@@ -1,6 +1,5 @@
 package org.mvel;
 
-import static org.mvel.util.ParseTools.debug;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
