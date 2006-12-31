@@ -239,7 +239,7 @@ public class PropertyTools {
             if (!isDigit(c = val[i]) && c != '.') return false;
         }
 
-        return len > 0;
+        return len > 0;      
     }
 
 
