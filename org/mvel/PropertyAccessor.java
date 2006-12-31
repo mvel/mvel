@@ -40,7 +40,7 @@ public class PropertyAccessor {
 
     private static Map<Class, Map<Integer, Member>> READ_PROPERTY_RESOLVER_CACHE;
     private static Map<Class, Map<Integer, Member>> WRITE_PROPERTY_RESOLVER_CACHE;
-    private static Map<Class, Map<Integer, Method>> METHOD_RESOLVER_CACHE;
+    private static Map<Class, Map<Integer, Object[]>> METHOD_RESOLVER_CACHE;
 
     static {
         configureFactory();
@@ -50,12 +50,12 @@ public class PropertyAccessor {
         if (MVEL.THREAD_SAFE) {
             READ_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
             WRITE_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
-            METHOD_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Method>>(10));
+            METHOD_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Object[]>>(10));
         }
         else {
             READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
             WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
-            METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Method>>(10));
+            METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Object[]>>(10));
         }
     }
 
@@ -318,12 +318,12 @@ public class PropertyAccessor {
 
     private static void addMethodCache(Class cls, Integer property, Method member) {
         if (!METHOD_RESOLVER_CACHE.containsKey(cls)) {
-            METHOD_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Method>());
+            METHOD_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Object[]>());
         }
-        METHOD_RESOLVER_CACHE.get(cls).put(property, member);
+        METHOD_RESOLVER_CACHE.get(cls).put(property, new Object[] { member, member.getParameterTypes() });
     }
 
-    public static Method checkMethodCache(Class cls, Integer property) {
+    public static Object[] checkMethodCache(Class cls, Integer property) {
         if (METHOD_RESOLVER_CACHE.containsKey(cls)) {
             return METHOD_RESOLVER_CACHE.get(cls).get(property);
         }
@@ -520,7 +520,20 @@ public class PropertyAccessor {
         /**
          * Check to see if we have already cached this method;
          */
-        Method m = checkMethodCache(cls, signature);
+        Object[] cache = checkMethodCache(cls, signature);
+
+
+        Method m;
+        Class[] parameterTypes;
+
+        if (cache != null) {
+            m = (Method) cache[0];
+            parameterTypes = (Class[]) cache[1];
+        }
+        else {
+            m = null;
+            parameterTypes = null;
+        }
 
 
         /**
@@ -533,6 +546,7 @@ public class PropertyAccessor {
 
             if ((m = getBestCanadidate(args, name, cls.getMethods())) != null) {
                 addMethodCache(cls, signature, m);
+                parameterTypes = m.getParameterTypes();
             }
 
             if (m == null) {
@@ -541,6 +555,7 @@ public class PropertyAccessor {
                  */
                 if ((m = getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
                     addMethodCache(cls, signature, m);
+                    parameterTypes = m.getParameterTypes();
                 }
             }
         }
@@ -559,7 +574,7 @@ public class PropertyAccessor {
              * Coerce any types if required.
              */
             for (int i = 0; i < args.length; i++)
-                args[i] = convert(args[i], m.getParameterTypes()[i]);
+                args[i] = convert(args[i], parameterTypes[i]);
 
             /**
              * Invoke the target method and return the response.

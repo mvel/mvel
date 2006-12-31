@@ -442,7 +442,7 @@ public class CompiledTest extends TestCase {
         String expr = "misc.toList(foo, 'hello', 42, ['key1' : 'value1', c : [ foo, 'car', 42 ]], [42, [c : 'value1']] )";
         Serializable compiled = ExpressionParser.compileExpression(expr);
 
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 10000000; i++) {
             ExpressionParser.executeExpression(compiled, map);
         }
     }
