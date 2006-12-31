@@ -1538,7 +1538,7 @@ public class ExpressionParser {
 
                 switch (tk.getCollectionCreationType()) {
                     case Token.LISTCREATE: {
-                        List<Object> newList = new ArrayList<Object>(10);
+                        List<Object> newList = new ArrayList<Object>();
                         newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
 
                         while (tokenMap.hasMoreTokens() &&
@@ -1556,7 +1556,7 @@ public class ExpressionParser {
                     case Token.MAPCREATE: {
                         tk = tk.isNestBegin() ? tokenMap.nextToken() : tk;
 
-                        Map<Object, Object> newMap = new HashMap<Object, Object>(10);
+                        Map<Object, Object> newMap = new HashMap<Object, Object>();
 
                         newMap.put(handleSubNesting(tk), handleSubNesting(tokenMap.nextToken()));
 
