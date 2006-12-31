@@ -591,14 +591,6 @@ public class PropertyAccessor {
         return hash;
     }
 
-    private static String createSignatureString(String name, Object[] args) {
-        StringBuilder sb = new StringBuilder(name);
-        for (Object o : args) {
-            sb.append("|").append(o != null ? o.getClass() : "null");
-        }
-        return sb.toString();
-    }
-
     public void setVariables(Map variables) {
         this.variables = variables;
     }

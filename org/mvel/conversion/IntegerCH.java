@@ -13,12 +13,13 @@ import java.math.BigInteger;
 
 public class IntegerCH implements ConversionHandler {
     private static final Map<Class, Converter> CNV =
-            new HashMap<Class, Converter>();
+            new HashMap<Class, Converter>(10);
 
 
     public Object convertFrom(Object in) {
         if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
                 + in.getClass().getName() + " to: " + Integer.class.getName());
+
         return CNV.get(in.getClass()).convert(in);
     }
 

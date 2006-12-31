@@ -1,7 +1,6 @@
 package org.mvel;
 
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 import java.math.BigDecimal;
 
 import org.mvel.conversion.*;
@@ -63,7 +62,7 @@ public class DataConversion {
 
     public static <T> T convert(Object in, Class<T> toType) {
         if (in == null) return null;
-        if (toType.isAssignableFrom(in.getClass())) {
+        if (toType == in.getClass() || toType.isAssignableFrom(in.getClass())) {
             return (T) in;
         }
         return (T) CONVERTERS.get(toType).convertFrom(in);
