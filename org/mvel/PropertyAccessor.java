@@ -515,7 +515,7 @@ public class PropertyAccessor {
          */
         Class cls = ctx instanceof Class ? (Class) ctx : ctx.getClass();
 
-        Integer signature = createSignature(name, args);
+        Integer signature = createSignature(name, tk);
 
         /**
          * Check to see if we have already cached this method;
@@ -583,11 +583,11 @@ public class PropertyAccessor {
         }
     }
 
-    private static int createSignature(String name, Object[] args) {
-        int hash = name.hashCode();
-        for (Object o : args) {
-            hash += o==null?0:o.hashCode();
-        }
+    private static int createSignature(String name, String args) {
+        int hash = name.hashCode() + args.hashCode();
+//        for (Object o : args) {
+//            hash += o==null?0:o.hashCode();
+//        }
         return hash;
     }
 
