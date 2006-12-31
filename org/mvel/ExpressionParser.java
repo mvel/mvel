@@ -270,12 +270,6 @@ public class ExpressionParser {
 
         this.expr = ((CompiledExpression) precompiedExpr).getExpression();
 
-
-        assert debug("\n<<Executing in Compiled Mode>>");
-        assert debug("Expression::<<" + new String(expr) + ">>");
-        assert debug(this.tokenMap.showTokenChain());
-
-
         this.ctx = ctx;
         this.tokens = tokens;
         this.fastExecuteMode = true;
@@ -410,24 +404,17 @@ public class ExpressionParser {
                 if (!(tk = (Token) stk.pop()).isValidNameIdentifier())
                     throw new CompileException("invalid identifier: " + tk.getName());
 
-                assert debug("ASSIGNMENT");
-
-
                 fields |= Token.ASSIGN;
                 parseAndExecute();
                 fields ^= Token.ASSIGN;
 
 
                 if (tokens == null) {
-                    assert debug("<<CREATING local token table>>");
                     tokens = new HashMap();
                 }
-                assert debug("<<variable table size=" + tokens.size() + ">>");                
 
                 //noinspection unchecked
                 tokens.put(tk.getName(), stk.pushAndPeek(valueOnly(stk.pop())));
-
-                assert debug("ASSIGNMENT to <<" + tk.getName() + ">> value=" + valueOnly(stk.peek()));
 
                 if (fastExecuteMode) {
                     if (tokenMap.hasMoreTokens()) {
@@ -727,8 +714,6 @@ public class ExpressionParser {
 
 
     private void parseAndExecute() {
-        assert debug("<<Executing has Begun>>");
-
         Token tk;
         Operator operator;
 
@@ -750,8 +735,6 @@ public class ExpressionParser {
             if (!tk.isOperator()) {
                 continue;
             }
-
-            assert tk.isOperator(); // The parser/or input script is borked if this isn't true.
 
             switch (reduceBinary(operator = tk.getOperator())) {
                 case-1:
@@ -782,8 +765,6 @@ public class ExpressionParser {
     }
 
     private Object reduceFast(Token tk) {
-        assert debug("<<REDUCEFAST: " + tk + ">>");
-
         if ((tk.getFlags() & Token.SUBEVAL) != 0) {
             setFieldFalse(Token.SUBEVAL);
 
@@ -795,8 +776,6 @@ public class ExpressionParser {
             }
         }
         else if ((tk.getFlags() & Token.DO_NOT_REDUCE) == 0) {
-            assert debug("<<FULL-REDUCING: " + tk + ">>");
-
             return tk.setFinalValue(reduce(reduceToken(tk))).getValue();
         }
         return tk;
@@ -819,7 +798,7 @@ public class ExpressionParser {
             else
                 return ~((BigDecimal) o).intValue();
         }
-        else if (((tok.getFlags() | fields) & Token.SUBEVAL) != 0) {
+        else if (!compileMode && ((tok.getFlags() | fields) & Token.SUBEVAL) != 0) {
             setFieldFalse(Token.SUBEVAL);
             return reduceParse(tok.getValueAsCharArray(), ctx, tokens);
         }
@@ -1204,7 +1183,6 @@ public class ExpressionParser {
                             addTokenToMap(new Token('{', fields | Token.NEST));
                         }
 
-
                         ArrayList<Object> projectionList = new ArrayList<Object>();
 
                         try {
@@ -1238,9 +1216,6 @@ public class ExpressionParser {
 
                     case']':
                     case'}':
-//                        if (compileMode) {
-//                            ((TokenMap) tokenMap).addTokenNode(new Token(expr[cursor], fields | Token.ENDNEST));
-//                        }
                     case',':
                         if (((fields & Token.LISTCREATE | fields & Token.ARRAYCREATE | fields & Token.MAPCREATE)) != 0) {
                             fields |= Token.DO_NOT_REDUCE;
@@ -1264,7 +1239,10 @@ public class ExpressionParser {
                             setFieldFalse(Token.CAPTURE_ONLY);
                             setFieldFalse(Token.PUSH);
 
-                            return tk.setValue(PropertyAccessor.get((tk).getName(), stk.pop()));
+                            if (!compileMode)
+                                return tk.setValue(PropertyAccessor.get((tk).getName(), stk.pop()));
+                            else
+                                return tk;
                         }
 
                     default:
@@ -1300,14 +1278,12 @@ public class ExpressionParser {
         String s;
 
         if (((fields & Token.CAPTURE_ONLY) | (token.getFlags() & Token.LITERAL)) != 0) {
-            assert debug("<<NOT reducing literal: " + token + ">>");
             return token;
         }
 
         if (propertyAccessor == null) propertyAccessor = new PropertyAccessor(tokens);
 
         if (((token.getFlags() | fields) & Token.PUSH) != 0) {
-            assert debug("<<PUSH REDUCE>>");
             return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), valueOnly(stk.pop())).get());
         }
         else if ((token.getFlags() & Token.DEEP_PROPERTY) != 0) {
@@ -1548,10 +1524,8 @@ public class ExpressionParser {
          */
 
         if ((tk = tokenMap.nextToken()) != null) {
-     //       assert debug("nextToken <<" + tk + ">>");
 
             if (tk.isOperator() && tk.getOperator() == Operator.ASSIGN) {
-                //     stk.push(tokenMap.tokensBack(2));
                 return tk;
             }
             else if (tk.isCollectionCreation()) {
@@ -1562,9 +1536,6 @@ public class ExpressionParser {
 
                 switch (tk.getCollectionCreationType()) {
                     case Token.LISTCREATE: {
-       //                 assert debug("<<Creating Inline-List : " + tk + " >>");
-
-
                         List<Object> newList = new ArrayList<Object>();
                         newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
 
@@ -1575,22 +1546,18 @@ public class ExpressionParser {
                         }
 
                         tokenMap.nextToken();
-                        
-   //                     assert debug("<<Inline List Created: " + newList + ">>");
-
 
                         tk.setFlag(true, Token.DO_NOT_REDUCE);
                         return tk.setFinalValue(newList);
                     }
 
                     case Token.MAPCREATE: {
-                        tk = tokenMap.nextToken();
-
-    //                    assert debug("<<Creating Inline-Map: " + tk + ">>");
+                        tk = tk.isNestBegin() ? tokenMap.nextToken() : tk;
 
                         Map<Object, Object> newMap = new HashMap<Object, Object>();
 
                         newMap.put(handleSubNesting(tk), handleSubNesting(tokenMap.nextToken()));
+
 
                         while (tokenMap.hasMoreTokens() && (tokenMap.peekToken().getFlags() & Token.ENDNEST) == 0) {
                             newMap.put(handleSubNesting(tokenMap.nextToken()), handleSubNesting(tokenMap.nextToken()));
@@ -1603,12 +1570,14 @@ public class ExpressionParser {
                     }
                     break;
 
-                    case Token.ARRAYCREATE: {
+                    case Token.ARRAYCREATE: {                                                
                         List<Object> newList = new ArrayList<Object>();
+
+                        newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
 
                         while (tokenMap.hasMoreTokens() &&
                                 (tokenMap.peekToken().getFlags() & Token.ENDNEST) == 0) {
-                             newList.add(handleSubNesting(tokenMap.nextToken()));
+                            newList.add(handleSubNesting(tokenMap.nextToken()));
                         }
 
                         tokenMap.nextToken();
@@ -1624,9 +1593,7 @@ public class ExpressionParser {
                 }
             }
             else if ((tk.getFlags() & Token.IDENTIFIER) != 0) {
-  //              assert debug("<<Reducing Identifier: " + tk + ">>");
                 reduceToken(tk);
-  //              assert debug("<<Reduction Result: " + tk + ">>");
             }
             else if ((tk.getFlags() & Token.THISREF) != 0) {
                 tk.setFinalValue(ctx);
@@ -1635,12 +1602,10 @@ public class ExpressionParser {
             fields |= (tk.getFlags() & Token.SUBEVAL);
 
             if ((tk.getFlags() & Token.PUSH) != 0) {
-  //              assert debug("<<PUSH: " + tk + ">>");
                 stk.push(tk.getValue());
             }
         }
 
- //       assert debug("<<Returning Token From CompiledTokens: " + tk + ">>");
         return tk;
     }
 

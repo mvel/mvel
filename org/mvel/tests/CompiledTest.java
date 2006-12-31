@@ -284,9 +284,6 @@ public class CompiledTest extends TestCase {
     }
 
 
-
-
-
     public void testListCreation2() {
         assertEquals(ArrayList.class, parseDirect("[\"test\"]").getClass());
     }
@@ -301,6 +298,10 @@ public class CompiledTest extends TestCase {
 
     public void testArrayCreationWithLength() {
         assertEquals(2, parseDirect("Array.getLength({'foo', 'bar'})"));
+    }
+
+    public void testArrayCreation() {
+        assertEquals(0, parseDirect("arrayTest = {{1, 2, 3}, {2, 1, 0}}; arrayTest[1][2]"));
     }
 
     public void testMapCreation() {

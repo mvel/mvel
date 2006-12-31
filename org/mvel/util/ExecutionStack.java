@@ -11,15 +11,11 @@ public class ExecutionStack implements Stack {
     }
 
     public void push(Object o) {
-        assert debug("STACK:PUSH <<" + o + ">>");
-
         size++;
         element = new StackElement(element, o);
     }
 
     public Object pushAndPeek(Object o) {
-        assert debug("STACK:PUSHandPEEK <<" + o + ">>");
-
         size++;
         element = new StackElement(element, o);
         return o;
@@ -45,8 +41,6 @@ public class ExecutionStack implements Stack {
         if (size-- == 0) return null;
         Object el = element.value;
         element = element.next;
-
-        assert debug("STACK:POP <<" + el + ">>");
         return el;
     }
 

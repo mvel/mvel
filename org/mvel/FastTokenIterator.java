@@ -24,8 +24,6 @@ public class FastTokenIterator implements TokenIterator {
     }
 
     public Token nextToken() {
-    //    assert debug("TOKEN_ITER pos=" + cursor);
-
         if (cursor < length)
             return token[cursor++];
         else
