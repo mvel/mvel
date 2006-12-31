@@ -1527,7 +1527,6 @@ public class ExpressionParser {
          */
 
         if ((tk = tokenMap.nextToken()) != null) {
-
             if (tk.isOperator() && tk.getOperator() == Operator.ASSIGN) {
                 return tk;
             }
@@ -1539,7 +1538,7 @@ public class ExpressionParser {
 
                 switch (tk.getCollectionCreationType()) {
                     case Token.LISTCREATE: {
-                        List<Object> newList = new ArrayList<Object>();
+                        List<Object> newList = new ArrayList<Object>(10);
                         newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
 
                         while (tokenMap.hasMoreTokens() &&
@@ -1557,7 +1556,7 @@ public class ExpressionParser {
                     case Token.MAPCREATE: {
                         tk = tk.isNestBegin() ? tokenMap.nextToken() : tk;
 
-                        Map<Object, Object> newMap = new HashMap<Object, Object>();
+                        Map<Object, Object> newMap = new HashMap<Object, Object>(10);
 
                         newMap.put(handleSubNesting(tk), handleSubNesting(tokenMap.nextToken()));
 
@@ -1574,7 +1573,7 @@ public class ExpressionParser {
                     break;
 
                     case Token.ARRAYCREATE: {
-                        List<Object> newList = new ArrayList<Object>();
+                        List<Object> newList = new LinkedList<Object>();
 
                         newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
 
