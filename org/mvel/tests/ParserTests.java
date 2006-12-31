@@ -28,6 +28,8 @@ public class ParserTests extends TestCase {
         map.put("pi", "3.14");
         map.put("hour", "60");
         map.put("zero", 0);
+
+        map.put("doubleTen", new Double(10));
     }
 
     public void testPassThru() {
@@ -312,26 +314,31 @@ public class ParserTests extends TestCase {
         assertEquals(~10 + (1 + ~50), parseDirect("~10 + (1 + ~50)"));
     }
 
-    public void testCompileExpression() {
-        String testExpression = "10 + 1 + 5 + 3 + hour";
 
-        Object compiled = ExpressionParser.compileExpression(testExpression);
-        assertEquals(parse("@{" + testExpression + "}"), ExpressionParser.executeExpression(compiled, base, map));
+    public void testNumericInteroperability() {
+        assertEquals(true, parseDirect("doubleTen > 5"));
     }
 
-    public void testCompileExpression2() {
-        String testExpression = "(10 + 1 > 5) && (10 + 1 < 20)";
-
-        Object compiled = ExpressionParser.compileExpression(testExpression);
-        assertEquals(parse("@{" + testExpression + "}"), ExpressionParser.executeExpression(compiled, base, map));
-    }
-
-    public void testCompileExpression3() {
-        String testExpression = "pi";
-        Object compiled = ExpressionParser.compileExpression(testExpression);
-        Object result = ExpressionParser.executeExpression(compiled, base, map);
-        assertEquals("3.14", result);
-    }
+//    public void testCompileExpression() {
+//        String testExpression = "10 + 1 + 5 + 3 + hour";
+//
+//        Object compiled = ExpressionParser.compileExpression(testExpression);
+//        assertEquals(parse("@{" + testExpression + "}"), ExpressionParser.executeExpression(compiled, base, map));
+//    }
+//
+//    public void testCompileExpression2() {
+//        String testExpression = "(10 + 1 > 5) && (10 + 1 < 20)";
+//
+//        Object compiled = ExpressionParser.compileExpression(testExpression);
+//        assertEquals(parse("@{" + testExpression + "}"), ExpressionParser.executeExpression(compiled, base, map));
+//    }
+//
+//    public void testCompileExpression3() {
+//        String testExpression = "pi";
+//        Object compiled = ExpressionParser.compileExpression(testExpression);
+//        Object result = ExpressionParser.executeExpression(compiled, base, map);
+//        assertEquals("3.14", result);
+//    }
 
     public void testExpression10() {
         assertEquals(true, parse("@{10 + 1 > 5 && 10 + 1 < 20}"));

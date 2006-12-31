@@ -667,13 +667,15 @@ public class ExpressionParser {
                 fields |= Token.LOOKAHEAD;
 
                 Token tk = nextToken();
-                stk.push(v1, nextToken(), tk.getOperator());
+                if (tk != null) {
+                    stk.push(v1, nextToken(), tk.getOperator());
 
-                reduceTrinary();
+                    reduceTrinary();
+                    return;
+                }
             }
-            else {
-                throw new CompileException("syntax error or incomptable types", expr, cursor, e);
-            }
+            throw new CompileException("syntax error or incomptable types", expr, cursor, e);
+
         }
         catch (Exception e) {
             throw new CompileException("failed to reduce expression: " + e);
@@ -703,7 +705,7 @@ public class ExpressionParser {
         else if (operand instanceof BigDecimal) {
             return operand;
         }
-        else if (isNumber(valueOf(operand))) {
+        else if (isNumber(operand)) {
             return new BigDecimal(valueOf(operand));
         }
         else {

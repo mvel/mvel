@@ -1,18 +1,18 @@
 package org.mvel.util;
 
 
-import org.mvel.DataConversion;
-
 import static java.lang.String.valueOf;
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.isPublic;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 import static java.util.regex.Pattern.compile;
-import java.math.BigDecimal;
 
 public class PropertyTools {
     private static final Pattern truePattern = compile("(on|yes|true|1|hi|high|y)");
@@ -247,7 +247,7 @@ public class PropertyTools {
         if (val == null) return false;
         if (val instanceof String) return isNumber((String) val);
         return val instanceof Integer || val instanceof BigDecimal
-                || val instanceof Float || val instanceof Double
+                || val instanceof Float || val instanceof Double || val instanceof Long
                 || val instanceof Short;
     }
 
