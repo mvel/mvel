@@ -38,6 +38,7 @@ public class Token implements Cloneable {
     public static final int NOCOMPILE = 1 << 21;
 
     public static final int PUSH = 1 << 22;
+    public static final int UNION = 1 << 23;
 
     public static final int NEST = 1 << 23;   // token begins a nesting area
     public static final int ENDNEST = 1 << 24; // token ends a nesting area

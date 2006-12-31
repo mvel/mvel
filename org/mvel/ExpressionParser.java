@@ -1344,8 +1344,6 @@ public class ExpressionParser {
                 return token.setValue(Token.LITERALS.get(s));
             }
             else if (tokens != null && tokens.containsKey(s)) {
-                System.out.println("<<CONTAINS var: " + s + " = " + tokens.get(s) + ">>");
-
                 if ((token.getFlags() & Token.COLLECTION) != 0) {
                     return token.setValue(propertyAccessor.setParameters(expr, token.getStart()
                             + token.getEndOfName(), token.getEnd(), tokens.get(s)).get());
