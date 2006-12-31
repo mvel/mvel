@@ -37,9 +37,9 @@ public class Token implements Cloneable, Serializable {
     public static final int THISREF = 1 << 19;
     public static final int ARRAYCREATE = 1 << 20;
     public static final int NOCOMPILE = 1 << 21;
+    public static final int STR_LITERAL = 1 << 25;
 
     public static final int PUSH = 1 << 22;
-    public static final int UNION = 1 << 23;
 
     public static final int NEST = 1 << 23;   // token begins a nesting area
     public static final int ENDNEST = 1 << 24; // token ends a nesting area
@@ -55,6 +55,8 @@ public class Token implements Cloneable, Serializable {
     private String nameCache;
 
     private transient Object value;
+    private transient Object resetValue;
+
     private BigDecimal numericValue;
 
     private int fields = 0;
@@ -410,12 +412,9 @@ public class Token implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     public void setName(char[] name) {
-//        if (name.length == 0) {
-//           fields |= NOCOMPILE;
-//            return;
-//        }
 
-        if ((fields & LITERAL) != 0) {
+        if ((fields & STR_LITERAL) != 0) {
+            fields |= LITERAL;
             int escapes = 0;
             for (int i = 0; i < name.length; i++) {
                 if (name[i] == '\\') {
@@ -435,6 +434,7 @@ public class Token implements Cloneable, Serializable {
             }
 
             this.value = new String(this.name = processedEscapeString);
+
         }
         else {
             this.value = new String(this.name = name);
@@ -467,6 +467,8 @@ public class Token implements Cloneable, Serializable {
         }
 
         if ((endOfName = findFirst('[', name)) > 0) fields |= COLLECTION;
+
+        resetValue = value;
     }
 
     public int getFlags() {
@@ -542,4 +544,13 @@ public class Token implements Cloneable, Serializable {
         }
     }
 
+    public void reset() {
+        if (resetValue == null) {
+            setLiteral(false);
+            setName(name);
+        }
+        else {
+            value = resetValue;
+        }
+    }
 }

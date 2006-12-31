@@ -1004,7 +1004,7 @@ public class ExpressionParser {
                         if (cursor == length || expr[cursor] != '\'') {
                             throw new CompileException("unterminated literal: " + new String(expr));
                         }
-                        return createToken(expr, start + 1, cursor++, fields |= Token.LITERAL);
+                        return createToken(expr, start + 1, cursor++, fields |= Token.STR_LITERAL | Token.LITERAL);
 
 
                     case'"':
@@ -1014,7 +1014,7 @@ public class ExpressionParser {
                         if (cursor == length || expr[cursor] != '"') {
                             throw new CompileException("unterminated literal: " + new String(expr));
                         }
-                        return createToken(expr, start + 1, cursor++, fields |= Token.LITERAL);
+                        return createToken(expr, start + 1, cursor++, fields |= Token.STR_LITERAL | Token.LITERAL);
 
 
                     case'&': {

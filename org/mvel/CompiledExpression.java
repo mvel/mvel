@@ -20,7 +20,7 @@ public class CompiledExpression implements Serializable, Cloneable {
     }
 
     public TokenIterator getTokenMap() {
-        return tokenMap.clone();
+        return tokenMap;
     }
 
     public void setTokenMap(TokenIterator tokenMap) {
