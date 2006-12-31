@@ -38,9 +38,9 @@ public class PropertyAccessor {
 
     private static final Object[] EMPTYARG = new Object[0];
 
-    private static Map<Class, Map<String, Member>> READ_PROPERTY_RESOLVER_CACHE;
-    private static Map<Class, Map<String, Member>> WRITE_PROPERTY_RESOLVER_CACHE;
-    private static Map<Class, Map<String, Method>> METHOD_RESOLVER_CACHE;
+    private static Map<Class, Map<Integer, Member>> READ_PROPERTY_RESOLVER_CACHE;
+    private static Map<Class, Map<Integer, Member>> WRITE_PROPERTY_RESOLVER_CACHE;
+    private static Map<Class, Map<Integer, Method>> METHOD_RESOLVER_CACHE;
 
     static {
         configureFactory();
@@ -48,14 +48,14 @@ public class PropertyAccessor {
 
     static void configureFactory() {
         if (MVEL.THREAD_SAFE) {
-            READ_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<String, Member>>(10));
-            WRITE_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<String, Member>>(10));
-            METHOD_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<String, Method>>(10));
+            READ_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
+            WRITE_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
+            METHOD_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Method>>(10));
         }
         else {
-            READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<String, Member>>(10));
-            WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<String, Member>>(10));
-            METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, Map<String, Method>>(10));
+            READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
+            WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
+            METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Method>>(10));
         }
     }
 
@@ -179,9 +179,9 @@ public class PropertyAccessor {
                 curr = getBeanProperty(curr, tk);
             }
 
-            Member member = checkWriteCache(curr.getClass(), tk);
+            Member member = checkWriteCache(curr.getClass(),  tk==null?0:tk.hashCode());
             if (member == null) {
-                addWriteCache(curr.getClass(), tk, (member = getFieldOrWriteAccessor(curr.getClass(), tk)));
+                addWriteCache(curr.getClass(), tk==null?0:tk.hashCode(), (member = getFieldOrWriteAccessor(curr.getClass(), tk)));
             }
 
             if (member instanceof Field) {
@@ -287,28 +287,28 @@ public class PropertyAccessor {
         }
     }
 
-    private static void addReadCache(Class cls, String property, Member member) {
+    private static void addReadCache(Class cls, Integer property, Member member) {
         if (!READ_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
-            READ_PROPERTY_RESOLVER_CACHE.put(cls, new WeakHashMap<String, Member>());
+            READ_PROPERTY_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Member>());
         }
         READ_PROPERTY_RESOLVER_CACHE.get(cls).put(property, member);
     }
 
-    public static Member checkReadCache(Class cls, String property) {
+    public static Member checkReadCache(Class cls, Integer property) {
         if (READ_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
             return READ_PROPERTY_RESOLVER_CACHE.get(cls).get(property);
         }
         return null;
     }
 
-    private static void addWriteCache(Class cls, String property, Member member) {
+    private static void addWriteCache(Class cls, Integer property, Member member) {
         if (!WRITE_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
-            WRITE_PROPERTY_RESOLVER_CACHE.put(cls, new WeakHashMap<String, Member>());
+            WRITE_PROPERTY_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Member>());
         }
         WRITE_PROPERTY_RESOLVER_CACHE.get(cls).put(property, member);
     }
 
-    public static Member checkWriteCache(Class cls, String property) {
+    public static Member checkWriteCache(Class cls, Integer property) {
         if (WRITE_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
             return WRITE_PROPERTY_RESOLVER_CACHE.get(cls).get(property);
         }
@@ -316,14 +316,14 @@ public class PropertyAccessor {
     }
 
 
-    private static void addMethodCache(Class cls, String property, Method member) {
+    private static void addMethodCache(Class cls, Integer property, Method member) {
         if (!METHOD_RESOLVER_CACHE.containsKey(cls)) {
-            METHOD_RESOLVER_CACHE.put(cls, new WeakHashMap<String, Method>());
+            METHOD_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Method>());
         }
         METHOD_RESOLVER_CACHE.get(cls).put(property, member);
     }
 
-    public static Method checkMethodCache(Class cls, String property) {
+    public static Method checkMethodCache(Class cls, Integer property) {
         if (METHOD_RESOLVER_CACHE.containsKey(cls)) {
             return METHOD_RESOLVER_CACHE.get(cls).get(property);
         }
@@ -335,10 +335,10 @@ public class PropertyAccessor {
             throws IllegalAccessException, InvocationTargetException {
 
         Class cls;
-        Member member = checkReadCache(cls = (ctx instanceof Class ? ((Class) ctx) : ctx.getClass()), property);
+        Member member = checkReadCache(cls = (ctx instanceof Class ? ((Class) ctx) : ctx.getClass()), property.hashCode());
 
         if (member == null) {
-            addReadCache(cls, property, member = getFieldOrAccessor(cls, property));
+            addReadCache(cls, property.hashCode(), member = getFieldOrAccessor(cls, property));
         }
 
         if (member instanceof Field) {
@@ -515,10 +515,13 @@ public class PropertyAccessor {
          */
         Class cls = ctx instanceof Class ? (Class) ctx : ctx.getClass();
 
+        Integer signature = createSignature(name, args);
+
         /**
          * Check to see if we have already cached this method;
          */
-        Method m = checkMethodCache(cls, createSignatureString(name, args));
+        Method m = checkMethodCache(cls, signature);
+
 
         /**
          * If we have not cached the method then we need to go ahead and try to resolve it.
@@ -529,7 +532,7 @@ public class PropertyAccessor {
              */
 
             if ((m = getBestCanadidate(args, name, cls.getMethods())) != null) {
-                addMethodCache(cls, createSignatureString(name, args), m);
+                addMethodCache(cls, signature, m);
             }
 
             if (m == null) {
@@ -537,7 +540,7 @@ public class PropertyAccessor {
                  * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
                  */
                 if ((m = getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
-                    addMethodCache(cls, createSignatureString(name, args), m);
+                    addMethodCache(cls, signature, m);
                 }
             }
         }
@@ -563,6 +566,14 @@ public class PropertyAccessor {
              */
             return m.invoke(ctx, args);
         }
+    }
+
+    private static int createSignature(String name, Object[] args) {
+        int hash = name.hashCode();
+        for (Object o : args) {
+            hash += o.hashCode();
+        }
+        return hash;
     }
 
     private static String createSignatureString(String name, Object[] args) {
