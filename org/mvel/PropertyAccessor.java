@@ -586,7 +586,7 @@ public class PropertyAccessor {
     private static int createSignature(String name, Object[] args) {
         int hash = name.hashCode();
         for (Object o : args) {
-            hash += o.hashCode();
+            hash += o==null?0:o.hashCode();
         }
         return hash;
     }
