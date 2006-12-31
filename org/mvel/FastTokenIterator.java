@@ -1,10 +1,8 @@
 package org.mvel;
 
-import static org.mvel.util.ParseTools.debug;
-
 import java.util.ArrayList;
 
-public class FastTokenIterator implements TokenIterator {
+public class FastTokenIterator implements TokenIterator, Cloneable {
     private Token[] token;
     private int length = 0;
     private int cursor = 0;
@@ -39,7 +37,7 @@ public class FastTokenIterator implements TokenIterator {
 
     public Token peekLast() {
         if (cursor > 0) {
-            return token[cursor-1];
+            return token[cursor - 1];
         }
         else {
             return null;
@@ -68,9 +66,26 @@ public class FastTokenIterator implements TokenIterator {
     public String showTokenChain() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            sb.append("(" + i + "): <<" + token[i].getName() + ">> = <<" + token[i].getValue() + ">> [" + (token[i].getValue()!=null?token[i].getValue().getClass():"null") + "]").append("\n");
+            sb.append("(" + i + "): <<" + token[i].getName() + ">> = <<" + token[i].getValue() + ">> [" + (token[i].getValue() != null ? token[i].getValue().getClass() : "null") + "]").append("\n");
         }
 
         return sb.toString();
+    }
+
+
+    public TokenIterator clone() {
+        try {
+            FastTokenIterator ti = (FastTokenIterator) super.clone();
+            for (int i = 0; i < token.length; i++) {
+                ti.token[i] = token[i].clone();
+                if (ti.token[i] == token[i]) throw new RuntimeException("clone failed!");
+            }
+            return ti;
+        }
+        catch (CloneNotSupportedException e) {
+            // no handling needed.
+            return null;
+        }
+
     }
 }

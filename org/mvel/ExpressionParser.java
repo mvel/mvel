@@ -1218,8 +1218,7 @@ public class ExpressionParser {
                     case'}':
                     case',':
                         if (((fields & Token.LISTCREATE | fields & Token.ARRAYCREATE | fields & Token.MAPCREATE)) != 0) {
-                            fields |= Token.DO_NOT_REDUCE;
-                            return createToken(expr, start, cursor, fields);
+                            return createToken(expr, start, cursor, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE);
                         }
                         else if (!capture) {
                             throw new CompileException("unexpected: " + expr[cursor]);
@@ -1252,6 +1251,7 @@ public class ExpressionParser {
 
         }
 
+
         return createToken(expr, start, cursor, fields);
     }
 
@@ -1260,8 +1260,9 @@ public class ExpressionParser {
 
         if (compileMode) {
             if ((tk.getFlags() & Token.NOCOMPILE) == 0) {
-                if ((tk.getFlags() & Token.SUBEVAL) != 0) reduceFast(tk);
                 ((TokenMap) tokenMap).addTokenNode(tk.clone());
+
+                if ((tk.getFlags() & Token.SUBEVAL) != 0) reduceFast(tk);
             }
             setFieldFalse(Token.NOCOMPILE);
         }
@@ -1277,16 +1278,18 @@ public class ExpressionParser {
     private Token reduceToken(Token token) {
         String s;
 
-        if (((fields & Token.CAPTURE_ONLY) | (token.getFlags() & Token.LITERAL)) != 0) {
+        int tkflags = token.getFlags();
+
+        if (((fields & Token.CAPTURE_ONLY) | (tkflags & Token.LITERAL)) != 0) {
             return token;
         }
 
         if (propertyAccessor == null) propertyAccessor = new PropertyAccessor(tokens);
 
-        if (((token.getFlags() | fields) & Token.PUSH) != 0) {
+        if (((tkflags | fields) & Token.PUSH) != 0) {
             return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), valueOnly(stk.pop())).get());
         }
-        else if ((token.getFlags() & Token.DEEP_PROPERTY) != 0) {
+        else if ((tkflags & Token.DEEP_PROPERTY) != 0) {
             if (Token.LITERALS.containsKey(s = token.getAbsoluteRootElement())) {
                 Object literal = Token.LITERALS.get(s);
                 if (literal == ThisLiteral.class) literal = ctx;
@@ -1570,7 +1573,7 @@ public class ExpressionParser {
                     }
                     break;
 
-                    case Token.ARRAYCREATE: {                                                
+                    case Token.ARRAYCREATE: {
                         List<Object> newList = new ArrayList<Object>();
 
                         newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));

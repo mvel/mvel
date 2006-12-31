@@ -2,7 +2,7 @@ package org.mvel;
 
 import java.io.Serializable;
 
-public class CompiledExpression implements Serializable {
+public class CompiledExpression implements Serializable, Cloneable {
     private char[] expression;
     private TokenIterator tokenMap;
 
@@ -20,7 +20,7 @@ public class CompiledExpression implements Serializable {
     }
 
     public TokenIterator getTokenMap() {
-        return tokenMap;
+        return tokenMap.clone();
     }
 
     public void setTokenMap(TokenIterator tokenMap) {

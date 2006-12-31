@@ -438,6 +438,16 @@ public class CompiledTest extends TestCase {
         return ExpressionParser.executeExpression(compiled, base, map);
     }
 
+    public void testToListBenchmark() {
+        String expr = "misc.toList(foo, 'hello', 42, ['key1' : 'value1', c : [ foo, 'car', 42 ]], [42, [c : 'value1']] )";
+        Serializable compiled = ExpressionParser.compileExpression(expr);
+
+        for (int i = 0; i < 100000; i++) {
+            ExpressionParser.executeExpression(compiled, map);
+        }
+    }
+
+
     public void testToList() {
         String expr = "misc.toList(foo, 'hello', 42, ['key1' : 'value1', c : [ foo, 'car', 42 ]], [42, [c : 'value1']] )";
         List list = (List) parseDirect(expr);
@@ -450,12 +460,18 @@ public class CompiledTest extends TestCase {
         List nestedList = (List) map.get("cat");
         assertSame(foo, nestedList.get(0));
         assertEquals("car", nestedList.get(1));
-        assertEquals(new BigDecimal(42), nestedList.get(2));
+        assertEquals(42, nestedList.get(2));
 
         nestedList = (List) list.get(4);
-        assertEquals(new BigDecimal(42), nestedList.get(0));
+        assertEquals(42, nestedList.get(0));
         map = (Map) nestedList.get(1);
         assertEquals("value1", map.get("cat"));
+    }
+
+    public void testToList2() {
+        for (int i = 0; i < 10; i++) {
+            testToList();
+        }
     }
 
     public class MiscTestClass {

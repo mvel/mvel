@@ -12,8 +12,9 @@ import static java.lang.String.valueOf;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.Serializable;
 
-public class Token implements Cloneable {
+public class Token implements Cloneable, Serializable {
     public static final int LITERAL = 1;
     public static final int DEEP_PROPERTY = 1 << 1;
     public static final int OPERATOR = 1 << 2;
@@ -53,7 +54,7 @@ public class Token implements Cloneable {
     private char[] name;
     private String nameCache;
 
-    private Object value;
+    private transient Object value;
     private BigDecimal numericValue;
 
     private int fields = 0;
@@ -347,9 +348,9 @@ public class Token implements Cloneable {
                     fields |= NUMERIC;
                     this.numericValue = (BigDecimal) value;
                 }
-                else if (isNumber(s = valueOf(value))) {
+                else if (isNumber(value)) {
                     fields |= NUMERIC;
-                    this.numericValue = new BigDecimal(s);
+                    this.numericValue = new BigDecimal(valueOf(value));
                 }
                 this.value = value;
             }
@@ -450,7 +451,7 @@ public class Token implements Cloneable {
             fields |= OPERATOR;
             value = OPERATORS.get(value);
         }
-        else if (isNumber(name)) {
+        else if (((fields & NUMERIC) != 0) || isNumber(name)) {
             if (((fields |= LITERAL | NUMERIC) & INVERT) != 0) {
                 value = this.numericValue = new BigDecimal(~parseInt((String) value));
             }
@@ -530,16 +531,16 @@ public class Token implements Cloneable {
         return (fields & Token.NEST) != 0;
     }
 
-    /**
-     * @noinspection CloneDoesntDeclareCloneNotSupportedException
-     */
+
     public Token clone() {
         try {
-            return (Token) super.clone();
+            Token tk = (Token) super.clone();
+            System.out.println("new:" +tk.hashCode());
+            System.out.println("curr: " + hashCode());
+            return tk;
         }
-        
         catch (CloneNotSupportedException e) {
-            // do nothing.
+            e.printStackTrace();
             return null;
         }
     }

@@ -61,4 +61,10 @@ public class TokenMap implements TokenIterator {
     public String showTokenChain() {
         throw new RuntimeException("unimplemented");        
     }
+
+
+    @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException"})
+    public TokenIterator clone() {
+        return null;
+    }
 }

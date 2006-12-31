@@ -1,6 +1,8 @@
 package org.mvel.util;
 
 
+import org.mvel.DataConversion;
+
 import static java.lang.String.valueOf;
 import java.lang.reflect.*;
 import static java.lang.reflect.Modifier.PUBLIC;
@@ -10,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 import static java.util.regex.Pattern.compile;
+import java.math.BigDecimal;
 
 public class PropertyTools {
     private static final Pattern truePattern = compile("(on|yes|true|1|hi|high|y)");
@@ -240,9 +243,15 @@ public class PropertyTools {
     }
 
 
+    public static boolean isNumber(Object val) {
+        if (val == null) return false;
+        if (val instanceof String) return isNumber((String) val);
+        return val instanceof Integer || val instanceof BigDecimal
+                || val instanceof Float || val instanceof Double
+                || val instanceof Short;
+    }
+
     public static boolean isNumber(final String val) {
-
-
         int len = val.length();
         char[] a = val.toCharArray();
         char c;
