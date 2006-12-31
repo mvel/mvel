@@ -410,14 +410,19 @@ public class ExpressionParser {
                 if (!(tk = (Token) stk.pop()).isValidNameIdentifier())
                     throw new CompileException("invalid identifier: " + tk.getName());
 
-                assert debug("ASSIGNMENT (1)");
+                assert debug("ASSIGNMENT");
 
 
                 fields |= Token.ASSIGN;
                 parseAndExecute();
                 fields ^= Token.ASSIGN;
 
-                if (tokens == null) tokens = new HashMap();
+
+                if (tokens == null) {
+                    assert debug("<<CREATING local token table>>");
+                    tokens = new HashMap();
+                }
+                assert debug("<<variable table size=" + tokens.size() + ">>");                
 
                 //noinspection unchecked
                 tokens.put(tk.getName(), stk.pushAndPeek(valueOnly(stk.pop())));
@@ -777,6 +782,8 @@ public class ExpressionParser {
     }
 
     private Object reduceFast(Token tk) {
+        System.out.println("<<REDUCEFAST: " + tk + ">>");
+
         if ((tk.getFlags() & Token.SUBEVAL) != 0) {
             setFieldFalse(Token.SUBEVAL);
 
@@ -787,8 +794,12 @@ public class ExpressionParser {
                 return tk.setFinalValue(executeExpression(tk.getCompiledExpression(), ctx, tokens)).getValue();
             }
         }
-        else {
+        else if ((tk.getFlags() & Token.DO_NOT_REDUCE) == 0) {
+            assert debug("<<FULL-REDUCING: " + tk + ">>");
+
             return tk.setFinalValue(reduce(reduceToken(tk))).getValue();
+            //    return tk.setFinalValue(reduce((tk))).getValue();
+
         }
         return tk;
     }
@@ -1102,17 +1113,24 @@ public class ExpressionParser {
                                 tk1.setFlag(false, Token.LISTCREATE);
                                 tk1.setFlag(true, Token.MAPCREATE);
 
+                                tk2.setFlag(false, Token.LISTCREATE);
+                                tk2.setFlag(true, Token.MAPCREATE);
+
+                                ((TokenMap) tokenMap).addTokenNode(new Token('[', Token.MAPCREATE | Token.NEST));
                                 ((TokenMap) tokenMap).addTokenNode(tk1);
                             }
+
+                            tk2 = nextToken();
 
                             fields |= Token.MAPCREATE;
 
                             Map<Object, Object> map = new HashMap<Object, Object>();
-                            map.put(reduce(tk1), reduce(nextToken()));
+                            map.put(reduce(tk1), reduce(tk2));
 
                             try {
                                 while (expr[cursor++] != ']') {
                                     tk1 = nextToken();
+                                    fields |= Token.NOCOMPILE;
                                     if ((tk2 = nextToken()) == null || !tk2.getName().equals(":"))
                                         throw new CompileException("unexpected token or end of expression, in map creation construct: " + tk2.getName());
 
@@ -1122,6 +1140,8 @@ public class ExpressionParser {
                             catch (ArrayIndexOutOfBoundsException e) {
                                 throw new CompileException("unterminated list projection");
                             }
+
+                            if (compileMode) ((TokenMap) tokenMap).addTokenNode(new Token(']', Token.ENDNEST));
 
                             setFieldFalse(Token.MAPCREATE);
 
@@ -1146,6 +1166,7 @@ public class ExpressionParser {
                             projectionList.add(reduce(tk1));
 
                             if (compileMode) {
+                                ((TokenMap) tokenMap).addTokenNode(new Token('[', Token.LISTCREATE | Token.NEST));
                                 ((TokenMap) tokenMap).addTokenNode(tk1);
                             }
 
@@ -1219,9 +1240,9 @@ public class ExpressionParser {
 
                     case']':
                     case'}':
-                        if (compileMode) {
-                            ((TokenMap) tokenMap).addTokenNode(new Token(expr[cursor], fields | Token.ENDNEST));
-                        }
+//                        if (compileMode) {
+//                            ((TokenMap) tokenMap).addTokenNode(new Token(expr[cursor], fields | Token.ENDNEST));
+//                        }
                     case',':
                         if (((fields & Token.LISTCREATE | fields & Token.ARRAYCREATE | fields & Token.MAPCREATE)) != 0) {
                             fields |= Token.DO_NOT_REDUCE;
@@ -1280,6 +1301,7 @@ public class ExpressionParser {
         String s;
 
         if (((fields & Token.CAPTURE_ONLY) | (token.getFlags() & Token.LITERAL)) != 0) {
+            System.out.println("<<NOT reducing literal: " + token + ">>");
             return token;
         }
 
@@ -1326,6 +1348,8 @@ public class ExpressionParser {
                 return token.setValue(Token.LITERALS.get(s));
             }
             else if (tokens != null && tokens.containsKey(s)) {
+                System.out.println("<<CONTAINS var: " + s + " = " + tokens.get(s) + ">>");
+
                 if ((token.getFlags() & Token.COLLECTION) != 0) {
                     return token.setValue(propertyAccessor.setParameters(expr, token.getStart()
                             + token.getEndOfName(), token.getEnd(), tokens.get(s)).get());
@@ -1528,7 +1552,6 @@ public class ExpressionParser {
         if ((tk = tokenMap.nextToken()) != null) {
             assert debug("nextToken <<" + tk + ">>");
 
-
             if (tk.isOperator() && tk.getOperator() == Operator.ASSIGN) {
                 //     stk.push(tokenMap.tokensBack(2));
                 return tk;
@@ -1541,56 +1564,43 @@ public class ExpressionParser {
 
                 switch (tk.getCollectionCreationType()) {
                     case Token.LISTCREATE: {
-                        assert debug("<<Creating Inline-List>>");
+                        assert debug("<<Creating Inline-List : " + tk + " >>");
 
 
                         List<Object> newList = new ArrayList<Object>();
+                        newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
 
                         while (tokenMap.hasMoreTokens() &&
                                 (tokenMap.peekToken().getFlags() & Token.ENDNEST) == 0) {
 
-                            if ((tokenMap.peekToken().getFlags() & Token.NEST) != 0) {
-                                newList.add(nextToken().getValue());
-                                tokenMap.nextToken();
-                            }
-                            else {
-                                newList.add(reduceFast(tokenMap.nextToken()));
-                            }
+                            newList.add(handleSubNesting(tokenMap.nextToken()));
                         }
 
-                        tk.setFinalValue(newList);
+                        tokenMap.nextToken();
+                        
+                        assert debug("<<Inline List Created: " + newList + ">>");
+
+
+                        tk.setFlag(true, Token.DO_NOT_REDUCE);
+                        return tk.setFinalValue(newList);
                     }
-                    break;
 
                     case Token.MAPCREATE: {
-                        assert debug("<<Creating Inline-Map>>");
+                        tk = tokenMap.nextToken();
+
+                        assert debug("<<Creating Inline-Map: " + tk + ">>");
 
                         Map<Object, Object> newMap = new HashMap<Object, Object>();
 
-                        newMap.put(reduce(reduceToken(tk)), reduce(reduceToken(tokenMap.nextToken())));
+                        newMap.put(handleSubNesting(tk), handleSubNesting(tokenMap.nextToken()));
 
-                        assert debug("<<Created Initial Map: " + newMap.toString() + ">>");
-
-                        while (tokenMap.hasMoreTokens() &&
-                                (tokenMap.peekToken().getFlags() & Token.ENDNEST) == 0) {
-
-                            assert debug("<<Map Creation: Peeking at Next Token: " + tokenMap.peekToken() + ">>");
-
-                            if ((tokenMap.peekToken().getFlags() & Token.NEST) != 0) {
-                                assert debug("<<Nesting>>");
-
-                                newMap.put(nextToken().getValue(), nextToken().getValue());
-                                tokenMap.nextToken();
-                            }
-                            else {
-                                assert debug("<<Next Map Key: " + tokenMap.peekToken() + ">>");
-
-                                newMap.put(reduceFast(tokenMap.nextToken()), reduceFast(tokenMap.nextToken()));
-
-                                assert debug("<<Map Updated: " + tokenMap.toString() + ">>");
-                            }
+                        while (tokenMap.hasMoreTokens() && (tokenMap.peekToken().getFlags() & Token.ENDNEST) == 0) {
+                            newMap.put(handleSubNesting(tokenMap.nextToken()), handleSubNesting(tokenMap.nextToken()));
                         }
 
+                        tokenMap.nextToken();
+
+                        tk.setFlag(true, Token.DO_NOT_REDUCE);
                         tk.setFinalValue(newMap);
                     }
                     break;
@@ -1600,17 +1610,12 @@ public class ExpressionParser {
 
                         while (tokenMap.hasMoreTokens() &&
                                 (tokenMap.peekToken().getFlags() & Token.ENDNEST) == 0) {
-
-                            if ((tokenMap.peekToken().getFlags() & Token.NEST) != 0) {
-                                newList.add(nextToken().getValue());
-                                tokenMap.nextToken();
-                            }
-                            else {
-                                newList.add(reduceFast(tokenMap.nextToken()));
-                            }
+                             newList.add(handleSubNesting(tokenMap.nextToken()));
                         }
 
+                        tokenMap.nextToken();
 
+                        tk.setFlag(true, Token.DO_NOT_REDUCE);
                         return tk.setFinalValue(newList.toArray());
                     }
                 }
@@ -1621,7 +1626,9 @@ public class ExpressionParser {
                 }
             }
             else if ((tk.getFlags() & Token.IDENTIFIER) != 0) {
+                assert debug("<<Reducing Identifier: " + tk + ">>");
                 reduceToken(tk);
+                assert debug("<<Reduction Result: " + tk + ">>");
             }
             else if ((tk.getFlags() & Token.THISREF) != 0) {
                 tk.setFinalValue(ctx);
@@ -1630,8 +1637,17 @@ public class ExpressionParser {
             fields |= (tk.getFlags() & Token.SUBEVAL);
         }
 
+        assert debug("<<Returning Token From CompiledTokens: " + tk + ">>");
         return tk;
     }
 
+    private Object handleSubNesting(Token token) {
+        if ((token.getFlags() & Token.NEST) != 0) {
+            return nextToken().getValue();
+        }
+        else {
+            return reduceToken(token).getValue();
+        }
+    }
 }
 

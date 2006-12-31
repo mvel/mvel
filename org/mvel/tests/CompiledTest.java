@@ -410,6 +410,10 @@ public class CompiledTest extends TestCase {
         ExpressionParser.executeExpression(compiled, null, null, Boolean.class);
     }
 
+    public void testSubListInMap() {
+       assertEquals("pear", parseDirect("map = ['test' : 'poo', 'foo' : [c, 'pear']]; map['foo'][1]"));
+    }
+
     public void testCompiledMethodCall() {
         Serializable compiled = ExpressionParser.compileExpression("c.getClass()");
         assertEquals(String.class, ExpressionParser.executeExpression(compiled, base, map));

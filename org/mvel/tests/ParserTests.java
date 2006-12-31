@@ -475,10 +475,10 @@ public class ParserTests extends TestCase {
 //        assertEquals(true, ExpressionParser.executeExpression(compiled));
 //    }
 
-    public void testCompiledMapStructures() {
-        Serializable compiled = ExpressionParser.compileExpression("['foo':'bar'] contains 'foo'");
-        ExpressionParser.executeExpression(compiled, null, null, Boolean.class);
-    }
+//    public void testCompiledMapStructures() {
+//        Serializable compiled = ExpressionParser.compileExpression("['foo':'bar'] contains 'foo'");
+//        ExpressionParser.executeExpression(compiled, null, null, Boolean.class);
+//    }
 
     public void testCompiledMethodCall() {
         Serializable compiled = ExpressionParser.compileExpression("c.getClass()");

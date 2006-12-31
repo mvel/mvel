@@ -525,6 +525,10 @@ public class Token implements Cloneable {
         return ((fields & MAPCREATE) | (fields & ARRAYCREATE) | (fields & LISTCREATE));
     }
 
+    public boolean isNestBegin() {
+        return (fields & Token.NEST) != 0;
+    }
+
     /**
      * @noinspection CloneDoesntDeclareCloneNotSupportedException
      */
