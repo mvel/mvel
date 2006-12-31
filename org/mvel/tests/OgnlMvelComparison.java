@@ -23,6 +23,7 @@ public class OgnlMvelComparison {
         runTest("Collection Access + Method Call", "funMap['foo'].happy()", TESTNUM);
         runTest("Boolean compare", "data == 'cat'", TESTNUM);
         runTest("Object instantiation", "new String('Hello')", TESTNUM);
+        runTest("Method access", "readBack('this is a string')", TESTNUM);
     }
 
     public void runTest(String name, String expression, int count) throws Exception {
