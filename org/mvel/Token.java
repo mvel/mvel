@@ -536,6 +536,7 @@ public class Token implements Cloneable {
         try {
             return (Token) super.clone();
         }
+        
         catch (CloneNotSupportedException e) {
             // do nothing.
             return null;

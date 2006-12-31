@@ -365,7 +365,7 @@ public class ExpressionParser {
 
             case TERNARY:
                 Token tk;
-                if ((Boolean) stk.peek()) {
+                if (!compileMode && (Boolean) stk.peek()) {
                     stk.discard();
                     return 1;
                 }
@@ -751,8 +751,6 @@ public class ExpressionParser {
 
             assert tk.isOperator(); // The parser/or input script is borked if this isn't true.
 
-            assert debug("B tk=" + tk);
-
             switch (reduceBinary(operator = tk.getOperator())) {
                 case-1:
                     return;
@@ -798,8 +796,6 @@ public class ExpressionParser {
             assert debug("<<FULL-REDUCING: " + tk + ">>");
 
             return tk.setFinalValue(reduce(reduceToken(tk))).getValue();
-            //    return tk.setFinalValue(reduce((tk))).getValue();
-
         }
         return tk;
     }
