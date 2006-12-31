@@ -76,9 +76,10 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
     public TokenIterator clone() {
         try {
             FastTokenIterator ti = (FastTokenIterator) super.clone();
+            ti.token = new Token[token.length];
+
             for (int i = 0; i < token.length; i++) {
                 ti.token[i] = token[i].clone();
-                if (ti.token[i] == token[i]) throw new RuntimeException("clone failed!");
             }
             return ti;
         }

@@ -1260,7 +1260,7 @@ public class ExpressionParser {
 
         if (compileMode) {
             if ((tk.getFlags() & Token.NOCOMPILE) == 0) {
-                ((TokenMap) tokenMap).addTokenNode(tk.clone());
+                ((TokenMap) tokenMap).addTokenNode(tk);
 
                 if ((tk.getFlags() & Token.SUBEVAL) != 0) reduceFast(tk);
             }

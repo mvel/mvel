@@ -486,7 +486,7 @@ public class PropertyAccessor {
             args = new Object[0];
         }
         else {
-            if (SUBEXPRESSION_CACHE.containsKey(tk) && false) {
+            if (SUBEXPRESSION_CACHE.containsKey(tk)) {
                 Serializable[] es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
                 for (int i = 0; i < es.length; i++) {
@@ -501,8 +501,6 @@ public class PropertyAccessor {
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
                     es[i] = ExpressionParser.compileExpression(subtokens[i]);
-                    args[i] = ExpressionParser.executeExpression(es[i], ctx, variables);
-    //                es[i] = ExpressionParser.compileExpression(subtokens[i]);
                     args[i] = ExpressionParser.executeExpression(es[i], ctx, variables);
                 }
 

@@ -460,10 +460,10 @@ public class CompiledTest extends TestCase {
         List nestedList = (List) map.get("cat");
         assertSame(foo, nestedList.get(0));
         assertEquals("car", nestedList.get(1));
-        assertEquals(42, nestedList.get(2));
+        assertEquals(new BigDecimal(42), nestedList.get(2));
 
         nestedList = (List) list.get(4);
-        assertEquals(42, nestedList.get(0));
+        assertEquals(new BigDecimal(42), nestedList.get(0));
         map = (Map) nestedList.get(1);
         assertEquals("value1", map.get("cat"));
     }

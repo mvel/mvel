@@ -532,12 +532,9 @@ public class Token implements Cloneable, Serializable {
     }
 
 
-    public Token clone() {
+    public Token clone() throws CloneNotSupportedException {
         try {
-            Token tk = (Token) super.clone();
-            System.out.println("new:" +tk.hashCode());
-            System.out.println("curr: " + hashCode());
-            return tk;
+            return (Token) super.clone();
         }
         catch (CloneNotSupportedException e) {
             e.printStackTrace();
