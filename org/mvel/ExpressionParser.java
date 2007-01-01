@@ -18,9 +18,6 @@ import java.util.*;
 import static java.util.Collections.synchronizedMap;
 import static java.util.regex.Pattern.compile;
 
-import javolution.util.FastList;
-import javolution.util.FastMap;
-
 public class ExpressionParser {
     private char[] expr;
 
@@ -1539,7 +1536,6 @@ public class ExpressionParser {
                  * We must handle collection creation differently for compiled
                  * execution.  This is not code duplication.  Don't report this.
                  */
-
                 switch (tk.getCollectionCreationType()) {
                     case Token.LISTCREATE: {
                         List<Object> newList = new ArrayList<Object>();
