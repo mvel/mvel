@@ -180,9 +180,9 @@ public class PropertyAccessor {
                 curr = getBeanProperty(curr, tk);
             }
 
-            Member member = checkWriteCache(curr.getClass(),  tk==null?0:tk.hashCode());
+            Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
             if (member == null) {
-                addWriteCache(curr.getClass(), tk==null?0:tk.hashCode(), (member = getFieldOrWriteAccessor(curr.getClass(), tk)));
+                addWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode(), (member = getFieldOrWriteAccessor(curr.getClass(), tk)));
             }
 
             if (member instanceof Field) {
@@ -321,7 +321,7 @@ public class PropertyAccessor {
         if (!METHOD_RESOLVER_CACHE.containsKey(cls)) {
             METHOD_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Object[]>());
         }
-        METHOD_RESOLVER_CACHE.get(cls).put(property, new Object[] { member, member.getParameterTypes() });
+        METHOD_RESOLVER_CACHE.get(cls).put(property, new Object[]{member, member.getParameterTypes()});
     }
 
     public static Object[] checkMethodCache(Class cls, Integer property) {
@@ -387,7 +387,7 @@ public class PropertyAccessor {
     /**
      * Handle accessing a property embedded in a collection, map, or array
      *
-     * @param ctx -
+     * @param ctx  -
      * @param prop -
      * @return -
      * @throws Exception -
@@ -456,7 +456,7 @@ public class PropertyAccessor {
     /**
      * Find an appropriate method, execute it, and return it's response.
      *
-     * @param ctx -
+     * @param ctx  -
      * @param name -
      * @return -
      * @throws Exception -
@@ -483,12 +483,15 @@ public class PropertyAccessor {
         cursor++;
 
         Object[] args;
+        Serializable[] es;
+
         if (tk.length() == 0) {
             args = new Object[0];
+            es = null;
         }
         else {
             if (SUBEXPRESSION_CACHE.containsKey(tk)) {
-                Serializable[] es = SUBEXPRESSION_CACHE.get(tk);
+                es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
                 for (int i = 0; i < es.length; i++) {
                     args[i] = executeExpression(es[i], ctx, variables);
@@ -498,11 +501,12 @@ public class PropertyAccessor {
             else {
                 String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
 
-                Serializable[] es = new Serializable[subtokens.length];
+                es = new Serializable[subtokens.length];
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
                     es[i] = ExpressionParser.compileExpression(subtokens[i]);
                     args[i] = executeExpression(es[i], ctx, variables);
+                    ((CompiledExpression) es[i]).setKnownEgressType(args[i] != null ? args[i].getClass() : null);
                 }
 
                 SUBEXPRESSION_CACHE.put(tk, es);
@@ -536,7 +540,6 @@ public class PropertyAccessor {
             parameterTypes = null;
         }
 
-
         /**
          * If we have not cached the method then we need to go ahead and try to resolve it.
          */
@@ -568,15 +571,28 @@ public class PropertyAccessor {
                 if (i < args.length - 1) errorBuild.append(", ");
             }
 
-           throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
+            throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
-            /**
-             * Coerce any types if required.
-             */
-            for (int i = 0; i < args.length; i++)
-                args[i] = convert(args[i], parameterTypes[i]);
-
+            if (es != null) {
+                for (int i = 0; i < es.length; i++) {
+                    if (((CompiledExpression) es[i]).getKnownIngressType() == null) {
+                        ((CompiledExpression) es[i]).setKnownIngressType(parameterTypes[i]);
+                        ((CompiledExpression) es[i]).pack();
+                    }
+                    if (!((CompiledExpression) es[i]).isConvertableIngressEgress()) {
+                        args[i] = convert(args[i], parameterTypes[i]);
+                    }
+                }
+            }
+            else {
+                /**
+                 * Coerce any types if required.
+                 */
+                for (int i = 0; i < args.length; i++)
+                    args[i] = convert(args[i], parameterTypes[i]);
+            }
+            
             /**
              * Invoke the target method and return the response.
              */

@@ -42,6 +42,7 @@ public class ExpressionParser {
     private final Stack stk = new ExecutionStack();
 
     private PropertyAccessor propertyAccessor;
+    private CompiledExpression compiledExpression;
 
     private static Map<String, char[]> EX_PRECACHE;
 
@@ -265,10 +266,11 @@ public class ExpressionParser {
     }
 
     public ExpressionParser(Object precompiedExpr, Object ctx, Map tokens) {
-        this.tokenMap = ((CompiledExpression) precompiedExpr).getTokenMap();
+        this.compiledExpression = (CompiledExpression) precompiedExpr;
+        this.tokenMap = compiledExpression.getTokenMap();
         this.tokenMap.reset();
 
-        this.expr = ((CompiledExpression) precompiedExpr).getExpression();
+        this.expr = compiledExpression.getExpression();
 
         this.ctx = ctx;
         this.tokens = tokens;
