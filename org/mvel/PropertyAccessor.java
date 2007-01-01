@@ -1,14 +1,14 @@
 package org.mvel;
 
+import static org.mvel.DataConversion.canConvert;
+import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.executeExpression;
+import static org.mvel.util.ParseTools.getBestCanadidate;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
-import static org.mvel.DataConversion.canConvert;
-import static org.mvel.DataConversion.convert;
-import static org.mvel.ExpressionParser.eval;
-import static org.mvel.util.ParseTools.getBestCanadidate;
 
+import java.io.Serializable;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isWhitespace;
 import static java.lang.Integer.parseInt;
@@ -18,7 +18,6 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.*;
 import static java.util.Collections.synchronizedMap;
-import java.io.Serializable;
 
 public class PropertyAccessor {
     private int start = 0;
@@ -461,6 +460,7 @@ public class PropertyAccessor {
      * @return -
      * @throws Exception -
      */
+    @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name) throws Exception {
         int st = cursor;
 
@@ -526,7 +526,6 @@ public class PropertyAccessor {
          * Check to see if we have already cached this method;
          */
         Object[] cache = checkMethodCache(cls, signature);
-
 
         Method m;
         Class[] parameterTypes;
