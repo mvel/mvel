@@ -352,7 +352,8 @@ public class Token implements Cloneable, Serializable {
                 }
                 else if (isNumber(value)) {
                     fields |= NUMERIC;
-                    this.numericValue = new BigDecimal(valueOf(value));
+                  // this.numericValue = new BigDecimal(valueOf(value));
+                    this.numericValue = DataConversion.convert(value, BigDecimal.class);
                 }
                 this.value = value;
             }

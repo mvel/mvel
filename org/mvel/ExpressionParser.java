@@ -1,5 +1,6 @@
 package org.mvel;
 
+import static org.mvel.util.ParseTools.captureContructorAndResidual;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
@@ -432,7 +433,7 @@ public class ExpressionParser {
                 try {
                     fields |= Token.CAPTURE_ONLY;
 
-                    String[] name = ParseTools.captureContructorAndResidual(nextToken().getName());
+                    String[] name = captureContructorAndResidual(nextToken().getName());
 
                     stk.push(ParseTools.constructObject(name[0], ctx, tokens));
                     setFieldFalse(Token.CAPTURE_ONLY);

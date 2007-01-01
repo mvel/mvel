@@ -246,11 +246,12 @@ public class PropertyTools {
     public static boolean isNumber(Object val) {
         if (val == null) return false;
         if (val instanceof String) return isNumber((String) val);
+        if (val instanceof char[]) return isNumber((char[]) val);
         return val instanceof Integer || val instanceof BigDecimal
                 || val instanceof Float || val instanceof Double || val instanceof Long
                 || val instanceof Short;
     }
-
+   
     public static boolean isNumber(final String val) {
         int len = val.length();
         char[] a = val.toCharArray();

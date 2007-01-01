@@ -160,7 +160,6 @@ public class CompiledTest extends TestCase {
     }
 
 
-
     public void testRegEx() {
         assertEquals(true, parseDirect("foo.bar.name ~= '[a-z].+'"));
     }
@@ -412,7 +411,7 @@ public class CompiledTest extends TestCase {
     }
 
     public void testSubListInMap() {
-       assertEquals("pear", parseDirect("map = ['test' : 'poo', 'foo' : [c, 'pear']]; map['foo'][1]"));
+        assertEquals("pear", parseDirect("map = ['test' : 'poo', 'foo' : [c, 'pear']]; map['foo'][1]"));
     }
 
     public void testCompiledMethodCall() {
@@ -438,6 +437,15 @@ public class CompiledTest extends TestCase {
         return ExpressionParser.executeExpression(compiled, base, map);
     }
 
+    public void testSimplePropertyAccess() {
+        final String expr = "c";
+        Serializable compiled = ExpressionParser.compileExpression(expr);
+
+        for (int i = 0; i < 100000000; i++) {
+            ExpressionParser.executeExpression(compiled, map);
+        }
+    }
+
     public void testToListBenchmark() {
         final String expr = "misc.toList(foo, 'hello', 42, ['key1' : 'value1', c : [ foo, 'car', 42 ]], [42, [c : 'value1']] )";
         Serializable compiled = ExpressionParser.compileExpression(expr);
@@ -447,6 +455,13 @@ public class CompiledTest extends TestCase {
         }
     }
 
+    public void testToListBenchmark2() {
+        testToListBenchmark();
+    }
+
+    public void testToListBenchmark3() {
+        testToListBenchmark();
+    }
 
     public void testToList() {
         String expr = "misc.toList(foo, 'hello', 42, ['key1' : 'value1', c : [ foo, 'car', 42 ]], [42, [c : 'value1']] )";
