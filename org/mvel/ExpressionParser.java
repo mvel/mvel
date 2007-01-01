@@ -1543,6 +1543,7 @@ public class ExpressionParser {
                 switch (tk.getCollectionCreationType()) {
                     case Token.LISTCREATE: {
                         List<Object> newList = new ArrayList<Object>();
+
                         newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
 
                         while (tokenMap.hasMoreTokens() &&
