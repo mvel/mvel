@@ -18,6 +18,9 @@ import java.util.*;
 import static java.util.Collections.synchronizedMap;
 import static java.util.regex.Pattern.compile;
 
+import javolution.util.FastList;
+import javolution.util.FastMap;
+
 public class ExpressionParser {
     private char[] expr;
 
@@ -1574,7 +1577,7 @@ public class ExpressionParser {
                     break;
 
                     case Token.ARRAYCREATE: {
-                        List<Object> newList = new LinkedList<Object>();
+                        List<Object> newList = new ArrayList<Object>();
 
                         newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
 

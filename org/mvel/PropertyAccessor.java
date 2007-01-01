@@ -1,5 +1,6 @@
 package org.mvel;
 
+import static org.mvel.ExpressionParser.executeExpression;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
@@ -386,10 +387,10 @@ public class PropertyAccessor {
     /**
      * Handle accessing a property embedded in a collection, map, or array
      *
-     * @param ctx
-     * @param prop
-     * @return
-     * @throws Exception
+     * @param ctx -
+     * @param prop -
+     * @return -
+     * @throws Exception -
      */
     private Object getCollectionProperty(Object ctx, String prop) throws Exception {
         if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
@@ -455,10 +456,10 @@ public class PropertyAccessor {
     /**
      * Find an appropriate method, execute it, and return it's response.
      *
-     * @param ctx
-     * @param name
-     * @return
-     * @throws Exception
+     * @param ctx -
+     * @param name -
+     * @return -
+     * @throws Exception -
      */
     private Object getMethod(Object ctx, String name) throws Exception {
         int st = cursor;
@@ -490,7 +491,7 @@ public class PropertyAccessor {
                 Serializable[] es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
                 for (int i = 0; i < es.length; i++) {
-                    args[i] = ExpressionParser.executeExpression(es[i], ctx, variables);
+                    args[i] = executeExpression(es[i], ctx, variables);
                 }
 
             }
@@ -501,7 +502,7 @@ public class PropertyAccessor {
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
                     es[i] = ExpressionParser.compileExpression(subtokens[i]);
-                    args[i] = ExpressionParser.executeExpression(es[i], ctx, variables);
+                    args[i] = executeExpression(es[i], ctx, variables);
                 }
 
                 SUBEXPRESSION_CACHE.put(tk, es);
@@ -584,11 +585,7 @@ public class PropertyAccessor {
     }
 
     private static int createSignature(String name, String args) {
-        int hash = name.hashCode() + args.hashCode();
-//        for (Object o : args) {
-//            hash += o==null?0:o.hashCode();
-//        }
-        return hash;
+        return name.hashCode() + args.hashCode();
     }
 
     public void setVariables(Map variables) {
