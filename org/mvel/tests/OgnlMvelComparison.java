@@ -3,10 +3,7 @@ package org.mvel.tests;
 import ognl.Ognl;
 import org.mvel.ExpressionParser;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 
 /**
