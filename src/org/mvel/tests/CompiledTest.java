@@ -447,8 +447,8 @@ public class CompiledTest extends TestCase {
     }
 
     public void testToListBenchmark() {
-        final String expr = "misc.toList(foo, 'hello', 42, ['key1' : 'value1', c : [ foo, 'car', 42 ]], [42, [c : 'value1']] )";
-        Serializable compiled = ExpressionParser.compileExpression(expr);
+    	String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
+        Serializable compiled = ExpressionParser.compileExpression(text);
 
         for (int i = 0; i < 100000; i++) {
             ExpressionParser.executeExpression(compiled, map);
@@ -464,8 +464,8 @@ public class CompiledTest extends TestCase {
     }
 
     public void testToList() {
-        String expr = "misc.toList(foo, 'hello', 42, ['key1' : 'value1', c : [ foo, 'car', 42 ]], [42, [c : 'value1']] )";
-        List list = (List) parseDirect(expr);
+    	String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
+        List list = (List) parseDirect(text);
         assertSame(foo, list.get(0));
         assertEquals("hello", list.get(1));
         assertEquals(new Integer(42), list.get(2));
