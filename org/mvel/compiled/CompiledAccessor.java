@@ -1,13 +1,12 @@
 package org.mvel.compiled;
 
-import static java.lang.Integer.parseInt;
-
 import org.mvel.*;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
 
 import java.io.Serializable;
 import static java.lang.Class.forName;
+import static java.lang.Integer.parseInt;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
@@ -34,8 +33,6 @@ public class CompiledAccessor {
     private static final int COL = 2;
 
     private static final Object[] EMPTYARG = new Object[0];
-
-    private ConversionHandler typeConversionHandler;
 
     public CompiledAccessor(char[] property, Object ctx) {
         this.property = property;
