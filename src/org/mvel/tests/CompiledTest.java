@@ -441,7 +441,7 @@ public class CompiledTest extends TestCase {
         final String expr = "c";
         Serializable compiled = ExpressionParser.compileExpression(expr);
 
-        for (int i = 0; i < 100000000; i++) {
+        for (int i = 0; i < 100000; i++) {
             ExpressionParser.executeExpression(compiled, map);
         }
     }
