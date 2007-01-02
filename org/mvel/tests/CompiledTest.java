@@ -1,15 +1,10 @@
 package org.mvel.tests;
 
+import junit.framework.TestCase;
 import org.mvel.ExpressionParser;
 import static org.mvel.ExpressionParser.evalToBoolean;
-import org.antlr.runtime.*;
-import org.codehaus.jfdi.interpreter.DefaultValueHandlerFactory;
-import org.codehaus.jfdi.interpreter.ClassTypeResolver;
-import org.codehaus.jfdi.interpreter.operations.Expr;
-import org.codehaus.jfdi.parser.JFDIParser;
-import junit.framework.TestCase;
 
-import java.io.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -509,73 +504,73 @@ public class CompiledTest extends TestCase {
     /**
      * Start JDFI Here
      */
-      public void testJFDIToList()  throws Exception {
-        String text = "misc.toList(foo.bar.name, 'hello', 42, {'key1' => 'value1', c => [ foo.bar.age, 'car', 42 ]}, [42, {c => 'value1'}] )";
-
-        JFDIParser parser = createParser( text );
-        this.factory.setVariables( map );
-        Expr expr = (Expr) parser.atom();
-
-        List list = null;
-        int count = 100000000;
-        long start = System.currentTimeMillis();
-        for ( int i = 0; i < count; i++ ) {
-            list = (List)  expr.getValue();
-        }
-        long end = System.currentTimeMillis();
-        System.out.println( end  - start);
-
-        assertSame( "dog", list.get( 0 ) );
-        assertEquals( "hello", list.get( 1 ) );
-        assertEquals( new Integer( 42 ), list.get( 2 ) );
-        Map map = ( Map ) list.get( 3 );
-        assertEquals( "value1", map.get( "key1" ) );
-
-        List nestedList = ( List ) map.get(  "cat" );
-        assertEquals( new Integer( 14 ), nestedList.get( 0 )  );
-        assertEquals( "car", nestedList.get( 1 )  );
-        assertEquals( new Integer(42), nestedList.get( 2 )  );
-
-        nestedList  = (List) list.get( 4 );
-        assertEquals( new Integer( 42 ), nestedList.get( 0 )  );
-        map = ( Map ) nestedList.get( 1 );
-        assertEquals( "value1", map.get( "cat" )  );
-    }
-
-    private DefaultValueHandlerFactory factory;
-    private ClassTypeResolver typeResolver;
-
-
-    protected JFDIParser createParser(String text) throws IOException {
-        this.factory = new DefaultValueHandlerFactory( new ClassTypeResolver() );
-        this.typeResolver = new ClassTypeResolver();
-
-        JFDIParser parser = new JFDIParser( createTokenStream( text ) );
-        parser.setValueHandlerFactory( factory );
-        parser.setTypeResolver( typeResolver );
-        return parser;
-    }
-
-    private TokenStream createTokenStream(String text) throws IOException {
-        return new CommonTokenStream( createLexer( text ) );
-    }
-
-    private org.codehaus.jfdi.parser.JFDILexer createLexer(String text) throws IOException {
-        org.codehaus.jfdi.parser.JFDILexer lexer = new org.codehaus.jfdi.parser.JFDILexer( createStream( text ) );
-        return lexer;
-    }
-
-    private CharStream createStream(String text) throws IOException {
-        if ( text.endsWith( ".jfdi" ) ) {
-            return new ANTLRReaderStream( createReader( text ) );
-        }
-
-        return new ANTLRStringStream( text );
-    }
-
-    private Reader createReader(String text) {
-        InputStream in = getClass().getResourceAsStream( text );
-        return new InputStreamReader( in );
-    }
+//      public void testJFDIToList()  throws Exception {
+//        String text = "misc.toList(foo.bar.name, 'hello', 42, {'key1' => 'value1', c => [ foo.bar.age, 'car', 42 ]}, [42, {c => 'value1'}] )";
+//
+//        JFDIParser parser = createParser( text );
+//        this.factory.setVariables( map );
+//        Expr expr = (Expr) parser.atom();
+//
+//        List list = null;
+//        int count = 100000000;
+//        long start = System.currentTimeMillis();
+//        for ( int i = 0; i < count; i++ ) {
+//            list = (List)  expr.getValue();
+//        }
+//        long end = System.currentTimeMillis();
+//        System.out.println( end  - start);
+//
+//        assertSame( "dog", list.get( 0 ) );
+//        assertEquals( "hello", list.get( 1 ) );
+//        assertEquals( new Integer( 42 ), list.get( 2 ) );
+//        Map map = ( Map ) list.get( 3 );
+//        assertEquals( "value1", map.get( "key1" ) );
+//
+//        List nestedList = ( List ) map.get(  "cat" );
+//        assertEquals( new Integer( 14 ), nestedList.get( 0 )  );
+//        assertEquals( "car", nestedList.get( 1 )  );
+//        assertEquals( new Integer(42), nestedList.get( 2 )  );
+//
+//        nestedList  = (List) list.get( 4 );
+//        assertEquals( new Integer( 42 ), nestedList.get( 0 )  );
+//        map = ( Map ) nestedList.get( 1 );
+//        assertEquals( "value1", map.get( "cat" )  );
+//    }
+//
+//    private DefaultValueHandlerFactory factory;
+//    private ClassTypeResolver typeResolver;
+//
+//
+//    protected JFDIParser createParser(String text) throws IOException {
+//        this.factory = new DefaultValueHandlerFactory( new ClassTypeResolver() );
+//        this.typeResolver = new ClassTypeResolver();
+//
+//        JFDIParser parser = new JFDIParser( createTokenStream( text ) );
+//        parser.setValueHandlerFactory( factory );
+//        parser.setTypeResolver( typeResolver );
+//        return parser;
+//    }
+//
+//    private TokenStream createTokenStream(String text) throws IOException {
+//        return new CommonTokenStream( createLexer( text ) );
+//    }
+//
+//    private org.codehaus.jfdi.parser.JFDILexer createLexer(String text) throws IOException {
+//        org.codehaus.jfdi.parser.JFDILexer lexer = new org.codehaus.jfdi.parser.JFDILexer( createStream( text ) );
+//        return lexer;
+//    }
+//
+//    private CharStream createStream(String text) throws IOException {
+//        if ( text.endsWith( ".jfdi" ) ) {
+//            return new ANTLRReaderStream( createReader( text ) );
+//        }
+//
+//        return new ANTLRStringStream( text );
+//    }
+//
+//    private Reader createReader(String text) {
+//        InputStream in = getClass().getResourceAsStream( text );
+//        return new InputStreamReader( in );
+//    }
 
 }

@@ -9,9 +9,10 @@ import java.util.Map;
 
 import ognl.Ognl;
 import ognl.OgnlException;
+import pnuts.lang.Context;
 
 public class ParserPerformanceTests extends TestCase {
-    private static final int COUNT = 10000000;
+    private static final int COUNT = 10000;
 
     Foo foo = new Foo();
     Map<String, Object> map = new HashMap<String, Object>(100);
@@ -31,6 +32,8 @@ public class ParserPerformanceTests extends TestCase {
 
         Interpreter.setCacheAggressively(true);
     }
+
+    
 
     public void testSimplePropertyAccessPerf() {
         for (int i = 0; i < COUNT; i++) {
