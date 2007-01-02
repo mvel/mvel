@@ -1,9 +1,12 @@
 package org.mvel;
 
+import static org.mvel.DataConversion.convert;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.PropertyTools.isNumber;
 import static org.mvel.Operator.*;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
+import org.mvel.util.ParseTools;
+import org.mvel.util.PropertyTools;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -317,13 +320,29 @@ public class Token implements Cloneable, Serializable {
     }
 
     public Token getOptimizedValue(Object ctx, Object elCtx, Map vars) throws Exception {
-        value = compiledAccessor.getValue(ctx, elCtx, vars);
+        if (isNumeric()) {
+            value = numericValue = convert(compiledAccessor.getValue(ctx, elCtx, vars), BigDecimal.class);
+        }
+        else
+            value = compiledAccessor.getValue(ctx, elCtx, vars);
+
+        if (isNegation()) value = !((Boolean)value);
+
         return this;
     }
 
+
+    public void createDeferralOptimization() {
+        compiledAccessor = new CompiledAccessor(null, null, null);
+        compiledAccessor.addAccessorNode(new Deferral());
+    }
+
+
     public void optimizeAccessor(Object ctx, Map vars) {
         compiledAccessor = new CompiledAccessor(name, ctx, vars);
-        compiledAccessor.compileGetChain();
+        Object test = compiledAccessor.compileGetChain();
+        setNumeric(isNumber(test));
+        setFlag(true, Token.OPTIMIZED_REF);
     }
 
     public boolean isOptimized() {
@@ -367,8 +386,8 @@ public class Token implements Cloneable, Serializable {
                 }
                 else if (isNumber(value)) {
                     fields |= NUMERIC;
-                  // this.numericValue = new BigDecimal(valueOf(value));
-                    this.numericValue = DataConversion.convert(value, BigDecimal.class);
+                    // this.numericValue = new BigDecimal(valueOf(value));
+                    this.numericValue = convert(value, BigDecimal.class);
                 }
                 this.value = value;
             }

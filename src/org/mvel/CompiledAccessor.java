@@ -1,14 +1,14 @@
 package org.mvel;
 
-import org.mvel.util.PropertyTools;
 import org.mvel.util.ParseTools;
+import org.mvel.util.PropertyTools;
 
-import java.util.*;
-import java.lang.reflect.Member;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.util.*;
 
 public class CompiledAccessor {
     private int start = 0;
@@ -21,7 +21,6 @@ public class CompiledAccessor {
     private AccessorNode currNode;
 
     private Object ctx;
-    private Object curr;
 
     private Map variables;
 
@@ -32,26 +31,6 @@ public class CompiledAccessor {
 
     private static final Object[] EMPTYARG = new Object[0];
 
-    private static Map<Class, Map<Integer, Member>> READ_PROPERTY_RESOLVER_CACHE;
-    private static Map<Class, Map<Integer, Member>> WRITE_PROPERTY_RESOLVER_CACHE;
-    private static Map<Class, Map<Integer, Object[]>> METHOD_RESOLVER_CACHE;
-
-    static {
-        configureFactory();
-    }
-
-    static void configureFactory() {
-        if (MVEL.THREAD_SAFE) {
-            READ_PROPERTY_RESOLVER_CACHE = Collections.synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
-            WRITE_PROPERTY_RESOLVER_CACHE = Collections.synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
-            METHOD_RESOLVER_CACHE = Collections.synchronizedMap(new WeakHashMap<Class, Map<Integer, Object[]>>(10));
-        }
-        else {
-            READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
-            WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
-            METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Object[]>>(10));
-        }
-    }
 
     public CompiledAccessor(char[] property, Object ctx) {
         this.property = property;
@@ -61,7 +40,7 @@ public class CompiledAccessor {
 
     public CompiledAccessor(char[] property, Object ctx, Map variables) {
         this.property = property;
-        this.length = property.length;
+        this.length = property != null ? property.length : 0;
         this.ctx = ctx;
         this.variables = variables;
     }
@@ -84,37 +63,9 @@ public class CompiledAccessor {
         this.ctx = ctx;
     }
 
-    public static Object get(String property, Object ctx) {
-        return new CompiledAccessor(property, ctx).compileGetChain();
-    }
-
-    public static Object get(char[] property, Object ctx, Map variables) {
-        return new CompiledAccessor(property, ctx, variables).compileGetChain();
-    }
-
-    public static Object get(char[] property, int offset, int end, Object ctx, Map variables) {
-        return new CompiledAccessor(property, offset, end, ctx, variables).compileGetChain();
-    }
-
-    public static Object get(String property, Object ctx, Map variables) {
-        return new CompiledAccessor(property.toCharArray(), ctx, variables).compileGetChain();
-    }
-
-    public static void set(Object ctx, String property, Object value) {
-        new CompiledAccessor(property, ctx).set(value);
-    }
-
-    public CompiledAccessor setParameters(char[] property, int offset, int end, Object ctx) {
-        this.property = property;
-        this.cursor = offset;
-        this.length = end;
-        this.ctx = ctx;
-        return this;
-    }
-
 
     public Object compileGetChain() {
-        curr = ctx;
+        Object curr = ctx;
 
         try {
             while (cursor < length) {
@@ -162,73 +113,64 @@ public class CompiledAccessor {
         }
     }
 
-    private void set(Object value) {
-        curr = ctx;
+//    private void set(Object value) {
+//        curr = ctx;
+//
+//        try {
+//            String tk = null;
+//            while (cursor < length) {
+//                tk = captureNext();
+//                if (!hasMore()) break;
+//                curr = getBeanProperty(curr, tk);
+//            }
+//
+//            Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
+//            if (member == null) {
+//                addWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode(), (member = PropertyTools.getFieldOrWriteAccessor(curr.getClass(), tk)));
+//            }
+//
+//            if (member instanceof Field) {
+//                Field fld = (Field) member;
+//
+//                if (value != null && !fld.getType().isAssignableFrom(value.getClass())) {
+//                    if (!DataConversion.canConvert(fld.getType(), value.getClass())) {
+//                        throw new ConversionException("cannot convert type: "
+//                                + value.getClass() + ": to " + fld.getType());
+//                    }
+//
+//                    fld.set(curr, DataConversion.convert(value, fld.getType()));
+//                }
+//                else
+//                    fld.set(curr, value);
+//            }
+//            else if (member != null) {
+//                Method meth = (Method) member;
+//
+//                if (value != null && !meth.getParameterTypes()[0].isAssignableFrom(value.getClass())) {
+//                    if (!DataConversion.canConvert(meth.getParameterTypes()[0], value.getClass())) {
+//                        throw new ConversionException("cannot convert type: "
+//                                + value.getClass() + ": to " + meth.getParameterTypes()[0]);
+//                    }
+//
+//                    meth.invoke(curr, DataConversion.convert(value, meth.getParameterTypes()[0]));
+//                }
+//                else {
+//                    meth.invoke(curr, value);
+//                }
+//            }
+//            else {
+//                throw new PropertyAccessException("could not access property (" + property + ") in: " + ctx.getClass().getName());
+//            }
+//        }
+//        catch (InvocationTargetException e) {
+//            throw new PropertyAccessException("could not access property", e);
+//        }
+//        catch (IllegalAccessException e) {
+//            throw new PropertyAccessException("could not access property", e);
+//        }
+//
+//    }
 
-        try {
-            String tk = null;
-            while (cursor < length) {
-                tk = captureNext();
-                if (!hasMore()) break;
-                curr = getBeanProperty(curr, tk);
-            }
-
-            Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
-            if (member == null) {
-                addWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode(), (member = PropertyTools.getFieldOrWriteAccessor(curr.getClass(), tk)));
-            }
-
-            if (member instanceof Field) {
-                Field fld = (Field) member;
-
-                if (value != null && !fld.getType().isAssignableFrom(value.getClass())) {
-                    if (!DataConversion.canConvert(fld.getType(), value.getClass())) {
-                        throw new ConversionException("cannot convert type: "
-                                + value.getClass() + ": to " + fld.getType());
-                    }
-
-                    fld.set(curr, DataConversion.convert(value, fld.getType()));
-                }
-                else
-                    fld.set(curr, value);
-            }
-            else if (member != null) {
-                Method meth = (Method) member;
-
-                if (value != null && !meth.getParameterTypes()[0].isAssignableFrom(value.getClass())) {
-                    if (!DataConversion.canConvert(meth.getParameterTypes()[0], value.getClass())) {
-                        throw new ConversionException("cannot convert type: "
-                                + value.getClass() + ": to " + meth.getParameterTypes()[0]);
-                    }
-
-                    meth.invoke(curr, DataConversion.convert(value, meth.getParameterTypes()[0]));
-                }
-                else {
-                    meth.invoke(curr, value);
-                }
-            }
-            else {
-                throw new PropertyAccessException("could not access property (" + property + ") in: " + ctx.getClass().getName());
-            }
-        }
-        catch (InvocationTargetException e) {
-            throw new PropertyAccessException("could not access property", e);
-        }
-        catch (IllegalAccessException e) {
-            throw new PropertyAccessException("could not access property", e);
-        }
-
-    }
-
-
-    private boolean hasMore() {
-        return cursor < length;
-    }
-
-    private String captureNext() {
-        nextToken();
-        return capture();
-    }
 
     private int nextToken() {
         switch (property[start = cursor]) {
@@ -259,76 +201,12 @@ public class CompiledAccessor {
         return new String(property, start, cursor - start);
     }
 
-    private void addAccessorNode(AccessorNode an) {
+    public void addAccessorNode(AccessorNode an) {
         if (currNode == null)
             rootNode = currNode = an;
         else {
             currNode = currNode.setNextNode(an);
         }
-    }
-
-    public static void clearPropertyResolverCache() {
-        READ_PROPERTY_RESOLVER_CACHE.clear();
-        WRITE_PROPERTY_RESOLVER_CACHE.clear();
-        METHOD_RESOLVER_CACHE.clear();
-    }
-
-    public static void reportCacheSizes() {
-        System.out.println("read property cache: " + READ_PROPERTY_RESOLVER_CACHE.size());
-        for (Class cls : READ_PROPERTY_RESOLVER_CACHE.keySet()) {
-            System.out.println(" [" + cls.getName() + "]: " + READ_PROPERTY_RESOLVER_CACHE.get(cls).size() + " entries.");
-        }
-        System.out.println("write property cache: " + WRITE_PROPERTY_RESOLVER_CACHE.size());
-        for (Class cls : WRITE_PROPERTY_RESOLVER_CACHE.keySet()) {
-            System.out.println(" [" + cls.getName() + "]: " + WRITE_PROPERTY_RESOLVER_CACHE.get(cls).size() + " entries.");
-        }
-        System.out.println("method cache: " + METHOD_RESOLVER_CACHE.size());
-        for (Class cls : METHOD_RESOLVER_CACHE.keySet()) {
-            System.out.println(" [" + cls.getName() + "]: " + METHOD_RESOLVER_CACHE.get(cls).size() + " entries.");
-        }
-    }
-
-    private static void addReadCache(Class cls, Integer property, Member member) {
-        if (!READ_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
-            READ_PROPERTY_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Member>());
-        }
-        READ_PROPERTY_RESOLVER_CACHE.get(cls).put(property, member);
-    }
-
-    public static Member checkReadCache(Class cls, Integer property) {
-        if (READ_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
-            return READ_PROPERTY_RESOLVER_CACHE.get(cls).get(property);
-        }
-        return null;
-    }
-
-    private static void addWriteCache(Class cls, Integer property, Member member) {
-        if (!WRITE_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
-            WRITE_PROPERTY_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Member>());
-        }
-        WRITE_PROPERTY_RESOLVER_CACHE.get(cls).put(property, member);
-    }
-
-    public static Member checkWriteCache(Class cls, Integer property) {
-        if (WRITE_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
-            return WRITE_PROPERTY_RESOLVER_CACHE.get(cls).get(property);
-        }
-        return null;
-    }
-
-
-    private static void addMethodCache(Class cls, Integer property, Method member) {
-        if (!METHOD_RESOLVER_CACHE.containsKey(cls)) {
-            METHOD_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Object[]>());
-        }
-        METHOD_RESOLVER_CACHE.get(cls).put(property, new Object[]{member, member.getParameterTypes()});
-    }
-
-    public static Object[] checkMethodCache(Class cls, Integer property) {
-        if (METHOD_RESOLVER_CACHE.containsKey(cls)) {
-            return METHOD_RESOLVER_CACHE.get(cls).get(property);
-        }
-        return null;
     }
 
 
@@ -337,7 +215,7 @@ public class CompiledAccessor {
 
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
-        
+
         if (member instanceof Field) {
             FieldAccessor accessor = new FieldAccessor();
             accessor.setField((Field) member);
@@ -440,6 +318,11 @@ public class CompiledAccessor {
         ++cursor;
 
         if (ctx instanceof Map) {
+            MapAccessor accessor = new MapAccessor();
+            accessor.setProperty(item);
+
+            addAccessorNode(accessor);
+
             return ((Map) ctx).get(item);
         }
         else if (ctx instanceof List) {
@@ -537,46 +420,29 @@ public class CompiledAccessor {
 
         //    Integer signature = ;
 
-        /**
-         * Check to see if we have already cached this method;
-         */
-        Object[] cache = checkMethodCache(cls, createSignature(name, tk));
-
         Method m;
-        Class[] parameterTypes;
-
-        if (cache != null) {
-            m = (Method) cache[0];
-            parameterTypes = (Class[]) cache[1];
-        }
-        else {
-            m = null;
-            parameterTypes = null;
-        }
+        Class[] parameterTypes = null;
 
         /**
          * If we have not cached the method then we need to go ahead and try to resolve it.
          */
+        /**
+         * Try to find an instance method from the class target.
+         */
+
+        if ((m = ParseTools.getBestCanadidate(args, name, cls.getMethods())) != null) {
+            parameterTypes = m.getParameterTypes();
+        }
+
         if (m == null) {
             /**
-             * Try to find an instance method from the class target.
+             * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
-
-            if ((m = ParseTools.getBestCanadidate(args, name, cls.getMethods())) != null) {
-                addMethodCache(cls, createSignature(name, tk), m);
+            if ((m = ParseTools.getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
                 parameterTypes = m.getParameterTypes();
             }
-
-            if (m == null) {
-                /**
-                 * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
-                 */
-                if ((m = ParseTools.getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
-                    addMethodCache(cls, createSignature(name, tk), m);
-                    parameterTypes = m.getParameterTypes();
-                }
-            }
         }
+
 
         if (m == null) {
             StringBuilder errorBuild = new StringBuilder();
@@ -623,9 +489,6 @@ public class CompiledAccessor {
         }
     }
 
-    private static int createSignature(String name, String args) {
-        return name.hashCode() + args.hashCode();
-    }
 
     public void setVariables(Map variables) {
         this.variables = variables;

@@ -186,7 +186,10 @@ public class ExpressionParser {
         return DataConversion.convert(new ExpressionParser(compiledExpression, ctx, null).parse(), toType);
     }
 
+
     public static Object[] executeAllExpression(final Serializable[] compiledExpressions, final Object ctx, final Map vars) {
+        if (compiledExpressions == null) return GetterAccessor.EMPTY;
+
         Object[] o = new Object[compiledExpressions.length];
         for (int i = 0; i < compiledExpressions.length; i++) {
             o[i] = executeExpression(compiledExpressions[i], ctx, vars);
@@ -1303,7 +1306,18 @@ public class ExpressionParser {
                     return token.getOptimizedValue(ctx, ctx, tokens);
                 }
                 else {
-                    token.optimizeAccessor(ctx, tokens);
+                    try {
+                        token.optimizeAccessor(ctx, tokens);
+                    }
+                    catch (Exception e) {
+                        if (!lookAhead()) throw e;
+                        else {
+                            token.createDeferralOptimization();
+                            return token;
+                        }
+                    }
+
+
                     return token.getOptimizedValue(ctx, ctx, tokens);
                 }
 
@@ -1436,7 +1450,9 @@ public class ExpressionParser {
             }
             else if (tk.getOperator() == Operator.ASSIGN || tk.getOperator() == Operator.PROJECTION) {
                 cursor = cursorCurrent;
-                if (fastExecuteMode) tokenMap.back();
+                if (fastExecuteMode) {
+                    tokenMap.back();
+                }
             }
             else
                 return false;
