@@ -1,4 +1,7 @@
-package org.mvel;
+package org.mvel.compiled;
+
+import org.mvel.AccessorNode;
+import org.mvel.ExpressionParser;
 
 import java.lang.reflect.Method;
 import java.io.Serializable;

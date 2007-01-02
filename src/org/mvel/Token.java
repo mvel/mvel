@@ -5,8 +5,8 @@ import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.PropertyTools.isNumber;
 import static org.mvel.Operator.*;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
-import org.mvel.util.ParseTools;
-import org.mvel.util.PropertyTools;
+import org.mvel.compiled.CompiledAccessor;
+import org.mvel.compiled.Deferral;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -344,7 +344,7 @@ public class Token implements Cloneable, Serializable {
         setNumeric(isNumber(test));
         setFlag(true, Token.OPTIMIZED_REF);
     }
-
+    
     public boolean isOptimized() {
         return compiledAccessor != null;
     }
