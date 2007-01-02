@@ -1617,7 +1617,7 @@ public class ExpressionParser {
 
     private Object handleSubNesting(Token token) {
         if ((token.getFlags() & Token.NEST) != 0) {
-            return nextToken().getValue();
+            return nextCompiledToken().getValue();
         }
         else {
             return reduceToken(token).getValue();
