@@ -1318,10 +1318,7 @@ public class ExpressionParser {
                             return token;
                         }
                     }
-
-
                 }
-
             }
             catch (Exception e) {
                 throw new CompileException("optimization failure for: " + new String(expr), e);
