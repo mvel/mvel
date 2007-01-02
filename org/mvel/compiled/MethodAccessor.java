@@ -1,5 +1,8 @@
 package org.mvel.compiled;
 
+import static org.mvel.ExpressionParser.executeAllExpression;
+import static org.mvel.ExpressionParser.executeExpression;
+import static org.mvel.DataConversion.convert;
 import org.mvel.AccessorNode;
 import org.mvel.DataConversion;
 import org.mvel.ExpressionParser;
@@ -21,11 +24,11 @@ public class MethodAccessor implements AccessorNode {
             try {
                 if (nextNode != null) {
                     return nextNode.getValue(
-                            method.invoke(ctx, ExpressionParser.executeAllExpression(compiledParameters, elCtx, vars))
+                            method.invoke(ctx, executeAllExpression(compiledParameters, elCtx, vars))
                             , elCtx, vars);
                 }
                 else {
-                    return method.invoke(ctx, ExpressionParser.executeAllExpression(compiledParameters, elCtx, vars));
+                    return method.invoke(ctx, executeAllExpression(compiledParameters, elCtx, vars));
                 }
             }
             catch (IllegalArgumentException e) {
@@ -45,51 +48,41 @@ public class MethodAccessor implements AccessorNode {
         }
     }
 
-    private static Object[] executeAndCoerce
-            (Serializable[] compiled, Class[] target, Object
-                    elCtx, Map
-                    vars) {
+    private static Object[] executeAndCoerce(Serializable[] compiled, Class[] target, Object elCtx, Map vars) {
         Object[] values = new Object[compiled.length];
         for (int i = 0; i < compiled.length; i++) {
-            values[i] = DataConversion.convert(ExpressionParser.executeExpression(compiled[i], elCtx, vars), target[i]);
+            //noinspection unchecked
+            values[i] = convert(executeExpression(compiled[i], elCtx, vars), target[i]);
         }
         return values;
     }
 
-    public Method getMethod
-            () {
+    public Method getMethod() {
         return method;
     }
 
-    public void setMethod
-            (Method
-                    method) {
+    public void setMethod(Method method) {
         this.method = method;
         this.parameterTypes = this.method.getParameterTypes();
     }
 
 
-    public Serializable[] getCompiledParameters
-            () {
+    public Serializable[] getCompiledParameters() {
         return compiledParameters;
     }
 
-    public void setCompiledParameters
-            (Serializable[] compiledParameters) {
+    public void setCompiledParameters(Serializable[] compiledParameters) {
         this.compiledParameters = compiledParameters;
     }
 
     public MethodAccessor() {
     }
 
-    public AccessorNode getNextNode
-            () {
+    public AccessorNode getNextNode() {
         return nextNode;
     }
 
-    public AccessorNode setNextNode
-            (AccessorNode
-                    nextNode) {
+    public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
 }

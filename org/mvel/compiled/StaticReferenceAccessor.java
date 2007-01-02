@@ -8,7 +8,6 @@ import java.util.Map;
 public class StaticReferenceAccessor implements AccessorNode {
     private AccessorNode nextNode;
 
-
     Object literal;
 
     public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception {
