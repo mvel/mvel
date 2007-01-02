@@ -9,7 +9,7 @@ public class GetterAccessor implements AccessorNode {
 
     private Method method;
 
-    private static final Object[] EMPTY = new Object[0];
+    public static final Object[] EMPTY = new Object[0];
 
     public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception {
         if (nextNode != null) {
