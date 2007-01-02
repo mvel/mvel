@@ -1,5 +1,7 @@
 package org.mvel.compiled;
 
+import static java.lang.Integer.parseInt;
+
 import org.mvel.*;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
@@ -297,14 +299,14 @@ public class CompiledAccessor {
         }
         else if (ctx instanceof List) {
             ListAccessor accessor = new ListAccessor();
-            accessor.setIndex(Integer.parseInt(item));
+            accessor.setIndex(parseInt(item));
 
             addAccessorNode(accessor);
 
             return ((List) ctx).get(accessor.getIndex());
         }
         else if (ctx instanceof Collection) {
-            int count = Integer.parseInt(item);
+            int count = parseInt(item);
             if (count > ((Collection) ctx).size())
                 throw new PropertyAccessException("index [" + count + "] out of bounds on collection");
 
@@ -314,14 +316,19 @@ public class CompiledAccessor {
         }
         else if (ctx instanceof Object[]) {
             ArrayAccessor accessor = new ArrayAccessor();
-            accessor.setIndex(Integer.parseInt(item));
+            accessor.setIndex(parseInt(item));
 
             addAccessorNode(accessor);
 
             return ((Object[]) ctx)[accessor.getIndex()];
         }
         else if (ctx instanceof CharSequence) {
-            return ((CharSequence) ctx).charAt(Integer.parseInt(item));
+            IndexedCharSeqAccessor accessor = new IndexedCharSeqAccessor();
+            accessor.setIndex(parseInt(item));
+
+            addAccessorNode(accessor);
+
+            return ((CharSequence) ctx).charAt(accessor.getIndex());
         }
         else {
             throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
