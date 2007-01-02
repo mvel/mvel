@@ -9,7 +9,6 @@ import java.util.Map;
 
 import ognl.Ognl;
 import ognl.OgnlException;
-import pnuts.lang.Context;
 
 public class ParserPerformanceTests extends TestCase {
     private static final int COUNT = 10000;

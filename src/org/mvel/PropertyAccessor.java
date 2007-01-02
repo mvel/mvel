@@ -155,7 +155,7 @@ public class PropertyAccessor {
             throw new PropertyAccessException("array or collection index out of bounds (property: " + new String(property) + ")", e);
         }
         catch (PropertyAccessException e) {
-            throw e;
+            throw new PropertyAccessException("failed to access property: <<" + new String(property) + ">> in: " + (ctx!=null?ctx.getClass():null), e);
         }
         catch (CompileException e) {
             throw e;
@@ -354,7 +354,7 @@ public class PropertyAccessor {
             return ctx;
         }
         else {
-            throw new PropertyAccessException("could not access property (" + property + ") in: " + ctx.getClass().getName());
+            throw new PropertyAccessException("could not access property (" + property + ")");
         }
     }
 

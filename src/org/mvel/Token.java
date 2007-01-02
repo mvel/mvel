@@ -62,6 +62,7 @@ public class Token implements Cloneable, Serializable {
     private int fields = 0;
 
     private CompiledExpression compiledExpression;
+    private CompiledAccessor compiledAccessor;
 
     public static final Map<String, Object> LITERALS =
             new HashMap<String, Object>(35, 0.6f);
@@ -313,6 +314,20 @@ public class Token implements Cloneable, Serializable {
 
     public Object getValue() {
         return value;
+    }
+
+    public Token getOptimizedValue(Object ctx, Object elCtx, Map vars) throws Exception {
+        value = compiledAccessor.getValue(ctx, elCtx, vars);
+        return this;
+    }
+
+    public void optimizeAccessor(Object ctx, Map vars) {
+        compiledAccessor = new CompiledAccessor(name, ctx, vars);
+        compiledAccessor.compileGetChain();
+    }
+
+    public boolean isOptimized() {
+        return compiledAccessor != null;
     }
 
     public BigDecimal getNumericValue() {

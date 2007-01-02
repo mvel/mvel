@@ -186,6 +186,14 @@ public class ExpressionParser {
         return DataConversion.convert(new ExpressionParser(compiledExpression, ctx, null).parse(), toType);
     }
 
+    public static Object[] executeAllExpression(final Serializable[] compiledExpressions, final Object ctx, final Map vars) {
+        Object[] o = new Object[compiledExpressions.length];
+        for (int i = 0; i < compiledExpressions.length; i++) {
+            o[i] = executeExpression(compiledExpressions[i], ctx, vars);
+        }
+        return o;
+    }
+
     public static <T> T eval(char[] expression, Object ctx, Map tokens, Class<T> toType) {
         return DataConversion.convert(new ExpressionParser(expression, ctx, tokens).parse(), toType);
     }
@@ -662,7 +670,7 @@ public class ExpressionParser {
         catch (ClassCastException e) {
             if ((fields & Token.LOOKAHEAD) == 0) {
                 /**
-                 * This will allow for some developers who like messy expressions to get
+                 * This will allow for some developers who like messy expressions to compileGetChain
                  * away with some messy constructs like: a + b < c && e + f > g + q instead
                  * of using brackets like (a + b < c) && (e + f > g + q)
                  */
@@ -1282,11 +1290,29 @@ public class ExpressionParser {
     private Token reduceToken(Token token) {
         String s;
 
+
         int tkflags = token.getFlags();
 
         if (((fields & Token.CAPTURE_ONLY) | (tkflags & Token.LITERAL)) != 0) {
             return token;
         }
+
+        if (fastExecuteMode) {
+            try {
+                if (token.isOptimized()) {
+                    return token.getOptimizedValue(ctx, ctx, tokens);
+                }
+                else {
+                    token.optimizeAccessor(ctx, tokens);
+                    return token.getOptimizedValue(ctx, ctx, tokens);
+                }
+
+            }
+            catch (Exception e) {
+                throw new CompileException("optimization failure for: " + new String(expr), e);
+            }
+        }
+
 
         if (propertyAccessor == null) propertyAccessor = new PropertyAccessor(tokens);
 

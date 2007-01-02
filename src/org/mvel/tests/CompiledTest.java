@@ -450,7 +450,7 @@ public class CompiledTest extends TestCase {
     	String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
         Serializable compiled = ExpressionParser.compileExpression(text);
 
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 100000; i++) {
             ExpressionParser.executeExpression(compiled, map);
         }
     }
@@ -520,21 +520,21 @@ public class CompiledTest extends TestCase {
 //        long end = System.currentTimeMillis();
 //        System.out.println( end  - start);
 //
-//        assertSame( "dog", list.get( 0 ) );
-//        assertEquals( "hello", list.get( 1 ) );
-//        assertEquals( new Integer( 42 ), list.get( 2 ) );
-//        Map map = ( Map ) list.get( 3 );
-//        assertEquals( "value1", map.get( "key1" ) );
+//        assertSame( "dog", list.compileGetChain( 0 ) );
+//        assertEquals( "hello", list.compileGetChain( 1 ) );
+//        assertEquals( new Integer( 42 ), list.compileGetChain( 2 ) );
+//        Map map = ( Map ) list.compileGetChain( 3 );
+//        assertEquals( "value1", map.compileGetChain( "key1" ) );
 //
-//        List nestedList = ( List ) map.get(  "cat" );
-//        assertEquals( new Integer( 14 ), nestedList.get( 0 )  );
-//        assertEquals( "car", nestedList.get( 1 )  );
-//        assertEquals( new Integer(42), nestedList.get( 2 )  );
+//        List nestedList = ( List ) map.compileGetChain(  "cat" );
+//        assertEquals( new Integer( 14 ), nestedList.compileGetChain( 0 )  );
+//        assertEquals( "car", nestedList.compileGetChain( 1 )  );
+//        assertEquals( new Integer(42), nestedList.compileGetChain( 2 )  );
 //
-//        nestedList  = (List) list.get( 4 );
-//        assertEquals( new Integer( 42 ), nestedList.get( 0 )  );
-//        map = ( Map ) nestedList.get( 1 );
-//        assertEquals( "value1", map.get( "cat" )  );
+//        nestedList  = (List) list.compileGetChain( 4 );
+//        assertEquals( new Integer( 42 ), nestedList.compileGetChain( 0 )  );
+//        map = ( Map ) nestedList.compileGetChain( 1 );
+//        assertEquals( "value1", map.compileGetChain( "cat" )  );
 //    }
 //
 //    private DefaultValueHandlerFactory factory;

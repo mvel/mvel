@@ -19,6 +19,8 @@ public class Base {
 
     public String barfoo;
 
+    public Object[] testArray = new Object[] { new Foo(), new Bar() };
+
     public Base() {
         this.list = new ArrayList<String>();
         list.add("Happy");
