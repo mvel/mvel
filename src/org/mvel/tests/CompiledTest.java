@@ -321,7 +321,7 @@ public class CompiledTest extends TestCase {
     }
 
     public void testStaticCalls() {
-        assertTrue(Math.abs(1.1d) == ((Double) parseDirect("Math.abs(1.1)")));
+        assertTrue(Math.abs(1.1f) == ((Float) parseDirect("Math.abs(1.1)")));
     }
 
     public void testMethodCallsEtc() {
@@ -450,7 +450,7 @@ public class CompiledTest extends TestCase {
     	String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
         Serializable compiled = ExpressionParser.compileExpression(text);
 
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 100000000; i++) {
             ExpressionParser.executeExpression(compiled, map);
         }
     }
@@ -473,7 +473,7 @@ public class CompiledTest extends TestCase {
         assertEquals( "value1", map.get( "key1" ) );
         
         List nestedList = ( List ) map.get(  "cat" );
-        assertEquals( new Integer( 14 ), nestedList.get( 0 )  );
+        assertEquals( new BigDecimal( 14 ), nestedList.get( 0 )  );
         assertEquals( "car", nestedList.get( 1 )  );
         assertEquals( new BigDecimal(42), nestedList.get( 2 )  );
         
@@ -489,7 +489,7 @@ public class CompiledTest extends TestCase {
         }
     }
 
-    public class MiscTestClass {
+    public class MiscTestClass {                                       
         public List toList(Object object1, String string, int integer, Map map, List list) {
             List l = new ArrayList();
             l.add(object1);
