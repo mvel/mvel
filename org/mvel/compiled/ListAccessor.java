@@ -2,30 +2,30 @@ package org.mvel.compiled;
 
 import org.mvel.AccessorNode;
 
-import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.List;
 
-public class DefaultPropertyMapAccessor implements AccessorNode {
+public class ListAccessor implements AccessorNode {
     private AccessorNode nextNode;
 
-    private Object property;
+    private int index;
 
     public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception {
         if (nextNode != null) {
-            return nextNode.getValue(vars.get(property), elCtx, vars);
+            return nextNode.getValue(((List)ctx).get(index), elCtx, vars);
         }
         else {
-            return vars.get(property);
+            return ((List)ctx).get(index);
         }
     }
 
 
-    public Object getProperty() {
-        return property;
+    public int getIndex() {
+        return index;
     }
 
-    public void setProperty(Object property) {
-        this.property = property;
+    public void setIndex(int index) {
+        this.index = index;
     }
 
     public AccessorNode getNextNode() {
@@ -36,7 +36,8 @@ public class DefaultPropertyMapAccessor implements AccessorNode {
         return this.nextNode = nextNode;
     }
 
+
     public String toString() {
-        return "Var Accessor -> [" + property + "]";
+        return "Array Accessor -> [" + index + "]";
     }
 }

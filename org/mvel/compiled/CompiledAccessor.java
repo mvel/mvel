@@ -1,15 +1,15 @@
 package org.mvel.compiled;
 
+import org.mvel.*;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
-import org.mvel.*;
 
 import java.io.Serializable;
+import static java.lang.Class.forName;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import static java.lang.Class.forName;
 import java.util.*;
 
 public class CompiledAccessor {
@@ -33,6 +33,7 @@ public class CompiledAccessor {
 
     private static final Object[] EMPTYARG = new Object[0];
 
+    private ConversionHandler typeConversionHandler;
 
     public CompiledAccessor(char[] property, Object ctx) {
         this.property = property;
@@ -71,10 +72,6 @@ public class CompiledAccessor {
 
         try {
             while (cursor < length) {
-//                if (curr == null) {
-//                    throw new PropertyAccessException("null pointer exception in property: " + new String(property) + " (" + capture() + " is null)");
-//                }
-
                 switch (nextToken()) {
                     case BEAN:
                         curr = getBeanProperty(curr, capture());
@@ -146,6 +143,7 @@ public class CompiledAccessor {
     }
 
     public void addAccessorNode(AccessorNode an) {
+
         if (currNode == null)
             rootNode = currNode = an;
         else {
@@ -298,7 +296,12 @@ public class CompiledAccessor {
             return ((Map) ctx).get(item);
         }
         else if (ctx instanceof List) {
-            return ((List) ctx).get(Integer.parseInt(item));
+            ListAccessor accessor = new ListAccessor();
+            accessor.setIndex(Integer.parseInt(item));
+
+            addAccessorNode(accessor);
+
+            return ((List) ctx).get(accessor.getIndex());
         }
         else if (ctx instanceof Collection) {
             int count = Integer.parseInt(item);
@@ -310,7 +313,12 @@ public class CompiledAccessor {
             return iter.next();
         }
         else if (ctx instanceof Object[]) {
-            return ((Object[]) ctx)[Integer.parseInt(item)];
+            ArrayAccessor accessor = new ArrayAccessor();
+            accessor.setIndex(Integer.parseInt(item));
+
+            addAccessorNode(accessor);
+
+            return ((Object[]) ctx)[accessor.getIndex()];
         }
         else if (ctx instanceof CharSequence) {
             return ((CharSequence) ctx).charAt(Integer.parseInt(item));
