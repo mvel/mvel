@@ -321,13 +321,13 @@ public class Token implements Cloneable, Serializable {
     }
 
     public Token getOptimizedValue(Object ctx, Object elCtx, Map vars) throws Exception {
-        if (isNumeric()) {
+        if ((fields & NUMERIC) != 0) {
             value = numericValue = convert(compiledAccessor.getValue(ctx, elCtx, vars), BigDecimal.class);
         }
         else
             value = compiledAccessor.getValue(ctx, elCtx, vars);
 
-        if (isNegation()) value = !((Boolean)value);
+        if ((fields & NEGATION) != 0) value = !((Boolean)value);
 
         return this;
     }

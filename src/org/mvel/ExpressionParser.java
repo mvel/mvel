@@ -188,7 +188,7 @@ public class ExpressionParser {
     }
 
 
-    public static Object[] executeAllExpression(final Serializable[] compiledExpressions, final Object ctx, final Map vars) {
+    public static Object[] executeAllExpression(Serializable[] compiledExpressions, Object ctx, Map vars) {
         if (compiledExpressions == null) return GetterAccessor.EMPTY;
 
         Object[] o = new Object[compiledExpressions.length];
@@ -1319,11 +1319,14 @@ public class ExpressionParser {
                         }
                     }
                 }
+
             }
             catch (Exception e) {
                 try {
-                    token.deOptimize();
-                    return reduceToken(token);
+                    synchronized (token) {
+                        token.deOptimize();
+                        return reduceToken(token);
+                    }
                 }
                 catch (Exception e2) {
                     throw new CompileException("optimization failure for: " + new String(expr), e);
@@ -1381,7 +1384,6 @@ public class ExpressionParser {
                 }
                 return token.setValue(tokens.get(s));
             }
-
             else if (ctx != null) {
                 try {
                     return token.setValue(propertyAccessor.setParameters(expr, token.getStart(),

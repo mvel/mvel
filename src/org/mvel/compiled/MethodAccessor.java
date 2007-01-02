@@ -24,8 +24,7 @@ public class MethodAccessor implements AccessorNode {
             try {
                 if (nextNode != null) {
                     return nextNode.getValue(
-                            method.invoke(ctx, executeAllExpression(compiledParameters, elCtx, vars))
-                            , elCtx, vars);
+                            method.invoke(ctx, executeAllExpression(compiledParameters, elCtx, vars)), elCtx, vars);
                 }
                 else {
                     return method.invoke(ctx, executeAllExpression(compiledParameters, elCtx, vars));
