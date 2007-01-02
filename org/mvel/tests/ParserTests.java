@@ -44,7 +44,6 @@ public class ParserTests extends TestCase {
         assertEquals("dog", parse("@{foo.bar.name}"));
     }
 
-
     public void testBooleanOperator() {
         assertEquals(true, parse("@{foo.bar.woof == true}"));
     }
@@ -344,6 +343,10 @@ public class ParserTests extends TestCase {
         assertEquals(true, parse("@{10 + 1 > 5 && 10 + 1 < 20}"));
     }
 
+    public void testArrayAccess() {
+        assertEquals("dog", parseDirect("testArray[0].bar.name"));
+    }
+
     public void testArrayCreation() {
         assertEquals("foobie", parseDirect("a = {{'foo', 'bar'}, {'foobie', 'barbie'}}; a[1][0]"));
     }
@@ -529,21 +532,21 @@ public class ParserTests extends TestCase {
 //        long end = System.currentTimeMillis();
 //        System.out.println( end  - start);
 //
-//        assertSame( "dog", list.get( 0 ) );
-//        assertEquals( "hello", list.get( 1 ) );
-//        assertEquals( new Integer( 42 ), list.get( 2 ) );
-//        Map map = ( Map ) list.get( 3 );
-//        assertEquals( "value1", map.get( "key1" ) );
+//        assertSame( "dog", list.compileGetChain( 0 ) );
+//        assertEquals( "hello", list.compileGetChain( 1 ) );
+//        assertEquals( new Integer( 42 ), list.compileGetChain( 2 ) );
+//        Map map = ( Map ) list.compileGetChain( 3 );
+//        assertEquals( "value1", map.compileGetChain( "key1" ) );
 //
-//        List nestedList = ( List ) map.get(  "cat" );
-//        assertEquals(  new Integer(14), nestedList.get( 0 )  );
-//        assertEquals( "car", nestedList.get( 1 )  );
-//        assertEquals( new BigDecimal(42), nestedList.get( 2 )  );
+//        List nestedList = ( List ) map.compileGetChain(  "cat" );
+//        assertEquals(  new Integer(14), nestedList.compileGetChain( 0 )  );
+//        assertEquals( "car", nestedList.compileGetChain( 1 )  );
+//        assertEquals( new BigDecimal(42), nestedList.compileGetChain( 2 )  );
 //
-//        nestedList  = (List) list.get( 4 );
-//        assertEquals( new BigDecimal(42), nestedList.get( 0 )  );
-//        map = ( Map ) nestedList.get( 1 );
-//        assertEquals( "value1", map.get( "cat" )  );
+//        nestedList  = (List) list.compileGetChain( 4 );
+//        assertEquals( new BigDecimal(42), nestedList.compileGetChain( 0 )  );
+//        map = ( Map ) nestedList.compileGetChain( 1 );
+//        assertEquals( "value1", map.compileGetChain( "cat" )  );
 //    }
 //
 //    public class MiscTestClass {

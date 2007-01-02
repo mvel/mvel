@@ -1,8 +1,9 @@
 package org.mvel;
 
-public class AccessorNode {
-    
+import java.util.Map;
 
-    private AccessorNode next;
-
+public interface AccessorNode {
+    public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception;
+    public AccessorNode getNextNode();
+    public AccessorNode setNextNode(AccessorNode accessorNode);
 }
