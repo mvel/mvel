@@ -14,7 +14,7 @@ public class MapAccessor implements AccessorNode {
             return nextNode.getValue(((Map)ctx).get(property), elCtx, vars);
         }
         else {
-            return vars.get(property);
+            return ((Map)ctx).get(property);
         }
     }
 
@@ -33,5 +33,10 @@ public class MapAccessor implements AccessorNode {
 
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
+    }
+
+
+    public String toString() {
+        return "Map Accessor -> [" + property + "]";
     }
 }
