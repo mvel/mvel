@@ -1,7 +1,8 @@
-package org.mvel;
+package org.mvel.compiled;
 
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
+import org.mvel.*;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;

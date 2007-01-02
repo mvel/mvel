@@ -6,6 +6,7 @@ import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
+import org.mvel.compiled.GetterAccessor;
 
 import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
@@ -1293,7 +1294,6 @@ public class ExpressionParser {
     private Token reduceToken(Token token) {
         String s;
 
-
         int tkflags = token.getFlags();
 
         if (((fields & Token.CAPTURE_ONLY) | (tkflags & Token.LITERAL)) != 0) {
@@ -1303,11 +1303,13 @@ public class ExpressionParser {
         if (fastExecuteMode) {
             try {
                 if (token.isOptimized()) {
-                    return token.getOptimizedValue(ctx, ctx, tokens);
+                    return token.getOptimizedValue((((tkflags | fields) & Token.PUSH) != 0) ? valueOnly(stk.pop()) : ctx, ctx, tokens);
                 }
                 else {
                     try {
-                        token.optimizeAccessor(ctx, tokens);
+                        Object cCtx;
+                        token.optimizeAccessor(cCtx = (((tkflags | fields) & Token.PUSH) != 0) ? valueOnly(stk.pop()) : ctx, tokens);
+                        return token.getOptimizedValue(cCtx, ctx, tokens);
                     }
                     catch (Exception e) {
                         if (!lookAhead()) throw e;
@@ -1318,7 +1320,6 @@ public class ExpressionParser {
                     }
 
 
-                    return token.getOptimizedValue(ctx, ctx, tokens);
                 }
 
             }

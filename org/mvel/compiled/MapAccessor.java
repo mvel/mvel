@@ -1,30 +1,30 @@
-package org.mvel;
+package org.mvel.compiled;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Field;
-import java.io.Serializable;
+import org.mvel.AccessorNode;
+
 import java.util.Map;
 
-public class FieldAccessor implements AccessorNode {
+public class MapAccessor implements AccessorNode {
     private AccessorNode nextNode;
 
-    private Field field;
+    private Object property;
 
     public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception {
         if (nextNode != null) {
-            return nextNode.getValue(field.get(ctx), elCtx, vars);
+            return nextNode.getValue(((Map)ctx).get(property), elCtx, vars);
         }
         else {
-            return field.get(ctx);
+            return vars.get(property);
         }
     }
 
-    public Field getField() {
-        return field;
+
+    public Object getProperty() {
+        return property;
     }
 
-    public void setField(Field field) {
-        this.field = field;
+    public void setProperty(Object property) {
+        this.property = property;
     }
 
     public AccessorNode getNextNode() {
