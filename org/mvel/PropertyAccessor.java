@@ -520,12 +520,12 @@ public class PropertyAccessor {
          */
         Class cls = ctx instanceof Class ? (Class) ctx : ctx.getClass();
 
-        Integer signature = createSignature(name, tk);
+    //    Integer signature = ;
 
         /**
          * Check to see if we have already cached this method;
          */
-        Object[] cache = checkMethodCache(cls, signature);
+        Object[] cache = checkMethodCache(cls, createSignature(name, tk));
 
         Method m;
         Class[] parameterTypes;
@@ -548,7 +548,7 @@ public class PropertyAccessor {
              */
 
             if ((m = getBestCanadidate(args, name, cls.getMethods())) != null) {
-                addMethodCache(cls, signature, m);
+                addMethodCache(cls, createSignature(name, tk), m);
                 parameterTypes = m.getParameterTypes();
             }
 
@@ -557,7 +557,7 @@ public class PropertyAccessor {
                  * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
                  */
                 if ((m = getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
-                    addMethodCache(cls, signature, m);
+                    addMethodCache(cls, createSignature(name, tk), m);
                     parameterTypes = m.getParameterTypes();
                 }
             }
@@ -574,12 +574,14 @@ public class PropertyAccessor {
         }
         else {
             if (es != null) {
+                CompiledExpression cExpr;
                 for (int i = 0; i < es.length; i++) {
-                    if (((CompiledExpression) es[i]).getKnownIngressType() == null) {
-                        ((CompiledExpression) es[i]).setKnownIngressType(parameterTypes[i]);
-                        ((CompiledExpression) es[i]).pack();
+                    cExpr = ((CompiledExpression) es[i]);
+                    if (cExpr.getKnownIngressType() == null) {
+                        cExpr.setKnownIngressType(parameterTypes[i]);
+                        cExpr.pack();
                     }
-                    if (!((CompiledExpression) es[i]).isConvertableIngressEgress()) {
+                    if (!cExpr.isConvertableIngressEgress()) {
                         args[i] = convert(args[i], parameterTypes[i]);
                     }
                 }
