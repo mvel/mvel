@@ -466,21 +466,21 @@ public class CompiledTest extends TestCase {
     public void testToList() {
     	String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
         List list = (List) parseDirect(text);
-        assertSame(foo, list.get(0));
-        assertEquals("hello", list.get(1));
-        assertEquals(new Integer(42), list.get(2));
-        Map map = (Map) list.get(3);
-        assertEquals("value1", map.get("key1"));
-
-        List nestedList = (List) map.get("cat");
-        assertSame(foo, nestedList.get(0));
-        assertEquals("car", nestedList.get(1));
-        assertEquals(new BigDecimal(42), nestedList.get(2));
-
-        nestedList = (List) list.get(4);
-        assertEquals(new BigDecimal(42), nestedList.get(0));
-        map = (Map) nestedList.get(1);
-        assertEquals("value1", map.get("cat"));
+        assertSame( "dog", list.get( 0 ) );
+        assertEquals( "hello", list.get( 1 ) );
+        assertEquals( new Integer( 42 ), list.get( 2 ) );
+        Map map = ( Map ) list.get( 3 );
+        assertEquals( "value1", map.get( "key1" ) );
+        
+        List nestedList = ( List ) map.get(  "cat" );
+        assertEquals( new Integer( 14 ), nestedList.get( 0 )  );
+        assertEquals( "car", nestedList.get( 1 )  );
+        assertEquals( new BigDecimal(42), nestedList.get( 2 )  );
+        
+        nestedList  = (List) list.get( 4 );
+        assertEquals( new BigDecimal( 42 ), nestedList.get( 0 )  );
+        map = ( Map ) nestedList.get( 1 );
+        assertEquals( "value1", map.get( "cat" )  );
     }
 
     public void testToList2() {
