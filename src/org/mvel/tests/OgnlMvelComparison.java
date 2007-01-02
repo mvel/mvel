@@ -12,7 +12,7 @@ import java.math.RoundingMode;
 public class OgnlMvelComparison {
     private Base baseClass = new Base();
 
-    private static final int TESTNUM = 100000;
+    private static final int TESTNUM = 20000;
 
 
     public OgnlMvelComparison() {
@@ -61,7 +61,8 @@ public class OgnlMvelComparison {
         mem = Runtime.getRuntime().freeMemory();
         for (int reps = 0; reps < 6; reps++) {
             for (int i = 0; i < count; i++) {
-                ExpressionParser.eval(expression, baseClass);
+               ExpressionParser.eval(expression, baseClass);
+             //   ExpressionParser.executeExpression(ExpressionParser.compileExpression(expression), baseClass);
             }
         }
         System.out.println("(MVEL)               : " + new BigDecimal(((System.currentTimeMillis() - time))).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
