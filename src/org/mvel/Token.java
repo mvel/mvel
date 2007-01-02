@@ -350,7 +350,11 @@ public class Token implements Cloneable, Serializable {
         setNumeric(isNumber(test));
         setFlag(true, Token.OPTIMIZED_REF);
     }
-    
+
+    public void deOptimize()  {
+        compiledAccessor = null;
+    }
+
     public boolean isOptimized() {
         return compiledAccessor != null;
     }

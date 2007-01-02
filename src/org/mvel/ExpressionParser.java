@@ -1,12 +1,12 @@
 package org.mvel;
 
-import static org.mvel.util.ParseTools.captureContructorAndResidual;
+import org.mvel.compiled.GetterAccessor;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.captureContructorAndResidual;
 import org.mvel.util.PropertyTools;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
-import org.mvel.compiled.GetterAccessor;
 
 import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
@@ -1321,7 +1321,13 @@ public class ExpressionParser {
                 }
             }
             catch (Exception e) {
-                throw new CompileException("optimization failure for: " + new String(expr), e);
+                try {
+                    token.deOptimize();
+                    return reduceToken(token);
+                }
+                catch (Exception e2) {
+                    throw new CompileException("optimization failure for: " + new String(expr), e);
+                }
             }
         }
 
