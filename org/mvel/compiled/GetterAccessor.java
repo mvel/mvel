@@ -3,7 +3,6 @@ package org.mvel.compiled;
 import org.mvel.AccessorNode;
 
 import java.lang.reflect.Method;
-import java.io.Serializable;
 import java.util.Map;
 
 public class GetterAccessor implements AccessorNode {

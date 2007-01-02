@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import static java.lang.Class.forName;
 import java.util.*;
 
 public class CompiledAccessor {
@@ -114,64 +115,6 @@ public class CompiledAccessor {
         }
     }
 
-//    private void set(Object value) {
-//        curr = ctx;
-//
-//        try {
-//            String tk = null;
-//            while (cursor < length) {
-//                tk = captureNext();
-//                if (!hasMore()) break;
-//                curr = getBeanProperty(curr, tk);
-//            }
-//
-//            Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
-//            if (member == null) {
-//                addWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode(), (member = PropertyTools.getFieldOrWriteAccessor(curr.getClass(), tk)));
-//            }
-//
-//            if (member instanceof Field) {
-//                Field fld = (Field) member;
-//
-//                if (value != null && !fld.getType().isAssignableFrom(value.getClass())) {
-//                    if (!DataConversion.canConvert(fld.getType(), value.getClass())) {
-//                        throw new ConversionException("cannot convert type: "
-//                                + value.getClass() + ": to " + fld.getType());
-//                    }
-//
-//                    fld.set(curr, DataConversion.convert(value, fld.getType()));
-//                }
-//                else
-//                    fld.set(curr, value);
-//            }
-//            else if (member != null) {
-//                Method meth = (Method) member;
-//
-//                if (value != null && !meth.getParameterTypes()[0].isAssignableFrom(value.getClass())) {
-//                    if (!DataConversion.canConvert(meth.getParameterTypes()[0], value.getClass())) {
-//                        throw new ConversionException("cannot convert type: "
-//                                + value.getClass() + ": to " + meth.getParameterTypes()[0]);
-//                    }
-//
-//                    meth.invoke(curr, DataConversion.convert(value, meth.getParameterTypes()[0]));
-//                }
-//                else {
-//                    meth.invoke(curr, value);
-//                }
-//            }
-//            else {
-//                throw new PropertyAccessException("could not access property (" + property + ") in: " + ctx.getClass().getName());
-//            }
-//        }
-//        catch (InvocationTargetException e) {
-//            throw new PropertyAccessException("could not access property", e);
-//        }
-//        catch (IllegalAccessException e) {
-//            throw new PropertyAccessException("could not access property", e);
-//        }
-//
-//    }
-
 
     private int nextToken() {
         switch (property[start = cursor]) {
@@ -234,9 +177,18 @@ public class CompiledAccessor {
             return ((Method) member).invoke(ctx, EMPTYARG);
         }
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
+            MapAccessor accessor = new MapAccessor();
+            accessor.setProperty(property);
+
+            addAccessorNode(accessor);
+
             return ((Map) ctx).get(property);
         }
         else if ("this".equals(property)) {
+            ThisValueAccessor accessor = new ThisValueAccessor();
+
+            addAccessorNode(accessor);
+
             return ctx;
         }
         else if (variables != null && variables.containsKey(property)) {
@@ -247,8 +199,27 @@ public class CompiledAccessor {
 
             return variables.get(property);
         }
+        else if (Token.LITERALS.containsKey(property)) {
+            StaticReferenceAccessor accessor = new StaticReferenceAccessor();
+            accessor.setLiteral(Token.LITERALS.get(property));
+
+            addAccessorNode(accessor);
+
+            return accessor.getLiteral();
+        }
         else {
-            throw new PropertyAccessException("could not access property (" + property + ")");
+            Class tryStaticMethodRef = tryStaticAccess();
+
+            if (tryStaticMethodRef != null) {
+                StaticReferenceAccessor accessor = new StaticReferenceAccessor();
+                accessor.setLiteral(tryStaticMethodRef);
+
+                addAccessorNode(accessor);
+
+                return tryStaticMethodRef;
+            }
+            else
+                throw new PropertyAccessException("could not access property (" + property + ")");
         }
     }
 
@@ -498,4 +469,47 @@ public class CompiledAccessor {
     public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception {
         return rootNode.getValue(ctx, elCtx, vars);
     }
+
+    private Class tryStaticAccess() {
+        try {
+            /**
+             * Try to resolve this *smartly* as a static class reference.
+             *
+             * This starts at the end of the token and starts to step backwards to figure out whether
+             * or not this may be a static class reference.  We search for method calls simply by
+             * inspecting for ()'s.  The first union area we come to where no brackets are present is our
+             * test-point for a class reference.  If we find a class, we pass the reference to the
+             * property accessor along  with trailing methods (if any).
+             *
+             */
+            boolean meth = false;
+            int depth = 0;
+            int last = property.length;
+            for (int i = property.length - 1; i > 0; i--) {
+                switch (property[i]) {
+                    case'.':
+                        if (!meth) {
+                            return forName(new String(property, 0, last));
+                        }
+
+                        meth = false;
+                        last = i;
+                        break;
+                    case')':
+                        if (depth++ == 0)
+                            meth = true;
+                        break;
+                    case'(':
+                        depth--;
+                        break;
+                }
+            }
+        }
+        catch (Exception cnfe) {
+            // do nothing.
+        }
+
+        return null;
+    }
+
 }

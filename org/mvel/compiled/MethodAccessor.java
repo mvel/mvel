@@ -15,7 +15,7 @@ public class MethodAccessor implements AccessorNode {
 
     public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception {
         if (nextNode != null) {
-            return getValue(
+            return nextNode.getValue(
                     method.invoke(ctx, ExpressionParser.executeAllExpression(compiledParameters, elCtx, vars))
                     , elCtx, vars);
         }
