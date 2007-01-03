@@ -278,9 +278,7 @@ public class ExpressionParser {
     }
 
     public ExpressionParser(Object precompiedExpr, Object ctx, Map tokens) {
-        this.compiledExpression = (CompiledExpression) precompiedExpr;
-        this.tokenMap = compiledExpression.getTokenMap();
-        this.tokenMap.reset();
+        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
 
         this.expr = compiledExpression.getExpression();
 
