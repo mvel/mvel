@@ -8,7 +8,7 @@ import java.util.Map;
 public class GetterAccessor implements AccessorNode {
     private AccessorNode nextNode;
 
-    private Method method;
+    private final Method method;
 
     public static final Object[] EMPTY = new Object[0];
 
@@ -21,25 +21,22 @@ public class GetterAccessor implements AccessorNode {
         }
     }
 
-    public Method getMethod() {
-        return method;
-    }
 
-    public void setMethod(Method method) {
+    public GetterAccessor(Method method) {
         this.method = method;
     }
 
-    public GetterAccessor() {
-    }
-
-    public AccessorNode getNextNode() {
-        return nextNode;
+    public Method getMethod() {
+        return method;
     }
 
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
 
+    public AccessorNode getNextNode() {
+        return nextNode;
+    }
 
     public String toString() {
         return method.getDeclaringClass().getName() + "." + method.getName();

@@ -1,11 +1,9 @@
 package org.mvel.compiled;
 
+import org.mvel.AccessorNode;
+import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.executeAllExpression;
 import static org.mvel.ExpressionParser.executeExpression;
-import static org.mvel.DataConversion.convert;
-import org.mvel.AccessorNode;
-import org.mvel.DataConversion;
-import org.mvel.ExpressionParser;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;

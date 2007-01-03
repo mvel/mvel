@@ -166,9 +166,7 @@ public class CompiledAccessor {
             return ((Field) member).get(ctx);
         }
         else if (member != null) {
-            GetterAccessor accessor = new GetterAccessor();
-            accessor.setMethod((Method) member);
-
+            GetterAccessor accessor = new GetterAccessor((Method) member);
             addAccessorNode(accessor);
 
             return ((Method) member).invoke(ctx, EMPTYARG);
