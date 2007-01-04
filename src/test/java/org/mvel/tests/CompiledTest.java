@@ -3,6 +3,7 @@ package org.mvel.tests;
 import junit.framework.TestCase;
 import org.mvel.ExpressionParser;
 import static org.mvel.ExpressionParser.evalToBoolean;
+import org.mvel.integration.impl.MapVariableResolverFactory;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -450,8 +451,11 @@ public class CompiledTest extends TestCase {
     	String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
         Serializable compiled = ExpressionParser.compileExpression(text);
 
+        MapVariableResolverFactory variableTable = new MapVariableResolverFactory(map);
+        variableTable.pack();
+
         for (int i = 0; i < 100000; i++) {
-            ExpressionParser.executeExpression(compiled, map);
+            ExpressionParser.executeExpression(compiled, variableTable);
         }
     }
 
