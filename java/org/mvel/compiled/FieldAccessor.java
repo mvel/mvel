@@ -1,18 +1,16 @@
 package org.mvel.compiled;
 
 import org.mvel.AccessorNode;
+import org.mvel.integration.VariableResolverFactory;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Field;
-import java.io.Serializable;
-import java.util.Map;
 
 public class FieldAccessor implements AccessorNode {
     private AccessorNode nextNode;
 
     private Field field;
 
-    public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
         if (nextNode != null) {
             return nextNode.getValue(field.get(ctx), elCtx, vars);
         }

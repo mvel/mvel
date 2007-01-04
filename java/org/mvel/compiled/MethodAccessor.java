@@ -1,6 +1,7 @@
 package org.mvel.compiled;
 
 import org.mvel.AccessorNode;
+import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.executeAllExpression;
 import static org.mvel.ExpressionParser.executeExpression;
@@ -17,7 +18,7 @@ public class MethodAccessor implements AccessorNode {
     private Serializable[] compiledParameters;
     private boolean coercionNeeded = false;
 
-    public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
         if (!coercionNeeded) {
             try {
                 if (nextNode != null) {
@@ -45,7 +46,7 @@ public class MethodAccessor implements AccessorNode {
         }
     }
 
-    private static Object[] executeAndCoerce(Serializable[] compiled, Class[] target, Object elCtx, Map vars) {
+    private static Object[] executeAndCoerce(Serializable[] compiled, Class[] target, Object elCtx, VariableResolverFactory vars) {
         Object[] values = new Object[compiled.length];
         for (int i = 0; i < compiled.length; i++) {
             //noinspection unchecked

@@ -6,6 +6,7 @@ import static org.mvel.ExpressionParser.eval;
 import org.mvel.Token;
 import org.mvel.CompileException;
 import org.mvel.ParseException;
+import org.mvel.integration.VariableResolverFactory;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
@@ -232,7 +233,7 @@ public class ParseTools {
         }
     }
 
-    public static Object constructObject(String expression, Object ctx, Map tokens)
+    public static Object constructObject(String expression, Object ctx, VariableResolverFactory vrf)
             throws InstantiationException, IllegalAccessException, InvocationTargetException,
             ClassNotFoundException {
 
@@ -244,7 +245,7 @@ public class ParseTools {
 
             Object[] parms = new Object[constructorParms.length];
             for (int i = 0; i < constructorParms.length; i++) {
-                parms[i] = (eval(constructorParms[i], ctx, tokens));
+                parms[i] = (eval(constructorParms[i], ctx, vrf));
             }
 
             Constructor cns = getBestConstructorCanadidate(parms, cls);

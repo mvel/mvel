@@ -1,6 +1,7 @@
 package org.mvel.compiled;
 
 import org.mvel.AccessorNode;
+import org.mvel.integration.VariableResolverFactory;
 
 import java.util.Map;
 
@@ -9,15 +10,14 @@ public class MapAccessor implements AccessorNode {
 
     private Object property;
 
-    public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) throws Exception {
         if (nextNode != null) {
-            return nextNode.getValue(((Map)ctx).get(property), elCtx, vars);
+            return nextNode.getValue(((Map)ctx).get(property), elCtx, vrf);
         }
         else {
             return ((Map)ctx).get(property);
         }
     }
-
 
     public Object getProperty() {
         return property;

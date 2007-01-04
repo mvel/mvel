@@ -7,6 +7,7 @@ import static org.mvel.Operator.*;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import org.mvel.compiled.CompiledAccessor;
 import org.mvel.compiled.Deferral;
+import org.mvel.integration.VariableResolverFactory;
 
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
@@ -320,12 +321,12 @@ public class Token implements Cloneable, Serializable {
         return value;
     }
 
-    public Token getOptimizedValue(Object ctx, Object elCtx, Map vars) throws Exception {
+    public Token getOptimizedValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
         if ((fields & NUMERIC) != 0) {
-            value = numericValue = convert(compiledAccessor.getValue(ctx, elCtx, vars), BigDecimal.class);
+            value = numericValue = convert(compiledAccessor.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
         }
         else
-            value = compiledAccessor.getValue(ctx, elCtx, vars);
+            value = compiledAccessor.getValue(ctx, elCtx, variableFactory);
 
         if ((fields & NEGATION) != 0) value = !((Boolean)value);
 
@@ -339,8 +340,8 @@ public class Token implements Cloneable, Serializable {
     }
 
 
-    public void optimizeAccessor(Object ctx, Map vars) {
-        compiledAccessor = new CompiledAccessor(name, ctx, vars);
+    public void optimizeAccessor(Object ctx, VariableResolverFactory variableFactory) {
+        compiledAccessor = new CompiledAccessor(name, ctx, variableFactory);
         setNumeric(false);
 
         Object test = compiledAccessor.compileGetChain();
