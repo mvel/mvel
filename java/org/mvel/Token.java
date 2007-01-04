@@ -1,14 +1,15 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.convert;
-import static org.mvel.util.ArrayTools.findFirst;
-import static org.mvel.util.PropertyTools.isNumber;
 import static org.mvel.Operator.*;
-import static org.mvel.util.ParseTools.handleEscapeSequence;
 import org.mvel.compiled.CompiledAccessor;
 import org.mvel.compiled.Deferral;
 import org.mvel.integration.VariableResolverFactory;
+import static org.mvel.util.ArrayTools.findFirst;
+import static org.mvel.util.ParseTools.handleEscapeSequence;
+import static org.mvel.util.PropertyTools.isNumber;
 
+import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Integer.parseInt;
@@ -16,7 +17,6 @@ import static java.lang.String.valueOf;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.Serializable;
 
 public class Token implements Cloneable, Serializable {
     public static final int LITERAL = 1;
@@ -67,7 +67,7 @@ public class Token implements Cloneable, Serializable {
 
     private CompiledExpression compiledExpression;
     private CompiledAccessor compiledAccessor;
-    private Class knownType;
+//    private Class knownType;
 
     public static final Map<String, Object> LITERALS =
             new HashMap<String, Object>(35, 0.6f);
@@ -346,7 +346,7 @@ public class Token implements Cloneable, Serializable {
 
         Object test = compiledAccessor.compileGetChain();
 
-        if (test != null) knownType = test.getClass();
+      //  if (test != null) knownType = test.getClass();
 
         setNumeric(isNumber(test));
         setFlag(true, Token.OPTIMIZED_REF);
