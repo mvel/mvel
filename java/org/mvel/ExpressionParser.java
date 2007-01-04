@@ -1320,7 +1320,7 @@ public class ExpressionParser {
 
                 return token.setValue(propertyAccessor.setParameters(expr, token.getStart() + token.getFirstUnion(), token.getEnd(), literal).get());
             }
-            else if (variableFactory.isResolveable(s)) {
+            else if (variableFactory != null && variableFactory.isResolveable(s)) {
                 return token.setValue(propertyAccessor.setParameters(expr, token.getStart() +
                         token.getAbsoluteFirstPart(),
                         token.getEnd(), variableFactory.getVariableResolver(s).getValue()).get());
@@ -1350,7 +1350,7 @@ public class ExpressionParser {
             if (Token.LITERALS.containsKey(s = token.getAbsoluteName())) {
                 return token.setValue(Token.LITERALS.get(s));
             }
-            else if (variableFactory.isResolveable(s)) {
+            else if (variableFactory != null && variableFactory.isResolveable(s)) {
                 if ((token.getFlags() & Token.COLLECTION) != 0) {
                     return token.setValue(propertyAccessor.setParameters(expr, token.getStart()
                             + token.getEndOfName(), token.getEnd(), variableFactory.getVariableResolver(s).getValue()).get());
