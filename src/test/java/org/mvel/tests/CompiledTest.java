@@ -454,7 +454,7 @@ public class CompiledTest extends TestCase {
         MapVariableResolverFactory variableTable = new MapVariableResolverFactory(map);
         variableTable.pack();
 
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 1000000; i++) {
             ExpressionParser.executeExpression(compiled, variableTable);
         }
     }

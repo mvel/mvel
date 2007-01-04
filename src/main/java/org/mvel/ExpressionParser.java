@@ -1666,9 +1666,12 @@ public class ExpressionParser {
         if (variableFactory == null)
             return variableFactory = new LocalVariableResolverFactory(new HashMap<String, Object>());
         else
-            return variableFactory =
-                    variableFactory.setNextFactory(new LocalVariableResolverFactory(new HashMap<String, Object>()));
+//            return variableFactory =
+//                    variableFactory.setNextFactory(new LocalVariableResolverFactory(new HashMap<String, Object>()));
+
+        return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(variableFactory);
     }
+
 
 
     /**
