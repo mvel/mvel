@@ -185,7 +185,8 @@ public class CompiledAccessor {
 
             addAccessorNode(accessor);
 
-
+//            System.out.println("property = " + property);
+//            System.out.println("vr = " + variableFactory.getVariableResolver(property));
             return variableFactory.getVariableResolver(property).getValue();
         }
         else if (Token.LITERALS.containsKey(property)) {
