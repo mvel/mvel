@@ -54,6 +54,13 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
         return false;
     }
 
+    public void pack() {
+        for (String s : variables.keySet()) {
+            variableResolvers.put(s, new MapVariableResolver(variables, s));
+        }
+    }
+
+
     public boolean isTarget(String name) {
         return variableResolvers.containsKey(name);
     }
