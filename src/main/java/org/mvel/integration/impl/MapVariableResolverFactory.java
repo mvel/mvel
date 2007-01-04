@@ -18,7 +18,7 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
 
     public MapVariableResolverFactory(Map<String, Object> variables) {
         this.variables = variables;
-        this.variableResolvers = new HashMap<String, VariableResolver>();
+        // this.variableResolvers = new HashMap<String, VariableResolver>();
     }
 
     public VariableResolver createVariable(String name, Object value) {
@@ -36,15 +36,17 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
 
     public VariableResolver getVariableResolver(String name) {
         return isResolveable(name) ? variableResolvers.get(name) :
-             nextFactory != null ? nextFactory.getVariableResolver(name) : null;
+                nextFactory != null ? nextFactory.getVariableResolver(name) : null;
     }
 
 
     public boolean isResolveable(String name) {
-        if (variableResolvers.containsKey(name)) {
+        if (variableResolvers != null && variableResolvers.containsKey(name)) {
             return true;
         }
         else if (variables.containsKey(name)) {
+            if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
+
             variableResolvers.put(name, new MapVariableResolver(variables, name));
             return true;
         }
@@ -55,8 +57,11 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
     }
 
     public void pack() {
-        for (String s : variables.keySet()) {
-            variableResolvers.put(s, new MapVariableResolver(variables, s));
+        if (variables != null) {
+            if (variableResolvers == null) variableResolvers = new HashMap<String,VariableResolver>();
+            for (String s : variables.keySet()) {
+                variableResolvers.put(s, new MapVariableResolver(variables, s));
+            }
         }
     }
 

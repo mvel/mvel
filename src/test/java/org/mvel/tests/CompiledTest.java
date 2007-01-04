@@ -447,8 +447,17 @@ public class CompiledTest extends TestCase {
         }
     }
 
+    public void testMathPerformance() {
+        final String expr = "10 + 1 + 3";
+        Serializable compiled = ExpressionParser.compileExpression(expr);
+
+        for (int i = 0; i < 10000000; i++) {
+            ExpressionParser.executeExpression(compiled, map);
+        }
+    }
+
     public void testToListBenchmark() {
-    	String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
+        String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
         Serializable compiled = ExpressionParser.compileExpression(text);
 
         MapVariableResolverFactory variableTable = new MapVariableResolverFactory(map);
@@ -468,23 +477,23 @@ public class CompiledTest extends TestCase {
     }
 
     public void testToList() {
-    	String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
+        String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
         List list = (List) parseDirect(text);
-        assertSame( "dog", list.get( 0 ) );
-        assertEquals( "hello", list.get( 1 ) );
-        assertEquals( new Integer( 42 ), list.get( 2 ) );
-        Map map = ( Map ) list.get( 3 );
-        assertEquals( "value1", map.get( "key1" ) );
-        
-        List nestedList = ( List ) map.get(  "cat" );
-        assertEquals( new BigDecimal( 14 ), nestedList.get( 0 )  );
-        assertEquals( "car", nestedList.get( 1 )  );
-        assertEquals( new BigDecimal(42), nestedList.get( 2 )  );
-        
-        nestedList  = (List) list.get( 4 );
-        assertEquals( new BigDecimal( 42 ), nestedList.get( 0 )  );
-        map = ( Map ) nestedList.get( 1 );
-        assertEquals( "value1", map.get( "cat" )  );
+        assertSame("dog", list.get(0));
+        assertEquals("hello", list.get(1));
+        assertEquals(new Integer(42), list.get(2));
+        Map map = (Map) list.get(3);
+        assertEquals("value1", map.get("key1"));
+
+        List nestedList = (List) map.get("cat");
+        assertEquals(new BigDecimal(14), nestedList.get(0));
+        assertEquals("car", nestedList.get(1));
+        assertEquals(new BigDecimal(42), nestedList.get(2));
+
+        nestedList = (List) list.get(4);
+        assertEquals(new BigDecimal(42), nestedList.get(0));
+        map = (Map) nestedList.get(1);
+        assertEquals("value1", map.get("cat"));
     }
 
     public void testToList2() {
@@ -493,7 +502,7 @@ public class CompiledTest extends TestCase {
         }
     }
 
-    public class MiscTestClass {                                       
+    public class MiscTestClass {
         public List toList(Object object1, String string, int integer, Map map, List list) {
             List l = new ArrayList();
             l.add(object1);
