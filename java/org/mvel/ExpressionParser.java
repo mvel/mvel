@@ -768,7 +768,7 @@ public class ExpressionParser {
             setFieldFalse(Token.SUBEVAL);
 
             if (compileMode) {
-                tk.setCompiledExpression((CompiledExpression) compileExpression(tk.getValueAsCharArray()));
+                tk.setCompiledExpression((CompiledExpression) compileExpression(tk.getValueAsString()));
             }
             else if (fastExecuteMode) {
                 return tk.setFinalValue(executeExpression(tk.getCompiledExpression(), ctx, variableFactory)).getValue();
@@ -780,17 +780,17 @@ public class ExpressionParser {
         return tk;
     }
 
-    private static Object reduceParse(char[] ex, Object ctx, VariableResolverFactory variableFactory) {
+    private static Object reduceParse(String ex, Object ctx, VariableResolverFactory variableFactory) {
         return new ExpressionParser(ex, ctx, variableFactory).parse();
     }
 
 
     private Object reduce(Token tok) {
         if ((tok.getFlags() & Token.NEGATION) != 0) {
-            return !((Boolean) reduceParse(tok.getValueAsCharArray(), ctx, variableFactory));
+            return !((Boolean) reduceParse(tok.getValueAsString(), ctx, variableFactory));
         }
         else if ((tok.getFlags() & Token.INVERT) != 0) {
-            Object o = reduceParse(tok.getValueAsCharArray(), ctx, variableFactory);
+            Object o = reduceParse(tok.getValueAsString(), ctx, variableFactory);
 
             if (o instanceof Integer)
                 return ~((Integer) o);
@@ -799,7 +799,7 @@ public class ExpressionParser {
         }
         else if (!compileMode && ((tok.getFlags() | fields) & Token.SUBEVAL) != 0) {
             setFieldFalse(Token.SUBEVAL);
-            return reduceParse(tok.getValueAsCharArray(), ctx, variableFactory);
+            return reduceParse(tok.getValueAsString(), ctx, variableFactory);
         }
         else return tok.getValue();
     }
