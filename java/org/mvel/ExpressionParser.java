@@ -135,6 +135,18 @@ public class ExpressionParser {
         return new ExpressionParser(compiledExpression, ctx, resolverFactory).parse();
     }
 
+        /**
+     * Executes a compiled expression.
+     *
+     * @param compiledExpression -
+     * @param ctx                -
+     * @return -
+     * @see #compileExpression(String)
+     */
+    public static Object executeExpression(final Object compiledExpression, final VariableResolverFactory factory) {
+        return new ExpressionParser(compiledExpression, factory).parse();
+    }
+
     /**
      * Executes a compiled expression.
      *
@@ -1705,6 +1717,14 @@ public class ExpressionParser {
 
         this.fastExecuteMode = true;
     }
+
+    ExpressionParser(Object precompiedExpr, VariableResolverFactory factory) {
+        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
+        this.expr = compiledExpression.getExpression();
+        this.variableFactory = factory;
+        this.fastExecuteMode = true;
+    }
+
 
 
     ExpressionParser(Object precompiedExpr, Object ctx, Map<String, Object> variables) {
