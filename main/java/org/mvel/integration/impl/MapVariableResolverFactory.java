@@ -1,10 +1,10 @@
 package org.mvel.integration.impl;
 
-import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.VariableResolver;
+import org.mvel.integration.VariableResolverFactory;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 public class MapVariableResolverFactory implements VariableResolverFactory {
     /**
@@ -35,7 +35,7 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
     }
 
     public VariableResolver getVariableResolver(String name) {
-        return variableResolvers.containsKey(name) ? variableResolvers.get(name) :
+        return isResolveable(name) ? variableResolvers.get(name) :
              nextFactory != null ? nextFactory.getVariableResolver(name) : null;
     }
 
