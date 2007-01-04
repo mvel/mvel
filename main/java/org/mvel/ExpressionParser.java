@@ -747,13 +747,13 @@ public class ExpressionParser {
                 throw new CompileException("unexpected end of statament");
 
             if ((fields & Token.SUBEVAL) != 0) {
-                stk.push(reduce(tk));
+                stk.push(reduce(tk), operator);
             }
             else {
-                stk.push(tk);
+                stk.push(tk, operator);
             }
 
-            stk.push(operator);
+           // stk.push(operator);
 
             if (!compileMode) reduceTrinary();
         }
