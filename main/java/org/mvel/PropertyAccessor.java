@@ -7,6 +7,8 @@ import static org.mvel.util.ParseTools.getBestCanadidate;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
+import org.mvel.compiled.VariableAccessor;
+import org.mvel.integration.VariableResolverFactory;
 
 import java.io.Serializable;
 import static java.lang.Character.isJavaIdentifierPart;
@@ -29,7 +31,7 @@ public class PropertyAccessor {
     private Object ctx;
     private Object curr;
 
-    private Map variables;
+    private VariableResolverFactory resolver;
 
     private static final int DONE = -1;
     private static final int NORM = 0;
@@ -65,24 +67,24 @@ public class PropertyAccessor {
         this.ctx = ctx;
     }
 
-    public PropertyAccessor(char[] property, Object ctx, Map variables) {
+    public PropertyAccessor(char[] property, Object ctx, VariableResolverFactory resolver) {
         this.property = property;
         this.length = property.length;
         this.ctx = ctx;
-        this.variables = variables;
+        this.resolver = resolver;
     }
 
-    public PropertyAccessor(Map variables) {
-        this.variables = variables;
+    public PropertyAccessor(VariableResolverFactory resolver) {
+        this.resolver = resolver;
     }
 
 
-    public PropertyAccessor(char[] property, int offset, int end, Object ctx, Map variables) {
+    public PropertyAccessor(char[] property, int offset, int end, Object ctx, VariableResolverFactory resolver) {
         this.property = property;
         this.cursor = offset;
         this.length = end;
         this.ctx = ctx;
-        this.variables = variables;
+        this.resolver = resolver;
     }
 
     public PropertyAccessor(String property, Object ctx) {
@@ -94,16 +96,16 @@ public class PropertyAccessor {
         return new PropertyAccessor(property, ctx).get();
     }
 
-    public static Object get(char[] property, Object ctx, Map variables) {
-        return new PropertyAccessor(property, ctx, variables).get();
+    public static Object get(char[] property, Object ctx, VariableResolverFactory resolver) {
+        return new PropertyAccessor(property, ctx, resolver).get();
     }
 
-    public static Object get(char[] property, int offset, int end, Object ctx, Map variables) {
-        return new PropertyAccessor(property, offset, end, ctx, variables).get();
+    public static Object get(char[] property, int offset, int end, Object ctx, VariableResolverFactory resolver) {
+        return new PropertyAccessor(property, offset, end, ctx, resolver).get();
     }
 
-    public static Object get(String property, Object ctx, Map variables) {
-        return new PropertyAccessor(property.toCharArray(), ctx, variables).get();
+    public static Object get(String property, Object ctx, VariableResolverFactory resolver) {
+        return new PropertyAccessor(property.toCharArray(), ctx, resolver).get();
     }
 
     public static void set(Object ctx, String property, Object value) {
@@ -494,7 +496,7 @@ public class PropertyAccessor {
                 es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
                 for (int i = 0; i < es.length; i++) {
-                    args[i] = executeExpression(es[i], ctx, variables);
+                    args[i] = executeExpression(es[i], ctx, resolver);
                 }
 
             }
@@ -505,7 +507,7 @@ public class PropertyAccessor {
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
                     es[i] = ExpressionParser.compileExpression(subtokens[i]);
-                    args[i] = executeExpression(es[i], ctx, variables);
+                    args[i] = executeExpression(es[i], ctx, resolver);
                     ((CompiledExpression) es[i]).setKnownEgressType(args[i] != null ? args[i].getClass() : null);
                 }
 
@@ -605,7 +607,4 @@ public class PropertyAccessor {
         return name.hashCode() + args.hashCode();
     }
 
-    public void setVariables(Map variables) {
-        this.variables = variables;
-    }
 }

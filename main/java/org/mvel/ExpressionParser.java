@@ -1,6 +1,9 @@
 package org.mvel;
 
 import org.mvel.compiled.GetterAccessor;
+import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.impl.LocalVariableResolverFactory;
+import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.captureContructorAndResidual;
@@ -36,9 +39,11 @@ public class ExpressionParser {
     private int length;
 
     private Object ctx;
-    private Map tokens;
+    // private Map tokens;
 
     private TokenIterator tokenMap;
+
+    private VariableResolverFactory variableFactory;
 
     private final Stack stk = new ExecutionStack();
 
@@ -46,6 +51,7 @@ public class ExpressionParser {
     private CompiledExpression compiledExpression;
 
     private static Map<String, char[]> EX_PRECACHE;
+
 
     static {
         configureFactory();
@@ -61,7 +67,11 @@ public class ExpressionParser {
     }
 
     public static Object eval(String expression, Object ctx) {
-        return new ExpressionParser(expression, ctx, null).parse();
+        return new ExpressionParser(expression, ctx).parse();
+    }
+
+    public static Object eval(String expression, Object ctx, VariableResolverFactory resolverFactory) {
+        return new ExpressionParser(expression, ctx, resolverFactory).parse();
     }
 
     public static Object eval(String expression, Map tokens) {
@@ -92,13 +102,11 @@ public class ExpressionParser {
      * Compiles an expression and returns a Serializable object containing the compiled
      * expression.
      *
-     * @param expression -
-     * @param ctx        -
-     * @param tokens     -
+     * @param expression - the expression to be compiled
      * @return -
      */
-    public static Serializable compileExpression(char[] expression, Object ctx, Map tokens) {
-        ExpressionParser parser = new ExpressionParser(expression, ctx, tokens)
+    public static Serializable compileExpression(char[] expression) {
+        ExpressionParser parser = new ExpressionParser(expression)
                 .setCompileMode(true);
 
         parser.parse();
@@ -106,8 +114,8 @@ public class ExpressionParser {
         return new CompiledExpression(parser.getExpressionArray(), parser.tokenMap);
     }
 
-    public static Object executeExpression(final Object compiledExpression) {
-        return new ExpressionParser(compiledExpression, null, null).parse();
+    public static Object executeExpression(Object compiledExpression) {
+        return new ExpressionParser(compiledExpression).parse();
     }
 
     /**
@@ -123,6 +131,10 @@ public class ExpressionParser {
         return new ExpressionParser(compiledExpression, ctx, vars).parse();
     }
 
+    public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
+        return new ExpressionParser(compiledExpression, ctx, resolverFactory).parse();
+    }
+
     /**
      * Executes a compiled expression.
      *
@@ -132,7 +144,7 @@ public class ExpressionParser {
      * @see #compileExpression(String)
      */
     public static Object executeExpression(final Object compiledExpression, final Object ctx) {
-        return new ExpressionParser(compiledExpression, ctx, null).parse();
+        return new ExpressionParser(compiledExpression, ctx).parse();
     }
 
 
@@ -184,11 +196,11 @@ public class ExpressionParser {
      * @return -
      */
     public static <T> T executeExpression(final Object compiledExpression, final Object ctx, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(compiledExpression, ctx, null).parse(), toType);
+        return DataConversion.convert(new ExpressionParser(compiledExpression, ctx).parse(), toType);
     }
 
 
-    public static Object[] executeAllExpression(Serializable[] compiledExpressions, Object ctx, Map vars) {
+    public static Object[] executeAllExpression(Serializable[] compiledExpressions, Object ctx, VariableResolverFactory vars) {
         if (compiledExpressions == null) return GetterAccessor.EMPTY;
 
         Object[] o = new Object[compiledExpressions.length];
@@ -203,7 +215,7 @@ public class ExpressionParser {
     }
 
     public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, ctx, null).parse(), toType);
+        return DataConversion.convert(new ExpressionParser(expression, ctx).parse(), toType);
     }
 
     public static <T> T eval(char[] expression, Map tokens, Class<T> toType) {
@@ -260,49 +272,10 @@ public class ExpressionParser {
         return evalToBoolean(expression, null, tokens);
     }
 
-    public ExpressionParser(char[] expression, Object ctx, Map tokens) {
-        this.expr = expression;
-        this.length = expr.length;
-        this.ctx = ctx;
-        this.tokens = tokens;
-    }
-
-    public ExpressionParser(String expression, Object ctx, Map tokens) {
-        setExpression(expression);
-        this.ctx = ctx;
-        this.tokens = tokens;
-    }
-
-    public ExpressionParser(String expression) {
-        setExpression(expression);
-    }
-
-    public ExpressionParser(Object precompiedExpr, Object ctx, Map tokens) {
-        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
-
-        this.expr = compiledExpression.getExpression();
-
-        this.ctx = ctx;
-        this.tokens = tokens;
-        this.fastExecuteMode = true;
-
-    }
-
-    public ExpressionParser(String expression, Object ctx, Map tokens, boolean booleanMode) {
-        setExpression(expression);
-        this.ctx = ctx;
-        this.tokens = tokens;
-        this.fields = booleanMode ? fields | Token.BOOLEAN_MODE : fields;
-    }
-
-    public ExpressionParser(Object ctx, Map tokens) {
-        this.ctx = ctx;
-        this.tokens = tokens;
-    }
 
     public Object parse(Object ctx, Map tokens) {
         this.ctx = ctx;
-        this.tokens = tokens;
+        //      this.tokens = tokens;
         return parse();
     }
 
@@ -420,13 +393,12 @@ public class ExpressionParser {
                 parseAndExecute();
                 fields ^= Token.ASSIGN;
 
-
-                if (tokens == null) {
-                    tokens = new HashMap();
-                }
+                VariableResolverFactory vrf = finalLocalVariableFactory();
 
                 //noinspection unchecked
-                tokens.put(tk.getName(), stk.pushAndPeek(valueOnly(stk.pop())));
+                //  tokens.put(tk.getName(), stk.pushAndPeek(valueOnly(stk.pop())));
+                vrf.createVariable(tk.getName(), stk.pushAndPeek(valueOnly(stk.pop())));
+
 
                 if (fastExecuteMode) {
                     if (tokenMap.hasMoreTokens()) {
@@ -447,7 +419,7 @@ public class ExpressionParser {
 
                     String[] name = captureContructorAndResidual(nextToken().getName());
 
-                    stk.push(ParseTools.constructObject(name[0], ctx, tokens));
+                    stk.push(ParseTools.constructObject(name[0], ctx, variableFactory));
                     setFieldFalse(Token.CAPTURE_ONLY);
 
                     if (name.length == 2) {
@@ -691,7 +663,7 @@ public class ExpressionParser {
 
         }
         catch (Exception e) {
-            throw new CompileException("failed to reduce expression: " + e);
+            throw new CompileException("failed to reduce expression", e);
         }
 
     }
@@ -783,10 +755,10 @@ public class ExpressionParser {
             setFieldFalse(Token.SUBEVAL);
 
             if (compileMode) {
-                tk.setCompiledExpression((CompiledExpression) compileExpression(tk.getValueAsCharArray(), ctx, tokens));
+                tk.setCompiledExpression((CompiledExpression) compileExpression(tk.getValueAsCharArray()));
             }
             else if (fastExecuteMode) {
-                return tk.setFinalValue(executeExpression(tk.getCompiledExpression(), ctx, tokens)).getValue();
+                return tk.setFinalValue(executeExpression(tk.getCompiledExpression(), ctx, variableFactory)).getValue();
             }
         }
         else if ((tk.getFlags() & Token.DO_NOT_REDUCE) == 0) {
@@ -795,17 +767,17 @@ public class ExpressionParser {
         return tk;
     }
 
-    private static Object reduceParse(char[] ex, Object ctx, Map tokens) {
-        return new ExpressionParser(ex, ctx, tokens).parse();
+    private static Object reduceParse(char[] ex, Object ctx, VariableResolverFactory variableFactory) {
+        return new ExpressionParser(ex, ctx, variableFactory).parse();
     }
 
 
     private Object reduce(Token tok) {
         if ((tok.getFlags() & Token.NEGATION) != 0) {
-            return !((Boolean) reduceParse(tok.getValueAsCharArray(), ctx, tokens));
+            return !((Boolean) reduceParse(tok.getValueAsCharArray(), ctx, variableFactory));
         }
         else if ((tok.getFlags() & Token.INVERT) != 0) {
-            Object o = reduceParse(tok.getValueAsCharArray(), ctx, tokens);
+            Object o = reduceParse(tok.getValueAsCharArray(), ctx, variableFactory);
 
             if (o instanceof Integer)
                 return ~((Integer) o);
@@ -814,7 +786,7 @@ public class ExpressionParser {
         }
         else if (!compileMode && ((tok.getFlags() | fields) & Token.SUBEVAL) != 0) {
             setFieldFalse(Token.SUBEVAL);
-            return reduceParse(tok.getValueAsCharArray(), ctx, tokens);
+            return reduceParse(tok.getValueAsCharArray(), ctx, variableFactory);
         }
         else return tok.getValue();
     }
@@ -1301,13 +1273,13 @@ public class ExpressionParser {
         if (fastExecuteMode) {
             try {
                 if (token.isOptimized()) {
-                    return token.getOptimizedValue((((tkflags | fields) & Token.PUSH) != 0) ? valueOnly(stk.pop()) : ctx, ctx, tokens);
+                    return token.getOptimizedValue((((tkflags | fields) & Token.PUSH) != 0) ? valueOnly(stk.pop()) : ctx, ctx, variableFactory);
                 }
                 else {
                     try {
                         Object cCtx;
-                        token.optimizeAccessor(cCtx = (((tkflags | fields) & Token.PUSH) != 0) ? valueOnly(stk.pop()) : ctx, tokens);
-                        return token.getOptimizedValue(cCtx, ctx, tokens);
+                        token.optimizeAccessor(cCtx = (((tkflags | fields) & Token.PUSH) != 0) ? valueOnly(stk.pop()) : ctx, variableFactory);
+                        return token.getOptimizedValue(cCtx, ctx, variableFactory);
                     }
                     catch (Exception e) {
                         if (!lookAhead()) throw e;
@@ -1318,6 +1290,9 @@ public class ExpressionParser {
                     }
                 }
 
+            }
+            catch (PropertyAccessException e) {
+                throw e;
             }
             catch (Exception e) {
                 try {
@@ -1333,7 +1308,7 @@ public class ExpressionParser {
         }
 
 
-        if (propertyAccessor == null) propertyAccessor = new PropertyAccessor(tokens);
+        if (propertyAccessor == null) propertyAccessor = new PropertyAccessor(variableFactory);
 
         if (((tkflags | fields) & Token.PUSH) != 0) {
             return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), valueOnly(stk.pop())).get());
@@ -1345,10 +1320,10 @@ public class ExpressionParser {
 
                 return token.setValue(propertyAccessor.setParameters(expr, token.getStart() + token.getFirstUnion(), token.getEnd(), literal).get());
             }
-            else if (tokens != null && tokens.containsKey(s)) {
+            else if (variableFactory.isResolveable(s)) {
                 return token.setValue(propertyAccessor.setParameters(expr, token.getStart() +
                         token.getAbsoluteFirstPart(),
-                        token.getEnd(), tokens.get(s)).get());
+                        token.getEnd(), variableFactory.getVariableResolver(s).getValue()).get());
 
             }
             else if (ctx != null) {
@@ -1375,12 +1350,12 @@ public class ExpressionParser {
             if (Token.LITERALS.containsKey(s = token.getAbsoluteName())) {
                 return token.setValue(Token.LITERALS.get(s));
             }
-            else if (tokens != null && tokens.containsKey(s)) {
+            else if (variableFactory.isResolveable(s)) {
                 if ((token.getFlags() & Token.COLLECTION) != 0) {
                     return token.setValue(propertyAccessor.setParameters(expr, token.getStart()
-                            + token.getEndOfName(), token.getEnd(), tokens.get(s)).get());
+                            + token.getEndOfName(), token.getEnd(), variableFactory.getVariableResolver(s).getValue()).get());
                 }
-                return token.setValue(tokens.get(s));
+                return token.setValue(variableFactory.getVariableResolver(s).getValue());
             }
             else if (ctx != null) {
                 try {
@@ -1669,5 +1644,121 @@ public class ExpressionParser {
             return reduceToken(token).getValue();
         }
     }
+
+    private VariableResolverFactory finalLocalVariableFactory() {
+        VariableResolverFactory v = variableFactory;
+        while (v != null) {
+            if (v instanceof LocalVariableResolverFactory) return v;
+            v = v.getNextFactory();
+        }
+        if (variableFactory == null)
+            return variableFactory = new LocalVariableResolverFactory(new HashMap<String, Object>());
+        else
+            return variableFactory =
+                    variableFactory.setNextFactory(new LocalVariableResolverFactory(new HashMap<String, Object>()));
+    }
+
+
+    /**
+     * CONSTRUCTORS START HERE
+     */
+
+    ExpressionParser(char[] expression, Object ctx, Map<String, Object> variables) {
+        this.expr = expression;
+        this.length = expr.length;
+        this.ctx = ctx;
+        //  this.tokens = tokens;
+        this.variableFactory = new MapVariableResolverFactory(variables);
+    }
+
+    ExpressionParser(String expression, Object ctx, Map<String, Object> variables) {
+        setExpression(expression);
+        this.ctx = ctx;
+        //   this.tokens = tokens;
+
+        this.variableFactory = new MapVariableResolverFactory(variables);
+
+    }
+
+    ExpressionParser(String expression) {
+        setExpression(expression);
+    }
+
+    ExpressionParser(char[] expression) {
+        this.expr = expression;
+    }
+
+
+    ExpressionParser() {
+    }
+
+    ExpressionParser(Object precompiedExpr) {
+        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
+        this.expr = compiledExpression.getExpression();
+        this.fastExecuteMode = true;
+    }
+
+    ExpressionParser(Object precompiedExpr, Object ctx) {
+        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
+        this.expr = compiledExpression.getExpression();
+        this.ctx = ctx;
+
+        this.fastExecuteMode = true;
+    }
+
+
+    ExpressionParser(Object precompiedExpr, Object ctx, Map<String, Object> variables) {
+        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
+
+        this.expr = compiledExpression.getExpression();
+
+        this.ctx = ctx;
+
+        this.variableFactory = variables != null ? new MapVariableResolverFactory(variables) : null;
+        this.fastExecuteMode = true;
+    }
+
+    ExpressionParser(Object precompiedExpr, Object ctx, VariableResolverFactory resolverFactory) {
+        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
+
+        this.expr = compiledExpression.getExpression();
+
+        this.ctx = ctx;
+
+        this.variableFactory = resolverFactory;
+        this.fastExecuteMode = true;
+    }
+
+    ExpressionParser(char[] expr, Object ctx, VariableResolverFactory resolverFactory) {
+        this.length = (this.expr = expr).length;
+        this.ctx = ctx;
+        this.variableFactory = resolverFactory;
+    }
+
+
+    ExpressionParser(String expression, Object ctx, Map<String, Object> variables, boolean booleanMode) {
+        setExpression(expression);
+        this.ctx = ctx;
+        this.variableFactory = new MapVariableResolverFactory(variables);
+        this.fields = booleanMode ? fields | Token.BOOLEAN_MODE : fields;
+    }
+
+    ExpressionParser(Object ctx, Map<String, Object> variables) {
+        this.ctx = ctx;
+        this.variableFactory = new MapVariableResolverFactory(variables);
+    }
+
+    ExpressionParser(String expression, Object ctx, VariableResolverFactory resolverFactory) {
+        setExpression(expression);
+        this.ctx = ctx;
+        this.variableFactory = resolverFactory;
+    }
+
+    ExpressionParser(String expression, Object ctx) {
+        setExpression(expression);
+        this.ctx = ctx;
+    }
+
+
 }
 

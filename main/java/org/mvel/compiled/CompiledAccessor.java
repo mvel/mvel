@@ -1,6 +1,7 @@
 package org.mvel.compiled;
 
 import org.mvel.*;
+import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
 
@@ -25,7 +26,7 @@ public class CompiledAccessor {
 
     private Object ctx;
 
-    private Map variables;
+    private VariableResolverFactory variableFactory;
 
     private static final int DONE = -1;
     private static final int BEAN = 0;
@@ -40,25 +41,14 @@ public class CompiledAccessor {
         this.ctx = ctx;
     }
 
-    public CompiledAccessor(char[] property, Object ctx, Map variables) {
+    public CompiledAccessor(char[] property, Object ctx, VariableResolverFactory variableFactory) {
         this.property = property;
         this.length = property != null ? property.length : 0;
         this.ctx = ctx;
-        this.variables = variables;
-    }
-
-    public CompiledAccessor(Map variables) {
-        this.variables = variables;
+        this.variableFactory = variableFactory;
     }
 
 
-    public CompiledAccessor(char[] property, int offset, int end, Object ctx, Map variables) {
-        this.property = property;
-        this.cursor = offset;
-        this.length = end;
-        this.ctx = ctx;
-        this.variables = variables;
-    }
 
     public CompiledAccessor(String property, Object ctx) {
         this.length = (this.property = property.toCharArray()).length;
@@ -186,13 +176,17 @@ public class CompiledAccessor {
 
             return ctx;
         }
-        else if (variables != null && variables.containsKey(property)) {
-            DefaultPropertyMapAccessor accessor = new DefaultPropertyMapAccessor();
-            accessor.setProperty(property);
+        else if (variableFactory != null && variableFactory.isResolveable(property)) {
+//            DefaultPropertyMapAccessor accessor = new DefaultPropertyMapAccessor();
+//            accessor.setProperty(property);
+//
+//            addAccessorNode(accessor);
+            VariableAccessor accessor = new VariableAccessor(property, variableFactory);
 
             addAccessorNode(accessor);
 
-            return variables.get(property);
+
+            return variableFactory.getVariableResolver(property).getValue();
         }
         else if (Token.LITERALS.containsKey(property)) {
             StaticReferenceAccessor accessor = new StaticReferenceAccessor();
@@ -374,7 +368,7 @@ public class CompiledAccessor {
                 es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
                 for (int i = 0; i < es.length; i++) {
-                    args[i] = ExpressionParser.executeExpression(es[i], ctx, variables);
+                    args[i] = ExpressionParser.executeExpression(es[i], ctx, variableFactory);
                 }
 
             }
@@ -385,7 +379,7 @@ public class CompiledAccessor {
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
                     es[i] = ExpressionParser.compileExpression(subtokens[i]);
-                    args[i] = ExpressionParser.executeExpression(es[i], ctx, variables);
+                    args[i] = ExpressionParser.executeExpression(es[i], ctx, variableFactory);
                     ((CompiledExpression) es[i]).setKnownEgressType(args[i] != null ? args[i].getClass() : null);
                 }
 
@@ -472,12 +466,8 @@ public class CompiledAccessor {
     }
 
 
-    public void setVariables(Map variables) {
-        this.variables = variables;
-    }
-
-    public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception {
-        return rootNode.getValue(ctx, elCtx, vars);
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
+        return rootNode.getValue(ctx, elCtx, variableFactory);
     }
 
     private Class tryStaticAccess() {

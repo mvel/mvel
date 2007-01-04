@@ -60,23 +60,6 @@ public class ParserPerformanceTests extends TestCase {
         }
     }
 
-    public void testPreCompiled() {
-        Object ex = ExpressionParser.compileExpression("hour != null");
-        ExpressionParser ep = new ExpressionParser(null, map);
-
-        for (int i = 0; i < COUNT; i++) {
-            ep.setPrecompiledExpression(ex).parse();
-        }
-    }
-
-
-    public void testPreCompiled2() {
-        testPreCompiled();
-    }
-
-    public void testPreCompiled3() {
-        testPreCompiled();
-    }
 
     public void testPreCompiledB() {
         Object ex = ExpressionParser.compileExpression("((hour + 10 - 1) == 69) && c == 'cat'");
