@@ -1,6 +1,7 @@
 package org.mvel.compiled;
 
 import org.mvel.AccessorNode;
+import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -10,7 +11,7 @@ public class StaticReferenceAccessor implements AccessorNode {
 
     Object literal;
 
-    public Object getValue(Object ctx, Object elCtx, Map vars) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
         if (nextNode != null) {
             return nextNode.getValue(literal, elCtx, vars);
         }

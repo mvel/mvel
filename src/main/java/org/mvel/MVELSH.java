@@ -22,7 +22,7 @@ public class MVELSH {
 
         String in;
 
-        ExpressionParser parser = new ExpressionParser(null, map);
+        ExpressionParser parser = new ExpressionParser();
 
         Object out = null;
 
