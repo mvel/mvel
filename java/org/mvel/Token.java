@@ -495,7 +495,8 @@ public class Token implements Cloneable, Serializable {
         }
         else if (OPERATORS.containsKey(value)) {
             fields |= OPERATOR;
-            value = OPERATORS.get(value);
+            resetValue = value = OPERATORS.get(value);
+            return;
         }
         else if (((fields & NUMERIC) != 0) || isNumber(name)) {
             if (((fields |= LITERAL | NUMERIC) & INVERT) != 0) {

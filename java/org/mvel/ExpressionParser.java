@@ -139,7 +139,7 @@ public class ExpressionParser {
      * Executes a compiled expression.
      *
      * @param compiledExpression -
-     * @param ctx                -
+     * @param                -
      * @return -
      * @see #compileExpression(String)
      */
@@ -742,8 +742,9 @@ public class ExpressionParser {
                 case 1:
                     continue;
             }
-
-            tk = nextToken();
+           
+            if ((tk = nextToken()) == null)
+                throw new CompileException("unexpected end of statament");
 
             if ((fields & Token.SUBEVAL) != 0) {
                 stk.push(reduce(tk));
