@@ -41,7 +41,6 @@ public class ExpressionParser {
     private int length;
 
     private Object ctx;
-    // private Map tokens;
 
     private TokenIterator tokenMap;
 
