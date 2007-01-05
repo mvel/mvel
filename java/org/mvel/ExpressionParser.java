@@ -347,6 +347,8 @@ public class ExpressionParser {
      * where-as a trinary statement does not.  Consider: (x && y): in this case, x will be reduced first, and
      * therefore will have a value on the stack, therefore the parser will then process the next BINARY statement,
      * which is (&& y).
+     *
+     * You can also think of a binary statement in terms of: ({stackvalue} op value)
      * 
      * @param o - operator
      * @return
