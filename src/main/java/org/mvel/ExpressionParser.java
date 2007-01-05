@@ -344,7 +344,7 @@ public class ExpressionParser {
     /**
      * This method is called to reduce a binary statement (or junction).  The difference between a binary and
      * trinary statement, as far as the parser is concerned is that a binary statement has an entrant state,
-     * where-as a trinary statement does not.  For example: (x && y), in this case, x will be reduced first, and
+     * where-as a trinary statement does not.  Consider: (x && y): in this case, x will be reduced first, and
      * therefore will have a value on the stack, therefore the parser will then process the next BINARY statement,
      * which is (&& y).
      * 
