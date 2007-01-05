@@ -1,5 +1,6 @@
 package org.mvel;
 
+import static org.mvel.DataConversion.canConvert;
 import org.mvel.compiled.GetterAccessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
@@ -7,6 +8,7 @@ import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.captureContructorAndResidual;
+import static org.mvel.util.ParseTools.containsCheck;
 import org.mvel.util.PropertyTools;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
@@ -339,6 +341,12 @@ public class ExpressionParser {
 
     }
 
+    /**
+     * This method is called to reduce a binary statement (or junction).
+     * 
+     * @param o
+     * @return
+     */
     private int reduceBinary(Operator o) {
         switch (o) {
             case AND:
@@ -457,6 +465,13 @@ public class ExpressionParser {
         return 0;
     }
 
+    /**
+     * This method is called when we reach the point where we must reduce a trinary operation in the expression.
+     * (ie. val1 op val2).  This is not the same as a binary operation, although binary operations would appear
+     * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
+     * current state against 2 downrange structures (usually an op and a val).
+     *
+     */
     private void reduceTrinary() {
         Object v1 = null, v2;
         Operator operator;
@@ -586,13 +601,13 @@ public class ExpressionParser {
 
                     case CONVERTABLE_TO:
                         if (v1 instanceof Class)
-                            stk.push(DataConversion.canConvert(v2.getClass(), (Class) v1));
+                            stk.push(canConvert(v2.getClass(), (Class) v1));
                         else
-                            stk.push(DataConversion.canConvert(v2.getClass(), forName(valueOf(v1))));
+                            stk.push(canConvert(v2.getClass(), forName(valueOf(v1))));
                         break;
 
                     case CONTAINS:
-                        stk.push(ParseTools.containsCheck(v2, v1));
+                        stk.push(containsCheck(v2, v1));
                         break;
 
                     case BW_AND:
