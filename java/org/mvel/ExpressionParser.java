@@ -75,11 +75,11 @@ public class ExpressionParser {
         return new ExpressionParser(expression, ctx, resolverFactory).parse();
     }
 
-    public static Object eval(String expression, Map tokens) {
+    public static Object eval(String expression, Map<String, Object> tokens) {
         return new ExpressionParser(expression, null, tokens).parse();
     }
 
-    public static Object eval(String expression, Object ctx, Map tokens) {
+    public static Object eval(String expression, Object ctx, Map<String, Object> tokens) {
         return new ExpressionParser(expression, ctx, tokens).parse();
     }
 
@@ -128,7 +128,7 @@ public class ExpressionParser {
      * @return -
      * @see #compileExpression(String)
      */
-    public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
+    public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map<String, Object> vars) {
         return new ExpressionParser(compiledExpression, ctx, vars).parse();
     }
 
@@ -136,11 +136,11 @@ public class ExpressionParser {
         return new ExpressionParser(compiledExpression, ctx, resolverFactory).parse();
     }
 
-        /**
+    /**
      * Executes a compiled expression.
      *
      * @param compiledExpression -
-     * @param                -
+     * @param factory            -
      * @return -
      * @see #compileExpression(String)
      */
@@ -162,7 +162,6 @@ public class ExpressionParser {
 
 
     /**
-     *
      * Executes a compiled expression.
      *
      * @param compiledExpression -
@@ -170,7 +169,7 @@ public class ExpressionParser {
      * @return -
      * @see #compileExpression(String)
      */
-    public static Object executeExpression(final Object compiledExpression, final Map vars) {
+    public static Object executeExpression(final Object compiledExpression, final Map<String, Object> vars) {
         return new ExpressionParser(compiledExpression, null, vars).parse();
     }
 
@@ -184,7 +183,7 @@ public class ExpressionParser {
      * @param toType             -
      * @return -
      */
-    public static <T> T executeExpression(final Object compiledExpression, final Object ctx, final Map vars, Class<T> toType) {
+    public static <T> T executeExpression(final Object compiledExpression, final Object ctx, final Map<String, Object> vars, Class<T> toType) {
         return DataConversion.convert(new ExpressionParser(compiledExpression, ctx, vars).parse(), toType);
     }
 
@@ -196,7 +195,7 @@ public class ExpressionParser {
      * @param toType             -
      * @return -
      */
-    public static <T> T executeExpression(final Object compiledExpression, final Map vars, Class<T> toType) {
+    public static <T> T executeExpression(final Object compiledExpression, final Map<String, Object> vars, Class<T> toType) {
         return DataConversion.convert(new ExpressionParser(compiledExpression, null, vars).parse(), toType);
     }
 
@@ -224,32 +223,32 @@ public class ExpressionParser {
         return o;
     }
 
-    public static <T> T eval(char[] expression, Object ctx, Map tokens, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, ctx, tokens).parse(), toType);
+    public static <T> T eval(char[] expression, Object ctx, Map<String, Object> vars, Class<T> toType) {
+        return DataConversion.convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
     }
 
     public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
         return DataConversion.convert(new ExpressionParser(expression, ctx).parse(), toType);
     }
 
-    public static <T> T eval(char[] expression, Map tokens, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, null, tokens).parse(), toType);
+    public static <T> T eval(char[] expression, Map<String, Object> vars, Class<T> toType) {
+        return DataConversion.convert(new ExpressionParser(expression, null, vars).parse(), toType);
     }
 
-    public static Object eval(char[] expression, Object ctx, Map tokens) {
-        return new ExpressionParser(expression, ctx, tokens).parse();
+    public static Object eval(char[] expression, Object ctx, Map<String, Object> vars) {
+        return new ExpressionParser(expression, ctx, vars).parse();
     }
 
     public static String evalToString(String expression, Object ctx) {
         return valueOf(eval(expression, ctx));
     }
 
-    public static String evalToString(String expression, Map tokens) {
-        return valueOf(eval(expression, tokens));
+    public static String evalToString(String expression, Map<String, Object> vars) {
+        return valueOf(eval(expression, vars));
     }
 
-    public static String evalToString(String expression, Object ctx, Map tokens) {
-        return valueOf(eval(expression, ctx, tokens));
+    public static String evalToString(String expression, Object ctx, Map<String, Object> vars) {
+        return valueOf(eval(expression, ctx, vars));
     }
 
     /**
@@ -257,11 +256,11 @@ public class ExpressionParser {
      *
      * @param expression -
      * @param ctx        -
-     * @param tokens     -
+     * @param vars       -
      * @return -
      */
-    public static Boolean evalToBoolean(String expression, Object ctx, Map tokens) {
-        return (Boolean) new ExpressionParser(expression, ctx, tokens, true).parse();
+    public static Boolean evalToBoolean(String expression, Object ctx, Map<String, Object> vars) {
+        return (Boolean) new ExpressionParser(expression, ctx, vars, true).parse();
     }
 
     /**
@@ -279,18 +278,11 @@ public class ExpressionParser {
      * Evaluate an expression in Boolean-only mode.
      *
      * @param expression -
-     * @param tokens     -
+     * @param vars       -
      * @return -
      */
-    public static Boolean evalToBoolean(String expression, Map tokens) {
-        return evalToBoolean(expression, null, tokens);
-    }
-
-
-    public Object parse(Object ctx, Map tokens) {
-        this.ctx = ctx;
-        //      this.tokens = tokens;
-        return parse();
+    public static Boolean evalToBoolean(String expression, Map<String, Object> vars) {
+        return evalToBoolean(expression, null, vars);
     }
 
     public Object parse() {
@@ -347,11 +339,11 @@ public class ExpressionParser {
      * where-as a trinary statement does not.  Consider: (x && y): in this case, x will be reduced first, and
      * therefore will have a value on the stack, so the parser will then process the next statement as a binary,
      * which is (&& y).
-     *
+     * <p/>
      * You can also think of a binary statement in terms of: ({stackvalue} op value)
-     * 
+     *
      * @param o - operator
-     * @return
+     * @return int - behaviour code
      */
     private int reduceBinary(Operator o) {
         switch (o) {
@@ -476,7 +468,6 @@ public class ExpressionParser {
      * (ie. val1 op val2).  This is not the same as a binary operation, although binary operations would appear
      * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
      * current state against 2 downrange structures (usually an op and a val).
-     *
      */
     private void reduceTrinary() {
         Object v1 = null, v2;
@@ -763,7 +754,7 @@ public class ExpressionParser {
                 case 1:
                     continue;
             }
-           
+
             if ((tk = nextToken()) == null)
                 throw new CompileException("unexpected end of statament");
 
@@ -774,7 +765,7 @@ public class ExpressionParser {
                 stk.push(tk, operator);
             }
 
-           // stk.push(operator);
+            // stk.push(operator);
 
             if (!compileMode) reduceTrinary();
         }
@@ -1688,17 +1679,9 @@ public class ExpressionParser {
         if (variableFactory == null)
             return variableFactory = new LocalVariableResolverFactory(new HashMap<String, Object>());
         else
-//            return variableFactory =
-//                    variableFactory.setNextFactory(new LocalVariableResolverFactory(new HashMap<String, Object>()));
-
-        return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(variableFactory);
+            return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(variableFactory);
     }
 
-
-
-    /**
-     * CONSTRUCTORS START HERE
-     */
 
     ExpressionParser(char[] expression, Object ctx, Map<String, Object> variables) {
         this.expr = expression;
@@ -1749,7 +1732,6 @@ public class ExpressionParser {
         this.variableFactory = factory;
         this.fastExecuteMode = true;
     }
-
 
 
     ExpressionParser(Object precompiedExpr, Object ctx, Map<String, Object> variables) {
