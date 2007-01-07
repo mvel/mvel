@@ -1345,7 +1345,7 @@ public class ExpressionParser {
         }
 
 
-        if (propertyAccessor == null) propertyAccessor = new PropertyAccessor(variableFactory);
+        if (propertyAccessor == null) propertyAccessor = new PropertyAccessor(variableFactory, ctx);
 
         if (((tkflags | fields) & Token.PUSH) != 0) {
             return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), valueOnly(stk.pop())).get());

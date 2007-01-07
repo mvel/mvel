@@ -3,12 +3,11 @@ package org.mvel;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.executeExpression;
+import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.getBestCanadidate;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
-import org.mvel.compiled.VariableAccessor;
-import org.mvel.integration.VariableResolverFactory;
 
 import java.io.Serializable;
 import static java.lang.Character.isJavaIdentifierPart;
@@ -28,6 +27,7 @@ public class PropertyAccessor {
     private char[] property;
     private int length;
 
+    private Object thisReference;
     private Object ctx;
     private Object curr;
 
@@ -67,15 +67,17 @@ public class PropertyAccessor {
         this.ctx = ctx;
     }
 
-    public PropertyAccessor(char[] property, Object ctx, VariableResolverFactory resolver) {
+    public PropertyAccessor(char[] property, Object ctx, VariableResolverFactory resolver, Object thisReference) {
         this.property = property;
         this.length = property.length;
         this.ctx = ctx;
         this.resolver = resolver;
+        this.thisReference = thisReference;
     }
 
-    public PropertyAccessor(VariableResolverFactory resolver) {
+    public PropertyAccessor(VariableResolverFactory resolver, Object thisReference) {
         this.resolver = resolver;
+        this.thisReference = thisReference;
     }
 
 
@@ -96,16 +98,16 @@ public class PropertyAccessor {
         return new PropertyAccessor(property, ctx).get();
     }
 
-    public static Object get(char[] property, Object ctx, VariableResolverFactory resolver) {
-        return new PropertyAccessor(property, ctx, resolver).get();
+    public static Object get(char[] property, Object ctx, VariableResolverFactory resolver, Object thisReference) {
+        return new PropertyAccessor(property, ctx, resolver, thisReference).get();
     }
 
     public static Object get(char[] property, int offset, int end, Object ctx, VariableResolverFactory resolver) {
         return new PropertyAccessor(property, offset, end, ctx, resolver).get();
     }
 
-    public static Object get(String property, Object ctx, VariableResolverFactory resolver) {
-        return new PropertyAccessor(property.toCharArray(), ctx, resolver).get();
+    public static Object get(String property, Object ctx, VariableResolverFactory resolver, Object thisReference) {
+        return new PropertyAccessor(property.toCharArray(), ctx, resolver, thisReference).get();
     }
 
     public static void set(Object ctx, String property, Object value) {
@@ -333,7 +335,7 @@ public class PropertyAccessor {
     }
 
 
-    private static Object getBeanProperty(Object ctx, String property)
+    private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
         Class cls;
@@ -353,7 +355,7 @@ public class PropertyAccessor {
             return ((Map) ctx).get(property);
         }
         else if ("this".equals(property)) {
-            return ctx;
+            return this.thisReference;
         }
         else {
             throw new PropertyAccessException("could not access property (" + property + ")");
@@ -507,7 +509,7 @@ public class PropertyAccessor {
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
                     es[i] = ExpressionParser.compileExpression(subtokens[i]);
-                    args[i] = executeExpression(es[i], ctx, resolver);
+                    args[i] = executeExpression(es[i], thisReference, resolver);
                     ((CompiledExpression) es[i]).setKnownEgressType(args[i] != null ? args[i].getClass() : null);
                 }
 
