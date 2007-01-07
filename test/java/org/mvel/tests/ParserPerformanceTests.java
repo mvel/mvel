@@ -1,14 +1,16 @@
 package org.mvel.tests;
 
+import junit.framework.TestCase;
+import ognl.Ognl;
+import ognl.OgnlException;
 import org.mvel.ExpressionParser;
 import org.mvel.Interpreter;
-import junit.framework.TestCase;
+import org.mvel.tests.res.Bar;
+import org.mvel.tests.res.Base;
+import org.mvel.tests.res.Foo;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import ognl.Ognl;
-import ognl.OgnlException;
 
 public class ParserPerformanceTests extends TestCase {
     private static final int COUNT = 10000;

@@ -2,6 +2,7 @@ package org.mvel.tests;
 
 import ognl.Ognl;
 import org.mvel.ExpressionParser;
+import org.mvel.tests.res.Base;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
