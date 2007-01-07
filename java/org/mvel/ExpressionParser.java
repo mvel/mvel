@@ -1130,15 +1130,20 @@ public class ExpressionParser {
 
                             Map<Object, Object> map = new HashMap<Object, Object>();
                             map.put(reduce(tk1), reduce(tk2));
+                            skipWhitespace();
 
                             try {
-                                while (expr[cursor++] != ']') {
+                                while (expr[cursor++] != ']') {         
                                     tk1 = nextToken();
                                     fields |= Token.NOCOMPILE;
-                                    if ((tk2 = nextToken()) == null || !tk2.getName().equals(":"))
+
+                                    if ((tk2 = nextToken()) == null
+                                            || (!tk2.isOperator() || (tk2.getOperator() != Operator.TERNARY_ELSE)))
                                         throw new CompileException("unexpected token or end of expression, in map creation construct: " + tk2.getName());
 
                                     map.put(reduce(tk1), reduce(nextToken()));
+
+                                    skipWhitespace();
                                 }
                             }
                             catch (ArrayIndexOutOfBoundsException e) {
@@ -1485,6 +1490,10 @@ public class ExpressionParser {
 
     public String getExpression() {
         return new String(expr);
+    }
+
+    private void skipWhitespace() {
+        while (isWhitespace(expr[cursor])) cursor++;
     }
 
     public ExpressionParser setExpression(String expression) {
