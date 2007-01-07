@@ -462,6 +462,10 @@ public class ParserUnitTest extends TestCase {
     public void testThisReferenceInMethodCall() {
         assertEquals(101, parseDirect("Integer.parseInt(this.number)"));
     }
+
+    public void testInlineVarAssignment() {
+        assertTrue((Boolean) parseDirect("x = ((a = 100) + (b = 200) + (c = 300)); (a == 100 && b == 200 && c == 300 && x == 600)"));
+    }
     
 
     public void testEvalToBoolean() {

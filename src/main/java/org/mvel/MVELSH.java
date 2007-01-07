@@ -1,9 +1,11 @@
 package org.mvel;
 
-import java.util.Map;
-import java.util.HashMap;
+import org.mvel.integration.impl.LocalVariableResolverFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MVELSH {
     public static void main(String[] args) {
@@ -13,7 +15,7 @@ public class MVELSH {
 
         Map map = new HashMap();
 
-        boolean output = false;
+        boolean output = true;
         boolean stacktrace = false;
         boolean showExecTime = false;
         boolean benchmarkMode = false;
@@ -22,7 +24,9 @@ public class MVELSH {
 
         String in;
 
-        ExpressionParser parser = new ExpressionParser();
+        LocalVariableResolverFactory lvrf = new LocalVariableResolverFactory(new HashMap<String, Object>());
+
+        //    ExpressionParser parser = new ExpressionParser();
 
         Object out = null;
 
@@ -35,9 +39,9 @@ public class MVELSH {
 
                 if (in.length() == 0) continue;
 
-                parser.setExpression(in.intern());
+                //  parser.setExpression(in.intern());
 
-                System.out.println("EXECUTING '" + in + "'");
+                //        System.out.println("EXECUTING '" + in + "'");
 
                 if ("quit;".equals(in) || "exit;".equals(in)) return;
                 if ("stacktrace;".equals(in)) {
@@ -89,24 +93,25 @@ public class MVELSH {
                 else if (benchmarkMode) {
                     System.out.println("HOTSPOT WARMUP ...");
                     for (int i = 10000; i != 0; i--) {
-                        parser.parse();
+                        ExpressionParser.eval(in, lvrf);
                     }
                     System.out.println("RUNNING BENCHMARK (10,000 times) ...");
 
                     time = System.currentTimeMillis();
                     for (int i = 10000; i != 0; i--) {
-                        out = parser.parse();
+                        out = ExpressionParser.eval(in, lvrf);
+
                     }
                     time = System.currentTimeMillis() - time;
                 }
                 else {
                     time = System.currentTimeMillis();
-                    out = parser.parse();
+                    out = ExpressionParser.eval(in, lvrf);
                     time = System.currentTimeMillis() - time;
                 }
 
                 if (showExecTime) System.out.println("DONE in : " + time + "ms.");
-                if (output) System.out.println((template?"TOUT: ":"OUT: ") + out);
+                if (output) System.out.println((template ? "TOUT: " : "OUT: ") + out);
             }
             catch (Exception e) {
                 if (stacktrace) e.printStackTrace();
