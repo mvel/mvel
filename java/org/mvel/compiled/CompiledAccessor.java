@@ -1,8 +1,11 @@
 package org.mvel.compiled;
 
 import org.mvel.*;
+import static org.mvel.ExpressionParser.compileExpression;
+import static org.mvel.ExpressionParser.executeExpression;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.util.PropertyTools;
 
 import java.io.Serializable;
@@ -132,7 +135,6 @@ public class CompiledAccessor {
     }
 
     public void addAccessorNode(AccessorNode an) {
-
         if (currNode == null)
             rootNode = currNode = an;
         else {
@@ -174,19 +176,13 @@ public class CompiledAccessor {
 
             addAccessorNode(accessor);
 
-            return ctx;
+            return this.ctx;
         }
         else if (variableFactory != null && variableFactory.isResolveable(property)) {
-//            DefaultPropertyMapAccessor accessor = new DefaultPropertyMapAccessor();
-//            accessor.setProperty(property);
-//
-//            addAccessorNode(accessor);
             VariableAccessor accessor = new VariableAccessor(property, variableFactory);
 
             addAccessorNode(accessor);
 
-//            System.out.println("property = " + property);
-//            System.out.println("vr = " + variableFactory.getVariableResolver(property));
             return variableFactory.getVariableResolver(property).getValue();
         }
         else if (Token.LITERALS.containsKey(property)) {
@@ -369,18 +365,18 @@ public class CompiledAccessor {
                 es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
                 for (int i = 0; i < es.length; i++) {
-                    args[i] = ExpressionParser.executeExpression(es[i], ctx, variableFactory);
+                    args[i] = executeExpression(es[i], ctx, variableFactory);
                 }
 
             }
             else {
-                String[] subtokens = ParseTools.parseParameterList(tk.toCharArray(), 0, -1);
+                String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
 
                 es = new Serializable[subtokens.length];
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
-                    es[i] = ExpressionParser.compileExpression(subtokens[i]);
-                    args[i] = ExpressionParser.executeExpression(es[i], ctx, variableFactory);
+                    es[i] = compileExpression(subtokens[i]);
+                    args[i] = executeExpression(es[i], this.ctx, variableFactory);
                     ((CompiledExpression) es[i]).setKnownEgressType(args[i] != null ? args[i].getClass() : null);
                 }
 
