@@ -1,14 +1,14 @@
 package org.mvel.tests;
 
+import junit.framework.TestCase;
 import org.mvel.ExpressionParser;
 import static org.mvel.ExpressionParser.evalToBoolean;
 import org.mvel.Interpreter;
-import junit.framework.TestCase;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ArrayList;
-import java.io.Serializable;
 
 public class ParserUnitTest extends TestCase {
     Foo foo = new Foo();
@@ -474,6 +474,11 @@ public class ParserUnitTest extends TestCase {
     public void testStringEscaping2() {
         assertEquals("MVEL's Parser is Fast", parse("@{'MVEL\\'s Parser is Fast'}"));
     }
+
+    public void testThisReferenceInMethodCall() {
+        assertEquals(101, parseDirect("Integer.parseInt(this.number)"));
+    }
+    
 
     public void testEvalToBoolean() {
         assertEquals(true, (boolean) ExpressionParser.evalToBoolean("true ", "true"));
