@@ -27,7 +27,6 @@ public class CompiledAccessor {
     private AccessorNode rootNode;
     private AccessorNode currNode;
 
-    private Object thisReference;
     private Object ctx;
 
     private VariableResolverFactory variableFactory;
