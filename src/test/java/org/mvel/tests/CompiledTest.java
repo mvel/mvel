@@ -460,6 +460,27 @@ public class CompiledTest extends TestCase {
         }
     }
 
+    public void testDifferentImplSameCompile() {
+        Serializable compiled = ExpressionParser.compileExpression("a.funMap.hello");
+
+        Map testMap = new HashMap();
+
+        for (int i = 0; i < 100; i++) {
+            Base b = new Base();
+            b.funMap.put("hello", "dog");
+            testMap.put("a", b);
+
+
+            assertEquals("dog", ExpressionParser.executeExpression(compiled, testMap));
+
+            b = new Base();
+            b.funMap.put("hello", "cat");
+            testMap.put("a", b);
+
+            assertEquals("cat", ExpressionParser.executeExpression(compiled, testMap));
+        }
+    }
+
     public void testToListBenchmark() {
         String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
         Serializable compiled = ExpressionParser.compileExpression(text);
