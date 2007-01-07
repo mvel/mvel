@@ -46,12 +46,11 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
         }
         else if (variables != null && variables.containsKey(name)) {
             if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
-
             variableResolvers.put(name, new MapVariableResolver(variables, name));
             return true;
         }
         else if (nextFactory != null) {
-            return nextFactory.isTarget(name);
+            return nextFactory.isResolveable(name);
         }
         return false;
     }
