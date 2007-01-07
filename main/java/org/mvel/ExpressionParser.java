@@ -71,6 +71,11 @@ public class ExpressionParser {
         return new ExpressionParser(expression, ctx).parse();
     }
 
+    public static Object eval(String expression, VariableResolverFactory resolverFactory) {
+        return new ExpressionParser(expression, resolverFactory).parse();
+    }
+
+
     public static Object eval(String expression, Object ctx, VariableResolverFactory resolverFactory) {
         return new ExpressionParser(expression, ctx, resolverFactory).parse();
     }
@@ -297,7 +302,7 @@ public class ExpressionParser {
         return evalToBoolean(expression, null, vars);
     }
 
-    public Object parse() {
+    Object parse() {
         stk.clear();
 
         fields = (Token.BOOLEAN_MODE & fields);
@@ -1405,7 +1410,7 @@ public class ExpressionParser {
             }
             else {
                 if (!lookAhead())
-                    new CompileException("unable to resolve token: " + s);
+                    throw new CompileException("unable to resolve token: " + s);
             }
         }
         return token;
@@ -1790,6 +1795,11 @@ public class ExpressionParser {
     ExpressionParser(String expression, Object ctx, VariableResolverFactory resolverFactory) {
         setExpression(expression);
         this.ctx = ctx;
+        this.variableFactory = resolverFactory;
+    }
+
+    ExpressionParser(String expression, VariableResolverFactory resolverFactory) {
+        setExpression(expression);
         this.variableFactory = resolverFactory;
     }
 
