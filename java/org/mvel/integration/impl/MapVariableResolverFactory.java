@@ -18,7 +18,6 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
 
     public MapVariableResolverFactory(Map<String, Object> variables) {
         this.variables = variables;
-        // this.variableResolvers = new HashMap<String, VariableResolver>();
     }
 
     public VariableResolver createVariable(String name, Object value) {
