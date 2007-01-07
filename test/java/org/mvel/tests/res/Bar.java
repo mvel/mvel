@@ -29,4 +29,8 @@ public class Bar {
     public void setAge(int age) {
         this.age = age;
     }
+
+    public boolean isFoo(Object obj) {
+        return obj instanceof Foo;
+    }
 }

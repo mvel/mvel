@@ -114,11 +114,12 @@ public class PropertyAccessor {
         new PropertyAccessor(property, ctx).set(value);
     }
 
-    public PropertyAccessor setParameters(char[] property, int offset, int end, Object ctx) {
+    public PropertyAccessor setParameters(char[] property, int offset, int end, Object ctx, Object thisReference) {
         this.property = property;
         this.cursor = offset;
         this.length = end;
         this.ctx = ctx;
+        this.thisReference = thisReference;
         return this;
     }
 
@@ -498,7 +499,7 @@ public class PropertyAccessor {
                 es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
                 for (int i = 0; i < es.length; i++) {
-                    args[i] = executeExpression(es[i], ctx, resolver);
+                    args[i] = executeExpression(es[i], thisReference, resolver);
                 }
 
             }
