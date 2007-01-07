@@ -1,12 +1,13 @@
 package org.mvel.tests;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Base {
     public String data = "cat";
+    public String number = "101";
     public List<String> list;
     public List<Thing> things;
     public Boolean fun =  false;
