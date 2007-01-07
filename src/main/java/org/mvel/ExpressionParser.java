@@ -360,13 +360,13 @@ public class ExpressionParser {
     private int reduceBinary(Operator o) {
         switch (o) {
             case AND:
-                if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
+                if (stk.peek() instanceof Boolean && !((Boolean) valueOnly(stk.peek()))) {
                     nextToken();
                     return -1;
                 }
                 break;
             case OR:
-                if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
+                if (stk.peek() instanceof Boolean && ((Boolean) valueOnly(stk.peek()))) {
                     nextToken();
                     return -1;
                 }
@@ -374,7 +374,7 @@ public class ExpressionParser {
 
             case TERNARY:
                 Token tk;
-                if (!compileMode && (Boolean) stk.peek()) {
+                if (!compileMode && (Boolean) valueOnly(stk.peek())) {
                     stk.discard();
                     return 1;
                 }

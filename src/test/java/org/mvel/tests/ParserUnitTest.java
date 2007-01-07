@@ -239,6 +239,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals("foobiebarbie", parse("@{zero==1?'foobie':'foobie'+'barbie'}"));
     }
 
+    public void testTernary4() {
+        assertEquals("no", parse("@{ackbar ? 'yes' : 'no'}"));
+    }
+
     public void testStrAppend() {
         assertEquals("foobarcar", parse("@{'foo' + 'bar' + 'car'}"));
     }
@@ -318,26 +322,6 @@ public class ParserUnitTest extends TestCase {
         assertEquals(true, parseDirect("doubleTen > 5"));
     }
 
-//    public void testCompileExpression() {
-//        String testExpression = "10 + 1 + 5 + 3 + hour";
-//
-//        Object compiled = ExpressionParser.compileExpression(testExpression);
-//        assertEquals(parse("@{" + testExpression + "}"), ExpressionParser.executeExpression(compiled, base, map));
-//    }
-//
-//    public void testCompileExpression2() {
-//        String testExpression = "(10 + 1 > 5) && (10 + 1 < 20)";
-//
-//        Object compiled = ExpressionParser.compileExpression(testExpression);
-//        assertEquals(parse("@{" + testExpression + "}"), ExpressionParser.executeExpression(compiled, base, map));
-//    }
-//
-//    public void testCompileExpression3() {
-//        String testExpression = "pi";
-//        Object compiled = ExpressionParser.compileExpression(testExpression);
-//        Object result = ExpressionParser.executeExpression(compiled, base, map);
-//        assertEquals("3.14", result);
-//    }
 
     public void testExpression10() {
         assertEquals(true, parse("@{10 + 1 > 5 && 10 + 1 < 20}"));
