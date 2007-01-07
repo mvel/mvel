@@ -427,12 +427,8 @@ public class ExpressionParser {
                 parseAndExecute();
                 fields ^= Token.ASSIGN;
 
-                VariableResolverFactory vrf = finalLocalVariableFactory();
-
                 //noinspection unchecked
-                //  tokens.put(tk.getName(), stk.pushAndPeek(valueOnly(stk.pop())));
-                vrf.createVariable(tk.getName(), stk.pushAndPeek(valueOnly(stk.pop())));
-
+                finalLocalVariableFactory().createVariable(tk.getName(), stk.pushAndPeek(valueOnly(stk.pop())));
 
                 if (fastExecuteMode) {
                     if (tokenMap.hasMoreTokens()) {
@@ -1634,7 +1630,6 @@ public class ExpressionParser {
                         Map<Object, Object> newMap = new HashMap<Object, Object>();
 
                         newMap.put(handleSubNesting(tk), handleSubNesting(tokenMap.nextToken()));
-
 
                         while (tokenMap.hasMoreTokens() && (tokenMap.peekToken().getFlags() & Token.ENDNEST) == 0) {
                             newMap.put(handleSubNesting(tokenMap.nextToken()), handleSubNesting(tokenMap.nextToken()));
