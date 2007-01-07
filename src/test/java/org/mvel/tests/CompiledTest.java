@@ -428,6 +428,10 @@ public class CompiledTest extends TestCase {
         assertEquals("FooBar", parseDirect("java.lang.String.valueOf('FooBar')"));
     }
 
+    public void testThisReferenceInMethodCall() {
+        assertEquals(101, parseDirect("Integer.parseInt(this.number)"));
+    }
+
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
@@ -451,7 +455,7 @@ public class CompiledTest extends TestCase {
         final String expr = "10 + 1 + 3";
         Serializable compiled = ExpressionParser.compileExpression(expr);
 
-        for (int i = 0; i < 10000000; i++) {
+        for (int i = 0; i < 10000; i++) {
             ExpressionParser.executeExpression(compiled, map);
         }
     }
@@ -463,7 +467,7 @@ public class CompiledTest extends TestCase {
         MapVariableResolverFactory variableTable = new MapVariableResolverFactory(map);
         variableTable.pack();
 
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 10000; i++) {
             ExpressionParser.executeExpression(compiled, variableTable);
         }
     }
