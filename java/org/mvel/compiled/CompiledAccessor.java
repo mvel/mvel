@@ -27,6 +27,7 @@ public class CompiledAccessor {
     private AccessorNode rootNode;
     private AccessorNode currNode;
 
+    private Object thisReference;
     private Object ctx;
 
     private VariableResolverFactory variableFactory;
@@ -37,6 +38,10 @@ public class CompiledAccessor {
     private static final int COL = 2;
 
     private static final Object[] EMPTYARG = new Object[0];
+
+
+    public CompiledAccessor() {
+    }
 
     public CompiledAccessor(char[] property, Object ctx) {
         this.property = property;
@@ -365,7 +370,7 @@ public class CompiledAccessor {
                 es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
                 for (int i = 0; i < es.length; i++) {
-                    args[i] = executeExpression(es[i], ctx, variableFactory);
+                    args[i] = executeExpression(es[i], this.ctx, variableFactory);
                 }
 
             }

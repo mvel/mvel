@@ -279,6 +279,7 @@ public class ExpressionParser {
         return (Boolean) new ExpressionParser(expression, ctx, vars, true).parse();
     }
 
+
     /**
      * Evaluate an expression in Boolean-only mode.
      *
@@ -287,8 +288,32 @@ public class ExpressionParser {
      * @return -
      */
     public static Boolean evalToBoolean(String expression, Object ctx) {
-        return evalToBoolean(expression, ctx, null);
+        return (Boolean) new ExpressionParser(expression, ctx, true).parse();
     }
+
+    /**
+     * Evaluate an expression in Boolean-only mode.
+     *
+     * @param expression -
+     * @param ctx        -
+     * @param factory -
+     * @return -
+     */
+    public static Boolean evalToBoolean(String expression, Object ctx, VariableResolverFactory factory) {
+        return (Boolean) new ExpressionParser(expression, ctx, factory, true).parse();
+    }
+
+    /**
+     * Evaluate an expression in Boolean-only mode.
+     *
+     * @param expression -
+     * @param factory -
+     * @return -
+     */
+    public static Boolean evalToBoolean(String expression, VariableResolverFactory factory) {
+        return (Boolean) new ExpressionParser(expression, null, factory, true).parse();
+    }
+    
 
     /**
      * Evaluate an expression in Boolean-only mode.
@@ -1405,24 +1430,24 @@ public class ExpressionParser {
         if (propertyAccessor == null) propertyAccessor = new PropertyAccessor(variableFactory, ctx);
 
         if (((tkflags | fields) & Token.PUSH) != 0) {
-            return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), valueOnly(stk.pop())).get());
+            return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), valueOnly(stk.pop()), ctx).get());
         }
         else if ((tkflags & Token.DEEP_PROPERTY) != 0) {
             if (Token.LITERALS.containsKey(s = token.getAbsoluteRootElement())) {
                 Object literal = Token.LITERALS.get(s);
                 if (literal == ThisLiteral.class) literal = ctx;
 
-                return token.setValue(propertyAccessor.setParameters(expr, token.getStart() + token.getFirstUnion(), token.getEnd(), literal).get());
+                return token.setValue(propertyAccessor.setParameters(expr, token.getStart() + token.getFirstUnion(), token.getEnd(), literal, ctx).get());
             }
             else if (variableFactory != null && variableFactory.isResolveable(s)) {
                 return token.setValue(propertyAccessor.setParameters(expr, token.getStart() +
                         token.getAbsoluteFirstPart(),
-                        token.getEnd(), variableFactory.getVariableResolver(s).getValue()).get());
+                        token.getEnd(), variableFactory.getVariableResolver(s).getValue(), ctx).get());
 
             }
             else if (ctx != null) {
                 try {
-                    return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), ctx).get());
+                    return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), ctx, ctx).get());
                 }
                 catch (PropertyAccessException e) {
 
@@ -1447,14 +1472,14 @@ public class ExpressionParser {
             else if (variableFactory != null && variableFactory.isResolveable(s)) {
                 if ((token.getFlags() & Token.COLLECTION) != 0) {
                     return token.setValue(propertyAccessor.setParameters(expr, token.getStart()
-                            + token.getEndOfName(), token.getEnd(), variableFactory.getVariableResolver(s).getValue()).get());
+                            + token.getEndOfName(), token.getEnd(), variableFactory.getVariableResolver(s).getValue(), ctx).get());
                 }
                 return token.setValue(variableFactory.getVariableResolver(s).getValue());
             }
             else if (ctx != null) {
                 try {
                     return token.setValue(propertyAccessor.setParameters(expr, token.getStart(),
-                            token.getEnd(), ctx).get());
+                            token.getEnd(), ctx, ctx).get());
                 }
                 catch (RuntimeException e) {
                     if (!lookAhead()) throw e;
@@ -1490,7 +1515,7 @@ public class ExpressionParser {
                             return token.setValue(
                                     propertyAccessor.setParameters(
                                             expr, last, token.getEnd(),
-                                            forName(new String(expr, token.getStart(), last - token.getStart()))
+                                            forName(new String(expr, token.getStart(), last - token.getStart())), ctx
                                     ).get());
                         }
                         meth = false;
@@ -1839,6 +1864,20 @@ public class ExpressionParser {
         setExpression(expression);
         this.ctx = ctx;
         this.variableFactory = new MapVariableResolverFactory(variables);
+        this.fields = booleanMode ? fields | Token.BOOLEAN_MODE : fields;
+    }
+
+    ExpressionParser(String expression, Object ctx, boolean booleanMode) {
+        setExpression(expression);
+        this.ctx = ctx;
+        this.fields = booleanMode ? fields | Token.BOOLEAN_MODE : fields;
+    }
+
+
+    ExpressionParser(String expression, Object ctx, VariableResolverFactory resolverFactory, boolean booleanMode) {
+        setExpression(expression);
+        this.ctx = ctx;
+        this.variableFactory = resolverFactory;
         this.fields = booleanMode ? fields | Token.BOOLEAN_MODE : fields;
     }
 
