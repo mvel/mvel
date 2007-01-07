@@ -177,6 +177,12 @@ public class ParserUnitTest extends TestCase {
                 ));
     }
 
+    public void testControlLoopMultiple() {
+        for (int i = 0; i < 100; i++) {
+            testControlLoop();
+        }
+    }
+
     public void testControlLoop2() {
         assertEquals("HappyHappy!JoyJoy!",
                 parse(

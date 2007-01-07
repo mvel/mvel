@@ -1,7 +1,7 @@
 package org.mvel;
 
 
-public class Node {
+public class Node implements Cloneable {
     private NodeType nodeType = NodeType.PROPERTY_EX;
 
     private int startPos;
@@ -134,4 +134,8 @@ public class Node {
         this.alias = alias;
     }
 
+
+    protected Node clone() throws CloneNotSupportedException {
+        return  (Node) super.clone();
+    }
 }
