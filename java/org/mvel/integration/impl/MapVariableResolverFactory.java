@@ -44,7 +44,7 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
         if (variableResolvers != null && variableResolvers.containsKey(name)) {
             return true;
         }
-        else if (variables.containsKey(name)) {
+        else if (variables != null && variables.containsKey(name)) {
             if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
 
             variableResolvers.put(name, new MapVariableResolver(variables, name));
