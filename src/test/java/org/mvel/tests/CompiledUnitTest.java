@@ -295,6 +295,14 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(ArrayList.class, parseDirect("[66]").getClass());
     }
 
+    public void testListCreation4() {
+        List ar = (List) parseDirect("[   66   , \"test\"   ]");
+        assertEquals(2, ar.size());
+        assertEquals(new BigDecimal(66), ar.get(0));
+        assertEquals("test", ar.get(1));
+    }
+
+
     public void testListCreationWithCall() {
         assertEquals(1, parseDirect("[\"apple\"].size()"));
     }
@@ -309,6 +317,10 @@ public class CompiledUnitTest extends TestCase {
 
     public void testMapCreation() {
         assertEquals("sarah", parseDirect("map = ['mike':'sarah','tom':'jacquelin']; map['mike']"));
+    }
+
+    public void testMapCreation2() {
+        assertEquals("sarah", parseDirect("map = ['mike' :'sarah'  ,'tom'  :'jacquelin'  ]; map['mike']"));
     }
 
     public void testProjectionSupport() {
