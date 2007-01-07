@@ -124,6 +124,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals("nulltest", parse("@{appendTwoStrings(null, 'test')}"));
     }
 
+    public void testMethodAccess6() {
+        assertEquals(false, parse("@{!foo.bar.isWoof()}"));
+    }
+
     public void testNegation() {
         assertEquals(true, parse("@{!fun && !fun}"));
     }
@@ -234,6 +238,16 @@ public class ParserUnitTest extends TestCase {
 
     public void testBooleanModeOnly4() {
         assertEquals(true, (Object) evalToBoolean("hour == (hour + 0)", base, map));
+    }
+
+    public void testBooleanModeOnly5() {
+        assertEquals(false, (Object) evalToBoolean("!foo.bar.isFoo(this.foo)", base, map));
+    }
+
+    public void testBooleanModeOnly6() {
+        for (int i = 0; i < 25; i++) {
+            testBooleanModeOnly5();
+        }
     }
 
     public void testTernary() {

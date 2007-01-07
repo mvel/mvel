@@ -23,4 +23,5 @@ public class Foo {
         return s.toUpperCase();
     }
 
+
 }
