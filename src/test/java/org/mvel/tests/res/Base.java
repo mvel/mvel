@@ -1,4 +1,4 @@
-package org.mvel.tests;
+package org.mvel.tests.res;
 
 import java.util.ArrayList;
 import java.util.HashMap;

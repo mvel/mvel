@@ -1,4 +1,4 @@
-package org.mvel.tests;
+package org.mvel.tests.res;
 
 public class Foo {
     private Bar bar =  new Bar();

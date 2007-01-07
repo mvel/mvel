@@ -48,7 +48,7 @@
             <classpath refid="test.classpath"/>
         </junit>
         <junit fork="yes" haltonfailure="yes">
-            <test name="org.mvel.tests.CompiledTest"/>
+            <test name="org.mvel.tests.CompiledUnitTest"/>
             <formatter type="plain" usefile="false"/>
             <classpath refid="test.classpath"/>
         </junit>

@@ -1,9 +1,10 @@
 package org.mvel.tests;
 
-import org.mvel.PropertyAccessor;
 import junit.framework.TestCase;
-import ognl.OgnlException;
 import ognl.Ognl;
+import ognl.OgnlException;
+import org.mvel.PropertyAccessor;
+import org.mvel.tests.res.Base;
 
 
 public class PropertyAccessPerformanceTest extends TestCase {

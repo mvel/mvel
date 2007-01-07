@@ -4,6 +4,9 @@ import junit.framework.TestCase;
 import org.mvel.ExpressionParser;
 import static org.mvel.ExpressionParser.evalToBoolean;
 import org.mvel.integration.impl.MapVariableResolverFactory;
+import org.mvel.tests.res.Bar;
+import org.mvel.tests.res.Base;
+import org.mvel.tests.res.Foo;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -12,12 +15,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class CompiledTest extends TestCase {
+public class CompiledUnitTest extends TestCase {
     Foo foo = new Foo();
     Map<String, Object> map = new HashMap<String, Object>();
     Base base = new Base();
 
-    public CompiledTest() {
+    public CompiledUnitTest() {
         foo.setBar(new Bar());
         map.put("foo", foo);
         map.put("a", null);
@@ -384,7 +387,7 @@ public class CompiledTest extends TestCase {
     }
 
     public void testThisReference3() {
-        assertEquals(true, parseDirect("this is 'org.mvel.tests.Base'"));
+        assertEquals(true, parseDirect("this is 'org.mvel.tests.res.Base'"));
     }
 
 

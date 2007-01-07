@@ -4,6 +4,9 @@ import junit.framework.TestCase;
 import org.mvel.ExpressionParser;
 import static org.mvel.ExpressionParser.evalToBoolean;
 import org.mvel.Interpreter;
+import org.mvel.tests.res.Bar;
+import org.mvel.tests.res.Base;
+import org.mvel.tests.res.Foo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -447,7 +450,7 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testThisReference3() {
-        assertEquals(true, parseDirect("this is 'org.mvel.tests.Base'"));
+        assertEquals(true, parseDirect("this is 'org.mvel.tests.res.Base'"));
     }
 
 

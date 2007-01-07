@@ -1,4 +1,4 @@
-package org.mvel.tests;
+package org.mvel.tests.res;
 
 public class Bar {
     private String name = "dog";
