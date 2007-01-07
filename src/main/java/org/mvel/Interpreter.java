@@ -1,8 +1,8 @@
 package org.mvel;
 
-import org.mvel.util.ExecutionStack;
 import static org.mvel.ExpressionParser.compileExpression;
 import static org.mvel.ExpressionParser.executeExpression;
+import org.mvel.util.ExecutionStack;
 
 import java.io.*;
 import static java.lang.String.valueOf;
@@ -120,7 +120,7 @@ public class Interpreter {
     private static Map<Object, Object> EX_PRECOMP_CACHE;
 
     static {
-         configureFactory();
+        configureFactory();
     }
 
     static void configureFactory() {
@@ -146,22 +146,40 @@ public class Interpreter {
     public Interpreter(CharSequence template) {
         if (!EX_PRECACHE.containsKey(template)) {
             EX_PRECACHE.put(template, this.expression = template.toString().toCharArray());
-            EX_NODE_CACHE.put(template, nodes = new TemplateCompiler(this).compileExpression());
+             nodes = new TemplateCompiler(this).compileExpression();
+            EX_NODE_CACHE.put(template, nodes.clone());
         }
         else {
             this.expression = EX_PRECACHE.get(template);
-            this.nodes = EX_NODE_CACHE.get(template);
+            this.nodes = EX_NODE_CACHE.get(template).clone();
+
         }
+        cloneAllNodes();
+
     }
 
     public Interpreter(String expression) {
         if (!EX_PRECACHE.containsKey(expression)) {
             EX_PRECACHE.put(expression, this.expression = expression.toCharArray());
-            EX_NODE_CACHE.put(expression, nodes = new TemplateCompiler(this).compileExpression());
+            nodes = new TemplateCompiler(this).compileExpression();
+            EX_NODE_CACHE.put(expression, nodes.clone());
         }
         else {
             this.expression = EX_PRECACHE.get(expression);
-            this.nodes = EX_NODE_CACHE.get(expression);
+            this.nodes = EX_NODE_CACHE.get(expression).clone();
+
+        }
+        cloneAllNodes();
+    }
+
+    private void cloneAllNodes() {
+        try {
+            for (int i = 0; i < nodes.length; i++) {
+                nodes[i] = nodes[i].clone();
+            }
+        }
+        catch (Exception e) {
+            throw new CompileException("unknown exception", e);
         }
     }
 
@@ -423,13 +441,11 @@ public class Interpreter {
     }
 
 
- 
     /**
      * @param expression -
-     * @param ctx -
-     * @param tokens -
+     * @param ctx        -
+     * @param tokens     -
      * @return -
-     * 
      * @deprecated
      */
     public static Object getValuePE(String expression, Object ctx, Map<String, Object> tokens) {
@@ -439,9 +455,9 @@ public class Interpreter {
 
     /**
      * @param expression -
-     * @param ctx -
+     * @param ctx        -
      * @param preParseCx -
-     * @param value -
+     * @param value      -
      * @deprecated
      */
     public static void setValuePE(String expression, Object ctx, Object preParseCx, Object value) {
