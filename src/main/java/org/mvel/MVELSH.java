@@ -39,10 +39,6 @@ public class MVELSH {
 
                 if (in.length() == 0) continue;
 
-                //  parser.setExpression(in.intern());
-
-                //        System.out.println("EXECUTING '" + in + "'");
-
                 if ("quit;".equals(in) || "exit;".equals(in)) return;
                 if ("stacktrace;".equals(in)) {
                     stacktrace = !stacktrace;
