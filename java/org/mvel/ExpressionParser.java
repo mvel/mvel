@@ -36,7 +36,6 @@ public class ExpressionParser {
     private boolean fastExecuteMode = false;
 
     private int fields;
-
     private int cursor;
     private int length;
 
@@ -46,7 +45,7 @@ public class ExpressionParser {
 
     private VariableResolverFactory variableFactory;
 
-    private final Stack stk = new ExecutionStack();
+    private Stack stk = new ExecutionStack();
 
     private PropertyAccessor propertyAccessor;
     private CompiledExpression compiledExpression;
