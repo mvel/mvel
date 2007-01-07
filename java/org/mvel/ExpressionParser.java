@@ -308,7 +308,10 @@ public class ExpressionParser {
 
         cursor = 0;
 
-        parseAndExecute();
+        if (fastExecuteMode)
+            parseAndExecuteAccelerated();
+        else
+            parseAndExecuteInterpreted();
 
         Object result = stk.peek();
 
@@ -424,7 +427,7 @@ public class ExpressionParser {
                     throw new CompileException("invalid identifier: " + tk.getName());
 
                 fields |= Token.ASSIGN;
-                parseAndExecute();
+                parseAndExecuteInterpreted();
                 fields ^= Token.ASSIGN;
 
                 //noinspection unchecked
@@ -447,7 +450,7 @@ public class ExpressionParser {
                 try {
                     fields |= Token.CAPTURE_ONLY;
 
-                    String[] name = captureContructorAndResidual(nextToken().getName());
+                    String[] name = captureContructorAndResidual(fastExecuteMode ? nextCompiledToken().getName() : nextToken().getName());
 
                     stk.push(ParseTools.constructObject(name[0], ctx, variableFactory));
                     setFieldFalse(Token.CAPTURE_ONLY);
@@ -735,7 +738,7 @@ public class ExpressionParser {
     }
 
 
-    private void parseAndExecute() {
+    private void parseAndExecuteInterpreted() {
         Token tk;
         Operator operator;
 
@@ -782,6 +785,55 @@ public class ExpressionParser {
             if (!compileMode) reduceTrinary();
         }
     }
+
+
+    private void parseAndExecuteAccelerated() {
+        Token tk;
+        Operator operator;
+
+        while ((tk = nextCompiledToken()) != null) {
+
+            if (stk.size() == 0) {
+                if ((fields & Token.SUBEVAL) != 0) {
+                    stk.push(reduce(tk));
+                }
+                else {
+                    stk.push(tk);
+                }
+
+                if (!tk.isOperator() && (tk = nextCompiledToken()) == null) {
+                    return;
+                }
+            }
+
+            if (!tk.isOperator()) {
+                continue;
+            }
+
+            switch (reduceBinary(operator = tk.getOperator())) {
+                case-1:
+                    return;
+                case 0:
+                    break;
+                case 1:
+                    continue;
+            }
+
+            tk = nextCompiledToken();
+
+            if ((fields & Token.SUBEVAL) != 0) {
+                stk.push(reduce(tk), operator);
+            }
+            else {
+                stk.push(tk, operator);
+            }
+
+            // stk.push(operator);
+
+            if (!compileMode) reduceTrinary();
+        }
+    }
+
 
     private static Object valueOnly(Object o) {
         return (o instanceof Token) ? ((Token) o).getValue() : o;
@@ -835,9 +887,9 @@ public class ExpressionParser {
      * @return -
      */
     private Token nextToken() {
-        Token tk;
-
         if (fastExecuteMode) return nextCompiledToken();
+
+        Token tk;
 
         /**
          * If the cursor is at the end of the expression, we have nothing more to do:
@@ -1129,7 +1181,7 @@ public class ExpressionParser {
                             skipWhitespace();
 
                             try {
-                                while (expr[cursor++] != ']') {         
+                                while (expr[cursor++] != ']') {
                                     tk1 = nextToken();
                                     fields |= Token.NOCOMPILE;
 
@@ -1578,8 +1630,8 @@ public class ExpressionParser {
     }
 
     public ExpressionParser setPrecompiledExpression(Object expression) {
-        this.tokenMap = ((CompiledExpression) expression).getTokenMap();
-        this.tokenMap.reset();
+        (this.tokenMap = ((CompiledExpression) expression).getTokenMap()).reset();
+
         this.fastExecuteMode = true;
         return this;
     }
@@ -1734,13 +1786,13 @@ public class ExpressionParser {
 
     ExpressionParser(Object precompiedExpr) {
         (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
-        this.expr = compiledExpression.getExpression();
+        //      this.expr = compiledExpression.getExpression();
         this.fastExecuteMode = true;
     }
 
     ExpressionParser(Object precompiedExpr, Object ctx) {
         (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
-        this.expr = compiledExpression.getExpression();
+        //      this.expr = compiledExpression.getExpression();
         this.ctx = ctx;
 
         this.fastExecuteMode = true;
@@ -1748,7 +1800,7 @@ public class ExpressionParser {
 
     ExpressionParser(Object precompiedExpr, VariableResolverFactory factory) {
         (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
-        this.expr = compiledExpression.getExpression();
+        //    this.expr = compiledExpression.getExpression();
         this.variableFactory = factory;
         this.fastExecuteMode = true;
     }
@@ -1756,8 +1808,7 @@ public class ExpressionParser {
 
     ExpressionParser(Object precompiedExpr, Object ctx, Map<String, Object> variables) {
         (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
-
-        this.expr = compiledExpression.getExpression();
+        setExpressionArray(compiledExpression.getExpression());
 
         this.ctx = ctx;
 
@@ -1767,8 +1818,9 @@ public class ExpressionParser {
 
     ExpressionParser(Object precompiedExpr, Object ctx, VariableResolverFactory resolverFactory) {
         (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
+        setExpressionArray(compiledExpression.getExpression());
 
-        this.expr = compiledExpression.getExpression();
+        //      this.expr = compiledExpression.getExpression();
 
         this.ctx = ctx;
 
