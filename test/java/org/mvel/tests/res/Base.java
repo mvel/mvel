@@ -20,6 +20,8 @@ public class Base {
 
     public String barfoo;
 
+    public String defnull = null;
+
     public Object[] testArray = new Object[] { new Foo(), new Bar() };
 
     public Base() {

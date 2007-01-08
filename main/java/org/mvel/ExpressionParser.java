@@ -393,17 +393,12 @@ public class ExpressionParser {
             case AND:
                 if (stk.peek() instanceof Boolean && !((Boolean) valueOnly(stk.peek()))) {
                     fields |= Token.DO_NOT_REDUCE;
-                    unwindStatement();
-                //    nextToken();
-                    return 0;
+                    return unwindStatement() ? -1 : 0;
                 }
                 break;
             case OR:
                 if (stk.peek() instanceof Boolean && ((Boolean) valueOnly(stk.peek()))) {
-                    unwindStatement();
-                  //   nextToken();
-                    //return -1;
-                    return 0;
+                    return unwindStatement() ? -1 : 0;
                 }
                 break;
 
@@ -1569,13 +1564,14 @@ public class ExpressionParser {
         while (isWhitespace(expr[cursor])) cursor++;
     }
 
-    private void unwindStatement() {
+    private boolean unwindStatement() {
         Token tk;
         fields |= Token.CAPTURE_ONLY;
         while ((tk = nextToken()) != null && !(tk.isOperator() && tk.getOperator() == Operator.END_OF_STMT)) {
            //nothing
         }
         setFieldFalse(Token.CAPTURE_ONLY);
+        return tk == null;
     }
 
     public ExpressionParser setExpression(String expression) {
