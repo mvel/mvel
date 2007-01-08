@@ -7,8 +7,7 @@ import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.captureContructorAndResidual;
-import static org.mvel.util.ParseTools.containsCheck;
+import static org.mvel.util.ParseTools.*;
 import org.mvel.util.PropertyTools;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
@@ -393,14 +392,18 @@ public class ExpressionParser {
         switch (o) {
             case AND:
                 if (stk.peek() instanceof Boolean && !((Boolean) valueOnly(stk.peek()))) {
-                    nextToken();
-                    return -1;
+                    fields |= Token.DO_NOT_REDUCE;
+                    unwindStatement();
+                //    nextToken();
+                    return 0;
                 }
                 break;
             case OR:
                 if (stk.peek() instanceof Boolean && ((Boolean) valueOnly(stk.peek()))) {
-                    nextToken();
-                    return -1;
+                    unwindStatement();
+                  //   nextToken();
+                    //return -1;
+                    return 0;
                 }
                 break;
 
@@ -477,7 +480,7 @@ public class ExpressionParser {
 
                     String[] name = captureContructorAndResidual(fastExecuteMode ? nextCompiledToken().getName() : nextToken().getName());
 
-                    stk.push(ParseTools.constructObject(name[0], ctx, variableFactory));
+                    stk.push(constructObject(name[0], ctx, variableFactory));
                     setFieldFalse(Token.CAPTURE_ONLY);
 
                     if (name.length == 2) {
@@ -1351,11 +1354,8 @@ public class ExpressionParser {
 
                     default:
                         cursor++;
-
                 }
-
         }
-
 
         return createToken(expr, start, cursor, fields);
     }
@@ -1567,6 +1567,15 @@ public class ExpressionParser {
 
     private void skipWhitespace() {
         while (isWhitespace(expr[cursor])) cursor++;
+    }
+
+    private void unwindStatement() {
+        Token tk;
+        fields |= Token.CAPTURE_ONLY;
+        while ((tk = nextToken()) != null && !(tk.isOperator() && tk.getOperator() == Operator.END_OF_STMT)) {
+           //nothing
+        }
+        setFieldFalse(Token.CAPTURE_ONLY);
     }
 
     public ExpressionParser setExpression(String expression) {
