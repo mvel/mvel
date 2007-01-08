@@ -63,6 +63,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals(true, parse("@{foo.bar.name != 'foo'}"));
     }
 
+    public void testShortPathExpression() {
+        assertEquals(null, parseDirect("3 > 4 && foo.toUC('test'); foo.register"));
+    }
+
     public void testChor() {
         assertEquals("cat", parse("@{a or b or c}"));
     }

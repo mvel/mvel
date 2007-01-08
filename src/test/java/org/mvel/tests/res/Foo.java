@@ -1,10 +1,10 @@
 package org.mvel.tests.res;
 
 public class Foo {
-    private Bar bar =  new Bar();
+    private Bar bar = new Bar();
+    public String register;
 
     public void abc() {
-        
     }
 
     public Bar getBar() {
@@ -20,8 +20,8 @@ public class Foo {
     }
 
     public String toUC(String s) {
+        register = s;
+        System.out.println("toUC('" + s + "')");
         return s.toUpperCase();
     }
-
-
 }
