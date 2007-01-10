@@ -146,12 +146,19 @@ public class Interpreter {
     public Interpreter(CharSequence template) {
         if (!EX_PRECACHE.containsKey(template)) {
             EX_PRECACHE.put(template, this.expression = template.toString().toCharArray());
-             nodes = new TemplateCompiler(this).compileExpression();
+            nodes = new TemplateCompiler(this).compileExpression();
             EX_NODE_CACHE.put(template, nodes.clone());
         }
         else {
             this.expression = EX_PRECACHE.get(template);
-            this.nodes = EX_NODE_CACHE.get(template).clone();
+            try {
+                this.nodes = EX_NODE_CACHE.get(expression).clone();
+            }
+            catch (NullPointerException e) {
+                EX_NODE_CACHE.remove(expression);
+                nodes = new TemplateCompiler(this).compileExpression();
+                EX_NODE_CACHE.put(expression, nodes.clone());
+            }
 
         }
         cloneAllNodes();
@@ -166,7 +173,14 @@ public class Interpreter {
         }
         else {
             this.expression = EX_PRECACHE.get(expression);
-            this.nodes = EX_NODE_CACHE.get(expression).clone();
+            try {
+                this.nodes = EX_NODE_CACHE.get(expression).clone();
+            }
+            catch (NullPointerException e) {
+                EX_NODE_CACHE.remove(expression);
+                nodes = new TemplateCompiler(this).compileExpression();
+                EX_NODE_CACHE.put(expression, nodes.clone());
+            }
 
         }
         cloneAllNodes();
