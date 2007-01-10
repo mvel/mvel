@@ -1,4 +1,3 @@
-
 package org.mvel;
 
 import static org.mvel.NodeType.*;
@@ -37,14 +36,20 @@ public class TemplateCompiler {
         Node ex;
         int node = 0;
         for (; cursor < length; cursor++) {
-            if (expressionArray[cursor] == '$' || expressionArray[cursor] == '@') {
+            if ((expressionArray[cursor] == '$' || expressionArray[cursor] == '@')) {
                 if (literalRange != 0) {
                     aList.add(new Node(node++, LITERAL, cursor - literalRange, literalRange, node));
                     literalRange = 0;
                 }
 
                 ex = new Node(cursor);
-                token = captureTo('{');
+
+                if ((token = captureTo('{')) == null) {
+                    literalRange++;
+                    continue;
+                }
+
+
                 exStr = structuredCaptureArray(1);
 
                 if (token.length() != 0) {
@@ -142,7 +147,7 @@ public class TemplateCompiler {
 
         arraycopy(aList.toArray(), 0, expressions = new Node[aList.size()], 0, expressions.length);
         ArrayList<Node> stk = new ArrayList<Node>(10);
-        
+
         for (int i = 0; i < expressions.length; i++) {
             switch (expressions[i].getToken()) {
                 case GOTO:
@@ -254,16 +259,16 @@ public class TemplateCompiler {
      */
     private char[] structuredCaptureArray(int depth) {
         int start = cursor++ + 1;
-       // int depth = 1;
+        // int depth = 1;
 
-      //  cursor++;
+        //  cursor++;
         while (cursor < (length) && depth != 0) {
             switch (expressionArray[cursor++]) {
                 case'@':
                 case'$':
                     if (expressionArray[cursor] == '{') {
                         cursor++;
-                        depth++;   
+                        depth++;
                     }
                     break;
                 case'}':

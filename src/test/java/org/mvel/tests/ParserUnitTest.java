@@ -39,6 +39,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals("poopy", parse("poopy"));
     }
 
+    public void testPassThru2() {
+        assertEquals("foo@bar.com", Interpreter.eval("foo@bar.com", map));
+    }
+
     public void testMethodOnValue() {
         assertEquals("DOG", parse("@{foo.bar.name.toUpperCase()}"));
     }
