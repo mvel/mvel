@@ -23,7 +23,8 @@ public class PropertyAccessUnitTest extends TestCase {
     }
 
     public void testCollectionsAccess() {
-        assertEquals("dog", PropertyAccessor.get("funMap['foo'].bar.name", base));
+        PropertyAccessor.set(base, "funMap['foo'].bar.name", "cat");
+        assertEquals("cat", PropertyAccessor.get("funMap['foo'].bar.name", base));
     }
 
     public void testMethodInvoke() {
