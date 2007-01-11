@@ -205,4 +205,12 @@ public class ArrayTools {
         }
         return -1;
     }
+
+    public static int findLast(char c, char[] array) {
+        for (int i = array.length - 1; i >= 0; i--) {
+            if (array[i] == c) return i;
+        }
+        return -1;
+    }
+
 }

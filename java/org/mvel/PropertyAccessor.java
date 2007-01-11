@@ -4,6 +4,7 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.executeExpression;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.ArrayTools;
 import static org.mvel.util.ParseTools.getBestCanadidate;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
@@ -160,7 +161,7 @@ public class PropertyAccessor {
             throw new PropertyAccessException("array or collection index out of bounds (property: " + new String(property) + ")", e);
         }
         catch (PropertyAccessException e) {
-            throw new PropertyAccessException("failed to access property: <<" + new String(property) + ">> in: " + (ctx!=null?ctx.getClass():null), e);
+            throw new PropertyAccessException("failed to access property: <<" + new String(property) + ">> in: " + (ctx != null ? ctx.getClass() : null), e);
         }
         catch (CompileException e) {
             throw e;
@@ -177,12 +178,13 @@ public class PropertyAccessor {
         curr = ctx;
 
         try {
-            String tk = null;
-            while (cursor < length) {
-                tk = captureNext();
-                if (!hasMore()) break;
-                curr = getBeanProperty(curr, tk);
-            }
+            int oLength = length;
+            length = ArrayTools.findLast('.', property);
+            curr = get();
+
+            length = oLength;
+
+            String tk = captureNext();
 
             Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
             if (member == null) {
@@ -525,7 +527,7 @@ public class PropertyAccessor {
          */
         Class cls = ctx instanceof Class ? (Class) ctx : ctx.getClass();
 
-    //    Integer signature = ;
+        //    Integer signature = ;
 
         /**
          * Check to see if we have already cached this method;
@@ -598,7 +600,7 @@ public class PropertyAccessor {
                 for (int i = 0; i < args.length; i++)
                     args[i] = convert(args[i], parameterTypes[i]);
             }
-            
+
             /**
              * Invoke the target method and return the response.
              */
