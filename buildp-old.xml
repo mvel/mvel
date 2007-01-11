@@ -10,7 +10,7 @@
     <property name="dist" location="dist"/>
 
 
-    <property name="deploy_to" location="c:\projects\rwhoist\WEB-INF\lib"/>
+    <property name="deploy_to" location="c:\projects\webcat\WEB-INF\lib"/>
 
     <target name="init">
         <!-- Create the time stamp -->
@@ -56,7 +56,7 @@
 
 
     <target name="deploy" depends="release">
-        <copy file="mvel-${version}-java${java.version}.jar" todir="../rwhoist/WEB-INF/lib/" />
+        <copy file="mvel-${version}-java${java.version}.jar" tofile="../webcat/WEB-INF/lib/mvel.jar" />
     </target>
 
     <target name="release" depends="clean,compile,el-tests"
