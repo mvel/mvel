@@ -208,6 +208,16 @@ public class ParserUnitTest extends TestCase {
                 ));
     }
 
+    public void testControlLoop3() {
+        assertEquals("HappyHappy!JoyJoy!",
+                parse(
+                        "@foreach{ list }" +
+                                "@{item}" +
+                                "@end{}"
+                ));
+    }
+
+
     public void testIfStatement() {
         assertEquals("sarah", parse("@if{'fun' == 'fun'}sarah@end{}"));
     }

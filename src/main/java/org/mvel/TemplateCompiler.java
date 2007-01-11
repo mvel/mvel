@@ -89,7 +89,8 @@ public class TemplateCompiler {
                     for (int i = 0; i < exStr.length; i++) {
                         switch (exStr[i]) {
                             case' ':
-                                if (capture == -1 && exStr[i + 1] == 'a' && exStr[i + 2] == 's'
+                                if (capture == -1 && ((i + 3) < exStr.length) 
+                                        && exStr[i + 1] == 'a' && exStr[i + 2] == 's'
                                         && exStr[i + 3] == ' ') {
 
                                     ex.setName(new String(exStr, 0, i));
@@ -109,6 +110,12 @@ public class TemplateCompiler {
                                     while (i < exStr.length && !isWhitespace(exStr[i++])) ;
 
                                     ex.setAlias(copyValueOf(exStr, capture, i - capture));
+
+                                    /**
+                                     * Scan to skip any excess whitespace.
+                                     */
+                                    //noinspection StatementWithEmptyBody
+                                    while (i < exStr.length && !isWhitespace(exStr[i++])) ;
                                 }
                                 break;
                         }
