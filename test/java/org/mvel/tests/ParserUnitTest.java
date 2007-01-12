@@ -383,6 +383,11 @@ public class ParserUnitTest extends TestCase {
     public void testTokenMethodAccess() {
         assertEquals(String.class, parse("@{a = 'foo'; a.getClass()}"));
     }
+    
+    public void testCacheAggressivelyReAssignmentAllowed() {
+    	Interpreter.setCacheAggressively(true);
+        assertEquals("bar", parse("@{a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]}"));
+    }      
 
     public void testComplexExpression() {
         assertEquals("bar", parse("@{a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]}"));
