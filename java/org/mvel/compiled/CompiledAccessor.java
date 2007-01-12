@@ -38,6 +38,8 @@ public class CompiledAccessor {
 
     private static final Object[] EMPTYARG = new Object[0];
 
+    private boolean first = true;
+
 
     public CompiledAccessor() {
     }
@@ -81,6 +83,8 @@ public class CompiledAccessor {
                     case DONE:
                         break;
                 }
+
+                first = false;
             }
 
             return curr;
@@ -153,7 +157,14 @@ public class CompiledAccessor {
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
 
-        if (member instanceof Field) {
+        if (first && variableFactory != null && variableFactory.isResolveable(property)) {
+            VariableAccessor accessor = new VariableAccessor(property, variableFactory);
+
+            addAccessorNode(accessor);
+
+            return variableFactory.getVariableResolver(property).getValue();
+        }
+        else if (member instanceof Field) {
             FieldAccessor accessor = new FieldAccessor();
             accessor.setField((Field) member);
 
@@ -181,13 +192,6 @@ public class CompiledAccessor {
             addAccessorNode(accessor);
 
             return this.ctx;
-        }
-        else if (variableFactory != null && variableFactory.isResolveable(property)) {
-            VariableAccessor accessor = new VariableAccessor(property, variableFactory);
-
-            addAccessorNode(accessor);
-
-            return variableFactory.getVariableResolver(property).getValue();
         }
         else if (Token.LITERALS.containsKey(property)) {
             StaticReferenceAccessor accessor = new StaticReferenceAccessor();
