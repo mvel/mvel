@@ -81,6 +81,9 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(188.4, parseDirect("pi * hour"));
     }
 
+    public void testComplexExpression() {
+        assertEquals("bar", parseDirect("a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]"));
+    }
 
     public void testComplexAnd() {
         assertEquals(true, parseDirect("(pi * hour) > 0 && foo.happy() == 'happyBar'"));
@@ -472,8 +475,12 @@ public class CompiledUnitTest extends TestCase {
 
     public Object compiledExecute(String ex) {
         Serializable compiled = ExpressionParser.compileExpression(ex);
-        return ExpressionParser.executeExpression(compiled, base, map);
+        Object first = ExpressionParser.executeExpression(compiled, base, map);
+        Object second = ExpressionParser.executeExpression(compiled, base, map);
+        assertEquals(first, second);
+        return second;
     }
+
 
     public void testSimplePropertyAccess() {
         final String expr = "c";

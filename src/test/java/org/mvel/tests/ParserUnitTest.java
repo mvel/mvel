@@ -383,6 +383,7 @@ public class ParserUnitTest extends TestCase {
     public void testTokenMethodAccess() {
         assertEquals(String.class, parse("@{a = 'foo'; a.getClass()}"));
     }
+
     
     public void testCacheAggressivelyReAssignmentAllowed() {
     	Interpreter.setCacheAggressively(true);
@@ -435,7 +436,7 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testStaticCalls() {
-        assertTrue(Math.abs(1.1d) == ((Double) parse("@{Math.abs(1.1)}")));
+        assertEquals(Math.toDegrees(1.5), parseDirect("Math.toDegrees(1.5)"));
     }
 
     public void testMethodCallsEtc() {
