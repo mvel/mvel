@@ -767,9 +767,8 @@ public class ExpressionParser {
         Operator operator;
 
         while ((tk = nextToken()) != null) {
-
             if (stk.size() == 0) {
-                if ((fields & Token.SUBEVAL) != 0) {
+                if (tk.isSubeval()) {
                     stk.push(reduce(tk));
                 }
                 else {
@@ -794,10 +793,10 @@ public class ExpressionParser {
                     continue;
             }
 
-            if ((tk = nextToken()) == null)
-                throw new CompileException("unexpected end of statament");
+//            if ((tk = nextToken()) == null)
+//                throw new CompileException("unexpected end of statament");
 
-            if ((fields & Token.SUBEVAL) != 0) {
+            if (((tk = nextToken()).isSubeval())) {
                 stk.push(reduce(tk), operator);
             }
             else {
@@ -816,9 +815,8 @@ public class ExpressionParser {
         Operator operator;
 
         while ((tk = nextCompiledToken()) != null) {
-
             if (stk.size() == 0) {
-                if ((fields & Token.SUBEVAL) != 0) {
+                if (tk.isSubeval()) {
                     stk.push(reduce(tk));
                 }
                 else {
@@ -893,7 +891,8 @@ public class ExpressionParser {
 
 
     private Object reduce(Token tok) {
-        if (tok.isNegation()) {
+        if (compileMode) return null;
+        else if (tok.isNegation()) {
             return !((Boolean) reduceParse(tok.getValueAsString(), ctx, variableFactory));
         }
         else if (tok.isInvert()) {
@@ -904,8 +903,7 @@ public class ExpressionParser {
             else
                 return ~((BigDecimal) o).intValue();
         }
-
-        else if (!compileMode && tok.isSubeval()) {
+        else if (tok.isSubeval()) {
             setFieldFalse(Token.SUBEVAL);
             return reduceParse(tok.getValueAsString(), ctx, variableFactory);
         }
@@ -938,10 +936,12 @@ public class ExpressionParser {
          * certain field states.  We do not reset for assignments, boolean mode, list creation or
          * a capture only mode.
          */
-        fields = ((fields & Token.ASSIGN) | (fields & Token.BOOLEAN_MODE) | (fields & Token.LISTCREATE)
-                | (fields & Token.CAPTURE_ONLY) | (fields & Token.NOCOMPILE) | (fields & Token.MAPCREATE)
-                | (fields & Token.ARRAYCREATE) | (fields & Token.PUSH) | (fields & Token.NEST) | (fields & Token.ENDNEST));
+//        fields = ((fields & Token.ASSIGN) | (fields & Token.BOOLEAN_MODE) | (fields & Token.LISTCREATE)
+//                | (fields & Token.CAPTURE_ONLY) | (fields & Token.NOCOMPILE) | (fields & Token.MAPCREATE)
+//                | (fields & Token.ARRAYCREATE) | (fields & Token.PUSH) | (fields & Token.NEST) | (fields & Token.ENDNEST));
 
+        fields = fields & (Token.ASSIGN | Token.BOOLEAN_MODE | Token.LISTCREATE | Token.CAPTURE_ONLY | Token.NOCOMPILE
+                | Token.MAPCREATE | Token.ARRAYCREATE | Token.PUSH | Token.NEST | Token.ENDNEST);
 
         boolean capture = false;
 
@@ -1386,7 +1386,7 @@ public class ExpressionParser {
 
     /**
      * Reduce a token.  When a token is reduced, it's targets are evaluated it's value is populated.
-     *
+     * <p/>
      * NOTE: It's currently an architectural must that both interpreted and compiled mode share this method, unlike
      * some of the other seperate methods due to the way things work.   So don't try and create a "reduceTokenFast"
      * method at this point, as you'll experience unexpected results.
@@ -1396,7 +1396,6 @@ public class ExpressionParser {
      */
     private Token reduceToken(Token token) {
         String s;
-
         if (((fields & Token.CAPTURE_ONLY) != 0 || token.isLiteral())) {
             return token;
         }
