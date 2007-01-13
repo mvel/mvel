@@ -1704,8 +1704,8 @@ public class ExpressionParser {
          * TODO: Move this to another method ASAP.  This is ridiculous.  (Note from Mike to Mike)
          */
 
-        if ((tk = tokenMap.nextToken()) != null) {
-            if (tk.isOperator(Operator.ASSIGN)) {
+        if (tokenMap.hasMoreTokens()) {
+            if ((tk = tokenMap.nextToken()).isOperator(Operator.ASSIGN)) {
                 return tk;
             }
             else if (tk.isCollectionCreation()) {
@@ -1778,11 +1778,14 @@ public class ExpressionParser {
                 tk.setFinalValue(ctx);
             }
 
-            fields |= (tk.getFlags() & Token.SUBEVAL);
+        //    fields |= (tk.getFlags() & Token.SUBEVAL);
 
             if (tk.isPush()) {
                 stk.push(tk.getValue());
             }
+        }
+        else {
+            tk = null;
         }
 
         return tk;
