@@ -1391,8 +1391,8 @@ public class ExpressionParser {
      * some of the other seperate methods due to the way things work.   So don't try and create a "reduceTokenFast"
      * method at this point, as you'll experience unexpected results.
      *
-     * @param token
-     * @return
+     * @param token -
+     * @return -
      */
     private Token reduceToken(Token token) {
         String s;
