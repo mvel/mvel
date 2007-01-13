@@ -45,7 +45,7 @@ public class ExpressionParser {
 
     private VariableResolverFactory variableFactory;
 
-    private Stack stk = new ExecutionStack();
+    private final Stack stk = new ExecutionStack();
 
     private PropertyAccessor propertyAccessor;
     private CompiledExpression compiledExpression;
@@ -793,17 +793,12 @@ public class ExpressionParser {
                     continue;
             }
 
-//            if ((tk = nextToken()) == null)
-//                throw new CompileException("unexpected end of statament");
-
             if (((tk = nextToken()).isSubeval())) {
                 stk.push(reduce(tk), operator);
             }
             else {
                 stk.push(tk, operator);
             }
-
-            // stk.push(operator);
 
             if (!compileMode) reduceTrinary();
         }
@@ -857,7 +852,7 @@ public class ExpressionParser {
         return (o instanceof Token) ? ((Token) o).getValue() : o;
     }
 
-    private Object reduceFast(Token tk) {
+    private void reduceFast(Token tk) {
         if (tk.isSubeval()) {
             /**
              * This token represents a subexpression, and we must recurse into that expression.
@@ -870,7 +865,7 @@ public class ExpressionParser {
                  * We are executing it fast mode, so we simply execute the compiled subexpression.
                  */
 
-                return tk.setFinalValue(executeExpression(tk.getCompiledExpression(), ctx, variableFactory)).getValue();
+                tk.setFinalValue(executeExpression(tk.getCompiledExpression(), ctx, variableFactory)).getValue();
             }
             else if (compileMode) {
                 /**
@@ -880,9 +875,9 @@ public class ExpressionParser {
             }
         }
         else if (!tk.isDoNotReduce()) {
-            return tk.setFinalValue(reduce(reduceToken(tk))).getValue();
+             tk.setFinalValue(reduce(reduceToken(tk))).getValue();
         }
-        return tk;
+      //  return tk;
     }
 
     private static Object reduceParse(String ex, Object ctx, VariableResolverFactory variableFactory) {
@@ -956,7 +951,6 @@ public class ExpressionParser {
 
                 capture = true;
                 cursor++;
-                // continue;
             }
             else if (capture) {
                 /**
@@ -1322,7 +1316,6 @@ public class ExpressionParser {
                     case'}':
                     case',':
                         if ((fields & (Token.LISTCREATE | Token.ARRAYCREATE | Token.MAPCREATE)) != 0) {
-     //                   if (((fields & Token.LISTCREATE | fields & Token.ARRAYCREATE | fields & Token.MAPCREATE)) != 0) {
                             return createToken(expr, start, cursor, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE);
                         }
                         else if (!capture) {
@@ -1599,7 +1592,7 @@ public class ExpressionParser {
         return tk == null;
     }
 
-    public ExpressionParser setExpression(String expression) {
+    public void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
             if (!EX_PRECACHE.containsKey(expression)) {
                 length = (this.expr = expression.toCharArray()).length;
@@ -1616,7 +1609,7 @@ public class ExpressionParser {
                 length = (expr = EX_PRECACHE.get(expression)).length;
             }
         }
-        return this;
+       // return this;
     }
 
 
@@ -1695,7 +1688,7 @@ public class ExpressionParser {
         ((TokenMap) tokenMap).addTokenNode(tk);
     }
 
-    public Token nextCompiledToken() {
+    private Token nextCompiledToken() {
         Token tk;
         /**
          * If we're running in fast-execute mode (aka. running a compiled expression)
@@ -1778,8 +1771,6 @@ public class ExpressionParser {
                 tk.setFinalValue(ctx);
             }
 
-        //    fields |= (tk.getFlags() & Token.SUBEVAL);
-
             if (tk.isPush()) {
                 stk.push(tk.getValue());
             }
@@ -1817,17 +1808,13 @@ public class ExpressionParser {
         this.expr = expression;
         this.length = expr.length;
         this.ctx = ctx;
-        //  this.tokens = tokens;
         this.variableFactory = new MapVariableResolverFactory(variables);
     }
 
     ExpressionParser(String expression, Object ctx, Map<String, Object> variables) {
         setExpression(expression);
         this.ctx = ctx;
-        //   this.tokens = tokens;
-
         this.variableFactory = new MapVariableResolverFactory(variables);
-
     }
 
     ExpressionParser(String expression) {
@@ -1844,13 +1831,11 @@ public class ExpressionParser {
 
     ExpressionParser(Object precompiedExpr) {
         (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
-        //      this.expr = compiledExpression.getExpression();
         this.fastExecuteMode = true;
     }
 
     ExpressionParser(Object precompiedExpr, Object ctx) {
         (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
-        //      this.expr = compiledExpression.getExpression();
         this.ctx = ctx;
 
         this.fastExecuteMode = true;
@@ -1858,7 +1843,6 @@ public class ExpressionParser {
 
     ExpressionParser(Object precompiedExpr, VariableResolverFactory factory) {
         (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
-        //    this.expr = compiledExpression.getExpression();
         this.variableFactory = factory;
         this.fastExecuteMode = true;
     }
@@ -1877,8 +1861,6 @@ public class ExpressionParser {
     ExpressionParser(Object precompiedExpr, Object ctx, VariableResolverFactory resolverFactory) {
         (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
         setExpressionArray(compiledExpression.getExpression());
-
-        //      this.expr = compiledExpression.getExpression();
 
         this.ctx = ctx;
 
