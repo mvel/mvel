@@ -843,20 +843,12 @@ public class ExpressionParser {
                     continue;
             }
 
-            /**
-             * DO NOT INLINE "tk = nextCompiledToken()" INTO THE NEXT DECISION BLOCK.  LEAVE THIS
-             * ALONE! THIS IS NOT AN OPTIMIZATION OPPORTUNITY!
-             */
-            tk = nextCompiledToken();
-
-            if ((fields & Token.SUBEVAL) != 0) {
+            if ((tk = nextCompiledToken()).isSubeval()) {
                 stk.push(reduce(tk), operator);
             }
             else {
                 stk.push(tk, operator);
             }
-
-            // stk.push(operator);
 
             if (!compileMode) reduceTrinary();
         }
