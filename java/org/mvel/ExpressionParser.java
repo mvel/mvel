@@ -1186,7 +1186,7 @@ public class ExpressionParser {
                         fields |= Token.NOCOMPILE;
                         Token tk2 = nextToken();
 
-                        if (tk2 != null && tk2.getName().equals(":")) {
+                        if (tk2 != null && tk2.isOperator(Operator.TERNARY_ELSE)) {
                             setFieldFalse(Token.LISTCREATE);
 
                             if (compileMode) {
@@ -1232,17 +1232,13 @@ public class ExpressionParser {
 
                             if (cursor < length && (expr[cursor] == '.')) {
                                 capture = false;
-
                                 fields |= Token.PUSH;
-
                                 stk.push(map);
-
                                 continue;
                             }
 
                             return (createToken(expr, start + 1, cursor - 1, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE))
                                     .setValue(map);
-
                         }
                         else {
                             tk1.setFlag(false, Token.MAPCREATE);
