@@ -6,6 +6,7 @@ import org.mvel.compiled.CompiledAccessor;
 import org.mvel.compiled.Deferral;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isNumber;
 
@@ -206,41 +207,6 @@ public class Token implements Cloneable, Serializable {
         return this.start == this.end;
     }
 
-    public boolean isLiteral() {
-        return (fields & LITERAL) != 0;
-    }
-
-    public void setLiteral(boolean literal) {
-        setFlag(literal, LITERAL);
-    }
-
-    public boolean isDeepProperty() {
-        return (fields & DEEP_PROPERTY) != 0;
-    }
-
-    public void setDeepProperty(boolean deepProperty) {
-        setFlag(deepProperty, DEEP_PROPERTY);
-    }
-
-    public boolean isOperator() {
-        return (fields & OPERATOR) != 0;
-    }
-
-    public Operator getOperator() {
-        return (Operator) value;
-    }
-
-    public void setOperator(boolean operator) {
-        setFlag(operator, OPERATOR);
-    }
-
-    public boolean isNegation() {
-        return getFlag(NEGATION);
-    }
-
-    public void setNegation(boolean negation) {
-        setFlag(negation, NEGATION);
-    }
 
     public char[] createRootElementArray() {
         if ((fields & DEEP_PROPERTY) != 0) {
@@ -322,15 +288,30 @@ public class Token implements Cloneable, Serializable {
     }
 
     public Token getOptimizedValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
+        try {
         if ((fields & NUMERIC) != 0) {
             value = numericValue = convert(compiledAccessor.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
         }
         else
             value = compiledAccessor.getValue(ctx, elCtx, variableFactory);
 
-        if ((fields & NEGATION) != 0) value = !((Boolean)value);
+        if ((fields & NEGATION) != 0) value = !((Boolean) value);
 
         return this;
+        }
+        catch (NullPointerException e) {
+            if (compiledAccessor == null) {
+                if (!optimizeAccessor(ctx, variableFactory))
+                    throw new OptimizationFailure();
+                else {
+                    return getOptimizedValue(ctx, elCtx, variableFactory);
+                }
+            }
+            else {
+                throw e;
+            }
+        }
+
     }
 
 
@@ -340,19 +321,23 @@ public class Token implements Cloneable, Serializable {
     }
 
 
-    public void optimizeAccessor(Object ctx, VariableResolverFactory variableFactory) {
-        compiledAccessor = new CompiledAccessor(name, ctx, variableFactory);
-        setNumeric(false);
+    public boolean optimizeAccessor(Object ctx, VariableResolverFactory variableFactory) {
+        try {
+            compiledAccessor = new CompiledAccessor(name, ctx, variableFactory);
+            setNumeric(false);
+            setNumeric(isNumber(compiledAccessor.compileGetChain()));
+            setFlag(true, Token.OPTIMIZED_REF);
+            return true;
 
-        Object test = compiledAccessor.compileGetChain();
+        }
+        catch (Exception e) {
+            assert ParseTools.debug(e);
+            return false;
+        }
 
-      //  if (test != null) knownType = test.getClass();
-
-        setNumeric(isNumber(test));
-        setFlag(true, Token.OPTIMIZED_REF);
     }
 
-    public void deOptimize()  {
+    public void deOptimize() {
         compiledAccessor = null;
     }
 
@@ -413,46 +398,6 @@ public class Token implements Cloneable, Serializable {
     public Token setFinalValue(Object value) {
         this.value = value;
         return this;
-    }
-
-    public boolean isIdentifier() {
-        return (fields & IDENTIFIER) != 0;
-    }
-
-    public void setIdentifier(boolean identifier) {
-        setFlag(identifier, IDENTIFIER);
-    }
-
-    public boolean isExpand() {
-        return (fields & SUBEVAL) != 0;
-    }
-
-    public void setExpand(boolean unreduced) {
-        setFlag(unreduced, SUBEVAL);
-    }
-
-    public boolean isNumeric() {
-        return (fields & NUMERIC) != 0;
-    }
-
-    public void setNumeric(boolean numeric) {
-        setFlag(numeric, NUMERIC);
-    }
-
-    public boolean isEvalRight() {
-        return (fields & EVAL_RIGHT) != 0;
-    }
-
-    public void setEvalRight(boolean evalRight) {
-        setFlag(evalRight, EVAL_RIGHT);
-    }
-
-    public boolean isInvert() {
-        return (fields & INVERT) != 0;
-    }
-
-    public void setInvert(boolean invert) {
-        setFlag(invert, INVERT);
     }
 
 
@@ -600,4 +545,107 @@ public class Token implements Cloneable, Serializable {
             value = resetValue;
         }
     }
+
+    public boolean isIdentifier() {
+        return (fields & IDENTIFIER) != 0;
+    }
+
+    public void setIdentifier(boolean identifier) {
+        setFlag(identifier, IDENTIFIER);
+    }
+
+    public boolean isSubeval() {
+        return (fields & SUBEVAL) != 0;
+    }
+
+    public void setExpand(boolean unreduced) {
+        setFlag(unreduced, SUBEVAL);
+    }
+
+    public boolean isNumeric() {
+        return (fields & NUMERIC) != 0;
+    }
+
+    public void setNumeric(boolean numeric) {
+        setFlag(numeric, NUMERIC);
+    }
+
+    public boolean isEvalRight() {
+        return (fields & EVAL_RIGHT) != 0;
+    }
+
+    public void setEvalRight(boolean evalRight) {
+        setFlag(evalRight, EVAL_RIGHT);
+    }
+
+    public boolean isInvert() {
+        return (fields & INVERT) != 0;
+    }
+
+    public void setInvert(boolean invert) {
+        setFlag(invert, INVERT);
+    }
+
+    public boolean isNoCompile() {
+        return (fields & NOCOMPILE) != 0;
+    }
+
+    public boolean isThisRef() {
+        return (fields & THISREF) != 0;
+    }
+
+    public boolean isDoNotReduce() {
+        return (fields & DO_NOT_REDUCE) != 0;
+    }
+
+
+    public boolean isLiteral() {
+        return (fields & LITERAL) != 0;
+    }
+
+    public void setLiteral(boolean literal) {
+        setFlag(literal, LITERAL);
+    }
+
+    public boolean isDeepProperty() {
+        return (fields & DEEP_PROPERTY) != 0;
+    }
+
+    public void setDeepProperty(boolean deepProperty) {
+        setFlag(deepProperty, DEEP_PROPERTY);
+    }
+
+    public boolean isOperator() {
+        return (fields & OPERATOR) != 0;
+    }
+
+    public Operator getOperator() {
+        return (Operator) value;
+    }
+
+    public void setOperator(boolean operator) {
+        setFlag(operator, OPERATOR);
+    }
+
+    public boolean isNegation() {
+        return getFlag(NEGATION);
+    }
+
+    public void setNegation(boolean negation) {
+        setFlag(negation, NEGATION);
+    }
+
+    public boolean isCollection() {
+        return (fields & COLLECTION) != 0;
+    }
+
+    public boolean isEndNest() {
+        return (fields & ENDNEST) != 0;
+    }
+
+    public boolean isPush() {
+        return (fields & PUSH) != 0;
+    }
 }
+
+
