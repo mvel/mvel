@@ -646,6 +646,14 @@ public class Token implements Cloneable, Serializable {
     public boolean isPush() {
         return (fields & PUSH) != 0;
     }
+
+    public boolean isCaptureOnly() {
+        return (fields & CAPTURE_ONLY) != 0;
+    }
+
+    public boolean isReducable() {
+        return ((fields & CAPTURE_ONLY) | (fields & LITERAL)) == 0;
+    }
 }
 
 
