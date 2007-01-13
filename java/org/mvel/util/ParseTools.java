@@ -1,11 +1,11 @@
 package org.mvel.util;
 
+import org.mvel.CompileException;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.eval;
-import org.mvel.Token;
-import org.mvel.CompileException;
 import org.mvel.ParseException;
+import org.mvel.Token;
 import org.mvel.integration.VariableResolverFactory;
 
 import static java.lang.Character.isWhitespace;
@@ -382,6 +382,11 @@ public class ParseTools {
 
     public static boolean debug(String str) {
         System.out.println(str);
+        return true;
+    }
+
+    public static boolean debug(Throwable t) {
+        t.printStackTrace();
         return true;
     }
 }

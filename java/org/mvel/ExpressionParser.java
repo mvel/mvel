@@ -33,6 +33,7 @@ public class ExpressionParser {
 
     private boolean compileMode = false;
     private boolean fastExecuteMode = false;
+    private boolean failNext = false;
 
     private int fields;
     private int cursor;
@@ -295,7 +296,7 @@ public class ExpressionParser {
      *
      * @param expression -
      * @param ctx        -
-     * @param factory -
+     * @param factory    -
      * @return -
      */
     public static Boolean evalToBoolean(String expression, Object ctx, VariableResolverFactory factory) {
@@ -306,13 +307,13 @@ public class ExpressionParser {
      * Evaluate an expression in Boolean-only mode.
      *
      * @param expression -
-     * @param factory -
+     * @param factory    -
      * @return -
      */
     public static Boolean evalToBoolean(String expression, VariableResolverFactory factory) {
         return (Boolean) new ExpressionParser(expression, null, factory, true).parse();
     }
-    
+
 
     /**
      * Evaluate an expression in Boolean-only mode.
@@ -863,17 +864,28 @@ public class ExpressionParser {
     }
 
     private Object reduceFast(Token tk) {
-        if ((tk.getFlags() & Token.SUBEVAL) != 0) {
+        if (tk.isSubeval()) {
+            /**
+             * This token represents a subexpression, and we must recurse into that expression.
+             */
+
             setFieldFalse(Token.SUBEVAL);
 
-            if (compileMode) {
-                tk.setCompiledExpression((CompiledExpression) compileExpression(tk.getValueAsString()));
-            }
-            else if (fastExecuteMode) {
+            if (fastExecuteMode) {
+                /**
+                 * We are executing it fast mode, so we simply execute the compiled subexpression.
+                 */
+
                 return tk.setFinalValue(executeExpression(tk.getCompiledExpression(), ctx, variableFactory)).getValue();
             }
+            else if (compileMode) {
+                /**
+                 * If we are compiling, then we compile the subexpression.
+                 */
+                tk.setCompiledExpression((CompiledExpression) compileExpression(tk.getValueAsString()));
+            }
         }
-        else if ((tk.getFlags() & Token.DO_NOT_REDUCE) == 0) {
+        else if (!tk.isDoNotReduce()) {
             return tk.setFinalValue(reduce(reduceToken(tk))).getValue();
         }
         return tk;
@@ -885,10 +897,10 @@ public class ExpressionParser {
 
 
     private Object reduce(Token tok) {
-        if ((tok.getFlags() & Token.NEGATION) != 0) {
+        if (tok.isNegation()) {
             return !((Boolean) reduceParse(tok.getValueAsString(), ctx, variableFactory));
         }
-        else if ((tok.getFlags() & Token.INVERT) != 0) {
+        else if (tok.isInvert()) {
             Object o = reduceParse(tok.getValueAsString(), ctx, variableFactory);
 
             if (o instanceof Integer)
@@ -896,7 +908,8 @@ public class ExpressionParser {
             else
                 return ~((BigDecimal) o).intValue();
         }
-        else if (!compileMode && ((tok.getFlags() | fields) & Token.SUBEVAL) != 0) {
+
+        else if (!compileMode && tok.isSubeval()) {
             setFieldFalse(Token.SUBEVAL);
             return reduceParse(tok.getValueAsString(), ctx, variableFactory);
         }
@@ -1359,67 +1372,91 @@ public class ExpressionParser {
         Token tk = new Token(expr, start, end, fields);
 
         if (compileMode) {
-            if ((tk.getFlags() & Token.NOCOMPILE) == 0) {
+            if (!tk.isNoCompile()) {
                 ((TokenMap) tokenMap).addTokenNode(tk);
 
-                if ((tk.getFlags() & Token.SUBEVAL) != 0) reduceFast(tk);
+                if (tk.isSubeval()) reduceFast(tk);
             }
             setFieldFalse(Token.NOCOMPILE);
         }
-        else if ((tk.getFlags() & Token.IDENTIFIER) != 0 && (fields & Token.DO_NOT_REDUCE) == 0) {
+        else if (tk.isIdentifier() && (fields & Token.DO_NOT_REDUCE) == 0) {
             return reduceToken(tk);
         }
 
-        if ((tk.getFlags() & Token.THISREF) != 0) tk.setFinalValue(ctx);
+        if (tk.isThisRef()) tk.setFinalValue(ctx);
 
         return tk;
     }
 
+    /**
+     * Reduce a token.  When a token is reduced, it's targets are evaluated it's value is populated.
+     *
+     * NOTE: It's currently an architectural must that both interpreted and compiled mode share this method, unlike
+     * some of the other seperate methods due to the way things work.   So don't try and create a "reduceTokenFast"
+     * method at this point, as you'll experience unexpected results.
+     *
+     * @param token
+     * @return
+     */
     private Token reduceToken(Token token) {
         String s;
 
-        int tkflags = token.getFlags();
-
-        if (((fields & Token.CAPTURE_ONLY) | (tkflags & Token.LITERAL)) != 0) {
+        if (((fields & Token.CAPTURE_ONLY) != 0 || token.isLiteral())) {
             return token;
         }
-
-        if (fastExecuteMode) {
+        else if (fastExecuteMode) {
             try {
-                if (token.isOptimized()) {
-                    return token.getOptimizedValue((((tkflags | fields) & Token.PUSH) != 0) ? valueOnly(stk.pop()) : ctx, ctx, variableFactory);
+                return token.getOptimizedValue(token.isPush() ? valueOnly(stk.pop()) : ctx, ctx, variableFactory);
+            }
+            catch (OptimizationFailure e) {
+                /**
+                 * If the token failed to optimize, we perform a lookahead to see if this is forgivable.
+                 */
+                if (lookAhead()) {
+                    /**
+                     * The token failed to reduce for forgivable reasons (ie. an assignment) so we record this
+                     * as a deferral, so we don't try to reduce this anymore at runtime.
+                     */
+                    token.createDeferralOptimization();
+                    return token;
                 }
                 else {
-                    try {
-                        Object cCtx;
-                        token.optimizeAccessor(cCtx = (((tkflags | fields) & Token.PUSH) != 0) ? valueOnly(stk.pop()) : ctx, variableFactory);
-                        return token.getOptimizedValue(cCtx, ctx, variableFactory);
-                    }
-                    catch (Exception e) {
-                        if (!lookAhead()) throw e;
-                        else {
-                            token.createDeferralOptimization();
-                            return token;
-                        }
-                    }
+                    /**
+                     * This is a genuine error.  We bail.
+                     */
+                    throw e;
                 }
-
             }
             catch (PropertyAccessException e) {
                 throw e;
             }
             catch (Exception e) {
+                /**
+                 * For the purpose of dynamic re-optimization we allow a "retry" of the reduction after we have
+                 * cleared the old optimized tree.  However, if the failNext bit remains high, we bail as we
+                 * clearly can't re-optimize.
+                 */
+                if (failNext) {
+                    throw new CompileException("optimization failure for: " + token, e);
+                }
+                else {
+                    failNext = false;
+                }
+
                 try {
                     synchronized (token) {
                         token.deOptimize();
+                        failNext = true;
                         return reduceToken(token);
                     }
                 }
                 catch (Exception e2) {
-                    throw new CompileException("optimization failure for: " + new String(expr), e);
+                    throw new CompileException("optimization failure for: " + token, e);
                 }
             }
         }
+
+        int tkflags = token.getFlags();
 
 
         if (propertyAccessor == null) propertyAccessor = new PropertyAccessor(variableFactory, ctx);
@@ -1465,7 +1502,7 @@ public class ExpressionParser {
                 return token.setValue(Token.LITERALS.get(s));
             }
             else if (variableFactory != null && variableFactory.isResolveable(s)) {
-                if ((token.getFlags() & Token.COLLECTION) != 0) {
+                if (token.isCollection()) {
                     return token.setValue(propertyAccessor.setParameters(expr, token.getStart()
                             + token.getEndOfName(), token.getEnd(), variableFactory.getVariableResolver(s).getValue(), ctx).get());
                 }
@@ -1568,7 +1605,7 @@ public class ExpressionParser {
         Token tk;
         fields |= Token.CAPTURE_ONLY;
         while ((tk = nextToken()) != null && !(tk.isOperator() && tk.getOperator() == Operator.END_OF_STMT)) {
-           //nothing
+            //nothing
         }
         setFieldFalse(Token.CAPTURE_ONLY);
         return tk == null;
@@ -1695,7 +1732,7 @@ public class ExpressionParser {
                         newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
 
                         while (tokenMap.hasMoreTokens() &&
-                                (tokenMap.peekToken().getFlags() & Token.ENDNEST) == 0) {
+                                (!tokenMap.peekToken().isEndNest())) {
 
                             newList.add(handleSubNesting(tokenMap.nextToken()));
                         }
@@ -1713,7 +1750,7 @@ public class ExpressionParser {
 
                         newMap.put(handleSubNesting(tk), handleSubNesting(tokenMap.nextToken()));
 
-                        while (tokenMap.hasMoreTokens() && (tokenMap.peekToken().getFlags() & Token.ENDNEST) == 0) {
+                        while (tokenMap.hasMoreTokens() && !tokenMap.peekToken().isEndNest()) {
                             newMap.put(handleSubNesting(tokenMap.nextToken()), handleSubNesting(tokenMap.nextToken()));
                         }
 
@@ -1730,7 +1767,7 @@ public class ExpressionParser {
                         newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
 
                         while (tokenMap.hasMoreTokens() &&
-                                (tokenMap.peekToken().getFlags() & Token.ENDNEST) == 0) {
+                                !tokenMap.peekToken().isEndNest()) {
                             newList.add(handleSubNesting(tokenMap.nextToken()));
                         }
 
@@ -1741,21 +1778,21 @@ public class ExpressionParser {
                     }
                 }
 
-                if (tokenMap.hasMoreTokens() && (tokenMap.peekToken().getFlags() & Token.PUSH) != 0) {
+                if (tokenMap.hasMoreTokens() && tokenMap.peekToken().isPush()) {
                     stk.push(tk.getValue());
                     return (tk = tokenMap.nextToken()).setFinalValue(PropertyAccessor.get(tk.getName(), stk.pop()));
                 }
             }
-            else if ((tk.getFlags() & Token.IDENTIFIER) != 0) {
+            else if (tk.isIdentifier()) {
                 reduceToken(tk);
             }
-            else if ((tk.getFlags() & Token.THISREF) != 0) {
+            else if (tk.isThisRef()) {
                 tk.setFinalValue(ctx);
             }
 
             fields |= (tk.getFlags() & Token.SUBEVAL);
 
-            if ((tk.getFlags() & Token.PUSH) != 0) {
+            if (tk.isPush()) {
                 stk.push(tk.getValue());
             }
         }
@@ -1764,7 +1801,7 @@ public class ExpressionParser {
     }
 
     private Object handleSubNesting(Token token) {
-        if ((token.getFlags() & Token.NEST) != 0) {
+        if (token.isNestBegin()) {
             return nextCompiledToken().getValue();
         }
         else {
