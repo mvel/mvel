@@ -413,7 +413,7 @@ public class ExpressionParser {
                     fields |= Token.CAPTURE_ONLY;
                     stk.clear();
 
-                    while ((tk = nextToken()) != null && !(tk.isOperator() && tk.getOperator() == Operator.TERNARY_ELSE)) {
+                    while ((tk = nextToken()) != null && !tk.isOperator(Operator.TERNARY_ELSE)) {
                         //nothing
                     }
 
@@ -936,9 +936,6 @@ public class ExpressionParser {
          * certain field states.  We do not reset for assignments, boolean mode, list creation or
          * a capture only mode.
          */
-//        fields = ((fields & Token.ASSIGN) | (fields & Token.BOOLEAN_MODE) | (fields & Token.LISTCREATE)
-//                | (fields & Token.CAPTURE_ONLY) | (fields & Token.NOCOMPILE) | (fields & Token.MAPCREATE)
-//                | (fields & Token.ARRAYCREATE) | (fields & Token.PUSH) | (fields & Token.NEST) | (fields & Token.ENDNEST));
 
         fields = fields & (Token.ASSIGN | Token.BOOLEAN_MODE | Token.LISTCREATE | Token.CAPTURE_ONLY | Token.NOCOMPILE
                 | Token.MAPCREATE | Token.ARRAYCREATE | Token.PUSH | Token.NEST | Token.ENDNEST);
@@ -1217,8 +1214,7 @@ public class ExpressionParser {
                                     tk1 = nextToken();
                                     fields |= Token.NOCOMPILE;
 
-                                    if ((tk2 = nextToken()) == null
-                                            || (!tk2.isOperator() || (tk2.getOperator() != Operator.TERNARY_ELSE)))
+                                    if ((tk2 = nextToken()) == null || !tk2.isOperator(Operator.TERNARY_ELSE))
                                         throw new CompileException("unexpected token or end of expression, in map creation construct: " + tk2.getName());
 
                                     map.put(reduce(tk1), reduce(nextToken()));
@@ -1329,7 +1325,8 @@ public class ExpressionParser {
                     case']':
                     case'}':
                     case',':
-                        if (((fields & Token.LISTCREATE | fields & Token.ARRAYCREATE | fields & Token.MAPCREATE)) != 0) {
+                        if ((fields & (Token.LISTCREATE | Token.ARRAYCREATE | Token.MAPCREATE)) != 0) {
+     //                   if (((fields & Token.LISTCREATE | fields & Token.ARRAYCREATE | fields & Token.MAPCREATE)) != 0) {
                             return createToken(expr, start, cursor, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE);
                         }
                         else if (!capture) {
@@ -1599,7 +1596,7 @@ public class ExpressionParser {
     private boolean unwindStatement() {
         Token tk;
         fields |= Token.CAPTURE_ONLY;
-        while ((tk = nextToken()) != null && !(tk.isOperator() && tk.getOperator() == Operator.END_OF_STMT)) {
+        while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT)) {
             //nothing
         }
         setFieldFalse(Token.CAPTURE_ONLY);
@@ -1712,7 +1709,7 @@ public class ExpressionParser {
          */
 
         if ((tk = tokenMap.nextToken()) != null) {
-            if (tk.isOperator() && tk.getOperator() == Operator.ASSIGN) {
+            if (tk.isOperator(Operator.ASSIGN)) {
                 return tk;
             }
             else if (tk.isCollectionCreation()) {
