@@ -619,6 +619,10 @@ public class Token implements Cloneable, Serializable {
         return (fields & OPERATOR) != 0;
     }
 
+    public boolean isOperator(Operator operator) {
+        return (fields & OPERATOR) != 0 && value == operator;
+    }
+
     public Operator getOperator() {
         return (Operator) value;
     }
