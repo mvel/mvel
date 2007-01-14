@@ -218,7 +218,7 @@ public class Token implements Cloneable, Serializable {
     }
 
     public String getAbsoluteRootElement() {
-        if ((fields & DEEP_PROPERTY) != 0 || (fields & COLLECTION) != 0) {
+        if ((fields & (DEEP_PROPERTY | COLLECTION)) != 0) {
             return new String(name, 0, getAbsoluteFirstPart());
         }
         return null;
@@ -365,7 +365,7 @@ public class Token implements Cloneable, Serializable {
     public Token setValue(Object value) {
         //String s;
         try {
-            if ((fields & NEGATION) != 0 && (fields & BOOLEAN_MODE) != 0) {
+            if ((fields & (NEGATION | BOOLEAN_MODE)) == (NEGATION | BOOLEAN_MODE)) {
                 this.value = BlankLiteral.INSTANCE.equals(value);
             }
             else if ((fields & NEGATION) != 0) {
@@ -514,17 +514,16 @@ public class Token implements Cloneable, Serializable {
     }
 
     public boolean isCollectionCreation() {
-        return ((fields & MAPCREATE) | (fields & ARRAYCREATE) | (fields & LISTCREATE)) != 0;
+        return (fields & (MAPCREATE | ARRAYCREATE | LISTCREATE)) != 0;
     }
 
     public int getCollectionCreationType() {
-        return ((fields & MAPCREATE) | (fields & ARRAYCREATE) | (fields & LISTCREATE));
+        return fields & (MAPCREATE | ARRAYCREATE | LISTCREATE);
     }
 
     public boolean isNestBegin() {
         return (fields & Token.NEST) != 0;
     }
-
 
     public Token clone() throws CloneNotSupportedException {
         try {

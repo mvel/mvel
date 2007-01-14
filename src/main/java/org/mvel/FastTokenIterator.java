@@ -31,6 +31,11 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
             return null;
     }
 
+
+    public void skipToken() {
+        cursor++;
+    }
+
     public Token peekToken() {
         if (cursor < length)
             return token[cursor];
