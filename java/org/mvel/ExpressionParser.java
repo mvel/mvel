@@ -876,7 +876,6 @@ public class ExpressionParser {
         else if (!tk.isDoNotReduce()) {
              tk.setFinalValue(reduce(reduceToken(tk))).getValue();
         }
-      //  return tk;
     }
 
     private static Object reduceParse(String ex, Object ctx, VariableResolverFactory variableFactory) {
@@ -1363,7 +1362,6 @@ public class ExpressionParser {
      */
     private Token createToken(char[] expr, int start, int end, int fields) {
         Token tk = new Token(expr, start, end, fields);
-
         if (compileMode) {
             if (!tk.isNoCompile()) {
                 ((TokenMap) tokenMap).addTokenNode(tk);
