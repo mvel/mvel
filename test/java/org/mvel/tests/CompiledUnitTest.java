@@ -2,7 +2,7 @@ package org.mvel.tests;
 
 import junit.framework.TestCase;
 import org.mvel.ExpressionParser;
-import static org.mvel.ExpressionParser.evalToBoolean;
+import static org.mvel.ExpressionParser.*;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.res.Bar;
 import org.mvel.tests.res.Base;
@@ -445,8 +445,8 @@ public class CompiledUnitTest extends TestCase {
     //    }
 
     public void testCompiledMapStructures() {
-        Serializable compiled = ExpressionParser.compileExpression("['foo':'bar'] contains 'foo'");
-        ExpressionParser.executeExpression(compiled, null, null, Boolean.class);
+        Serializable compiled = compileExpression("['foo':'bar'] contains 'foo'");
+        executeExpression(compiled, null, null, Boolean.class);
     }
 
     public void testSubListInMap() {
@@ -454,8 +454,8 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testCompiledMethodCall() {
-        Serializable compiled = ExpressionParser.compileExpression("c.getClass()");
-        assertEquals(String.class, ExpressionParser.executeExpression(compiled, base, map));
+        Serializable compiled = compileExpression("c.getClass()");
+        assertEquals(String.class, executeExpression(compiled, base, map));
     }
 
     public void testStaticNamespaceCall() {
@@ -476,9 +476,9 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public Object compiledExecute(String ex) {
-        Serializable compiled = ExpressionParser.compileExpression(ex);
-        Object first = ExpressionParser.executeExpression(compiled, base, map);
-        Object second = ExpressionParser.executeExpression(compiled, base, map);
+        Serializable compiled = compileExpression(ex);
+        Object first = executeExpression(compiled, base, map);
+        Object second = executeExpression(compiled, base, map);
         assertEquals(first, second);
         return second;
     }
@@ -486,24 +486,24 @@ public class CompiledUnitTest extends TestCase {
 
     public void testSimplePropertyAccess() {
         final String expr = "c";
-        Serializable compiled = ExpressionParser.compileExpression(expr);
+        Serializable compiled = compileExpression(expr);
 
         for (int i = 0; i < 100000; i++) {
-            ExpressionParser.executeExpression(compiled, map);
+            executeExpression(compiled, map);
         }
     }
 
     public void testMathPerformance() {
         final String expr = "10 + 1 + 3";
-        Serializable compiled = ExpressionParser.compileExpression(expr);
+        Serializable compiled = compileExpression(expr);
 
         for (int i = 0; i < 10000; i++) {
-            ExpressionParser.executeExpression(compiled, map);
+            executeExpression(compiled, map);
         }
     }
 
     public void testDifferentImplSameCompile() {
-        Serializable compiled = ExpressionParser.compileExpression("a.funMap.hello");
+        Serializable compiled = compileExpression("a.funMap.hello");
 
         Map testMap = new HashMap();
 
@@ -513,25 +513,28 @@ public class CompiledUnitTest extends TestCase {
             testMap.put("a", b);
 
 
-            assertEquals("dog", ExpressionParser.executeExpression(compiled, testMap));
+            assertEquals("dog", executeExpression(compiled, testMap));
 
             b = new Base();
             b.funMap.put("hello", "cat");
             testMap.put("a", b);
 
-            assertEquals("cat", ExpressionParser.executeExpression(compiled, testMap));
+            assertEquals("cat", executeExpression(compiled, testMap));
         }
     }
 
     public void testToListBenchmark() {
         String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
-        Serializable compiled = ExpressionParser.compileExpression(text);
 
         MapVariableResolverFactory variableTable = new MapVariableResolverFactory(map);
         variableTable.pack();
 
+        ExpressionParser ep = new ExpressionParser();
+        ep.setCompiledStatement(compileExpression(text));
+        ep.setVariableResolverFactory(variableTable);
+
         for (int i = 0; i < 100000; i++) {
-            ExpressionParser.executeExpression(compiled, variableTable);
+            ep.executeFast();
         }
     }
 

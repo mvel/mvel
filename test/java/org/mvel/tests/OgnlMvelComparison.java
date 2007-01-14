@@ -20,7 +20,12 @@ public class OgnlMvelComparison {
     }
 
     public static void main(String[] args) throws Exception {
-        new OgnlMvelComparison().runTests();
+        OgnlMvelComparison omc = new OgnlMvelComparison();
+        if (args.length > 0 && args[0].equals("-continuous")) {
+            while (true) omc.runTests();
+        }
+
+        omc.runTests();
     }
 
     public void runTests() throws Exception {

@@ -1894,7 +1894,7 @@ public class ExpressionParser {
     /**
      * Lots of messy constructors beyond here.  Most exist for performance considerations (code inlinability, etc.)
      */
-    ExpressionParser() {
+    public ExpressionParser() {
     }
 
     ExpressionParser(Object precompiedExpr) {
@@ -1983,6 +1983,20 @@ public class ExpressionParser {
     ExpressionParser(String expression, Object ctx) {
         setExpression(expression);
         this.ctx = ctx;
+    }
+
+    public void setCompiledStatement(Serializable compiled) {
+        fastExecuteMode = true;
+        (this.tokenMap = (this.compiledExpression = (CompiledExpression) compiled).getTokenMap()).reset();
+    }
+
+    public void setVariableResolverFactory(VariableResolverFactory factory) {
+        this.variableFactory = factory;
+    }
+
+    public Object executeFast() {
+        tokenMap.reset();
+        return parse();
     }
 }
 
