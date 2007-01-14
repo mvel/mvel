@@ -1361,11 +1361,11 @@ public class ExpressionParser {
 
     /**
      * Most of this method should be self-explanatory.
-     * @param expr
-     * @param start
-     * @param end
-     * @param fields
-     * @return
+     * @param expr -
+     * @param start -
+     * @param end -
+     * @param fields -
+     * @return -
      */
     private Token createToken(char[] expr, int start, int end, int fields) {
         Token tk = new Token(expr, start, end, fields);
@@ -1607,7 +1607,7 @@ public class ExpressionParser {
      * under non-fatal circumstances: ASSIGNMENT or PROJECTION.  If one of these situations is indeed the case,
      * the execution continues after a quick adjustment to allow the parser to continue as if we're just at a
      * junction.  Otherwise we explode.
-     * @return
+     * @return -
      */
     private boolean lookAhead() {
         Token tk;
@@ -1642,7 +1642,7 @@ public class ExpressionParser {
 
     /**
      * This method is called to unwind the current statement without any reduction or further parsing.
-     * @return
+     * @return -
      */
     private boolean unwindStatement() {
         Token tk;
@@ -1671,7 +1671,6 @@ public class ExpressionParser {
                 length = (expr = EX_PRECACHE.get(expression)).length;
             }
         }
-       // return this;
     }
 
 
@@ -1888,6 +1887,9 @@ public class ExpressionParser {
     }
 
 
+    /**
+     * Lots of messy constructors beyond here.  Most exist for performance considerations (code inlinability, etc.) 
+     */
     ExpressionParser() {
     }
 
