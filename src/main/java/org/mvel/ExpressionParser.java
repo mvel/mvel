@@ -1,7 +1,9 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
+import static org.mvel.DataConversion.convert;
 import static org.mvel.Operator.*;
+import static org.mvel.PropertyAccessor.get;
 import org.mvel.compiled.GetterAccessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
@@ -193,7 +195,7 @@ public class ExpressionParser {
      */
     @SuppressWarnings({"unchecked"})
     public static <T> T executeExpression(final Object compiledExpression, final Object ctx, final Map vars, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(compiledExpression, ctx, vars).parse(), toType);
+        return convert(new ExpressionParser(compiledExpression, ctx, vars).parse(), toType);
     }
 
     /**
@@ -206,7 +208,7 @@ public class ExpressionParser {
      */
     @SuppressWarnings({"unchecked"})
     public static <T> T executeExpression(final Object compiledExpression, Map vars, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(compiledExpression, null, vars).parse(), toType);
+        return convert(new ExpressionParser(compiledExpression, null, vars).parse(), toType);
     }
 
 
@@ -219,7 +221,7 @@ public class ExpressionParser {
      * @return -
      */
     public static <T> T executeExpression(final Object compiledExpression, final Object ctx, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(compiledExpression, ctx).parse(), toType);
+        return convert(new ExpressionParser(compiledExpression, ctx).parse(), toType);
     }
 
 
@@ -235,16 +237,16 @@ public class ExpressionParser {
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, Map vars, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
     }
 
     public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, ctx).parse(), toType);
+        return convert(new ExpressionParser(expression, ctx).parse(), toType);
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Map vars, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, null, vars).parse(), toType);
+        return convert(new ExpressionParser(expression, null, vars).parse(), toType);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -480,7 +482,7 @@ public class ExpressionParser {
                     setFieldFalse(Token.CAPTURE_ONLY);
 
                     if (name.length == 2) {
-                        stk.push(PropertyAccessor.get(name[1], stk.pop()));
+                        stk.push(get(name[1], stk.pop()));
                     }
                 }
                 catch (InstantiationException e) {
@@ -684,7 +686,7 @@ public class ExpressionParser {
                         try {
                             List<Object> list = new ArrayList<Object>(((Collection) v1).size());
                             for (Object o : (Collection) v1) {
-                                list.add(PropertyAccessor.get(valueOf(v2), o));
+                                list.add(get(valueOf(v2), o));
                             }
                             stk.push(list);
                         }
@@ -1346,7 +1348,7 @@ public class ExpressionParser {
                             setFieldFalse(Token.PUSH);
 
                             if (!compileMode)
-                                return tk.setValue(PropertyAccessor.get((tk).getName(), stk.pop()));
+                                return tk.setValue(get((tk).getName(), stk.pop()));
                             else
                                 return tk;
                         }
@@ -1824,7 +1826,7 @@ public class ExpressionParser {
 
                 if (tokenMap.hasMoreTokens() && tokenMap.peekToken().isPush()) {
                     stk.push(tk.getValue());
-                    return (tk = tokenMap.nextToken()).setFinalValue(PropertyAccessor.get(tk.getName(), stk.pop()));
+                    return (tk = tokenMap.nextToken()).setFinalValue(get(tk.getName(), stk.pop()));
                 }
             }
             else if (tk.isIdentifier()) {
