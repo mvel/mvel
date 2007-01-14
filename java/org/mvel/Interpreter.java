@@ -4,6 +4,7 @@ import static org.mvel.ExpressionParser.compileExpression;
 import static org.mvel.ExpressionParser.executeExpression;
 import static org.mvel.NodeType.*;
 import org.mvel.util.ExecutionStack;
+import org.mvel.util.StringAppender;
 
 import java.io.*;
 import static java.lang.String.valueOf;
@@ -244,7 +245,7 @@ public class Interpreter {
             fc = inStream.getChannel();
             ByteBuffer buf = allocateDirect(10);
 
-            StringBuilder sb = new StringBuilder((int) file.length());
+            StringAppender sb = new StringAppender((int) file.length());
 
             int read = 0;
             while (read >= 0) {
@@ -319,7 +320,7 @@ public class Interpreter {
 
         Object register = null;
 
-        StringBuilder sbuf = new StringBuilder(10);
+        StringAppender sbuf = new StringAppender(10);
         Node currNode = null;
 
         try {

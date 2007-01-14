@@ -6,10 +6,8 @@ import org.mvel.compiled.GetterAccessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.util.ExecutionStack;
-import org.mvel.util.ParseTools;
+import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
-import org.mvel.util.PropertyTools;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 
@@ -678,7 +676,7 @@ public class ExpressionParser {
                         break;
 
                     case STR_APPEND:
-                        stk.push(new StringBuilder(valueOf(v2)).append(valueOf(v1)).toString());
+                        stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
                         break;
 
                     case PROJECTION:
