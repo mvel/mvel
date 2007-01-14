@@ -3,6 +3,7 @@ package org.mvel;
 public interface TokenIterator extends Cloneable {
     public void reset();
     public Token nextToken();
+    public void skipToken();
     public Token peekToken();
     public Token peekLast();
     public void back();
