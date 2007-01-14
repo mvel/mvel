@@ -9,6 +9,7 @@ import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.util.PropertyTools;
 
 import java.io.Serializable;
+import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.Field;
@@ -220,7 +221,7 @@ public class CompiledAccessor {
     private void whiteSpaceSkip() {
         if (cursor < length)
             //noinspection StatementWithEmptyBody
-            while (Character.isWhitespace(property[cursor]) && ++cursor < length) ;
+            while (isWhitespace(property[cursor]) && ++cursor < length) ;
     }
 
     private boolean scanTo(char c) {
@@ -236,7 +237,7 @@ public class CompiledAccessor {
         int pos = cursor;
         for (pos--; pos > 0; pos--) {
             if (property[pos] == '\'' || property[pos] == '"') return pos;
-            else if (!Character.isWhitespace(property[pos])) return pos;
+            else if (!isWhitespace(property[pos])) return pos;
         }
         return -1;
     }
@@ -375,19 +376,15 @@ public class CompiledAccessor {
                 for (int i = 0; i < es.length; i++) {
                     args[i] = executeExpression(es[i], this.ctx, variableFactory);
                 }
-
             }
             else {
                 String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
-
                 es = new Serializable[subtokens.length];
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
-                    es[i] = compileExpression(subtokens[i]);
-                    args[i] = executeExpression(es[i], this.ctx, variableFactory);
+                    args[i] = executeExpression((es[i] = compileExpression(subtokens[i])), this.ctx, variableFactory);
                     ((CompiledExpression) es[i]).setKnownEgressType(args[i] != null ? args[i].getClass() : null);
                 }
-
                 SUBEXPRESSION_CACHE.put(tk, es);
             }
 
