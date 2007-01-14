@@ -64,21 +64,21 @@ public class ParseTools {
                     continue;
 
                 case'\'':
-                    while (++i < length && parm[i] != '\'') {
+                    while (++i < end && parm[i] != '\'') {
                         if (parm[i] == '\\') handleEscapeSequence(parm[++i]);
                     }
 
-                    if (i == length || parm[i] != '\'') {
+                    if (i == end || parm[i] != '\'') {
                         throw new CompileException("unterminated literal: " + new String(parm));
                     }
                     continue;
 
                 case'"':
-                    while (++i < length && parm[i] != '"') {
+                    while (++i < end && parm[i] != '"') {
                         if (parm[i] == '\\') handleEscapeSequence(parm[++i]);
                     }
 
-                    if (i == length || parm[i] != '\'') {
+                    if (i == end || parm[i] != '\'') {
                         throw new CompileException("unterminated literal: " + new String(parm));
                     }
                     continue;
