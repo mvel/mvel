@@ -119,8 +119,8 @@ public class Token implements Cloneable, Serializable {
         LITERALS.put("Array", java.lang.reflect.Array.class);
     }
 
-    private static final Map<String, Operator> OPERATORS =
-            new HashMap<String, Operator>(25 * 2, 0.6f);
+    private static final Map<String, Integer> OPERATORS =
+            new HashMap<String, Integer>(25 * 2, 0.6f);
 
     static {
         OPERATORS.put("+", ADD);
@@ -619,12 +619,12 @@ public class Token implements Cloneable, Serializable {
         return (fields & OPERATOR) != 0;
     }
 
-    public boolean isOperator(Operator operator) {
+    public boolean isOperator(Integer operator) {
         return (fields & OPERATOR) != 0 && value == operator;
     }
 
-    public Operator getOperator() {
-        return (Operator) value;
+    public Integer getOperator() {
+        return (Integer) value;
     }
 
     public void setOperator(boolean operator) {
