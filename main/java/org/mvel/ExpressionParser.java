@@ -1623,6 +1623,10 @@ public class ExpressionParser {
         while (isWhitespace(expr[cursor])) cursor++;
     }
 
+    /**
+     * This method is called to unwind the current statement without any reduction or further parsing.
+     * @return
+     */
     private boolean unwindStatement() {
         Token tk;
         fields |= Token.CAPTURE_ONLY;
