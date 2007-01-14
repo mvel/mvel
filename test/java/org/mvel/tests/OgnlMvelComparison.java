@@ -17,9 +17,6 @@ public class OgnlMvelComparison {
 
 
     public OgnlMvelComparison() {
-//        vars.put("data", "Hello");
-//        vars.put("foo", new Foo());
-//        vars.put("funMap", baseClass.funMap);
     }
 
     public static void main(String[] args) throws Exception {
