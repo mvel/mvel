@@ -289,21 +289,22 @@ public class Token implements Cloneable, Serializable {
 
     public Token getOptimizedValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
         try {
-        if ((fields & NUMERIC) != 0) {
-            value = numericValue = convert(compiledAccessor.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
-        }
-        else
-            value = compiledAccessor.getValue(ctx, elCtx, variableFactory);
+            if ((fields & NUMERIC) != 0) {
+                value = numericValue = convert(compiledAccessor.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
+            }
+            else
+                value = compiledAccessor.getValue(ctx, elCtx, variableFactory);
 
-        if ((fields & NEGATION) != 0) value = !((Boolean) value);
+            if ((fields & NEGATION) != 0) value = !((Boolean) value);
 
-        return this;
+            return this;
         }
         catch (NullPointerException e) {
             if (compiledAccessor == null) {
                 if (!optimizeAccessor(ctx, variableFactory))
-                    throw new OptimizationFailure();
+                    throw new OptimizationFailure("token: " + new String(name), e);
                 else {
+                    assert ParseTools.debug(e);
                     return getOptimizedValue(ctx, elCtx, variableFactory);
                 }
             }

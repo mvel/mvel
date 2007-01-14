@@ -367,7 +367,9 @@ public class CompiledUnitTest extends TestCase {
                 "label = new javax.swing.JLabel; " +
                 "title = title + 1;" +
                 "frame.setTitle(title);" +
-                "label.setText('this is a test of mvel');" +
+                "label.setText('MVEL UNIT TEST PACKAGE -- IF YOU SEE THIS, THAT IS GOOD');" +
+                "frame.getContentPane().add(label);" +
+                "frame.pack();" +
                 "frame.setVisible(true);");
     }
 
