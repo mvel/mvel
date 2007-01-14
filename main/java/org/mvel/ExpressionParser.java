@@ -875,7 +875,7 @@ public class ExpressionParser {
             }
         }
         else if (!tk.isDoNotReduce()) {
-             tk.setFinalValue(reduce(reduceToken(tk))).getValue();
+            tk.setFinalValue(reduce(reduceToken(tk))).getValue();
         }
     }
 
@@ -995,7 +995,7 @@ public class ExpressionParser {
                 if (cursor < length) {
                     switch (expr[cursor]) {
                         case']':
-                            if (((fields & Token.LISTCREATE) | (fields & Token.MAPCREATE)) != 0) break;
+                            if ((fields & (Token.LISTCREATE | Token.MAPCREATE)) != 0) break;
                         case'[':
                         case'\'':
                         case'"':
@@ -1361,9 +1361,10 @@ public class ExpressionParser {
 
     /**
      * Most of this method should be self-explanatory.
-     * @param expr -
-     * @param start -
-     * @param end -
+     *
+     * @param expr   -
+     * @param start  -
+     * @param end    -
      * @param fields -
      * @return -
      */
@@ -1607,6 +1608,7 @@ public class ExpressionParser {
      * under non-fatal circumstances: ASSIGNMENT or PROJECTION.  If one of these situations is indeed the case,
      * the execution continues after a quick adjustment to allow the parser to continue as if we're just at a
      * junction.  Otherwise we explode.
+     *
      * @return -
      */
     private boolean lookAhead() {
@@ -1642,6 +1644,7 @@ public class ExpressionParser {
 
     /**
      * This method is called to unwind the current statement without any reduction or further parsing.
+     *
      * @return -
      */
     private boolean unwindStatement() {
@@ -1770,7 +1773,6 @@ public class ExpressionParser {
                 switch (tk.getCollectionCreationType()) {
                     case Token.LISTCREATE: {
                         List<Object> newList = new ArrayList<Object>();
-
                         newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
 
                         while (tokenMap.hasMoreTokens() &&
@@ -1779,7 +1781,7 @@ public class ExpressionParser {
                             newList.add(handleSubNesting(tokenMap.nextToken()));
                         }
 
-                        tokenMap.nextToken();
+                        tokenMap.skipToken();
 
                         tk.setFlag(true, Token.DO_NOT_REDUCE);
                         return tk.setFinalValue(newList);
@@ -1796,7 +1798,7 @@ public class ExpressionParser {
                             newMap.put(handleSubNesting(tokenMap.nextToken()), handleSubNesting(tokenMap.nextToken()));
                         }
 
-                        tokenMap.nextToken();
+                        tokenMap.skipToken();
 
                         tk.setFlag(true, Token.DO_NOT_REDUCE);
                         tk.setFinalValue(newMap);
@@ -1813,7 +1815,7 @@ public class ExpressionParser {
                             newList.add(handleSubNesting(tokenMap.nextToken()));
                         }
 
-                        tokenMap.nextToken();
+                        tokenMap.skipToken();
 
                         tk.setFlag(true, Token.DO_NOT_REDUCE);
                         return tk.setFinalValue(newList.toArray());
@@ -1888,7 +1890,7 @@ public class ExpressionParser {
 
 
     /**
-     * Lots of messy constructors beyond here.  Most exist for performance considerations (code inlinability, etc.) 
+     * Lots of messy constructors beyond here.  Most exist for performance considerations (code inlinability, etc.)
      */
     ExpressionParser() {
     }
