@@ -1438,33 +1438,55 @@ public class ExpressionParser {
 
         int tkflags = token.getFlags();
 
-
-        if (propertyAccessor == null) propertyAccessor = new PropertyAccessor(variableFactory, ctx);
+        /**
+         * To save the GC a little bit of work, we don't initialize a property accessor unless we need it, and we
+         * reuse the same instance if we need it more than once.
+         */
+        if (propertyAccessor == null)
+            propertyAccessor = new PropertyAccessor(variableFactory, ctx);
 
         if (((tkflags | fields) & Token.PUSH) != 0) {
+            /**
+             * This token is attached to a stack value, and we use the top stack value as the context for the
+             * property accessor.
+             */
             return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), valueOnly(stk.pop()), ctx).get());
         }
         else if ((tkflags & Token.DEEP_PROPERTY) != 0) {
+            /**
+             * The token is a DEEP PROPERTY (meaning it contains unions) in which case we need to traverse an object
+             * graph.
+             */
             if (Token.LITERALS.containsKey(s = token.getAbsoluteRootElement())) {
+                /**
+                 * The root of the DEEP PROPERTY is a literal.
+                 */
                 Object literal = Token.LITERALS.get(s);
                 if (literal == ThisLiteral.class) literal = ctx;
 
                 return token.setValue(propertyAccessor.setParameters(expr, token.getStart() + token.getFirstUnion(), token.getEnd(), literal, ctx).get());
             }
             else if (variableFactory != null && variableFactory.isResolveable(s)) {
+                /**
+                 * The root of the DEEP PROPERTY is a local or global var.
+                 */
                 return token.setValue(propertyAccessor.setParameters(expr, token.getStart() +
                         token.getAbsoluteFirstPart(),
                         token.getEnd(), variableFactory.getVariableResolver(s).getValue(), ctx).get());
 
             }
             else if (ctx != null) {
+                /**
+                 * We didn't resolve the root, yet, so we assume that if we have a VROOT then the property must be
+                 * accessible as a field of the VROOT.
+                 */
+
                 try {
                     return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), ctx, ctx).get());
                 }
                 catch (PropertyAccessException e) {
-
                     /**
-                     * Make a last-ditch effort to resolve this as a static-class reference.
+                     * No luck. Make a last-ditch effort to resolve this as a static-class reference.
                      */
                     Token tk = tryStaticAccess(token);
                     if (tk == null) throw e;
@@ -1479,9 +1501,16 @@ public class ExpressionParser {
         }
         else {
             if (Token.LITERALS.containsKey(s = token.getAbsoluteName())) {
+                /**
+                 * The token is actually a literal.
+                 */
                 return token.setValue(Token.LITERALS.get(s));
             }
             else if (variableFactory != null && variableFactory.isResolveable(s)) {
+                /**
+                 * The token is a local or global var.
+                 */
+
                 if (token.isCollection()) {
                     return token.setValue(propertyAccessor.setParameters(expr, token.getStart()
                             + token.getEndOfName(), token.getEnd(), variableFactory.getVariableResolver(s).getValue(), ctx).get());
@@ -1489,11 +1518,17 @@ public class ExpressionParser {
                 return token.setValue(variableFactory.getVariableResolver(s).getValue());
             }
             else if (ctx != null) {
+                /**
+                 * Check to see if the var exists in the VROOT.
+                 */
                 try {
                     return token.setValue(propertyAccessor.setParameters(expr, token.getStart(),
                             token.getEnd(), ctx, ctx).get());
                 }
                 catch (RuntimeException e) {
+                    /**
+                     * Nope.  Let's see if this a a LA-issue.
+                     */
                     if (!lookAhead()) throw e;
                 }
             }
@@ -1550,6 +1585,13 @@ public class ExpressionParser {
         return null;
     }
 
+    /**
+     * This method is called by the parser when it can't resolve a token.  There are two cases where this may happen
+     * under non-fatal circumstances: ASSIGNMENT or PROJECTION.  If one of these situations is indeed the case,
+     * the execution continues after a quick adjustment to allow the parser to continue as if we're just at a
+     * junction.  Otherwise we explode.
+     * @return
+     */
     private boolean lookAhead() {
         Token tk;
 
