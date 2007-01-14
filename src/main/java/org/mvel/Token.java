@@ -363,7 +363,7 @@ public class Token implements Cloneable, Serializable {
     }
 
     public Token setValue(Object value) {
-        String s;
+        //String s;
         try {
             if ((fields & NEGATION) != 0 && (fields & BOOLEAN_MODE) != 0) {
                 this.value = BlankLiteral.INSTANCE.equals(value);
@@ -383,7 +383,6 @@ public class Token implements Cloneable, Serializable {
                 }
                 else if (isNumber(value)) {
                     fields |= NUMERIC;
-                    // this.numericValue = new BigDecimal(valueOf(value));
                     this.numericValue = convert(value, BigDecimal.class);
                 }
                 this.value = value;
@@ -539,7 +538,7 @@ public class Token implements Cloneable, Serializable {
 
     public void reset() {
         if (resetValue == null) {
-            setLiteral(false);
+            setFlag(false, LITERAL);
             setName(name);
         }
         else {
