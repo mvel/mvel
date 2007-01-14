@@ -6,10 +6,11 @@ import org.mvel.compiled.GetterAccessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.util.*;
+import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
+import org.mvel.util.StringAppender;
 
 import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
@@ -1022,7 +1023,7 @@ public class ExpressionParser {
                     }
 
                     case'-':
-                        if (!PropertyTools.isDigit(expr[cursor + 1])) {
+                        if (!isDigit(expr[cursor + 1])) {
                             return createToken(expr, start, cursor++ + 1, fields);
                         }
                         else if ((cursor - 1) < 0 || (!isDigit(expr[cursor - 1])) && isDigit(expr[cursor + 1])) {
@@ -1098,7 +1099,7 @@ public class ExpressionParser {
 
                     case'\'':
                         while (++cursor < length && expr[cursor] != '\'') {
-                            if (expr[cursor] == '\\') ParseTools.handleEscapeSequence(expr[++cursor]);
+                            if (expr[cursor] == '\\') handleEscapeSequence(expr[++cursor]);
                         }
 
                         if (cursor == length || expr[cursor] != '\'') {
@@ -1109,7 +1110,7 @@ public class ExpressionParser {
 
                     case'"':
                         while (++cursor < length && expr[cursor] != '"') {
-                            if (expr[cursor] == '\\') ParseTools.handleEscapeSequence(expr[++cursor]);
+                            if (expr[cursor] == '\\') handleEscapeSequence(expr[++cursor]);
                         }
                         if (cursor == length || expr[cursor] != '"') {
                             throw new CompileException("unterminated literal: " + new String(expr));
@@ -1167,6 +1168,12 @@ public class ExpressionParser {
                         }
                     }
 
+                    /**
+                     * The inline map, array, and list creation code starts here.  Be very careful about
+                     * attempting any optimizations that might look obvious or useful.  This is already
+                     * quite optimized.  Keep in mind the parser uses a sliding state system when doing
+                     * anything.  Often the appearance of redundancy is not such.
+                     */
                     case'[':
                         if (capture) {
                             cursor++;
