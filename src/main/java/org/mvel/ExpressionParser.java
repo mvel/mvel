@@ -941,6 +941,10 @@ public class ExpressionParser {
          */
         while (start < length && isWhitespace(expr[start])) start++;
 
+        /**
+         * From here to the end of the method is the core MVEL parsing code.  Fiddling around here is asking for
+         * trouble unless you really know what you're doing.
+         */
         for (cursor = start; cursor < length;) {
             if (isIdentifierPart(expr[cursor])) {
                 /**
@@ -1349,6 +1353,14 @@ public class ExpressionParser {
         return createToken(expr, start, cursor, fields);
     }
 
+    /**
+     * Most of this method should be self-explanatory.
+     * @param expr
+     * @param start
+     * @param end
+     * @param fields
+     * @return
+     */
     private Token createToken(char[] expr, int start, int end, int fields) {
         Token tk = new Token(expr, start, end, fields);
 
