@@ -992,7 +992,7 @@ public class ExpressionParser {
 
                 /**
                  * If we encounter any of the following cases, we are still dealing with
-                 * a contiguous token.
+                 * a contiguous token.                               
                  */
                 if (cursor < length) {
                     switch (expr[cursor]) {
