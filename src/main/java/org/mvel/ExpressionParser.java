@@ -1,6 +1,7 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
+import static org.mvel.Operator.*;
 import org.mvel.compiled.GetterAccessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
@@ -389,7 +390,7 @@ public class ExpressionParser {
      * @param o - operator
      * @return int - behaviour code
      */
-    private int reduceBinary(Operator o) {
+    private int reduceBinary(int o) {
         switch (o) {
             case AND:
                 if (stk.peek() instanceof Boolean && !((Boolean) valueOnly(stk.peek()))) {
@@ -510,7 +511,7 @@ public class ExpressionParser {
      */
     private void reduceTrinary() {
         Object v1 = null, v2;
-        Operator operator;
+        Integer operator;
         try {
             while (stk.size() > 1) {
                 if ((v1 = stk.pop()) instanceof Boolean) {
@@ -518,16 +519,16 @@ public class ExpressionParser {
                      * There is a boolean value at the top of the stk, so we
                      * are at a boolean junction.
                      */
-                    operator = (Operator) stk.pop();
+                    operator = (Integer) stk.pop();
                     v2 = processToken(stk.pop());
                 }
                 else if ((fields & Token.EVAL_RIGHT) != 0) {
-                    operator = (Operator) v1;
+                    operator = (Integer) v1;
                     v2 = processToken(stk.pop());
                     v1 = processToken(stk.pop());
                 }
                 else {
-                    operator = (Operator) v1;
+                    operator = (Integer) v1;
                     v1 = processToken(stk.pop());
                     v2 = processToken(stk.pop());
                 }
@@ -764,7 +765,7 @@ public class ExpressionParser {
 
     private void parseAndExecuteInterpreted() {
         Token tk;
-        Operator operator;
+        Integer operator;
 
         while ((tk = nextToken()) != null) {
             if (stk.size() == 0) {
@@ -807,7 +808,7 @@ public class ExpressionParser {
 
     private void parseAndExecuteAccelerated() {
         Token tk;
-        Operator operator;
+        Integer operator;
 
         while ((tk = nextCompiledToken()) != null) {
             if (stk.size() == 0) {

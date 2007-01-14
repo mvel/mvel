@@ -2,7 +2,7 @@ package org.mvel;
 
 
 public class Node implements Cloneable {
-    private NodeType nodeType = NodeType.PROPERTY_EX;
+    private int nodeType = NodeType.PROPERTY_EX;
 
     private int startPos;
     private int length;
@@ -20,28 +20,27 @@ public class Node implements Cloneable {
     Node() {
     }
 
-
     Node(int startPos) {
         this.startPos = startPos;
     }
 
-    Node(int node, NodeType nodeType) {
+    Node(int node, int nodeType) {
         this.node = node;
         this.nodeType = nodeType;
     }
 
-    Node(int node, NodeType nodeType, int endNode) {
+    Node(int node, int nodeType, int endNode) {
         this.node = node;
         this.nodeType = nodeType;
         this.endNode = endNode;
     }
 
-    Node(int startPos, int length) {
-        this.startPos = startPos;
-        this.length = length;
-    }
+//    Node(int startPos, int length) {
+//        this.startPos = startPos;
+//        this.length = length;
+//    }
 
-    Node(int node, NodeType nodeType, int startPos, int length, int endNode) {
+    Node(int node, int nodeType, int startPos, int length, int endNode) {
         this.nodeType = nodeType;
         this.startPos = startPos;
         this.length = length;
@@ -49,11 +48,11 @@ public class Node implements Cloneable {
         this.endNode = endNode;
     }
 
-    public NodeType getToken() {
+    public int getToken() {
         return nodeType;
     }
 
-    public void setToken(NodeType nodeType) {
+    public void setToken(int nodeType) {
         this.nodeType = nodeType;
     }
 
@@ -118,11 +117,11 @@ public class Node implements Cloneable {
         this.name = name;
     }
 
-    public NodeType getNodeType() {
+    public int getNodeType() {
         return nodeType;
     }
 
-    public void setNodeType(NodeType nodeType) {
+    public void setNodeType(int nodeType) {
         this.nodeType = nodeType;
     }
 

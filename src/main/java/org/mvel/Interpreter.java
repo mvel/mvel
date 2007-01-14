@@ -2,6 +2,7 @@ package org.mvel;
 
 import static org.mvel.ExpressionParser.compileExpression;
 import static org.mvel.ExpressionParser.executeExpression;
+import static org.mvel.NodeType.*;
 import org.mvel.util.ExecutionStack;
 
 import java.io.*;
