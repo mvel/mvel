@@ -1368,7 +1368,7 @@ public class ExpressionParser {
      * @param fields -
      * @return -
      */
-    private Token createToken(char[] expr, int start, int end, int fields) {
+    private Token createToken(final char[] expr, final int start, final int end, final int fields) {
         Token tk = new Token(expr, start, end, fields);
         if (compileMode) {
             if (!tk.isNoCompile()) {
@@ -1382,7 +1382,7 @@ public class ExpressionParser {
             return reduceToken(tk);
         }
 
-        if (tk.isThisRef()) tk.setFinalValue(ctx);
+        if (tk.isThisRef()) return tk.setFinalValue(ctx);
 
         return tk;
     }
@@ -1982,7 +1982,5 @@ public class ExpressionParser {
         setExpression(expression);
         this.ctx = ctx;
     }
-
-
 }
 
