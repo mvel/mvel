@@ -16,10 +16,14 @@ public class CompileException extends RuntimeException {
 
     public CompileException(String message, char[] expr, int cursor, Exception e) {
         super("Failed to compile:\n[Error: " + message + "]\n[Near: \"" + showCodeNearError(expr, cursor) + "\"]", e);
+        this.expr = expr;
+        this.cursor = cursor;
     }
 
     public CompileException(String message, char[] expr, int cursor) {
          super("Failed to compile:\n[Error: " + message + "]\n[Near: \"" + showCodeNearError(expr, cursor) + "\"]");
+        this.expr = expr;
+        this.cursor = cursor;
      }
 
 
@@ -42,5 +46,14 @@ public class CompileException extends RuntimeException {
             end = expr.length - 1;
         }
         return "'" + copyValueOf(expr, start, end - start) + "'";
+    }
+
+
+    public char[] getExpr() {
+        return expr;
+    }
+
+    public int getCursor() {
+        return cursor;
     }
 }
