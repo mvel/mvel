@@ -63,6 +63,26 @@ public class ParseTools {
                     }
                     continue;
 
+                case'\'':
+                    while (++i < length && parm[i] != '\'') {
+                        if (parm[i] == '\\') handleEscapeSequence(parm[++i]);
+                    }
+
+                    if (i == length || parm[i] != '\'') {
+                        throw new CompileException("unterminated literal: " + new String(parm));
+                    }
+                    continue;
+
+                case'"':
+                    while (++i < length && parm[i] != '"') {
+                        if (parm[i] == '\\') handleEscapeSequence(parm[++i]);
+                    }
+
+                    if (i == length || parm[i] != '\'') {
+                        throw new CompileException("unterminated literal: " + new String(parm));
+                    }
+                    continue;
+
                 case',':
                     if (adepth != 0) continue;
 
@@ -104,7 +124,7 @@ public class ParseTools {
         Class[] targetParms = new Class[arguments.length];
 
         for (int i = 0; i < arguments.length; i++)
-            targetParms[i] = arguments[i] != null ? arguments[i].getClass() :  Object.class;
+            targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
 
         Integer hash = createClassSignatureHash(targetParms);
 
