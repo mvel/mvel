@@ -15,7 +15,7 @@ public class ASTOptimizer implements Optimizer {
     public ExecutableStatement optimize(TokenIterator tokenIterator, Object staticContext, VariableResolverFactory factory) {
         Token token;
 
-        ASTNode currentNode;
+        ASTNode currentNode = null;
 
         while (tokenIterator.hasMoreTokens()) {
             token = tokenIterator.nextToken();
