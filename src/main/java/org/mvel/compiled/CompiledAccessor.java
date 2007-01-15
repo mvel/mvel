@@ -513,4 +513,8 @@ public class CompiledAccessor {
         return null;
     }
 
+
+    public AccessorNode getRootNode() {
+        return rootNode;
+    }
 }

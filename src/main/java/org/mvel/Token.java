@@ -43,6 +43,7 @@ public class Token implements Cloneable, Serializable {
     public static final int ARRAYCREATE = 1 << 20;
     public static final int NOCOMPILE = 1 << 21;
     public static final int STR_LITERAL = 1 << 25;
+    public static final int FLOATING_NUMERIC = 1 << 26;
 
     public static final int PUSH = 1 << 22;
 
@@ -67,7 +68,8 @@ public class Token implements Cloneable, Serializable {
     private int fields = 0;
 
     private CompiledExpression compiledExpression;
-    private CompiledAccessor compiledAccessor;
+   // private CompiledAccessor compiledAccessor;
+    private AccessorNode accessorNode;
     private int knownSize = 0;
 
 //    private Class knownType;
@@ -292,17 +294,17 @@ public class Token implements Cloneable, Serializable {
     public Token getOptimizedValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
         try {
             if ((fields & NUMERIC) != 0) {
-                value = numericValue = convert(compiledAccessor.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
+                value = numericValue = convert(accessorNode.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
             }
             else
-                value = compiledAccessor.getValue(ctx, elCtx, variableFactory);
+                value = accessorNode.getValue(ctx, elCtx, variableFactory);
 
             if ((fields & NEGATION) != 0) value = !((Boolean) value);
 
             return this;
         }
         catch (NullPointerException e) {
-            if (compiledAccessor == null) {
+            if (accessorNode == null) {
                 if (!optimizeAccessor(ctx, variableFactory))
                     throw new OptimizationFailure("token: " + new String(name), e);
                 else {
@@ -319,17 +321,22 @@ public class Token implements Cloneable, Serializable {
 
 
     public void createDeferralOptimization() {
-        compiledAccessor = new CompiledAccessor();
-        compiledAccessor.addAccessorNode(new Deferral());
+      //  compiledAccessor = new CompiledAccessor();
+        accessorNode = new Deferral();
+
+    //    compiledAccessor.addAccessorNode(new Deferral());
     }
 
 
     public boolean optimizeAccessor(Object ctx, VariableResolverFactory variableFactory) {
         try {
-            compiledAccessor = new CompiledAccessor(name, ctx, variableFactory);
+            CompiledAccessor compiledAccessor = new CompiledAccessor(name, ctx, variableFactory);
             setNumeric(false);
             setNumeric(isNumber(compiledAccessor.compileGetChain()));
             setFlag(true, Token.OPTIMIZED_REF);
+
+            accessorNode = compiledAccessor.getRootNode();
+
             return true;
 
         }
@@ -341,11 +348,11 @@ public class Token implements Cloneable, Serializable {
     }
 
     public void deOptimize() {
-        compiledAccessor = null;
+        accessorNode = null;
     }
 
     public boolean isOptimized() {
-        return compiledAccessor != null;
+        return accessorNode != null;
     }
 
     public BigDecimal getNumericValue() {
@@ -452,6 +459,7 @@ public class Token implements Cloneable, Serializable {
             else {
                 value = this.numericValue = new BigDecimal(valueOf(name));
             }
+            if (this.numericValue.scale() > 0) fields |= FLOATING_NUMERIC;
         }
         else if ((firstUnion = findFirst('.', name)) > 0) {
             fields |= DEEP_PROPERTY | IDENTIFIER;
@@ -512,8 +520,12 @@ public class Token implements Cloneable, Serializable {
     }
 
 
-    public CompiledAccessor getCompiledAccessor() {
-        return compiledAccessor;
+    public AccessorNode getAccessorNode() {
+        return accessorNode;
+    }
+
+    public void setAccessorNode(AccessorNode accessorNode) {
+        this.accessorNode = accessorNode;
     }
 
     public void setCompiledExpression(CompiledExpression compiledExpression) {
