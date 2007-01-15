@@ -14,6 +14,8 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     private boolean convertableIngressEgress;
 
+    private ExpressionParser expressionParser;
+
     public CompiledExpression(char[] expression, TokenIterator tokenMap) {
         this.expression = expression;
         this.tokenMap = new FastTokenIterator(tokenMap);
@@ -68,8 +70,12 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         }
     }
 
-
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        return new ExpressionParser(factory, staticContext, tokenMap).parse();
+        if (expressionParser == null) {
+            expressionParser = new ExpressionParser(factory, staticContext, tokenMap);
+        }
+        
+        expressionParser.resetParser();
+        return expressionParser.parse();
     }
 }
