@@ -68,6 +68,8 @@ public class Token implements Cloneable, Serializable {
 
     private CompiledExpression compiledExpression;
     private CompiledAccessor compiledAccessor;
+    private int knownSize = 0;
+
 //    private Class knownType;
 
     public static final Map<String, Object> LITERALS =
@@ -661,6 +663,14 @@ public class Token implements Cloneable, Serializable {
 
     public boolean isReducable() {
         return ((fields & CAPTURE_ONLY) | (fields & LITERAL)) == 0;
+    }
+
+    public int getKnownSize() {
+        return knownSize;
+    }
+
+    public void setKnownSize(int knownSize) {
+        this.knownSize = knownSize;
     }
 }
 

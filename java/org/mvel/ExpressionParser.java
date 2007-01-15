@@ -1204,6 +1204,8 @@ public class ExpressionParser {
                         fields |= Token.NOCOMPILE;
                         Token tk2 = nextToken();
 
+                        Token starting = null;
+
                         if (tk2 != null && tk2.isOperator(Operator.TERNARY_ELSE)) {
                             setFieldFalse(Token.LISTCREATE);
 
@@ -1215,7 +1217,7 @@ public class ExpressionParser {
                                 tk2.setFlag(false, Token.LISTCREATE);
                                 tk2.setFlag(true, Token.MAPCREATE);
 
-                                ((TokenMap) tokens).addTokenNode(new Token('[', Token.MAPCREATE | Token.NEST));
+                                ((TokenMap) tokens).addTokenNode(starting = new Token('[', Token.MAPCREATE | Token.NEST));
                                 ((TokenMap) tokens).addTokenNode(tk1);
                             }
 
@@ -1244,7 +1246,10 @@ public class ExpressionParser {
                                 throw new CompileException("unterminated list projection");
                             }
 
-                            if (compileMode) ((TokenMap) tokens).addTokenNode(new Token(']', Token.ENDNEST));
+                            if (compileMode) {
+                                ((TokenMap) tokens).addTokenNode(new Token(']', Token.ENDNEST));
+                                starting.setKnownSize(map.size());
+                            }
 
                             setFieldFalse(Token.MAPCREATE);
 
@@ -1265,7 +1270,7 @@ public class ExpressionParser {
                             projectionList.add(reduce(tk1));
 
                             if (compileMode) {
-                                ((TokenMap) tokens).addTokenNode(new Token('[', Token.LISTCREATE | Token.NEST));
+                                ((TokenMap) tokens).addTokenNode(starting = new Token('[', Token.LISTCREATE | Token.NEST));
                                 ((TokenMap) tokens).addTokenNode(tk1);
                             }
 
@@ -1276,6 +1281,7 @@ public class ExpressionParser {
 
                                 if (compileMode) {
                                     addTokenToMap(new Token(']', fields | Token.ENDNEST));
+                                    starting.setKnownSize(projectionList.size());
                                 }
                             }
                             catch (ArrayIndexOutOfBoundsException e) {
@@ -1301,8 +1307,10 @@ public class ExpressionParser {
                     case'{':
                         fields |= Token.ARRAYCREATE;
 
+                        starting = null;
+
                         if (compileMode) {
-                            addTokenToMap(new Token('{', fields | Token.NEST));
+                            addTokenToMap(starting = new Token('{', fields | Token.NEST));
                         }
 
                         ArrayList<Object> projectionList = new ArrayList<Object>();
@@ -1314,6 +1322,7 @@ public class ExpressionParser {
 
                             if (compileMode) {
                                 addTokenToMap(new Token('}', fields | Token.ENDNEST));
+                                starting.setKnownSize(projectionList.size());
                             }
 
                         }
@@ -1787,8 +1796,8 @@ public class ExpressionParser {
                  */
                 switch (tk.getCollectionCreationType()) {
                     case Token.LISTCREATE: {
-                        List<Object> newList = new ArrayList<Object>();
-                        newList.add(handleSubNesting(tk.isNestBegin() ? tokens.nextToken() : tk));
+                        List<Object> newList = new ArrayList<Object>(tk.getKnownSize());
+                        newList.add(handleSubNesting(tokens.nextToken()));
 
                         while (tokens.hasMoreTokens() &&
                                 (!tokens.peekToken().isEndNest())) {
@@ -1803,7 +1812,7 @@ public class ExpressionParser {
                     }
 
                     case Token.MAPCREATE: {
-                        tk = tk.isNestBegin() ? tokens.nextToken() : tk;
+                        tk =  tokens.nextToken();
 
                         Map<Object, Object> newMap = new HashMap<Object, Object>();
 
@@ -1821,19 +1830,28 @@ public class ExpressionParser {
                     break;
 
                     case Token.ARRAYCREATE: {
-                        List<Object> newList = new ArrayList<Object>();
+                        // List<Object> newList = new ArrayList<Object>();
+                        Object[] newArray = new Object[tk.getKnownSize()];
+                        int i = 0;
 
-                        newList.add(handleSubNesting(tk.isNestBegin() ? tokens.nextToken() : tk));
+                        //        newArray[i++] = handleSubNesting(tk.isNestBegin() ? tokens.nextToken() : tk);
+
+                        newArray[i++] = handleSubNesting(tokens.nextToken());
+
+                        //   newList.add(handleSubNesting(tk.isNestBegin() ? tokens.nextToken() : tk));
 
                         while (tokens.hasMoreTokens() &&
                                 !tokens.peekToken().isEndNest()) {
-                            newList.add(handleSubNesting(tokens.nextToken()));
+                            //  newList.add(handleSubNesting(tokens.nextToken()));
+                            newArray[i++] = handleSubNesting(tokens.nextToken());
                         }
 
                         tokens.skipToken();
 
                         tk.setFlag(true, Token.DO_NOT_REDUCE);
-                        return tk.setFinalValue(newList.toArray());
+
+                        return tk.setFinalValue(newArray);
+                        //   return tk.setFinalValue(newList.toArray());
                     }
                 }
 
@@ -1862,6 +1880,7 @@ public class ExpressionParser {
 
     private Object handleSubNesting(Token token) {
         if (token.isNestBegin()) {
+            tokens.back();
             return nextCompiledToken().getValue();
         }
         else {

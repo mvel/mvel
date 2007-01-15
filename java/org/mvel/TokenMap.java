@@ -39,6 +39,14 @@ public class TokenMap implements TokenIterator {
             current = current.next;
     }
 
+
+    public Token peekNext() {
+        if (current != null && current.next != null)
+            return current.next.token;
+        else
+            return null;
+    }
+
     public Token peekToken() {
         if (current == null) return null;
         return current.token;
