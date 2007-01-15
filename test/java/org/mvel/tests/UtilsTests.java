@@ -1,9 +1,10 @@
 package org.mvel.tests;
 
 import junit.framework.TestCase;
+import org.mvel.util.FastMap;
 import org.mvel.util.StringAppender;
 
-public class StringAppenderTests extends TestCase {
+public class UtilsTests extends TestCase {
 
     public void testMain() {
         assertEquals("foobarfoobar", new StringAppender().append("foo").append('b').append('a').append('r').append("foobar").toString());
@@ -21,6 +22,14 @@ public class StringAppenderTests extends TestCase {
                         .append("resources/productimages/").toString());
     }
 
+    public void testMap1() {
+        FastMap map = new FastMap(10);
+        map.put("test", "foobar");
+        map.put("foo", "bar");
+
+        assertEquals("foobar", map.get("test"));
+        assertEquals("bar", map.get("foo"));
+    }
   
 
 //    public void testMainPerf() {

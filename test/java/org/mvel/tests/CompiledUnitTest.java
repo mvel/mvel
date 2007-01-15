@@ -7,6 +7,7 @@ import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.res.Bar;
 import org.mvel.tests.res.Base;
 import org.mvel.tests.res.Foo;
+import org.mvel.util.FastList;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -309,11 +310,11 @@ public class CompiledUnitTest extends TestCase {
 
 
     public void testListCreation2() {
-        assertEquals(ArrayList.class, parseDirect("[\"test\"]").getClass());
+        assertEquals(FastList.class, parseDirect("[\"test\"]").getClass());
     }
 
     public void testListCreation3() {
-        assertEquals(ArrayList.class, parseDirect("[66]").getClass());
+        assertEquals(FastList.class, parseDirect("[66]").getClass());
     }
 
     public void testListCreation4() {

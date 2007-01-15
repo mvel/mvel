@@ -36,6 +36,8 @@ public class CompileException extends RuntimeException {
     }
 
     private static CharSequence showCodeNearError(char[] expr, int cursor) {
+        if (expr == null) return "Unknown";
+
         int start = cursor - 10;
         int end = (cursor + 20);
 
