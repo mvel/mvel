@@ -126,7 +126,7 @@ public class ExpressionParser {
 
     public static Object executeExpression(Object compiledExpression) {
         return ((ExecutableStatement) compiledExpression).getValue(null, null);
-     //   return new ExpressionParser(compiledExpression).parse();
+        //   return new ExpressionParser(compiledExpression).parse();
     }
 
     /**
@@ -142,13 +142,13 @@ public class ExpressionParser {
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
         return ((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars));
 
-    //    return new ExpressionParser(compiledExpression, ctx, vars).parse();
+        //    return new ExpressionParser(compiledExpression, ctx, vars).parse();
     }
 
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
         return ((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory);
 
-     //   return new ExpressionParser(compiledExpression, ctx, resolverFactory).parse();
+        //   return new ExpressionParser(compiledExpression, ctx, resolverFactory).parse();
     }
 
     /**
@@ -162,7 +162,7 @@ public class ExpressionParser {
     public static Object executeExpression(final Object compiledExpression, final VariableResolverFactory factory) {
         return ((ExecutableStatement) compiledExpression).getValue(null, factory);
 
-    //    return new ExpressionParser(compiledExpression, factory).parse();
+        //    return new ExpressionParser(compiledExpression, factory).parse();
     }
 
     /**
@@ -176,7 +176,7 @@ public class ExpressionParser {
     public static Object executeExpression(final Object compiledExpression, final Object ctx) {
         return ((ExecutableStatement) compiledExpression).getValue(ctx, null);
 
-   //     return new ExpressionParser(compiledExpression, ctx).parse();
+        //     return new ExpressionParser(compiledExpression, ctx).parse();
     }
 
 
@@ -192,7 +192,7 @@ public class ExpressionParser {
     public static Object executeExpression(final Object compiledExpression, final Map vars) {
         return ((ExecutableStatement) compiledExpression).getValue(null, new MapVariableResolverFactory(vars));
 
-   //     return new ExpressionParser(compiledExpression, null, vars).parse();
+        //     return new ExpressionParser(compiledExpression, null, vars).parse();
     }
 
 
@@ -878,8 +878,9 @@ public class ExpressionParser {
                 /**
                  * We are executing it fast mode, so we simply execute the compiled subexpression.
                  */
+                tk.setFinalValue(tk.getCompiledExpression().getValue(ctx, variableFactory)).getValue();
 
-                tk.setFinalValue(executeExpression(tk.getCompiledExpression(), ctx, variableFactory)).getValue();
+                //      tk.setFinalValue(executeExpression(tk.getCompiledExpression(), ctx, variableFactory)).getValue();
             }
             else if (compileMode) {
                 /**
