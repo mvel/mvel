@@ -8,6 +8,7 @@ import org.mvel.compiled.GetterAccessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
+import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
@@ -43,7 +44,7 @@ public class ExpressionParser {
 
     private Object ctx;
 
-    private TokenIterator tokenMap;
+    private TokenIterator tokens;
 
     private VariableResolverFactory variableFactory;
 
@@ -104,7 +105,7 @@ public class ExpressionParser {
 
         parser.parse();
 
-        return new CompiledExpression(parser.getExpressionArray(), parser.tokenMap);
+        return new CompiledExpression(parser.getExpressionArray(), parser.tokens);
     }
 
     /**
@@ -120,11 +121,12 @@ public class ExpressionParser {
 
         parser.parse();
 
-        return new CompiledExpression(parser.getExpressionArray(), parser.tokenMap);
+        return new CompiledExpression(parser.getExpressionArray(), parser.tokens);
     }
 
     public static Object executeExpression(Object compiledExpression) {
-        return new ExpressionParser(compiledExpression).parse();
+        return ((ExecutableStatement) compiledExpression).getValue(null, null);
+     //   return new ExpressionParser(compiledExpression).parse();
     }
 
     /**
@@ -138,11 +140,15 @@ public class ExpressionParser {
      */
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
-        return new ExpressionParser(compiledExpression, ctx, vars).parse();
+        return ((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars));
+
+    //    return new ExpressionParser(compiledExpression, ctx, vars).parse();
     }
 
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
-        return new ExpressionParser(compiledExpression, ctx, resolverFactory).parse();
+        return ((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory);
+
+     //   return new ExpressionParser(compiledExpression, ctx, resolverFactory).parse();
     }
 
     /**
@@ -154,7 +160,9 @@ public class ExpressionParser {
      * @see #compileExpression(String)
      */
     public static Object executeExpression(final Object compiledExpression, final VariableResolverFactory factory) {
-        return new ExpressionParser(compiledExpression, factory).parse();
+        return ((ExecutableStatement) compiledExpression).getValue(null, factory);
+
+    //    return new ExpressionParser(compiledExpression, factory).parse();
     }
 
     /**
@@ -166,7 +174,9 @@ public class ExpressionParser {
      * @see #compileExpression(String)
      */
     public static Object executeExpression(final Object compiledExpression, final Object ctx) {
-        return new ExpressionParser(compiledExpression, ctx).parse();
+        return ((ExecutableStatement) compiledExpression).getValue(ctx, null);
+
+   //     return new ExpressionParser(compiledExpression, ctx).parse();
     }
 
 
@@ -180,7 +190,9 @@ public class ExpressionParser {
      */
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Map vars) {
-        return new ExpressionParser(compiledExpression, null, vars).parse();
+        return ((ExecutableStatement) compiledExpression).getValue(null, new MapVariableResolverFactory(vars));
+
+   //     return new ExpressionParser(compiledExpression, null, vars).parse();
     }
 
 
@@ -195,7 +207,7 @@ public class ExpressionParser {
      */
     @SuppressWarnings({"unchecked"})
     public static <T> T executeExpression(final Object compiledExpression, final Object ctx, final Map vars, Class<T> toType) {
-        return convert(new ExpressionParser(compiledExpression, ctx, vars).parse(), toType);
+        return convert(executeExpression(compiledExpression, ctx, vars), toType);
     }
 
     /**
@@ -208,7 +220,7 @@ public class ExpressionParser {
      */
     @SuppressWarnings({"unchecked"})
     public static <T> T executeExpression(final Object compiledExpression, Map vars, Class<T> toType) {
-        return convert(new ExpressionParser(compiledExpression, null, vars).parse(), toType);
+        return convert(executeExpression(compiledExpression, vars), toType);
     }
 
 
@@ -221,7 +233,7 @@ public class ExpressionParser {
      * @return -
      */
     public static <T> T executeExpression(final Object compiledExpression, final Object ctx, Class<T> toType) {
-        return convert(new ExpressionParser(compiledExpression, ctx).parse(), toType);
+        return convert(executeExpression(compiledExpression, ctx), toType);
     }
 
 
@@ -431,7 +443,7 @@ public class ExpressionParser {
             case END_OF_STMT:
                 setFieldFalse(Token.LISTCREATE);
                 if (fastExecuteMode) {
-                    if ((fields & Token.ASSIGN) != 0 || !tokenMap.hasMoreTokens()) {
+                    if ((fields & Token.ASSIGN) != 0 || !tokens.hasMoreTokens()) {
                         return -1;
                     }
                     else {
@@ -460,7 +472,7 @@ public class ExpressionParser {
                 finalLocalVariableFactory().createVariable(tk.getName(), stk.pushAndPeek(valueOnly(stk.pop())));
 
                 if (fastExecuteMode) {
-                    if (tokenMap.hasMoreTokens()) {
+                    if (tokens.hasMoreTokens()) {
                         stk.clear();
                     }
                 }
@@ -1202,8 +1214,8 @@ public class ExpressionParser {
                                 tk2.setFlag(false, Token.LISTCREATE);
                                 tk2.setFlag(true, Token.MAPCREATE);
 
-                                ((TokenMap) tokenMap).addTokenNode(new Token('[', Token.MAPCREATE | Token.NEST));
-                                ((TokenMap) tokenMap).addTokenNode(tk1);
+                                ((TokenMap) tokens).addTokenNode(new Token('[', Token.MAPCREATE | Token.NEST));
+                                ((TokenMap) tokens).addTokenNode(tk1);
                             }
 
                             tk2 = nextToken();
@@ -1231,7 +1243,7 @@ public class ExpressionParser {
                                 throw new CompileException("unterminated list projection");
                             }
 
-                            if (compileMode) ((TokenMap) tokenMap).addTokenNode(new Token(']', Token.ENDNEST));
+                            if (compileMode) ((TokenMap) tokens).addTokenNode(new Token(']', Token.ENDNEST));
 
                             setFieldFalse(Token.MAPCREATE);
 
@@ -1252,8 +1264,8 @@ public class ExpressionParser {
                             projectionList.add(reduce(tk1));
 
                             if (compileMode) {
-                                ((TokenMap) tokenMap).addTokenNode(new Token('[', Token.LISTCREATE | Token.NEST));
-                                ((TokenMap) tokenMap).addTokenNode(tk1);
+                                ((TokenMap) tokens).addTokenNode(new Token('[', Token.LISTCREATE | Token.NEST));
+                                ((TokenMap) tokens).addTokenNode(tk1);
                             }
 
                             try {
@@ -1374,7 +1386,7 @@ public class ExpressionParser {
         Token tk = new Token(expr, start, end, fields);
         if (compileMode) {
             if (!tk.isNoCompile()) {
-                ((TokenMap) tokenMap).addTokenNode(tk);
+                ((TokenMap) tokens).addTokenNode(tk);
 
                 if (tk.isSubeval()) reduceFast(tk);
             }
@@ -1624,7 +1636,7 @@ public class ExpressionParser {
             else if (tk.getOperator() == Operator.ASSIGN || tk.getOperator() == Operator.PROJECTION) {
                 cursor = cursorCurrent;
                 if (fastExecuteMode) {
-                    tokenMap.back();
+                    tokens.back();
                 }
             }
             else
@@ -1739,19 +1751,19 @@ public class ExpressionParser {
     }
 
     private ExpressionParser setCompileMode(boolean compileMode) {
-        if (this.compileMode = compileMode) tokenMap = new TokenMap(null);
+        if (this.compileMode = compileMode) tokens = new TokenMap(null);
         return this;
     }
 
     public ExpressionParser setPrecompiledExpression(Object expression) {
-        (this.tokenMap = ((CompiledExpression) expression).getTokenMap()).reset();
+        (this.tokens = ((CompiledExpression) expression).getTokenMap()).reset();
 
         this.fastExecuteMode = true;
         return this;
     }
 
     private void addTokenToMap(Token tk) {
-        ((TokenMap) tokenMap).addTokenNode(tk);
+        ((TokenMap) tokens).addTokenNode(tk);
     }
 
     private Token nextCompiledToken() {
@@ -1763,8 +1775,8 @@ public class ExpressionParser {
          * TODO: Move this to another method ASAP.  This is ridiculous.  (Note from Mike to Mike)
          */
 
-        if (tokenMap.hasMoreTokens()) {
-            if ((tk = tokenMap.nextToken()).isOperator(Operator.ASSIGN)) {
+        if (tokens.hasMoreTokens()) {
+            if ((tk = tokens.nextToken()).isOperator(Operator.ASSIGN)) {
                 return tk;
             }
             else if (tk.isCollectionCreation()) {
@@ -1775,32 +1787,32 @@ public class ExpressionParser {
                 switch (tk.getCollectionCreationType()) {
                     case Token.LISTCREATE: {
                         List<Object> newList = new ArrayList<Object>();
-                        newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
+                        newList.add(handleSubNesting(tk.isNestBegin() ? tokens.nextToken() : tk));
 
-                        while (tokenMap.hasMoreTokens() &&
-                                (!tokenMap.peekToken().isEndNest())) {
+                        while (tokens.hasMoreTokens() &&
+                                (!tokens.peekToken().isEndNest())) {
 
-                            newList.add(handleSubNesting(tokenMap.nextToken()));
+                            newList.add(handleSubNesting(tokens.nextToken()));
                         }
 
-                        tokenMap.skipToken();
+                        tokens.skipToken();
 
                         tk.setFlag(true, Token.DO_NOT_REDUCE);
                         return tk.setFinalValue(newList);
                     }
 
                     case Token.MAPCREATE: {
-                        tk = tk.isNestBegin() ? tokenMap.nextToken() : tk;
+                        tk = tk.isNestBegin() ? tokens.nextToken() : tk;
 
                         Map<Object, Object> newMap = new HashMap<Object, Object>();
 
-                        newMap.put(handleSubNesting(tk), handleSubNesting(tokenMap.nextToken()));
+                        newMap.put(handleSubNesting(tk), handleSubNesting(tokens.nextToken()));
 
-                        while (tokenMap.hasMoreTokens() && !tokenMap.peekToken().isEndNest()) {
-                            newMap.put(handleSubNesting(tokenMap.nextToken()), handleSubNesting(tokenMap.nextToken()));
+                        while (tokens.hasMoreTokens() && !tokens.peekToken().isEndNest()) {
+                            newMap.put(handleSubNesting(tokens.nextToken()), handleSubNesting(tokens.nextToken()));
                         }
 
-                        tokenMap.skipToken();
+                        tokens.skipToken();
 
                         tk.setFlag(true, Token.DO_NOT_REDUCE);
                         tk.setFinalValue(newMap);
@@ -1810,23 +1822,23 @@ public class ExpressionParser {
                     case Token.ARRAYCREATE: {
                         List<Object> newList = new ArrayList<Object>();
 
-                        newList.add(handleSubNesting(tk.isNestBegin() ? tokenMap.nextToken() : tk));
+                        newList.add(handleSubNesting(tk.isNestBegin() ? tokens.nextToken() : tk));
 
-                        while (tokenMap.hasMoreTokens() &&
-                                !tokenMap.peekToken().isEndNest()) {
-                            newList.add(handleSubNesting(tokenMap.nextToken()));
+                        while (tokens.hasMoreTokens() &&
+                                !tokens.peekToken().isEndNest()) {
+                            newList.add(handleSubNesting(tokens.nextToken()));
                         }
 
-                        tokenMap.skipToken();
+                        tokens.skipToken();
 
                         tk.setFlag(true, Token.DO_NOT_REDUCE);
                         return tk.setFinalValue(newList.toArray());
                     }
                 }
 
-                if (tokenMap.hasMoreTokens() && tokenMap.peekToken().isPush()) {
+                if (tokens.hasMoreTokens() && tokens.peekToken().isPush()) {
                     stk.push(tk.getValue());
-                    return (tk = tokenMap.nextToken()).setFinalValue(get(tk.getName(), stk.pop()));
+                    return (tk = tokens.nextToken()).setFinalValue(get(tk.getName(), stk.pop()));
                 }
             }
             else if (tk.isIdentifier()) {
@@ -1898,26 +1910,26 @@ public class ExpressionParser {
     }
 
     ExpressionParser(Object precompiedExpr) {
-        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
+        (this.tokens = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
         this.fastExecuteMode = true;
     }
 
     ExpressionParser(Object precompiedExpr, Object ctx) {
-        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
+        (this.tokens = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
         this.ctx = ctx;
 
         this.fastExecuteMode = true;
     }
 
     ExpressionParser(Object precompiedExpr, VariableResolverFactory factory) {
-        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
+        (this.tokens = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
         this.variableFactory = factory;
         this.fastExecuteMode = true;
     }
 
 
     ExpressionParser(Object precompiedExpr, Object ctx, Map<String, Object> variables) {
-        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
+        (this.tokens = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
         setExpressionArray(compiledExpression.getExpression());
 
         this.ctx = ctx;
@@ -1927,7 +1939,7 @@ public class ExpressionParser {
     }
 
     ExpressionParser(Object precompiedExpr, Object ctx, VariableResolverFactory resolverFactory) {
-        (this.tokenMap = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
+        (this.tokens = (this.compiledExpression = (CompiledExpression) precompiedExpr).getTokenMap()).reset();
         setExpressionArray(compiledExpression.getExpression());
 
         this.ctx = ctx;
@@ -1980,6 +1992,13 @@ public class ExpressionParser {
         this.variableFactory = resolverFactory;
     }
 
+    ExpressionParser(VariableResolverFactory resolverFactory, Object ctx, TokenIterator tokens) {
+        this.ctx = ctx;
+        this.variableFactory = resolverFactory;
+        (this.tokens = tokens).reset();
+        this.fastExecuteMode = true;
+    }
+
     ExpressionParser(String expression, Object ctx) {
         setExpression(expression);
         this.ctx = ctx;
@@ -1987,7 +2006,12 @@ public class ExpressionParser {
 
     public void setCompiledStatement(Serializable compiled) {
         fastExecuteMode = true;
-        (this.tokenMap = (this.compiledExpression = (CompiledExpression) compiled).getTokenMap()).reset();
+        (this.tokens = (this.compiledExpression = (CompiledExpression) compiled).getTokenMap()).reset();
+    }
+
+    public void setTokens(TokenIterator tokenIterator) {
+        fastExecuteMode = true;
+        (this.tokens = tokenIterator).reset();
     }
 
     public void setVariableResolverFactory(VariableResolverFactory factory) {
@@ -1995,7 +2019,7 @@ public class ExpressionParser {
     }
 
     public Object executeFast() {
-        tokenMap.reset();
+        tokens.reset();
         return parse();
     }
 }
