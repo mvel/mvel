@@ -1819,10 +1819,7 @@ public class ExpressionParser {
                 case Token.MAPCREATE: {
                     Map<Object, Object> newMap = new FastMap(tk.getKnownSize());
 
-                    tk = tokens.nextToken();
-
-
-                    newMap.put(handleSubNesting(tk), handleSubNesting(tokens.nextToken()));
+                    newMap.put(handleSubNesting(tk = tokens.nextToken()), handleSubNesting(tokens.nextToken()));
 
                     while (tokens.hasMoreTokens() && !tokens.peekToken().isEndNest()) {
                         newMap.put(handleSubNesting(tokens.nextToken()), handleSubNesting(tokens.nextToken()));

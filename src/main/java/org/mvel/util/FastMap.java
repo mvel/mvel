@@ -21,7 +21,6 @@ public class FastMap extends AbstractMap {
 
 
     public Object put(Object key, Object value) {
-
         size++;
         entrySet.add(key);
 
