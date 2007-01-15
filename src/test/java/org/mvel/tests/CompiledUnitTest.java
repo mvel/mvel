@@ -439,11 +439,6 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(true, (boolean) ExpressionParser.evalToBoolean("true ", "true"));
     }
 
-    //    public void testCompiledListStructures() {
-    //        Serializable compiled = ExpressionParser.compileExpression("[\"test\", \"yeolpass\"] contains \"yeolpass\"");
-    //        assertEquals(true, ExpressionParser.executeExpression(compiled));
-    //    }
-
     public void testCompiledMapStructures() {
         Serializable compiled = compileExpression("['foo':'bar'] contains 'foo'");
         executeExpression(compiled, null, null, Boolean.class);
