@@ -42,6 +42,8 @@ public class MethodAccessor implements AccessorNode {
     }
 
     private Object[] executeAll(Object ctx, VariableResolverFactory vars) {
+        if (compiledParameters == null) return GetterAccessor.EMPTY;
+        
         Object[] vals = new Object[compiledParameters.length];
         for (int i = 0; i < vals.length; i++) {
             vals[i] = compiledParameters[i].getValue(ctx, vars);
