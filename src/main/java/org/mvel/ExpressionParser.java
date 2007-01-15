@@ -2022,5 +2022,9 @@ public class ExpressionParser {
         tokens.reset();
         return parse();
     }
+
+    public void resetParser() {
+        tokens.reset();
+    }
 }
 
