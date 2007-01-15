@@ -11,7 +11,7 @@
     <property name="dist" location="dist"/>
 
 
-    <property name="deploy_to" location="c:\projects\rwhoist\WEB-INF\lib"/>
+    <property name="deploy_to" location="c:\projects\webcat\WEB-INF\lib"/>
 
     <target name="init">
         <!-- Create the time stamp -->

@@ -41,7 +41,7 @@ public class StringAppender implements CharSequence
     }
 
     public StringAppender append(CharSequence s) {
-        if (s.length() > (capacity - size)) grow();
+        if (s.length() > (capacity - size)) grow(s.length());
         for (int i = 0; size < capacity; size++) {
             str[size] = s.charAt(i++);
         }
@@ -52,8 +52,9 @@ public class StringAppender implements CharSequence
     public StringAppender append(String s) {
         int len = s.length();
         if (len > (capacity - size)) {
-            grow();
+            grow(len);
         }
+
         s.getChars(0, len, str, size);
         size += len;
 
@@ -61,7 +62,7 @@ public class StringAppender implements CharSequence
     }
 
     public StringAppender append(char c) {
-        if (size >= capacity) grow();
+        if (size >= capacity) grow(1);
         str[size++] = c;
         return this;
     }
@@ -70,8 +71,9 @@ public class StringAppender implements CharSequence
         return size;
     }
 
-    public void grow() {
-        final char[] newArray = new char[capacity = capacity * 2];
+    public void grow(int s) {
+        if (capacity == 0) capacity = DEFAULT_SIZE;
+        final char[] newArray = new char[capacity += s * 2];
         System.arraycopy(str, 0, newArray, 0, size);
         str = newArray;
     }
