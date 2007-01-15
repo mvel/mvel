@@ -25,7 +25,7 @@ public class ASTOptimizer implements Optimizer {
                     token.optimizeAccessor(staticContext, factory);
                 }
 
-                currentNode = astStatement.addASTNode(new Property(token.getCompiledAccessor()));
+                currentNode = astStatement.addASTNode(new Property(token.getAccessorNode()));
             }
 
         }
