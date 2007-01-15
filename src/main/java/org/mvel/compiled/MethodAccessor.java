@@ -13,6 +13,7 @@ public class MethodAccessor implements AccessorNode {
     private Method method;
     private Class[] parameterTypes;
     private ExecutableStatement[] compiledParameters;
+    int length;
     private boolean coercionNeeded = false;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
@@ -42,18 +43,18 @@ public class MethodAccessor implements AccessorNode {
     }
 
     private Object[] executeAll(Object ctx, VariableResolverFactory vars) {
-        if (compiledParameters == null) return GetterAccessor.EMPTY;
+        if (length == 0) return GetterAccessor.EMPTY;
         
-        Object[] vals = new Object[compiledParameters.length];
-        for (int i = 0; i < vals.length; i++) {
+        Object[] vals = new Object[length];
+        for (int i = 0; i < length; i++) {
             vals[i] = compiledParameters[i].getValue(ctx, vars);
         }
         return vals;
     }
 
     private Object[] executeAndCoerce(Class[] target, Object elCtx, VariableResolverFactory vars) {
-        Object[] values = new Object[compiledParameters.length];
-        for (int i = 0; i < compiledParameters.length; i++) {
+        Object[] values = new Object[length];
+        for (int i = 0; i < length; i++) {
             //noinspection unchecked
             values[i] = convert(compiledParameters[i].getValue(elCtx, vars), target[i]);
         }
@@ -66,7 +67,7 @@ public class MethodAccessor implements AccessorNode {
 
     public void setMethod(Method method) {
         this.method = method;
-        this.parameterTypes = this.method.getParameterTypes();
+        this.length = (this.parameterTypes = this.method.getParameterTypes()).length;
     }
 
 
