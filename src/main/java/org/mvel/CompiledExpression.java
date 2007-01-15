@@ -14,7 +14,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     private boolean convertableIngressEgress;
 
-    private ExpressionParser expressionParser;
+    private transient ExpressionParser expressionParser;
 
     public CompiledExpression(char[] expression, TokenIterator tokenMap) {
         this.expression = expression;
@@ -75,7 +75,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
             expressionParser = new ExpressionParser(factory, staticContext, tokenMap);
         }
         
-        expressionParser.resetParser();
-        return expressionParser.parse();
+        return expressionParser.resetParser().parse();
     }
 }
