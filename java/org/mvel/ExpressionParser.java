@@ -9,11 +9,10 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.ExecutableStatement;
-import org.mvel.util.ExecutionStack;
+import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
-import org.mvel.util.StringAppender;
 
 import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
@@ -900,7 +899,7 @@ public class ExpressionParser {
 
 
     private Object reduce(Token tok) {
-        if (compileMode) return null;
+        if (compileMode) return tok.getName();
         else if (tok.isNegation()) {
             return !((Boolean) reduceParse(tok.getValueAsString(), ctx, variableFactory));
         }
@@ -1277,6 +1276,8 @@ public class ExpressionParser {
                             try {
                                 while (expr[cursor++] != ']') {
                                     projectionList.add(reduce(nextToken()));
+
+                                    skipWhitespace();
                                 }
 
                                 if (compileMode) {
@@ -1423,7 +1424,7 @@ public class ExpressionParser {
      */
     private Token reduceToken(Token token) {
         String s;
-        if (((fields & Token.CAPTURE_ONLY) != 0 || token.isLiteral())) {
+        if (token.isLiteral() || ((fields & Token.CAPTURE_ONLY) != 0)) {
             return token;
         }
         else if (fastExecuteMode) {
@@ -1777,6 +1778,7 @@ public class ExpressionParser {
     }
 
     private Token nextCompiledToken() {
+        if (!tokens.hasMoreTokens()) return null;
         Token tk;
         /**
          * If we're running in fast-execute mode (aka. running a compiled expression)
@@ -1785,89 +1787,92 @@ public class ExpressionParser {
          * TODO: Move this to another method ASAP.  This is ridiculous.  (Note from Mike to Mike)
          */
 
-        if (tokens.hasMoreTokens()) {
-            if ((tk = tokens.nextToken()).isOperator(Operator.ASSIGN)) {
-                return tk;
-            }
-            else if (tk.isCollectionCreation()) {
-                /**
-                 * We must handle collection creation differently for compiled
-                 * execution.  This is not code duplication.  Don't report this.
-                 */
-                switch (tk.getCollectionCreationType()) {
-                    case Token.LISTCREATE: {
-                        List<Object> newList = new ArrayList<Object>(tk.getKnownSize());
-                        newList.add(handleSubNesting(tokens.nextToken()));
+        if ((tk = tokens.nextToken()).isCollectionCreation()) {
+            /**
+             * We must handle collection creation differently for compiled
+             * execution.  This is not code duplication.  Don't report this.
+             */
+            switch (tk.getCollectionCreationType()) {
+                case Token.LISTCREATE: {
+                  //  List<Object> newList = new ArrayList<Object>(tk.getKnownSize());
+                   Object[] newList = new Object[tk.getKnownSize()];
+                    int i = 0;
 
-                        while (tokens.hasMoreTokens() &&
-                                (!tokens.peekToken().isEndNest())) {
+                    newList[i++] = handleSubNesting(tokens.nextToken());
 
-                            newList.add(handleSubNesting(tokens.nextToken()));
-                        }
+                    //newList.add(handleSubNesting(tokens.nextToken()));
 
-                        tokens.skipToken();
+                    while (tokens.hasMoreTokens() &&
+                            (!tokens.peekToken().isEndNest())) {
 
-                        tk.setFlag(true, Token.DO_NOT_REDUCE);
-                        
-                        return tk.setFinalValue(newList);
+                       // newList.add(handleSubNesting(tokens.nextToken()));
+                        newList[i++] = handleSubNesting(tokens.nextToken());
                     }
 
-                    case Token.MAPCREATE: {
-                        tk =  tokens.nextToken();
+                    tokens.skipToken();
 
-                        Map<Object, Object> newMap = new HashMap<Object, Object>();
+                    tk.setFlag(true, Token.DO_NOT_REDUCE);
 
-                        newMap.put(handleSubNesting(tk), handleSubNesting(tokens.nextToken()));
+                    return tk.setFinalValue(new FastList(newList));
+                }
 
-                        while (tokens.hasMoreTokens() && !tokens.peekToken().isEndNest()) {
-                            newMap.put(handleSubNesting(tokens.nextToken()), handleSubNesting(tokens.nextToken()));
-                        }
+                case Token.MAPCREATE: {
+                    Map<Object, Object> newMap = new FastMap(tk.getKnownSize());
 
-                        tokens.skipToken();
+                    tk = tokens.nextToken();
 
-                        tk.setFlag(true, Token.DO_NOT_REDUCE);
-                        tk.setFinalValue(newMap);
+
+                    newMap.put(handleSubNesting(tk), handleSubNesting(tokens.nextToken()));
+
+                    while (tokens.hasMoreTokens() && !tokens.peekToken().isEndNest()) {
+                        newMap.put(handleSubNesting(tokens.nextToken()), handleSubNesting(tokens.nextToken()));
                     }
-                    break;
 
-                    case Token.ARRAYCREATE: {
-                        Object[] newArray = new Object[tk.getKnownSize()];
-                        int i = 0;
+                    tokens.skipToken();
 
+                    tk.setFlag(true, Token.DO_NOT_REDUCE);
+                    tk.setFinalValue(newMap);
+                }
+                break;
+
+                case Token.ARRAYCREATE: {
+                    Object[] newArray = new Object[tk.getKnownSize()];
+                    int i = 0;
+
+                    newArray[i++] = handleSubNesting(tokens.nextToken());
+
+                    while (tokens.hasMoreTokens() &&
+                            !tokens.peekToken().isEndNest()) {
                         newArray[i++] = handleSubNesting(tokens.nextToken());
-
-                        while (tokens.hasMoreTokens() &&
-                                !tokens.peekToken().isEndNest()) {
-                            newArray[i++] = handleSubNesting(tokens.nextToken());
-                        }
-
-                        tokens.skipToken();
-
-                        tk.setFlag(true, Token.DO_NOT_REDUCE);
-
-                        return tk.setFinalValue(newArray);
                     }
-                }
 
-                if (tokens.hasMoreTokens() && tokens.peekToken().isPush()) {
-                    stk.push(tk.getValue());
-                    return (tk = tokens.nextToken()).setFinalValue(get(tk.getName(), stk.pop()));
+                    tokens.skipToken();
+
+                    tk.setFlag(true, Token.DO_NOT_REDUCE);
+
+                    return tk.setFinalValue(newArray);
                 }
-            }
-            else if (tk.isIdentifier()) {
-                reduceToken(tk);
-            }
-            else if (tk.isThisRef()) {
-                tk.setFinalValue(ctx);
             }
 
-            if (tk.isPush()) {
+            if (tokens.hasMoreTokens() && tokens.peekToken().isPush()) {
                 stk.push(tk.getValue());
+                return (tk = tokens.nextToken()).setFinalValue(get(tk.getName(), stk.pop()));
             }
         }
-        else {
-            tk = null;
+        else if (tk.isIdentifier()) {
+            reduceToken(tk);
         }
+        else if (tk.isOperator(Operator.ASSIGN)) {
+            return tk;
+        }
+        else if (tk.isThisRef()) {
+            tk.setFinalValue(ctx);
+        }
+
+        if (tk.isPush()) {
+            stk.push(tk.getValue());
+        }
+
 
         return tk;
     }
