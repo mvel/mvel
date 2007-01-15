@@ -528,7 +528,7 @@ public class CompiledUnitTest extends TestCase {
         ep.setCompiledStatement(compileExpression(text));
         ep.setVariableResolverFactory(variableTable);
 
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 1000000; i++) {
             ep.executeFast();
         }
     }

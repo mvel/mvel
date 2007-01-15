@@ -1808,6 +1808,7 @@ public class ExpressionParser {
                         tokens.skipToken();
 
                         tk.setFlag(true, Token.DO_NOT_REDUCE);
+                        
                         return tk.setFinalValue(newList);
                     }
 
@@ -1830,19 +1831,13 @@ public class ExpressionParser {
                     break;
 
                     case Token.ARRAYCREATE: {
-                        // List<Object> newList = new ArrayList<Object>();
                         Object[] newArray = new Object[tk.getKnownSize()];
                         int i = 0;
 
-                        //        newArray[i++] = handleSubNesting(tk.isNestBegin() ? tokens.nextToken() : tk);
-
                         newArray[i++] = handleSubNesting(tokens.nextToken());
-
-                        //   newList.add(handleSubNesting(tk.isNestBegin() ? tokens.nextToken() : tk));
 
                         while (tokens.hasMoreTokens() &&
                                 !tokens.peekToken().isEndNest()) {
-                            //  newList.add(handleSubNesting(tokens.nextToken()));
                             newArray[i++] = handleSubNesting(tokens.nextToken());
                         }
 
@@ -1851,7 +1846,6 @@ public class ExpressionParser {
                         tk.setFlag(true, Token.DO_NOT_REDUCE);
 
                         return tk.setFinalValue(newArray);
-                        //   return tk.setFinalValue(newList.toArray());
                     }
                 }
 
