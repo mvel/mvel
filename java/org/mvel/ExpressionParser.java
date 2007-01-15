@@ -2023,8 +2023,9 @@ public class ExpressionParser {
         return parse();
     }
 
-    public void resetParser() {
+    public ExpressionParser resetParser() {
         tokens.reset();
+        return this;
     }
 }
 
