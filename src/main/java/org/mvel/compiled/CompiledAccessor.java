@@ -2,13 +2,12 @@ package org.mvel.compiled;
 
 import org.mvel.*;
 import static org.mvel.ExpressionParser.compileExpression;
-import static org.mvel.ExpressionParser.executeExpression;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.util.PropertyTools;
 
-import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.Integer.parseInt;
@@ -330,7 +329,8 @@ public class CompiledAccessor {
         }
     }
 
-    private static final Map<String, Serializable[]> SUBEXPRESSION_CACHE = new WeakHashMap<String, Serializable[]>();
+    private static final Map<String, ExecutableStatement[]> SUBEXPRESSION_CACHE
+            = new WeakHashMap<String, ExecutableStatement[]>();
 
     /**
      * Find an appropriate method, execute it, and return it's response.
@@ -363,7 +363,7 @@ public class CompiledAccessor {
         cursor++;
 
         Object[] args;
-        Serializable[] es;
+        ExecutableStatement[] es;
 
         if (tk.length() == 0) {
             args = new Object[0];
@@ -374,16 +374,15 @@ public class CompiledAccessor {
                 es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
                 for (int i = 0; i < es.length; i++) {
-                    args[i] = executeExpression(es[i], this.ctx, variableFactory);
+                    args[i] = es[i].getValue(this.ctx, variableFactory);
                 }
             }
             else {
                 String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
-                es = new Serializable[subtokens.length];
+                es = new ExecutableStatement[subtokens.length];
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
-                    args[i] = executeExpression((es[i] = compileExpression(subtokens[i])), this.ctx, variableFactory);
-                    ((CompiledExpression) es[i]).setKnownEgressType(args[i] != null ? args[i].getClass() : null);
+                    args[i] = (es[i] = (CompiledExpression) compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
                 }
                 SUBEXPRESSION_CACHE.put(tk, es);
             }
