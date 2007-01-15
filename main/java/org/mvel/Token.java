@@ -509,6 +509,11 @@ public class Token implements Cloneable, Serializable {
         return compiledExpression;
     }
 
+
+    public CompiledAccessor getCompiledAccessor() {
+        return compiledAccessor;
+    }
+
     public void setCompiledExpression(CompiledExpression compiledExpression) {
         this.compiledExpression = compiledExpression;
     }

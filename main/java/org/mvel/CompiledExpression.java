@@ -1,8 +1,11 @@
-package org.mvel;                                      
+package org.mvel;
+
+import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.ExecutableStatement;
 
 import java.io.Serializable;
 
-public class CompiledExpression implements Serializable {
+public class CompiledExpression implements Serializable, ExecutableStatement {
     private char[] expression;
     private TokenIterator tokenMap;
 
@@ -63,5 +66,10 @@ public class CompiledExpression implements Serializable {
         if (knownIngressType != null && knownEgressType != null) {
              convertableIngressEgress = knownIngressType.isAssignableFrom(knownEgressType);
         }
+    }
+
+
+    public Object getValue(Object staticContext, VariableResolverFactory factory) {
+        return new ExpressionParser(factory, staticContext, tokenMap).parse();
     }
 }
