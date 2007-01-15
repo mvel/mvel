@@ -2,12 +2,12 @@ package org.mvel;
 
 public class TokenNode implements Cloneable {
     public TokenNode(Token token) {
-        try {
-            this.token = token.clone();
-        }
-        catch (CloneNotSupportedException e) {
-            throw new RuntimeException("unable to clone node", e);
-        }
+//        try {
+            this.token = token;
+//        }
+//        catch (CloneNotSupportedException e) {
+//            throw new RuntimeException("unable to clone node", e);
+//        }
     }
 
     public Token token;
