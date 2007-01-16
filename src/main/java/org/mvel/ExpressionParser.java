@@ -1794,21 +1794,13 @@ public class ExpressionParser {
              */
             switch (tk.getCollectionCreationType()) {
                 case Token.LISTCREATE: {
-                  //  List<Object> newList = new ArrayList<Object>(tk.getKnownSize());
-                   Object[] newList = new Object[tk.getKnownSize()];
+                    //  List<Object> newList = new ArrayList<Object>(tk.getKnownSize());
+                    Object[] newList = new Object[tk.getKnownSize()];
                     int i = 0;
 
                     newList[i++] = handleSubNesting(tokens.nextToken());
 
-                    //newList.add(handleSubNesting(tokens.nextToken()));
-
-//                    while (tokens.hasMoreTokens() &&
-//                            (!tokens.peekToken().isEndNest())) {
-
-
-
                     while (!tokens.peekNextTokenFlags(Token.ENDNEST)) {
-                       // newList.add(handleSubNesting(tokens.nextToken()));
                         newList[i++] = handleSubNesting(tokens.nextToken());
                     }
 
@@ -1824,7 +1816,7 @@ public class ExpressionParser {
 
                     newMap.put(handleSubNesting(tk = tokens.nextToken()), handleSubNesting(tokens.nextToken()));
 
-                    while (tokens.hasMoreTokens() && !tokens.peekToken().isEndNest()) {
+                    while (!tokens.peekNextTokenFlags(Token.ENDNEST)) {
                         newMap.put(handleSubNesting(tokens.nextToken()), handleSubNesting(tokens.nextToken()));
                     }
 
@@ -1841,8 +1833,7 @@ public class ExpressionParser {
 
                     newArray[i++] = handleSubNesting(tokens.nextToken());
 
-                    while (tokens.hasMoreTokens() &&
-                            !tokens.peekToken().isEndNest()) {
+                    while (!tokens.peekNextTokenFlags(Token.ENDNEST)) {
                         newArray[i++] = handleSubNesting(tokens.nextToken());
                     }
 
