@@ -321,10 +321,7 @@ public class Token implements Cloneable, Serializable {
 
 
     public void createDeferralOptimization() {
-      //  compiledAccessor = new CompiledAccessor();
         accessorNode = new Deferral();
-
-    //    compiledAccessor.addAccessorNode(new Deferral());
     }
 
 
