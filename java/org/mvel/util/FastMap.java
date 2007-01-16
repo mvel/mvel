@@ -8,10 +8,10 @@ public class FastMap extends AbstractMap {
     private Set entrySet;
     private Node[] values;
     private int size;
-    private int capacity;
+   // private int capacity;
 
     public FastMap(int capacity) {
-        entrySet = new FastSet(this.capacity = capacity);
+        entrySet = new FastSet(capacity);
         values = new Node[capacity * 2];
     }
 

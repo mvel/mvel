@@ -12,8 +12,8 @@ public class MethodAccessor implements AccessorNode {
 
     private Method method;
     private Class[] parameterTypes;
-    private ExecutableStatement[] compiledParameters;
-    int length;
+    private ExecutableStatement[] parms;
+    private int length;
     private boolean coercionNeeded = false;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
@@ -47,7 +47,7 @@ public class MethodAccessor implements AccessorNode {
         
         Object[] vals = new Object[length];
         for (int i = 0; i < length; i++) {
-            vals[i] = compiledParameters[i].getValue(ctx, vars);
+            vals[i] = parms[i].getValue(ctx, vars);
         }
         return vals;
     }
@@ -56,7 +56,7 @@ public class MethodAccessor implements AccessorNode {
         Object[] values = new Object[length];
         for (int i = 0; i < length; i++) {
             //noinspection unchecked
-            values[i] = convert(compiledParameters[i].getValue(elCtx, vars), target[i]);
+            values[i] = convert(parms[i].getValue(elCtx, vars), target[i]);
         }
         return values;
     }
@@ -71,12 +71,12 @@ public class MethodAccessor implements AccessorNode {
     }
 
 
-    public ExecutableStatement[] getCompiledParameters() {
-        return compiledParameters;
+    public ExecutableStatement[] getParms() {
+        return parms;
     }
 
-    public void setCompiledParameters(ExecutableStatement[] compiledParameters) {
-        this.compiledParameters = compiledParameters;
+    public void setParms(ExecutableStatement[] parms) {
+        this.parms = parms;
     }
 
     public MethodAccessor() {

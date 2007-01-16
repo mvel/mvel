@@ -29,6 +29,7 @@ public class CompiledAccessor {
     private AccessorNode currNode;
 
     private Object ctx;
+    private Object thisRef;
 
     private VariableResolverFactory variableFactory;
 
@@ -54,10 +55,17 @@ public class CompiledAccessor {
     public CompiledAccessor(char[] property, Object ctx, VariableResolverFactory variableFactory) {
         this.property = property;
         this.length = property != null ? property.length : 0;
-        this.ctx = ctx;
+        this.thisRef = this.ctx = ctx;
         this.variableFactory = variableFactory;
     }
 
+    public CompiledAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableFactory) {
+        this.property = property;
+        this.length = property != null ? property.length : 0;
+        this.ctx = ctx;
+        this.variableFactory = variableFactory;
+        this.thisRef = thisRef;
+    }
 
 
     public CompiledAccessor(String property, Object ctx) {
@@ -144,7 +152,7 @@ public class CompiledAccessor {
     }
 
     public void addAccessorNode(AccessorNode an) {
-        if (currNode == null)
+        if (rootNode == null)
             rootNode = currNode = an;
         else {
             currNode = currNode.setNextNode(an);
@@ -192,7 +200,7 @@ public class CompiledAccessor {
 
             addAccessorNode(accessor);
 
-            return this.ctx;
+            return this.thisRef;
         }
         else if (Token.LITERALS.containsKey(property)) {
             StaticReferenceAccessor accessor = new StaticReferenceAccessor();
@@ -456,7 +464,7 @@ public class CompiledAccessor {
 
             MethodAccessor access = new MethodAccessor();
             access.setMethod(m);
-            access.setCompiledParameters(es);
+            access.setParms(es);
 
             addAccessorNode(access);
 
@@ -514,6 +522,10 @@ public class CompiledAccessor {
         return null;
     }
 
+
+    public void setRootNode(AccessorNode rootNode) {
+        this.rootNode = this.currNode = rootNode;
+    }
 
     public AccessorNode getRootNode() {
         return rootNode;
