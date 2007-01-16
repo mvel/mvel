@@ -38,6 +38,7 @@ public class Base {
 
 
         funMap.put("foo", new Foo());
+        funMap.put("foo_bar", new Foo());
     }
 
 

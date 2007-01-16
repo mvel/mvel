@@ -33,6 +33,8 @@ public class ParserUnitTest extends TestCase {
         map.put("zero", 0);
 
         map.put("doubleTen", new Double(10));
+
+        map.put("variable_with_underscore", "HELLO");
     }
 
     public void testPassThru() {
@@ -384,7 +386,18 @@ public class ParserUnitTest extends TestCase {
         assertEquals(String.class, parse("@{a = 'foo'; a.getClass()}"));
     }
 
-    
+    public void testVariableAccess() {
+        assertEquals("HELLO", parseDirect("variable_with_underscore"));
+    }
+
+    public void testMapAccess3() {
+        assertEquals("happyBar", parseDirect("funMap.foo_bar.happy()"));
+    }
+
+    public void testMapAsMethodParm() {
+        assertEquals("happyBar", parseDirect("readBack(funMap.foo_bar.happy())"));
+    }
+
     public void testCacheAggressivelyReAssignmentAllowed() {
     	Interpreter.setCacheAggressively(true);
         assertEquals("bar", parse("@{a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]}"));
