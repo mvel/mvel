@@ -26,7 +26,7 @@ public class ParserUnitTest extends TestCase {
         map.put("c", "cat");
         map.put("BWAH", "");
 
-   //     map.put("misc", new MiscTestClass());
+        //     map.put("misc", new MiscTestClass());
 
         map.put("pi", "3.14");
         map.put("hour", "60");
@@ -395,13 +395,13 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testMapAsMethodParm() {
-        assertEquals("happyBar", parseDirect("readBack(funMap.foo_bfar.happy())"));
+        assertEquals("happyBar", parseDirect("readBack(funMap.foo_bar.happy())"));
     }
 
     public void testCacheAggressivelyReAssignmentAllowed() {
-    	Interpreter.setCacheAggressively(true);
+        Interpreter.setCacheAggressively(true);
         assertEquals("bar", parse("@{a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]}"));
-    }      
+    }
 
     public void testComplexExpression() {
         assertEquals("bar", parse("@{a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]}"));
@@ -523,6 +523,14 @@ public class ParserUnitTest extends TestCase {
         assertEquals("MVEL's Parser is Fast", parse("@{'MVEL\\'s Parser is Fast'}"));
     }
 
+    public void testThisReferenceInConstructor() {
+        assertEquals("101", parseDirect("new String(this.number)"));
+    }
+
+    public void testChainedMethodCallOnConstructor() {
+        assertEquals(String.class, parseDirect("new String('foo').getClass()"));
+    }
+
     public void testThisReferenceInMethodCall() {
         assertEquals(101, parseDirect("Integer.parseInt(this.number)"));
     }
@@ -530,7 +538,7 @@ public class ParserUnitTest extends TestCase {
     public void testInlineVarAssignment() {
         assertTrue((Boolean) parseDirect("x = ((a = 100) + (b = 200) + (c = 300)); (a == 100 && b == 200 && c == 300 && x == 600)"));
     }
-    
+
 
     public void testEvalToBoolean() {
         assertEquals(true, (boolean) ExpressionParser.evalToBoolean("true ", "true"));
@@ -565,7 +573,7 @@ public class ParserUnitTest extends TestCase {
     }
 
     public Object parseDirect(String ex) {
-      //  return compiledExecute(ex);
+        //  return compiledExecute(ex);
         return ExpressionParser.eval(ex, base, map);
     }
 

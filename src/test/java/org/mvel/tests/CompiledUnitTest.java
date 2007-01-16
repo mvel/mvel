@@ -7,14 +7,12 @@ import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.res.Bar;
 import org.mvel.tests.res.Base;
 import org.mvel.tests.res.Foo;
+import org.mvel.tests.res.PDFFieldUtil;
 import org.mvel.util.FastList;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CompiledUnitTest extends TestCase {
     Foo foo = new Foo();
@@ -466,12 +464,25 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(101, parseDirect("Integer.parseInt(this.number)"));
     }
 
+    public void testThisReferenceInConstructor() {
+        assertEquals("101", parseDirect("new String(this.number)"));
+    }
+
+
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
     }
 
     public Object compiledExecute(String ex) {
+        Serializable compiled = compileExpression(ex);
+        Object first = executeExpression(compiled, base, map);
+        Object second = executeExpression(compiled, base, map);
+        assertEquals(first, second);
+        return second;
+    }
+
+    public Object compiledExecute(String ex, Object base, Map map) {
         Serializable compiled = compileExpression(ex);
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);
@@ -580,76 +591,17 @@ public class CompiledUnitTest extends TestCase {
         }
     }
 
-    /**
-     * Start JDFI Here
-     */
-    //      public void testJFDIToList()  throws Exception {
-    //        String text = "misc.toList(foo.bar.name, 'hello', 42, {'key1' => 'value1', c => [ foo.bar.age, 'car', 42 ]}, [42, {c => 'value1'}] )";
-    //
-    //        JFDIParser parser = createParser( text );
-    //        this.factory.setVariables( map );
-    //        Expr expr = (Expr) parser.atom();
-    //
-    //        List list = null;
-    //        int count = 100000000;
-    //        long start = System.currentTimeMillis();
-    //        for ( int i = 0; i < count; i++ ) {
-    //            list = (List)  expr.getValue();
-    //        }
-    //        long end = System.currentTimeMillis();
-    //        System.out.println( end  - start);
-    //
-    //        assertSame( "dog", list.compileGetChain( 0 ) );
-    //        assertEquals( "hello", list.compileGetChain( 1 ) );
-    //        assertEquals( new Integer( 42 ), list.compileGetChain( 2 ) );
-    //        Map map = ( Map ) list.compileGetChain( 3 );
-    //        assertEquals( "value1", map.compileGetChain( "key1" ) );
-    //
-    //        List nestedList = ( List ) map.compileGetChain(  "cat" );
-    //        assertEquals( new Integer( 14 ), nestedList.compileGetChain( 0 )  );
-    //        assertEquals( "car", nestedList.compileGetChain( 1 )  );
-    //        assertEquals( new Integer(42), nestedList.compileGetChain( 2 )  );
-    //
-    //        nestedList  = (List) list.compileGetChain( 4 );
-    //        assertEquals( new Integer( 42 ), nestedList.compileGetChain( 0 )  );
-    //        map = ( Map ) nestedList.compileGetChain( 1 );
-    //        assertEquals( "value1", map.compileGetChain( "cat" )  );
-    //    }
-    //
-    //    private DefaultValueHandlerFactory factory;
-    //    private ClassTypeResolver typeResolver;
-    //
-    //
-    //    protected JFDIParser createParser(String text) throws IOException {
-    //        this.factory = new DefaultValueHandlerFactory( new ClassTypeResolver() );
-    //        this.typeResolver = new ClassTypeResolver();
-    //
-    //        JFDIParser parser = new JFDIParser( createTokenStream( text ) );
-    //        parser.setValueHandlerFactory( factory );
-    //        parser.setTypeResolver( typeResolver );
-    //        return parser;
-    //    }
-    //
-    //    private TokenStream createTokenStream(String text) throws IOException {
-    //        return new CommonTokenStream( createLexer( text ) );
-    //    }
-    //
-    //    private org.codehaus.jfdi.parser.JFDILexer createLexer(String text) throws IOException {
-    //        org.codehaus.jfdi.parser.JFDILexer lexer = new org.codehaus.jfdi.parser.JFDILexer( createStream( text ) );
-    //        return lexer;
-    //    }
-    //
-    //    private CharStream createStream(String text) throws IOException {
-    //        if ( text.endsWith( ".jfdi" ) ) {
-    //            return new ANTLRReaderStream( createReader( text ) );
-    //        }
-    //
-    //        return new ANTLRStringStream( text );
-    //    }
-    //
-    //    private Reader createReader(String text) {
-    //        InputStream in = getClass().getResourceAsStream( text );
-    //        return new InputStreamReader( in );
-    //    }
+    public void calculateAge() {
+        System.out.println("Calculating the Age");
+        Calendar c1 = Calendar.getInstance();
+        c1.set(1999, 0, 10); // 1999 jan 20
+        Map objectMap = new HashMap(1);
+        Map propertyMap = new HashMap(1);
+        propertyMap.put("GEBDAT", c1.getTime());
+        objectMap.put("EV_VI_ANT1", propertyMap);
+        System.out.println(new PDFFieldUtil().calculateAge(c1.getTime()));
+        System.out.println(compiledExecute("new org.mvel.tests.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'X' : ''"
+                , null, objectMap));
+    }
 
 }
