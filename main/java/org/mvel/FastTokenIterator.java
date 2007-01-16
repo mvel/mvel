@@ -1,5 +1,7 @@
 package org.mvel;
 
+import org.mvel.util.StringAppender;
+
 import java.util.ArrayList;
 
 public class FastTokenIterator implements TokenIterator, Cloneable {
@@ -51,6 +53,13 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
             return null;
     }
 
+
+    public boolean peekNextTokenFlags(int flags) {
+        if (cursor >= length) return false;
+        return (token[cursor].getFlags() & flags) != 0;
+    }    
+
+
     public Token peekLast() {
         if (cursor > 0) {
             return token[cursor - 1];
@@ -80,7 +89,7 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
 
 
     public String showTokenChain() {
-        StringBuilder sb = new StringBuilder();
+        StringAppender sb = new StringAppender();
         for (int i = 0; i < length; i++) {
             sb.append("(" + i + "): <<" + token[i].getName() + ">> = <<" + token[i].getValue() + ">> [" + (token[i].getValue() != null ? token[i].getValue().getClass() : "null") + "]").append("\n");
         }

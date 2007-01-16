@@ -1,12 +1,12 @@
 package org.mvel.conversion;
 
-import org.mvel.ConversionHandler;
 import org.mvel.ConversionException;
+import org.mvel.ConversionHandler;
 
-import java.util.Map;
-import java.util.HashMap;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BigDecimalCH implements ConversionHandler {
     private static final Map<Class, Converter> CNV =

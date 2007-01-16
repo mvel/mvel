@@ -1,15 +1,14 @@
 package org.mvel.conversion;
 
-import static java.lang.reflect.Array.set;
-import static java.lang.reflect.Array.newInstance;
-
-import static org.mvel.DataConversion.convert;
-import static org.mvel.DataConversion.canConvert;
-import org.mvel.ConversionHandler;
 import org.mvel.ConversionException;
+import org.mvel.ConversionHandler;
+import static org.mvel.DataConversion.canConvert;
+import static org.mvel.DataConversion.convert;
 
-import java.util.Map;
+import static java.lang.reflect.Array.newInstance;
+import static java.lang.reflect.Array.set;
 import java.util.HashMap;
+import java.util.Map;
 
 public class PrimArrayHandler implements ConversionHandler {
     private final Map<Class, Converter> CNV = new HashMap<Class, Converter>();

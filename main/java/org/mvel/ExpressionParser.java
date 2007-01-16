@@ -1802,9 +1802,12 @@ public class ExpressionParser {
 
                     //newList.add(handleSubNesting(tokens.nextToken()));
 
-                    while (tokens.hasMoreTokens() &&
-                            (!tokens.peekToken().isEndNest())) {
+//                    while (tokens.hasMoreTokens() &&
+//                            (!tokens.peekToken().isEndNest())) {
 
+
+
+                    while (!tokens.peekNextTokenFlags(Token.ENDNEST)) {
                        // newList.add(handleSubNesting(tokens.nextToken()));
                         newList[i++] = handleSubNesting(tokens.nextToken());
                     }

@@ -1,6 +1,7 @@
 package org.mvel;
 
 import static org.mvel.NodeType.*;
+import org.mvel.util.StringAppender;
 
 import static java.lang.Boolean.getBoolean;
 import static java.lang.Character.isWhitespace;
@@ -223,7 +224,7 @@ public class TemplateParser {
     }
 
     private static String indent(final int depth) {
-        final StringBuilder sb = new StringBuilder();
+        final StringAppender sb = new StringAppender();
         for (int i = depth; i >= 0; i--) {
             sb.append("    ");
         }

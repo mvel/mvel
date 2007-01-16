@@ -2,8 +2,8 @@ package org.mvel;
 
 import org.mvel.util.ParseTools;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Tester {
     public static void main(String[] args) {

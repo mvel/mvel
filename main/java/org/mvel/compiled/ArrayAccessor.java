@@ -3,8 +3,6 @@ package org.mvel.compiled;
 import org.mvel.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
 
-import java.util.Map;
-
 public class ArrayAccessor implements AccessorNode {
     private AccessorNode nextNode;
 

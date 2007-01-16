@@ -7,6 +7,7 @@ import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.util.PropertyTools;
+import org.mvel.util.StringAppender;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
@@ -422,7 +423,7 @@ public class CompiledAccessor {
 
 
         if (m == null) {
-            StringBuilder errorBuild = new StringBuilder();
+            StringAppender errorBuild = new StringAppender();
             for (int i = 0; i < args.length; i++) {
                 errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
                 if (i < args.length - 1) errorBuild.append(", ");

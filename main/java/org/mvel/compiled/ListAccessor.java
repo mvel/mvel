@@ -3,7 +3,6 @@ package org.mvel.compiled;
 import org.mvel.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
 
-import java.util.Map;
 import java.util.List;
 
 public class ListAccessor implements AccessorNode {

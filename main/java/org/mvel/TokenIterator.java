@@ -7,6 +7,7 @@ public interface TokenIterator extends Cloneable {
     public Token peekNext();
     public Token peekToken();
     public Token peekLast();
+    public boolean peekNextTokenFlags(int flags);
     public void back();
     public Token tokensBack(int offset);
     public boolean hasMoreTokens();
