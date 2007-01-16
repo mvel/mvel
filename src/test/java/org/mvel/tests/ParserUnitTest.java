@@ -395,7 +395,7 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testMapAsMethodParm() {
-        assertEquals("happyBar", parseDirect("readBack(funMap.foo_bar.happy())"));
+        assertEquals("happyBar", parseDirect("readBack(funMap.foo_bfar.happy())"));
     }
 
     public void testCacheAggressivelyReAssignmentAllowed() {
