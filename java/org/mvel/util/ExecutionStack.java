@@ -1,7 +1,5 @@
 package org.mvel.util;
 
-import static org.mvel.util.ParseTools.debug;
-
 public class ExecutionStack implements Stack {
     private StackElement element;
     private int size = 0;

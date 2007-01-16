@@ -1,11 +1,11 @@
 package org.mvel.conversion;
 
-import org.mvel.ConversionHandler;
 import org.mvel.ConversionException;
+import org.mvel.ConversionHandler;
 
-import java.util.Map;
-import java.util.HashMap;
 import static java.lang.String.valueOf;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CharCH implements ConversionHandler {
     private static final Map<Class, Converter> CNV =

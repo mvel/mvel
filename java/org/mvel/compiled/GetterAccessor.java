@@ -4,7 +4,6 @@ import org.mvel.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 
 public class GetterAccessor implements AccessorNode {
     private AccessorNode nextNode;
