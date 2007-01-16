@@ -503,14 +503,15 @@ public class ExpressionParser {
                     }
                     else {
                         fields |= Token.CAPTURE_ONLY;
+                        tk = nextToken();
 
-                        String[] name = captureContructorAndResidual(nextToken().getName());
+                        String[] name = captureContructorAndResidual(tk.getName());
                         stk.push(constructObject(name[0], ctx, variableFactory));
 
                         setFieldFalse(Token.CAPTURE_ONLY);
 
                         if (name.length == 2) {
-                            stk.push(get(name[1], stk.pop()));
+                            stk.push(get(name[1], stk.pop(), variableFactory, ctx));
                         }
                     }
                 }
