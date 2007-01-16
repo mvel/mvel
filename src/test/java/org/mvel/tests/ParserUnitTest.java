@@ -7,9 +7,11 @@ import org.mvel.Interpreter;
 import org.mvel.tests.res.Bar;
 import org.mvel.tests.res.Base;
 import org.mvel.tests.res.Foo;
+import org.mvel.tests.res.PDFFieldUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -581,6 +583,19 @@ public class ParserUnitTest extends TestCase {
         Serializable compiled = ExpressionParser.compileExpression(ex);
         return ExpressionParser.executeExpression(compiled, base, map);
     }
+        public void calculateAge() {
+        System.out.println("Calculating the Age");
+        Calendar c1 = Calendar.getInstance();
+        c1.set(1999, 0, 10); // 1999 jan 20
+        Map objectMap = new HashMap(1);
+        Map propertyMap = new HashMap(1);
+        propertyMap.put("GEBDAT", c1.getTime());
+        objectMap.put("EV_VI_ANT1", propertyMap);
+        System.out.println(new PDFFieldUtil().calculateAge(c1.getTime()));
+        System.out.println(ExpressionParser.eval("new org.mvel.tests.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'X' : ''"
+                , null, objectMap));
+    }
+
 
 //    public void testToList() {
 //        String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";

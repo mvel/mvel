@@ -77,6 +77,15 @@ public class PropertyAccessor {
         this.thisReference = thisReference;
     }
 
+    public PropertyAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory resolver, Object thisReference) {
+        this.property = property;
+        this.length = property.length;
+        this.ctx = ctx;
+        this.thisReference = thisRef;
+        this.resolver = resolver;
+        this.thisReference = thisReference;
+    }
+
     public PropertyAccessor(VariableResolverFactory resolver, Object thisReference) {
         this.resolver = resolver;
         this.thisReference = thisReference;
