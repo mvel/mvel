@@ -485,15 +485,33 @@ public class ExpressionParser {
                 stk.discard();
 
                 try {
-                    fields |= Token.CAPTURE_ONLY;
+                    if (fastExecuteMode) {
+                        tk = nextCompiledToken();
+                        if (!tk.isOptimized()) {
+                            tk.setAccessorNode(
+                                    ParseTools.compileConstructor(tk.getName(), ctx, variableFactory)
+                            );
+                        }
 
-                    String[] name = captureContructorAndResidual(fastExecuteMode ? nextCompiledToken().getName() : nextToken().getName());
+                        stk.push(tk.getOptimizedValue(ctx, ctx, variableFactory));
+                    }
+                    else if (compileMode) {
+                        fields |= Token.CAPTURE_ONLY;                       
+                        tk = nextToken();
+                        tk.setIdentifier(false);
+                        setFieldFalse(Token.CAPTURE_ONLY);
+                    }
+                    else {
+                        fields |= Token.CAPTURE_ONLY;
 
-                    stk.push(constructObject(name[0], ctx, variableFactory));
-                    setFieldFalse(Token.CAPTURE_ONLY);
+                        String[] name = captureContructorAndResidual(nextToken().getName());
+                        stk.push(constructObject(name[0], ctx, variableFactory));
 
-                    if (name.length == 2) {
-                        stk.push(get(name[1], stk.pop()));
+                        setFieldFalse(Token.CAPTURE_ONLY);
+
+                        if (name.length == 2) {
+                            stk.push(get(name[1], stk.pop()));
+                        }
                     }
                 }
                 catch (InstantiationException e) {
@@ -504,10 +522,15 @@ public class ExpressionParser {
                 }
                 catch (InvocationTargetException e) {
                     throw new CompileException("unable to instantiate class", e);
-
+                }
+                catch (NoSuchMethodException e) {
+                    throw new CompileException("no default constructor for class", e);
                 }
                 catch (ClassNotFoundException e) {
                     throw new CompileException("class not found: " + e.getMessage(), e);
+                }
+                catch (Exception e) {
+                    throw new CompileException("error constructing object", e);
                 }
 
                 return 1;

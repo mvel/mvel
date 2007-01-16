@@ -1,12 +1,13 @@
 package org.mvel.util;
 
-import org.mvel.CompileException;
+import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.eval;
-import org.mvel.ParseException;
-import org.mvel.Token;
+import org.mvel.compiled.CompiledAccessor;
+import org.mvel.compiled.ConstructorAccessor;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.ExecutableStatement;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
@@ -285,7 +286,71 @@ public class ParseTools {
         }
     }
 
-    public static String[] captureContructorAndResidual(String token) {
+    public static AccessorNode compileConstructor(String expression, Object ctx, VariableResolverFactory vars) throws
+            InstantiationException, IllegalAccessException, InvocationTargetException,
+            ClassNotFoundException, NoSuchMethodException {
+
+
+        String[] cnsRes = captureContructorAndResidual(expression);
+
+        String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
+
+        if (constructorParms != null) {
+            Class cls = Token.LITERALS.containsKey(expression = expression.substring(0, expression.indexOf('('))) ?
+                    ((Class) Token.LITERALS.get(expression)) : createClass(expression);
+
+            ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
+
+            for (int i = 0; i < constructorParms.length; i++) {
+                cStmts[i] = (ExecutableStatement) ExpressionParser.compileExpression(constructorParms[i]);
+            }
+
+            Object[] parms = new Object[constructorParms.length];
+            for (int i = 0; i < constructorParms.length; i++) {
+                parms[i] = cStmts[i].getValue(ctx, vars);
+            }
+
+            Constructor cns = getBestConstructorCanadidate(parms, cls);
+
+            if (cns == null)
+                throw new CompileException("unable to find constructor for: " + cls.getName());
+
+            for (int i = 0; i < parms.length; i++) {
+                //noinspection unchecked
+                parms[i] = convert(parms[i], cns.getParameterTypes()[i]);
+            }
+
+            AccessorNode ca = new ConstructorAccessor(cns, cStmts);
+
+            if (cnsRes.length > 1) {
+                CompiledAccessor compiledAccessor
+                        = new CompiledAccessor(cnsRes[1].toCharArray(), cns.newInstance(parms), ctx, vars);
+                compiledAccessor.setRootNode(ca);
+                compiledAccessor.compileGetChain();
+                ca = compiledAccessor.getRootNode();
+            }
+
+            return ca;
+        }
+        else {
+            Constructor cns = Class.forName(expression).getConstructor();
+            AccessorNode ca = new ConstructorAccessor(cns, null);
+
+            if (cnsRes.length > 1) {
+                CompiledAccessor compiledAccessor
+                        = new CompiledAccessor(cnsRes[1].toCharArray(), cns.newInstance(), ctx, vars);
+                compiledAccessor.setRootNode(ca);
+                compiledAccessor.compileGetChain();
+                ca = compiledAccessor.getRootNode();
+            }
+
+            return ca;
+        }
+    }
+
+    public static String[] captureContructorAndResidual
+            (String
+                    token) {
         char[] cs = token.toCharArray();
 
         int depth = 0;
@@ -304,7 +369,9 @@ public class ParseTools {
         return new String[]{token};
     }
 
-    public static Class boxPrimitive(Class cls) {
+    public static Class boxPrimitive
+            (Class
+                    cls) {
         if (cls == int.class) {
             return Integer.class;
         }
@@ -351,7 +418,10 @@ public class ParseTools {
         return null;
     }
 
-    public static boolean containsCheck(Object compareTo, Object compareTest) {
+    public static boolean containsCheck
+            (Object
+                    compareTo, Object
+                    compareTest) {
         if (compareTo == null)
             return false;
         else if (compareTo instanceof String)
@@ -369,7 +439,8 @@ public class ParseTools {
         return false;
     }
 
-    public static int createClassSignatureHash(Class[] sig) {
+    public static int createClassSignatureHash
+            (Class[] sig) {
         int hash = 0;
         for (Class cls : sig) {
             if (cls != null) hash += cls.hashCode();
@@ -377,7 +448,9 @@ public class ParseTools {
         return hash + sig.length;
     }
 
-    public static char handleEscapeSequence(char escapedChar) {
+    public static char handleEscapeSequence
+            (
+                    char escapedChar) {
         switch (escapedChar) {
             case'\\':
                 return '\\';
@@ -394,18 +467,23 @@ public class ParseTools {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main
+            (String[] args) {
         for (Package p : Package.getPackages()) {
             System.out.println(p);
         }
     }
 
-    public static boolean debug(String str) {
+    public static boolean debug
+            (String
+                    str) {
         System.out.println(str);
         return true;
     }
 
-    public static boolean debug(Throwable t) {
+    public static boolean debug
+            (Throwable
+                    t) {
         t.printStackTrace();
         return true;
     }
