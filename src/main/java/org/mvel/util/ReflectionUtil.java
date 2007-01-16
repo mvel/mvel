@@ -1,11 +1,11 @@
 package org.mvel.util;
 
-import static java.util.regex.Pattern.compile;
-import java.lang.reflect.Method;
 import java.lang.reflect.Field;
-import java.util.regex.Pattern;
-import java.util.Set;
+import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
+import static java.util.regex.Pattern.compile;
 
 /**
  * Utilities for working with reflection.

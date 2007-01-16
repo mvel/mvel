@@ -9,6 +9,7 @@ import static org.mvel.util.ParseTools.getBestCanadidate;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
+import org.mvel.util.StringAppender;
 
 import java.io.Serializable;
 import static java.lang.Character.isJavaIdentifierPart;
@@ -571,7 +572,7 @@ public class PropertyAccessor {
         }
 
         if (m == null) {
-            StringBuilder errorBuild = new StringBuilder();
+            StringAppender errorBuild = new StringAppender();
             for (int i = 0; i < args.length; i++) {
                 errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
                 if (i < args.length - 1) errorBuild.append(", ");

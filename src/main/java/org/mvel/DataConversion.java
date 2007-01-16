@@ -1,9 +1,10 @@
 package org.mvel;
 
-import java.util.*;
-import java.math.BigDecimal;
-
 import org.mvel.conversion.*;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DataConversion {
     private static final Map<Class, ConversionHandler> CONVERTERS

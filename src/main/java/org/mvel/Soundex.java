@@ -1,5 +1,7 @@
 package org.mvel;
 
+import org.mvel.util.StringAppender;
+
 /*
  * Copyright (c) Ian F. Darwin, http://www.darwinsys.com/, 1996-2002.
  * All rights reserved. Software written by Ian F. Darwin and others.
@@ -101,7 +103,7 @@ public class Soundex {
     public static String soundex(String s) {
         char[] ca = s.toUpperCase().toCharArray();
 
-        StringBuilder res = new StringBuilder();
+        StringAppender res = new StringAppender();
         char c, prev = '?';
 
         // Main loop: find up to 4 chars that map.
