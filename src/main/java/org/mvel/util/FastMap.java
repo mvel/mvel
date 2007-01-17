@@ -4,7 +4,7 @@ package org.mvel.util;
 import java.util.AbstractMap;
 import java.util.Set;
 
-public class FastMap extends AbstractMap {
+public class FastMap<K,V> extends AbstractMap<K,V> {
     private Set entrySet;
     private Node[] values;
     private int size;
@@ -20,7 +20,7 @@ public class FastMap extends AbstractMap {
     }
 
 
-    public Object put(Object key, Object value) {
+    public V put(Object key, Object value) {
         size++;
         entrySet.add(key);
 
@@ -39,8 +39,8 @@ public class FastMap extends AbstractMap {
         return get(key) != null;
     }
 
-    public Object get(Object key) {
-        return values[hash(key)].getValue(key);
+    public V get(Object key) {
+        return (V) values[hash(key)].getValue(key);
     }
 
 
@@ -59,18 +59,18 @@ public class FastMap extends AbstractMap {
         return (hashCode ^ (hashCode >>> 7) ^ (hashCode >>> 4)) & values.length - 1;
     }
 
-    public static class Node {
+    public static class Node<K, V> {
         private Node next;
-        private Object key;
-        private Object value;
+        private K key;
+        private V value;
 
 
-        public Node(Object key, Object value) {
+        public Node(K key, V value) {
             this.key = key;
             this.value = value;
         }
 
-        public Object getValue(Object key) {
+        public V getValue(K key) {
             Node n = this;
             do {
                 if (key.equals(n.key)) return value;
@@ -80,7 +80,7 @@ public class FastMap extends AbstractMap {
             return null;
         }
 
-        public Node add(Object key, Object value) {
+        public Node add(K key, V value) {
             Node n = new Node(key, value);
             n.next = this;
             return n;
