@@ -1,4 +1,4 @@
-package org.mvel.tests.experimental;
+package org.mvel.experimental;
 
 import junit.framework.TestCase;
 import org.mvel.CompiledExpression;
