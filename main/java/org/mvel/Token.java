@@ -309,6 +309,7 @@ public class Token implements Cloneable, Serializable {
                     throw new OptimizationFailure("token: " + new String(name), e);
                 else {
                     assert ParseTools.debug(e);
+
                     return getOptimizedValue(ctx, elCtx, variableFactory);
                 }
             }
