@@ -1836,7 +1836,7 @@ public class ExpressionParser {
                 }
 
                 case Token.MAPCREATE: {
-                    Map<Object, Object> newMap = new FastMap(tk.getKnownSize());
+                    Map<Object, Object> newMap = new FastMap<Object, Object>(tk.getKnownSize());
 
                     newMap.put(handleSubNesting(tk = tokens.nextToken()), handleSubNesting(tokens.nextToken()));
 
