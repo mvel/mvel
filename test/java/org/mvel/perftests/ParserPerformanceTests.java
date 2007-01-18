@@ -1,13 +1,13 @@
-package org.mvel.tests;
+package org.mvel.perftests;
 
 import junit.framework.TestCase;
 import ognl.Ognl;
 import ognl.OgnlException;
 import org.mvel.ExpressionParser;
 import org.mvel.Interpreter;
-import org.mvel.tests.res.Bar;
-import org.mvel.tests.res.Base;
-import org.mvel.tests.res.Foo;
+import org.mvel.tests.main.res.Bar;
+import org.mvel.tests.main.res.Base;
+import org.mvel.tests.main.res.Foo;
 
 import java.util.HashMap;
 import java.util.Map;
