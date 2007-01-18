@@ -2,7 +2,7 @@ package org.mvel.perftests;
 
 import ognl.Ognl;
 import org.mvel.ExpressionParser;
-import org.mvel.tests.res.Base;
+import org.mvel.tests.main.res.Base;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

@@ -4,10 +4,10 @@ import junit.framework.TestCase;
 import org.mvel.ExpressionParser;
 import static org.mvel.ExpressionParser.compileExpression;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.tests.CompiledUnitTest;
-import org.mvel.tests.res.Bar;
-import org.mvel.tests.res.Base;
-import org.mvel.tests.res.Foo;
+import org.mvel.tests.main.CompiledUnitTest;
+import org.mvel.tests.main.res.Bar;
+import org.mvel.tests.main.res.Base;
+import org.mvel.tests.main.res.Foo;
 
 import java.util.HashMap;
 import java.util.Map;

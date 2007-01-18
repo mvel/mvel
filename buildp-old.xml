@@ -44,12 +44,12 @@
 
     <target name="el-tests">
         <junit fork="yes" haltonfailure="yes">
-            <test name="org.mvel.tests.ParserUnitTest"/>
+            <test name="org.mvel.tests.main.ParserUnitTest"/>
             <formatter type="plain" usefile="false"/>
             <classpath refid="test.classpath"/>
         </junit>
         <junit fork="yes" haltonfailure="yes">
-            <test name="org.mvel.tests.CompiledUnitTest"/>
+            <test name="org.mvel.tests.main.CompiledUnitTest"/>
             <formatter type="plain" usefile="false"/>
             <classpath refid="test.classpath"/>
         </junit>

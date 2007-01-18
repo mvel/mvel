@@ -8,9 +8,9 @@ import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.ExecutableStatement;
-import org.mvel.tests.res.Bar;
-import org.mvel.tests.res.Base;
-import org.mvel.tests.res.Foo;
+import org.mvel.tests.main.res.Bar;
+import org.mvel.tests.main.res.Base;
+import org.mvel.tests.main.res.Foo;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -426,7 +426,7 @@ public class CompiledUnitTestEx extends TestCase {
     }
 
     public void testThisReference3() {
-        assertEquals(true, parseDirect("this is 'org.mvel.tests.res.Base'"));
+        assertEquals(true, parseDirect("this is 'org.mvel.tests.main.res.Base'"));
     }
 
 
