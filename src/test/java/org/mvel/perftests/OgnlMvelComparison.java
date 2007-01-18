@@ -1,4 +1,4 @@
-package org.mvel.tests;
+package org.mvel.perftests;
 
 import ognl.Ognl;
 import org.mvel.ExpressionParser;
