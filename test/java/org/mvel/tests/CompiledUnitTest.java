@@ -3,7 +3,6 @@ package org.mvel.tests;
 import junit.framework.TestCase;
 import org.mvel.ExpressionParser;
 import static org.mvel.ExpressionParser.*;
-import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.res.Bar;
 import org.mvel.tests.res.Base;
 import org.mvel.tests.res.Foo;
@@ -15,9 +14,9 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public class CompiledUnitTest extends TestCase {
-    Foo foo = new Foo();
-    Map<String, Object> map = new HashMap<String, Object>();
-    Base base = new Base();
+    protected Foo foo = new Foo();
+    protected Map<String, Object> map = new HashMap<String, Object>();
+    protected Base base = new Base();
 
     public CompiledUnitTest() {
         foo.setBar(new Bar());
@@ -469,7 +468,6 @@ public class CompiledUnitTest extends TestCase {
     }
 
 
-
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
     }
@@ -530,28 +528,6 @@ public class CompiledUnitTest extends TestCase {
         }
     }
 
-    public void testToListBenchmark() {
-        String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
-
-        MapVariableResolverFactory variableTable = new MapVariableResolverFactory(map);
-        variableTable.pack();
-
-        ExpressionParser ep = new ExpressionParser();
-        ep.setCompiledStatement(compileExpression(text));
-        ep.setVariableResolverFactory(variableTable);
-
-        for (int i = 0; i < 1000; i++) {
-            ep.executeFast();
-        }
-    }
-
-    public void testToListBenchmark2() {
-        testToListBenchmark();
-    }
-
-    public void testToListBenchmark3() {
-        testToListBenchmark();
-    }
 
     public void testToList() {
         String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
@@ -579,7 +555,7 @@ public class CompiledUnitTest extends TestCase {
         }
     }
 
-    public class MiscTestClass {
+    public static class MiscTestClass {
         public List toList(Object object1, String string, int integer, Map map, List list) {
             List l = new ArrayList();
             l.add(object1);
