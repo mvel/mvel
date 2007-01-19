@@ -459,6 +459,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("FooBar", parseDirect("java.lang.String.valueOf('FooBar')"));
     }
 
+    public void testStaticNamespaceClassWithMethod2() {
+        assertEquals("FooBar", parseDirect("(java.lang.String).valueOf('FooBar')"));
+    }
+
     public void testThisReferenceInMethodCall() {
         assertEquals(101, parseDirect("Integer.parseInt(this.number)"));
     }
