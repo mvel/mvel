@@ -2,17 +2,21 @@ package org.mvel;
 
 import static org.mvel.DataConversion.convert;
 import static org.mvel.Operator.*;
+import static org.mvel.PropertyAccessor.get;
 import org.mvel.compiled.CompiledAccessor;
 import org.mvel.compiled.Deferral;
+import org.mvel.compiled.ThisValueAccessor;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
+import static org.mvel.util.ParseTools.valueOnly;
 import static org.mvel.util.PropertyTools.isNumber;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
+import static java.lang.Class.forName;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.valueOf;
 import java.math.BigDecimal;
@@ -68,11 +72,10 @@ public class Token implements Cloneable, Serializable {
     private int fields = 0;
 
     private CompiledExpression compiledExpression;
-   // private CompiledAccessor compiledAccessor;
     private AccessorNode accessorNode;
     private int knownSize = 0;
 
-//    private Class knownType;
+    Token nextToken;
 
     public static final Map<String, Object> LITERALS =
             new HashMap<String, Object>(35, 0.6f);
@@ -305,12 +308,12 @@ public class Token implements Cloneable, Serializable {
         }
         catch (NullPointerException e) {
             if (accessorNode == null) {
-                if (!optimizeAccessor(ctx, variableFactory))
-                    throw new OptimizationFailure("token: " + new String(name), e);
+                if (!optimizeAccessor(isPush() ? valueOnly(ctx) : elCtx, variableFactory, isPush() ? null : new ThisValueAccessor()))
+                    throw new OptimizationFailure("token: " + new String(name) + " (push=" + isPush() + ")", e);
                 else {
                     assert ParseTools.debug(e);
 
-                    return getOptimizedValue(ctx, elCtx, variableFactory);
+                    return getOptimizedValue(valueOnly(ctx), elCtx, variableFactory);
                 }
             }
             else {
@@ -321,19 +324,26 @@ public class Token implements Cloneable, Serializable {
     }
 
 
-    public void createDeferralOptimization() {
+    public Token createDeferralOptimization() {
         accessorNode = new Deferral();
+        return this;
     }
 
 
-    public boolean optimizeAccessor(Object ctx, VariableResolverFactory variableFactory) {
+    public boolean optimizeAccessor(Object ctx, VariableResolverFactory variableFactory, AccessorNode root) {
         try {
             CompiledAccessor compiledAccessor = new CompiledAccessor(name, ctx, variableFactory);
             setNumeric(false);
             setNumeric(isNumber(compiledAccessor.compileGetChain()));
             setFlag(true, Token.OPTIMIZED_REF);
 
-            accessorNode = compiledAccessor.getRootNode();
+            if (root != null) {
+                root.setNextNode(compiledAccessor.getRootNode());
+                accessorNode = root;
+            }
+            else {
+                accessorNode = compiledAccessor.getRootNode();
+            }
 
             return true;
 
@@ -368,6 +378,241 @@ public class Token implements Cloneable, Serializable {
         else if (value instanceof String) return ((String) value).toCharArray();
         else return valueOf(value).toCharArray();
     }
+
+    public Token _getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory, boolean failBit) {
+        try {
+            return getOptimizedValue(ctx, eCtx, factory);
+        }
+        catch (OptimizationFailure e) {
+            /**
+             * If the token failed to optimize, we perform a lookahead to see if this is forgivable.
+             */
+            if (lookAhead()) {
+                /**
+                 * The token failed to reduce for forgivable reasons (ie. an assignment) so we record this
+                 * as a deferral, so we don't try to reduce this anymore at runtime.
+                 */
+
+                createDeferralOptimization();
+                return this;
+            }
+            else {
+                /**
+                 * This is a genuine error.  We bail.
+                 */
+                throw e;
+            }
+        }
+        catch (PropertyAccessException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            /**
+             * For the purpose of dynamic re-optimization we allow a "retry" of the reduction after we have
+             * cleared the old optimized tree.  However, if the failNext bit remains high, we bail as we
+             * clearly can't re-optimize.
+             */
+            if (failBit) {
+                throw new CompileException("optimization failure for: " + this, e);
+            }
+
+
+            try {
+                synchronized (this) {
+                    deOptimize();
+                    return _getReducedValueAccelerated(ctx, eCtx, factory, true);
+                }
+            }
+            catch (Exception e2) {
+                throw new CompileException("optimization failure for: " + this, e);
+            }
+        }
+    }
+
+    public Token getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory) {
+        if ((fields & (LITERAL)) != 0) {
+            return this;
+        }
+
+        return _getReducedValueAccelerated(ctx, eCtx, factory, false);
+    }
+
+
+    /**
+     * This method is called by the parser when it can't resolve a token.  There are two cases where this may happen
+     * under non-fatal circumstances: ASSIGNMENT or PROJECTION.  If one of these situations is indeed the case,
+     * the execution continues after a quick adjustment to allow the parser to continue as if we're just at a
+     * junction.  Otherwise we explode.
+     *
+     * @return -
+     */
+    private boolean lookAhead() {
+        Token tk = this;
+
+        if ((tk = tk.nextToken) != null) {
+            if (tk.isOperator(Operator.ASSIGN) || tk.isOperator(Operator.PROJECTION)) {
+                nextToken = tk;
+
+            }
+            else if (!tk.isOperator()) {
+                throw new CompileException("expected operator but encountered token: " + tk.getName());
+            }
+            else
+                return false;
+        }
+        else {
+            return false;
+        }
+        return true;
+    }
+
+    public Token getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        String s;
+        if ((fields & LITERAL) != 0 || ((fields & Token.CAPTURE_ONLY) != 0)) {
+            return this;
+        }
+
+        /**
+         * To save the GC a little bit of work, we don't initialize a property accessor unless we need it, and we
+         * reuse the same instance if we need it more than once.
+         */
+        // if (propertyAccessor == null)
+
+        if ((fields & Token.PUSH) != 0) {
+            /**
+             * This token is attached to a stack value, and we use the top stack value as the context for the
+             * property accessor.
+             */
+            return setValue(get(name, ctx, factory, thisValue));
+        }
+        else if ((fields & Token.DEEP_PROPERTY) != 0) {
+            /**
+             * The token is a DEEP PROPERTY (meaning it contains unions) in which case we need to traverse an object
+             * graph.
+             */
+            if (Token.LITERALS.containsKey(s = getAbsoluteRootElement())) {
+                /**
+                 * The root of the DEEP PROPERTY is a literal.
+                 */
+                Object literal = Token.LITERALS.get(s);
+                if (literal == ThisLiteral.class) literal = thisValue;
+
+                return setValue(get(getRemainder(), literal, factory, thisValue));
+            }
+            else if (factory != null && factory.isResolveable(s)) {
+                /**
+                 * The root of the DEEP PROPERTY is a local or global var.
+                 */
+                return setValue(get(getRemainder(), factory.getVariableResolver(s).getValue(), factory, thisValue));
+
+            }
+            else if (thisValue != null) {
+                /**
+                 * We didn't resolve the root, yet, so we assume that if we have a VROOT then the property must be
+                 * accessible as a field of the VROOT.
+                 */
+
+                try {
+                    return setValue(get(name, thisValue, factory, thisValue));
+                }
+                catch (PropertyAccessException e) {
+                    /**
+                     * No luck. Make a last-ditch effort to resolve this as a static-class reference.
+                     */
+                    Token tk = tryStaticAccess(thisValue, factory);
+                    if (tk == null) throw e;
+                    return tk;
+                }
+            }
+            else {
+                Token tk = tryStaticAccess(thisValue, factory);
+                if (tk == null) throw new CompileException("unable to resolve token: " + s);
+                return tk;
+            }
+        }
+        else {
+            if (Token.LITERALS.containsKey(s = getAbsoluteName())) {
+                /**
+                 * The token is actually a literal.
+                 */
+                return setValue(Token.LITERALS.get(s));
+            }
+            else if (factory != null && factory.isResolveable(s)) {
+                /**
+                 * The token is a local or global var.
+                 */
+
+                if (isCollection()) {
+                    return setValue(get(new String(name, endOfName, name.length - endOfName),
+                            factory.getVariableResolver(s).getValue(), factory, thisValue));
+                }
+                return setValue(factory.getVariableResolver(s).getValue());
+            }
+            else if (thisValue != null) {
+                /**
+                 * Check to see if the var exists in the VROOT.
+                 */
+                try {
+                    return setValue(get(name, thisValue, factory, thisValue));
+                }
+                catch (RuntimeException e) {
+                    /**
+                     * Nope.  Let's see if this a a LA-issue.
+                     */
+                    if (!lookAhead()) throw e;
+                }
+            }
+            else {
+                if (!lookAhead())
+                    throw new CompileException("unable to resolve token: " + s);
+            }
+        }
+        return this;
+    }
+
+    private Token tryStaticAccess(Object thisRef, VariableResolverFactory factory) {
+        try {
+            /**
+             * Try to resolve this *smartly* as a static class reference.
+             *
+             * This starts at the end of the token and starts to step backwards to figure out whether
+             * or not this may be a static class reference.  We search for method calls simply by
+             * inspecting for ()'s.  The first union area we come to where no brackets are present is our
+             * test-point for a class reference.  If we find a class, we pass the reference to the
+             * property accessor along  with trailing methods (if any).
+             *
+             */
+            boolean meth = false;
+            int depth = 0;
+            int last = name.length;
+            for (int i = last - 1; i > 0; i--) {
+                switch (name[i]) {
+                    case'.':
+                        if (!meth) {
+                            return setValue(
+                                    get(new String(name, last, name.length - last), forName(new String(name, 0, last)), factory, thisRef)
+                            );
+                        }
+                        meth = false;
+                        last = i;
+                        break;
+                    case')':
+                        if (depth++ == 0)
+                            meth = true;
+                        break;
+                    case'(':
+                        depth--;
+                        break;
+                }
+            }
+        }
+        catch (Exception cnfe) {
+            // do nothing.
+        }
+
+        return null;
+    }
+
 
     public Token setValue(Object value) {
         //String s;
@@ -681,6 +926,15 @@ public class Token implements Cloneable, Serializable {
 
     public void setKnownSize(int knownSize) {
         this.knownSize = knownSize;
+    }
+
+
+    public Token getNextToken() {
+        return nextToken;
+    }
+
+    public void setNextToken(Token nextToken) {
+        this.nextToken = nextToken;
     }
 }
 
