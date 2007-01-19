@@ -299,8 +299,9 @@ public class Token implements Cloneable, Serializable {
             if ((fields & NUMERIC) != 0) {
                 value = numericValue = convert(accessorNode.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
             }
-            else
+            else {
                 value = accessorNode.getValue(ctx, elCtx, variableFactory);
+            }
 
             if ((fields & NEGATION) != 0) value = !((Boolean) value);
 
@@ -439,7 +440,6 @@ public class Token implements Cloneable, Serializable {
             }
         }
     }
-
 
 
     /**
@@ -648,6 +648,12 @@ public class Token implements Cloneable, Serializable {
             throw new CompileException("unable to create numeric value from: '" + value + "'");
         }
 
+        return this;
+    }
+
+    public Token setFinalValue(int fields, Object value) {
+        this.fields |= fields;
+        this.value = value;
         return this;
     }
 
