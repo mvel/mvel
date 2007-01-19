@@ -1679,8 +1679,8 @@ public class ExpressionParser {
                 return (tk = tokens.nextToken()).setFinalValue(get(tk.getName(), stk.pop()));
             }
         }
-        else if (tk.isIdentifier()) {
-            reduceToken(tk);
+        else if (reduce && tk.isIdentifier()) {
+            tk.getReducedValueAccelerated(tk.isPush() ? stk.pop() : null, ctx, variableFactory);
         }
         else if (tk.isOperator(Operator.ASSIGN)) {
             return tk;

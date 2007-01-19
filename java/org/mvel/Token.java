@@ -308,12 +308,14 @@ public class Token implements Cloneable, Serializable {
         }
         catch (NullPointerException e) {
             if (accessorNode == null) {
-                if (!optimizeAccessor(isPush() ? valueOnly(ctx) : elCtx, variableFactory, isPush() ? null : new ThisValueAccessor()))
+                Object v = valueOnly(ctx);
+                if (!optimizeAccessor(isPush() ? v : elCtx,
+                        variableFactory, isPush() ? null : elCtx != null ? new ThisValueAccessor() : null))
                     throw new OptimizationFailure("token: " + new String(name) + " (push=" + isPush() + ")", e);
                 else {
                     assert ParseTools.debug(e);
 
-                    return getOptimizedValue(valueOnly(ctx), elCtx, variableFactory);
+                    return getOptimizedValue(v, elCtx, variableFactory);
                 }
             }
             else {
@@ -379,6 +381,15 @@ public class Token implements Cloneable, Serializable {
         else return valueOf(value).toCharArray();
     }
 
+
+    public Token getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory) {
+        if ((fields & (LITERAL)) != 0) {
+            return this;
+        }
+
+        return _getReducedValueAccelerated(ctx, eCtx, factory, false);
+    }
+
     public Token _getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory, boolean failBit) {
         try {
             return getOptimizedValue(ctx, eCtx, factory);
@@ -429,13 +440,6 @@ public class Token implements Cloneable, Serializable {
         }
     }
 
-    public Token getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory) {
-        if ((fields & (LITERAL)) != 0) {
-            return this;
-        }
-
-        return _getReducedValueAccelerated(ctx, eCtx, factory, false);
-    }
 
 
     /**
