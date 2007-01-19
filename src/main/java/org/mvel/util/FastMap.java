@@ -4,15 +4,21 @@ package org.mvel.util;
 import java.util.AbstractMap;
 import java.util.Set;
 
-public class FastMap<K,V> extends AbstractMap<K,V> {
+public class FastMap<K, V> extends AbstractMap<K, V> {
     private Set entrySet;
     private Node[] values;
     private int size;
-   // private int capacity;
+    private boolean init = false;
+
+    private Object[] lateInitKeys;
+    private Object[] lateInitVals;
 
     public FastMap(int capacity) {
         entrySet = new FastSet(capacity);
         values = new Node[capacity * 2];
+
+        lateInitKeys = new Object[capacity];
+        lateInitVals = new Object[capacity];
     }
 
     public Set entrySet() {
@@ -21,7 +27,16 @@ public class FastMap<K,V> extends AbstractMap<K,V> {
 
 
     public V put(Object key, Object value) {
+        if (!init) {
+            lateInitKeys[size] = key;
+            lateInitVals[size] = value;
+
+            size++;
+            return null;
+        }
+
         size++;
+
         entrySet.add(key);
 
         int target = hash(key);
@@ -40,7 +55,20 @@ public class FastMap<K,V> extends AbstractMap<K,V> {
     }
 
     public V get(Object key) {
+        if (!init) {
+            initialize();
+        }
+
         return (V) values[hash(key)].getValue(key);
+    }
+
+    private void initialize() {
+        init = true;
+        int preInitSize = size;
+        size = 0;
+        for (int i = 0; i < preInitSize; i++) {
+            put(lateInitKeys[i], lateInitVals[i]);
+        }
     }
 
 

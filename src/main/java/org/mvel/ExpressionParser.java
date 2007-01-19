@@ -30,7 +30,7 @@ public class ExpressionParser {
 
     private boolean returnBigDecimal = false;
 
-    private int roundingMode  = BigDecimal.ROUND_HALF_DOWN;
+    private int roundingMode = BigDecimal.ROUND_HALF_DOWN;
 
     private boolean compileMode = false;
     private boolean fastExecuteMode = false;
@@ -41,18 +41,12 @@ public class ExpressionParser {
     private int length;
 
     private Object ctx;
-
     private TokenIterator tokens;
-
     private VariableResolverFactory variableFactory;
-
     private final Stack stk = new ExecutionStack();
-
-    private PropertyAccessor propertyAccessor;
     private CompiledExpression compiledExpression;
 
     private static Map<String, char[]> EX_PRECACHE;
-
 
     static {
         configureFactory();
@@ -139,14 +133,10 @@ public class ExpressionParser {
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
         return ((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars));
-
-        //    return new ExpressionParser(compiledExpression, ctx, vars).parse();
     }
 
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
         return ((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory);
-
-        //   return new ExpressionParser(compiledExpression, ctx, resolverFactory).parse();
     }
 
     /**
@@ -159,8 +149,6 @@ public class ExpressionParser {
      */
     public static Object executeExpression(final Object compiledExpression, final VariableResolverFactory factory) {
         return ((ExecutableStatement) compiledExpression).getValue(null, factory);
-
-        //    return new ExpressionParser(compiledExpression, factory).parse();
     }
 
     /**
@@ -173,8 +161,6 @@ public class ExpressionParser {
      */
     public static Object executeExpression(final Object compiledExpression, final Object ctx) {
         return ((ExecutableStatement) compiledExpression).getValue(ctx, null);
-
-        //     return new ExpressionParser(compiledExpression, ctx).parse();
     }
 
 
@@ -189,8 +175,6 @@ public class ExpressionParser {
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Map vars) {
         return ((ExecutableStatement) compiledExpression).getValue(null, new MapVariableResolverFactory(vars));
-
-        //     return new ExpressionParser(compiledExpression, null, vars).parse();
     }
 
 
@@ -405,7 +389,6 @@ public class ExpressionParser {
         switch (o) {
             case AND:
                 if (stk.peek() instanceof Boolean && !((Boolean) ParseTools.valueOnly(stk.peek()))) {
-                    fields |= Token.DO_NOT_REDUCE;
                     return unwindStatement() ? -1 : 0;
                 }
                 break;
@@ -422,14 +405,14 @@ public class ExpressionParser {
                     return 1;
                 }
                 else {
-                    fields |= Token.CAPTURE_ONLY;
+                    reduce = false;
                     stk.clear();
 
                     while ((tk = nextToken()) != null && !tk.isOperator(Operator.TERNARY_ELSE)) {
                         //nothing
                     }
 
-                    setFieldFalse(Token.CAPTURE_ONLY);
+                    reduce = true;
 
                     return 1;
                 }
@@ -495,19 +478,19 @@ public class ExpressionParser {
                         stk.push(tk.getOptimizedValue(ctx, ctx, variableFactory).getValue());
                     }
                     else if (compileMode) {
-                        fields |= Token.CAPTURE_ONLY;
+                        reduce = false;
                         tk = nextToken();
                         tk.setIdentifier(false);
-                        setFieldFalse(Token.CAPTURE_ONLY);
+                        reduce = true;
                     }
                     else {
-                        fields |= Token.CAPTURE_ONLY;
+                        reduce = false;
                         tk = nextToken();
 
                         String[] name = captureContructorAndResidual(tk.getName());
                         stk.push(constructObject(name[0], ctx, variableFactory));
 
-                        setFieldFalse(Token.CAPTURE_ONLY);
+                        reduce = true;
 
                         if (name.length == 2) {
                             stk.push(get(name[1], stk.pop(), variableFactory, ctx));
@@ -890,15 +873,12 @@ public class ExpressionParser {
              * This token represents a subexpression, and we must recurse into that expression.
              */
 
-            setFieldFalse(Token.SUBEVAL);
-
             if (fastExecuteMode) {
                 /**
                  * We are executing it fast mode, so we simply execute the compiled subexpression.
                  */
                 tk.setFinalValue(tk.getCompiledExpression().getValue(ctx, variableFactory)).getValue();
 
-                //      tk.setFinalValue(executeExpression(tk.getCompiledExpression(), ctx, variableFactory)).getValue();
             }
             else if (compileMode) {
                 /**
@@ -931,7 +911,6 @@ public class ExpressionParser {
                 return ~((BigDecimal) o).intValue();
         }
         else if (tok.isSubeval()) {
-            setFieldFalse(Token.SUBEVAL);
             return reduceParse(tok.getValueAsString(), ctx, variableFactory);
         }
         else return tok.getValue();
@@ -1459,7 +1438,6 @@ public class ExpressionParser {
     }
 
 
-
     /**
      * This method is called by the parser when it can't resolve a token.  There are two cases where this may happen
      * under non-fatal circumstances: ASSIGNMENT or PROJECTION.  If one of these situations is indeed the case,
@@ -1612,8 +1590,6 @@ public class ExpressionParser {
         /**
          * If we're running in fast-execute mode (aka. running a compiled expression)
          * we retrieve the next token from the compiled stack
-         *
-         * TODO: Move this to another method ASAP.  This is ridiculous.  (Note from Mike to Mike)
          */
 
         if ((tk = tokens.nextToken()).isCollectionCreation()) {
@@ -1623,7 +1599,6 @@ public class ExpressionParser {
              */
             switch (tk.getCollectionCreationType()) {
                 case Token.LISTCREATE: {
-                    //  List<Object> newList = new ArrayList<Object>(tk.getKnownSize());
                     Object[] newList = new Object[tk.getKnownSize()];
                     int i = 0;
 
@@ -1635,9 +1610,7 @@ public class ExpressionParser {
 
                     tokens.skipToken();
 
-                    tk.setFlag(true, Token.DO_NOT_REDUCE);
-
-                    return tk.setFinalValue(new FastList(newList));
+                    return tk.setFinalValue(Token.DO_NOT_REDUCE, new FastList(newList));
                 }
 
                 case Token.MAPCREATE: {
@@ -1651,8 +1624,7 @@ public class ExpressionParser {
 
                     tokens.skipToken();
 
-                    tk.setFlag(true, Token.DO_NOT_REDUCE);
-                    tk.setFinalValue(newMap);
+                    tk.setFinalValue(Token.DO_NOT_REDUCE, newMap);
                 }
                 break;
 
@@ -1668,9 +1640,7 @@ public class ExpressionParser {
 
                     tokens.skipToken();
 
-                    tk.setFlag(true, Token.DO_NOT_REDUCE);
-
-                    return tk.setFinalValue(newArray);
+                    tk.setFinalValue(Token.DO_NOT_REDUCE, newArray);
                 }
             }
 
@@ -1693,7 +1663,6 @@ public class ExpressionParser {
             stk.push(tk.getValue());
         }
 
-
         return tk;
     }
 
@@ -1713,10 +1682,12 @@ public class ExpressionParser {
             if (v instanceof LocalVariableResolverFactory) return v;
             v = v.getNextFactory();
         }
-        if (variableFactory == null)
+        if (variableFactory == null) {
             return variableFactory = new LocalVariableResolverFactory(new HashMap<String, Object>());
-        else
+        }
+        else {
             return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(variableFactory);
+        }
     }
 
 
