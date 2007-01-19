@@ -540,11 +540,11 @@ public class ExpressionParser {
                     operator = (Integer) stk.pop();
                     v2 = processToken(stk.pop());
                 }
-                else if ((fields & Token.EVAL_RIGHT) != 0) {
-                    operator = (Integer) v1;
-                    v2 = processToken(stk.pop());
-                    v1 = processToken(stk.pop());
-                }
+//                else if ((fields & Token.EVAL_RIGHT) != 0) {
+//                    operator = (Integer) v1;
+//                    v2 = processToken(stk.pop());
+//                    v1 = processToken(stk.pop());
+//                }
                 else {
                     operator = (Integer) v1;
                     v1 = processToken(stk.pop());
@@ -1187,10 +1187,10 @@ public class ExpressionParser {
                      * anything.  Often the appearance of redundancy is not such.
                      */
                     case'[':
-                        if (capture) {
-                            cursor++;
-                            continue;
-                        }
+//                        if (capture) {
+//                            cursor++;
+//                            continue;
+//                        }
 
                         cursor++;
 
@@ -1250,12 +1250,12 @@ public class ExpressionParser {
 
                             setFieldFalse(Token.MAPCREATE);
 
-                            if (cursor < length && (expr[cursor] == '.')) {
-                                capture = false;
-                                fields |= Token.PUSH;
-                                stk.push(map);
-                                continue;
-                            }
+//                            if (cursor < length && (expr[cursor] == '.')) {
+//                                capture = false;
+//                                fields |= Token.PUSH;
+//                                stk.push(map);
+//                                continue;
+//                            }
 
                             return (createToken(expr, start + 1, cursor - 1, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE))
                                     .setValue(map);
@@ -1331,14 +1331,14 @@ public class ExpressionParser {
 
                         setFieldFalse(Token.ARRAYCREATE);
 
-                        if (cursor < length && (expr[cursor] == '.')) {
-                            capture = false;
-
-                            fields |= Token.PUSH;
-
-                            stk.push(projectionList.toArray());
-                            continue;
-                        }
+//                        if (cursor < length && (expr[cursor] == '.')) {
+//                            capture = false;
+//
+//                            fields |= Token.PUSH;
+//
+//                            stk.push(projectionList.toArray());
+//                            continue;
+//                        }
 
 
                         return (createToken(expr, start + 1, cursor - 1, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE))
@@ -1644,10 +1644,10 @@ public class ExpressionParser {
                 }
             }
 
-            if (tokens.hasMoreTokens() && tokens.peekToken().isPush()) {
-                stk.push(tk.getValue());
-                return (tk = tokens.nextToken()).setFinalValue(get(tk.getName(), stk.pop()));
-            }
+//            if (tokens.hasMoreTokens() && tokens.peekToken().isPush()) {
+//                stk.push(tk.getValue());
+//                return (tk = tokens.nextToken()).setFinalValue(get(tk.getName(), stk.pop()));
+//            }
         }
         else if (reduce && tk.isIdentifier()) {
             tk.getReducedValueAccelerated(tk.isPush() ? stk.pop() : null, ctx, variableFactory);
