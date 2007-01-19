@@ -71,6 +71,22 @@ public class ParserUnitTest extends TestCase {
         assertEquals(true, parse("@{foo.bar.name != 'foo'}"));
     }
 
+    public void testTextComparison2() {
+        assertEquals(false, parseDirect("null == foo.bar.name"));
+    }
+
+    public void testNENumbers() {
+        assertEquals(true, parseDirect("10 != 9"));
+    }
+
+    public void testNENumbers2() {
+        assertEquals(true, parseDirect("10 != null"));
+    }
+
+    public void testNENumbers3() {
+        assertEquals(true, parseDirect("null != 10"));
+    }
+
     public void testShortPathExpression() {
         assertEquals(null, parseDirect("3 > 4 && foo.toUC('test'); foo.register"));
     }
@@ -97,6 +113,10 @@ public class ParserUnitTest extends TestCase {
 
     public void testMath() {
         assertEquals(188.4, parse("@{pi * hour}"));
+    }
+
+    public void testMath2() {
+        assertEquals(10f / 4f, parseDirect("10 / 4"));
     }
 
     public void testTemplating() {
@@ -296,6 +316,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals("foobarcar", parse("@{'foo' + 'bar' + 'car'}"));
     }
 
+    public void testStrAppendForce() {
+        assertEquals("11", parseDirect("1 # 1"));
+    }
+
     public void testStrAppend2() {
         assertEquals("foobarcar1", parse("@{'foobar' + 'car' + 1}"));
     }
@@ -306,6 +330,14 @@ public class ParserUnitTest extends TestCase {
 
     public void testInstanceCheck2() {
         assertEquals(false, parse("@{pi is 'java.lang.Integer'}"));
+    }
+
+    public void testConversionCheck() {
+        assertEquals(true, parseDirect("pi convertable_to java.math.BigDecimal"));
+    }
+
+    public void testConversionCheck2() {
+        assertEquals(true, parseDirect("pi convertable_to java.lang.Integer"));
     }
 
     public void testBitwiseOr1() {
@@ -334,6 +366,10 @@ public class ParserUnitTest extends TestCase {
 
     public void testShiftRight() {
         assertEquals(128, parse("@{256 >> 1}"));
+    }
+
+    public void testUnsignedRightShift() {
+        assertEquals(-5 >>> 2, parseDirect("-5 >>> 2"));
     }
 
     public void testXOR() {
@@ -583,7 +619,8 @@ public class ParserUnitTest extends TestCase {
         Serializable compiled = ExpressionParser.compileExpression(ex);
         return ExpressionParser.executeExpression(compiled, base, map);
     }
-        public void calculateAge() {
+
+    public void calculateAge() {
         System.out.println("Calculating the Age");
         Calendar c1 = Calendar.getInstance();
         c1.set(1999, 0, 10); // 1999 jan 20
@@ -595,7 +632,6 @@ public class ParserUnitTest extends TestCase {
         System.out.println(ExpressionParser.eval("new org.mvel.tests.main.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'X' : ''"
                 , null, objectMap));
     }
-
 
 //    public void testToList() {
 //        String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
