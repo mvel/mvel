@@ -487,4 +487,8 @@ public class ParseTools {
         t.printStackTrace();
         return true;
     }
+
+    public static Object valueOnly(Object o) {
+        return (o instanceof Token) ? ((Token) o).getValue() : o;
+    }
 }

@@ -1,19 +1,19 @@
 package org.mvel;
 
 public class TokenMap implements TokenIterator {
-    private TokenNode firstToken;
-    private TokenNode current;
+    private Token firstToken;
+    private Token current;
 
-    public TokenMap(TokenNode firstToken) {
+    public TokenMap(Token firstToken) {
         this.current = this.firstToken = firstToken;
     }
 
     public void addTokenNode(Token token) {
-        if (this.current == null) {
-            this.firstToken = this.current = new TokenNode(token);
+        if (this.firstToken == null) {
+            this.firstToken = this.current= token;
         }
         else {
-           this.current = this.current.next = new TokenNode(token);
+           this.current = (this.current.nextToken = token);
         }
     }
 
@@ -27,22 +27,28 @@ public class TokenMap implements TokenIterator {
 
     public Token nextToken() {
         if (current == null) return null;
-
-        Token tk = current.token;
-        current = current.next;
-        return tk;
+        try {
+            return current;
+        }
+        finally {
+            current = current.nextToken;
+        }
+       
+       // Token tk = current.token;
+      //  current = current.next;
+      //  return tk;
     }
 
 
     public void skipToken() {
          if (current != null)
-            current = current.next;
+            current = current.nextToken;
     }
 
 
     public Token peekNext() {
-        if (current != null && current.next != null)
-            return current.next.token;
+        if (current != null && current.nextToken != null)
+            return current.nextToken;
         else
             return null;
     }
@@ -50,17 +56,17 @@ public class TokenMap implements TokenIterator {
 
     public boolean peekNextTokenFlags(int flags) {
         if (current == null) return false;
-        return (flags & current.token.getFlags()) != 0;
+        return (flags & current.nextToken.getFlags()) != 0;
     }
 
     public Token peekToken() {
         if (current == null) return null;
-        return current.token;
+        return current.nextToken;
     }
 
     public void removeToken() {
         if (current != null) {
-            current = current.next;
+            current = current.nextToken;
         }
     }
 

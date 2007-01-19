@@ -21,7 +21,6 @@ import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
 import static java.util.Collections.synchronizedMap;
 import static java.util.regex.Pattern.compile;
@@ -35,7 +34,7 @@ public class ExpressionParser {
 
     private boolean compileMode = false;
     private boolean fastExecuteMode = false;
-    private boolean failNext = false;
+    private boolean reduce = true;
 
     private int fields;
     private int cursor;
@@ -405,20 +404,20 @@ public class ExpressionParser {
     private int reduceBinary(int o) {
         switch (o) {
             case AND:
-                if (stk.peek() instanceof Boolean && !((Boolean) valueOnly(stk.peek()))) {
+                if (stk.peek() instanceof Boolean && !((Boolean) ParseTools.valueOnly(stk.peek()))) {
                     fields |= Token.DO_NOT_REDUCE;
                     return unwindStatement() ? -1 : 0;
                 }
                 break;
             case OR:
-                if (stk.peek() instanceof Boolean && ((Boolean) valueOnly(stk.peek()))) {
+                if (stk.peek() instanceof Boolean && ((Boolean) ParseTools.valueOnly(stk.peek()))) {
                     return unwindStatement() ? -1 : 0;
                 }
                 break;
 
             case TERNARY:
                 Token tk;
-                if (!compileMode && (Boolean) valueOnly(stk.peek())) {
+                if (!compileMode && (Boolean) ParseTools.valueOnly(stk.peek())) {
                     stk.discard();
                     return 1;
                 }
@@ -468,7 +467,7 @@ public class ExpressionParser {
                 fields ^= Token.ASSIGN;
 
                 //noinspection unchecked
-                finalLocalVariableFactory().createVariable(tk.getName(), stk.pushAndPeek(valueOnly(stk.pop())));
+                finalLocalVariableFactory().createVariable(tk.getName(), stk.pushAndPeek(ParseTools.valueOnly(stk.pop())));
 
                 if (fastExecuteMode) {
                     if (tokens.hasMoreTokens()) {
@@ -493,10 +492,10 @@ public class ExpressionParser {
                             );
                         }
 
-                        stk.push(tk.getOptimizedValue(ctx, ctx, variableFactory));
+                        stk.push(tk.getOptimizedValue(ctx, ctx, variableFactory).getValue());
                     }
                     else if (compileMode) {
-                        fields |= Token.CAPTURE_ONLY;                       
+                        fields |= Token.CAPTURE_ONLY;
                         tk = nextToken();
                         tk.setIdentifier(false);
                         setFieldFalse(Token.CAPTURE_ONLY);
@@ -884,10 +883,6 @@ public class ExpressionParser {
         }
     }
 
-
-    private static Object valueOnly(Object o) {
-        return (o instanceof Token) ? ((Token) o).getValue() : o;
-    }
 
     private void reduceFast(Token tk) {
         if (tk.isSubeval()) {
@@ -1426,12 +1421,12 @@ public class ExpressionParser {
                 if (tk.isSubeval()) reduceFast(tk);
             }
             setFieldFalse(Token.NOCOMPILE);
+
         }
         else if (tk.isIdentifier() && (fields & Token.DO_NOT_REDUCE) == 0) {
             return reduceToken(tk);
         }
-
-        if (tk.isThisRef()) return tk.setFinalValue(ctx);
+        else if (tk.isThisRef()) return tk.setFinalValue(ctx);
 
         return tk;
     }
@@ -1447,210 +1442,23 @@ public class ExpressionParser {
      * @return -
      */
     private Token reduceToken(Token token) {
-        String s;
-        if (token.isLiteral() || ((fields & Token.CAPTURE_ONLY) != 0)) {
-            return token;
-        }
-        else if (fastExecuteMode) {
+        if (!reduce) return token;
+        if (fastExecuteMode) return token.getReducedValueAccelerated(stk.peek(), ctx, variableFactory);
+        else {
             try {
-                return token.getOptimizedValue(token.isPush() ? valueOnly(stk.pop()) : ctx, ctx, variableFactory);
-            }
-            catch (OptimizationFailure e) {
-                /**
-                 * If the token failed to optimize, we perform a lookahead to see if this is forgivable.
-                 */
-                if (lookAhead()) {
-                    /**
-                     * The token failed to reduce for forgivable reasons (ie. an assignment) so we record this
-                     * as a deferral, so we don't try to reduce this anymore at runtime.
-                     */
-                    token.createDeferralOptimization();
-                    return token;
-                }
-                else {
-                    /**
-                     * This is a genuine error.  We bail.
-                     */
-                    throw e;
-                }
-            }
-            catch (PropertyAccessException e) {
-                throw e;
+                return token.getReducedValue(stk.peek(), ctx, variableFactory);
             }
             catch (Exception e) {
-                /**
-                 * For the purpose of dynamic re-optimization we allow a "retry" of the reduction after we have
-                 * cleared the old optimized tree.  However, if the failNext bit remains high, we bail as we
-                 * clearly can't re-optimize.
-                 */
-                if (failNext) {
-                    throw new CompileException("optimization failure for: " + token, e);
-                }
-                else {
-                    failNext = false;
-                }
-
-                try {
-                    synchronized (token) {
-                        token.deOptimize();
-                        failNext = true;
-                        return reduceToken(token);
-                    }
-                }
-                catch (Exception e2) {
-                    throw new CompileException("optimization failure for: " + token, e);
-                }
-            }
-        }
-
-        int tkflags = token.getFlags();
-
-        /**
-         * To save the GC a little bit of work, we don't initialize a property accessor unless we need it, and we
-         * reuse the same instance if we need it more than once.
-         */
-        if (propertyAccessor == null)
-            propertyAccessor = new PropertyAccessor(variableFactory, ctx);
-
-        if (((tkflags | fields) & Token.PUSH) != 0) {
-            /**
-             * This token is attached to a stack value, and we use the top stack value as the context for the
-             * property accessor.
-             */
-            return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), valueOnly(stk.pop()), ctx).get());
-        }
-        else if ((tkflags & Token.DEEP_PROPERTY) != 0) {
-            /**
-             * The token is a DEEP PROPERTY (meaning it contains unions) in which case we need to traverse an object
-             * graph.
-             */
-            if (Token.LITERALS.containsKey(s = token.getAbsoluteRootElement())) {
-                /**
-                 * The root of the DEEP PROPERTY is a literal.
-                 */
-                Object literal = Token.LITERALS.get(s);
-                if (literal == ThisLiteral.class) literal = ctx;
-
-                return token.setValue(propertyAccessor.setParameters(expr, token.getStart() + token.getFirstUnion(), token.getEnd(), literal, ctx).get());
-            }
-            else if (variableFactory != null && variableFactory.isResolveable(s)) {
-                /**
-                 * The root of the DEEP PROPERTY is a local or global var.
-                 */
-                return token.setValue(propertyAccessor.setParameters(expr, token.getStart() +
-                        token.getAbsoluteFirstPart(),
-                        token.getEnd(), variableFactory.getVariableResolver(s).getValue(), ctx).get());
-
-            }
-            else if (ctx != null) {
-                /**
-                 * We didn't resolve the root, yet, so we assume that if we have a VROOT then the property must be
-                 * accessible as a field of the VROOT.
-                 */
-
-                try {
-                    return token.setValue(propertyAccessor.setParameters(expr, token.getStart(), token.getEnd(), ctx, ctx).get());
-                }
-                catch (PropertyAccessException e) {
-                    /**
-                     * No luck. Make a last-ditch effort to resolve this as a static-class reference.
-                     */
-                    Token tk = tryStaticAccess(token);
-                    if (tk == null) throw e;
-                    return tk;
-                }
-            }
-            else {
-                Token tk = tryStaticAccess(token);
-                if (tk == null) throw new CompileException("unable to resolve token: " + s);
-                return tk;
-            }
-        }
-        else {
-            if (Token.LITERALS.containsKey(s = token.getAbsoluteName())) {
-                /**
-                 * The token is actually a literal.
-                 */
-                return token.setValue(Token.LITERALS.get(s));
-            }
-            else if (variableFactory != null && variableFactory.isResolveable(s)) {
-                /**
-                 * The token is a local or global var.
-                 */
-
-                if (token.isCollection()) {
-                    return token.setValue(propertyAccessor.setParameters(expr, token.getStart()
-                            + token.getEndOfName(), token.getEnd(), variableFactory.getVariableResolver(s).getValue(), ctx).get());
-                }
-                return token.setValue(variableFactory.getVariableResolver(s).getValue());
-            }
-            else if (ctx != null) {
-                /**
-                 * Check to see if the var exists in the VROOT.
-                 */
-                try {
-                    return token.setValue(propertyAccessor.setParameters(expr, token.getStart(),
-                            token.getEnd(), ctx, ctx).get());
-                }
-                catch (RuntimeException e) {
-                    /**
-                     * Nope.  Let's see if this a a LA-issue.
-                     */
-                    if (!lookAhead()) throw e;
-                }
-            }
-            else {
                 if (!lookAhead())
-                    throw new CompileException("unable to resolve token: " + s);
+                    throw new CompileException("unable to resolve token: " + token.getName(), e);
+                else
+                    return token;
             }
         }
-        return token;
+
     }
 
-    private Token tryStaticAccess(Token token) {
-        try {
-            /**
-             * Try to resolve this *smartly* as a static class reference.
-             *
-             * This starts at the end of the token and starts to step backwards to figure out whether
-             * or not this may be a static class reference.  We search for method calls simply by
-             * inspecting for ()'s.  The first union area we come to where no brackets are present is our
-             * test-point for a class reference.  If we find a class, we pass the reference to the
-             * property accessor along  with trailing methods (if any).
-             *
-             */
-            boolean meth = false;
-            int depth = 0;
-            int last = token.getEnd();
-            for (int i = last - 1; i > token.getStart(); i--) {
-                switch (expr[i]) {
-                    case'.':
-                        if (!meth) {
-                            return token.setValue(
-                                    propertyAccessor.setParameters(
-                                            expr, last, token.getEnd(),
-                                            forName(new String(expr, token.getStart(), last - token.getStart())), ctx
-                                    ).get());
-                        }
-                        meth = false;
-                        last = i;
-                        break;
-                    case')':
-                        if (depth++ == 0)
-                            meth = true;
-                        break;
-                    case'(':
-                        depth--;
-                        break;
-                }
-            }
-        }
-        catch (Exception cnfe) {
-            // do nothing.
-        }
 
-        return null;
-    }
 
     /**
      * This method is called by the parser when it can't resolve a token.  There are two cases where this may happen
@@ -1664,15 +1472,12 @@ public class ExpressionParser {
         Token tk;
 
         int cursorCurrent = cursor;
-        if (!compileMode && (tk = nextToken()) != null) {
-            if (!tk.isOperator()) {
-                throw new CompileException("expected operator but encountered token: " + tk.getName());
-            }
-            else if (tk.getOperator() == Operator.ASSIGN || tk.getOperator() == Operator.PROJECTION) {
+        if ((tk = nextToken()) != null) {
+            if (tk.isOperator(Operator.ASSIGN) || tk.isOperator(Operator.PROJECTION)) {
                 cursor = cursorCurrent;
-                if (fastExecuteMode) {
-                    tokens.back();
-                }
+            }
+            else if (!tk.isOperator()) {
+                throw new CompileException("expected operator but encountered token: " + tk.getName());
             }
             else
                 return false;
@@ -1698,11 +1503,11 @@ public class ExpressionParser {
      */
     private boolean unwindStatement() {
         Token tk;
-        fields |= Token.CAPTURE_ONLY;
+        reduce = false;
         while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT)) {
             //nothing
         }
-        setFieldFalse(Token.CAPTURE_ONLY);
+        reduce = true;
         return tk == null;
     }
 
