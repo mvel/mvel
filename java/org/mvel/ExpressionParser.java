@@ -31,7 +31,7 @@ public class ExpressionParser {
 
     private boolean returnBigDecimal = false;
 
-    private RoundingMode roundingMode = RoundingMode.HALF_DOWN;
+    private int roundingMode  = BigDecimal.ROUND_HALF_DOWN;
 
     private boolean compileMode = false;
     private boolean fastExecuteMode = false;
@@ -1739,11 +1739,11 @@ public class ExpressionParser {
         return expr;
     }
 
-    public RoundingMode getRoundingMode() {
+    public int getRoundingMode() {
         return roundingMode;
     }
 
-    public void setRoundingMode(RoundingMode roundingMode) {
+    public void setRoundingMode(int roundingMode) {
         this.roundingMode = roundingMode;
     }
 
