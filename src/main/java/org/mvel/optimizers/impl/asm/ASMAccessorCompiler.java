@@ -1,11 +1,11 @@
 package org.mvel.optimizers.impl.asm;
 
 import org.mvel.*;
-import org.mvel.compiled.*;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorCompiler;
 import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.optimizers.OptimizationNotSupported;
+import org.mvel.optimizers.impl.refl.*;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;

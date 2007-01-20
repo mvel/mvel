@@ -1,19 +1,19 @@
-package org.mvel.compiled;
+package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
 
-public class ArrayAccessor implements AccessorNode {
+public class IndexedCharSeqAccessor implements AccessorNode {
     private AccessorNode nextNode;
 
     private int index;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
         if (nextNode != null) {
-            return nextNode.getValue(((Object[])ctx)[index], elCtx, vars);
+            return nextNode.getValue(((String)ctx).charAt(index), elCtx, vars);
         }
         else {
-            return ((Object[])ctx)[index];
+            return ((String)ctx).charAt(index);
         }
     }
 
