@@ -11,6 +11,7 @@ import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.ParseTools.valueOnly;
 import static org.mvel.util.PropertyTools.isNumber;
+import org.mvel.util.ThisLiteral;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;

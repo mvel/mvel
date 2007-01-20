@@ -1,4 +1,4 @@
-package org.mvel;
+package org.mvel.util;
 
 public class ThisLiteral {
 }
