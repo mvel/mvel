@@ -114,7 +114,7 @@ public class ReflectionUtil {
         }
     }
 
-    static final Pattern GETTER_PATTERN = compile("^compileGetChain.+");
+    static final Pattern GETTER_PATTERN = compile("^compileAccessor.+");
     public static boolean isAccessor(Method method) {
         if (method == null) return false;
         return GETTER_PATTERN.matcher(method.getName()).matches()
