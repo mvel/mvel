@@ -1,29 +1,21 @@
-package org.mvel.compiled;
+package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
 
-public class IndexedCharSeqAccessor implements AccessorNode {
+public class ThisValueAccessor implements AccessorNode {
     private AccessorNode nextNode;
-
-    private int index;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
         if (nextNode != null) {
-            return nextNode.getValue(((String)ctx).charAt(index), elCtx, vars);
+            return this.nextNode.getValue(elCtx, elCtx, vars);
         }
         else {
-            return ((String)ctx).charAt(index);
+            return elCtx;
         }
     }
 
-
-    public int getIndex() {
-        return index;
-    }
-
-    public void setIndex(int index) {
-        this.index = index;
+    public ThisValueAccessor() {
     }
 
     public AccessorNode getNextNode() {
@@ -32,10 +24,5 @@ public class IndexedCharSeqAccessor implements AccessorNode {
 
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
-    }
-
-
-    public String toString() {
-        return "Array Accessor -> [" + index + "]";
     }
 }

@@ -1,21 +1,31 @@
-package org.mvel.compiled;
+package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
 
-public class ThisValueAccessor implements AccessorNode {
+import java.lang.reflect.Field;
+
+public class FieldAccessor implements AccessorNode {
     private AccessorNode nextNode;
+
+    private Field field;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
         if (nextNode != null) {
-            return this.nextNode.getValue(elCtx, elCtx, vars);
+            return nextNode.getValue(field.get(ctx), elCtx, vars);
         }
         else {
-            return elCtx;
+            return field.get(ctx);
         }
+
     }
 
-    public ThisValueAccessor() {
+    public Field getField() {
+        return field;
+    }
+
+    public void setField(Field field) {
+        this.field = field;
     }
 
     public AccessorNode getNextNode() {

@@ -1,9 +1,9 @@
 package org.mvel.optimizers;
 
 import org.mvel.CompileException;
-import org.mvel.compiled.ReflectiveAccessor;
 import org.mvel.optimizers.impl.asm.ASMAccessorCompiler;
 import org.mvel.optimizers.impl.asm.ASMOptimizer;
+import org.mvel.optimizers.impl.refl.ReflectiveAccessor;
 
 import java.util.HashMap;
 import java.util.Map;
