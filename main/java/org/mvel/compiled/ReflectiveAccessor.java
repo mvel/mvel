@@ -3,6 +3,7 @@ package org.mvel.compiled;
 import org.mvel.*;
 import static org.mvel.ExpressionParser.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.AccessorCompiler;
 import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.parseParameterList;
@@ -18,7 +19,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.*;
 
-public class CompiledAccessor {
+public class ReflectiveAccessor implements AccessorCompiler {
     private int start = 0;
     private int cursor = 0;
 
@@ -30,6 +31,7 @@ public class CompiledAccessor {
 
     private Object ctx;
     private Object thisRef;
+    private Object val;
 
     private VariableResolverFactory variableFactory;
 
@@ -43,23 +45,23 @@ public class CompiledAccessor {
     private boolean first = true;
 
 
-    public CompiledAccessor() {
+    public ReflectiveAccessor() {
     }
 
-    public CompiledAccessor(char[] property, Object ctx) {
+    public ReflectiveAccessor(char[] property, Object ctx) {
         this.property = property;
         this.length = property.length;
         this.ctx = ctx;
     }
 
-    public CompiledAccessor(char[] property, Object ctx, VariableResolverFactory variableFactory) {
+    public ReflectiveAccessor(char[] property, Object ctx, VariableResolverFactory variableFactory) {
         this.property = property;
         this.length = property != null ? property.length : 0;
         this.thisRef = this.ctx = ctx;
         this.variableFactory = variableFactory;
     }
 
-    public CompiledAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableFactory) {
+    public ReflectiveAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableFactory) {
         this.property = property;
         this.length = property != null ? property.length : 0;
         this.ctx = ctx;
@@ -68,13 +70,28 @@ public class CompiledAccessor {
     }
 
 
-    public CompiledAccessor(String property, Object ctx) {
+    public ReflectiveAccessor(String property, Object ctx) {
         this.length = (this.property = property.toCharArray()).length;
         this.ctx = ctx;
     }
 
 
-    public Object compileGetChain() {
+    public Accessor compile(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean root) {
+        this.rootNode = this.currNode = null;
+        this.start = this.cursor = 0;
+        this.first = true;
+
+        this.length = (this.property = property).length;
+        this.ctx = ctx;
+        this.thisRef = thisRef;
+        this.variableFactory = factory;
+
+        if (root) currNode = rootNode = new ThisValueAccessor();
+
+        return compileGetChain();
+    }
+
+    public Accessor compileGetChain() {
         Object curr = ctx;
 
         try {
@@ -96,7 +113,9 @@ public class CompiledAccessor {
                 first = false;
             }
 
-            return curr;
+            val = curr;
+
+            return rootNode;
         }
         catch (InvocationTargetException e) {
             throw new PropertyAccessException("could not access property", e);
@@ -163,8 +182,6 @@ public class CompiledAccessor {
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
-        Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
-        Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
 
         if (first && variableFactory != null && variableFactory.isResolveable(property)) {
             VariableAccessor accessor = new VariableAccessor(property, variableFactory);
@@ -173,7 +190,12 @@ public class CompiledAccessor {
 
             return variableFactory.getVariableResolver(property).getValue();
         }
-        else if (member instanceof Field) {
+
+        Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
+        Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
+
+
+       if (member instanceof Field) {
             FieldAccessor accessor = new FieldAccessor();
             accessor.setField((Field) member);
 
@@ -222,7 +244,7 @@ public class CompiledAccessor {
                 return tryStaticMethodRef;
             }
             else
-                throw new PropertyAccessException("could not access property (" + property + ")");
+                throw new PropertyAccessException("could not access property ('" + property + "')");
         }
     }
 
@@ -529,5 +551,10 @@ public class CompiledAccessor {
 
     public AccessorNode getRootNode() {
         return rootNode;
+    }
+
+
+    public Object getResultOptPass() {
+        return val;
     }
 }

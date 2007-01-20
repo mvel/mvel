@@ -3,12 +3,11 @@ package org.mvel;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
-import org.mvel.compiled.CompiledAccessor;
 import org.mvel.compiled.Deferral;
-import org.mvel.compiled.ThisValueAccessor;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.AccessorCompiler;
+import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.util.ArrayTools.findFirst;
-import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.ParseTools.valueOnly;
 import static org.mvel.util.PropertyTools.isNumber;
@@ -72,7 +71,7 @@ public class Token implements Cloneable, Serializable {
     private int fields = 0;
 
     private CompiledExpression compiledExpression;
-    private AccessorNode accessorNode;
+    private Accessor accessor;
     private int knownSize = 0;
 
     Token nextToken;
@@ -297,10 +296,10 @@ public class Token implements Cloneable, Serializable {
     public Token getOptimizedValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
         try {
             if ((fields & NUMERIC) != 0) {
-                value = numericValue = convert(accessorNode.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
+                value = numericValue = convert(accessor.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
             }
             else {
-                value = accessorNode.getValue(ctx, elCtx, variableFactory);
+                value = accessor.getValue(ctx, elCtx, variableFactory);
             }
 
             if ((fields & NEGATION) != 0) value = !((Boolean) value);
@@ -308,16 +307,9 @@ public class Token implements Cloneable, Serializable {
             return this;
         }
         catch (NullPointerException e) {
-            if (accessorNode == null) {
-                Object v = valueOnly(ctx);
-                if (!optimizeAccessor(isPush() ? v : elCtx,
-                        variableFactory, isPush() ? null : elCtx != null ? new ThisValueAccessor() : null))
-                    throw new OptimizationFailure("token: " + new String(name) + " (push=" + isPush() + ")", e);
-                else {
-                    assert ParseTools.debug(e);
-
-                    return getOptimizedValue(v, elCtx, variableFactory);
-                }
+            if (accessor == null) {
+                optimizeAccessor(isPush() ? valueOnly(ctx) : ctx, elCtx, variableFactory, elCtx != null);
+                return this;
             }
             else {
                 throw e;
@@ -328,42 +320,38 @@ public class Token implements Cloneable, Serializable {
 
 
     public Token createDeferralOptimization() {
-        accessorNode = new Deferral();
+        accessor = new Deferral();
         return this;
     }
 
 
-    public boolean optimizeAccessor(Object ctx, VariableResolverFactory variableFactory, AccessorNode root) {
+    public Object optimizeAccessor(Object ctx, Object thisRef, VariableResolverFactory variableFactory, boolean thisRefPush) {
         try {
-            CompiledAccessor compiledAccessor = new CompiledAccessor(name, ctx, variableFactory);
+            AccessorCompiler compiler = OptimizerFactory.getDefaultAccessorCompiler();
+            accessor = compiler.compile(name, ctx, thisRef, variableFactory, thisRefPush);
+
             setNumeric(false);
-            setNumeric(isNumber(compiledAccessor.compileGetChain()));
+            //         setNumeric(isNumber(compiler.getResultOptPass()));
+
+            setValue(compiler.getResultOptPass());
+
             setFlag(true, Token.OPTIMIZED_REF);
 
-            if (root != null) {
-                root.setNextNode(compiledAccessor.getRootNode());
-                accessorNode = root;
-            }
-            else {
-                accessorNode = compiledAccessor.getRootNode();
-            }
-
-            return true;
+            return compiler.getResultOptPass();
 
         }
         catch (Exception e) {
-            assert ParseTools.debug(e);
-            return false;
+            throw new OptimizationFailure("failed to optimize accessor: " + new String(name), e);
         }
 
     }
 
     public void deOptimize() {
-        accessorNode = null;
+        accessor = null;
     }
 
     public boolean isOptimized() {
-        return accessorNode != null;
+        return accessor != null;
     }
 
     public BigDecimal getNumericValue() {
@@ -773,12 +761,12 @@ public class Token implements Cloneable, Serializable {
     }
 
 
-    public AccessorNode getAccessorNode() {
-        return accessorNode;
+    public Accessor getAccessor() {
+        return accessor;
     }
 
-    public void setAccessorNode(AccessorNode accessorNode) {
-        this.accessorNode = accessorNode;
+    public void setAccessor(Accessor accessor) {
+        this.accessor = accessor;
     }
 
     public void setCompiledExpression(CompiledExpression compiledExpression) {

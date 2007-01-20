@@ -1,13 +1,13 @@
 package org.mvel.optimizers.impl.ast.res;
 
-import org.mvel.AccessorNode;
+import org.mvel.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.impl.ast.AbstractASTNode;
 
 public class Property extends AbstractASTNode {
-    private AccessorNode accessor;
+    private Accessor accessor;
 
-    public Property(AccessorNode accessor) {
+    public Property(Accessor accessor) {
         this.accessor = accessor;
     }
 

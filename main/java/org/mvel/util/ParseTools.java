@@ -4,8 +4,8 @@ import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.eval;
-import org.mvel.compiled.CompiledAccessor;
 import org.mvel.compiled.ConstructorAccessor;
+import org.mvel.compiled.ReflectiveAccessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.ExecutableStatement;
 
@@ -323,8 +323,8 @@ public class ParseTools {
             AccessorNode ca = new ConstructorAccessor(cns, cStmts);
 
             if (cnsRes.length > 1) {
-                CompiledAccessor compiledAccessor
-                        = new CompiledAccessor(cnsRes[1].toCharArray(), cns.newInstance(parms), ctx, vars);
+                ReflectiveAccessor compiledAccessor
+                        = new ReflectiveAccessor(cnsRes[1].toCharArray(), cns.newInstance(parms), ctx, vars);
                 compiledAccessor.setRootNode(ca);
                 compiledAccessor.compileGetChain();
                 ca = compiledAccessor.getRootNode();
@@ -337,8 +337,8 @@ public class ParseTools {
             AccessorNode ca = new ConstructorAccessor(cns, null);
 
             if (cnsRes.length > 1) {
-                CompiledAccessor compiledAccessor
-                        = new CompiledAccessor(cnsRes[1].toCharArray(), cns.newInstance(), ctx, vars);
+                ReflectiveAccessor compiledAccessor
+                        = new ReflectiveAccessor(cnsRes[1].toCharArray(), cns.newInstance(), ctx, vars);
                 compiledAccessor.setRootNode(ca);
                 compiledAccessor.compileGetChain();
                 ca = compiledAccessor.getRootNode();
