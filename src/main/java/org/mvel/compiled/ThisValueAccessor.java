@@ -8,8 +8,7 @@ public class ThisValueAccessor implements AccessorNode {
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
         if (nextNode != null) {
-            return this.nextNode.getValue(
-                    elCtx, elCtx, vars);
+            return this.nextNode.getValue(elCtx, elCtx, vars);
         }
         else {
             return elCtx;

@@ -470,7 +470,7 @@ public class ExpressionParser {
                     if (fastExecuteMode) {
                         tk = nextCompiledToken();
                         if (!tk.isOptimized()) {
-                            tk.setAccessorNode(
+                            tk.setAccessor(
                                     ParseTools.compileConstructor(tk.getName(), ctx, variableFactory)
                             );
                         }
@@ -726,7 +726,7 @@ public class ExpressionParser {
         catch (ClassCastException e) {
             if ((fields & Token.LOOKAHEAD) == 0) {
                 /**
-                 * This will allow for some developers who like messy expressions to compileGetChain
+                 * This will allow for some developers who like messy expressions to compileAccessor
                  * away with some messy constructs like: a + b < c && e + f > g + q instead
                  * of using brackets like (a + b < c) && (e + f > g + q)
                  */
@@ -1650,7 +1650,7 @@ public class ExpressionParser {
 //            }
         }
         else if (reduce && tk.isIdentifier()) {
-            tk.getReducedValueAccelerated(tk.isPush() ? stk.pop() : null, ctx, variableFactory);
+            tk.getReducedValueAccelerated(tk.isPush() ? stk.pop() : ctx, ctx, variableFactory);
         }
         else if (tk.isOperator(Operator.ASSIGN)) {
             return tk;

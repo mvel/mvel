@@ -355,10 +355,6 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(String.class.getName(), parseDirect("String.valueOf(Class.forName('java.lang.String').getName())"));
     }
 
-    public void testStaticCalls() {
-        assertTrue(Math.abs(1.1f) == ((Float) parseDirect("Math.abs(1.1)")));
-    }
-
     public void testMethodCallsEtc() {
         parseDirect("title = 1; " +
                 "frame = new javax.swing.JFrame; " +

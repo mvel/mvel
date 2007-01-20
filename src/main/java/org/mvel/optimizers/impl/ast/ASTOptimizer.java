@@ -22,10 +22,10 @@ public class ASTOptimizer implements Optimizer {
 
             if (token.isIdentifier()) {
                 if (!token.isOptimized()) {
-                    token.optimizeAccessor(staticContext, factory, null);
+            //        token.optimizeAccessor(staticContext, factory, null);
                 }
 
-                currentNode = astStatement.addASTNode(new Property(token.getAccessorNode()));
+                currentNode = astStatement.addASTNode(new Property(token.getAccessor()));
             }
 
         }

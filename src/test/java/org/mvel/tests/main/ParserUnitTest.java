@@ -648,21 +648,21 @@ public class ParserUnitTest extends TestCase {
 //        long end = System.currentTimeMillis();
 //        System.out.println( end  - start);
 //
-//        assertSame( "dog", list.compileGetChain( 0 ) );
-//        assertEquals( "hello", list.compileGetChain( 1 ) );
-//        assertEquals( new Integer( 42 ), list.compileGetChain( 2 ) );
-//        Map map = ( Map ) list.compileGetChain( 3 );
-//        assertEquals( "value1", map.compileGetChain( "key1" ) );
+//        assertSame( "dog", list.compileAccessor( 0 ) );
+//        assertEquals( "hello", list.compileAccessor( 1 ) );
+//        assertEquals( new Integer( 42 ), list.compileAccessor( 2 ) );
+//        Map map = ( Map ) list.compileAccessor( 3 );
+//        assertEquals( "value1", map.compileAccessor( "key1" ) );
 //
-//        List nestedList = ( List ) map.compileGetChain(  "cat" );
-//        assertEquals(  new Integer(14), nestedList.compileGetChain( 0 )  );
-//        assertEquals( "car", nestedList.compileGetChain( 1 )  );
-//        assertEquals( new BigDecimal(42), nestedList.compileGetChain( 2 )  );
+//        List nestedList = ( List ) map.compileAccessor(  "cat" );
+//        assertEquals(  new Integer(14), nestedList.compileAccessor( 0 )  );
+//        assertEquals( "car", nestedList.compileAccessor( 1 )  );
+//        assertEquals( new BigDecimal(42), nestedList.compileAccessor( 2 )  );
 //
-//        nestedList  = (List) list.compileGetChain( 4 );
-//        assertEquals( new BigDecimal(42), nestedList.compileGetChain( 0 )  );
-//        map = ( Map ) nestedList.compileGetChain( 1 );
-//        assertEquals( "value1", map.compileGetChain( "cat" )  );
+//        nestedList  = (List) list.compileAccessor( 4 );
+//        assertEquals( new BigDecimal(42), nestedList.compileAccessor( 0 )  );
+//        map = ( Map ) nestedList.compileAccessor( 1 );
+//        assertEquals( "value1", map.compileAccessor( "cat" )  );
 //    }
 //
 //    public class MiscTestClass {
