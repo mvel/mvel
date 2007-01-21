@@ -676,8 +676,6 @@ public class ASMAccessorCompiler implements AccessorCompiler {
                     mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(ExecutableStatement.class), "getValue",
                             "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
 
-                    //    inputs++;
-
                     if (parameterTypes[i].isPrimitive()) {
                         unwrapPrimitive(parameterTypes[i]);
                     }
