@@ -32,7 +32,7 @@ public class TestClass implements Accessor {
     	this.p2 = p2;
     }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
     	Short s = Short.valueOf((short) 1);
     	Float f = Float.valueOf(10f);
     	Double d = Double.valueOf(10d);

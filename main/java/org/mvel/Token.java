@@ -298,7 +298,7 @@ public class Token implements Cloneable, Serializable {
         return value;
     }
 
-    public Token getOptimizedValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
+    public Token getOptimizedValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         try {
             if ((fields & NUMERIC) != 0) {
                 value = accessor.getValue(ctx, elCtx, variableFactory);

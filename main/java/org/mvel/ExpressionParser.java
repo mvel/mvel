@@ -113,6 +113,15 @@ public class ExpressionParser {
 
         parser.parse();
 
+        /**
+         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
+         */
+        parser.tokens.reset();
+        if (parser.tokens.size() == 1 && parser.tokens.peekToken().isIdentifier()) {
+            return new ExecutableAccessor(parser.tokens.peekToken());
+        }
+
+
         return new CompiledExpression(parser.getExpressionArray(), parser.tokens);
     }
 

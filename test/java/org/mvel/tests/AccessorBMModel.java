@@ -18,7 +18,7 @@ public class AccessorBMModel implements Accessor {
         this.p1 = p1;
     }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         String.valueOf(ctx);
 
         return ((Foo)variableFactory.getVariableResolver("foo").getValue())

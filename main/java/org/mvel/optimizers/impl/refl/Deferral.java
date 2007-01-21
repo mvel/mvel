@@ -4,7 +4,7 @@ import org.mvel.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
 
 public class Deferral implements AccessorNode {
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vr) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vr) {
         return null;
     }
 
