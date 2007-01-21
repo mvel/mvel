@@ -10,16 +10,16 @@ import java.math.RoundingMode;
 /**
  * Performance Tests Comparing MVEL to OGNL with Same Expressions.
  */
-public class OgnlMvelComparison {
+public class ELComparisons {
     private Base baseClass = new Base();
 
     private static final int TESTNUM = 100000;
 
-    public OgnlMvelComparison() {
+    public ELComparisons() {
     }
 
     public static void main(String[] args) throws Exception {
-        OgnlMvelComparison omc = new OgnlMvelComparison();
+        ELComparisons omc = new ELComparisons();
         if (args.length > 0 && args[0].equals("-continuous")) {
             while (true) omc.runTests();
         }
@@ -63,8 +63,8 @@ public class OgnlMvelComparison {
         mem = Runtime.getRuntime().freeMemory();
         for (int reps = 0; reps < 6; reps++) {
             for (int i = 0; i < count; i++) {
-               ExpressionParser.eval(expression, baseClass);
-             //   ExpressionParser.executeExpression(ExpressionParser.compileExpression(expression), baseClass);
+                ExpressionParser.eval(expression, baseClass);
+                //   ExpressionParser.executeExpression(ExpressionParser.compileExpression(expression), baseClass);
             }
         }
         System.out.println("(MVEL)               : " + new BigDecimal(((System.currentTimeMillis() - time))).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
