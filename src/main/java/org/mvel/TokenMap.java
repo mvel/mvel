@@ -19,6 +19,11 @@ public class TokenMap implements TokenIterator {
         size++;
     }
 
+
+    public Token firstToken() {
+        return firstToken;
+    }
+
     public void reset() {
         this.current = firstToken;
     }

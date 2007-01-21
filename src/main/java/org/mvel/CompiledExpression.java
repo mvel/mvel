@@ -64,7 +64,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         this.convertableIngressEgress = convertableIngressEgress;
     }
 
-    public void pack() {
+    public void computeTypeConversionRule() {
         if (knownIngressType != null && knownEgressType != null) {
              convertableIngressEgress = knownIngressType.isAssignableFrom(knownEgressType);
         }
