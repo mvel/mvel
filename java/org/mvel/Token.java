@@ -71,6 +71,7 @@ public class Token implements Cloneable, Serializable {
     private transient Object resetValue;
 
     private BigDecimal numericValue;
+    private Class srcType;
 
     private int fields = 0;
 
@@ -300,7 +301,38 @@ public class Token implements Cloneable, Serializable {
     public Token getOptimizedValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
         try {
             if ((fields & NUMERIC) != 0) {
-                value = numericValue = convert(accessor.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
+                value = accessor.getValue(ctx, elCtx, variableFactory);
+                if (srcType == null && value != null) {
+                    srcType = value.getClass();
+                }
+
+                if (srcType == String.class) {
+                    value = numericValue = new BigDecimal((String) value);
+                }
+                else if (srcType == BigDecimal.class) {
+                    numericValue = (BigDecimal) value;
+                }
+                else if (srcType == Integer.class) {
+                    value = numericValue = new BigDecimal((Integer) value);
+                }
+                else if (srcType == Long.class) {
+                    value = numericValue = new BigDecimal((Long) value);
+                }
+                else if (srcType == Short.class) {
+                    value = numericValue = new BigDecimal((Short) value);
+                }
+                else if (srcType == Float.class) {
+                    value = numericValue = new BigDecimal((Float) value);
+                }
+                else if (srcType == Double.class) {
+                    value = numericValue = new BigDecimal((Double) value);
+                }
+                else {
+                    throw new CompileException("expected numeric value: got: " + value);
+                }
+
+
+                // value = numericValue = convert(accessor.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
             }
             else {
                 value = accessor.getValue(ctx, elCtx, variableFactory);
