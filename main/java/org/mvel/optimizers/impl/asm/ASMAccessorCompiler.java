@@ -728,8 +728,8 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     }
 
 
-    public void debug(String instruction) {
-        System.out.println(instruction);
+    public static void debug(String instruction) {
+        assert ParseTools.debug(instruction);
     }
 
     public String getName() {
