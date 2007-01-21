@@ -91,5 +91,14 @@ public class BooleanCH implements ConversionHandler {
                 }
         );
 
+        CNV.put(boolean.class,
+                new Converter() {
+
+                    public Boolean convert(Object o) {
+                        return Boolean.valueOf((Boolean) o);
+                    }
+                }
+        );
+
     }
 }
