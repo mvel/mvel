@@ -278,8 +278,14 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         }
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
 
-            //   addAccessorComponent(cls, property, COL, null);
+            debug("CHECKCAST: java/util/Map");
+            mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 
+            debug("LDC: \"" + property + "\"");
+            mv.visitLdcInsn(property);
+
+            debug("INVOKEINTERFACE: get");
+            mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
             return ((Map) ctx).get(property);
         }
         else if ("this".equals(property)) {
