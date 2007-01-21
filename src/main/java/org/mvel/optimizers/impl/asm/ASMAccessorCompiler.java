@@ -6,7 +6,6 @@ import org.mvel.optimizers.AccessorCompiler;
 import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.impl.refl.IndexedCharSeqAccessor;
-import org.mvel.optimizers.impl.refl.MapAccessor;
 import org.mvel.optimizers.impl.refl.MethodAccessor;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
@@ -144,7 +143,11 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
             System.out.println("[MVEL JIT Completed Optimization <<" + new String(property) + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
 
-            return (Accessor) cls.newInstance();
+            Accessor a = (Accessor) cls.newInstance();
+
+            System.out.println("[MVEL JIT Test Output: " + a.getValue(ctx, thisRef, variableFactory) + "]");
+
+            return a;
         }
         catch (InvocationTargetException e) {
             throw new PropertyAccessException("could not access property", e);
@@ -268,7 +271,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         }
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
 
-            addAccessorComponent(cls, property, COL, null);
+            //   addAccessorComponent(cls, property, COL, null);
 
             return ((Map) ctx).get(property);
         }
@@ -362,11 +365,15 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         ++cursor;
 
         if (ctx instanceof Map) {
-            MapAccessor accessor = new MapAccessor();
-            accessor.setProperty(item);
+            debug("CHECKCAST: java/util/Map");
+            mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 
-            //    addAccessorNode(accessor);
+            debug("LDC: \"" + item + "\"");
+            mv.visitLdcInsn(item);
 
+            debug("INVOKEINTERFACE: get");
+            mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
+            
             return ((Map) ctx).get(item);
         }
         else if (ctx instanceof List) {
@@ -698,7 +705,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
 
     public void debug(String instruction) {
-       System.out.println(instruction);
+    //    System.out.println(instruction);
     }
 
     public String getName() {
