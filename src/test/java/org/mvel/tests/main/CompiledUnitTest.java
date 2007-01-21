@@ -33,6 +33,10 @@ public class CompiledUnitTest extends TestCase {
         map.put("zero", 0);
     }
 
+    public void testSingleProperty() {
+        assertEquals(false, parseDirect("fun"));
+    }
+
 
     public void testMethodOnValue() {
         assertEquals("DOG", parseDirect("foo.bar.name.toUpperCase()"));
@@ -42,6 +46,9 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("dog", parseDirect("foo.bar.name"));
     }
 
+    public void testMapAccessWithMethodCall() {
+        assertEquals("happyBar", parseDirect("funMap['foo'].happy()"));
+    }
 
     public void testBooleanOperator() {
         assertEquals(true, parseDirect("foo.bar.woof == true"));
