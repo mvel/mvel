@@ -6,7 +6,6 @@ import org.mvel.optimizers.AccessorCompiler;
 import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.impl.refl.IndexedCharSeqAccessor;
-import org.mvel.optimizers.impl.refl.MethodAccessor;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
@@ -125,13 +124,18 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
             val = curr;
 
-            debug("{exit: " + returnType + "}");
-
             if (returnType != null && returnType.isPrimitive()) {
                 wrapPrimitive(returnType);
             }
 
+            if (returnType == void.class) {
+                debug("ACONST_NULL");
+                mv.visitInsn(ACONST_NULL);
+            }
+
+
             debug("ARETURN");
+
             mv.visitInsn(ARETURN);
             mv.visitMaxs(stacksize, 1);
 
@@ -166,6 +170,9 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         }
         catch (NullPointerException e) {
             throw new PropertyAccessException("null pointer exception in property: " + new String(property), e);
+        }
+        catch (OptimizationNotSupported e) {
+            throw e;
         }
         catch (Exception e) {
             throw new PropertyAccessException("unknown exception in expression: " + new String(property), e);
@@ -206,7 +213,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
-        debug("{BEAN(" + property + ")}");
+        debug("{bean: " + property + "}");
 
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
@@ -373,7 +380,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
             debug("INVOKEINTERFACE: get");
             mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
-            
+
             return ((Map) ctx).get(item);
         }
         else if (ctx instanceof List) {
@@ -468,6 +475,9 @@ public class ASMAccessorCompiler implements AccessorCompiler {
      */
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name) throws Exception {
+        debug("{method: " + name + "}");
+
+
         int st = cursor;
 
         int depth = 1;
@@ -578,21 +588,20 @@ public class ASMAccessorCompiler implements AccessorCompiler {
                     args[i] = DataConversion.convert(args[i], parameterTypes[i]);
             }
 
-
-            MethodAccessor access = new MethodAccessor();
-            access.setMethod(m);
-            access.setParms(es);
-
-            //  addAccessorNode(access);
-
-            if (m.getTypeParameters().length == 0) {
-
+            if (first) {
+                debug("ALOAD 1");
+                mv.visitVarInsn(ALOAD, 1);
+            }
+            if (m.getParameterTypes().length == 0) {
                 debug("CHECKCAST: " + getInternalName(m.getDeclaringClass()));
                 mv.visitTypeInsn(CHECKCAST, getInternalName(m.getDeclaringClass()));
 
-                debug("INVOKEVIRTUAL");
+                debug("INVOKEVIRTUAL: " + m.getName());
                 mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(m.getDeclaringClass()), m.getName(),
                         getMethodDescriptor(m));
+
+                returnType = m.getReturnType();
+
                 stacksize++;
             }
             else {
@@ -705,7 +714,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
 
     public void debug(String instruction) {
-    //    System.out.println(instruction);
+        System.out.println(instruction);
     }
 
     public String getName() {
@@ -722,7 +731,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;");
         }
         else if (cls == int.class) {
-            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(Z)Ljava/lang/Integer;");
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
         }
         else if (cls == float.class) {
             mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(Z)Ljava/lang/Float;");

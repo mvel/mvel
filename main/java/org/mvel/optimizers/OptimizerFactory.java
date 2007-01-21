@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class OptimizerFactory {
+    public static String SAFE_REFLECTIVE = "Reflective";
+
     private static String defaultOptimizer = "ASM";
     private static final Map<String, Optimizer> optimizers = new HashMap<String, Optimizer>();
     private static final Map<String, AccessorCompiler> accessorCompilers = new HashMap<String, AccessorCompiler>();
@@ -16,7 +18,7 @@ public class OptimizerFactory {
     static {
         optimizers.put("ASM", new ASMOptimizer());
         accessorCompilers.put("ASM", new ASMAccessorCompiler());
-        accessorCompilers.put("Reflective", new ReflectiveAccessor());
+        accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveAccessor());
     }
 
     public static void registerOptimizer(Optimizer optimizer) {
@@ -30,6 +32,15 @@ public class OptimizerFactory {
     public static AccessorCompiler getDefaultAccessorCompiler() {
         try {
             return accessorCompilers.get(defaultOptimizer).getClass().newInstance();
+        }
+        catch (Exception e) {
+            throw new CompileException("unable to instantiate accessor compiler", e);
+        }
+    }
+
+    public static AccessorCompiler getAccessorCompiler(String name) {
+        try {
+            return accessorCompilers.get(name).getClass().newInstance();
         }
         catch (Exception e) {
             throw new CompileException("unable to instantiate accessor compiler", e);

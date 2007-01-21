@@ -5,7 +5,9 @@ import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorCompiler;
+import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.OptimizerFactory;
+import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
 import org.mvel.optimizers.impl.refl.Deferral;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
@@ -337,14 +339,23 @@ public class Token implements Cloneable, Serializable {
             accessor = compiler.compile(name, ctx, thisRef, variableFactory, thisRefPush);
 
             setNumeric(false);
-            //         setNumeric(isNumber(compiler.getResultOptPass()));
-
             setValue(compiler.getResultOptPass());
-
             setFlag(true, Token.OPTIMIZED_REF);
 
             return compiler.getResultOptPass();
 
+        }
+        catch (OptimizationNotSupported e) {
+            System.out.println("[Falling Back to Reflective Optimizer]");
+            // fall back to the safe reflective optimizer
+            AccessorCompiler compiler = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+            accessor = compiler.compile(name, ctx, thisRef, variableFactory, thisRefPush);
+
+            setNumeric(false);
+            setValue(compiler.getResultOptPass());
+            setFlag(true, Token.OPTIMIZED_REF);
+
+            return compiler.getResultOptPass();
         }
         catch (Exception e) {
             throw new OptimizationFailure("failed to optimize accessor: " + new String(name), e);
