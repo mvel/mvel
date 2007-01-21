@@ -1,19 +1,27 @@
 import org.mvel.Accessor;
 import org.mvel.Token;
 import org.mvel.integration.VariableResolverFactory;
-import org.objectweb.asm.Type;
-
-import java.lang.reflect.Method;
 
 public class TestClass implements Accessor {
 
 
     public static void main(String[] args) throws Exception {
-        Class cls = Class.forName(args[0]);
+        int test = 0;
+        int a = 1;
+        Integer b = 1;
 
-        for (Method m : cls.getMethods()) {
-            System.out.println(m + "::" + Type.getMethodDescriptor(m));
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 10000000; i++) {
+            test = a;
         }
+        System.out.println("(unwrapped) time = " + (System.currentTimeMillis() - start));
+
+        start = System.currentTimeMillis();
+        for (int i = 0; i < 10000000; i++) {
+            test = b;
+        }
+        System.out.println("(wrapped) time = " + (System.currentTimeMillis() - start));
+
     }
 
 
