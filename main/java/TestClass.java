@@ -1,5 +1,4 @@
 import org.mvel.Accessor;
-import org.mvel.Token;
 import org.mvel.integration.VariableResolverFactory;
 
 public class TestClass implements Accessor {
@@ -26,8 +25,16 @@ public class TestClass implements Accessor {
 
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
-    	((Token)ctx).reset();
-    	return 10;
+    	Short.valueOf((short) 1);
+    	Float.valueOf(10f);
+    	Double.valueOf(10d);
+    	Byte.valueOf((byte) 1);
+    	Character.valueOf('a');
+    	
+    	
+    	return System.currentTimeMillis();
+    	//((CharSequence)ctx).charAt(10);
+    	// return 10;
     	// return ((Map) ((Token)variableFactory.getVariableResolver("foo").getValue()).getValue()).get("test");
     }
 

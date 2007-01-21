@@ -5,7 +5,6 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorCompiler;
 import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.optimizers.OptimizationNotSupported;
-import org.mvel.optimizers.impl.refl.IndexedCharSeqAccessor;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
@@ -15,10 +14,7 @@ import org.objectweb.asm.Opcodes;
 import static org.objectweb.asm.Opcodes.*;
 import static org.objectweb.asm.Type.*;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.*;
 
 public class ASMAccessorCompiler implements AccessorCompiler {
@@ -296,7 +292,10 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             return this.thisRef;
         }
         else if (Token.LITERALS.containsKey(property)) {
-            throw new OptimizationNotSupported("literal: " + property);
+
+            //     mv.visitLdcInsn(Token.LITERALS.get(property));
+
+            return Token.LITERALS.get(property);
         }
         else {
             Class tryStaticMethodRef = tryStaticAccess();
@@ -456,12 +455,15 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             return ((Object[]) ctx)[index];
         }
         else if (ctx instanceof CharSequence) {
-            IndexedCharSeqAccessor accessor = new IndexedCharSeqAccessor();
-            accessor.setIndex(Integer.parseInt(item));
+            int index = Integer.parseInt(item);
 
-            //    addAccessorNode(accessor);
+            mv.visitIntInsn(BIPUSH, index);
+            mv.visitMethodInsn(INVOKEINTERFACE, "java/lang/CharSequence", "charAt", "(I)C");
 
-            return ((CharSequence) ctx).charAt(accessor.getIndex());
+//            IndexedCharSeqAccessor accessor = new IndexedCharSeqAccessor();
+//            accessor.setIndex(Integer.parseInt(item));
+
+            return ((CharSequence) ctx).charAt(index);
         }
         else {
             throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
@@ -537,8 +539,6 @@ public class ASMAccessorCompiler implements AccessorCompiler {
          */
         Class cls = ctx instanceof Class ? (Class) ctx : ctx.getClass();
 
-        //    Integer signature = ;
-
         Method m;
         Class[] parameterTypes = null;
 
@@ -598,13 +598,22 @@ public class ASMAccessorCompiler implements AccessorCompiler {
                 debug("ALOAD 1");
                 mv.visitVarInsn(ALOAD, 1);
             }
-            if (m.getParameterTypes().length == 0) {
-                debug("CHECKCAST: " + getInternalName(m.getDeclaringClass()));
-                mv.visitTypeInsn(CHECKCAST, getInternalName(m.getDeclaringClass()));
 
-                debug("INVOKEVIRTUAL: " + m.getName());
-                mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(m.getDeclaringClass()), m.getName(),
-                        getMethodDescriptor(m));
+            if (m.getParameterTypes().length == 0) {
+                if ((m.getModifiers() & Modifier.STATIC) != 0) {
+
+                    debug("INVOKESTATIC: " + m.getName());
+                    mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(), getMethodDescriptor(m));
+                }
+                else {
+
+                    debug("CHECKCAST: " + getInternalName(m.getDeclaringClass()));
+                    mv.visitTypeInsn(CHECKCAST, getInternalName(m.getDeclaringClass()));
+
+                    debug("INVOKEVIRTUAL: " + m.getName());
+                    mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(m.getDeclaringClass()), m.getName(),
+                            getMethodDescriptor(m));
+                }
 
                 returnType = m.getReturnType();
 
@@ -720,7 +729,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
 
     public void debug(String instruction) {
-  //      System.out.println(instruction);
+        System.out.println(instruction);
     }
 
     public String getName() {
@@ -740,19 +749,22 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
         }
         else if (cls == float.class) {
-            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(Z)Ljava/lang/Float;");
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;");
         }
         else if (cls == double.class) {
-            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(Z)Ljava/lang/Double;");
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;");
         }
         else if (cls == short.class) {
-            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(Z)Ljava/lang/Short;");
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;");
+        }
+        else if (cls == long.class) {
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;");
         }
         else if (cls == byte.class) {
-            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(Z)Ljava/lang/Byte;");
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;");
         }
         else if (cls == char.class) {
-            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(Z)Ljava/lang/Character;");
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;");
         }
     }
 
