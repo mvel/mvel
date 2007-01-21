@@ -1,5 +1,7 @@
 import org.mvel.Accessor;
+import org.mvel.DataConversion;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.ExecutableStatement;
 
 public class TestClass implements Accessor {
 
@@ -20,19 +22,31 @@ public class TestClass implements Accessor {
             test = b;
         }
         System.out.println("(wrapped) time = " + (System.currentTimeMillis() - start));
-
     }
 
+    private ExecutableStatement p1;
+    private ExecutableStatement p2;
+    
+    public TestClass(ExecutableStatement p1, ExecutableStatement p2) {
+    	this.p1 = p1;
+    	this.p2 = p2;
+    }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
-    	Short.valueOf((short) 1);
-    	Float.valueOf(10f);
-    	Double.valueOf(10d);
-    	Byte.valueOf((byte) 1);
-    	Character.valueOf('a');
+    	Short s = Short.valueOf((short) 1);
+    	Float f = Float.valueOf(10f);
+    	Double d = Double.valueOf(10d);
+    	Byte b =Byte.valueOf((byte) 1);
+    	Character c = Character.valueOf('a');
     	
-    	
-    	return System.currentTimeMillis();
+
+        variableFactory.createVariable(String.valueOf(s), DataConversion.convert(p1.getValue(ctx, variableFactory), String.class));
+
+        ;
+        
+        return s;
+
+        // return System.currentTimeMillis();
     	//((CharSequence)ctx).charAt(10);
     	// return 10;
     	// return ((Map) ((Token)variableFactory.getVariableResolver("foo").getValue()).getValue()).get("test");
