@@ -10,6 +10,7 @@ import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
 import org.mvel.optimizers.impl.refl.Deferral;
 import static org.mvel.util.ArrayTools.findFirst;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.ParseTools.valueOnly;
 import static org.mvel.util.PropertyTools.isNumber;
@@ -346,7 +347,7 @@ public class Token implements Cloneable, Serializable {
 
         }
         catch (OptimizationNotSupported e) {
-            System.out.println("[Falling Back to Reflective Optimizer]");
+            assert ParseTools.debug("[Falling Back to Reflective Optimizer]");
             // fall back to the safe reflective optimizer
             AccessorCompiler compiler = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
             accessor = compiler.compile(name, ctx, thisRef, variableFactory, thisRefPush);
