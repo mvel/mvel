@@ -35,4 +35,28 @@ public class ASTStatement implements ExecutableStatement {
         }
     }
 
+
+    public void setKnownIngressType(Class type) {
+
+    }
+
+    public void setKnownEgressType(Class type) {
+
+    }
+
+    public Class getKnownIngressType() {
+        return null;
+    }
+
+    public Class getKnownEgressType() {
+        return null;
+    }
+
+    public boolean isConvertableIngressEgress() {
+        return false;
+    }
+
+    public void computeTypeConversionRule() {
+
+    }
 }

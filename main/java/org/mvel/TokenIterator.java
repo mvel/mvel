@@ -14,5 +14,6 @@ public interface TokenIterator extends Cloneable {
     public String showTokenChain();
     @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException"})
     public TokenIterator clone();
+    public Token firstToken();
     public int size();
 }

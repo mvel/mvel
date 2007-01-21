@@ -26,6 +26,11 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
         }
     }
 
+
+    public Token firstToken() {
+        return token[0];
+    }
+
     public Token nextToken() {
         if (cursor < length)
             return token[cursor++];

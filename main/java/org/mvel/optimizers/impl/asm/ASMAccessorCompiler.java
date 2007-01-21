@@ -168,7 +168,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
                 for (int i = 0; i < inputs; i++) {
                     parms[i] = ExecutableStatement.class;
                 }
-                a = (Accessor) cls.getConstructor(parms).newInstance(compiledInputs.toArray(new CompiledExpression[compiledInputs.size()]));
+                a = (Accessor) cls.getConstructor(parms).newInstance(compiledInputs.toArray(new ExecutableStatement[compiledInputs.size()]));
             }
 
             debug("[MVEL JIT Test Output: " + a.getValue(ctx, thisRef, variableFactory) + "]");
@@ -554,7 +554,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
                 preConvArgs = new Object[es.length];
 
                 for (int i = 0; i < subtokens.length; i++) {
-                    preConvArgs[i] = args[i] = (es[i] = (CompiledExpression) ExpressionParser.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                    preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) ExpressionParser.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
                 }
                 SUBEXPRESSION_CACHE.put(tk, es);
             }
@@ -606,12 +606,12 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         }
         else {
             if (es != null) {
-                CompiledExpression cExpr;
+                ExecutableStatement cExpr;
                 for (int i = 0; i < es.length; i++) {
-                    cExpr = ((CompiledExpression) es[i]);
+                    cExpr = es[i];
                     if (cExpr.getKnownIngressType() == null) {
                         cExpr.setKnownIngressType(parameterTypes[i]);
-                        cExpr.pack();
+                        cExpr.computeTypeConversionRule();
                     }
                     if (!cExpr.isConvertableIngressEgress()) {
                         args[i] = DataConversion.convert(args[i], parameterTypes[i]);

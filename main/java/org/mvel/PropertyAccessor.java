@@ -4,6 +4,7 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.executeExpression;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.util.ArrayTools;
 import static org.mvel.util.ParseTools.getBestCanadidate;
 import static org.mvel.util.ParseTools.parseParameterList;
@@ -523,7 +524,9 @@ public class PropertyAccessor {
                 for (int i = 0; i < subtokens.length; i++) {
                     es[i] = ExpressionParser.compileExpression(subtokens[i]);
                     args[i] = executeExpression(es[i], thisReference, resolver);
-                    ((CompiledExpression) es[i]).setKnownEgressType(args[i] != null ? args[i].getClass() : null);
+
+                    if (es[i] instanceof CompiledExpression)
+                        ((CompiledExpression) es[i]).setKnownEgressType(args[i] != null ? args[i].getClass() : null);
                 }
 
                 SUBEXPRESSION_CACHE.put(tk, es);
@@ -591,12 +594,12 @@ public class PropertyAccessor {
         }
         else {
             if (es != null) {
-                CompiledExpression cExpr;
+                ExecutableStatement cExpr;
                 for (int i = 0; i < es.length; i++) {
-                    cExpr = ((CompiledExpression) es[i]);
+                    cExpr = (ExecutableStatement) es[i];
                     if (cExpr.getKnownIngressType() == null) {
                         cExpr.setKnownIngressType(parameterTypes[i]);
-                        cExpr.pack();
+                        cExpr.computeTypeConversionRule();
                     }
                     if (!cExpr.isConvertableIngressEgress()) {
                         args[i] = convert(args[i], parameterTypes[i]);
