@@ -5,7 +5,9 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorCompiler;
 import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.optimizers.OptimizationNotSupported;
-import org.mvel.optimizers.impl.refl.*;
+import org.mvel.optimizers.impl.refl.IndexedCharSeqAccessor;
+import org.mvel.optimizers.impl.refl.MapAccessor;
+import org.mvel.optimizers.impl.refl.MethodAccessor;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
@@ -13,7 +15,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import static org.objectweb.asm.Opcodes.*;
-import static org.objectweb.asm.Type.getDescriptor;
+import static org.objectweb.asm.Type.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -47,9 +49,13 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
     private String className;
     private ClassWriter classWriter;
-    private MethodVisitor methodVisitor;
+    private MethodVisitor mv;
 
     private Object val;
+    private int stacksize = 1;
+    private long time;
+
+    private Class returnType;
 
     public ASMAccessorCompiler(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableResolverFactory) {
         this.property = property;
@@ -63,6 +69,8 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     }
 
     public Accessor compile(char[] property, Object staticContext, Object thisRef, VariableResolverFactory factory, boolean root) {
+        time = System.currentTimeMillis();
+
         start = cursor = 0;
 
         this.first = true;
@@ -75,23 +83,21 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         this.variableFactory = factory;
 
         classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        classWriter.visit(Opcodes.V1_4, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = new String(property)
-                .replaceAll("[\\.\\[\\]'\\\"]", "_"),
-                null, "java/lang/Object", new String[]{"org.mvel.Accessor"});
+        classWriter.visit(Opcodes.V1_2, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_" + String.valueOf(classWriter.hashCode()).replaceAll("\\-", "_"),
+                null, "java/lang/Object", new String[]{"org/mvel/Accessor"});
 
-        MethodVisitor m = classWriter.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+        MethodVisitor m = classWriter.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         m.visitCode();
         m.visitVarInsn(Opcodes.ALOAD, 0);
         m.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object",
                 "<init>", "()V");
         m.visitInsn(Opcodes.RETURN);
         m.visitMaxs(1, 1);
+        m.visitEnd();
 
-        methodVisitor = classWriter.visitMethod(Opcodes.ACC_PUBLIC, "getValue",
+        mv = classWriter.visitMethod(ACC_PUBLIC, "getValue",
                 "(Ljava/lang/Object;Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;", null, null);
-        methodVisitor.visitCode();
-
-        if (root) methodVisitor.visitVarInsn(ALOAD, 2);
+        mv.visitCode();
 
         return compileAccessor();
     }
@@ -120,11 +126,23 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
             val = curr;
 
-            methodVisitor.visitEnd();
+            debug("{exit: " + returnType + "}");
+
+            if (returnType != null && returnType.isPrimitive()) {
+                wrapPrimitive(returnType);
+            }
+
+            debug("ARETURN");
+            mv.visitInsn(ARETURN);
+            mv.visitMaxs(stacksize, 1);
+
+            mv.visitEnd();
             classWriter.visitEnd();
+
 
             Class cls = loadClass(classWriter.toByteArray());
 
+            System.out.println("[MVEL JIT Completed Optimization <<" + new String(property) + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
 
             return (Accessor) cls.newInstance();
         }
@@ -185,55 +203,90 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
+        debug("{BEAN(" + property + ")}");
+
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
 
         if (first && variableFactory != null && variableFactory.isResolveable(property)) {
-            addAccessorComponent(cls, property, VAR);
+            try {
+                debug("ALOAD 3");
+                mv.visitVarInsn(ALOAD, 3);
+
+                debug("LDC :" + property);
+                mv.visitLdcInsn(property);
+
+                debug("INVOKEINTERFACE");
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolverFactory",
+                        "getVariableResolver", "(Ljava/lang/String;)Lorg/mvel/integration/VariableResolver;");
+
+                debug("INVOKEINTERFACE");
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolver",
+                        "getValue", "()Ljava/lang/Object;");
+            }
+            catch (Exception e) {
+                throw new OptimizationFailure("critical error in JIT", e);
+            }
+
 
             return variableFactory.getVariableResolver(property).getValue();
         }
         else if (member instanceof Field) {
-            addAccessorComponent(cls, property, FIELD);
+            Object o = ((Field) member).get(ctx);
 
-            return ((Field) member).get(ctx);
+            if (first) {
+                debug("ALOAD 2");
+                mv.visitVarInsn(ALOAD, 2);
+            }
+
+            debug("CHECKCAST: " + getInternalName(cls));
+            mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
+
+            debug("GETFIELD: " + property + ":" + getDescriptor(((Field) member).getType()));
+            mv.visitFieldInsn(GETFIELD, getInternalName(cls), property, getDescriptor(((Field) member).getType()));
+            //  addAccessorComponent(cls, property, FIELD, ((Field) member).getType());
+            return o;
         }
         else if (member != null) {
+            if (first) {
+                debug("ALOAD 2");
+                mv.visitVarInsn(ALOAD, 2);
+            }
 
-            addAccessorComponent(cls, property, METH);
+            debug("CHECKCAST: " + getInternalName(member.getDeclaringClass()));
+            mv.visitTypeInsn(CHECKCAST, getInternalName(member.getDeclaringClass()));
+
+            returnType = ((Method) member).getReturnType();
+
+            debug("INVOKEVIRTUAL: " + member.getName() + ":" + returnType);
+            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(member.getDeclaringClass()), member.getName(),
+                    getMethodDescriptor((Method) member));
+
+            stacksize++;
 
             return ((Method) member).invoke(ctx, EMPTYARG);
         }
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
 
-            addAccessorComponent(cls, property, COL);
+            addAccessorComponent(cls, property, COL, null);
 
             return ((Map) ctx).get(property);
         }
         else if ("this".equals(property)) {
 
-            methodVisitor.visitVarInsn(ALOAD, 2); // load the thisRef value.
+            debug("ALOAD 2");
+            mv.visitVarInsn(ALOAD, 2); // load the thisRef value.
 
             return this.thisRef;
         }
         else if (Token.LITERALS.containsKey(property)) {
-
             throw new OptimizationNotSupported("literal: " + property);
-
-            // return accessor.getLiteral();
         }
         else {
             Class tryStaticMethodRef = tryStaticAccess();
 
             if (tryStaticMethodRef != null) {
                 throw new OptimizationNotSupported("class literal: " + tryStaticMethodRef);
-
-//                StaticReferenceAccessor accessor = new StaticReferenceAccessor();
-//                accessor.setLiteral(tryStaticMethodRef);
-//
-//                addAccessorNode(accessor);
-//
-//                return tryStaticMethodRef;
             }
             else
                 throw new PropertyAccessException("could not access property (" + property + ")");
@@ -276,6 +329,8 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     private Object getCollectionProperty(Object ctx, String prop) throws Exception {
         if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
 
+        debug("{collection: " + prop + "} ctx=" + ctx);
+
         int start = ++cursor;
 
         whiteSpaceSkip();
@@ -315,12 +370,18 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             return ((Map) ctx).get(item);
         }
         else if (ctx instanceof List) {
-            ListAccessor accessor = new ListAccessor();
-            accessor.setIndex(Integer.parseInt(item));
+            int index = Integer.parseInt(item);
 
-            //  addAccessorNode(accessor);
+            debug("CHECKCAST: java/util/List");
+            mv.visitTypeInsn(CHECKCAST, "java/util/List");
 
-            return ((List) ctx).get(accessor.getIndex());
+            debug("BIGPUSH: " + 6);
+            mv.visitIntInsn(BIPUSH, index);
+
+            debug("INVOKEINTERFACE: java/util/List.get");
+            mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
+
+            return ((List) ctx).get(index);
         }
         else if (ctx instanceof Collection) {
             int count = Integer.parseInt(item);
@@ -332,12 +393,47 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             return iter.next();
         }
         else if (ctx instanceof Object[]) {
-            ArrayAccessor accessor = new ArrayAccessor();
-            accessor.setIndex(Integer.parseInt(item));
+            int index = Integer.parseInt(item);
 
-            //    addAccessorNode(accessor);
+            debug("CHECKCAST: [Ljava/lang/Object;");
+            mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
 
-            return ((Object[]) ctx)[accessor.getIndex()];
+            if (index < 6) {
+                switch (index) {
+                    case 0:
+                        debug("ICONST_0");
+                        mv.visitInsn(ICONST_0);
+                        break;
+                    case 1:
+                        debug("ICONST_1");
+                        mv.visitInsn(ICONST_1);
+                        break;
+                    case 2:
+                        debug("ICONST_2");
+                        mv.visitInsn(ICONST_2);
+                        break;
+                    case 3:
+                        debug("ICONST_3");
+                        mv.visitInsn(ICONST_3);
+                        break;
+                    case 4:
+                        debug("ICONST_4");
+                        mv.visitInsn(ICONST_4);
+                        break;
+                    case 5:
+                        debug("ICONST_5");
+                        mv.visitInsn(ICONST_5);
+                        break;
+                }
+            }
+            else {
+                debug("BIPUSH " + index);
+                mv.visitIntInsn(BIPUSH, index);
+            }
+
+            mv.visitInsn(AALOAD);
+
+            return ((Object[]) ctx)[index];
         }
         else if (ctx instanceof CharSequence) {
             IndexedCharSeqAccessor accessor = new IndexedCharSeqAccessor();
@@ -482,7 +578,21 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
             //  addAccessorNode(access);
 
-            addAccessorComponent(cls, m.getName(), METH);
+            if (m.getTypeParameters().length == 0) {
+
+                debug("CHECKCAST: " + getInternalName(m.getDeclaringClass()));
+                mv.visitTypeInsn(CHECKCAST, getInternalName(m.getDeclaringClass()));
+
+                debug("INVOKEVIRTUAL");
+                mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(m.getDeclaringClass()), m.getName(),
+                        getMethodDescriptor(m));
+                stacksize++;
+            }
+            else {
+                throw new OptimizationNotSupported("JIT does not currently support method parameters");
+            }
+
+            //addAccessorComponent(cls, m.getName(), METH, null);
 
             /**
              * Invoke the target method and return the response.
@@ -535,35 +645,29 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     }
 
 
-    public void addAccessorComponent(Class context, String name, int type) {
-
-
+    public void addAccessorComponent(Class context, String name, int type, Class signature) {
         switch (type) {
             case BEAN:
-                methodVisitor.visitVarInsn(ALOAD, 1); // load the context object.
-                addMethodComponent(methodVisitor, context, name);
+                addMethodComponent(mv, context, name);
                 return;
 
             case METH:
                 throw new OptimizationNotSupported("cannot optimize method: " + name);
 
-
             case FIELD:
-                methodVisitor.visitVarInsn(ALOAD, 0); // load the class instance.
-                addFieldComponent(methodVisitor, context, name);
+                addFieldComponent(mv, context, name, signature);
                 return;
         }
     }
 
 
     public void addMethodComponent(MethodVisitor methodVisitor, Class context, String name) {
-        //     methodVisitor.visitVarInsn(ALOAD, 2);
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL, getDescriptor(context), name, "()I");
     }
 
-    public void addFieldComponent(MethodVisitor methodVisitor, Class context, String name) {
-        methodVisitor.visitVarInsn(ALOAD, 0); // load class instance onto the stack.
-        methodVisitor.visitFieldInsn(GETFIELD, getDescriptor(context), name, "L" + getDescriptor(context) + ";");
+    public void addFieldComponent(MethodVisitor methodVisitor, Class context, String name, Class signature) {
+        methodVisitor.visitVarInsn(ALOAD, 1);
+        methodVisitor.visitFieldInsn(GETFIELD, getInternalName(context), name, getDescriptor(signature));
     }
 
     private java.lang.Class loadClass(byte[] b) {
@@ -578,7 +682,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             // protected method invocaton
             method.setAccessible(true);
             try {
-                Object[] args = new Object[]{className, b, new Integer(0), new Integer(b.length)};
+                Object[] args = new Object[]{className, b, 0, (b.length)};
                 clazz = (Class) method.invoke(loader, args);
             }
             finally {
@@ -593,6 +697,10 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     }
 
 
+    public void debug(String instruction) {
+       System.out.println(instruction);
+    }
+
     public String getName() {
         return "ASM";
     }
@@ -601,4 +709,29 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     public Object getResultOptPass() {
         return val;
     }
+
+    private void wrapPrimitive(Class<? extends Object> cls) {
+        if (cls == boolean.class) {
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;");
+        }
+        else if (cls == int.class) {
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(Z)Ljava/lang/Integer;");
+        }
+        else if (cls == float.class) {
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(Z)Ljava/lang/Float;");
+        }
+        else if (cls == double.class) {
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(Z)Ljava/lang/Double;");
+        }
+        else if (cls == short.class) {
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(Z)Ljava/lang/Short;");
+        }
+        else if (cls == byte.class) {
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(Z)Ljava/lang/Byte;");
+        }
+        else if (cls == char.class) {
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(Z)Ljava/lang/Character;");
+        }
+    }
+
 }
