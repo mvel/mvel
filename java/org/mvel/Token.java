@@ -5,6 +5,7 @@ import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorCompiler;
+import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
@@ -75,7 +76,7 @@ public class Token implements Cloneable, Serializable {
 
     private int fields = 0;
 
-    private CompiledExpression compiledExpression;
+    private ExecutableStatement compiledExpression;
     private Accessor accessor;
     private int knownSize = 0;
 
@@ -803,7 +804,7 @@ public class Token implements Cloneable, Serializable {
         return firstUnion;
     }
 
-    public CompiledExpression getCompiledExpression() {
+    public ExecutableStatement getCompiledExpression() {
         return compiledExpression;
     }
 
@@ -816,7 +817,7 @@ public class Token implements Cloneable, Serializable {
         this.accessor = accessor;
     }
 
-    public void setCompiledExpression(CompiledExpression compiledExpression) {
+    public void setCompiledExpression(ExecutableStatement compiledExpression) {
         this.compiledExpression = compiledExpression;
     }
 

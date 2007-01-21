@@ -463,12 +463,12 @@ public class ReflectiveAccessor implements AccessorCompiler {
         }
         else {
             if (es != null) {
-                CompiledExpression cExpr;
+                ExecutableStatement cExpr;
                 for (int i = 0; i < es.length; i++) {
-                    cExpr = ((CompiledExpression) es[i]);
+                    cExpr = es[i];
                     if (cExpr.getKnownIngressType() == null) {
                         cExpr.setKnownIngressType(parameterTypes[i]);
-                        cExpr.pack();
+                        cExpr.computeTypeConversionRule();
                     }
                     if (!cExpr.isConvertableIngressEgress()) {
                         args[i] = DataConversion.convert(args[i], parameterTypes[i]);
