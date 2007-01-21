@@ -10,7 +10,7 @@ public class ListAccessor implements AccessorNode {
 
     private int index;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {
             return nextNode.getValue(((List)ctx).get(index), elCtx, vars);
         }

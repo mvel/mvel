@@ -23,7 +23,7 @@ public class VariableAccessor implements AccessorNode {
 
     }
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
         if (vrf == null) 
             throw new PropertyAccessException("cannot property in optimized accessor: " + property);
         if (nextNode != null) {

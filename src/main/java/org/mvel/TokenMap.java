@@ -3,6 +3,7 @@ package org.mvel;
 public class TokenMap implements TokenIterator {
     private Token firstToken;
     private Token current;
+    private int size;
 
     public TokenMap(Token firstToken) {
         this.current = this.firstToken = firstToken;
@@ -15,6 +16,7 @@ public class TokenMap implements TokenIterator {
         else {
            this.current = (this.current.nextToken = token);
         }
+        size++;
     }
 
     public void reset() {
@@ -87,6 +89,10 @@ public class TokenMap implements TokenIterator {
         throw new RuntimeException("unimplemented");        
     }
 
+
+    public int size() {
+        return size;
+    }
 
     @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException"})
     public TokenIterator clone() {

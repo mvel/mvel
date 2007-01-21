@@ -6,7 +6,7 @@ import org.mvel.integration.VariableResolverFactory;
 public class ThisValueAccessor implements AccessorNode {
     private AccessorNode nextNode;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {
             return this.nextNode.getValue(elCtx, elCtx, vars);
         }

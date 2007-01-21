@@ -8,7 +8,7 @@ public class StaticReferenceAccessor implements AccessorNode {
 
     Object literal;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {
             return nextNode.getValue(literal, elCtx, vars);
         }

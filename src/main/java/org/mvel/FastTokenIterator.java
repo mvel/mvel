@@ -114,4 +114,9 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
         }
 
     }
+
+
+    public int size() {
+        return length;
+    }
 }
