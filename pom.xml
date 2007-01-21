@@ -34,6 +34,13 @@
       <version>2.6.9</version>
       <scope>test</scope>
     </dependency>
+    
+    <dependency>
+      <groupId>asm</groupId>
+      <artifactId>asm</artifactId>
+      <version>3.0_RC1</version>
+      <scope>test</scope>
+    </dependency>    
   </dependencies>
 
 
