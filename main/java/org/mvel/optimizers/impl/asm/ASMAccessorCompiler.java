@@ -145,11 +145,11 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
             Class cls = loadClass(classWriter.toByteArray());
 
-            System.out.println("[MVEL JIT Completed Optimization <<" + new String(property) + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
+            debug("[MVEL JIT Completed Optimization <<" + new String(property) + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
 
             Accessor a = (Accessor) cls.newInstance();
 
-            System.out.println("[MVEL JIT Test Output: " + a.getValue(ctx, thisRef, variableFactory) + "]");
+            debug("[MVEL JIT Test Output: " + a.getValue(ctx, thisRef, variableFactory) + "]");
 
             return a;
         }
@@ -720,7 +720,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
 
     public void debug(String instruction) {
-        System.out.println(instruction);
+  //      System.out.println(instruction);
     }
 
     public String getName() {
