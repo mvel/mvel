@@ -4,6 +4,7 @@ import org.mvel.integration.VariableResolverFactory;
 import org.objectweb.asm.Type;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 public class TestClass implements Accessor {
 
@@ -18,7 +19,7 @@ public class TestClass implements Accessor {
 
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
-        return ((Object[]) ((Token)variableFactory.getVariableResolver("foo").getValue()).getValue())[6];
+        return ((Map) ((Token)variableFactory.getVariableResolver("foo").getValue()).getValue()).get("test");
     }
 
  
