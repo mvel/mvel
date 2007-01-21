@@ -19,6 +19,20 @@ import java.lang.reflect.*;
 import java.util.*;
 
 public class ASMAccessorCompiler implements AccessorCompiler {
+    private static final int OPCODES_VERSION;
+
+    static {
+        String javaVersion = System.getProperty("java.version");
+        if (javaVersion.startsWith("1.4"))
+            OPCODES_VERSION = Opcodes.V1_4;
+        else if (javaVersion.startsWith("1.5"))
+            OPCODES_VERSION = Opcodes.V1_5;
+        else if (javaVersion.startsWith("1.6") || javaVersion.startsWith("1.7"))
+            OPCODES_VERSION = Opcodes.V1_6;
+        else
+            OPCODES_VERSION = Opcodes.V1_2;
+    }
+
     private int start = 0;
     private int cursor = 0;
 
@@ -82,7 +96,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         this.variableFactory = factory;
 
         cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
-        cw.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_" + String.valueOf(cw.hashCode()).replaceAll("\\-", "_"),
+        cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_" + String.valueOf(cw.hashCode()).replaceAll("\\-", "_"),
                 null, "java/lang/Object", new String[]{"org/mvel/Accessor"});
 
         MethodVisitor m = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
@@ -627,7 +641,6 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             }
 
 
-
             if (first) {
                 debug("ALOAD 1");
                 mv.visitVarInsn(ALOAD, 1);
@@ -732,8 +745,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             }
 
 
-
-            return  m.invoke(ctx, args);
+            return m.invoke(ctx, args);
         }
     }
 
@@ -938,6 +950,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         cv.visitEnd();
 
         debug("}");
-
     }
+
+
 }
