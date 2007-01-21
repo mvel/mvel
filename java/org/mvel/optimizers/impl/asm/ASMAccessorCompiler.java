@@ -34,9 +34,6 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     private static final int BEAN = 0;
     private static final int METH = 1;
     private static final int COL = 2;
-    private static final int FIELD = 3;
-    private static final int VAR = 4;
-    private static final int THIS = 5;
 
     private static final Object[] EMPTYARG = new Object[0];
 
@@ -131,6 +128,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             val = curr;
 
             if (returnType != null && returnType.isPrimitive()) {
+                //noinspection unchecked
                 wrapPrimitive(returnType);
             }
 
@@ -528,27 +526,35 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
         cursor++;
 
+        Object[] preConvArgs;
         Object[] args;
         ExecutableStatement[] es;
 
         if (tk.length() == 0) {
+            //noinspection ZeroLengthArrayAllocation
             args = new Object[0];
+
+            //noinspection ZeroLengthArrayAllocation            
+            preConvArgs = new Object[0];
             es = null;
         }
         else {
             if (SUBEXPRESSION_CACHE.containsKey(tk)) {
                 es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
+                preConvArgs = new Object[es.length];
                 for (int i = 0; i < es.length; i++) {
-                    args[i] = es[i].getValue(this.ctx, variableFactory);
+                    preConvArgs[i] = args[i] = es[i].getValue(this.ctx, variableFactory);
                 }
             }
             else {
                 String[] subtokens = ParseTools.parseParameterList(tk.toCharArray(), 0, -1);
                 es = new ExecutableStatement[subtokens.length];
                 args = new Object[subtokens.length];
+                preConvArgs = new Object[es.length];
+
                 for (int i = 0; i < subtokens.length; i++) {
-                    args[i] = (es[i] = (CompiledExpression) ExpressionParser.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                    preConvArgs[i] = args[i] = (es[i] = (CompiledExpression) ExpressionParser.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
                 }
                 SUBEXPRESSION_CACHE.put(tk, es);
             }
@@ -620,6 +626,8 @@ public class ASMAccessorCompiler implements AccessorCompiler {
                     args[i] = DataConversion.convert(args[i], parameterTypes[i]);
             }
 
+
+
             if (first) {
                 debug("ALOAD 1");
                 mv.visitVarInsn(ALOAD, 1);
@@ -670,11 +678,13 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
                     //    inputs++;
 
-
                     if (parameterTypes[i].isPrimitive()) {
                         unwrapPrimitive(parameterTypes[i]);
                     }
-                    else if (parameterTypes[i] != Object.class) {
+                    else if (preConvArgs[i] == null ||
+                            (parameterTypes[i] != String.class &&
+                                    !parameterTypes[i].isAssignableFrom(preConvArgs[i].getClass()))) {
+
                         debug("LDC " + getType(parameterTypes[i]));
                         mv.visitLdcInsn(getType(parameterTypes[i]));
 
@@ -685,6 +695,18 @@ public class ASMAccessorCompiler implements AccessorCompiler {
                         debug("CHECKCAST " + getInternalName(parameterTypes[i]));
                         mv.visitTypeInsn(CHECKCAST, getInternalName(parameterTypes[i]));
                     }
+                    else if (parameterTypes[i] == String.class) {
+                        debug("<<<DYNAMIC TYPE OPTIMIZATION STRING>>");
+                        mv.visitMethodInsn(INVOKESTATIC, "java/lang/String", "valueOf", "(Ljava/lang/Object;)Ljava/lang/String;");
+                    }
+                    else {
+                        debug("<<<DYNAMIC TYPING BYPASS>>>");
+                        debug("<<<OPT. JUSTIFICATION " + parameterTypes[i] + "=" + preConvArgs[i].getClass() + ">>>");
+
+                        debug("CHECKCAST " + getInternalName(parameterTypes[i]));
+                        mv.visitTypeInsn(CHECKCAST, getInternalName(parameterTypes[i]));
+                    }
+
 
                     stacksize += 3;
                 }
@@ -711,12 +733,9 @@ public class ASMAccessorCompiler implements AccessorCompiler {
                 stacksize++;
             }
 
-            //addAccessorComponent(cls, m.getName(), METH, null);
 
-            /**
-             * Invoke the target method and return the response.
-             */
-            return m.invoke(ctx, args);
+
+            return  m.invoke(ctx, args);
         }
     }
 
