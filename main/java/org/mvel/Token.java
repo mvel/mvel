@@ -361,7 +361,6 @@ public class Token implements Cloneable, Serializable {
         catch (Exception e) {
             throw new OptimizationFailure("failed to optimize accessor: " + new String(name), e);
         }
-
     }
 
     public void deOptimize() {
