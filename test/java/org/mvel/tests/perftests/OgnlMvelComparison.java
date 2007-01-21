@@ -92,7 +92,7 @@ public class OgnlMvelComparison {
             }
         }
         System.out.println("(OGNL Compiled)      : " + new BigDecimal(System.currentTimeMillis() - time).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
-                + "ms avg.  (mem delta: " + (mem - (Runtime.getRuntime().freeMemory()) / 1024) + "kb)");
+                + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
 
         System.gc();
 
@@ -106,7 +106,7 @@ public class OgnlMvelComparison {
             }
         }
         System.out.println("(MVEL Compiled)      : " + new BigDecimal(System.currentTimeMillis() - time).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
-                + "ms avg.  (mem delta: " + (mem - (Runtime.getRuntime().freeMemory()) / 1024) + "kb)");
+                + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
     }
 
 }
