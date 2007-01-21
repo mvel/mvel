@@ -701,29 +701,24 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         methodVisitor.visitFieldInsn(GETFIELD, getInternalName(context), name, getDescriptor(signature));
     }
 
-    private java.lang.Class loadClass(byte[] b) {
+    private java.lang.Class loadClass(byte[] b) throws Exception {
         //override classDefine (as it is protected) and define the class.
         Class clazz = null;
-        try {
-            ClassLoader loader = ClassLoader.getSystemClassLoader();
-            Class cls = Class.forName("java.lang.ClassLoader");
-            java.lang.reflect.Method method =
-                    cls.getDeclaredMethod("defineClass", new Class[]{String.class, byte[].class, int.class, int.class});
+        ClassLoader loader = ClassLoader.getSystemClassLoader();
+        Class cls = Class.forName("java.lang.ClassLoader");
+        java.lang.reflect.Method method =
+                cls.getDeclaredMethod("defineClass", new Class[]{String.class, byte[].class, int.class, int.class});
 
-            // protected method invocaton
-            method.setAccessible(true);
-            try {
-                Object[] args = new Object[]{className, b, 0, (b.length)};
-                clazz = (Class) method.invoke(loader, args);
-            }
-            finally {
-                method.setAccessible(false);
-            }
+        // protected method invocaton
+        method.setAccessible(true);
+        try {
+            Object[] args = new Object[]{className, b, 0, (b.length)};
+            clazz = (Class) method.invoke(loader, args);
         }
-        catch (Exception e) {
-            e.printStackTrace();
-            System.exit(1);
+        finally {
+            method.setAccessible(false);
         }
+
         return clazz;
     }
 
