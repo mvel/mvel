@@ -327,12 +327,10 @@ public class Token implements Cloneable, Serializable {
 
     }
 
-
     public Token createDeferralOptimization() {
         accessor = new Deferral();
         return this;
     }
-
 
     public Object optimizeAccessor(Object ctx, Object thisRef, VariableResolverFactory variableFactory, boolean thisRefPush) {
         try {
