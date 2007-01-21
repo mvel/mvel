@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class OptimizerFactory {
-    private static String defaultOptimizer = "Reflective";
+    private static String defaultOptimizer = "ASM";
     private static final Map<String, Optimizer> optimizers = new HashMap<String, Optimizer>();
     private static final Map<String, AccessorCompiler> accessorCompilers = new HashMap<String, AccessorCompiler>();
 

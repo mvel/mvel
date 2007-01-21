@@ -75,7 +75,7 @@ public class Token implements Cloneable, Serializable {
     private Accessor accessor;
     private int knownSize = 0;
 
-    Token nextToken;
+    public Token nextToken;
 
     public static final Map<String, Object> LITERALS =
             new HashMap<String, Object>(35, 0.6f);
@@ -309,6 +309,11 @@ public class Token implements Cloneable, Serializable {
         }
         catch (NullPointerException e) {
             if (accessor == null) {
+                if (nextToken != null && nextToken.isOperator(Operator.ASSIGN)) {
+                    createDeferralOptimization();
+                    return this;
+                }
+
                 optimizeAccessor(isPush() ? valueOnly(ctx) : ctx, elCtx, variableFactory, elCtx != null);
                 return this;
             }

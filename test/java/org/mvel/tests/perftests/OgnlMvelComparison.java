@@ -13,8 +13,7 @@ import java.math.RoundingMode;
 public class OgnlMvelComparison {
     private Base baseClass = new Base();
 
-    private static final int TESTNUM = 100000;
-
+    private static final int TESTNUM = 10000;
 
     public OgnlMvelComparison() {
     }
