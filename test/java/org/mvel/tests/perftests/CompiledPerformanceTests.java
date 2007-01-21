@@ -43,7 +43,7 @@ public class CompiledPerformanceTests extends TestCase {
         ep.setCompiledStatement(compileExpression(text));
         ep.setVariableResolverFactory(variableTable);
 
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 1000000000; i++) {
             ep.executeFast();
         }
     }
