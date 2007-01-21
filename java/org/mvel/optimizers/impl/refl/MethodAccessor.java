@@ -1,6 +1,7 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
+import org.mvel.CompileException;
 import static org.mvel.DataConversion.convert;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.ExecutableStatement;
@@ -16,7 +17,7 @@ public class MethodAccessor implements AccessorNode {
     private int length;
     private boolean coercionNeeded = false;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (!coercionNeeded) {
             try {
                 if (nextNode != null) {
@@ -30,21 +31,29 @@ public class MethodAccessor implements AccessorNode {
                 coercionNeeded = true;
                 return getValue(ctx, elCtx, vars);
             }
+            catch (Exception e) {
+                throw new CompileException("cannot invoke method", e);
+            }
 
         }
         else {
-            if (nextNode != null) {
-                return nextNode.getValue(method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars)), elCtx, vars);
+            try {
+                if (nextNode != null) {
+                    return nextNode.getValue(method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars)), elCtx, vars);
+                }
+                else {
+                    return method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars));
+                }
             }
-            else {
-                return method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars));
+            catch (Exception e) {
+                throw new CompileException("cannot invoke method", e);
             }
         }
     }
 
     private Object[] executeAll(Object ctx, VariableResolverFactory vars) {
         if (length == 0) return GetterAccessor.EMPTY;
-        
+
         Object[] vals = new Object[length];
         for (int i = 0; i < length; i++) {
             vals[i] = parms[i].getValue(ctx, vars);

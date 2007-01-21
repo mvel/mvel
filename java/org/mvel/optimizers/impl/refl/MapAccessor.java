@@ -10,7 +10,7 @@ public class MapAccessor implements AccessorNode {
 
     private Object property;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) throws Exception {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
         if (nextNode != null) {
             return nextNode.getValue(((Map)ctx).get(property), elCtx, vrf);
         }

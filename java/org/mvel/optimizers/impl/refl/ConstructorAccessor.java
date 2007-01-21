@@ -1,5 +1,6 @@
 package org.mvel.optimizers.impl.refl;
 
+import org.mvel.CompileException;
 import static org.mvel.DataConversion.convert;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.ExecutableStatement;
@@ -13,30 +14,35 @@ public class ConstructorAccessor extends BaseAccessor {
     private int length;
     private boolean coercionNeeded = false;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
-        if (!coercionNeeded) {
-            try {
-                if (nextNode != null) {
-                    return nextNode.getValue(constructor.newInstance(executeAll(elCtx, variableFactory)), elCtx, variableFactory);
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+        try {
+            if (!coercionNeeded) {
+                try {
+                    if (nextNode != null) {
+                        return nextNode.getValue(constructor.newInstance(executeAll(elCtx, variableFactory)), elCtx, variableFactory);
+                    }
+                    else {
+                        return constructor.newInstance(executeAll(elCtx, variableFactory));
+                    }
                 }
-                else {
-                    return constructor.newInstance(executeAll(elCtx, variableFactory));
+                catch (IllegalArgumentException e) {
+                    coercionNeeded = true;
+                    return getValue(ctx, elCtx, variableFactory);
                 }
-            }
-            catch (IllegalArgumentException e) {
-                coercionNeeded = true;
-                return getValue(ctx, elCtx, variableFactory);
-            }
 
-        }
-        else {
-            if (nextNode != null) {
-                return nextNode.getValue(constructor.newInstance(executeAndCoerce(parmTypes, elCtx, variableFactory)),
-                        elCtx, variableFactory);
             }
             else {
-                return constructor.newInstance(executeAndCoerce(parmTypes, elCtx, variableFactory));
+                if (nextNode != null) {
+                    return nextNode.getValue(constructor.newInstance(executeAndCoerce(parmTypes, elCtx, variableFactory)),
+                            elCtx, variableFactory);
+                }
+                else {
+                    return constructor.newInstance(executeAndCoerce(parmTypes, elCtx, variableFactory));
+                }
             }
+        }
+        catch (Exception e) {
+            throw new CompileException("cannot construct object", e);
         }
     }
 

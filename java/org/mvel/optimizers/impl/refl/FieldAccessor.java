@@ -1,6 +1,7 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
+import org.mvel.CompileException;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Field;
@@ -10,12 +11,17 @@ public class FieldAccessor implements AccessorNode {
 
     private Field field;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) throws Exception {
-        if (nextNode != null) {
-            return nextNode.getValue(field.get(ctx), elCtx, vars);
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
+        try {
+            if (nextNode != null) {
+                return nextNode.getValue(field.get(ctx), elCtx, vars);
+            }
+            else {
+                return field.get(ctx);
+            }
         }
-        else {
-            return field.get(ctx);
+        catch (Exception e) {
+            throw new CompileException("unable to access field", e);
         }
 
     }
