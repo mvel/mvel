@@ -247,10 +247,6 @@ public class ExpressionParser {
         return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
     }
 
-//    public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
-//        return convert(new ExpressionParser(expression, ctx).parse(), toType);
-//    }
-
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Map vars, Class<T> toType) {
         return convert(new ExpressionParser(expression, null, vars).parse(), toType);
