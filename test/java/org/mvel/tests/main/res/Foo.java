@@ -21,7 +21,6 @@ public class Foo {
 
     public String toUC(String s) {
         register = s;
-        System.out.println("toUC('" + s + "')");
         return s.toUpperCase();
     }
 }

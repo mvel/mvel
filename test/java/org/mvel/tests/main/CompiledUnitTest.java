@@ -6,7 +6,6 @@ import static org.mvel.ExpressionParser.*;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
-import org.mvel.tests.main.res.PDFFieldUtil;
 import org.mvel.util.FastList;
 
 import java.io.Serializable;
@@ -574,16 +573,15 @@ public class CompiledUnitTest extends TestCase {
         }
     }
 
-    public void calculateAge() {
-        System.out.println("Calculating the Age");
+    public void testCalculateAge() {
+    //    System.out.println("Calculating the Age");
         Calendar c1 = Calendar.getInstance();
         c1.set(1999, 0, 10); // 1999 jan 20
         Map objectMap = new HashMap(1);
         Map propertyMap = new HashMap(1);
         propertyMap.put("GEBDAT", c1.getTime());
         objectMap.put("EV_VI_ANT1", propertyMap);
-        System.out.println(new PDFFieldUtil().calculateAge(c1.getTime()));
-        System.out.println(compiledExecute("new org.mvel.tests.main.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'X' : ''"
+        assertEquals("N", compiledExecute("new org.mvel.tests.main.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'Y' : 'N'"
                 , null, objectMap));
     }
 

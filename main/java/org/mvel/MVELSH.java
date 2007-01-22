@@ -9,9 +9,9 @@ import java.util.Map;
 
 public class MVELSH {
     public static void main(String[] args) {
-        System.out.println("MVEL (MVFLEX Expression Language) Command-line Interpreter Tool");
+        System.out.println(MVEL.NAME + " Command-line Interpreter Tool");
         System.out.println("Copyright (C) 2006 The MVFLEX/Valhalla Project");
-        System.out.println("Version 1.1.008  -- Written by: Christopher Brock\n\n");
+        System.out.println("Version " + MVEL.VERSION + MVEL.VERSION_SUB + " (" + MVEL.CODENAME +  ")  -- Written by: Christopher Brock\n\n");
 
         Map map = new HashMap();
 
