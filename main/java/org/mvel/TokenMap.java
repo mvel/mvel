@@ -123,4 +123,9 @@ public class TokenMap implements TokenIterator {
     public TokenIterator clone() {
         return null;
     }
+
+
+    public int index() {
+        return -1;
+    }
 }

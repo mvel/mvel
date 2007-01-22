@@ -21,8 +21,8 @@ public class AccessorBMModel implements Accessor {
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
      //   String.valueOf(ctx);
 
-//        return ((Foo)variableFactory.getVariableResolver("foo").getValue())
-//                .toUC(DataConversion.convert(p0.getValue(elCtx, variableFactory), String.class));
+//        return ((Foo)variableFactory.getVariableResolver("foo").getLiteralValue())
+//                .toUC(DataConversion.convert(p0.getLiteralValue(elCtx, variableFactory), String.class));
         
         return blah;
     }

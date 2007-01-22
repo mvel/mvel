@@ -35,5 +35,8 @@ public interface TokenIterator extends Cloneable {
     @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException"})
     public TokenIterator clone();
     public Token firstToken();
+
     public int size();
+    public int index();
+
 }

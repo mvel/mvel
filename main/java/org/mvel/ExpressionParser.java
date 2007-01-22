@@ -88,6 +88,9 @@ public class ExpressionParser {
         return new ExpressionParser(expression, resolverFactory).parse();
     }
 
+    public static Object eval(char[] expression, Object ctx, VariableResolverFactory resolverFactory) {
+        return new ExpressionParser(expression, ctx, resolverFactory).parse();
+    }
 
     public static Object eval(String expression, Object ctx, VariableResolverFactory resolverFactory) {
         return new ExpressionParser(expression, ctx, resolverFactory).parse();
@@ -357,28 +360,30 @@ public class ExpressionParser {
 
         cursor = 0;
 
-        if (fastExecuteMode)
+        assert debug("\n**************\nPARSER_START_" + (fastExecuteMode ? "ACCEL" : (compileMode ? "COMPILE" : "INTERP")));
+
+        if (fastExecuteMode) {
+            assert debug(tokens.showTokenChain());
+
             parseAndExecuteAccelerated();
-        else
+        }
+        else {
             parseAndExecuteInterpreted();
+        }
 
         Object result = stk.peek();
 
         if (isBooleanModeOnly()) {
             if (result instanceof Boolean) return result;
-            else if (result instanceof Token) {
-                if (((Token) result).getValue() instanceof Boolean) {
-                    return ((Token) result).getValue();
-                }
-                return !BlankLiteral.INSTANCE.equals(((Token) result).getValue());
-            }
             else if (result instanceof BigDecimal) {
                 return !BlankLiteral.INSTANCE.equals(((BigDecimal) result).floatValue());
             }
-            throw new CompileException("unknown exception in expression: encountered unknown stack element: " + result);
-        }
-        else if (result instanceof Token) {
-            result = ((Token) result).getValue();
+            else {
+                if (result instanceof Boolean) {
+                    return ((Token) result).getLiteralValue();
+                }
+                return !BlankLiteral.INSTANCE.equals(result);
+            }
         }
 
         if (result instanceof BigDecimal) {
@@ -402,7 +407,7 @@ public class ExpressionParser {
     }
 
     /**
-     * This method is called to reduce a binary statement (or junction).  The difference between a binary and
+     * This method is called to subEval a binary statement (or junction).  The difference between a binary and
      * trinary statement, as far as the parser is concerned is that a binary statement has an entrant state,
      * where-as a trinary statement does not.  Consider: (x && y): in this case, x will be reduced first, and
      * therefore will have a value on the stack, so the parser will then process the next statement as a binary,
@@ -414,22 +419,43 @@ public class ExpressionParser {
      * @return int - behaviour code
      */
     private int reduceBinary(int o) {
+        assert debug("BINARY_OP " + o + " PEEK=<<" + stk.peek() + ">>");
         switch (o) {
             case AND:
-                if (stk.peek() instanceof Boolean && !((Boolean) ParseTools.valueOnly(stk.peek()))) {
-                    return unwindStatement() ? -1 : 0;
+                if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
+                    assert debug("STMT_UNWIND");
+                    if (unwindStatement()) {
+                        return -1;
+                    }
+                    else {
+                        stk.clear();
+                        return 1;
+                    }
                 }
-                break;
+                else {
+                    stk.discard();
+                    return 1;
+                }
             case OR:
-                if (stk.peek() instanceof Boolean && ((Boolean) ParseTools.valueOnly(stk.peek()))) {
-                    return unwindStatement() ? -1 : 0;
+                if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
+                    assert debug("STMT_UNWIND");
+                    if (unwindStatement()) {
+                        return -1;
+                    }
+                    else {
+                        stk.clear();
+                        return 1;
+                    }
                 }
-                break;
+                else {
+                    stk.discard();
+                    return 1;
+                }
 
             case TERNARY:
                 Token tk;
-                if (!compileMode && (Boolean) ParseTools.valueOnly(stk.peek())) {
-                    stk.discard();
+                if (!compileMode && (Boolean) stk.pop()) {
+                    //   stk.discard();
                     return 1;
                 }
                 else {
@@ -451,31 +477,45 @@ public class ExpressionParser {
 
             case END_OF_STMT:
                 setFieldFalse(Token.LISTCREATE);
-                if (fastExecuteMode) {
-                    if ((fields & Token.ASSIGN) != 0 || !tokens.hasMoreTokens()) {
-                        return -1;
-                    }
-                    else {
-                        stk.clear();
-                        return 1;
-                    }
-                }
 
-                if ((fields & Token.ASSIGN) != 0 || cursor == length) {
+                /**
+                 * Assignments are a special scenario for dealing with the stack.  Assignments are basically like
+                 * held-over failures that basically kickstart the parser when an assignment operator is is
+                 * encountered.  The originating token is captured, and the the parser is told to march on.  The
+                 * resultant value on the stack is then used to populate the target variable.
+                 *
+                 * The other scenario in which we don't want to wipe the stack, is when we hit the end of the
+                 * statement, because that top stack value is the value we want back from the parser.
+                 */
+
+                if ((fields & Token.ASSIGN) != 0) {
                     return -1;
                 }
-                else {
+                else if (!hasNoMore()) {
                     stk.clear();
-                    return 1;
                 }
+
+                return 1;
+
 
             case ASSIGN:
                 if (!(tk = (Token) stk.pop()).isValidNameIdentifier())
                     throw new CompileException("invalid identifier: " + tk.getName());
 
+                assert debug("BEGIN ASSIGNMENT");
+
                 fields |= Token.ASSIGN;
-                parseAndExecuteInterpreted();
+
+                if (fastExecuteMode) {
+                    parseAndExecuteAccelerated();
+                }
+                else {
+                    parseAndExecuteInterpreted();
+                }
+
                 fields ^= Token.ASSIGN;
+
+                assert debug("ASSIGNMENT TARGET=<<" + tk.getName() + ">>  VALUE=<<" + stk.peek() + ">>");
 
                 //noinspection unchecked
                 finalLocalVariableFactory().createVariable(tk.getName(), stk.pushAndPeek(ParseTools.valueOnly(stk.pop())));
@@ -496,14 +536,8 @@ public class ExpressionParser {
 
                 try {
                     if (fastExecuteMode) {
-                        tk = nextCompiledToken();
-                        if (!tk.isOptimized()) {
-                            tk.setAccessor(
-                                    ParseTools.compileConstructor(tk.getName(), ctx, variableFactory)
-                            );
-                        }
-
-                        stk.push(tk.getOptimizedValue(ctx, ctx, variableFactory).getValue());
+                        tk = tokens.nextToken();
+                        stk.push(tk.getOptimizedValue(ctx, ctx, variableFactory));
                     }
                     else if (compileMode) {
                         reduce = false;
@@ -534,9 +568,9 @@ public class ExpressionParser {
                 catch (InvocationTargetException e) {
                     throw new CompileException("unable to instantiate class", e);
                 }
-                catch (NoSuchMethodException e) {
-                    throw new CompileException("no default constructor for class", e);
-                }
+//                catch (NoSuchMethodException e) {
+//                    throw new CompileException("no default constructor for class", e);
+//                }
                 catch (ClassNotFoundException e) {
                     throw new CompileException("class not found: " + e.getMessage(), e);
                 }
@@ -549,8 +583,13 @@ public class ExpressionParser {
         return 0;
     }
 
+    private boolean hasNoMore() {
+        if (fastExecuteMode) return !tokens.hasMoreTokens();
+        else return cursor < length;
+    }
+
     /**
-     * This method is called when we reach the point where we must reduce a trinary operation in the expression.
+     * This method is called when we reach the point where we must subEval a trinary operation in the expression.
      * (ie. val1 op val2).  This is not the same as a binary operation, although binary operations would appear
      * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
      * current state against 2 downrange structures (usually an op and a val).
@@ -568,16 +607,13 @@ public class ExpressionParser {
                     operator = (Integer) stk.pop();
                     v2 = processToken(stk.pop());
                 }
-//                else if ((fields & Token.EVAL_RIGHT) != 0) {
-//                    operator = (Integer) v1;
-//                    v2 = processToken(stk.pop());
-//                    v1 = processToken(stk.pop());
-//                }
                 else {
                     operator = (Integer) v1;
                     v1 = processToken(stk.pop());
                     v2 = processToken(stk.pop());
                 }
+
+                assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
 
                 switch (operator) {
                     case ADD:
@@ -606,6 +642,7 @@ public class ExpressionParser {
                         break;
 
                     case EQUAL:
+
                         if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
                             stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == 0);
                         }
@@ -618,6 +655,7 @@ public class ExpressionParser {
                         break;
 
                     case NEQUAL:
+
                         if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
                             stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) != 0);
                         }
@@ -773,7 +811,7 @@ public class ExpressionParser {
 
         }
         catch (Exception e) {
-            throw new CompileException("failed to reduce expression", e);
+            throw new CompileException("failed to subEval expression", e);
         }
 
     }
@@ -790,11 +828,11 @@ public class ExpressionParser {
                 return ((Token) operand).getNumericValue();
             }
             else if (!((Token) operand).isLiteral()) {
-                return ((Token) operand).getValue();
+                return ((Token) operand).getLiteralValue();
             }
             else {
                 if (((Token) operand).isEvalRight()) fields |= Token.EVAL_RIGHT;
-                return ((Token) operand).getValue();
+                return ((Token) operand).getLiteralValue();
             }
         }
         else if (operand instanceof BigDecimal) {
@@ -811,20 +849,34 @@ public class ExpressionParser {
 
     private void parseAndExecuteInterpreted() {
         Token tk;
+        Token tk2;
         Integer operator;
 
         while ((tk = nextToken()) != null) {
             if (stk.size() == 0) {
-                if (tk.isSubeval()) {
-                    stk.push(reduce(tk));
+
+                try {
+                    if (!compileMode) {
+                        stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
+                    }
                 }
-                else {
+                catch (UnresolveablePropertyException e) {
+                    if (!lookAhead())
+                        throw new CompileException("could not resolve token: " + e.getToken().getName());
+                    else
+                        stk.push(tk);
+                }
+
+
+                if ((tk2 = nextToken()) == null && (!tk.isOperator())) {
+                    return;
+                }
+                else if (tk2.isOperator(Operator.ASSIGN)) {
+                    stk.discard();
                     stk.push(tk);
                 }
 
-                if (!tk.isOperator() && (tk = nextToken()) == null) {
-                    return;
-                }
+                tk = tk2;
             }
 
             if (!tk.isOperator()) {
@@ -840,62 +892,75 @@ public class ExpressionParser {
                     continue;
             }
 
-            if (((tk = nextToken()).isSubeval())) {
-                stk.push(reduce(tk), operator);
-            }
-            else {
-                stk.push(tk, operator);
-            }
+            if ((tk = nextToken()) == null) continue;
+
+            stk.push(compileMode ? "" : tk.getReducedValue(ctx, ctx, variableFactory), operator);
 
             if (!compileMode) reduceTrinary();
         }
     }
-
 
     private void parseAndExecuteAccelerated() {
         Token tk;
         Integer operator;
 
-        while ((tk = nextCompiledToken()) != null) {
+        while ((tk = tokens.nextToken()) != null) {
+            assert debug("\nSTART_FRAME <<" + tk + ">> STK_SIZE=" + stk.size() + "; STK_PEEK=" + stk.peek() + "; TOKEN#=" + tokens.index());
             if (stk.size() == 0) {
-                if (tk.isSubeval()) {
-                    stk.push(reduce(tk));
+                try {
+                    stk.push(reduceTokenAccelerated(tk));
                 }
-                else {
-                    stk.push(tk);
+                catch (UnresolveablePropertyException e) {
+                    assert debug("ATTEMPT_LOOKAHEAD FROM=" + e.getToken());
+                    if (lookAheadAccelerated()) {
+                        tk.createDeferralOptimization();
+                        stk.push(tk);
+
+                        tokens.back();
+                        continue;
+                    }
+                    else {
+                        throw e;
+                    }
                 }
 
-                if (!tk.isOperator() && (tk = nextCompiledToken()) == null) {
-                    return;
+                if (tokens.hasMoreTokens() && tokens.peekToken().isOperator(Operator.ASSIGN)) {
+                    assert debug("LOOK_AHEAD_FOUND_ASSIGNMENT");
+
+                    stk.discard(); // discard any value on the stack.
+                    stk.push(tk); // push the token back to the stack.
                 }
+                tk = tokens.nextToken();
             }
 
-            if (!tk.isOperator()) {
+            if (tk == null || !tk.isOperator()) {
                 continue;
             }
 
             switch (reduceBinary(operator = tk.getOperator())) {
                 case-1:
+                    assert debug("FRAME_KILL_PROC");
                     return;
                 case 0:
+                    assert debug("FRAME_CONTINUE");
                     break;
                 case 1:
+                    assert debug("FRAME_NEXT");
                     continue;
             }
 
-            if ((tk = nextCompiledToken()).isSubeval()) {
-                stk.push(reduce(tk), operator);
-            }
-            else {
-                stk.push(tk, operator);
-            }
+            if (!tokens.hasMoreTokens()) return;
+
+            stk.push(reduce ? (tokens.nextToken()).getReducedValueAccelerated(ctx, ctx, variableFactory) : tk, operator);
+
 
             if (!compileMode) reduceTrinary();
         }
+        assert debug("NO_MORE_TOKENS");
     }
 
 
-    private void reduceFast(Token tk) {
+    private Object reduceFast(Token tk) {
         if (tk.isSubeval()) {
             /**
              * This token represents a subexpression, and we must recurse into that expression.
@@ -905,7 +970,7 @@ public class ExpressionParser {
                 /**
                  * We are executing it fast mode, so we simply execute the compiled subexpression.
                  */
-                tk.setFinalValue(tk.getCompiledExpression().getValue(ctx, variableFactory)).getValue();
+                return (tk.getCompiledExpression().getValue(ctx, variableFactory));
 
             }
             else if (compileMode) {
@@ -916,34 +981,16 @@ public class ExpressionParser {
             }
         }
         else if (!tk.isDoNotReduce()) {
-            tk.setFinalValue(reduce(reduceToken(tk))).getValue();
+            //   tk.setFinalValue(subEval(reduceToken(tk))).getLiteralValue();
         }
+
+        return tk;
     }
 
     private static Object reduceParse(String ex, Object ctx, VariableResolverFactory variableFactory) {
+        assert debug("REDUCE_SUB_EX <<" + ex + ">>");
         return new ExpressionParser(ex, ctx, variableFactory).parse();
     }
-
-
-    private Object reduce(Token tok) {
-        if (compileMode) return tok.getName();
-        else if (tok.isNegation()) {
-            return !((Boolean) reduceParse(tok.getValueAsString(), ctx, variableFactory));
-        }
-        else if (tok.isInvert()) {
-            Object o = reduceParse(tok.getValueAsString(), ctx, variableFactory);
-
-            if (o instanceof Integer)
-                return ~((Integer) o);
-            else
-                return ~((BigDecimal) o).intValue();
-        }
-        else if (tok.isSubeval()) {
-            return reduceParse(tok.getValueAsString(), ctx, variableFactory);
-        }
-        else return tok.getValue();
-    }
-
 
     /**
      * Retrieve the next token in the expression.
@@ -951,7 +998,7 @@ public class ExpressionParser {
      * @return -
      */
     private Token nextToken() {
-        if (fastExecuteMode) return nextCompiledToken();
+        if (fastExecuteMode) return tokens.nextToken();
 
         Token tk;
 
@@ -1102,7 +1149,7 @@ public class ExpressionParser {
                         tk = createToken(expr, start + 1, cursor - 1, fields |= Token.SUBEVAL);
 
                         if (cursor < length && (expr[cursor] == '.')) {
-                            stk.push(reduce(tk));
+                            stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
                             continue;
                         }
 
@@ -1215,10 +1262,6 @@ public class ExpressionParser {
                      * anything.  Often the appearance of redundancy is not such.
                      */
                     case'[':
-//                        if (capture) {
-//                            cursor++;
-//                            continue;
-//                        }
 
                         cursor++;
 
@@ -1251,7 +1294,7 @@ public class ExpressionParser {
                             fields |= Token.MAPCREATE;
 
                             Map<Object, Object> map = new HashMap<Object, Object>();
-                            map.put(reduce(tk1), reduce(tk2));
+                            map.put(tk1.getReducedValue(ctx, ctx, variableFactory), tk2.getReducedValue(ctx, ctx, variableFactory));
                             skipWhitespace();
 
                             try {
@@ -1262,7 +1305,8 @@ public class ExpressionParser {
                                     if ((tk2 = nextToken()) == null || !tk2.isOperator(Operator.TERNARY_ELSE))
                                         throw new CompileException("unexpected token or end of expression, in map creation construct: " + tk2.getName());
 
-                                    map.put(reduce(tk1), reduce(nextToken()));
+                                    map.put(tk1.getReducedValue(ctx, ctx, variableFactory),
+                                            nextToken().getReducedValue(ctx, ctx, variableFactory));
 
                                     skipWhitespace();
                                 }
@@ -1278,21 +1322,14 @@ public class ExpressionParser {
 
                             setFieldFalse(Token.MAPCREATE);
 
-//                            if (cursor < length && (expr[cursor] == '.')) {
-//                                capture = false;
-//                                fields |= Token.PUSH;
-//                                stk.push(map);
-//                                continue;
-//                            }
-
-                            return (createToken(expr, start + 1, cursor - 1, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE))
-                                    .setValue(map);
+                            stk.push(map);
+                            return (createToken(expr, start + 1, cursor - 1, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE));
                         }
                         else {
                             tk1.setFlag(false, Token.MAPCREATE);
 
                             ArrayList<Object> projectionList = new ArrayList<Object>();
-                            projectionList.add(reduce(tk1));
+                            projectionList.add(tk1.getReducedValue(ctx, ctx, variableFactory));
 
                             if (compileMode) {
                                 ((TokenMap) tokens).addTokenNode(starting = new Token('[', Token.LISTCREATE | Token.NEST));
@@ -1301,7 +1338,7 @@ public class ExpressionParser {
 
                             try {
                                 while (expr[cursor++] != ']') {
-                                    projectionList.add(reduce(nextToken()));
+                                    projectionList.add(tk1.getReducedValue(ctx, ctx, variableFactory));
 
                                     skipWhitespace();
                                 }
@@ -1326,8 +1363,8 @@ public class ExpressionParser {
                                 continue;
                             }
 
-                            return (createToken(expr, start + 1, cursor - 1, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE))
-                                    .setValue(projectionList);
+                            stk.push(projectionList);
+                            return (createToken(expr, start + 1, cursor - 1, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE));
                         }
 
 
@@ -1341,11 +1378,30 @@ public class ExpressionParser {
                         }
 
                         ArrayList<Object> projectionList = new ArrayList<Object>();
+                        Object o;
 
                         try {
-                            while (expr[cursor++] != '}') {
-                                projectionList.add(reduce(nextToken()));
+                            if (compileMode) {
+                                while (expr[cursor++] != '}') {
+                                    projectionList.add(nextToken().getName());
+                                }
                             }
+                            else {
+                                while (expr[cursor++] != '}') {
+                                    if (!(tk = nextToken()).isLiteral()) {
+                                        o = tk.getReducedValue(ctx, ctx, variableFactory);
+                                    }
+                                    else {
+                                        o = tk.getLiteralValue();
+                                    }
+
+                                    if (stk.isEmpty())
+                                        projectionList.add(o);
+                                    else
+                                        projectionList.add(stk.pop());
+                                }
+                            }
+
 
                             if (compileMode) {
                                 addTokenToMap(new Token('}', fields | Token.ENDNEST));
@@ -1354,23 +1410,14 @@ public class ExpressionParser {
 
                         }
                         catch (ArrayIndexOutOfBoundsException e) {
-                            throw new CompileException("unterminated list projection");
+                            throw new CompileException("unterminated list");
                         }
 
                         setFieldFalse(Token.ARRAYCREATE);
 
-//                        if (cursor < length && (expr[cursor] == '.')) {
-//                            capture = false;
-//
-//                            fields |= Token.PUSH;
-//
-//                            stk.push(projectionList.toArray());
-//                            continue;
-//                        }
 
-
-                        return (createToken(expr, start + 1, cursor - 1, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE))
-                                .setValue(projectionList.toArray());
+                        stk.push(projectionList.toArray());
+                        return (createToken(expr, start + 1, cursor - 1, fields |= Token.DO_NOT_REDUCE | Token.NOCOMPILE));
 
                     case']':
                     case'}':
@@ -1396,10 +1443,8 @@ public class ExpressionParser {
                             setFieldFalse(Token.CAPTURE_ONLY);
                             setFieldFalse(Token.PUSH);
 
-                            if (!compileMode)
-                                return tk.setValue(get((tk).getName(), stk.pop()));
-                            else
-                                return tk;
+
+                            return tk;
                         }
 
                     default:
@@ -1430,10 +1475,6 @@ public class ExpressionParser {
             setFieldFalse(Token.NOCOMPILE);
 
         }
-        else if (tk.isIdentifier() && (fields & Token.DO_NOT_REDUCE) == 0) {
-            return reduceToken(tk);
-        }
-        else if (tk.isThisRef()) return tk.setFinalValue(ctx);
 
         return tk;
     }
@@ -1448,7 +1489,7 @@ public class ExpressionParser {
      * @param token -
      * @return -
      */
-    private Token reduceToken(Token token) {
+    private Object reduceToken(Token token) {
         if (!reduce) return token;
         if (fastExecuteMode) return token.getReducedValueAccelerated(stk.peek(), ctx, variableFactory);
         else {
@@ -1478,12 +1519,25 @@ public class ExpressionParser {
         Token tk;
 
         int cursorCurrent = cursor;
+
+        assert debug("LOOK_AHEAD_SCAN FROM=" + cursor);
+
         if ((tk = nextToken()) != null) {
+            assert debug("LOOK_AT=" + tk);
+
             if (tk.isOperator(Operator.ASSIGN) || tk.isOperator(Operator.PROJECTION)) {
                 cursor = cursorCurrent;
+                return true;
             }
             else if (!tk.isOperator()) {
-                throw new CompileException("expected operator but encountered token: " + tk.getName());
+                Object staticTry = tk.tryStaticAccess(ctx, variableFactory);
+
+                if (staticTry != null) {
+                    stk.push(staticTry);
+                    return true;
+                }
+                else
+                    throw new CompileException("expected operator but encountered token: " + tk.getName());
             }
             else
                 return false;
@@ -1491,7 +1545,35 @@ public class ExpressionParser {
         else {
             return false;
         }
-        return true;
+        //  return true;
+    }
+
+    private boolean lookAheadAccelerated() {
+        Token tk;
+
+        if ((tk = tokens.nextToken()) != null) {
+            assert debug("LOOKING_AT <<" + tk + ">>");
+
+            if (tk.isOperator(Operator.ASSIGN) || tk.isOperator(Operator.PROJECTION)) {
+                return true;
+            }
+            else if (!tk.isOperator()) {
+                Object staticTry = tk.tryStaticAccess(ctx, variableFactory);
+
+                if (staticTry != null) {
+                    stk.push(staticTry);
+                    return true;
+                }
+                else
+                    throw new CompileException("expected operator but encountered token: " + tk.getName());
+            }
+            else
+                return false;
+        }
+        else {
+            return false;
+        }
+        //  return true;
     }
 
     public String getExpression() {
@@ -1508,6 +1590,8 @@ public class ExpressionParser {
      * @return -
      */
     private boolean unwindStatement() {
+        if (fastExecuteMode) return unwindStatementAccelerated();
+
         Token tk;
         reduce = false;
         while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT)) {
@@ -1515,6 +1599,13 @@ public class ExpressionParser {
         }
         reduce = true;
         return tk == null;
+    }
+
+    private boolean unwindStatementAccelerated() {
+        reduce = false;
+        while (tokens.hasMoreTokens() && !tokens.nextToken().isOperator(Operator.END_OF_STMT)) ;
+        reduce = true;
+        return !tokens.hasMoreTokens();
     }
 
     public void setExpression(String expression) {
@@ -1612,15 +1703,11 @@ public class ExpressionParser {
         ((TokenMap) tokens).addTokenNode(tk);
     }
 
-    private Token nextCompiledToken() {
-        if (!tokens.hasMoreTokens()) return null;
-        Token tk;
-        /**
-         * If we're running in fast-execute mode (aka. running a compiled expression)
-         * we retrieve the next token from the compiled stack
-         */
+    private Object reduceTokenAccelerated(Token tk) {
+        if (!reduce) return null;
 
-        if ((tk = tokens.nextToken()).isCollectionCreation()) {
+        if (tk.isCollectionCreation()) {
+
             /**
              * We must handle collection creation differently for compiled
              * execution.  This is not code duplication.  Don't report this.
@@ -1638,7 +1725,8 @@ public class ExpressionParser {
 
                     tokens.skipToken();
 
-                    return tk.setFinalValue(Token.DO_NOT_REDUCE, new FastList(newList));
+                    return new FastList(newList);
+                    //  return tk.setFinalValue(Token.DO_NOT_REDUCE, new FastList(newList));
                 }
 
                 case Token.MAPCREATE: {
@@ -1652,9 +1740,9 @@ public class ExpressionParser {
 
                     tokens.skipToken();
 
-                    tk.setFinalValue(Token.DO_NOT_REDUCE, newMap);
+                    return newMap;
+                    //  tk.setFinalValue(Token.DO_NOT_REDUCE, newMap);
                 }
-                break;
 
                 case Token.ARRAYCREATE: {
                     Object[] newArray = new Object[tk.getKnownSize()];
@@ -1668,34 +1756,29 @@ public class ExpressionParser {
 
                     tokens.skipToken();
 
-                    tk.setFinalValue(Token.DO_NOT_REDUCE, newArray);
+                    return newArray;
+                    //  tk.setFinalValue(Token.DO_NOT_REDUCE, newArray);
                 }
             }
         }
-        else if (reduce && tk.isIdentifier()) {
-            tk.getReducedValueAccelerated(tk.isPush() ? stk.pop() : ctx, ctx, variableFactory);
-        }
-        else if (tk.isOperator(Operator.ASSIGN)) {
-            return tk;
+        else if (reduce && (tk.isIdentifier() || tk.isSubeval())) {
+            return tk.getReducedValueAccelerated(tk.isPush() ? stk.pop() : ctx, ctx, variableFactory);
         }
         else if (tk.isThisRef()) {
-            tk.setFinalValue(ctx);
+            return ctx;
         }
 
-        if (tk.isPush()) {
-            stk.push(tk.getValue());
-        }
-
-        return tk;
+        assert debug("RET_LITERAL <<" + tk.getLiteralValue() + ">>");
+        return tk.getLiteralValue();
     }
 
     private Object handleSubNesting(Token token) {
         if (token.isNestBegin()) {
             tokens.back();
-            return nextCompiledToken().getValue();
+            return reduceTokenAccelerated(tokens.nextToken());
         }
         else {
-            return reduceToken(token).getValue();
+            return reduceToken(token);
         }
     }
 

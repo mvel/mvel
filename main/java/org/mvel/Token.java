@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -30,9 +29,8 @@ import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
 import org.mvel.optimizers.impl.refl.Deferral;
 import static org.mvel.util.ArrayTools.findFirst;
-import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.debug;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
-import static org.mvel.util.ParseTools.valueOnly;
 import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
 
@@ -88,7 +86,9 @@ public class Token implements Cloneable, Serializable {
     private String nameCache;
 
     private transient Object value;
+
     private transient Object resetValue;
+    private transient int resetFields;
 
     private BigDecimal numericValue;
     private Class srcType;
@@ -323,65 +323,68 @@ public class Token implements Cloneable, Serializable {
         return "";
     }
 
-    public Object getValue() {
+    public Object getLiteralValue() {
         return value;
     }
 
-    public Token getOptimizedValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+    public Object getOptimizedValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         try {
+            Object v;
             if ((fields & NUMERIC) != 0) {
-                value = accessor.getValue(ctx, elCtx, variableFactory);
-                if (srcType == null && value != null) {
-                    srcType = value.getClass();
+                v = accessor.getValue(ctx, elCtx, variableFactory);
+                if (srcType == null && v != null) {
+                    srcType = v.getClass();
                 }
 
                 if (srcType == String.class) {
                     if ("".equals(value))
-                        value = numericValue = new BigDecimal(0);
+                        v = new BigDecimal(0);
                     else
-                        value = numericValue = new BigDecimal((String) value);
+                        v = new BigDecimal((String) value);
                 }
                 else if (srcType == BigDecimal.class) {
-                    numericValue = (BigDecimal) value;
+                    //  v = value;
                 }
                 else if (srcType == Integer.class) {
-                    value = numericValue = new BigDecimal((Integer) value);
+                    v = new BigDecimal((Integer) value);
                 }
                 else if (srcType == Long.class) {
-                    value = numericValue = new BigDecimal((Long) value);
+                    v = new BigDecimal((Long) value);
                 }
                 else if (srcType == Short.class) {
-                    value = numericValue = new BigDecimal((Short) value);
+                    v = new BigDecimal((Short) value);
                 }
                 else if (srcType == Float.class) {
-                    value = numericValue = new BigDecimal((Float) value);
+                    v = new BigDecimal((Float) value);
                 }
                 else if (srcType == Double.class) {
-                    value = numericValue = new BigDecimal((Double) value);
+                    v = new BigDecimal((Double) value);
                 }
                 else {
                     throw new CompileException("expected numeric value: got: " + value);
                 }
 
-                // value = numericValue = convert(accessor.getValue(ctx, elCtx, variableFactory), BigDecimal.class);
+                // value = numericValue = convert(accessor.getLiteralValue(ctx, elCtx, variableFactory), BigDecimal.class);
             }
             else {
-                value = accessor.getValue(ctx, elCtx, variableFactory);
+                v = accessor.getValue(ctx, elCtx, variableFactory);
             }
 
-            if ((fields & NEGATION) != 0) value = !((Boolean) value);
-
-            return this;
+            return v;
         }
         catch (NullPointerException e) {
             if (accessor == null) {
-                if (nextToken != null && nextToken.isOperator(Operator.ASSIGN)) {
-                    createDeferralOptimization();
-                    return this;
-                }
+//                if (nextToken != null && nextToken.isOperator(Operator.ASSIGN)) {
+//                    createDeferralOptimization();
+//                    return this;
+//                }
 
-                optimizeAccessor(isPush() ? valueOnly(ctx) : ctx, elCtx, variableFactory, elCtx != null);
-                return this;
+                try {
+                    return optimizeAccessor(ctx, elCtx, variableFactory, elCtx != null);
+                }
+                catch (Exception up) {
+                    throw new UnresolveablePropertyException(this);
+                }
             }
             else {
                 throw e;
@@ -402,19 +405,17 @@ public class Token implements Cloneable, Serializable {
             accessor = compiler.compile(name, ctx, thisRef, variableFactory, thisRefPush);
 
             setNumeric(false);
-            setValue(compiler.getResultOptPass());
             setFlag(true, Token.OPTIMIZED_REF);
 
             return compiler.getResultOptPass();
         }
         catch (OptimizationNotSupported e) {
-            assert ParseTools.debug("[Falling Back to Reflective Optimizer]");
+            assert debug("[Falling Back to Reflective Optimizer]");
             // fall back to the safe reflective optimizer
             AccessorCompiler compiler = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
             accessor = compiler.compile(name, ctx, thisRef, variableFactory, thisRefPush);
 
             setNumeric(false);
-            setValue(compiler.getResultOptPass());
             setFlag(true, Token.OPTIMIZED_REF);
 
             return compiler.getResultOptPass();
@@ -449,37 +450,27 @@ public class Token implements Cloneable, Serializable {
     }
 
 
-    public Token getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory) {
+    public Object getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory) {
         if ((fields & (LITERAL)) != 0) {
-            return this;
+            return valRet(value);
+        }
+        else if ((fields & SUBEVAL) != 0) {
+            assert debug("SUBEVAL <<" + value + ">>");
+            return valRet(compiledExpression.getValue(ctx, factory));
         }
 
-        return _getReducedValueAccelerated(ctx, eCtx, factory, false);
+        return valRet(_getReducedValueAccelerated(ctx, eCtx, factory, false));
     }
 
-    public Token _getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory, boolean failBit) {
+    public Object _getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory, boolean failBit) {
         try {
             return getOptimizedValue(ctx, eCtx, factory);
         }
+        catch (UnresolveablePropertyException e) {
+            throw e;
+        }
         catch (OptimizationFailure e) {
-            /**
-             * If the token failed to optimize, we perform a lookahead to see if this is forgivable.
-             */
-            if (lookAhead()) {
-                /**
-                 * The token failed to reduce for forgivable reasons (ie. an assignment) so we record this
-                 * as a deferral, so we don't try to reduce this anymore at runtime.
-                 */
-
-                createDeferralOptimization();
-                return this;
-            }
-            else {
-                /**
-                 * This is a genuine error.  We bail.
-                 */
-                throw e;
-            }
+            throw e;
         }
         catch (PropertyAccessException e) {
             throw e;
@@ -501,6 +492,9 @@ public class Token implements Cloneable, Serializable {
                     return _getReducedValueAccelerated(ctx, eCtx, factory, true);
                 }
             }
+            catch (UnresolveablePropertyException e2) {
+                throw e2;
+            }
             catch (Exception e2) {
                 throw new CompileException("optimization failure for: " + this, e);
             }
@@ -508,52 +502,27 @@ public class Token implements Cloneable, Serializable {
     }
 
 
-    /**
-     * This method is called by the parser when it can't resolve a token.  There are two cases where this may happen
-     * under non-fatal circumstances: ASSIGNMENT or PROJECTION.  If one of these situations is indeed the case,
-     * the execution continues after a quick adjustment to allow the parser to continue as if we're just at a
-     * junction.  Otherwise we explode.
-     *
-     * @return -
-     */
-    private boolean lookAhead() {
-        Token tk = this;
-
-        if ((tk = tk.nextToken) != null) {
-            if (tk.isOperator(Operator.ASSIGN) || tk.isOperator(Operator.PROJECTION)) {
-                nextToken = tk;
-
-            }
-            else if (!tk.isOperator()) {
-                throw new CompileException("expected operator but encountered token: " + tk.getName());
-            }
-            else
-                return false;
-        }
-        else {
-            return false;
-        }
-        return true;
-    }
-
-    public Token getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         String s;
         if ((fields & LITERAL) != 0 || ((fields & Token.CAPTURE_ONLY) != 0)) {
-            return this;
+            return value;
+        }
+        else if ((fields & SUBEVAL) != 0) {
+            assert debug("SUBEVAL <<" + new String(name)+ ">>");
+            return valRet(ExpressionParser.eval(name, ctx, factory));
         }
 
         /**
          * To save the GC a little bit of work, we don't initialize a property accessor unless we need it, and we
          * reuse the same instance if we need it more than once.
          */
-        // if (propertyAccessor == null)
 
         if ((fields & Token.PUSH) != 0) {
             /**
              * This token is attached to a stack value, and we use the top stack value as the context for the
              * property accessor.
              */
-            return setValue(get(name, ctx, factory, thisValue));
+            return valRet(get(name, ctx, factory, thisValue));
         }
         else if ((fields & Token.DEEP_PROPERTY) != 0) {
             /**
@@ -567,13 +536,13 @@ public class Token implements Cloneable, Serializable {
                 Object literal = Token.LITERALS.get(s);
                 if (literal == ThisLiteral.class) literal = thisValue;
 
-                return setValue(get(getRemainder(), literal, factory, thisValue));
+                return valRet(get(getRemainder(), literal, factory, thisValue));
             }
             else if (factory != null && factory.isResolveable(s)) {
                 /**
                  * The root of the DEEP PROPERTY is a local or global var.
                  */
-                return setValue(get(getRemainder(), factory.getVariableResolver(s).getValue(), factory, thisValue));
+                return valRet(get(getRemainder(), factory.getVariableResolver(s).getValue(), factory, thisValue));
 
             }
             else if (thisValue != null) {
@@ -583,21 +552,21 @@ public class Token implements Cloneable, Serializable {
                  */
 
                 try {
-                    return setValue(get(name, thisValue, factory, thisValue));
+                    return valRet(get(name, thisValue, factory, thisValue));
                 }
                 catch (PropertyAccessException e) {
                     /**
                      * No luck. Make a last-ditch effort to resolve this as a static-class reference.
                      */
-                    Token tk = tryStaticAccess(thisValue, factory);
-                    if (tk == null) throw e;
-                    return tk;
+                    Object sa = tryStaticAccess(thisValue, factory);
+                    if (sa == null) throw e;
+                    return valRet(sa);
                 }
             }
             else {
-                Token tk = tryStaticAccess(thisValue, factory);
-                if (tk == null) throw new CompileException("unable to resolve token: " + s);
-                return tk;
+                Object sa = tryStaticAccess(thisValue, factory);
+                if (sa == null) throw new CompileException("unable to resolve token: " + s);
+                return valRet(sa);
             }
         }
         else {
@@ -605,7 +574,7 @@ public class Token implements Cloneable, Serializable {
                 /**
                  * The token is actually a literal.
                  */
-                return setValue(Token.LITERALS.get(s));
+                return valRet(Token.LITERALS.get(s));
             }
             else if (factory != null && factory.isResolveable(s)) {
                 /**
@@ -613,34 +582,76 @@ public class Token implements Cloneable, Serializable {
                  */
 
                 if (isCollection()) {
-                    return setValue(get(new String(name, endOfName, name.length - endOfName),
+                    return valRet(get(new String(name, endOfName, name.length - endOfName),
                             factory.getVariableResolver(s).getValue(), factory, thisValue));
                 }
-                return setValue(factory.getVariableResolver(s).getValue());
+
+                return valRet(factory.getVariableResolver(s).getValue());
             }
             else if (thisValue != null) {
                 /**
                  * Check to see if the var exists in the VROOT.
                  */
                 try {
-                    return setValue(get(name, thisValue, factory, thisValue));
+                    return valRet(get(name, thisValue, factory, thisValue));
                 }
                 catch (RuntimeException e) {
+                    throw new UnresolveablePropertyException(this);
                     /**
                      * Nope.  Let's see if this a a LA-issue.
                      */
-                    if (!lookAhead()) throw e;
+                    //   if (!lookAhead()) throw e;
                 }
             }
             else {
-                if (!lookAhead())
-                    throw new CompileException("unable to resolve token: " + s);
+                throw new UnresolveablePropertyException(this);
+//                if (!lookAhead())
+//                    throw new CompileException("unable to resolve token: " + s);
             }
         }
-        return this;
+        //   return this;
     }
 
-    private Token tryStaticAccess(Object thisRef, VariableResolverFactory factory) {
+    private Object valRet(Object value) {
+        assert debug("VAL_RET_SPECIAL <<" + value + ">>");
+        //String s;
+        try {
+            if ((fields & (NEGATION | BOOLEAN_MODE)) == (NEGATION | BOOLEAN_MODE)) {
+                value = BlankLiteral.INSTANCE.equals(value);
+            }
+            else if ((fields & NEGATION) != 0) {
+                if (value instanceof Boolean) {
+                    value = !((Boolean) value);
+                }
+                else {
+                    throw new CompileException("illegal negation - not a boolean expression");
+                }
+            }
+            else {
+                if (value instanceof BigDecimal) {
+                    fields |= NUMERIC;
+                    //    this.numericValue = (BigDecimal) value;
+                }
+                else if (isNumber(value)) {
+                    fields |= NUMERIC;
+                    value = convert(value, BigDecimal.class);
+                }
+            }
+
+
+            if ((fields & INVERT) != 0) {
+                value = new BigDecimal(~((BigDecimal) value).intValue());
+            }
+        }
+
+        catch (NumberFormatException e) {
+            throw new CompileException("unable to create numeric value from: '" + value + "'");
+        }
+
+        return value;
+    }
+
+    public Object tryStaticAccess(Object thisRef, VariableResolverFactory factory) {
         try {
             /**
              * Try to resolve this *smartly* as a static class reference.
@@ -659,9 +670,7 @@ public class Token implements Cloneable, Serializable {
                 switch (name[i]) {
                     case'.':
                         if (!meth) {
-                            return setValue(
-                                    get(new String(name, last, name.length - last), forName(new String(name, 0, last)), factory, thisRef)
-                            );
+                            return get(new String(name, last, name.length - last), forName(new String(name, 0, last)), factory, thisRef);
                         }
                         meth = false;
                         last = i;
@@ -683,39 +692,6 @@ public class Token implements Cloneable, Serializable {
         return null;
     }
 
-
-    public Token setValue(Object value) {
-        //String s;
-        try {
-            if ((fields & (NEGATION | BOOLEAN_MODE)) == (NEGATION | BOOLEAN_MODE)) {
-                this.value = BlankLiteral.INSTANCE.equals(value);
-            }
-            else if ((fields & NEGATION) != 0) {
-                if (value instanceof Boolean) {
-                    this.value = !((Boolean) value);
-                }
-                else {
-                    throw new CompileException("illegal negation - not a boolean expression");
-                }
-            }
-            else {
-                if (value instanceof BigDecimal) {
-                    fields |= NUMERIC;
-                    this.numericValue = (BigDecimal) value;
-                }
-                else if (isNumber(value)) {
-                    fields |= NUMERIC;
-                    this.numericValue = convert(value, BigDecimal.class);
-                }
-                this.value = value;
-            }
-        }
-        catch (NumberFormatException e) {
-            throw new CompileException("unable to create numeric value from: '" + value + "'");
-        }
-
-        return this;
-    }
 
     public Token setFinalValue(int fields, Object value) {
         this.fields |= fields;
@@ -767,8 +743,9 @@ public class Token implements Cloneable, Serializable {
             if ((value = LITERALS.get(value)) == ThisLiteral.class) fields |= THISREF;
         }
         else if (OPERATORS.containsKey(value)) {
-            fields |= OPERATOR;
+            resetFields = fields |= OPERATOR;
             resetValue = value = OPERATORS.get(value);
+
             return;
         }
         else if (((fields & NUMERIC) != 0) || isNumber(name)) {
@@ -790,6 +767,7 @@ public class Token implements Cloneable, Serializable {
         if ((endOfName = findFirst('[', name)) > 0) fields |= COLLECTION;
 
         resetValue = value;
+        resetFields = fields;
     }
 
     public int getFlags() {
@@ -811,7 +789,7 @@ public class Token implements Cloneable, Serializable {
 
 
     public String toString() {
-        return valueOf(value);
+        return isOperator() ? "OPCODE_" + getOperator() : new String(name);
     }
 
     public boolean equals(Object obj) {
@@ -1004,14 +982,6 @@ public class Token implements Cloneable, Serializable {
         this.knownSize = knownSize;
     }
 
-
-    public Token getNextToken() {
-        return nextToken;
-    }
-
-    public void setNextToken(Token nextToken) {
-        this.nextToken = nextToken;
-    }
 }
 
 
