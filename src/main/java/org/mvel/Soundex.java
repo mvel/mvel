@@ -1,7 +1,3 @@
-package org.mvel;
-
-import org.mvel.util.StringAppender;
-
 /*
  * Copyright (c) Ian F. Darwin, http://www.darwinsys.com/, 1996-2002.
  * All rights reserved. Software written by Ian F. Darwin and others.
@@ -78,9 +74,15 @@ import org.mvel.util.StringAppender;
  * Rich Pinder (<rpinder@hsc.usc.edu>) supplied ideas and spotted
  * mistakes.
  * @author Ian Darwin, http://www.darwinsys.com/ (Java Version)
- * @author Christopher Brock (performance and code revisions)
+ * @author Christopher Brock, (performance and code revisions)
  * @version $Id: Soundex.java,v 1.2 2006/12/12 20:40:53 cbrock Exp $
  */
+
+package org.mvel;
+
+import org.mvel.util.StringAppender;
+
+
 public class Soundex {
 
     /* Implements the mapping
