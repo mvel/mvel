@@ -413,7 +413,7 @@ public class ReflectiveAccessor implements AccessorCompiler {
                 es = new ExecutableStatement[subtokens.length];
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
-                    args[i] = (es[i] = (CompiledExpression) compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                    args[i] = (es[i] = (ExecutableStatement) compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
                 }
                 SUBEXPRESSION_CACHE.put(tk, es);
             }
