@@ -675,7 +675,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
                     mv.visitVarInsn(ALOAD, 0);
 
                     debug("GETFIELD p" + inputs++);
-                    mv.visitFieldInsn(GETFIELD, className, "p" + (inputs - 1), "Lorg/mvel/optimizers/ExecutableStatement;");
+                    mv.visitFieldInsn(GETFIELD, className, "p" + (inputs - 1), "Lorg/mvel/ExecutableStatement;");
 
                     debug("ALOAD 2");
                     mv.visitVarInsn(ALOAD, 2);
@@ -917,10 +917,10 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
         for (int i = 0; i < size; i++) {
             debug("ACC_PRIVATE p" + i);
-            FieldVisitor fv = cw.visitField(ACC_PRIVATE, "p" + i, "Lorg/mvel/optimizers/ExecutableStatement;", null, null);
+            FieldVisitor fv = cw.visitField(ACC_PRIVATE, "p" + i, "Lorg/mvel/ExecutableStatement;", null, null);
             fv.visitEnd();
 
-            constSig.append("Lorg/mvel/optimizers/ExecutableStatement;");
+            constSig.append("Lorg/mvel/ExecutableStatement;");
         }
         constSig.append(")V");
 
@@ -940,7 +940,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             debug("ALOAD " + (i + 1));
             cv.visitVarInsn(ALOAD, i + 1);
             debug("PUTFIELD p" + i);
-            cv.visitFieldInsn(PUTFIELD, className, "p" + i, "Lorg/mvel/optimizers/ExecutableStatement;");
+            cv.visitFieldInsn(PUTFIELD, className, "p" + i, "Lorg/mvel/ExecutableStatement;");
         }
         debug("RETURN");
         cv.visitInsn(RETURN);
