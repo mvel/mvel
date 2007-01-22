@@ -123,12 +123,21 @@ public class Token implements Cloneable, Serializable {
         LITERALS.put("Thread", Thread.class);
         LITERALS.put("Compiler", Compiler.class);
         LITERALS.put("StringBuffer", StringBuffer.class);
-        LITERALS.put("StringBuilder", StringBuilder.class);
         LITERALS.put("ThreadLocal", ThreadLocal.class);
         LITERALS.put("SecurityManager", SecurityManager.class);
         LITERALS.put("StrictMath", StrictMath.class);
 
         LITERALS.put("Array", java.lang.reflect.Array.class);
+
+        float version = Float.parseFloat(System.getProperty("java.version").substring(0, 2));
+        if (version >= 1.5) {
+            try {
+                LITERALS.put("StringBuilder", Class.forName("java.lang.StringBuilder"));
+            }
+            catch (Exception e) {
+                throw new RuntimeException("cannot resolve a built-in literal", e);
+            }
+        }
     }
 
     private static final Map<String, Integer> OPERATORS =
