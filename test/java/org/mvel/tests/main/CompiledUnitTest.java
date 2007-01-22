@@ -77,6 +77,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(true, parseDirect("c != null"));
     }
 
+    public void testUninitializedInt() {
+        assertEquals(0, parseDirect("sarahl"));
+    }
+
     public void testAnd() {
         assertEquals(true, parseDirect("c != null && foo.bar.name == 'dog' && foo.bar.woof"));
     }

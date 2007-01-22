@@ -104,6 +104,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         m.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object",
                 "<init>", "()V");
         m.visitInsn(Opcodes.RETURN);
+
         m.visitMaxs(1, 1);
         m.visitEnd();
 
@@ -171,22 +172,29 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             debug("[MVEL JIT Completed Optimization <<" + new String(property) + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
 
 
-            Accessor a;
+            Object o;
+
+            //   Accessor a;
+
 
             if (inputs == 0) {
-                a = (Accessor) cls.newInstance();
+                o = cls.newInstance();
             }
             else {
                 Class[] parms = new Class[inputs];
                 for (int i = 0; i < inputs; i++) {
                     parms[i] = ExecutableStatement.class;
                 }
-                a = (Accessor) cls.getConstructor(parms).newInstance(compiledInputs.toArray(new ExecutableStatement[compiledInputs.size()]));
+                o = cls.getConstructor(parms).newInstance(compiledInputs.toArray(new ExecutableStatement[compiledInputs.size()]));
             }
 
-            debug("[MVEL JIT Test Output: " + a.getValue(ctx, thisRef, variableFactory) + "]");
+            if (!(o instanceof Accessor)) {
+                throw new RuntimeException("Classloader problem detected. JIT Class is not subclass of org.mvel.Accessor.");
+            }
 
-            return a;
+          //  debug("[MVEL JIT Test Output: " + ((Accessor)o).getValue(ctx, thisRef, variableFactory) + "]");
+
+            return (Accessor) o;
         }
         catch (InvocationTargetException e) {
             throw new PropertyAccessException("could not access property", e);
@@ -289,6 +297,8 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
             debug("GETFIELD " + property + ":" + getDescriptor(((Field) member).getType()));
             mv.visitFieldInsn(GETFIELD, getInternalName(cls), property, getDescriptor(((Field) member).getType()));
+
+            returnType = ((Field) member).getType();
             //  addAccessorComponent(cls, property, FIELD, ((Field) member).getType());
             return o;
         }
@@ -794,7 +804,8 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     private java.lang.Class loadClass(byte[] b) throws Exception {
         //override classDefine (as it is protected) and define the class.
         Class clazz = null;
-        ClassLoader loader = ClassLoader.getSystemClassLoader();
+        ClassLoader loader = this.getClass().getClassLoader();
+
         Class cls = Class.forName("java.lang.ClassLoader");
         java.lang.reflect.Method method =
                 cls.getDeclaredMethod("defineClass", new Class[]{String.class, byte[].class, int.class, int.class});
@@ -884,6 +895,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;");
         }
         else if (cls == int.class) {
+            debug("INVOKESTATIC java/lang/Integer.valueOf");
             mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
         }
         else if (cls == float.class) {
