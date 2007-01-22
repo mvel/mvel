@@ -42,6 +42,7 @@ public class ParseTools {
         if (length == -1) length = parm.length;
 
         int adepth = 0;
+
         int start = offset;
         int i = offset;
         int end = i + length;
@@ -65,22 +66,24 @@ public class ParseTools {
                     continue;
 
                 case'\'':
+                    int rStart = i;
                     while (++i < end && parm[i] != '\'') {
                         if (parm[i] == '\\') handleEscapeSequence(parm[++i]);
                     }
 
                     if (i == end || parm[i] != '\'') {
-                        throw new CompileException("unterminated literal: " + new String(parm));
+                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm));
                     }
                     continue;
 
                 case'"':
+                    rStart = i;
                     while (++i < end && parm[i] != '"') {
                         if (parm[i] == '\\') handleEscapeSequence(parm[++i]);
                     }
 
                     if (i == end || parm[i] != '\'') {
-                        throw new CompileException("unterminated literal: " + new String(parm));
+                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm));
                     }
                     continue;
 
