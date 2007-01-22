@@ -7,7 +7,6 @@ import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;

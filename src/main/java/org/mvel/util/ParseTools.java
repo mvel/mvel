@@ -5,7 +5,6 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.eval;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.optimizers.impl.refl.ConstructorAccessor;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessor;
 

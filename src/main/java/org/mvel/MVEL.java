@@ -1,7 +1,6 @@
 package org.mvel;
 
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.optimizers.OptimizerFactory;
 
 public class MVEL {

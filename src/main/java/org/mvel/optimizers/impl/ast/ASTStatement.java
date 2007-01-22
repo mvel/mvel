@@ -1,7 +1,7 @@
 package org.mvel.optimizers.impl.ast;
 
+import org.mvel.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.ExecutableStatement;
 
 public class ASTStatement implements ExecutableStatement {
     private ASTNode nextNode;
