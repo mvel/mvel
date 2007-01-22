@@ -612,7 +612,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         if (m == null) {
             StringAppender errorBuild = new StringAppender();
             for (int i = 0; i < args.length; i++) {
-                errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
+                errorBuild.append(parameterTypes[i] != null ? parameterTypes[i].getClass().getName() : null);
                 if (i < args.length - 1) errorBuild.append(", ");
             }
 
