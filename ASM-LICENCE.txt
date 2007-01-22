@@ -1,14 +1,12 @@
-------------------------------------------------------------------
+------------------------------------------------------------------------------
 
-MVEL's Built-in JIT (Just-in-Time) Compiler relies on the "ASM"
-library for generating bytecode in the Java Class File Format.
+MVEL's Built-in JIT (Just-in-Time) Compiler relies on the "ASM" library for
+generating bytecode in the Java Class File Format.
 
-The "ASM" library is subject to a third-party license henceforth
-described.
-
+The "ASM" library is subject to a third-party license henceforth described.
 
 
-------------------------[LICENSE BEGINS]--------------------------
+----------------------------- [LICENSE BEGINS]-------------------------------
 
 ASM Bytecode Manipulation Framework
 
