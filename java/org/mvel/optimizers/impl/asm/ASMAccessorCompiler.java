@@ -622,8 +622,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             if (es != null) {
                 ExecutableStatement cExpr;
                 for (int i = 0; i < es.length; i++) {
-                    cExpr = es[i];
-                    if (cExpr.getKnownIngressType() == null) {
+                    if ((cExpr = es[i]).getKnownIngressType() == null) {
                         cExpr.setKnownIngressType(parameterTypes[i]);
                         cExpr.computeTypeConversionRule();
                     }
