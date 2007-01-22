@@ -11,14 +11,26 @@ import java.util.Map;
 public class OptimizerFactory {
     public static String SAFE_REFLECTIVE = "Reflective";
 
-    private static String defaultOptimizer = "ASM";
+    private static String defaultOptimizer;
     private static final Map<String, Optimizer> optimizers = new HashMap<String, Optimizer>();
     private static final Map<String, AccessorCompiler> accessorCompilers = new HashMap<String, AccessorCompiler>();
 
     static {
-        optimizers.put("ASM", new ASMOptimizer());
-        accessorCompilers.put("ASM", new ASMAccessorCompiler());
         accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveAccessor());
+
+        /**
+         * By default, activate the JIT if ASM is present in the classpath
+         */
+        try {
+            Class.forName("org.objectweb.asm.ClassWriter");
+
+            defaultOptimizer = "ASM";
+            optimizers.put("ASM", new ASMOptimizer());
+            accessorCompilers.put("ASM", new ASMAccessorCompiler());
+        }
+        catch (ClassNotFoundException e) {
+            defaultOptimizer = SAFE_REFLECTIVE;
+        }
     }
 
     public static void registerOptimizer(Optimizer optimizer) {
