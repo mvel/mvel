@@ -17,15 +17,13 @@ public class OptimizerFactory {
 
     static {
         accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveAccessor());
-
         /**
          * By default, activate the JIT if ASM is present in the classpath
          */
         try {
             Class.forName("org.objectweb.asm.ClassWriter");
 
-            defaultOptimizer = "ASM";
-            optimizers.put("ASM", new ASMOptimizer());
+            optimizers.put(defaultOptimizer = "ASM", new ASMOptimizer());
             accessorCompilers.put("ASM", new ASMAccessorCompiler());
         }
         catch (ClassNotFoundException e) {
