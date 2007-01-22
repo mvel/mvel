@@ -1,4 +1,4 @@
-package org.mvel.optimizers;
+package org.mvel;
 
 import org.mvel.integration.VariableResolverFactory;
 

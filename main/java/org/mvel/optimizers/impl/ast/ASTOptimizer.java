@@ -1,9 +1,9 @@
 package org.mvel.optimizers.impl.ast;
 
+import org.mvel.ExecutableStatement;
 import org.mvel.Token;
 import org.mvel.TokenIterator;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.optimizers.Optimizer;
 import org.mvel.optimizers.impl.ast.res.Property;
 

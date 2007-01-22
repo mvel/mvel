@@ -2,8 +2,8 @@ package org.mvel.tests;
 
 import org.mvel.Accessor;
 import org.mvel.DataConversion;
+import org.mvel.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.tests.main.res.Foo;
 
 public class AccessorBMModel implements Accessor {

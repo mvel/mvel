@@ -2,12 +2,12 @@ package org.mvel.tests.experimental;
 
 import junit.framework.TestCase;
 import org.mvel.CompiledExpression;
+import org.mvel.ExecutableStatement;
 import org.mvel.ExpressionParser;
 import static org.mvel.ExpressionParser.*;
 import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;

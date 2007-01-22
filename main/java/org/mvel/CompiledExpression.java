@@ -1,7 +1,6 @@
 package org.mvel;
 
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.ExecutableStatement;
 
 import java.io.Serializable;
 
