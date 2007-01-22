@@ -4,7 +4,6 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.executeExpression;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.util.ArrayTools;
 import static org.mvel.util.ParseTools.getBestCanadidate;
 import static org.mvel.util.ParseTools.parseParameterList;

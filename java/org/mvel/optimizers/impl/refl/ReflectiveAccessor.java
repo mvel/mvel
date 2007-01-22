@@ -4,7 +4,6 @@ import org.mvel.*;
 import static org.mvel.ExpressionParser.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorCompiler;
-import org.mvel.optimizers.ExecutableStatement;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.util.PropertyTools;

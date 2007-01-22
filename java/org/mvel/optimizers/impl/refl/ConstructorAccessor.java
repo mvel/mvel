@@ -2,8 +2,8 @@ package org.mvel.optimizers.impl.refl;
 
 import org.mvel.CompileException;
 import static org.mvel.DataConversion.convert;
+import org.mvel.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.ExecutableStatement;
 
 import java.lang.reflect.Constructor;
 
