@@ -22,6 +22,8 @@ public class Base {
 
     public String defnull = null;
 
+    public int sarahl;
+
     public Object[] testArray = new Object[] { new Foo(), new Bar() };
 
     public Base() {

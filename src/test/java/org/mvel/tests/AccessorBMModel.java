@@ -1,15 +1,15 @@
 package org.mvel.tests;
 
 import org.mvel.Accessor;
-import org.mvel.DataConversion;
 import org.mvel.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.tests.main.res.Foo;
 
 public class AccessorBMModel implements Accessor {
     private ExecutableStatement p0;
     private ExecutableStatement p1;
 
+    private int blah;
+    
     public AccessorBMModel() {
     }
 
@@ -19,9 +19,11 @@ public class AccessorBMModel implements Accessor {
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        String.valueOf(ctx);
+     //   String.valueOf(ctx);
 
-        return ((Foo)variableFactory.getVariableResolver("foo").getValue())
-                .toUC(DataConversion.convert(p0.getValue(elCtx, variableFactory), String.class));
+//        return ((Foo)variableFactory.getVariableResolver("foo").getValue())
+//                .toUC(DataConversion.convert(p0.getValue(elCtx, variableFactory), String.class));
+        
+        return blah;
     }
 }

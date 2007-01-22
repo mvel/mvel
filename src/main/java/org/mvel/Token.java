@@ -366,6 +366,7 @@ public class Token implements Cloneable, Serializable {
             }
         }
 
+
     }
 
     public Token createDeferralOptimization() {
@@ -383,7 +384,6 @@ public class Token implements Cloneable, Serializable {
             setFlag(true, Token.OPTIMIZED_REF);
 
             return compiler.getResultOptPass();
-
         }
         catch (OptimizationNotSupported e) {
             assert ParseTools.debug("[Falling Back to Reflective Optimizer]");

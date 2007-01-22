@@ -57,7 +57,7 @@
 
 
     <target name="deploy" depends="release">
-        <copy file="mvel-${version}-java${java.version}.jar" tofile="../webcat/WEB-INF/lib/mvel.jar" />
+        <copy file="mvel-${version}-java${java.version}.jar" tofile="${deploy_to}/mvel.jar" />
     </target>
 
     <target name="release" depends="clean,compile,el-tests"
