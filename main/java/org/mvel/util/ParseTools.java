@@ -142,8 +142,9 @@ public class ParseTools {
                 else if (arguments.length == 0 && parmTypes.length == 0) return meth;
 
                 for (int i = 0; i < arguments.length; i++) {
-                    if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) score += 3;
-                    else if (parmTypes[i] == targetParms[i]) score += 4;
+                    if (parmTypes[i] == targetParms[i]) score += 4;
+                    else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) score += 3;
+                    else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) score += 3;
                     else if (parmTypes[i].isAssignableFrom(targetParms[i])) score += 2;
                     else if (canConvert(parmTypes[i], targetParms[i])) score += 1;
                     else {
@@ -186,6 +187,7 @@ public class ParseTools {
     }
 
     public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
+
         Class[] parmTypes;
         Constructor bestCandidate = null;
         int bestScore = 0;
@@ -206,8 +208,9 @@ public class ParseTools {
             else if (arguments.length == 0 && parmTypes.length == 0) return construct;
 
             for (int i = 0; i < arguments.length; i++) {
-                if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) score += 3;
-                else if (parmTypes[i] == targetParms[i]) score += 4;
+                if (parmTypes[i] == targetParms[i]) score += 4;
+                else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) score += 3;
+                else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) score += 3;
                 else if (parmTypes[i].isAssignableFrom(targetParms[i])) score += 2;
                 else if (canConvert(parmTypes[i], targetParms[i])) score += 1;
                 else {
@@ -373,9 +376,8 @@ public class ParseTools {
         return new String[]{token};
     }
 
-    public static Class boxPrimitive
-            (Class
-                    cls) {
+
+    public static Class boxPrimitive(Class cls) {
         if (cls == int.class) {
             return Integer.class;
         }
@@ -421,6 +423,55 @@ public class ParseTools {
 
         return null;
     }
+
+
+    public static Class unboxPrimitive(Class cls) {
+        if (cls == Integer.class) {
+            return int.class;
+        }
+        else if (cls == Integer[].class) {
+            return int[].class;
+        }
+        else if (cls == Long.class) {
+            return long.class;
+        }
+        else if (cls == Long[].class) {
+            return long[].class;
+        }
+        else if (cls == Short.class) {
+            return short.class;
+        }
+        else if (cls == Short[].class) {
+            return short[].class;
+        }
+        else if (cls == Double.class) {
+            return double.class;
+        }
+        else if (cls == Double[].class) {
+            return double[].class;
+        }
+        else if (cls == Float.class) {
+            return float.class;
+        }
+        else if (cls == Float[].class) {
+            return float[].class;
+        }
+        else if (cls == Boolean.class) {
+            return boolean.class;
+        }
+        else if (cls == Boolean[].class) {
+            return boolean[].class;
+        }
+        else if (cls == Byte.class) {
+            return byte.class;
+        }
+        else if (cls == Byte[].class) {
+            return byte[].class;
+        }
+
+        return null;
+    }
+
 
     public static boolean containsCheck
             (Object
@@ -470,7 +521,6 @@ public class ParseTools {
                 throw new ParseException("illegal escape sequence: " + escapedChar);
         }
     }
-
 
 
     public static boolean debug(String str) {
