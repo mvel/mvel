@@ -533,6 +533,6 @@ public class ParseTools {
     }
 
     public static Object valueOnly(Object o) {
-        return (o instanceof Token) ? ((Token) o).getValue() : o;
+        return (o instanceof Token) ? ((Token) o).getLiteralValue() : o;
     }
 }

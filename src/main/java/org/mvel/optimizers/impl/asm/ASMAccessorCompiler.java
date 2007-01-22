@@ -214,7 +214,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
                 throw new RuntimeException("Classloader problem detected. JIT Class is not subclass of org.mvel.Accessor.");
             }
 
-            //  debug("[MVEL JIT Test Output: " + ((Accessor)o).getValue(ctx, thisRef, variableFactory) + "]");
+             debug("[MVEL JIT Test Output: " + ((Accessor)o).getValue(ctx, thisRef, variableFactory) + "]");
 
             return (Accessor) o;
         }

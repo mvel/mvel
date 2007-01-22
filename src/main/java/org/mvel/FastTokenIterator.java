@@ -39,9 +39,12 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
 
     public void reset() {
         cursor = 0;
-        for (Token tk : token) {
-            tk.reset();
-        }
+        for (int i = length - 1; i != -1; i--)
+            token[i].reset();
+        
+//        for (Token tk : token) {
+//            tk.reset();
+//        }
     }
 
 
@@ -114,7 +117,7 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
     public String showTokenChain() {
         StringAppender sb = new StringAppender();
         for (int i = 0; i < length; i++) {
-            sb.append("(" + i + "): <<" + token[i].getName() + ">> = <<" + token[i].getValue() + ">> [" + (token[i].getValue() != null ? token[i].getValue().getClass() : "null") + "]").append("\n");
+            sb.append("(" + i + "): <<" + token[i].getName() + ">> = <<" + token[i].getLiteralValue() + ">> [" + (token[i].getLiteralValue() != null ? token[i].getLiteralValue().getClass() : "null") + "]").append("\n");
         }
 
         return sb.toString();
@@ -141,5 +144,10 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
 
     public int size() {
         return length;
+    }
+
+
+    public int index() {
+        return cursor;
     }
 }

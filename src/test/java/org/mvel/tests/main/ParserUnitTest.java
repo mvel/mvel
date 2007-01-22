@@ -398,8 +398,14 @@ public class ParserUnitTest extends TestCase {
 
     public void testInvert() {
         assertEquals(~10, parseDirect("~10"));
+    }
+
+    public void testInvert2() {
         assertEquals(~(10 + 1), parseDirect("~(10 + 1)"));
-        assertEquals(~10 + (1 + ~50), parseDirect("~10 + (1 + ~50)"));
+    }
+
+    public void testInvert3() {
+        assertEquals(~10 + (1 + ~50), parseDirect("~10 + (1 + ~50)"));        
     }
 
 

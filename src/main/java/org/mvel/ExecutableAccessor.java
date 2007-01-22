@@ -40,14 +40,14 @@ public class ExecutableAccessor implements ExecutableStatement {
 
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        Object result = accessor.getOptimizedValue(staticContext, staticContext, factory).getValue();
+        Object result = accessor.getOptimizedValue(staticContext, staticContext, factory);
         if (booleanMode) {
             if (result instanceof Boolean) return result;
             else if (result instanceof Token) {
-                if (((Token) result).getValue() instanceof Boolean) {
-                    return ((Token) result).getValue();
+                if (((Token) result).getLiteralValue() instanceof Boolean) {
+                    return ((Token) result).getLiteralValue();
                 }
-                return !BlankLiteral.INSTANCE.equals(((Token) result).getValue());
+                return !BlankLiteral.INSTANCE.equals(((Token) result).getLiteralValue());
             }
             else if (result instanceof BigDecimal) {
                 return !BlankLiteral.INSTANCE.equals(((BigDecimal) result).floatValue());
@@ -55,7 +55,7 @@ public class ExecutableAccessor implements ExecutableStatement {
             throw new CompileException("unknown exception in expression: encountered unknown stack element: " + result);
         }
         else if (result instanceof Token) {
-            result = ((Token) result).getValue();
+            result = ((Token) result).getLiteralValue();
         }
         if (accessor.isNumeric()) {
             result = accessor.getNumericValue();
