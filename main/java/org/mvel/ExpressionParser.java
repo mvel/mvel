@@ -1656,11 +1656,6 @@ public class ExpressionParser {
                     tk.setFinalValue(Token.DO_NOT_REDUCE, newArray);
                 }
             }
-
-//            if (tokens.hasMoreTokens() && tokens.peekToken().isPush()) {
-//                stk.push(tk.getValue());
-//                return (tk = tokens.nextToken()).setFinalValue(get(tk.getName(), stk.pop()));
-//            }
         }
         else if (reduce && tk.isIdentifier()) {
             tk.getReducedValueAccelerated(tk.isPush() ? stk.pop() : ctx, ctx, variableFactory);
