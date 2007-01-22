@@ -37,6 +37,15 @@ public class ParseTools {
     }
 
 
+    public static void main(String[] args) {
+        String test = "globalObject, $person, \"literal\", 42, [ $person : globalObject, \"key1\" : [ \"key2\" : \"value2\"]], [$person, 42, [\"x\", \"y\"]]";
+        for (String s : parseParameterList(test.toCharArray(), 0, test.length())) {
+            System.out.println("<<" + s + ">>");
+        }
+
+
+    }
+
     public static String[] parseParameterList(char[] parm, int offset, int length) {
         List<String> list = new LinkedList<String>();
 
@@ -83,7 +92,7 @@ public class ParseTools {
                         if (parm[i] == '\\') handleEscapeSequence(parm[++i]);
                     }
 
-                    if (i == end || parm[i] != '\'') {
+                    if (i == end || parm[i] != '"') {
                         throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
                     }
                     continue;
@@ -471,23 +480,14 @@ public class ParseTools {
         }
     }
 
-    public static void main
-            (String[] args) {
-        for (Package p : Package.getPackages()) {
-            System.out.println(p);
-        }
-    }
 
-    public static boolean debug
-            (String
-                    str) {
+
+    public static boolean debug(String str) {
         System.out.println(str);
         return true;
     }
 
-    public static boolean debug
-            (Throwable
-                    t) {
+    public static boolean debug(Throwable t) {
         t.printStackTrace();
         return true;
     }
