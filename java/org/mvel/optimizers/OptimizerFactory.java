@@ -56,6 +56,8 @@ public class OptimizerFactory {
             defaultOptimizer = SAFE_REFLECTIVE;
         }
 
+        if (Boolean.getBoolean("mvel.disable.jit"))
+            defaultOptimizer = SAFE_REFLECTIVE;
     }
 
     public static void registerOptimizer(Optimizer optimizer) {
