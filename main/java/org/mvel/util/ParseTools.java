@@ -36,6 +36,7 @@ public class ParseTools {
         return null;
     }
 
+
     public static String[] parseParameterList(char[] parm, int offset, int length) {
         List<String> list = new LinkedList<String>();
 
@@ -72,7 +73,7 @@ public class ParseTools {
                     }
 
                     if (i == end || parm[i] != '\'') {
-                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm));
+                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
                     }
                     continue;
 
@@ -83,7 +84,7 @@ public class ParseTools {
                     }
 
                     if (i == end || parm[i] != '\'') {
-                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm));
+                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
                     }
                     continue;
 
