@@ -89,10 +89,10 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        if (expressionParser == null) {
-            expressionParser = new ExpressionParser(factory, staticContext, tokenMap);
-        }
+      //  if (expressionParser == null) {
+            return new ExpressionParser(factory, staticContext, tokenMap).parse();
+      //  }
         
-        return expressionParser.resetParser().parse();
+      //  return expressionParser.resetParser().parse();
     }
 }
