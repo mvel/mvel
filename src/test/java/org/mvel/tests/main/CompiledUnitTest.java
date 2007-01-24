@@ -170,6 +170,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("sarah", parseDirect("populate(); blahfoo = barfoo"));
     }
 
+    public void testAssignment3() {
+        assertEquals(java.lang.Integer.class, parseDirect("(blah = 5)").getClass());
+    }
+
     public void testOr() {
         assertEquals(true, parseDirect("fun || true"));
     }

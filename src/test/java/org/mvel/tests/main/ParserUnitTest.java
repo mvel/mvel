@@ -426,6 +426,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals("foobie", parseDirect("a = {{'foo', 'bar'}, {'foobie', 'barbie'}}; a[1][0]"));
     }
 
+    public void testArrayCreation2() {
+        assertEquals(5, parseDirect("a = {1,3,5}; a[2]"));
+    }
+
     public void testTokenMethodAccess() {
         assertEquals(String.class, parse("@{a = 'foo'; a.getClass()}"));
     }
@@ -442,21 +446,16 @@ public class ParserUnitTest extends TestCase {
         assertEquals("happyBar", parseDirect("readBack(funMap.foo_bar.happy())"));
     }
 
-    public void testCacheAggressivelyReAssignmentAllowed() {
-        Interpreter.setCacheAggressively(true);
-        assertEquals("bar", parse("@{a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]}"));
-    }
-
     public void testComplexExpression() {
-        assertEquals("bar", parse("@{a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]}"));
+        assertEquals("bar", parseDirect("a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]"));
     }
 
     public void testComplexExpression2() {
-        assertEquals("foobar", parse("@{x = 'bar'; y = 'foo'; array = {y,x}; array[0] + array[1]}"));
+        assertEquals("foobar", parseDirect("x = 'bar'; y = 'foo'; array = {y,x}; array[0] + array[1]"));
     }
 
     public void testListCreation() {
-        assertEquals("foobar", parse("@{test = ['apple', 'pear', 'foobar']; test[2]}"));
+        assertEquals("foobar", parseDirect("test = ['apple', 'pear', 'foobar']; test[2]"));
     }
 
     public void testListCreation2() {
@@ -484,7 +483,7 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testProjectionSupport2() {
-        assertEquals(3, parse("@{(('name') in things).size()}"));
+        assertEquals(3, parse("@{(name in things).size()}"));
     }
 
 
