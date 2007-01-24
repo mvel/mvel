@@ -21,7 +21,7 @@ package org.mvel.optimizers.impl.asm;
 
 import org.mvel.*;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.AccessorCompiler;
+import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
@@ -36,7 +36,7 @@ import static org.objectweb.asm.Type.*;
 import java.lang.reflect.*;
 import java.util.*;
 
-public class ASMAccessorCompiler implements AccessorCompiler {
+public class ASMAccessorOptimizer implements AccessorOptimizer {
     private static final int OPCODES_VERSION;
 
     static {
@@ -85,7 +85,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
     private Class returnType;
 
-    public ASMAccessorCompiler(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableResolverFactory) {
+    public ASMAccessorOptimizer(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableResolverFactory) {
         this.property = property;
         this.ctx = ctx;
         this.variableFactory = variableResolverFactory;
@@ -93,13 +93,13 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     }
 
 
-    public ASMAccessorCompiler() {
+    public ASMAccessorOptimizer() {
         //do this to confirm we're running the correct version
         //otherwise should create a verification error in VM
         new ClassWriter(ClassWriter.COMPUTE_MAXS);
     }
 
-    public Accessor compile(char[] property, Object staticContext, Object thisRef, VariableResolverFactory factory, boolean root) {
+    public Accessor optimize(char[] property, Object staticContext, Object thisRef, VariableResolverFactory factory, boolean root) {
         time = System.currentTimeMillis();
 
         inputs = 0;
@@ -225,7 +225,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             throw new PropertyAccessException("could not access property", e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException("array or collection index out of bounds (property: " + new String(property) + ")", e);
+            throw new PropertyAccessException("array or collections index out of bounds (property: " + new String(property) + ")", e);
         }
         catch (PropertyAccessException e) {
             throw new PropertyAccessException("failed to access property: <<" + new String(property) + ">> in: " + (ctx != null ? ctx.getClass() : null), e);
@@ -402,7 +402,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
 
 
     /**
-     * Handle accessing a property embedded in a collection, map, or array
+     * Handle accessing a property embedded in a collections, map, or array
      *
      * @param ctx  -
      * @param prop -
@@ -412,7 +412,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     private Object getCollectionProperty(Object ctx, String prop) throws Exception {
         if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
 
-        debug("{collection: " + prop + "} ctx=" + ctx);
+        debug("{collections: " + prop + "} ctx=" + ctx);
 
         int start = ++cursor;
 
@@ -431,7 +431,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
             if (!scanTo(']'))
                 throw new PropertyAccessException("unterminated '['");
             if ((end = containsStringLiteralTermination()) == -1)
-                throw new PropertyAccessException("unterminated string literal in collection accessor");
+                throw new PropertyAccessException("unterminated string literal in collections accessor");
 
             item = new String(property, start, end - start);
         }
@@ -473,7 +473,7 @@ public class ASMAccessorCompiler implements AccessorCompiler {
         else if (ctx instanceof Collection) {
             int count = Integer.parseInt(item);
             if (count > ((Collection) ctx).size())
-                throw new PropertyAccessException("index [" + count + "] out of bounds on collection");
+                throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
 
             Iterator iter = ((Collection) ctx).iterator();
             for (int i = 0; i < count; i++) iter.next();
@@ -985,4 +985,20 @@ public class ASMAccessorCompiler implements AccessorCompiler {
     }
 
 
+    public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        throw new OptimizationNotSupported("JIT does not yet support collections");
+    }
+
+
+    public Accessor optimizeAssignment(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        throw new OptimizationNotSupported("JIT does not yet support assignments");
+    }
+
+    public Accessor optimizeObjectCreation(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        throw new OptimizationNotSupported("JIT does not yet support object creation");
+    }
+
+    public Accessor optimizeFold(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        throw new OptimizationNotSupported("JIT does not yet support fold operations.");
+    }
 }

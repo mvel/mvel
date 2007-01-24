@@ -36,7 +36,7 @@ public class ASMOptimizer implements Optimizer {
             token = tokenIterator.nextToken();
 
             if (token.isIdentifier()) {
-                ASMAccessorCompiler compiler = new ASMAccessorCompiler(token.getNameAsArray(), staticContext, staticContext, factory);
+                ASMAccessorOptimizer compiler = new ASMAccessorOptimizer(token.getNameAsArray(), staticContext, staticContext, factory);
                 token.setAccessor(compiler.compileAccessor());
 
 
