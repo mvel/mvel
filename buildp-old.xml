@@ -16,7 +16,7 @@
     <target name="init">
         <!-- Create the time stamp -->
         <tstamp/>
-        <!-- Create the build directory structure used by compile -->
+        <!-- Create the build directory structure used by optimize -->
         <mkdir dir="${build}"/>
     </target>
 
