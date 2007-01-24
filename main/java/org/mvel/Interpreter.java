@@ -386,7 +386,7 @@ public class Interpreter {
                                 );
                             }
                             catch (ClassCastException e) {
-                                throw new CompileException("expression for collection does not return a collection object: " + new String(getSegment(currNode)));
+                                throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)));
                             }
                             catch (NullPointerException e) {
                                 throw new CompileException("null returned for foreach in expression: " + (getForEachSegment(currNode)));

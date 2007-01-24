@@ -186,7 +186,7 @@ public class PropertyAccessor {
             throw new PropertyAccessException("could not access property", e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException("array or collection index out of bounds (property: " + new String(property) + ")", e);
+            throw new PropertyAccessException("array or collections index out of bounds (property: " + new String(property) + ")", e);
         }
         catch (PropertyAccessException e) {
             throw new PropertyAccessException("failed to access property: <<" + new String(property) + ">> in: " + (ctx != null ? ctx.getClass() : null), e);
@@ -419,7 +419,7 @@ public class PropertyAccessor {
 
 
     /**
-     * Handle accessing a property embedded in a collection, map, or array
+     * Handle accessing a property embedded in a collections, map, or array
      *
      * @param ctx  -
      * @param prop -
@@ -446,7 +446,7 @@ public class PropertyAccessor {
             if (!scanTo(']'))
                 throw new PropertyAccessException("unterminated '['");
             if ((end = containsStringLiteralTermination()) == -1)
-                throw new PropertyAccessException("unterminated string literal in collection accessor");
+                throw new PropertyAccessException("unterminated string literal in collections accessor");
 
             item = new String(property, start, end - start);
         }
@@ -468,7 +468,7 @@ public class PropertyAccessor {
         else if (ctx instanceof Collection) {
             int count = parseInt(item);
             if (count > ((Collection) ctx).size())
-                throw new PropertyAccessException("index [" + count + "] out of bounds on collection");
+                throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
 
             Iterator iter = ((Collection) ctx).iterator();
             for (int i = 0; i < count; i++) iter.next();
