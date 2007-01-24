@@ -20,9 +20,9 @@
 package org.mvel.optimizers;
 
 import org.mvel.CompileException;
-import org.mvel.optimizers.impl.asm.ASMAccessorCompiler;
+import org.mvel.optimizers.impl.asm.ASMAccessorOptimizer;
 import org.mvel.optimizers.impl.asm.ASMOptimizer;
-import org.mvel.optimizers.impl.refl.ReflectiveAccessor;
+import org.mvel.optimizers.impl.refl.ReflectiveOptimizer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,10 +32,10 @@ public class OptimizerFactory {
 
     private static String defaultOptimizer;
     private static final Map<String, Optimizer> optimizers = new HashMap<String, Optimizer>();
-    private static final Map<String, AccessorCompiler> accessorCompilers = new HashMap<String, AccessorCompiler>();
+    private static final Map<String, AccessorOptimizer> accessorCompilers = new HashMap<String, AccessorOptimizer>();
 
     static {
-        accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveAccessor());
+        accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveOptimizer());
         /**
          * By default, activate the JIT if ASM is present in the classpath
          */
@@ -43,7 +43,7 @@ public class OptimizerFactory {
             Class.forName("org.objectweb.asm.ClassWriter");
 
             optimizers.put(defaultOptimizer = "ASM", new ASMOptimizer());
-            accessorCompilers.put("ASM", new ASMAccessorCompiler());
+            accessorCompilers.put("ASM", new ASMAccessorOptimizer());
         }
 
         catch (ClassNotFoundException e) {
@@ -68,7 +68,7 @@ public class OptimizerFactory {
         return optimizers.get(defaultOptimizer);
     }
 
-    public static AccessorCompiler getDefaultAccessorCompiler() {
+    public static AccessorOptimizer getDefaultAccessorCompiler() {
         try {
             return accessorCompilers.get(defaultOptimizer).getClass().newInstance();
         }
@@ -77,7 +77,7 @@ public class OptimizerFactory {
         }
     }
 
-    public static AccessorCompiler getAccessorCompiler(String name) {
+    public static AccessorOptimizer getAccessorCompiler(String name) {
         try {
             return accessorCompilers.get(name).getClass().newInstance();
         }
