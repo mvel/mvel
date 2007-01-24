@@ -39,12 +39,12 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
 
     public void reset() {
         cursor = 0;
-        for (int i = length - 1; i != -1; i--)
-            token[i].reset();
-        
-//        for (Token tk : token) {
-//            tk.reset();
-//        }
+//        for (int i = length - 1; i != -1; i--)
+//            token[i].reset();
+//
+////        for (Token tk : token) {
+////            tk.reset();
+////        }
     }
 
 

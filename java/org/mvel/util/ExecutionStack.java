@@ -9,7 +9,7 @@ public class ExecutionStack implements Stack {
     }
 
     public void push(Object o) {
-        assert ParseTools.debug("PUSH <<" + o + ">>");
+        assert ParseTools.debug("PUSH <<" + o + ">> SIZE=" + size);
 
         size++;
         element = new StackElement(element, o);
