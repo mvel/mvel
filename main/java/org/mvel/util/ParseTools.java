@@ -5,8 +5,9 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.eval;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.optimizers.impl.refl.ConstructorAccessor;
-import org.mvel.optimizers.impl.refl.ReflectiveAccessor;
+import org.mvel.optimizers.impl.refl.ReflectiveOptimizer;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
@@ -329,11 +330,11 @@ public class ParseTools {
             AccessorNode ca = new ConstructorAccessor(cns, cStmts);
 
             if (cnsRes.length > 1) {
-                ReflectiveAccessor compiledAccessor
-                        = new ReflectiveAccessor(cnsRes[1].toCharArray(), cns.newInstance(parms), ctx, vars);
-                compiledAccessor.setRootNode(ca);
-                compiledAccessor.compileGetChain();
-                ca = compiledAccessor.getRootNode();
+                ReflectiveOptimizer compiledOptimizer
+                        = new ReflectiveOptimizer(cnsRes[1].toCharArray(), cns.newInstance(parms), ctx, vars);
+                compiledOptimizer.setRootNode(ca);
+                compiledOptimizer.compileGetChain();
+                ca = compiledOptimizer.getRootNode();
             }
 
             return ca;
@@ -343,11 +344,11 @@ public class ParseTools {
             AccessorNode ca = new ConstructorAccessor(cns, null);
 
             if (cnsRes.length > 1) {
-                ReflectiveAccessor compiledAccessor
-                        = new ReflectiveAccessor(cnsRes[1].toCharArray(), cns.newInstance(), ctx, vars);
-                compiledAccessor.setRootNode(ca);
-                compiledAccessor.compileGetChain();
-                ca = compiledAccessor.getRootNode();
+                ReflectiveOptimizer compiledOptimizer
+                        = new ReflectiveOptimizer(cnsRes[1].toCharArray(), cns.newInstance(), ctx, vars);
+                compiledOptimizer.setRootNode(ca);
+                compiledOptimizer.compileGetChain();
+                ca = compiledOptimizer.getRootNode();
             }
 
             return ca;
@@ -521,6 +522,20 @@ public class ParseTools {
         }
     }
 
+    public static VariableResolverFactory finalLocalVariableFactory(VariableResolverFactory factory) {
+        VariableResolverFactory v = factory;
+        while (v != null) {
+            if (v instanceof LocalVariableResolverFactory) return v;
+            v = v.getNextFactory();
+        }
+        if (factory == null) {
+            return new LocalVariableResolverFactory(new HashMap<String, Object>());
+        }
+        else {
+            return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
+        }
+    }
+
 
     public static boolean debug(String str) {
         System.out.println(str);
@@ -530,6 +545,18 @@ public class ParseTools {
     public static boolean debug(Throwable t) {
         t.printStackTrace();
         return true;
+    }
+
+    public static char[] subset(char[] array, int start, int length) {
+        char[] newArray = new char[length];
+        System.arraycopy(array, start, newArray, 0, length);
+        return newArray;
+    }
+
+    public static char[] subset(char[] array, int start) {
+        char[] newArray = new char[array.length - start];
+        System.arraycopy(array, start, newArray, 0, newArray.length);
+        return newArray;
     }
 
     public static Object valueOnly(Object o) {

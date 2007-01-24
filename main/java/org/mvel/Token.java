@@ -23,7 +23,7 @@ import static org.mvel.DataConversion.convert;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.AccessorCompiler;
+import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
@@ -54,26 +54,21 @@ public class Token implements Cloneable, Serializable {
     public static final int NEGATION = 1 << 6;
     public static final int EVAL_RIGHT = 1 << 7;
     public static final int INVERT = 1 << 8;
-    public static final int REQUIRE_REDUCTION = 1 << 9;
+    public static final int FOLD = 1 << 9;
     public static final int BOOLEAN_MODE = 1 << 10;
     public static final int TERNARY = 1 << 11;
     public static final int ASSIGN = 1 << 12;
     public static final int LOOKAHEAD = 1 << 13;
     public static final int COLLECTION = 1 << 14;
-    public static final int LISTCREATE = 1 << 15;
     public static final int DO_NOT_REDUCE = 1 << 16;
     public static final int CAPTURE_ONLY = 1 << 17;
-    public static final int MAPCREATE = 1 << 18;
     public static final int THISREF = 1 << 19;
-    public static final int ARRAYCREATE = 1 << 20;
+    public static final int INLINE_COLLECTION = 1 << 20;
     public static final int NOCOMPILE = 1 << 21;
     public static final int STR_LITERAL = 1 << 25;
     public static final int FLOATING_NUMERIC = 1 << 26;
 
     public static final int PUSH = 1 << 22;
-
-    public static final int NEST = 1 << 23;   // token begins a nesting area
-    public static final int ENDNEST = 1 << 24; // token ends a nesting area
 
     public static final int OPTIMIZED_REF = 1 << 31; // future use
 
@@ -363,8 +358,13 @@ public class Token implements Cloneable, Serializable {
                 else {
                     throw new CompileException("expected numeric value: got: " + value);
                 }
-
-                // value = numericValue = convert(accessor.getLiteralValue(ctx, elCtx, variableFactory), BigDecimal.class);
+            }
+            else if ((fields & INLINE_COLLECTION) != 0) {
+                if (accessor == null) {
+                    accessor = OptimizerFactory.getAccessorCompiler(OptimizerFactory.SAFE_REFLECTIVE)
+                            .optimizeCollection(name, ctx, elCtx, variableFactory);
+                }
+                return accessor.getValue(ctx, elCtx, variableFactory);
             }
             else {
                 v = accessor.getValue(ctx, elCtx, variableFactory);
@@ -374,15 +374,12 @@ public class Token implements Cloneable, Serializable {
         }
         catch (NullPointerException e) {
             if (accessor == null) {
-//                if (nextToken != null && nextToken.isOperator(Operator.ASSIGN)) {
-//                    createDeferralOptimization();
-//                    return this;
-//                }
-
                 try {
                     return optimizeAccessor(ctx, elCtx, variableFactory, elCtx != null);
                 }
                 catch (Exception up) {
+                    up.printStackTrace();
+
                     throw new UnresolveablePropertyException(this);
                 }
             }
@@ -401,24 +398,36 @@ public class Token implements Cloneable, Serializable {
 
     public Object optimizeAccessor(Object ctx, Object thisRef, VariableResolverFactory variableFactory, boolean thisRefPush) {
         try {
-            AccessorCompiler compiler = OptimizerFactory.getDefaultAccessorCompiler();
-            accessor = compiler.compile(name, ctx, thisRef, variableFactory, thisRefPush);
+            AccessorOptimizer optimizer = OptimizerFactory.getDefaultAccessorCompiler();
+
+            if ((fields & ASSIGN) != 0) {
+                accessor = optimizer.optimizeAssignment(name, ctx, thisRef, variableFactory);
+            }
+            else {
+                accessor = optimizer.optimize(name, ctx, thisRef, variableFactory, thisRefPush);
+            }
 
             setNumeric(false);
             setFlag(true, Token.OPTIMIZED_REF);
 
-            return compiler.getResultOptPass();
+            return optimizer.getResultOptPass();
         }
         catch (OptimizationNotSupported e) {
             assert debug("[Falling Back to Reflective Optimizer]");
             // fall back to the safe reflective optimizer
-            AccessorCompiler compiler = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
-            accessor = compiler.compile(name, ctx, thisRef, variableFactory, thisRefPush);
+            AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+
+            if ((fields & ASSIGN) != 0) {
+                accessor = optimizer.optimizeAssignment(name, ctx, thisRef, variableFactory);
+            }
+            else {
+                accessor = optimizer.optimize(name, ctx, thisRef, variableFactory, thisRefPush);
+            }
 
             setNumeric(false);
             setFlag(true, Token.OPTIMIZED_REF);
 
-            return compiler.getResultOptPass();
+            return optimizer.getResultOptPass();
         }
         catch (Exception e) {
             throw new OptimizationFailure("failed to optimize accessor: " + new String(name), e);
@@ -451,12 +460,30 @@ public class Token implements Cloneable, Serializable {
 
 
     public Object getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory) {
+        assert debug("GET_RED_ACCL (literal=" + isLiteral() + "; assign=" + isAssign() + "; subeval=" + isSubeval()
+                + "; collections=" + isCollection() + "): <<" + new String(name) + ">>");
+
         if ((fields & (LITERAL)) != 0) {
             return valRet(value);
+        }
+        else if ((fields & ASSIGN) != 0) {
+            if (accessor == null) {
+                accessor = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)
+                        .optimizeAssignment(name, ctx, eCtx, factory);
+            }
+
+            return accessor.getValue(ctx, eCtx, factory);
         }
         else if ((fields & SUBEVAL) != 0) {
             assert debug("SUBEVAL <<" + value + ">>");
             return valRet(compiledExpression.getValue(ctx, factory));
+        }
+        else if ((fields & COLLECTION) != 0) {
+            if (accessor == null) {
+                accessor = OptimizerFactory.getDefaultAccessorCompiler().optimizeCollection(name, ctx, eCtx, factory);
+            }
+
+            return accessor.getValue(ctx, eCtx, factory);
         }
 
         return valRet(_getReducedValueAccelerated(ctx, eCtx, factory, false));
@@ -503,28 +530,40 @@ public class Token implements Cloneable, Serializable {
 
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        assert debug("REDUCE <<" + new String(name) + ">> ctx=" + ctx + ";literal=" + (fields & LITERAL) + ";assign=" + (fields & ASSIGN));
+
         String s;
-        if ((fields & LITERAL) != 0 || ((fields & Token.CAPTURE_ONLY) != 0)) {
+        if ((fields & (LITERAL | OPERATOR)) != 0) {
             return value;
         }
+        else if ((fields & ASSIGN) != 0) {
+            assert debug("TK_ASSIGN");
+
+            if (accessor == null) {
+                accessor = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)
+                        .optimizeAssignment(name, ctx, thisValue, factory);
+            }
+
+            return accessor.getValue(ctx, thisValue, factory);
+        }
         else if ((fields & SUBEVAL) != 0) {
-            assert debug("SUBEVAL <<" + new String(name)+ ">>");
+            assert debug("TK_SUBEVAL");
+
             return valRet(ExpressionParser.eval(name, ctx, factory));
         }
 
-        /**
-         * To save the GC a little bit of work, we don't initialize a property accessor unless we need it, and we
-         * reuse the same instance if we need it more than once.
-         */
+        else if ((fields & INLINE_COLLECTION) != 0) {
+            assert debug("TK_INLINE_COLLECTION");
 
-        if ((fields & Token.PUSH) != 0) {
-            /**
-             * This token is attached to a stack value, and we use the top stack value as the context for the
-             * property accessor.
-             */
-            return valRet(get(name, ctx, factory, thisValue));
+            if (accessor == null) {
+                accessor = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)
+                        .optimizeCollection(name, ctx, thisValue, factory);
+            }
+
+            return accessor.getValue(ctx, thisValue, factory);
         }
-        else if ((fields & Token.DEEP_PROPERTY) != 0) {
+
+        if ((fields & Token.DEEP_PROPERTY) != 0) {
             /**
              * The token is a DEEP PROPERTY (meaning it contains unions) in which case we need to traverse an object
              * graph.
@@ -545,26 +584,26 @@ public class Token implements Cloneable, Serializable {
                 return valRet(get(getRemainder(), factory.getVariableResolver(s).getValue(), factory, thisValue));
 
             }
-            else if (thisValue != null) {
+            else if (ctx != null) {
                 /**
                  * We didn't resolve the root, yet, so we assume that if we have a VROOT then the property must be
                  * accessible as a field of the VROOT.
                  */
 
                 try {
-                    return valRet(get(name, thisValue, factory, thisValue));
+                    return valRet(get(name, ctx, factory, thisValue));
                 }
                 catch (PropertyAccessException e) {
                     /**
                      * No luck. Make a last-ditch effort to resolve this as a static-class reference.
                      */
-                    Object sa = tryStaticAccess(thisValue, factory);
+                    Object sa = tryStaticAccess(ctx, factory);
                     if (sa == null) throw e;
                     return valRet(sa);
                 }
             }
             else {
-                Object sa = tryStaticAccess(thisValue, factory);
+                Object sa = tryStaticAccess(ctx, factory);
                 if (sa == null) throw new CompileException("unable to resolve token: " + s);
                 return valRet(sa);
             }
@@ -588,12 +627,12 @@ public class Token implements Cloneable, Serializable {
 
                 return valRet(factory.getVariableResolver(s).getValue());
             }
-            else if (thisValue != null) {
+            else if (ctx != null) {
                 /**
                  * Check to see if the var exists in the VROOT.
                  */
                 try {
-                    return valRet(get(name, thisValue, factory, thisValue));
+                    return valRet(get(name, ctx, factory, thisValue));
                 }
                 catch (RuntimeException e) {
                     throw new UnresolveablePropertyException(this);
@@ -616,16 +655,19 @@ public class Token implements Cloneable, Serializable {
         assert debug("VAL_RET_SPECIAL <<" + value + ">>");
         //String s;
         try {
-            if ((fields & (NEGATION | BOOLEAN_MODE)) == (NEGATION | BOOLEAN_MODE)) {
-                value = BlankLiteral.INSTANCE.equals(value);
-            }
-            else if ((fields & NEGATION) != 0) {
+            if ((fields & NEGATION) != 0) {
                 if (value instanceof Boolean) {
                     value = !((Boolean) value);
+                }
+                else if ((fields & BOOLEAN_MODE) != 0) {
+                    value = BlankLiteral.INSTANCE.equals(value);
                 }
                 else {
                     throw new CompileException("illegal negation - not a boolean expression");
                 }
+            }
+            else if ((fields & BOOLEAN_MODE) != 0) {
+                value = !BlankLiteral.INSTANCE.equals(value);
             }
             else {
                 if (value instanceof BigDecimal) {
@@ -710,6 +752,7 @@ public class Token implements Cloneable, Serializable {
 
         if ((fields & STR_LITERAL) != 0) {
             fields |= LITERAL;
+
             int escapes = 0;
             for (int i = 0; i < name.length; i++) {
                 if (name[i] == '\\') {
@@ -743,8 +786,8 @@ public class Token implements Cloneable, Serializable {
             if ((value = LITERALS.get(value)) == ThisLiteral.class) fields |= THISREF;
         }
         else if (OPERATORS.containsKey(value)) {
-            resetFields = fields |= OPERATOR;
-            resetValue = value = OPERATORS.get(value);
+            fields |= OPERATOR;
+            value = OPERATORS.get(value);
 
             return;
         }
@@ -827,18 +870,6 @@ public class Token implements Cloneable, Serializable {
 
     public void setCompiledExpression(ExecutableStatement compiledExpression) {
         this.compiledExpression = compiledExpression;
-    }
-
-    public boolean isCollectionCreation() {
-        return (fields & (MAPCREATE | ARRAYCREATE | LISTCREATE)) != 0;
-    }
-
-    public int getCollectionCreationType() {
-        return fields & (MAPCREATE | ARRAYCREATE | LISTCREATE);
-    }
-
-    public boolean isNestBegin() {
-        return (fields & Token.NEST) != 0;
     }
 
     public Token clone() throws CloneNotSupportedException {
@@ -958,9 +989,6 @@ public class Token implements Cloneable, Serializable {
         return (fields & COLLECTION) != 0;
     }
 
-    public boolean isEndNest() {
-        return (fields & ENDNEST) != 0;
-    }
 
     public boolean isPush() {
         return (fields & PUSH) != 0;
@@ -969,6 +997,11 @@ public class Token implements Cloneable, Serializable {
     public boolean isCaptureOnly() {
         return (fields & CAPTURE_ONLY) != 0;
     }
+
+    public boolean isAssign() {
+        return (fields & ASSIGN) != 0;
+    }
+
 
     public boolean isReducable() {
         return ((fields & CAPTURE_ONLY) | (fields & LITERAL)) == 0;
@@ -980,6 +1013,10 @@ public class Token implements Cloneable, Serializable {
 
     public void setKnownSize(int knownSize) {
         this.knownSize = knownSize;
+    }
+
+    public void setFlags(int flags) {
+        this.fields = flags;
     }
 
 }
