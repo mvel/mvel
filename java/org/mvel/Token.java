@@ -401,7 +401,7 @@ public class Token implements Cloneable, Serializable {
 
     public Object getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory) {
         if ((fields & (LITERAL)) != 0) {
-            return valRet(literal);
+            return literal;
         }
         try {
             return valRet(accessor.getValue(ctx, eCtx, factory));
@@ -592,39 +592,39 @@ public class Token implements Cloneable, Serializable {
     private Object valRet(Object value) {
         if ((fields & (NEGATION | BOOLEAN_MODE | NUMERIC | INVERT)) == 0) return value;
 
-        try {
-            if ((fields & NEGATION) != 0) {
-                if (value instanceof Boolean) {
-                    value = !((Boolean) value);
-                }
-                else if ((fields & BOOLEAN_MODE) != 0) {
-                    value = BlankLiteral.INSTANCE.equals(value);
-                }
-                else {
-                    throw new CompileException("illegal negation - not a boolean expression");
-                }
+        if ((fields & NEGATION) != 0) {
+            if (value instanceof Boolean) {
+                return !((Boolean) value);
             }
             else if ((fields & BOOLEAN_MODE) != 0) {
-                value = !BlankLiteral.INSTANCE.equals(value);
+                return BlankLiteral.INSTANCE.equals(value);
             }
             else {
-                if (knownType > 99) {
-                    value = ParseTools.getBigDecimalFromType(value, knownType);
-                }
-                else if (isNumber(value)) {
-                    knownType = ParseTools.resolveType(value.getClass());
-                    value = ParseTools.getBigDecimalFromType(value, knownType);
-                }
+                throw new CompileException("illegal negation - not a boolean expression");
             }
-
-            if ((fields & INVERT) != 0) {
-                value = new BigDecimal(~((BigDecimal) value).intValue());
+        }
+        else if ((fields & BOOLEAN_MODE) != 0) {
+            return !BlankLiteral.INSTANCE.equals(value);
+        }
+        else if ((fields & INVERT) != 0) {
+            if (knownType > 99) {
+                value = ~ParseTools.getBigDecimalFromType(value, knownType).intValue();
+            }
+            else if (isNumber(value)) {
+                knownType = ParseTools.resolveType(value.getClass());
+                value = ~ParseTools.getBigDecimalFromType(value, knownType).intValue();
+            }
+        }
+        else {
+            if (knownType > 99) {
+                value = ParseTools.getBigDecimalFromType(value, knownType);
+            }
+            else if (isNumber(value)) {
+                knownType = ParseTools.resolveType(value.getClass());
+                value = ParseTools.getBigDecimalFromType(value, knownType);
             }
         }
 
-        catch (NumberFormatException e) {
-            throw new CompileException("unable to create numeric value from: '" + value + "'");
-        }
 
         return value;
     }
@@ -738,7 +738,7 @@ public class Token implements Cloneable, Serializable {
             }
             else {
                 literal = new BigDecimal((String) literal);
-                
+
             }
 
 
