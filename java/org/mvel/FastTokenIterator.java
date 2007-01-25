@@ -22,7 +22,7 @@ import org.mvel.util.StringAppender;
 
 import java.util.ArrayList;
 
-public class FastTokenIterator implements TokenIterator, Cloneable {
+public class FastTokenIterator implements TokenIterator {
     private Token[] token;
     private int length = 0;
     private int cursor = 0;
@@ -126,11 +126,6 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
         }
 
         return sb.toString();
-    }
-
-
-    public TokenIterator clone() {
-        return new FastTokenIterator(token);
     }
 
 
