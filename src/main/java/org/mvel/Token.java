@@ -405,7 +405,6 @@ public class Token implements Cloneable, Serializable {
         }
         try {
             return valRet(accessor.getValue(ctx, eCtx, factory));
-
         }
         catch (NullPointerException e) {
             AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
@@ -591,8 +590,15 @@ public class Token implements Cloneable, Serializable {
 
     private Object valRet(Object value) {
         if ((fields & (NEGATION | BOOLEAN_MODE | NUMERIC | INVERT)) == 0) return value;
-
-        if ((fields & NEGATION) != 0) {
+        else if (knownType > 99) {
+            if ((fields & INVERT) != 0) {
+                return ~ParseTools.getBigDecimalFromType(value, knownType).intValue();
+            }
+            else {
+                return ParseTools.getBigDecimalFromType(value, knownType);
+            }
+        }
+        else if ((fields & NEGATION) != 0) {
             if (value instanceof Boolean) {
                 return !((Boolean) value);
             }
@@ -607,22 +613,14 @@ public class Token implements Cloneable, Serializable {
             return !BlankLiteral.INSTANCE.equals(value);
         }
         else if ((fields & INVERT) != 0) {
-            if (knownType > 99) {
-                value = ~ParseTools.getBigDecimalFromType(value, knownType).intValue();
-            }
-            else if (isNumber(value)) {
+            if (isNumber(value)) {
                 knownType = ParseTools.resolveType(value.getClass());
                 value = ~ParseTools.getBigDecimalFromType(value, knownType).intValue();
             }
         }
-        else {
-            if (knownType > 99) {
-                value = ParseTools.getBigDecimalFromType(value, knownType);
-            }
-            else if (isNumber(value)) {
-                knownType = ParseTools.resolveType(value.getClass());
-                value = ParseTools.getBigDecimalFromType(value, knownType);
-            }
+        else if (isNumber(value)) {
+            knownType = ParseTools.resolveType(value.getClass());
+            value = ParseTools.getBigDecimalFromType(value, knownType);
         }
 
 

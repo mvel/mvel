@@ -33,13 +33,19 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
     }
 
     public FastTokenIterator(TokenIterator map) {
-        ArrayList<Token> tokens = new ArrayList<Token>();
-        map.reset();
-        while (map.hasMoreTokens()) {
-            tokens.add(map.nextToken());
+        if (map instanceof FastTokenIterator) {
+            this.length = (this.token = ((FastTokenIterator) map).token).length;
         }
+        else {
 
-        token = tokens.toArray(new Token[length = tokens.size()]);
+            ArrayList<Token> tokens = new ArrayList<Token>();
+            map.reset();
+            while (map.hasMoreTokens()) {
+                tokens.add(map.nextToken());
+            }
+
+            token = tokens.toArray(new Token[length = tokens.size()]);
+        }
     }
 
     public void reset() {
@@ -82,7 +88,7 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
     public boolean peekNextTokenFlags(int flags) {
         if (cursor >= length) return false;
         return (token[cursor].getFlags() & flags) != 0;
-    }    
+    }
 
 
     public Token peekLast() {
