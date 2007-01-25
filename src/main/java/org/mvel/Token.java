@@ -19,22 +19,18 @@
 
 package org.mvel;
 
-import static org.mvel.DataConversion.convert;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
-import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.OptimizerFactory;
-import org.mvel.optimizers.Optimizer;
 import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
-import static org.mvel.optimizers.OptimizerFactory.getDefaultAccessorCompiler;
 import org.mvel.optimizers.impl.refl.Deferral;
 import static org.mvel.util.ArrayTools.findFirst;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
-import org.mvel.util.ParseTools;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
