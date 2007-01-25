@@ -496,7 +496,7 @@ public class Token implements Cloneable, Serializable {
             assert debug("SUBEVAL <<" + value + ">>");
             return valRet(compiledExpression.getValue(ctx, factory));
         }
-        else if ((fields & COLLECTION) != 0) {
+        else if ((fields & INLINE_COLLECTION) != 0) {
             if (accessor == null) {
                 accessor = getDefaultAccessorCompiler().optimizeCollection(name, ctx, eCtx, factory);
             }
