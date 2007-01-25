@@ -40,11 +40,11 @@ public class ExecutableAccessor implements ExecutableStatement {
 
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        return getValue(ctx, variableFactory);
+        return getValue(elCtx, variableFactory);
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        Object result = accessor.getOptimizedValue(staticContext, staticContext, factory);
+        Object result = accessor.getReducedValueAccelerated(staticContext, staticContext, factory);
         if (booleanMode) {
             if (result instanceof Boolean) return result;
             else if (result instanceof Token) {
@@ -62,7 +62,6 @@ public class ExecutableAccessor implements ExecutableStatement {
             result = ((Token) result).getLiteralValue();
         }
         if (accessor.isNumeric()) {
-            result = accessor.getNumericValue();
             if (returnBigDecimal) return result;
             else if (((BigDecimal) result).scale() > 14) {
                 return ((BigDecimal) result).floatValue();

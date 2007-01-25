@@ -50,7 +50,6 @@ public class ExpressionParser extends AbstractParser {
 
     private boolean compileMode = false;
     private boolean fastExecuteMode = false;
-    private boolean reduce = true;
 
     private Object ctx;
     private TokenIterator tokens;
@@ -437,7 +436,7 @@ public class ExpressionParser extends AbstractParser {
         Integer operator;
 
         while ((tk = tokens.nextToken()) != null) {
-       //     assert debug("\nSTART_FRAME <<" + tk + ">> STK_SIZE=" + stk.size() + "; STK_PEEK=" + stk.peek() + "; TOKEN#=" + tokens.index());
+            //     assert debug("\nSTART_FRAME <<" + tk + ">> STK_SIZE=" + stk.size() + "; STK_PEEK=" + stk.peek() + "; TOKEN#=" + tokens.index());
             if (stk.size() == 0) {
                 stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
             }
@@ -448,7 +447,7 @@ public class ExpressionParser extends AbstractParser {
 
             switch (reduceBinary(operator = tk.getOperator())) {
                 case-1:
-                   // assert debug("FRAME_KILL_PROC");
+                    // assert debug("FRAME_KILL_PROC");
                     return;
                 case 0:
                     // assert debug("FRAME_CONTINUE");
@@ -477,7 +476,7 @@ public class ExpressionParser extends AbstractParser {
             if (tk.isSubeval()) {
                 // assert debug("BEGIN_SUBCOMPILE");
                 tk.setAccessor((ExecutableStatement) compileExpression(tk.getNameAsArray()));
-             //   tk.setAccessor(new ExecutableAccessor());
+                //   tk.setAccessor(new ExecutableAccessor());
                 // assert debug("FINISH_SUBCOMPILE");
             }
 
@@ -549,14 +548,11 @@ public class ExpressionParser extends AbstractParser {
                     return 1;
                 }
                 else {
-                    reduce = false;
                     stk.clear();
 
                     while ((tk = nextToken()) != null && !tk.isOperator(Operator.TERNARY_ELSE)) {
                         //nothing
                     }
-
-                    reduce = true;
 
                     return 1;
                 }
@@ -829,19 +825,7 @@ public class ExpressionParser extends AbstractParser {
     private Object processToken(Object operand) {
         setFieldFalse(Token.EVAL_RIGHT);
 
-        if (operand instanceof Token) {
-            if (((Token) operand).isNumeric()) {
-                return ((Token) operand).getNumericValue();
-            }
-            else if (!((Token) operand).isLiteral()) {
-                return ((Token) operand).getLiteralValue();
-            }
-            else {
-                if (((Token) operand).isEvalRight()) fields |= Token.EVAL_RIGHT;
-                return ((Token) operand).getLiteralValue();
-            }
-        }
-        else if (operand instanceof BigDecimal) {
+        if (operand instanceof BigDecimal) {
             return operand;
         }
         else if (isNumber(operand)) {
@@ -867,19 +851,15 @@ public class ExpressionParser extends AbstractParser {
         if (fastExecuteMode) return unwindStatementAccelerated();
 
         Token tk;
-        reduce = false;
         while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT)) {
             //nothing
         }
-        reduce = true;
         return tk == null;
     }
 
     private boolean unwindStatementAccelerated() {
-        reduce = false;
         //noinspection StatementWithEmptyBody
         while (tokens.hasMoreTokens() && !tokens.nextToken().isOperator(Operator.END_OF_STMT)) ;
-        reduce = true;
         return !tokens.hasMoreTokens();
     }
 
