@@ -339,38 +339,41 @@ public class Token implements Cloneable, Serializable {
     }
 
 
-    public Object getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory) {
+    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((fields & (LITERAL)) != 0) {
-            return literal;
+            if ((fields & THISREF) != 0)
+                return thisValue;
+            else
+                return literal;
         }
         try {
-            return valRet(accessor.getValue(ctx, eCtx, factory));
+            return valRet(accessor.getValue(ctx, thisValue, factory));
         }
         catch (NullPointerException e) {
             AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
             Object retVal = null;
 
             if ((fields & ASSIGN) != 0) {
-                accessor = optimizer.optimizeAssignment(name, ctx, eCtx, factory);
-                retVal = accessor.getValue(ctx, eCtx, factory);
+                accessor = optimizer.optimizeAssignment(name, ctx, thisValue, factory);
+                retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & SUBEVAL) != 0) {
                 accessor = (ExecutableStatement) MVEL.compileExpression(name);
-                retVal = accessor.getValue(ctx, eCtx, factory);
+                retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & INLINE_COLLECTION) != 0) {
-                accessor = optimizer.optimizeCollection(name, ctx, eCtx, factory);
-                retVal = accessor.getValue(ctx, eCtx, factory);
+                accessor = optimizer.optimizeCollection(name, ctx, thisValue, factory);
+                retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & FOLD) != 0) {
-                accessor = optimizer.optimizeFold(name, ctx, eCtx, factory);
-                retVal = accessor.getValue(ctx, eCtx, factory);
+                accessor = optimizer.optimizeFold(name, ctx, thisValue, factory);
+                retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & NEW) != 0) {
-                accessor = optimizer.optimizeObjectCreation(name, ctx, eCtx, factory);
+                accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
             }
             else {
-                accessor = optimizer.optimize(name, ctx, eCtx, factory, true);
+                accessor = optimizer.optimize(name, ctx, thisValue, factory, true);
             }
 
             if (accessor == null)

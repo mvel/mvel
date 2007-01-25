@@ -547,7 +547,7 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("value1", map.get("key1"));
 
         List nestedList = (List) map.get("cat");
-        assertEquals(new BigDecimal(14), nestedList.get(0));
+        assertEquals(14, nestedList.get(0));
         assertEquals("car", nestedList.get(1));
         assertEquals(new BigDecimal(42), nestedList.get(2));
 
