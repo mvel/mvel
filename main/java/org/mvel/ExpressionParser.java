@@ -353,12 +353,7 @@ public class ExpressionParser extends AbstractParser {
 
         cursor = 0;
 
-        assert debug("\n**************\nPARSER_START_" + (fastExecuteMode ? "ACCEL" : (compileMode ? "COMPILE" : "INTERP")));
-        assert debug("EXPR: " + (expr != null ? new String(expr) : "<COMPILED>"));
-
         if (fastExecuteMode) {
-            assert debug(tokens.showTokenChain());
-
             parseAndExecuteAccelerated();
         }
         else if (compileMode) {
@@ -442,7 +437,7 @@ public class ExpressionParser extends AbstractParser {
         Integer operator;
 
         while ((tk = tokens.nextToken()) != null) {
-            assert debug("\nSTART_FRAME <<" + tk + ">> STK_SIZE=" + stk.size() + "; STK_PEEK=" + stk.peek() + "; TOKEN#=" + tokens.index());
+       //     assert debug("\nSTART_FRAME <<" + tk + ">> STK_SIZE=" + stk.size() + "; STK_PEEK=" + stk.peek() + "; TOKEN#=" + tokens.index());
             if (stk.size() == 0) {
                 stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
             }
@@ -453,13 +448,13 @@ public class ExpressionParser extends AbstractParser {
 
             switch (reduceBinary(operator = tk.getOperator())) {
                 case-1:
-                    assert debug("FRAME_KILL_PROC");
+                   // assert debug("FRAME_KILL_PROC");
                     return;
                 case 0:
-                    assert debug("FRAME_CONTINUE");
+                    // assert debug("FRAME_CONTINUE");
                     break;
                 case 1:
-                    assert debug("FRAME_NEXT");
+                    // assert debug("FRAME_NEXT");
                     continue;
             }
 
@@ -469,20 +464,21 @@ public class ExpressionParser extends AbstractParser {
 
             reduceTrinary();
         }
-        assert debug("NO_MORE_TOKENS");
+        // assert debug("NO_MORE_TOKENS");
     }
 
     private TokenIterator parseCompile() {
-        assert debug("BEGIN_COMPILE length=" + length + ", cursor=" + cursor);
+        // assert debug("BEGIN_COMPILE length=" + length + ", cursor=" + cursor);
         Token tk;
         TokenMap tokenMap = null;
 
         while ((tk = nextToken()) != null) {
-            assert debug("COMPILING_TOKEN <<" + tk + ">>::ASSIGNMENT=" + (tk.getFlags() & Token.ASSIGN));
+            // assert debug("COMPILING_TOKEN <<" + tk + ">>::ASSIGNMENT=" + (tk.getFlags() & Token.ASSIGN));
             if (tk.isSubeval()) {
-                assert debug("BEGIN_SUBCOMPILE");
-                tk.setCompiledExpression((ExecutableStatement) compileExpression(tk.getNameAsArray()));
-                assert debug("FINISH_SUBCOMPILE");
+                // assert debug("BEGIN_SUBCOMPILE");
+                tk.setAccessor((ExecutableStatement) compileExpression(tk.getNameAsArray()));
+             //   tk.setAccessor(new ExecutableAccessor());
+                // assert debug("FINISH_SUBCOMPILE");
             }
 
             if (tokenMap == null) {
@@ -513,11 +509,11 @@ public class ExpressionParser extends AbstractParser {
      * @return int - behaviour code
      */
     private int reduceBinary(int o) {
-        assert debug("BINARY_OP " + o + " PEEK=<<" + stk.peek() + ">>");
+        // assert debug("BINARY_OP " + o + " PEEK=<<" + stk.peek() + ">>");
         switch (o) {
             case AND:
                 if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
-                    assert debug("STMT_UNWIND");
+                    // assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
                         return -1;
                     }
@@ -532,7 +528,7 @@ public class ExpressionParser extends AbstractParser {
                 }
             case OR:
                 if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
-                    assert debug("STMT_UNWIND");
+                    // assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
                         return -1;
                     }
@@ -623,7 +619,7 @@ public class ExpressionParser extends AbstractParser {
                     v2 = processToken(stk.pop());
                 }
 
-                assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
+                // assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
 
                 switch (operator) {
                     case ADD:
@@ -857,33 +853,6 @@ public class ExpressionParser extends AbstractParser {
     }
 
 
-    private Object reduceFast(Token tk) {
-        if (tk.isSubeval()) {
-            /**
-             * This token represents a subexpression, and we must recurse into that expression.
-             */
-
-            if (fastExecuteMode) {
-                /**
-                 * We are executing it fast mode, so we simply execute the compiled subexpression.
-                 */
-                return (tk.getCompiledExpression().getValue(ctx, variableFactory));
-
-            }
-            else if (compileMode) {
-                /**
-                 * If we are compiling, then we optimize the subexpression.
-                 */
-                tk.setCompiledExpression((ExecutableStatement) compileExpression(tk.getValueAsString()));
-            }
-        }
-        else if (!tk.isDoNotReduce()) {
-            //   tk.setFinalValue(subEval(reduceToken(tk))).getLiteralValue();
-        }
-        return tk;
-    }
-
-
     public String getExpression() {
         return new String(expr);
     }
@@ -993,17 +962,6 @@ public class ExpressionParser extends AbstractParser {
         return this;
     }
 
-    public ExpressionParser setPrecompiledExpression(Object expression) {
-        (this.tokens = ((CompiledExpression) expression).getTokenMap()).reset();
-
-        this.fastExecuteMode = true;
-        return this;
-    }
-
-    private void addTokenToMap(Token tk) {
-        ((TokenMap) tokens).addTokenNode(tk);
-    }
-
 
     ExpressionParser(char[] expression, Object ctx, Map<String, Object> variables) {
         this.expr = expression;
@@ -1081,7 +1039,7 @@ public class ExpressionParser extends AbstractParser {
     ExpressionParser(VariableResolverFactory resolverFactory, Object ctx, TokenIterator tokens) {
         this.ctx = ctx;
         this.variableFactory = resolverFactory;
-        (this.tokens = tokens).reset();
+        this.tokens = tokens.clone();
         this.fastExecuteMode = true;
     }
 
@@ -1097,7 +1055,7 @@ public class ExpressionParser extends AbstractParser {
 
     public void setTokens(TokenIterator tokenIterator) {
         fastExecuteMode = true;
-        (this.tokens = tokenIterator).reset();
+        this.tokens = tokenIterator.clone();
     }
 
     public void setVariableResolverFactory(VariableResolverFactory factory) {
@@ -1105,7 +1063,6 @@ public class ExpressionParser extends AbstractParser {
     }
 
     public Object executeFast() {
-//        tokens.reset();
         return compiledExpression.getValue(ctx, variableFactory);
     }
 

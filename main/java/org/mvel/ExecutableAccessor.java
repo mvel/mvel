@@ -39,6 +39,10 @@ public class ExecutableAccessor implements ExecutableStatement {
     }
 
 
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+        return getValue(ctx, variableFactory);
+    }
+
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         Object result = accessor.getOptimizedValue(staticContext, staticContext, factory);
         if (booleanMode) {
