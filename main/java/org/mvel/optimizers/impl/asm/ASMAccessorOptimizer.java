@@ -599,7 +599,7 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
                 preConvArgs = new Object[es.length];
 
                 for (int i = 0; i < subtokens.length; i++) {
-                    preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) ExpressionParser.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                    preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) MVEL.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
                 }
                 SUBEXPRESSION_CACHE.put(tk, es);
             }

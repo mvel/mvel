@@ -108,20 +108,20 @@ public class MVELSH {
                 else if (benchmarkMode) {
                     System.out.println("HOTSPOT WARMUP ...");
                     for (int i = 10000; i != 0; i--) {
-                        ExpressionParser.eval(in, lvrf);
+                        MVEL.eval(in, lvrf);
                     }
                     System.out.println("RUNNING BENCHMARK (10,000 times) ...");
 
                     time = System.currentTimeMillis();
                     for (int i = 10000; i != 0; i--) {
-                        out = ExpressionParser.eval(in, lvrf);
+                        out = MVEL.eval(in, lvrf);
 
                     }
                     time = System.currentTimeMillis() - time;
                 }
                 else {
                     time = System.currentTimeMillis();
-                    out = ExpressionParser.eval(in, lvrf);
+                    out = MVEL.eval(in, lvrf);
                     time = System.currentTimeMillis() - time;
                 }
 

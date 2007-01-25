@@ -4,7 +4,6 @@ import junit.framework.TestCase;
 import org.mvel.CompiledExpression;
 import org.mvel.ExecutableStatement;
 import org.mvel.ExpressionParser;
-import static org.mvel.ExpressionParser.*;
 import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
@@ -204,19 +203,19 @@ public class CompiledUnitTestEx extends TestCase {
     }
 
     public void testBooleanModeOnly() {
-        assertEquals(true, (Object) evalToBoolean("!BWAH", base, map));
+        assertEquals(true, (Object) MVEL.evalToBoolean("!BWAH", base, map));
     }
 
     public void testBooleanModeOnly2() {
-        assertEquals(false, (Object) evalToBoolean("BWAH", base, map));
+        assertEquals(false, (Object) MVEL.evalToBoolean("BWAH", base, map));
     }
 
     public void testBooleanModeOnly3() {
-        assertEquals(true, (Object) evalToBoolean("!zero", base, map));
+        assertEquals(true, (Object) MVEL.evalToBoolean("!zero", base, map));
     }
 
     public void testBooleanModeOnly4() {
-        assertEquals(true, (Object) evalToBoolean("hour == (hour + 0)", base, map));
+        assertEquals(true, (Object) MVEL.evalToBoolean("hour == (hour + 0)", base, map));
     }
 
     public void testTernary() {
@@ -439,8 +438,8 @@ public class CompiledUnitTestEx extends TestCase {
     }
 
     public void testEvalToBoolean() {
-        assertEquals(true, (boolean) ExpressionParser.evalToBoolean("true ", "true"));
-        assertEquals(true, (boolean) ExpressionParser.evalToBoolean("true ", "true"));
+        assertEquals(true, (boolean) MVEL.evalToBoolean("true ", "true"));
+        assertEquals(true, (boolean) MVEL.evalToBoolean("true ", "true"));
     }
 
     //    public void testCompiledListStructures() {
@@ -449,8 +448,8 @@ public class CompiledUnitTestEx extends TestCase {
     //    }
 
     public void testCompiledMapStructures() {
-        Serializable compiled = compileExpression("['foo':'bar'] contains 'foo'");
-        executeExpression(compiled, null, null, Boolean.class);
+        Serializable compiled = MVEL.compileExpression("['foo':'bar'] contains 'foo'");
+        MVEL.executeExpression(compiled, null, null, Boolean.class);
     }
 
     public void testSubListInMap() {
@@ -458,8 +457,8 @@ public class CompiledUnitTestEx extends TestCase {
     }
 
     public void testCompiledMethodCall() {
-        Serializable compiled = compileExpression("c.getClass()");
-        assertEquals(String.class, executeExpression(compiled, base, map));
+        Serializable compiled = MVEL.compileExpression("c.getClass()");
+        assertEquals(String.class, MVEL.executeExpression(compiled, base, map));
     }
 
     public void testStaticNamespaceCall() {
@@ -480,39 +479,40 @@ public class CompiledUnitTestEx extends TestCase {
     }
 
     public Object compiledExecute(String ex) {
-        CompiledExpression compiled = (CompiledExpression) compileExpression(ex);
-
-       VariableResolverFactory factory = new MapVariableResolverFactory(map);
-
-        ExecutableStatement stmt = MVEL.optimize(compiled.getTokenMap(), base, factory);
-        
-        Object first = stmt.getValue(base, factory);
-        Object second = stmt.getValue(base, factory);
-        assertEquals(first, second);
-        return second;
+//        CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(ex);
+//
+////       VariableResolverFactory factory = new MapVariableResolverFactory(map);
+////
+////      //  ExecutableStatement stmt = MVEL.optimize(compiled.getTokenMap(), base, factory);
+////
+////        Object first = stmt.getValue(base, factory);
+////        Object second = stmt.getValue(base, factory);
+//        assertEquals(first, second);
+//        return second;
+        return null;
     }
 
 
     public void testSimplePropertyAccess() {
         final String expr = "c";
-        Serializable compiled = compileExpression(expr);
+        Serializable compiled = MVEL.compileExpression(expr);
 
         for (int i = 0; i < 100000; i++) {
-            executeExpression(compiled, map);
+            MVEL.executeExpression(compiled, map);
         }
     }
 
     public void testMathPerformance() {
         final String expr = "10 + 1 + 3";
-        Serializable compiled = compileExpression(expr);
+        Serializable compiled = MVEL.compileExpression(expr);
 
         for (int i = 0; i < 10000; i++) {
-            executeExpression(compiled, map);
+            MVEL.executeExpression(compiled, map);
         }
     }
 
     public void testDifferentImplSameCompile() {
-        Serializable compiled = compileExpression("a.funMap.hello");
+        Serializable compiled = MVEL.compileExpression("a.funMap.hello");
 
         Map testMap = new HashMap();
 
@@ -522,38 +522,17 @@ public class CompiledUnitTestEx extends TestCase {
             testMap.put("a", b);
 
 
-            assertEquals("dog", executeExpression(compiled, testMap));
+            assertEquals("dog", MVEL.executeExpression(compiled, testMap));
 
             b = new Base();
             b.funMap.put("hello", "cat");
             testMap.put("a", b);
 
-            assertEquals("cat", executeExpression(compiled, testMap));
+            assertEquals("cat", MVEL.executeExpression(compiled, testMap));
         }
     }
 
-    public void testToListBenchmark() {
-        String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
 
-        MapVariableResolverFactory variableTable = new MapVariableResolverFactory(map);
-        variableTable.pack();
-
-        ExpressionParser ep = new ExpressionParser();
-        ep.setCompiledStatement(compileExpression(text));
-        ep.setVariableResolverFactory(variableTable);
-
-        for (int i = 0; i < 100000; i++) {
-            ep.executeFast();
-        }
-    }
-
-    public void testToListBenchmark2() {
-        testToListBenchmark();
-    }
-
-    public void testToListBenchmark3() {
-        testToListBenchmark();
-    }
 
     public void testToList() {
         String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";

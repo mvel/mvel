@@ -1,14 +1,14 @@
 package org.mvel.tests.perftests;
 
 import junit.framework.TestCase;
-import org.mvel.ExpressionParser;
-import static org.mvel.ExpressionParser.compileExpression;
+import org.mvel.MVEL;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.main.CompiledUnitTest;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,13 +38,14 @@ public class CompiledPerformanceTests extends TestCase {
 
         MapVariableResolverFactory variableTable = new MapVariableResolverFactory(map);
         variableTable.pack();
+//
+//        ExpressionParser ep = new ExpressionParser();
+//        ep.setCompiledStatement(MVEL.compileExpression(text));
+//        ep.setVariableResolverFactory(variableTable);
 
-        ExpressionParser ep = new ExpressionParser();
-        ep.setCompiledStatement(compileExpression(text));
-        ep.setVariableResolverFactory(variableTable);
-
+        Serializable compiled = MVEL.compileExpression(text);
         for (int i = 0; i < 100000; i++) {
-            ep.executeFast();
+            MVEL.executeExpression(compiled, variableTable);
         }
     }
 

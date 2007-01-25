@@ -1,8 +1,7 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-import org.mvel.ExpressionParser;
-import static org.mvel.ExpressionParser.*;
+import org.mvel.MVEL;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
@@ -211,19 +210,19 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testBooleanModeOnly() {
-        assertEquals(true, (Object) evalToBoolean("!BWAH", base, map));
+        assertEquals(true, (Object) MVEL.evalToBoolean("!BWAH", base, map));
     }
 
     public void testBooleanModeOnly2() {
-        assertEquals(false, (Object) evalToBoolean("BWAH", base, map));
+        assertEquals(false, (Object) MVEL.evalToBoolean("BWAH", base, map));
     }
 
     public void testBooleanModeOnly3() {
-        assertEquals(true, (Object) evalToBoolean("!zero", base, map));
+        assertEquals(true, (Object) MVEL.evalToBoolean("!zero", base, map));
     }
 
     public void testBooleanModeOnly4() {
-        assertEquals(true, (Object) evalToBoolean("hour == (hour + 0)", base, map));
+        assertEquals(true, (Object) MVEL.evalToBoolean("hour == (hour + 0)", base, map));
     }
 
     public void testTernary() {
@@ -442,13 +441,13 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testEvalToBoolean() {
-        assertEquals(true, (boolean) ExpressionParser.evalToBoolean("true ", "true"));
-        assertEquals(true, (boolean) ExpressionParser.evalToBoolean("true ", "true"));
+        assertEquals(true, (boolean) MVEL.evalToBoolean("true ", "true"));
+        assertEquals(true, (boolean) MVEL.evalToBoolean("true ", "true"));
     }
 
     public void testCompiledMapStructures() {
-        Serializable compiled = compileExpression("['foo':'bar'] contains 'foo'");
-        executeExpression(compiled, null, null, Boolean.class);
+        Serializable compiled = MVEL.compileExpression("['foo':'bar'] contains 'foo'");
+        MVEL.executeExpression(compiled, null, null, Boolean.class);
     }
 
     public void testSubListInMap() {
@@ -456,8 +455,8 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testCompiledMethodCall() {
-        Serializable compiled = compileExpression("c.getClass()");
-        assertEquals(String.class, executeExpression(compiled, base, map));
+        Serializable compiled = MVEL.compileExpression("c.getClass()");
+        assertEquals(String.class, MVEL.executeExpression(compiled, base, map));
     }
 
     public void testStaticNamespaceCall() {
@@ -482,17 +481,17 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public Object compiledExecute(String ex) {
-        Serializable compiled = compileExpression(ex);
-        Object first = executeExpression(compiled, base, map);
-        Object second = executeExpression(compiled, base, map);
+        Serializable compiled = MVEL.compileExpression(ex);
+        Object first = MVEL.executeExpression(compiled, base, map);
+        Object second = MVEL.executeExpression(compiled, base, map);
         assertEquals(first, second);
         return second;
     }
 
     public Object compiledExecute(String ex, Object base, Map map) {
-        Serializable compiled = compileExpression(ex);
-        Object first = executeExpression(compiled, base, map);
-        Object second = executeExpression(compiled, base, map);
+        Serializable compiled = MVEL.compileExpression(ex);
+        Object first = MVEL.executeExpression(compiled, base, map);
+        Object second = MVEL.executeExpression(compiled, base, map);
         assertEquals(first, second);
         return second;
     }
@@ -517,7 +516,7 @@ public class CompiledUnitTest extends TestCase {
 //    }
 
     public void testDifferentImplSameCompile() {
-        Serializable compiled = compileExpression("a.funMap.hello");
+        Serializable compiled = MVEL.compileExpression("a.funMap.hello");
 
         Map testMap = new HashMap();
 
@@ -527,13 +526,13 @@ public class CompiledUnitTest extends TestCase {
             testMap.put("a", b);
 
 
-            assertEquals("dog", executeExpression(compiled, testMap));
+            assertEquals("dog", MVEL.executeExpression(compiled, testMap));
 
             b = new Base();
             b.funMap.put("hello", "cat");
             testMap.put("a", b);
 
-            assertEquals("cat", executeExpression(compiled, testMap));
+            assertEquals("cat", MVEL.executeExpression(compiled, testMap));
         }
     }
 

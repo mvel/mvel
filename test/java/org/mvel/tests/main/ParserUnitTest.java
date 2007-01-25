@@ -1,9 +1,8 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-import org.mvel.ExpressionParser;
-import static org.mvel.ExpressionParser.evalToBoolean;
 import org.mvel.Interpreter;
+import org.mvel.MVEL;
 import org.mvel.util.FastList;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
@@ -11,7 +10,6 @@ import org.mvel.tests.main.res.Foo;
 import org.mvel.tests.main.res.PDFFieldUtil;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -272,23 +270,23 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testBooleanModeOnly() {
-        assertEquals(true, (Object) evalToBoolean("!BWAH", base, map));
+        assertEquals(true, (Object) MVEL.evalToBoolean("!BWAH", base, map));
     }
 
     public void testBooleanModeOnly2() {
-        assertEquals(false, (Object) evalToBoolean("BWAH", base, map));
+        assertEquals(false, (Object) MVEL.evalToBoolean("BWAH", base, map));
     }
 
     public void testBooleanModeOnly3() {
-        assertEquals(true, (Object) evalToBoolean("!zero", base, map));
+        assertEquals(true, (Object) MVEL.evalToBoolean("!zero", base, map));
     }
 
     public void testBooleanModeOnly4() {
-        assertEquals(true, (Object) evalToBoolean("hour == (hour + 0)", base, map));
+        assertEquals(true, (Object) MVEL.evalToBoolean("hour == (hour + 0)", base, map));
     }
 
     public void testBooleanModeOnly5() {
-        assertEquals(false, (Object) evalToBoolean("!foo.bar.isFoo(this.foo)", base, map));
+        assertEquals(false, (Object) MVEL.evalToBoolean("!foo.bar.isFoo(this.foo)", base, map));
     }
 
     public void testBooleanModeOnly6() {
@@ -586,8 +584,8 @@ public class ParserUnitTest extends TestCase {
 
 
     public void testEvalToBoolean() {
-        assertEquals(true, (boolean) ExpressionParser.evalToBoolean("true ", "true"));
-        assertEquals(true, (boolean) ExpressionParser.evalToBoolean("true ", "true"));
+        assertEquals(true, (boolean) MVEL.evalToBoolean("true ", "true"));
+        assertEquals(true, (boolean) MVEL.evalToBoolean("true ", "true"));
     }
 
 //    public void testCompiledListStructures() {
@@ -601,8 +599,8 @@ public class ParserUnitTest extends TestCase {
 //    }
 
     public void testCompiledMethodCall() {
-        Serializable compiled = ExpressionParser.compileExpression("c.getClass()");
-        assertEquals(String.class, ExpressionParser.executeExpression(compiled, base, map));
+        Serializable compiled = MVEL.compileExpression("c.getClass()");
+        assertEquals(String.class, MVEL.executeExpression(compiled, base, map));
     }
 
     public void testStaticNamespaceCall() {
@@ -619,12 +617,12 @@ public class ParserUnitTest extends TestCase {
 
     public Object parseDirect(String ex) {
         //  return compiledExecute(ex);
-        return ExpressionParser.eval(ex, base, map);
+        return MVEL.eval(ex, base, map);
     }
 
     public Object compiledExecute(String ex) {
-        Serializable compiled = ExpressionParser.compileExpression(ex);
-        return ExpressionParser.executeExpression(compiled, base, map);
+        Serializable compiled = MVEL.compileExpression(ex);
+        return MVEL.executeExpression(compiled, base, map);
     }
 
     public void calculateAge() {
@@ -636,7 +634,7 @@ public class ParserUnitTest extends TestCase {
         propertyMap.put("GEBDAT", c1.getTime());
         objectMap.put("EV_VI_ANT1", propertyMap);
         System.out.println(new PDFFieldUtil().calculateAge(c1.getTime()));
-        System.out.println(ExpressionParser.eval("new org.mvel.tests.main.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'X' : ''"
+        System.out.println(MVEL.eval("new org.mvel.tests.main.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'X' : ''"
                 , null, objectMap));
     }
 

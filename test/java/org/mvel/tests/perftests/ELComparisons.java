@@ -1,7 +1,7 @@
 package org.mvel.tests.perftests;
 
 import ognl.Ognl;
-import org.mvel.ExpressionParser;
+import org.mvel.MVEL;
 import org.mvel.tests.main.res.Base;
 
 import java.math.BigDecimal;
@@ -63,7 +63,7 @@ public class ELComparisons {
         mem = Runtime.getRuntime().freeMemory();
         for (int reps = 0; reps < 6; reps++) {
             for (int i = 0; i < count; i++) {
-                ExpressionParser.eval(expression, baseClass);
+                MVEL.eval(expression, baseClass);
                 //   ExpressionParser.executeExpression(ExpressionParser.compileExpression(expression), baseClass);
             }
         }
@@ -99,10 +99,10 @@ public class ELComparisons {
         time = System.currentTimeMillis();
         mem = Runtime.getRuntime().freeMemory();
 
-        compiled = ExpressionParser.compileExpression(expression);
+        compiled = MVEL.compileExpression(expression);
         for (int reps = 0; reps < 6; reps++) {
             for (int i = 0; i < count; i++) {
-                ExpressionParser.executeExpression(compiled, baseClass);
+                MVEL.executeExpression(compiled, baseClass);
             }
         }
         System.out.println("(MVEL Compiled)      : " + new BigDecimal(System.currentTimeMillis() - time).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)

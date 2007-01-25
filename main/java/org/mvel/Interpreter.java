@@ -19,8 +19,6 @@
 
 package org.mvel;
 
-import static org.mvel.ExpressionParser.compileExpression;
-import static org.mvel.ExpressionParser.executeExpression;
 import static org.mvel.NodeType.*;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.StringAppender;
@@ -319,15 +317,15 @@ public class Interpreter {
                         char[] seg = new char[expression.length - 3];
                         arraycopy(expression, 2, seg, 0, seg.length);
 
-                        return ExpressionParser.eval(seg, ctx, tokens);
+                        return MVEL.eval(seg, ctx, tokens);
                     }
                     else {
                         String s = new String(expression, 2, expression.length - 3);
                         if (!EX_PRECOMP_CACHE.containsKey(s)) {
-                            EX_PRECOMP_CACHE.put(s, compileExpression(s));
+                            EX_PRECOMP_CACHE.put(s, MVEL.compileExpression(s));
                         }
 
-                        return executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
+                        return MVEL.executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
 
                     }
                 case LITERAL:
