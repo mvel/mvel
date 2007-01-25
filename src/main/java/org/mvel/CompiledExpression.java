@@ -20,6 +20,7 @@
 package org.mvel;
 
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.ParseTools;
 
 import java.io.Serializable;
 
@@ -94,6 +95,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        return new AcceleratedParser(tokenMap).execute(staticContext, factory);
+        return ParseTools.handleParserEgress(new AcceleratedParser(tokenMap).execute(staticContext, factory), false, false);
     }
 }

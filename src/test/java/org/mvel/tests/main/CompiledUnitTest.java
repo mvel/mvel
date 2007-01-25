@@ -329,7 +329,7 @@ public class CompiledUnitTest extends TestCase {
     public void testListCreation4() {
         List ar = (List) parseDirect("[   66   , \"test\"   ]");
         assertEquals(2, ar.size());
-        assertEquals(new BigDecimal(66), ar.get(0));
+        assertEquals(66, ar.get(0));
         assertEquals("test", ar.get(1));
     }
 
@@ -549,10 +549,10 @@ public class CompiledUnitTest extends TestCase {
         List nestedList = (List) map.get("cat");
         assertEquals(14, nestedList.get(0));
         assertEquals("car", nestedList.get(1));
-        assertEquals(new BigDecimal(42), nestedList.get(2));
+        assertEquals(42, nestedList.get(2));
 
         nestedList = (List) list.get(4);
-        assertEquals(new BigDecimal(42), nestedList.get(0));
+        assertEquals(42, nestedList.get(0));
         map = (Map) nestedList.get(1);
         assertEquals("value1", map.get("cat"));
     }
