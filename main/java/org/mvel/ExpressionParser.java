@@ -19,6 +19,7 @@
 
 package org.mvel;
 
+import static org.mvel.util.ParseTools.handleParserEgress;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.Operator.*;
@@ -32,6 +33,7 @@ import static org.mvel.util.ParseTools.debug;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
+import org.mvel.util.ParseTools;
 
 import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
@@ -159,11 +161,12 @@ public class ExpressionParser extends AbstractParser {
      */
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
-        return ((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars));
+        return handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars)),
+                false, false);
     }
 
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
-        return ((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory);
+        return handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory), false, false);
     }
 
     /**
@@ -362,39 +365,7 @@ public class ExpressionParser extends AbstractParser {
             parseAndExecuteInterpreted();
         }
 
-        Object result = stk.peek();
-
-        if (isBooleanModeOnly()) {
-            if (result instanceof Boolean) return result;
-            else if (result instanceof BigDecimal) {
-                return !BlankLiteral.INSTANCE.equals(((BigDecimal) result).floatValue());
-            }
-            else {
-                if (result instanceof Boolean) {
-                    return ((Token) result).getLiteralValue();
-                }
-                return !BlankLiteral.INSTANCE.equals(result);
-            }
-        }
-
-        if (result instanceof BigDecimal) {
-            if (returnBigDecimal) return result;
-            else if (((BigDecimal) result).scale() > 14) {
-                return ((BigDecimal) result).floatValue();
-            }
-            else if (((BigDecimal) result).scale() > 0) {
-                return ((BigDecimal) result).doubleValue();
-            }
-            else if (((BigDecimal) result).longValue() > Integer.MAX_VALUE) {
-                return ((BigDecimal) result).longValue();
-            }
-            else {
-                return ((BigDecimal) result).intValue();
-            }
-        }
-        else
-            return result;
-
+        return handleParserEgress(stk.peek(), (fields & Token.BOOLEAN_MODE) != 0, returnBigDecimal);
     }
 
     boolean lookAhead = false;

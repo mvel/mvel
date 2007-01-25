@@ -171,7 +171,7 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testAssignment3() {
-        assertEquals(java.lang.Integer.class, parseDirect("(blah = 5)").getClass());
+        assertEquals(java.lang.Integer.class, parseDirect("blah = 5").getClass());
     }
 
     public void testOr() {
@@ -189,7 +189,6 @@ public class CompiledUnitTest extends TestCase {
     public void testLiteralPassThrough3() {
         assertEquals(null, parseDirect("null"));
     }
-
 
     public void testRegEx() {
         assertEquals(true, parseDirect("foo.bar.name ~= '[a-z].+'"));

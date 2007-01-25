@@ -639,7 +639,7 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
 
         if (expr.isLiteral()) {
             assert ParseTools.debug("ASSIGN_LITERAL '" + expr.getName() + "'");
-            Literal lit = new Literal(expr.getName());
+            Literal lit = new Literal(expr.getReducedValueAccelerated(ctx, thisRef, factory));
             val = lit.getValue(ctx, thisRef, factory);
             return new Assignment(var.getName(), lit);
         }
