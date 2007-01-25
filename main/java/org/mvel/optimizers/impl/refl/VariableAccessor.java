@@ -27,21 +27,13 @@ public class VariableAccessor implements AccessorNode {
     private AccessorNode nextNode;
 
     private String property;
- //   private VariableResolverFactory resolverFactory;
+
 
     public VariableAccessor(String property, VariableResolverFactory vrf) {
         this.property = property;
 
-//        while (vrf != null) {
-//            if (vrf.isTarget(property)) {
-//                this.resolverFactory = vrf;
-//                break;
-//            }
-//            vrf = vrf.getNextFactory();
-//        }
-
     }
-
+    
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
         if (vrf == null) 
             throw new PropertyAccessException("cannot property in optimized accessor: " + property);
@@ -70,8 +62,4 @@ public class VariableAccessor implements AccessorNode {
         return this.nextNode = nextNode;
     }
 
-
-    public String toString() {
-        return "Map Accessor -> [" + property + "]";
-    }
 }
