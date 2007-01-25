@@ -24,6 +24,7 @@ import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
+import org.mvel.optimizers.OptimizationNotSupported;
 import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
 import org.mvel.optimizers.impl.refl.Deferral;
 import static org.mvel.util.ArrayTools.findFirst;
@@ -350,6 +351,7 @@ public class Token implements Cloneable, Serializable {
             return valRet(accessor.getValue(ctx, thisValue, factory));
         }
         catch (NullPointerException e) {
+            //todo: FIX JIT, so we don't have to force safe reflective mode.
             AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
             Object retVal = null;
 
@@ -373,7 +375,13 @@ public class Token implements Cloneable, Serializable {
                 accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
             }
             else {
-                accessor = optimizer.optimize(name, ctx, thisValue, factory, true);
+                try {
+                    accessor = (optimizer = OptimizerFactory.getDefaultAccessorCompiler()).optimize(name, ctx, thisValue, factory, true);
+                }
+                catch (OptimizationNotSupported ne) {
+                    accessor = (optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)).optimize(name, ctx, thisValue, factory, true);
+
+                }
             }
 
             if (accessor == null)
