@@ -20,7 +20,7 @@
 
 package org.mvel;
 
-public interface TokenIterator extends Cloneable {
+public interface TokenIterator {
     public void reset();
     public Token nextToken();
     public void skipToken();
@@ -32,8 +32,6 @@ public interface TokenIterator extends Cloneable {
     public Token tokensBack(int offset);
     public boolean hasMoreTokens();
     public String showTokenChain();
-    @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException"})
-    public TokenIterator clone();
     public Token firstToken();
 
     public int size();
