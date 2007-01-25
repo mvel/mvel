@@ -361,7 +361,7 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testProjectionSupport2() {
-        assertEquals(3, parseDirect("(('name') in things).size()"));
+        assertEquals(3, parseDirect("(name in things).size()"));
     }
 
 
@@ -467,10 +467,6 @@ public class CompiledUnitTest extends TestCase {
 
     public void testStaticNamespaceClassWithMethod() {
         assertEquals("FooBar", parseDirect("java.lang.String.valueOf('FooBar')"));
-    }
-
-    public void testStaticNamespaceClassWithMethod2() {
-        assertEquals("FooBar", parseDirect("(java.lang.String).valueOf('FooBar')"));
     }
 
     public void testThisReferenceInMethodCall() {
