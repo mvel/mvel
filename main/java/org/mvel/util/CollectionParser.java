@@ -22,6 +22,8 @@ public class CollectionParser {
     public static final int ARRAY = 1;
     public static final int MAP = 2;
 
+    private static final Object[] EMPTY_ARRAY = new Object[0];
+
 
     public CollectionParser() {
     }
@@ -45,7 +47,10 @@ public class CollectionParser {
 
 
     private Object parseCollection() {
-        if (length == 0) return new ArrayList();
+        if (length == 0) {
+            if (type == LIST) return new ArrayList();
+            else return EMPTY_ARRAY;
+        }
 
         Map<Object, Object> map = null;
         List<Object> list = null;
