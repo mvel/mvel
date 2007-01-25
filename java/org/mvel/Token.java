@@ -623,7 +623,6 @@ public class Token implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     public void setName(char[] name) {
-
         if ((fields & STR_LITERAL) != 0) {
             fields |= LITERAL;
 
@@ -676,7 +675,6 @@ public class Token implements Cloneable, Serializable {
             }
             else {
                 literal = new BigDecimal((String) literal);
-
             }
 
 
