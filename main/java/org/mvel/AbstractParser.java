@@ -80,24 +80,23 @@ public class AbstractParser {
                  */
 
                 switch (expr[start]) {
-                    case 'i': //handle 'in'
+                    case'i': //handle 'in'
                         if (cursor < (length - 2) && expr[start + 1] == 'n' && isWhitespace(expr[start + 2])) {
                             return createToken(expr, start, cursor, fields);
                         }
                         break;
-                    case 'n': //handle 'new'
-                       if (cursor < (length - 3) && expr[start + 1] == 'e' && expr[start + 2] == 'w'
-                               && isWhitespace(expr[start + 3])) {
+                    case'n': //handle 'new'
+                        if (cursor < (length - 3) && expr[start + 1] == 'e' && expr[start + 2] == 'w'
+                                && isWhitespace(expr[start + 3])) {
 
-                           fields |= Token.NEW;
-                           start += 4;
-                           capture = false;
-                           continue;
-                       }
+                            fields |= Token.NEW;
+                            start += 4;
+                            capture = false;
+                            continue;
+                        }
                         break;
 
                 }
-
 
                 /**
                  * If we *were* capturing a token, and we just hit a non-identifier
@@ -162,9 +161,11 @@ public class AbstractParser {
 
                                 assert debug("GREEDY_CAPTURE_CONTINUE_FOR_ASSIGNMENT");
 
+                                captureToEOS();
+
                                 capture = false;
 
-                                continue;
+                                break;
                             }
                         case'i': // handle "in" fold operator
                             if (greedy && cursor < (length - 2) && expr[cursor + 1] == 'n' && isWhitespace(expr[cursor + 2])) {
@@ -247,7 +248,7 @@ public class AbstractParser {
                             throw new CompileException("unbalanced braces in expression: (" + brace + "):" + new String(expr));
 
                         if ((fields & Token.FOLD) != 0) {
-                            if (cursor < length && expr[cursor] == '.')  {
+                            if (cursor < length && expr[cursor] == '.') {
                                 cursor++;
                                 continue;
                             }
@@ -458,6 +459,13 @@ public class AbstractParser {
      */
     private Token createToken(final char[] expr, final int start, final int end, int fields) {
         return new Token(expr, start, end, fields);
+    }
+
+    private void captureToEOS() {
+        while (cursor < length && expr[cursor] != ';') {
+            cursor++;
+        }
+    //    if (cursor < length) cursor--;
     }
 
 
