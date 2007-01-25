@@ -342,8 +342,12 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(2, parseDirect("Array.getLength({'foo', 'bar'})"));
     }
 
-    public void testEmptyArray() {
+    public void testEmptyList() {
         assertTrue(parseDirect("[]") instanceof List);
+    }
+
+    public void testEmptyArray() {
+        assertTrue(((Object[]) parseDirect("{}")).length == 0);
     }
 
     public void testArrayCreation() {
@@ -488,7 +492,11 @@ public class CompiledUnitTest extends TestCase {
         Serializable compiled = MVEL.compileExpression(ex);
         Object first = MVEL.executeExpression(compiled, base, map);
         Object second = MVEL.executeExpression(compiled, base, map);
-        assertEquals(first, second);
+
+
+        if (first != null && !first.getClass().isArray())
+            assertEquals(first, second);
+
         return second;
     }
 
@@ -496,7 +504,9 @@ public class CompiledUnitTest extends TestCase {
         Serializable compiled = MVEL.compileExpression(ex);
         Object first = MVEL.executeExpression(compiled, base, map);
         Object second = MVEL.executeExpression(compiled, base, map);
-        assertEquals(first, second);
+
+        if (first != null && !first.getClass().isArray())
+            assertSame(first, second);
         return second;
     }
 
@@ -580,7 +590,7 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testCalculateAge() {
-    //    System.out.println("Calculating the Age");
+        //    System.out.println("Calculating the Age");
         Calendar c1 = Calendar.getInstance();
         c1.set(1999, 0, 10); // 1999 jan 20
         Map objectMap = new HashMap(1);

@@ -38,13 +38,9 @@ public class CompiledPerformanceTests extends TestCase {
 
         MapVariableResolverFactory variableTable = new MapVariableResolverFactory(map);
         variableTable.pack();
-//
-//        ExpressionParser ep = new ExpressionParser();
-//        ep.setCompiledStatement(MVEL.compileExpression(text));
-//        ep.setVariableResolverFactory(variableTable);
 
         Serializable compiled = MVEL.compileExpression(text);
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 1000000; i++) {
             MVEL.executeExpression(compiled, variableTable);
         }
     }
