@@ -1,22 +1,19 @@
 package org.mvel.util;
 
-import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.ExpressionParser.eval;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
-import org.mvel.optimizers.impl.refl.ConstructorAccessor;
-import org.mvel.optimizers.impl.refl.ReflectiveOptimizer;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
 import java.math.BigDecimal;
+import java.util.*;
 
 public class ParseTools {
     public static String[] parseMethodOrConstructor(char[] parm) {
@@ -52,63 +49,63 @@ public class ParseTools {
 
         for (; i < end; i++) {
             switch (parm[i]) {
-            case '[':
-            case '{':
-                if (adepth++ == 0)
-                    start = i;
-                continue;
+                case'[':
+                case'{':
+                    if (adepth++ == 0)
+                        start = i;
+                    continue;
 
-            case ']':
-            case '}':
-                if (--adepth == 0) {
-                    list.add(new String(parm, start, i - start + 1));
+                case']':
+                case'}':
+                    if (--adepth == 0) {
+                        list.add(new String(parm, start, i - start + 1));
+
+                        while (isWhitespace(parm[i]))
+                            i++;
+
+                        start = i + 1;
+                    }
+                    continue;
+
+                case'\'':
+                    int rStart = i;
+                    while (++i < end && parm[i] != '\'') {
+                        if (parm[i] == '\\')
+                            handleEscapeSequence(parm[++i]);
+                    }
+
+                    if (i == end || parm[i] != '\'') {
+                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
+                    }
+                    continue;
+
+                case'"':
+                    rStart = i;
+                    while (++i < end && parm[i] != '"') {
+                        if (parm[i] == '\\')
+                            handleEscapeSequence(parm[++i]);
+                    }
+
+                    if (i == end || parm[i] != '"') {
+                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
+                    }
+                    continue;
+
+                case',':
+                    if (adepth != 0)
+                        continue;
+
+                    if (i > start) {
+                        while (isWhitespace(parm[start]))
+                            start++;
+
+                        list.add(new String(parm, start, i - start));
+                    }
 
                     while (isWhitespace(parm[i]))
                         i++;
 
                     start = i + 1;
-                }
-                continue;
-
-            case '\'':
-                int rStart = i;
-                while (++i < end && parm[i] != '\'') {
-                    if (parm[i] == '\\')
-                        handleEscapeSequence(parm[++i]);
-                }
-
-                if (i == end || parm[i] != '\'') {
-                    throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
-                }
-                continue;
-
-            case '"':
-                rStart = i;
-                while (++i < end && parm[i] != '"') {
-                    if (parm[i] == '\\')
-                        handleEscapeSequence(parm[++i]);
-                }
-
-                if (i == end || parm[i] != '"') {
-                    throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
-                }
-                continue;
-
-            case ',':
-                if (adepth != 0)
-                    continue;
-
-                if (i > start) {
-                    while (isWhitespace(parm[start]))
-                        start++;
-
-                    list.add(new String(parm, start, i - start));
-                }
-
-                while (isWhitespace(parm[i]))
-                    i++;
-
-                start = i + 1;
             }
         }
 
@@ -116,7 +113,8 @@ public class ParseTools {
             String s = new String(parm, start, i - start).trim();
             if (s.length() > 0)
                 list.add(s);
-        } else if (list.size() == 0) {
+        }
+        else if (list.size() == 0) {
             String s = new String(parm, start, length).trim();
             if (s.length() > 0)
                 list.add(s);
@@ -155,22 +153,28 @@ public class ParseTools {
                 for (int i = 0; i < arguments.length; i++) {
                     if (parmTypes[i] == targetParms[i]) {
                         score += 5;
-                    } else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
+                    }
+                    else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
                         score += 4;
-                    } else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
+                    }
+                    else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
                         score += 4;
-                    } else if ( isNumericallyCoercible( targetParms[i], parmTypes[i] ) ) {
+                    }
+                    else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
                         score += 3;
-                    } else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
+                    }
+                    else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
                         score += 2;
-                    } else if (canConvert(parmTypes[i], targetParms[i])) {
+                    }
+                    else if (canConvert(parmTypes[i], targetParms[i])) {
                         score += 1;
-                    } else {
+                    }
+                    else {
                         score = 0;
                         break;
                     }
                 }
-                
+
                 if (score != 0 && score > bestScore) {
                     bestCandidate = meth;
                     bestScore = score;
@@ -229,17 +233,23 @@ public class ParseTools {
             for (int i = 0; i < arguments.length; i++) {
                 if (parmTypes[i] == targetParms[i]) {
                     score += 5;
-                } else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
+                }
+                else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
                     score += 4;
-                } else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
+                }
+                else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
                     score += 4;
-                } else if ( isNumericallyCoercible( targetParms[i], parmTypes[i] ) ) {
+                }
+                else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
                     score += 3;
-                } else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
+                }
+                else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
                     score += 2;
-                } else if (canConvert(parmTypes[i], targetParms[i])) {
+                }
+                else if (canConvert(parmTypes[i], targetParms[i])) {
                     score += 1;
-                } else {
+                }
+                else {
                     score = 0;
                     break;
                 }
@@ -312,7 +322,8 @@ public class ParseTools {
             }
 
             return cns.newInstance(parms);
-        } else {
+        }
+        else {
             return forName(expression).newInstance();
         }
     }
@@ -324,62 +335,75 @@ public class ParseTools {
 
         for (int i = 0; i < cs.length; i++) {
             switch (cs[i]) {
-            case '(':
-                depth++;
-                continue;
-            case ')':
-                if (1 == depth--) {
-                    return new String[] { new String(cs, 0, ++i), new String(cs, i, cs.length - i) };
-                }
+                case'(':
+                    depth++;
+                    continue;
+                case')':
+                    if (1 == depth--) {
+                        return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i)};
+                    }
             }
         }
-        return new String[] { token };
+        return new String[]{token};
     }
 
     public static String[] captureContructorAndResidual(char[] cs) {
         int depth = 0;
         for (int i = 0; i < cs.length; i++) {
             switch (cs[i]) {
-            case '(':
-                depth++;
-                continue;
-            case ')':
-                if (1 == depth--) {
-                    return new String[] { new String(cs, 0, ++i), new String(cs, i, cs.length - i) };
-                }
+                case'(':
+                    depth++;
+                    continue;
+                case')':
+                    if (1 == depth--) {
+                        return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i)};
+                    }
             }
         }
-        return new String[] { new String(cs) };
+        return new String[]{new String(cs)};
     }
 
     public static Class boxPrimitive(Class cls) {
-        if (cls == int.class || cls == Integer.class ) {
+        if (cls == int.class || cls == Integer.class) {
             return Integer.class;
-        } else if (cls == int[].class || cls == Integer[].class ) {
+        }
+        else if (cls == int[].class || cls == Integer[].class) {
             return Integer[].class;
-        } else if (cls == long.class || cls == Long.class ) {
+        }
+        else if (cls == long.class || cls == Long.class) {
             return Long.class;
-        } else if (cls == long[].class || cls == Long[].class ) {
+        }
+        else if (cls == long[].class || cls == Long[].class) {
             return Long[].class;
-        } else if (cls == short.class || cls == Short.class ) {
+        }
+        else if (cls == short.class || cls == Short.class) {
             return Short.class;
-        } else if (cls == short[].class || cls == Short[].class ) {
+        }
+        else if (cls == short[].class || cls == Short[].class) {
             return Short[].class;
-        } else if (cls == double.class || cls == Double.class ) {
+        }
+        else if (cls == double.class || cls == Double.class) {
             return Double.class;
-        } else if (cls == double[].class || cls == Double[].class ) {
+        }
+        else if (cls == double[].class || cls == Double[].class) {
             return Double[].class;
-        } else if (cls == float.class || cls == Float.class ) {
+        }
+        else if (cls == float.class || cls == Float.class) {
             return Float.class;
-        } else if (cls == float[].class || cls == Float[].class ) {
+        }
+        else if (cls == float[].class || cls == Float[].class) {
             return Float[].class;
-        } else if (cls == boolean.class || cls == Boolean.class ) {
+        }
+        else if (cls == boolean.class || cls == Boolean.class) {
             return Boolean.class;
-        } else if (cls == boolean[].class || cls == Boolean[].class ) {
+        }
+        else if (cls == boolean[].class || cls == Boolean[].class) {
             return Boolean[].class;
-        } else if (cls == byte.class || cls == Byte.class ) {
+        }
+        else if (cls == byte.class || cls == Byte.class) {
             return Byte.class;
-        } else if (cls == byte[].class || cls == Byte[].class ) {
+        }
+        else if (cls == byte[].class || cls == Byte[].class) {
             return Byte[].class;
         }
 
@@ -387,33 +411,46 @@ public class ParseTools {
     }
 
     public static Class unboxPrimitive(Class cls) {
-        if (cls == Integer.class || cls == int.class ) {
+        if (cls == Integer.class || cls == int.class) {
             return int.class;
-        } else if (cls == Integer[].class || cls == int[].class) {
+        }
+        else if (cls == Integer[].class || cls == int[].class) {
             return int[].class;
-        } else if (cls == Long.class || cls == long.class ) {
+        }
+        else if (cls == Long.class || cls == long.class) {
             return long.class;
-        } else if (cls == Long[].class || cls == long[].class ) {
+        }
+        else if (cls == Long[].class || cls == long[].class) {
             return long[].class;
-        } else if (cls == Short.class || cls == short.class ) {
+        }
+        else if (cls == Short.class || cls == short.class) {
             return short.class;
-        } else if (cls == Short[].class || cls == short[].class ) {
+        }
+        else if (cls == Short[].class || cls == short[].class) {
             return short[].class;
-        } else if (cls == Double.class || cls == double.class ) {
+        }
+        else if (cls == Double.class || cls == double.class) {
             return double.class;
-        } else if (cls == Double[].class || cls == double[].class ) {
+        }
+        else if (cls == Double[].class || cls == double[].class) {
             return double[].class;
-        } else if (cls == Float.class || cls == float.class ) {
+        }
+        else if (cls == Float.class || cls == float.class) {
             return float.class;
-        } else if (cls == Float[].class || cls == float[].class ) {
+        }
+        else if (cls == Float[].class || cls == float[].class) {
             return float[].class;
-        } else if (cls == Boolean.class || cls == boolean.class ) {
+        }
+        else if (cls == Boolean.class || cls == boolean.class) {
             return boolean.class;
-        } else if (cls == Boolean[].class || cls == boolean[].class ) {
+        }
+        else if (cls == Boolean[].class || cls == boolean[].class) {
             return boolean[].class;
-        } else if (cls == Byte.class || cls == byte.class ) {
+        }
+        else if (cls == Byte.class || cls == byte.class) {
             return byte.class;
-        } else if (cls == Byte[].class || cls == byte[].class ) {
+        }
+        else if (cls == Byte[].class || cls == byte[].class) {
             return byte[].class;
         }
 
@@ -451,18 +488,18 @@ public class ParseTools {
 
     public static char handleEscapeSequence(char escapedChar) {
         switch (escapedChar) {
-        case '\\':
-            return '\\';
-        case 't':
-            return '\t';
-        case 'r':
-            return '\r';
-        case '\'':
-            return '\'';
-        case '"':
-            return '"';
-        default:
-            throw new ParseException("illegal escape sequence: " + escapedChar);
+            case'\\':
+                return '\\';
+            case't':
+                return '\t';
+            case'r':
+                return '\r';
+            case'\'':
+                return '\'';
+            case'"':
+                return '"';
+            default:
+                throw new ParseException("illegal escape sequence: " + escapedChar);
         }
     }
 
@@ -475,7 +512,8 @@ public class ParseTools {
         }
         if (factory == null) {
             return new LocalVariableResolverFactory(new HashMap<String, Object>());
-        } else {
+        }
+        else {
             return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
         }
     }
@@ -551,20 +589,20 @@ public class ParseTools {
         if (in == null)
             return new BigDecimal(0);
         switch (type) {
-        case DataTypes.BIG_DECIMAL:
-            return (BigDecimal) in;
-        case DataTypes.W_INTEGER:
-            return new BigDecimal((Integer) in);
-        case DataTypes.W_LONG:
-            return new BigDecimal((Long) in);
-        case DataTypes.STRING:
-            return new BigDecimal((String) in);
-        case DataTypes.W_FLOAT:
-            return new BigDecimal((Float) in);
-        case DataTypes.W_DOUBLE:
-            return new BigDecimal((Double) in);
-        case DataTypes.W_SHORT:
-            return new BigDecimal((Short) in);
+            case DataTypes.BIG_DECIMAL:
+                return (BigDecimal) in;
+            case DataTypes.W_INTEGER:
+                return new BigDecimal((Integer) in);
+            case DataTypes.W_LONG:
+                return new BigDecimal((Long) in);
+            case DataTypes.STRING:
+                return new BigDecimal((String) in);
+            case DataTypes.W_FLOAT:
+                return new BigDecimal((Float) in);
+            case DataTypes.W_DOUBLE:
+                return new BigDecimal((Double) in);
+            case DataTypes.W_SHORT:
+                return new BigDecimal((Short) in);
 
         }
 
@@ -574,17 +612,45 @@ public class ParseTools {
     public static Object valueOnly(Object o) {
         return (o instanceof Token) ? ((Token) o).getLiteralValue() : o;
     }
-    
+
     public static boolean isNumericallyCoercible(Class target, Class parm) {
-        Class boxedTarget = target.isPrimitive() ? boxPrimitive( target ) : target;
-        
-        if ( boxedTarget != null && Number.class.isAssignableFrom( target ) ) {
-            Class boxedParm = parm.isPrimitive() ? boxPrimitive( parm ) : parm;
-            
-            if ( boxedParm != null ) {
-                return Number.class.isAssignableFrom( boxedParm );
+        Class boxedTarget = target.isPrimitive() ? boxPrimitive(target) : target;
+
+        if (boxedTarget != null && Number.class.isAssignableFrom(target)) {
+            Class boxedParm = parm.isPrimitive() ? boxPrimitive(parm) : parm;
+
+            if (boxedParm != null) {
+                return Number.class.isAssignableFrom(boxedParm);
             }
         }
         return false;
+    }
+
+    public static Object handleParserEgress(Object result, boolean booleanMode, boolean returnBigDecimal) {
+        if (booleanMode) {
+            if (result instanceof Boolean) return result;
+            else if (result instanceof BigDecimal) {
+                return !BlankLiteral.INSTANCE.equals(((BigDecimal) result).floatValue());
+            }
+        }
+
+        if (result instanceof BigDecimal) {
+            if (returnBigDecimal) return result;
+            else if (((BigDecimal) result).scale() > 14) {
+                return ((BigDecimal) result).floatValue();
+            }
+            else if (((BigDecimal) result).scale() > 0) {
+                return ((BigDecimal) result).doubleValue();
+            }
+            else if (((BigDecimal) result).longValue() > Integer.MAX_VALUE) {
+                return ((BigDecimal) result).longValue();
+            }
+            else {
+                return ((BigDecimal) result).intValue();
+            }
+        }
+        else
+            return result;
+
     }
 }

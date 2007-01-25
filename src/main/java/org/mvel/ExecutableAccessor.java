@@ -18,7 +18,9 @@
  */
 package org.mvel;
 
+import static org.mvel.util.ParseTools.handleParserEgress;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.ParseTools;
 
 import java.math.BigDecimal;
 
@@ -44,40 +46,8 @@ public class ExecutableAccessor implements ExecutableStatement {
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        Object result = accessor.getReducedValueAccelerated(staticContext, staticContext, factory);
-        if (booleanMode) {
-            if (result instanceof Boolean) return result;
-            else if (result instanceof Token) {
-                if (((Token) result).getLiteralValue() instanceof Boolean) {
-                    return ((Token) result).getLiteralValue();
-                }
-                return !BlankLiteral.INSTANCE.equals(((Token) result).getLiteralValue());
-            }
-            else if (result instanceof BigDecimal) {
-                return !BlankLiteral.INSTANCE.equals(((BigDecimal) result).floatValue());
-            }
-            throw new CompileException("unknown exception in expression: encountered unknown stack element: " + result);
-        }
-        else if (result instanceof Token) {
-            result = ((Token) result).getLiteralValue();
-        }
-        if (accessor.isNumeric()) {
-            if (returnBigDecimal) return result;
-            else if (((BigDecimal) result).scale() > 14) {
-                return ((BigDecimal) result).floatValue();
-            }
-            else if (((BigDecimal) result).scale() > 0) {
-                return ((BigDecimal) result).doubleValue();
-            }
-            else if (((BigDecimal) result).longValue() > Integer.MAX_VALUE) {
-                return ((BigDecimal) result).longValue();
-            }
-            else {
-                return ((BigDecimal) result).intValue();
-            }
-        }
-        else
-            return result;
+        return handleParserEgress(accessor.getReducedValueAccelerated(staticContext, staticContext, factory),
+                booleanMode, returnBigDecimal);
     }
 
 
