@@ -551,8 +551,11 @@ public class Token implements Cloneable, Serializable {
         assert debug("REDUCE <<" + new String(name) + ">> ctx=" + ctx + ";literal=" + (fields & LITERAL) + ";assign=" + (fields & ASSIGN));
 
         String s;
-        if ((fields & (LITERAL | OPERATOR)) != 0) {
-            return value;
+        if ((fields & (LITERAL)) != 0) {
+            if ((fields & THISREF) != 0)
+                return thisValue;
+            else
+                return value;
         }
         else if ((fields & ASSIGN) != 0) {
             assert debug("TK_ASSIGN");
@@ -919,10 +922,6 @@ public class Token implements Cloneable, Serializable {
         }
     }
 
-    public void reset() {
-
-    }
-
     public boolean isIdentifier() {
         return (fields & IDENTIFIER) != 0;
     }
@@ -1019,7 +1018,6 @@ public class Token implements Cloneable, Serializable {
     public boolean isCollection() {
         return (fields & COLLECTION) != 0;
     }
-
 
     public boolean isPush() {
         return (fields & PUSH) != 0;

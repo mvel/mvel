@@ -431,9 +431,9 @@ public class ExpressionParser extends AbstractParser {
 
             if ((tk = nextToken()) == null) continue;
 
-            stk.push(compileMode ? "" : tk.getReducedValue(tk.isPush() ? stk.pop() : ctx, ctx, variableFactory), operator);
+            stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
 
-            if (!compileMode) reduceTrinary();
+            reduceTrinary();
         }
     }
 
@@ -445,7 +445,6 @@ public class ExpressionParser extends AbstractParser {
             assert debug("\nSTART_FRAME <<" + tk + ">> STK_SIZE=" + stk.size() + "; STK_PEEK=" + stk.peek() + "; TOKEN#=" + tokens.index());
             if (stk.size() == 0) {
                 stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
-                // tk = tokens.nextToken();
             }
 
             if (!tk.isOperator()) {
@@ -466,10 +465,9 @@ public class ExpressionParser extends AbstractParser {
 
             if (!tokens.hasMoreTokens()) return;
 
-            stk.push(reduce ? (tokens.nextToken()).getReducedValueAccelerated(ctx, ctx, variableFactory) : tk, operator);
+            stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
 
-
-            if (!compileMode) reduceTrinary();
+            reduceTrinary();
         }
         assert debug("NO_MORE_TOKENS");
     }
@@ -478,13 +476,13 @@ public class ExpressionParser extends AbstractParser {
         assert debug("BEGIN_COMPILE length=" + length + ", cursor=" + cursor);
         Token tk;
         TokenMap tokenMap = null;
-        
+
         while ((tk = nextToken()) != null) {
-            assert debug ("COMPILING_TOKEN <<" + tk + ">>::ASSIGNMENT=" + (tk.getFlags() & Token.ASSIGN));
+            assert debug("COMPILING_TOKEN <<" + tk + ">>::ASSIGNMENT=" + (tk.getFlags() & Token.ASSIGN));
             if (tk.isSubeval()) {
-                assert debug ("BEGIN_SUBCOMPILE");
+                assert debug("BEGIN_SUBCOMPILE");
                 tk.setCompiledExpression((ExecutableStatement) compileExpression(tk.getNameAsArray()));
-                assert debug ("FINISH_SUBCOMPILE");
+                assert debug("FINISH_SUBCOMPILE");
             }
 
             if (tokenMap == null) {

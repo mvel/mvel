@@ -236,9 +236,7 @@ public class AbstractParser {
                                     brace--;
                                     break;
                                 case'i':
-                                    System.out.println("I!");
                                     if (cursor < length && expr[cursor] == 'n' && isWhitespace(expr[cursor + 1])) {
-                                        System.out.println("FOLD!");
                                         fields |= Token.FOLD;
                                     }
                                     break;
@@ -398,7 +396,6 @@ public class AbstractParser {
                             continue;
                         }
 
-                        System.out.println("CREATE_TK <<" + expr[cursor] + ">>");
                         return createToken(expr, start, ++cursor, fields | Token.INLINE_COLLECTION);
 
                     default:

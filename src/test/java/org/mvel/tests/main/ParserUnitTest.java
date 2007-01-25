@@ -495,9 +495,6 @@ public class ParserUnitTest extends TestCase {
         assertEquals(String.class.getName(), parse("@{String.valueOf(Class.forName('java.lang.String').getName())}"));
     }
 
-    public void testStaticCalls() {
-        assertEquals(Math.toDegrees(1.5), parseDirect("Math.toDegrees(1.5)"));
-    }
 
     public void testMethodCallsEtc() {
         parseDirect("title = 1; " +
