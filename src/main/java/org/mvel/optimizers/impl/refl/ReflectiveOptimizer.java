@@ -570,8 +570,8 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
     }
 
     public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        CollectionParser parser =  new CollectionParser();
-        Object o = ((List)parser.parseCollection(property)).get(0);
+        CollectionParser parser = new CollectionParser();
+        Object o = ((List) parser.parseCollection(property)).get(0);
 
 
         Accessor root = get(o);
@@ -661,7 +661,16 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
 
 
     public Accessor optimizeFold(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        this.length = (this.expr = property).length;
+        this.cursor = 0;
         greedy = false; // don't be greedy!
+
+        if (expr[cursor] == '(') {
+            balancedCapture('(');
+            length = cursor;
+            cursor = 1;
+        }
+
 
         Token var = nextToken();
 
@@ -669,11 +678,21 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
             throw new CompileException("expected fold operator");
         }
 
-        Token expr = nextToken();
+        greedy = true;
 
 
+        Fold fold = new Fold(var.getNameAsArray(), new ExprValueAccessor(nextToken().getName()));
 
-        return null;
+        if (length < property.length - 1) {
+            cursor += 2;
+            Accessor union = new Union(fold, subset(property, cursor));
+            val = union.getValue(ctx, thisRef, factory);
+            return union;
+        }
+        else {
+            val = fold.getValue(ctx, thisRef, factory);
+            return fold;
+        }
     }
 
     public void setRootNode(AccessorNode rootNode) {

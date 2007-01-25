@@ -82,8 +82,6 @@ public class Token implements Cloneable, Serializable {
 
     private transient Object value;
 
-    private transient Object resetValue;
-    private transient int resetFields;
 
     private BigDecimal numericValue;
     private Class srcType;
@@ -403,6 +401,9 @@ public class Token implements Cloneable, Serializable {
             if ((fields & ASSIGN) != 0) {
                 accessor = optimizer.optimizeAssignment(name, ctx, thisRef, variableFactory);
             }
+            else if ((fields & FOLD) != 0) {
+                accessor = optimizer.optimizeFold(name, ctx, thisRef, variableFactory);
+            }
             else {
                 accessor = optimizer.optimize(name, ctx, thisRef, variableFactory, thisRefPush);
             }
@@ -419,6 +420,9 @@ public class Token implements Cloneable, Serializable {
 
             if ((fields & ASSIGN) != 0) {
                 accessor = optimizer.optimizeAssignment(name, ctx, thisRef, variableFactory);
+            }
+            else if ((fields & FOLD) != 0) {
+                accessor = optimizer.optimizeFold(name, ctx, thisRef, variableFactory);
             }
             else {
                 accessor = optimizer.optimize(name, ctx, thisRef, variableFactory, thisRefPush);
@@ -561,6 +565,16 @@ public class Token implements Cloneable, Serializable {
             }
 
             return accessor.getValue(ctx, thisValue, factory);
+        }
+        else if ((fields & FOLD) != 0) {
+            assert debug("FOLD");
+
+            if (accessor == null) {
+                AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+                accessor = optimizer.optimizeFold(name, ctx, thisValue, factory);
+
+                return optimizer.getResultOptPass();
+            }
         }
 
         if ((fields & Token.DEEP_PROPERTY) != 0) {
@@ -809,8 +823,6 @@ public class Token implements Cloneable, Serializable {
 
         if ((endOfName = findFirst('[', name)) > 0) fields |= COLLECTION;
 
-        resetValue = value;
-        resetFields = fields;
     }
 
     public int getFlags() {
@@ -883,13 +895,7 @@ public class Token implements Cloneable, Serializable {
     }
 
     public void reset() {
-        if (resetValue == null) {
-            setFlag(false, LITERAL);
-            setName(name);
-        }
-        else {
-            value = resetValue;
-        }
+
     }
 
     public boolean isIdentifier() {

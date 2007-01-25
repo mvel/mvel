@@ -76,6 +76,15 @@ public class AbstractParser {
                 assert debug("END_OF_IDENTIFIER");
 
                 /**
+                 * This hack is needed to handle inline collections within a projection.
+                 */
+
+                if (expr[start] == 'i' && expr[start + 1] == 'n' && isWhitespace(expr[start + 2])) {
+                    return createToken(expr, start, cursor, fields);
+                }
+
+
+                /**
                  * If we *were* capturing a token, and we just hit a non-identifier
                  * character, we stop and figure out what to do.
                  */
@@ -142,18 +151,18 @@ public class AbstractParser {
 
                                 continue;
                             }
-                         case 'i': // handle "in" fold operator
-                             if (greedy && cursor < (length - 2) && expr[cursor + 1] == 'n' && isWhitespace(expr[cursor + 2])) {
-                                 cursor += 2;
+                        case'i': // handle "in" fold operator
+                            if (greedy && cursor < (length - 2) && expr[cursor + 1] == 'n' && isWhitespace(expr[cursor + 2])) {
+                                cursor += 2;
 
-                                 fields |= Token.FOLD;
+                                fields |= Token.FOLD;
 
-                                 assert debug("GREEDY_CAPTURE_CONTINUE_FOR_FOLD");
+                                assert debug("GREEDY_CAPTURE_CONTINUE_FOR_FOLD");
 
-                                 capture = false;
+                                capture = false;
 
-                                 continue;
-                             }
+                                continue;
+                            }
 
                     }
 
@@ -170,11 +179,11 @@ public class AbstractParser {
             else
                 switch (expr[cursor]) {
                     case'=': {
-                        if (expr[++cursor] != '=') {
-                            return createToken(expr, start, cursor++, fields |= Token.ASSIGN);
+                        if (expr[cursor + 1] != '=') {
+                            return createToken(expr, start, ++cursor, fields |= Token.ASSIGN);
                         }
                         else {
-                            return createToken(expr, start, ++cursor, fields);
+                            return createToken(expr, start, (cursor += 2), fields);
                         }
                     }
 
@@ -210,24 +219,37 @@ public class AbstractParser {
                                 case')':
                                     brace--;
                                     break;
+                                case'i':
+                                    System.out.println("I!");
+                                    if (cursor < length && expr[cursor] == 'n' && isWhitespace(expr[cursor + 1])) {
+                                        System.out.println("FOLD!");
+                                        fields |= Token.FOLD;
+                                    }
+                                    break;
                             }
                         }
                         if (brace > 0)
                             throw new CompileException("unbalanced braces in expression: (" + brace + "):" + new String(expr));
 
-                        if ((fields & Token.ASSIGN) != 0) {
-                            return createToken(expr, start, cursor , fields | Token.SUBEVAL);
-                        }
-                        else {
-                            tk = createToken(expr, start + 1, cursor - 1, fields |= Token.SUBEVAL);
-                        }
+                        if ((fields & Token.FOLD) != 0) {
+                            if (cursor < length && expr[cursor] == '.')  {
+                                cursor++;
+                                continue;
+                            }
 
-                        if (cursor < length && (expr[cursor] == '.')) {
-                            //             stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
+                            return createToken(expr, start, cursor, Token.FOLD);
+                        }
+                        else if ((fields & Token.ASSIGN) != 0) {
+                            return createToken(expr, start, cursor, fields | Token.SUBEVAL);
+                        }
+                        else if (cursor < length && (expr[cursor] == '.')) {
+
+                            cursor++;
                             continue;
                         }
 
-                        return tk;
+                        return createToken(expr, start + 1, cursor - 1, fields |= Token.SUBEVAL);
+
                     }
 
                     case'>': {
@@ -372,7 +394,7 @@ public class AbstractParser {
     }
 
 
-    private int balancedCapture(char type) {
+    protected int balancedCapture(char type) {
         int depth = 1;
         char term = type;
         switch (type) {
@@ -381,6 +403,9 @@ public class AbstractParser {
                 break;
             case'{':
                 term = '}';
+                break;
+            case'(':
+                term = ')';
                 break;
         }
 
