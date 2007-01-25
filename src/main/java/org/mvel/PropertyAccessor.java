@@ -20,7 +20,6 @@ package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
-import static org.mvel.ExpressionParser.executeExpression;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ArrayTools;
 import static org.mvel.util.ParseTools.getBestCanadidate;
@@ -529,7 +528,7 @@ public class PropertyAccessor {
                 es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
                 for (int i = 0; i < es.length; i++) {
-                    args[i] = executeExpression(es[i], thisReference, resolver);
+                    args[i] = MVEL.executeExpression(es[i], thisReference, resolver);
                 }
 
             }
@@ -539,8 +538,8 @@ public class PropertyAccessor {
                 es = new Serializable[subtokens.length];
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
-                    es[i] = ExpressionParser.compileExpression(subtokens[i]);
-                    args[i] = executeExpression(es[i], thisReference, resolver);
+                    es[i] = MVEL.compileExpression(subtokens[i]);
+                    args[i] = MVEL.executeExpression(es[i], thisReference, resolver);
 
                     if (es[i] instanceof CompiledExpression)
                         ((CompiledExpression) es[i]).setKnownEgressType(args[i] != null ? args[i].getClass() : null);

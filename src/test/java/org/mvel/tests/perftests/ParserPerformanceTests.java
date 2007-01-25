@@ -3,8 +3,8 @@ package org.mvel.tests.perftests;
 import junit.framework.TestCase;
 import ognl.Ognl;
 import ognl.OgnlException;
-import org.mvel.ExpressionParser;
 import org.mvel.Interpreter;
+import org.mvel.MVEL;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
@@ -64,12 +64,12 @@ public class ParserPerformanceTests extends TestCase {
 
 
     public void testPreCompiledB() {
-        Object ex = ExpressionParser.compileExpression("((hour + 10 - 1) == 69) && c == 'cat'");
+        Object ex = MVEL.compileExpression("((hour + 10 - 1) == 69) && c == 'cat'");
         for (int i = 0; i < COUNT; i++) {
-            ExpressionParser.executeExpression(ex, null, map);
+            MVEL.executeExpression(ex, null, map);
         }
 
-        ExpressionParser.executeExpression(ex, null, map);
+        MVEL.executeExpression(ex, null, map);
     }
 
     public void testPreCompiledB2() {
@@ -83,12 +83,12 @@ public class ParserPerformanceTests extends TestCase {
 
 
     public void testPreCompiledC() {
-        Object ex = ExpressionParser.compileExpression("hour");
+        Object ex = MVEL.compileExpression("hour");
         for (int i = 0; i < COUNT; i++) {
-            assert "60".equals(ExpressionParser.executeExpression(ex, null, map));
+            assert "60".equals(MVEL.executeExpression(ex, null, map));
         }
 
-        ExpressionParser.executeExpression(ex, null, map);
+        MVEL.executeExpression(ex, null, map);
     }
 
     public void testSimplePropertyAccessPerfDirect2() {
@@ -135,7 +135,7 @@ public class ParserPerformanceTests extends TestCase {
     }
 
     public Object parseDirect(String ex) {
-        return ExpressionParser.eval(ex, base, map);
+        return MVEL.eval(ex, base, map);
     }
 
 }

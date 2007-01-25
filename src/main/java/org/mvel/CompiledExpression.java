@@ -94,6 +94,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        return new ExpressionParser(factory, staticContext, tokenMap).parse();
+        return new AcceleratedParser(tokenMap).execute(staticContext, factory);
     }
 }

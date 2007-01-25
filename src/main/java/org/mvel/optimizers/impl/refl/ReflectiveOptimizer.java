@@ -19,20 +19,15 @@
 
 package org.mvel.optimizers.impl.refl;
 
-import static org.mvel.util.ParseTools.parseMethodOrConstructor;
-import static org.mvel.util.ParseTools.captureContructorAndResidual;
-import static org.mvel.util.ParseTools.getBestConstructorCanadidate;
 import org.mvel.*;
-import static org.mvel.ExpressionParser.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.impl.refl.collection.ArrayCreator;
+import org.mvel.optimizers.impl.refl.collection.ExprValueAccessor;
 import org.mvel.optimizers.impl.refl.collection.ListCreator;
 import org.mvel.optimizers.impl.refl.collection.MapCreator;
-import org.mvel.optimizers.impl.refl.collection.ExprValueAccessor;
-import static org.mvel.util.ParseTools.parseParameterList;
-import static org.mvel.util.ParseTools.subset;
 import org.mvel.util.*;
+import static org.mvel.util.ParseTools.*;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
@@ -430,7 +425,7 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
                 es = new ExecutableStatement[subtokens.length];
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
-                    args[i] = (es[i] = (ExecutableStatement) compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                    args[i] = (es[i] = (ExecutableStatement) MVEL.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
                 }
                 SUBEXPRESSION_CACHE.put(tk, es);
             }
@@ -736,7 +731,7 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
             ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
 
             for (int i = 0; i < constructorParms.length; i++) {
-                cStmts[i] = (ExecutableStatement) compileExpression(constructorParms[i]);
+                cStmts[i] = (ExecutableStatement) MVEL.compileExpression(constructorParms[i]);
             }
 
             Object[] parms = new Object[constructorParms.length];

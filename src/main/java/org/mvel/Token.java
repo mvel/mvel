@@ -355,7 +355,7 @@ public class Token implements Cloneable, Serializable {
                 retVal = accessor.getValue(ctx, eCtx, factory);
             }
             else if ((fields & SUBEVAL) != 0) {
-                accessor = (ExecutableStatement) ExpressionParser.compileExpression(name);
+                accessor = (ExecutableStatement) MVEL.compileExpression(name);
                 retVal = accessor.getValue(ctx, eCtx, factory);
             }
             else if ((fields & INLINE_COLLECTION) != 0) {
@@ -412,7 +412,7 @@ public class Token implements Cloneable, Serializable {
         else if ((fields & SUBEVAL) != 0) {
             // assert debug("TK_SUBEVAL");
 
-            return valRet(ExpressionParser.eval(name, ctx, factory));
+            return valRet(MVEL.eval(name, ctx, factory));
         }
 
         else if ((fields & INLINE_COLLECTION) != 0) {
