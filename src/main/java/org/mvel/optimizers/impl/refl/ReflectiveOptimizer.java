@@ -26,7 +26,7 @@ import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.impl.refl.collection.ArrayCreator;
 import org.mvel.optimizers.impl.refl.collection.ListCreator;
 import org.mvel.optimizers.impl.refl.collection.MapCreator;
-import org.mvel.optimizers.impl.refl.collection.ValueAccessor;
+import org.mvel.optimizers.impl.refl.collection.ExprValueAccessor;
 import org.mvel.util.CollectionParser;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.parseParameterList;
@@ -619,7 +619,7 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
             return new ArrayCreator(a);
         }
         else {
-            return new ValueAccessor((String) o);
+            return new ExprValueAccessor((String) o);
         }
 
     }
@@ -647,7 +647,7 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
         }
         else {
             assert ParseTools.debug("ASSIGN_EXPR '" + expr.getName() + "'");
-            ValueAccessor valAcc = new ValueAccessor(expr.getName());
+            ExprValueAccessor valAcc = new ExprValueAccessor(expr.getName());
             val = valAcc.getValue(ctx, thisRef, factory);
             return new Assignment(var.getName(), valAcc);
         }
@@ -661,6 +661,18 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
 
 
     public Accessor optimizeFold(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        greedy = false; // don't be greedy!
+
+        Token var = nextToken();
+
+        if (!nextToken().isOperator(Operator.PROJECTION)) {
+            throw new CompileException("expected fold operator");
+        }
+
+        Token expr = nextToken();
+
+
+
         return null;
     }
 

@@ -8,11 +8,11 @@ import org.mvel.integration.VariableResolverFactory;
 /**
  * @author Christopher Brock
  */
-public class ValueAccessor implements Accessor {
+public class ExprValueAccessor implements Accessor {
 
     public ExecutableStatement stmt;
 
-    public ValueAccessor(String ex) {
+    public ExprValueAccessor(String ex) {
          stmt = (ExecutableStatement) ExpressionParser.compileExpression(ex);
     }
 
