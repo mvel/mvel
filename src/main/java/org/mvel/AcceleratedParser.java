@@ -144,7 +144,11 @@ public class AcceleratedParser extends AbstractParser {
                 }
 
             case TERNARY:
-                //todo: implement this;
+                if (!(Boolean) stk.pop()) {
+                    skipToOperator(Operator.TERNARY_ELSE);
+                }
+                stk.clear();
+                return 1;
 
 
             case TERNARY_ELSE:
@@ -429,5 +433,8 @@ public class AcceleratedParser extends AbstractParser {
         return !tokens.hasMoreTokens();
     }
 
+    private void skipToOperator(int operator) {
+        while (tokens.hasMoreTokens() && !tokens.nextToken().isOperator(operator)) ;
+    }
 
 }
