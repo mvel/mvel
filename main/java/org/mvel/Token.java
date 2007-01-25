@@ -413,6 +413,7 @@ public class Token implements Cloneable, Serializable {
 
             if ((fields & ASSIGN) != 0) {
                 accessor = optimizer.optimizeAssignment(name, ctx, eCtx, factory);
+                retVal = accessor.getValue(ctx, eCtx, factory);
             }
             else if ((fields & SUBEVAL) != 0) {
                 accessor = (ExecutableStatement) ExpressionParser.compileExpression(name);
