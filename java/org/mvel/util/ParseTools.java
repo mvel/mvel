@@ -16,6 +16,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.math.BigDecimal;
 
 public class ParseTools {
     public static String[] parseMethodOrConstructor(char[] parm) {
@@ -510,6 +511,55 @@ public class ParseTools {
         char[] newArray = new char[array.length - start];
         System.arraycopy(array, start, newArray, 0, newArray.length);
         return newArray;
+    }
+
+    public static final int resolveType(Class cls) {
+        if (cls == null) return 0;
+        if (int.class == cls) return DataTypes.INTEGER;
+        if (short.class == cls) return DataTypes.SHORT;
+        if (float.class == cls) return DataTypes.FLOAT;
+        if (double.class == cls) return DataTypes.DOUBLE;
+        if (long.class == cls) return DataTypes.LONG;
+        if (boolean.class == cls) return DataTypes.BOOLEAN;
+        if (byte.class == cls) return DataTypes.BYTE;
+        if (char.class == cls) return DataTypes.CHAR;
+        if (String.class == cls) return DataTypes.STRING;
+
+        if (Integer.class == cls) return DataTypes.W_INTEGER;
+        if (Short.class == cls) return DataTypes.W_SHORT;
+        if (Float.class == cls) return DataTypes.W_FLOAT;
+        if (Double.class == cls) return DataTypes.W_DOUBLE;
+        if (Long.class == cls) return DataTypes.W_LONG;
+        if (Boolean.class == cls) return DataTypes.W_BOOLEAN;
+        if (Byte.class == cls) return DataTypes.W_BYTE;
+        if (Character.class == cls) return DataTypes.W_CHAR;
+
+        if (BigDecimal.class == cls) return DataTypes.BIG_DECIMAL;
+
+        return DataTypes.OBJECT;
+    }
+
+    public static BigDecimal getBigDecimalFromType(Object in, int type) {
+        if (in == null) return new BigDecimal(0);
+        switch (type) {
+            case DataTypes.BIG_DECIMAL:
+                return (BigDecimal) in;
+            case DataTypes.W_INTEGER:
+                return new BigDecimal((Integer) in);
+            case DataTypes.W_LONG:
+                return new BigDecimal((Long) in);
+            case DataTypes.STRING:
+                return new BigDecimal((String) in);
+            case DataTypes.W_FLOAT:
+                return new BigDecimal((Float) in);
+            case DataTypes.W_DOUBLE:
+                return new BigDecimal((Double) in);
+            case DataTypes.W_SHORT:
+                return new BigDecimal((Short) in);
+
+        }
+
+        throw new ConversionException("cannot convert <" + in + "> to a numeric type");
     }
 
     public static Object valueOnly(Object o) {
