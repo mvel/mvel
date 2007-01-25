@@ -111,7 +111,7 @@ public class ExpressionParser extends AbstractParser {
 
         TokenIterator tokens = (TokenIterator) parser.parse();
 
-        if (parser.tokens.size() == 1 && tokens.firstToken().isIdentifier()) {
+        if (tokens.size() == 1) {
             return new ExecutableAccessor(tokens.firstToken(), parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
         }
 
@@ -135,7 +135,7 @@ public class ExpressionParser extends AbstractParser {
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
-        if (tokens.size() == 1 && tokens.firstToken().isIdentifier()) {
+        if (tokens.size() == 1) {
             return new ExecutableAccessor(tokens.firstToken(), parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
         }
 
