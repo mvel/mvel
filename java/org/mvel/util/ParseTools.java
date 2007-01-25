@@ -3,7 +3,6 @@ package org.mvel.util;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
-import static org.mvel.ExpressionParser.eval;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 
@@ -308,7 +307,7 @@ public class ParseTools {
 
             Object[] parms = new Object[constructorParms.length];
             for (int i = 0; i < constructorParms.length; i++) {
-                parms[i] = (eval(constructorParms[i], ctx, vrf));
+                parms[i] = (MVEL.eval(constructorParms[i], ctx, vrf));
             }
 
             Constructor cns = getBestConstructorCanadidate(parms, cls);

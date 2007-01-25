@@ -19,23 +19,18 @@
 
 package org.mvel;
 
-import static org.mvel.util.ParseTools.handleParserEgress;
 import static org.mvel.DataConversion.canConvert;
-import static org.mvel.DataConversion.convert;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.optimizers.impl.refl.GetterAccessor;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
-import static org.mvel.util.ParseTools.debug;
+import static org.mvel.util.ParseTools.handleParserEgress;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
-import org.mvel.util.ParseTools;
 
-import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
@@ -51,13 +46,10 @@ public class ExpressionParser extends AbstractParser {
     private int roundingMode = BigDecimal.ROUND_HALF_DOWN;
 
     private boolean compileMode = false;
-    private boolean fastExecuteMode = false;
 
     private Object ctx;
-    private TokenIterator tokens;
     private VariableResolverFactory variableFactory;
     private final Stack stk = new ExecutionStack();
-    private ExecutableStatement compiledExpression;
 
     private static Map<String, char[]> EX_PRECACHE;
 
@@ -74,296 +66,13 @@ public class ExpressionParser extends AbstractParser {
         }
     }
 
-    public static Object eval(String expression, Object ctx) {
-        return new ExpressionParser(expression, ctx).parse();
-    }
-
-    public static Object eval(String expression, VariableResolverFactory resolverFactory) {
-        return new ExpressionParser(expression, resolverFactory).parse();
-    }
-
-    public static Object eval(char[] expression, Object ctx, VariableResolverFactory resolverFactory) {
-        return new ExpressionParser(expression, ctx, resolverFactory).parse();
-    }
-
-    public static Object eval(String expression, Object ctx, VariableResolverFactory resolverFactory) {
-        return new ExpressionParser(expression, ctx, resolverFactory).parse();
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static Object eval(String expression, Map tokens) {
-        return new ExpressionParser(expression, null, tokens).parse();
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static Object eval(String expression, Object ctx, Map tokens) {
-        return new ExpressionParser(expression, ctx, tokens).parse();
-    }
-
-    /**
-     * Compiles an expression and returns a Serializable object containing the compiled
-     * expression.
-     *
-     * @param expression - the expression to be compiled
-     * @return -
-     */
-    public static Serializable compileExpression(String expression) {
-        ExpressionParser parser = new ExpressionParser(expression)
-                .setCompileMode(true);
-
-        TokenIterator tokens = (TokenIterator) parser.parse();
-
-        if (tokens.size() == 1 && tokens.firstToken().isIdentifier()) {
-            return new ExecutableAccessor(tokens.firstToken(), parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
-        }
-
-
-        return new CompiledExpression(parser.getExpressionArray(), tokens);
-    }
-
-    /**
-     * Compiles an expression and returns a Serializable object containing the compiled
-     * expression.
-     *
-     * @param expression - the expression to be compiled
-     * @return -
-     */
-    public static Serializable compileExpression(char[] expression) {
-        ExpressionParser parser = new ExpressionParser(expression)
-                .setCompileMode(true);
-
-        TokenIterator tokens = (TokenIterator) parser.parse();
-
-        /**
-         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
-         */
-        if (tokens.size() == 1 && tokens.firstToken().isIdentifier()) {
-            return new ExecutableAccessor(tokens.firstToken(), parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
-        }
-
-
-        return new CompiledExpression(parser.getExpressionArray(), tokens);
-    }
-
-    public static Object executeExpression(Object compiledExpression) {
-        return ((ExecutableStatement) compiledExpression).getValue(null, null);
-        //   return new ExpressionParser(compiledExpression).parse();
-    }
-
-    /**
-     * Executes a compiled expression.
-     *
-     * @param compiledExpression -
-     * @param ctx                -
-     * @param vars               -
-     * @return -
-     * @see #compileExpression(String)
-     */
-    @SuppressWarnings({"unchecked"})
-    public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
-        return handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars)),
-                false, false);
-    }
-
-    public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
-        return handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory), false, false);
-    }
-
-    /**
-     * Executes a compiled expression.
-     *
-     * @param compiledExpression -
-     * @param factory            -
-     * @return -
-     * @see #compileExpression(String)
-     */
-    public static Object executeExpression(final Object compiledExpression, final VariableResolverFactory factory) {
-        return ((ExecutableStatement) compiledExpression).getValue(null, factory);
-    }
-
-    /**
-     * Executes a compiled expression.
-     *
-     * @param compiledExpression -
-     * @param ctx                -
-     * @return -
-     * @see #compileExpression(String)
-     */
-    public static Object executeExpression(final Object compiledExpression, final Object ctx) {
-        return ((ExecutableStatement) compiledExpression).getValue(ctx, null);
-    }
-
-
-    /**
-     * Executes a compiled expression.
-     *
-     * @param compiledExpression -
-     * @param vars               -
-     * @return -
-     * @see #compileExpression(String)
-     */
-    @SuppressWarnings({"unchecked"})
-    public static Object executeExpression(final Object compiledExpression, final Map vars) {
-        return ((ExecutableStatement) compiledExpression).getValue(null, new MapVariableResolverFactory(vars));
-    }
-
-
-    /**
-     * Execute a compiled expression and convert the result to a type
-     *
-     * @param compiledExpression -
-     * @param ctx                -
-     * @param vars               -
-     * @param toType             -
-     * @return -
-     */
-    @SuppressWarnings({"unchecked"})
-    public static <T> T executeExpression(final Object compiledExpression, final Object ctx, final Map vars, Class<T> toType) {
-        return convert(executeExpression(compiledExpression, ctx, vars), toType);
-    }
-
-    /**
-     * Execute a compiled expression and convert the result to a type
-     *
-     * @param compiledExpression -
-     * @param vars               -
-     * @param toType             -
-     * @return -
-     */
-    @SuppressWarnings({"unchecked"})
-    public static <T> T executeExpression(final Object compiledExpression, Map vars, Class<T> toType) {
-        return convert(executeExpression(compiledExpression, vars), toType);
-    }
-
-
-    /**
-     * Execute a compiled expression and convert the result to a type.
-     *
-     * @param compiledExpression -
-     * @param ctx                -
-     * @param toType             -
-     * @return -
-     */
-    public static <T> T executeExpression(final Object compiledExpression, final Object ctx, Class<T> toType) {
-        return convert(executeExpression(compiledExpression, ctx), toType);
-    }
-
-
-    public static Object[] executeAllExpression(Serializable[] compiledExpressions, Object ctx, VariableResolverFactory vars) {
-        if (compiledExpressions == null) return GetterAccessor.EMPTY;
-
-        Object[] o = new Object[compiledExpressions.length];
-        for (int i = 0; i < compiledExpressions.length; i++) {
-            o[i] = executeExpression(compiledExpressions[i], ctx, vars);
-        }
-        return o;
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static <T> T eval(char[] expression, Object ctx, Map vars, Class<T> toType) {
-        return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static <T> T eval(char[] expression, Map vars, Class<T> toType) {
-        return convert(new ExpressionParser(expression, null, vars).parse(), toType);
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static Object eval(char[] expression, Object ctx, Map vars) {
-        return new ExpressionParser(expression, ctx, vars).parse();
-    }
-
-    public static String evalToString(String expression, Object ctx) {
-        return valueOf(eval(expression, ctx));
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static String evalToString(String expression, Map vars) {
-        return valueOf(eval(expression, vars));
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static String evalToString(String expression, Object ctx, Map vars) {
-        return valueOf(eval(expression, ctx, vars));
-    }
-
-    /**
-     * Evaluate an expression in Boolean-only mode.
-     *
-     * @param expression -
-     * @param ctx        -
-     * @param vars       -
-     * @return -
-     */
-    @SuppressWarnings({"unchecked"})
-    public static Boolean evalToBoolean(String expression, Object ctx, Map vars) {
-        return (Boolean) new ExpressionParser(expression, ctx, vars, true).parse();
-    }
-
-
-    /**
-     * Evaluate an expression in Boolean-only mode.
-     *
-     * @param expression -
-     * @param ctx        -
-     * @return -
-     */
-    public static Boolean evalToBoolean(String expression, Object ctx) {
-        return (Boolean) new ExpressionParser(expression, ctx, true).parse();
-    }
-
-    /**
-     * Evaluate an expression in Boolean-only mode.
-     *
-     * @param expression -
-     * @param ctx        -
-     * @param factory    -
-     * @return -
-     */
-    public static Boolean evalToBoolean(String expression, Object ctx, VariableResolverFactory factory) {
-        return (Boolean) new ExpressionParser(expression, ctx, factory, true).parse();
-    }
-
-    /**
-     * Evaluate an expression in Boolean-only mode.
-     *
-     * @param expression -
-     * @param factory    -
-     * @return -
-     */
-    public static Boolean evalToBoolean(String expression, VariableResolverFactory factory) {
-        return (Boolean) new ExpressionParser(expression, null, factory, true).parse();
-    }
-
-
-    /**
-     * Evaluate an expression in Boolean-only mode.
-     *
-     * @param expression -
-     * @param vars       -
-     * @return -
-     */
-    public static Boolean evalToBoolean(String expression, Map vars) {
-        return evalToBoolean(expression, null, vars);
-    }
 
     Object parse() {
         stk.clear();
-
         fields = (Token.BOOLEAN_MODE & fields);
-
         cursor = 0;
 
-        if (fastExecuteMode) {
-            parseAndExecuteAccelerated();
-        }
-        else if (compileMode) {
-            return parseCompile();
-        }
-        else {
-            parseAndExecuteInterpreted();
-        }
+        parseAndExecuteInterpreted();
 
         return handleParserEgress(stk.peek(), (fields & Token.BOOLEAN_MODE) != 0, returnBigDecimal);
     }
@@ -402,53 +111,14 @@ public class ExpressionParser extends AbstractParser {
         }
     }
 
-    private void parseAndExecuteAccelerated() {
-        Token tk;
-        Integer operator;
 
-        while ((tk = tokens.nextToken()) != null) {
-            //     assert debug("\nSTART_FRAME <<" + tk + ">> STK_SIZE=" + stk.size() + "; STK_PEEK=" + stk.peek() + "; TOKEN#=" + tokens.index());
-            if (stk.size() == 0) {
-                stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
-            }
-
-            if (!tk.isOperator()) {
-                continue;
-            }
-
-            switch (reduceBinary(operator = tk.getOperator())) {
-                case-1:
-                    // assert debug("FRAME_KILL_PROC");
-                    return;
-                case 0:
-                    // assert debug("FRAME_CONTINUE");
-                    break;
-                case 1:
-                    // assert debug("FRAME_NEXT");
-                    continue;
-            }
-
-            if (!tokens.hasMoreTokens()) return;
-
-            stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
-
-            reduceTrinary();
-        }
-        // assert debug("NO_MORE_TOKENS");
-    }
-
-    private TokenIterator parseCompile() {
-        // assert debug("BEGIN_COMPILE length=" + length + ", cursor=" + cursor);
+    public TokenIterator compileTokens() {
         Token tk;
         TokenMap tokenMap = null;
 
         while ((tk = nextToken()) != null) {
-            // assert debug("COMPILING_TOKEN <<" + tk + ">>::ASSIGNMENT=" + (tk.getFlags() & Token.ASSIGN));
             if (tk.isSubeval()) {
-                // assert debug("BEGIN_SUBCOMPILE");
-                tk.setAccessor((ExecutableStatement) compileExpression(tk.getNameAsArray()));
-                //   tk.setAccessor(new ExecutableAccessor());
-                // assert debug("FINISH_SUBCOMPILE");
+                tk.setAccessor((ExecutableStatement) MVEL.compileExpression(tk.getNameAsArray()));
             }
 
             if (tokenMap == null) {
@@ -556,9 +226,7 @@ public class ExpressionParser extends AbstractParser {
     }
 
     private boolean hasNoMore() {
-        if (fastExecuteMode) return !tokens.hasMoreTokens();
-        else return cursor >=
-                length;
+        return cursor >= length;
     }
 
     /**
@@ -819,8 +487,6 @@ public class ExpressionParser extends AbstractParser {
      * @return -
      */
     private boolean unwindStatement() {
-        if (fastExecuteMode) return unwindStatementAccelerated();
-
         Token tk;
         while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT)) {
             //nothing
@@ -828,11 +494,6 @@ public class ExpressionParser extends AbstractParser {
         return tk == null;
     }
 
-    private boolean unwindStatementAccelerated() {
-        //noinspection StatementWithEmptyBody
-        while (tokens.hasMoreTokens() && !tokens.nextToken().isOperator(Operator.END_OF_STMT)) ;
-        return !tokens.hasMoreTokens();
-    }
 
     public void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
@@ -906,11 +567,6 @@ public class ExpressionParser extends AbstractParser {
             fields |= Token.BOOLEAN_MODE;
         else
             setFieldFalse(Token.BOOLEAN_MODE);
-    }
-
-    private ExpressionParser setCompileMode(boolean compileMode) {
-        if (this.compileMode = compileMode) tokens = new TokenMap(null);
-        return this;
     }
 
 
@@ -987,39 +643,15 @@ public class ExpressionParser extends AbstractParser {
         this.variableFactory = resolverFactory;
     }
 
-    ExpressionParser(VariableResolverFactory resolverFactory, Object ctx, TokenIterator tokens) {
-        this.ctx = ctx;
-        this.variableFactory = resolverFactory;
-        this.tokens = new FastTokenIterator(tokens);
-        this.fastExecuteMode = true;
-    }
 
     ExpressionParser(String expression, Object ctx) {
         setExpression(expression);
         this.ctx = ctx;
     }
 
-    public void setCompiledStatement(Serializable compiled) {
-        fastExecuteMode = true;
-        this.compiledExpression = (ExecutableStatement) compiled;
-    }
-
-    public void setTokens(TokenIterator tokenIterator) {
-        fastExecuteMode = true;
-        this.tokens = new FastTokenIterator(tokenIterator);
-    }
 
     public void setVariableResolverFactory(VariableResolverFactory factory) {
         this.variableFactory = factory;
-    }
-
-    public Object executeFast() {
-        return compiledExpression.getValue(ctx, variableFactory);
-    }
-
-    public ExpressionParser resetParser() {
-        tokens.reset();
-        return this;
     }
 }
 
