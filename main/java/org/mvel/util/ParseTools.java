@@ -1,5 +1,6 @@
 package org.mvel.util;
 
+import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
@@ -241,7 +242,7 @@ public class ParseTools {
     private static Map<String, Class> CLASS_RESOLVER_CACHE = new WeakHashMap<String, Class>(10);
     private static Map<Class, Constructor[]> CLASS_CONSTRUCTOR_CACHE = new WeakHashMap<Class, Constructor[]>(10);
 
-    private static Class createClass(String className) throws ClassNotFoundException {
+    public static Class createClass(String className) throws ClassNotFoundException {
         if (CLASS_RESOLVER_CACHE.containsKey(className))
             return CLASS_RESOLVER_CACHE.get(className);
         else {
@@ -251,7 +252,7 @@ public class ParseTools {
         }
     }
 
-    private static Constructor[] getConstructors(Class cls) {
+    public static Constructor[] getConstructors(Class cls) {
         if (CLASS_CONSTRUCTOR_CACHE.containsKey(cls))
             return CLASS_CONSTRUCTOR_CACHE.get(cls);
         else {
@@ -293,71 +294,7 @@ public class ParseTools {
         }
     }
 
-    public static AccessorNode compileConstructor(String expression, Object ctx, VariableResolverFactory vars) throws
-            InstantiationException, IllegalAccessException, InvocationTargetException,
-            ClassNotFoundException, NoSuchMethodException {
-
-
-        String[] cnsRes = captureContructorAndResidual(expression);
-
-        String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
-
-        if (constructorParms != null) {
-            Class cls = Token.LITERALS.containsKey(expression = expression.substring(0, expression.indexOf('('))) ?
-                    ((Class) Token.LITERALS.get(expression)) : createClass(expression);
-
-            ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
-
-            for (int i = 0; i < constructorParms.length; i++) {
-                cStmts[i] = (ExecutableStatement) ExpressionParser.compileExpression(constructorParms[i]);
-            }
-
-            Object[] parms = new Object[constructorParms.length];
-            for (int i = 0; i < constructorParms.length; i++) {
-                parms[i] = cStmts[i].getValue(ctx, vars);
-            }
-
-            Constructor cns = getBestConstructorCanadidate(parms, cls);
-
-            if (cns == null)
-                throw new CompileException("unable to find constructor for: " + cls.getName());
-
-            for (int i = 0; i < parms.length; i++) {
-                //noinspection unchecked
-                parms[i] = convert(parms[i], cns.getParameterTypes()[i]);
-            }
-
-            AccessorNode ca = new ConstructorAccessor(cns, cStmts);
-
-            if (cnsRes.length > 1) {
-                ReflectiveOptimizer compiledOptimizer
-                        = new ReflectiveOptimizer(cnsRes[1].toCharArray(), cns.newInstance(parms), ctx, vars);
-                compiledOptimizer.setRootNode(ca);
-                compiledOptimizer.compileGetChain();
-                ca = compiledOptimizer.getRootNode();
-            }
-
-            return ca;
-        }
-        else {
-            Constructor cns = Class.forName(expression).getConstructor();
-            AccessorNode ca = new ConstructorAccessor(cns, null);
-
-            if (cnsRes.length > 1) {
-                ReflectiveOptimizer compiledOptimizer
-                        = new ReflectiveOptimizer(cnsRes[1].toCharArray(), cns.newInstance(), ctx, vars);
-                compiledOptimizer.setRootNode(ca);
-                compiledOptimizer.compileGetChain();
-                ca = compiledOptimizer.getRootNode();
-            }
-
-            return ca;
-        }
-    }
-
-    public static String[] captureContructorAndResidual
-            (String
-                    token) {
+    public static String[] captureContructorAndResidual(String token) {
         char[] cs = token.toCharArray();
 
         int depth = 0;
@@ -374,6 +311,22 @@ public class ParseTools {
             }
         }
         return new String[]{token};
+    }
+
+    public static String[] captureContructorAndResidual(char[] cs) {
+        int depth = 0;
+        for (int i = 0; i < cs.length; i++) {
+            switch (cs[i]) {
+                case'(':
+                    depth++;
+                    continue;
+                case')':
+                    if (1 == depth--) {
+                        return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i)};
+                    }
+            }
+        }
+        return new String[]{new String(cs)};
     }
 
 
