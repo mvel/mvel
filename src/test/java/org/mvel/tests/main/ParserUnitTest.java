@@ -506,11 +506,11 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testObjectInstantiation() {
-        parse("@{new java.lang.String('foobie')}");
+        assertEquals("foobie", parse("@{new java.lang.String('foobie')}"));
     }
 
     public void testObjectInstantiationWithMethodCall() {
-        parse("@{new String('foobie').toString()}");
+       assertEquals("foobie", parse("@{new String('foobie').toString()}"));
     }
 
     public void testObjectInstantiation2() {

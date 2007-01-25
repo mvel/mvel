@@ -60,6 +60,7 @@ public class Token implements Cloneable, Serializable {
     public static final int ASSIGN = 1 << 12;
     public static final int LOOKAHEAD = 1 << 13;
     public static final int COLLECTION = 1 << 14;
+    public static final int NEW = 1 << 15;
     public static final int DO_NOT_REDUCE = 1 << 16;
     public static final int CAPTURE_ONLY = 1 << 17;
     public static final int THISREF = 1 << 19;
@@ -576,6 +577,18 @@ public class Token implements Cloneable, Serializable {
                 return optimizer.getResultOptPass();
             }
         }
+        else if ((fields & NEW) != 0) {
+            assert debug("NEW");
+
+            if (accessor == null) {
+                AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+                accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
+
+                return optimizer.getResultOptPass();
+            }
+
+        }
+
 
         if ((fields & Token.DEEP_PROPERTY) != 0) {
             /**
@@ -802,7 +815,6 @@ public class Token implements Cloneable, Serializable {
         else if (OPERATORS.containsKey(value)) {
             fields |= OPERATOR;
             value = OPERATORS.get(value);
-
             return;
         }
         else if (((fields & NUMERIC) != 0) || isNumber(name)) {
