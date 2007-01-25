@@ -27,20 +27,14 @@ import org.mvel.optimizers.impl.refl.collection.ArrayCreator;
 import org.mvel.optimizers.impl.refl.collection.ListCreator;
 import org.mvel.optimizers.impl.refl.collection.MapCreator;
 import org.mvel.optimizers.impl.refl.collection.ExprValueAccessor;
-import org.mvel.util.CollectionParser;
-import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.ParseTools.subset;
-import org.mvel.util.PropertyTools;
-import org.mvel.util.StringAppender;
+import org.mvel.util.*;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.Integer.parseInt;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.*;
 
 public class ReflectiveOptimizer extends AbstractParser implements AccessorOptimizer {
@@ -656,7 +650,16 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
     }
 
     public Accessor optimizeObjectCreation(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        return null;
+        this.length = (this.expr = property).length;
+        this.cursor = 0;
+        try {
+            Accessor contructor = compileConstructor(property, ctx, factory);
+            val = contructor.getValue(property, thisRef, factory);
+            return contructor;
+        }
+        catch (Exception e) {
+            throw new CompileException("could not create constructor", e);
+        }
     }
 
 
@@ -706,5 +709,69 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
 
     public Object getResultOptPass() {
         return val;
+    }
+
+    public static AccessorNode compileConstructor(char[] expression, Object ctx, VariableResolverFactory vars) throws
+            InstantiationException, IllegalAccessException, InvocationTargetException,
+            ClassNotFoundException, NoSuchMethodException {
+
+
+        String[] cnsRes = ParseTools.captureContructorAndResidual(expression);
+
+        String[] constructorParms = ParseTools.parseMethodOrConstructor(cnsRes[0].toCharArray());
+
+        if (constructorParms != null) {
+            String s;
+
+            Class cls = Token.LITERALS.containsKey(s = new String(subset(expression, 0, ArrayTools.findFirst('(', expression)))) ?
+                    ((Class) Token.LITERALS.get(s)) : ParseTools.createClass(s);
+
+            ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
+
+            for (int i = 0; i < constructorParms.length; i++) {
+                cStmts[i] = (ExecutableStatement) compileExpression(constructorParms[i]);
+            }
+
+            Object[] parms = new Object[constructorParms.length];
+            for (int i = 0; i < constructorParms.length; i++) {
+                parms[i] = cStmts[i].getValue(ctx, vars);
+            }
+
+            Constructor cns = ParseTools.getBestConstructorCanadidate(parms, cls);
+
+            if (cns == null)
+                throw new CompileException("unable to find constructor for: " + cls.getName());
+
+            for (int i = 0; i < parms.length; i++) {
+                //noinspection unchecked
+                parms[i] = DataConversion.convert(parms[i], cns.getParameterTypes()[i]);
+            }
+
+            AccessorNode ca = new ConstructorAccessor(cns, cStmts);
+
+            if (cnsRes.length > 1) {
+                ReflectiveOptimizer compiledOptimizer
+                        = new ReflectiveOptimizer(cnsRes[1].toCharArray(), cns.newInstance(parms), ctx, vars);
+                compiledOptimizer.setRootNode(ca);
+                compiledOptimizer.compileGetChain();
+                ca = compiledOptimizer.getRootNode();
+            }
+
+            return ca;
+        }
+        else {
+            Constructor cns = Class.forName(new String(expression)).getConstructor();
+            AccessorNode ca = new ConstructorAccessor(cns, null);
+
+            if (cnsRes.length > 1) {
+                ReflectiveOptimizer compiledOptimizer
+                        = new ReflectiveOptimizer(cnsRes[1].toCharArray(), cns.newInstance(), ctx, vars);
+                compiledOptimizer.setRootNode(ca);
+                compiledOptimizer.compileGetChain();
+                ca = compiledOptimizer.getRootNode();
+            }
+
+            return ca;
+        }
     }
 }

@@ -79,8 +79,23 @@ public class AbstractParser {
                  * This hack is needed to handle inline collections within a projection.
                  */
 
-                if (expr[start] == 'i' && expr[start + 1] == 'n' && isWhitespace(expr[start + 2])) {
-                    return createToken(expr, start, cursor, fields);
+                switch (expr[start]) {
+                    case 'i': //handle 'in'
+                        if (cursor < (length - 2) && expr[start + 1] == 'n' && isWhitespace(expr[start + 2])) {
+                            return createToken(expr, start, cursor, fields);
+                        }
+                        break;
+                    case 'n': //handle 'new'
+                       if (cursor < (length - 3) && expr[start + 1] == 'e' && expr[start + 2] == 'w'
+                               && isWhitespace(expr[start + 3])) {
+
+                           fields |= Token.NEW;
+                           start += 4;
+                           capture = false;
+                           continue;
+                       }
+                        break;
+
                 }
 
 
@@ -442,19 +457,7 @@ public class AbstractParser {
      * @return -
      */
     private Token createToken(final char[] expr, final int start, final int end, int fields) {
-        Token tk = new Token(expr, start, end, fields);
-
-//        if ((this.fields & Token.ASSIGN) != 0) {
-//            tk.setFlags(Token.ASSIGN);
-//        }
-
-        assert debug("CAPTURE_TOKEN <<" + tk.getName() + ">> PUSH=" + (this.fields & Token.PUSH)
-                + "; BOOL=" + ((this.fields & Token.BOOLEAN_MODE)) + "; ASSIGN=" + tk.isAssign()
-                + "; LITERAL=" + tk.isLiteral());
-
-        if (!tk.isOperator()) lastTkIdx = start;
-
-        return tk;
+        return new Token(expr, start, end, fields);
     }
 
 
