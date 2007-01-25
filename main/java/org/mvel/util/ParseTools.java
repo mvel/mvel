@@ -38,11 +38,11 @@ public class ParseTools {
         return null;
     }
 
-
     public static String[] parseParameterList(char[] parm, int offset, int length) {
         List<String> list = new LinkedList<String>();
 
-        if (length == -1) length = parm.length;
+        if (length == -1)
+            length = parm.length;
 
         int adepth = 0;
 
@@ -52,56 +52,63 @@ public class ParseTools {
 
         for (; i < end; i++) {
             switch (parm[i]) {
-                case'[':
-                case'{':
-                    if (adepth++ == 0) start = i;
-                    continue;
+            case '[':
+            case '{':
+                if (adepth++ == 0)
+                    start = i;
+                continue;
 
-                case']':
-                case'}':
-                    if (--adepth == 0) {
-                        list.add(new String(parm, start, i - start + 1));
+            case ']':
+            case '}':
+                if (--adepth == 0) {
+                    list.add(new String(parm, start, i - start + 1));
 
-                        while (isWhitespace(parm[i])) i++;
-
-                        start = i + 1;
-                    }
-                    continue;
-
-                case'\'':
-                    int rStart = i;
-                    while (++i < end && parm[i] != '\'') {
-                        if (parm[i] == '\\') handleEscapeSequence(parm[++i]);
-                    }
-
-                    if (i == end || parm[i] != '\'') {
-                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
-                    }
-                    continue;
-
-                case'"':
-                    rStart = i;
-                    while (++i < end && parm[i] != '"') {
-                        if (parm[i] == '\\') handleEscapeSequence(parm[++i]);
-                    }
-
-                    if (i == end || parm[i] != '"') {
-                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
-                    }
-                    continue;
-
-                case',':
-                    if (adepth != 0) continue;
-
-                    if (i > start) {
-                        while (isWhitespace(parm[start])) start++;
-
-                        list.add(new String(parm, start, i - start));
-                    }
-
-                    while (isWhitespace(parm[i])) i++;
+                    while (isWhitespace(parm[i]))
+                        i++;
 
                     start = i + 1;
+                }
+                continue;
+
+            case '\'':
+                int rStart = i;
+                while (++i < end && parm[i] != '\'') {
+                    if (parm[i] == '\\')
+                        handleEscapeSequence(parm[++i]);
+                }
+
+                if (i == end || parm[i] != '\'') {
+                    throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
+                }
+                continue;
+
+            case '"':
+                rStart = i;
+                while (++i < end && parm[i] != '"') {
+                    if (parm[i] == '\\')
+                        handleEscapeSequence(parm[++i]);
+                }
+
+                if (i == end || parm[i] != '"') {
+                    throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
+                }
+                continue;
+
+            case ',':
+                if (adepth != 0)
+                    continue;
+
+                if (i > start) {
+                    while (isWhitespace(parm[start]))
+                        start++;
+
+                    list.add(new String(parm, start, i - start));
+                }
+
+                while (isWhitespace(parm[i]))
+                    i++;
+
+                start = i + 1;
             }
         }
 
@@ -109,8 +116,7 @@ public class ParseTools {
             String s = new String(parm, start, i - start).trim();
             if (s.length() > 0)
                 list.add(s);
-        }
-        else if (list.size() == 0) {
+        } else if (list.size() == 0) {
             String s = new String(parm, start, length).trim();
             if (s.length() > 0)
                 list.add(s);
@@ -119,8 +125,7 @@ public class ParseTools {
         return list.toArray(new String[list.size()]);
     }
 
-    private static Map<String, Map<Integer, Method>> RESOLVED_METH_CACHE =
-            new WeakHashMap<String, Map<Integer, Method>>(10);
+    private static Map<String, Map<Integer, Method>> RESOLVED_METH_CACHE = new WeakHashMap<String, Map<Integer, Method>>(10);
 
     public static Method getBestCanadidate(Object[] arguments, String method, Method[] methods) {
         Class[] parmTypes;
@@ -130,31 +135,42 @@ public class ParseTools {
 
         Class[] targetParms = new Class[arguments.length];
 
-        for (int i = 0; i < arguments.length; i++)
+        for (int i = 0; i < arguments.length; i++) {
             targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
+        }
 
         Integer hash = createClassSignatureHash(targetParms);
 
-        if (RESOLVED_METH_CACHE.containsKey(method) && RESOLVED_METH_CACHE.get(method).containsKey(hash))
+        if (RESOLVED_METH_CACHE.containsKey(method) && RESOLVED_METH_CACHE.get(method).containsKey(hash)) {
             return RESOLVED_METH_CACHE.get(method).get(hash);
+        }
 
         for (Method meth : methods) {
             if (method.equals(meth.getName())) {
-                if ((parmTypes = meth.getParameterTypes()).length != arguments.length) continue;
-                else if (arguments.length == 0 && parmTypes.length == 0) return meth;
+                if ((parmTypes = meth.getParameterTypes()).length != arguments.length)
+                    continue;
+                else if (arguments.length == 0 && parmTypes.length == 0)
+                    return meth;
 
                 for (int i = 0; i < arguments.length; i++) {
-                    if (parmTypes[i] == targetParms[i]) score += 4;
-                    else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) score += 3;
-                    else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) score += 3;
-                    else if (parmTypes[i].isAssignableFrom(targetParms[i])) score += 2;
-                    else if (canConvert(parmTypes[i], targetParms[i])) score += 1;
-                    else {
+                    if (parmTypes[i] == targetParms[i]) {
+                        score += 5;
+                    } else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
+                        score += 4;
+                    } else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
+                        score += 4;
+                    } else if ( isNumericallyCoercible( targetParms[i], parmTypes[i] ) ) {
+                        score += 3;
+                    } else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
+                        score += 2;
+                    } else if (canConvert(parmTypes[i], targetParms[i])) {
+                        score += 1;
+                    } else {
                         score = 0;
                         break;
                     }
                 }
-
+                
                 if (score != 0 && score > bestScore) {
                     bestCandidate = meth;
                     bestScore = score;
@@ -162,7 +178,6 @@ public class ParseTools {
                 score = 0;
             }
         }
-
 
         if (bestCandidate != null) {
             if (!RESOLVED_METH_CACHE.containsKey(method))
@@ -175,8 +190,8 @@ public class ParseTools {
     }
 
     private static Map<Class, Map<Integer, Constructor>> RESOLVED_CONST_CACHE = new WeakHashMap<Class, Map<Integer, Constructor>>(10);
-    private static Map<Constructor, Class[]> CONSTRUCTOR_PARMS_CACHE = new WeakHashMap<Constructor, Class[]>(10);
 
+    private static Map<Constructor, Class[]> CONSTRUCTOR_PARMS_CACHE = new WeakHashMap<Constructor, Class[]>(10);
 
     private static Class[] getConstructors(Constructor cns) {
         if (CONSTRUCTOR_PARMS_CACHE.containsKey(cns))
@@ -206,16 +221,25 @@ public class ParseTools {
             return RESOLVED_CONST_CACHE.get(cls).get(hash);
 
         for (Constructor construct : getConstructors(cls)) {
-            if ((parmTypes = getConstructors(construct)).length != arguments.length) continue;
-            else if (arguments.length == 0 && parmTypes.length == 0) return construct;
+            if ((parmTypes = getConstructors(construct)).length != arguments.length)
+                continue;
+            else if (arguments.length == 0 && parmTypes.length == 0)
+                return construct;
 
             for (int i = 0; i < arguments.length; i++) {
-                if (parmTypes[i] == targetParms[i]) score += 4;
-                else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) score += 3;
-                else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) score += 3;
-                else if (parmTypes[i].isAssignableFrom(targetParms[i])) score += 2;
-                else if (canConvert(parmTypes[i], targetParms[i])) score += 1;
-                else {
+                if (parmTypes[i] == targetParms[i]) {
+                    score += 5;
+                } else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
+                    score += 4;
+                } else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
+                    score += 4;
+                } else if ( isNumericallyCoercible( targetParms[i], parmTypes[i] ) ) {
+                    score += 3;
+                } else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
+                    score += 2;
+                } else if (canConvert(parmTypes[i], targetParms[i])) {
+                    score += 1;
+                } else {
                     score = 0;
                     break;
                 }
@@ -229,7 +253,6 @@ public class ParseTools {
 
         }
 
-
         if (bestCandidate != null) {
             if (!RESOLVED_CONST_CACHE.containsKey(cls))
                 RESOLVED_CONST_CACHE.put(cls, new WeakHashMap<Integer, Constructor>());
@@ -241,6 +264,7 @@ public class ParseTools {
     }
 
     private static Map<String, Class> CLASS_RESOLVER_CACHE = new WeakHashMap<String, Class>(10);
+
     private static Map<Class, Constructor[]> CLASS_CONSTRUCTOR_CACHE = new WeakHashMap<Class, Constructor[]>(10);
 
     public static Class createClass(String className) throws ClassNotFoundException {
@@ -263,15 +287,14 @@ public class ParseTools {
         }
     }
 
-    public static Object constructObject(String expression, Object ctx, VariableResolverFactory vrf)
-            throws InstantiationException, IllegalAccessException, InvocationTargetException,
-            ClassNotFoundException {
+    public static Object constructObject(String expression, Object ctx, VariableResolverFactory vrf) throws InstantiationException, IllegalAccessException,
+            InvocationTargetException, ClassNotFoundException {
 
         String[] constructorParms = parseMethodOrConstructor(expression.toCharArray());
 
         if (constructorParms != null) {
-            Class cls = Token.LITERALS.containsKey(expression = expression.substring(0, expression.indexOf('('))) ?
-                    ((Class) Token.LITERALS.get(expression)) : createClass(expression);
+            Class cls = Token.LITERALS.containsKey(expression = expression.substring(0, expression.indexOf('('))) ? ((Class) Token.LITERALS.get(expression))
+                    : createClass(expression);
 
             Object[] parms = new Object[constructorParms.length];
             for (int i = 0; i < constructorParms.length; i++) {
@@ -284,13 +307,12 @@ public class ParseTools {
                 throw new CompileException("unable to find constructor for: " + cls.getName());
 
             for (int i = 0; i < parms.length; i++) {
-                //noinspection unchecked
+                // noinspection unchecked
                 parms[i] = convert(parms[i], cns.getParameterTypes()[i]);
             }
 
             return cns.newInstance(parms);
-        }
-        else {
+        } else {
             return forName(expression).newInstance();
         }
     }
@@ -302,135 +324,103 @@ public class ParseTools {
 
         for (int i = 0; i < cs.length; i++) {
             switch (cs[i]) {
-                case'(':
-                    depth++;
-                    continue;
-                case')':
-                    if (1 == depth--) {
-                        return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i)};
-                    }
+            case '(':
+                depth++;
+                continue;
+            case ')':
+                if (1 == depth--) {
+                    return new String[] { new String(cs, 0, ++i), new String(cs, i, cs.length - i) };
+                }
             }
         }
-        return new String[]{token};
+        return new String[] { token };
     }
 
     public static String[] captureContructorAndResidual(char[] cs) {
         int depth = 0;
         for (int i = 0; i < cs.length; i++) {
             switch (cs[i]) {
-                case'(':
-                    depth++;
-                    continue;
-                case')':
-                    if (1 == depth--) {
-                        return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i)};
-                    }
+            case '(':
+                depth++;
+                continue;
+            case ')':
+                if (1 == depth--) {
+                    return new String[] { new String(cs, 0, ++i), new String(cs, i, cs.length - i) };
+                }
             }
         }
-        return new String[]{new String(cs)};
+        return new String[] { new String(cs) };
     }
 
-
     public static Class boxPrimitive(Class cls) {
-        if (cls == int.class) {
+        if (cls == int.class || cls == Integer.class ) {
             return Integer.class;
-        }
-        else if (cls == int[].class) {
+        } else if (cls == int[].class || cls == Integer[].class ) {
             return Integer[].class;
-        }
-        else if (cls == long.class) {
+        } else if (cls == long.class || cls == Long.class ) {
             return Long.class;
-        }
-        else if (cls == long[].class) {
+        } else if (cls == long[].class || cls == Long[].class ) {
             return Long[].class;
-        }
-        else if (cls == short.class) {
+        } else if (cls == short.class || cls == Short.class ) {
             return Short.class;
-        }
-        else if (cls == short[].class) {
+        } else if (cls == short[].class || cls == Short[].class ) {
             return Short[].class;
-        }
-        else if (cls == double.class) {
+        } else if (cls == double.class || cls == Double.class ) {
             return Double.class;
-        }
-        else if (cls == double[].class) {
+        } else if (cls == double[].class || cls == Double[].class ) {
             return Double[].class;
-        }
-        else if (cls == float.class) {
+        } else if (cls == float.class || cls == Float.class ) {
             return Float.class;
-        }
-        else if (cls == float[].class) {
+        } else if (cls == float[].class || cls == Float[].class ) {
             return Float[].class;
-        }
-        else if (cls == boolean.class) {
+        } else if (cls == boolean.class || cls == Boolean.class ) {
             return Boolean.class;
-        }
-        else if (cls == boolean[].class) {
+        } else if (cls == boolean[].class || cls == Boolean[].class ) {
             return Boolean[].class;
-        }
-        else if (cls == byte.class) {
+        } else if (cls == byte.class || cls == Byte.class ) {
             return Byte.class;
-        }
-        else if (cls == byte[].class) {
+        } else if (cls == byte[].class || cls == Byte[].class ) {
             return Byte[].class;
         }
 
         return null;
     }
 
-
     public static Class unboxPrimitive(Class cls) {
-        if (cls == Integer.class) {
+        if (cls == Integer.class || cls == int.class ) {
             return int.class;
-        }
-        else if (cls == Integer[].class) {
+        } else if (cls == Integer[].class || cls == int[].class) {
             return int[].class;
-        }
-        else if (cls == Long.class) {
+        } else if (cls == Long.class || cls == long.class ) {
             return long.class;
-        }
-        else if (cls == Long[].class) {
+        } else if (cls == Long[].class || cls == long[].class ) {
             return long[].class;
-        }
-        else if (cls == Short.class) {
+        } else if (cls == Short.class || cls == short.class ) {
             return short.class;
-        }
-        else if (cls == Short[].class) {
+        } else if (cls == Short[].class || cls == short[].class ) {
             return short[].class;
-        }
-        else if (cls == Double.class) {
+        } else if (cls == Double.class || cls == double.class ) {
             return double.class;
-        }
-        else if (cls == Double[].class) {
+        } else if (cls == Double[].class || cls == double[].class ) {
             return double[].class;
-        }
-        else if (cls == Float.class) {
+        } else if (cls == Float.class || cls == float.class ) {
             return float.class;
-        }
-        else if (cls == Float[].class) {
+        } else if (cls == Float[].class || cls == float[].class ) {
             return float[].class;
-        }
-        else if (cls == Boolean.class) {
+        } else if (cls == Boolean.class || cls == boolean.class ) {
             return boolean.class;
-        }
-        else if (cls == Boolean[].class) {
+        } else if (cls == Boolean[].class || cls == boolean[].class ) {
             return boolean[].class;
-        }
-        else if (cls == Byte.class) {
+        } else if (cls == Byte.class || cls == byte.class ) {
             return byte.class;
-        }
-        else if (cls == Byte[].class) {
+        } else if (cls == Byte[].class || cls == byte[].class ) {
             return byte[].class;
         }
 
         return null;
     }
 
-
-    public static boolean containsCheck
-            (Object
-                    compareTo, Object
-                    compareTest) {
+    public static boolean containsCheck(Object compareTo, Object compareTest) {
         if (compareTo == null)
             return false;
         else if (compareTo instanceof String)
@@ -441,55 +431,54 @@ public class ParseTools {
             return ((Map) compareTo).containsKey(compareTest);
         else if (compareTo.getClass().isArray()) {
             for (Object o : ((Object[]) compareTo)) {
-                if (compareTest == null && o == null) return true;
-                else if (o != null && o.equals(compareTest)) return true;
+                if (compareTest == null && o == null)
+                    return true;
+                else if (o != null && o.equals(compareTest))
+                    return true;
             }
         }
         return false;
     }
 
-    public static int createClassSignatureHash
-            (Class[] sig) {
+    public static int createClassSignatureHash(Class[] sig) {
         int hash = 0;
         for (Class cls : sig) {
-            if (cls != null) hash += cls.hashCode();
+            if (cls != null)
+                hash += cls.hashCode();
         }
         return hash + sig.length;
     }
 
-    public static char handleEscapeSequence
-            (
-                    char escapedChar) {
+    public static char handleEscapeSequence(char escapedChar) {
         switch (escapedChar) {
-            case'\\':
-                return '\\';
-            case't':
-                return '\t';
-            case'r':
-                return '\r';
-            case'\'':
-                return '\'';
-            case'"':
-                return '"';
-            default:
-                throw new ParseException("illegal escape sequence: " + escapedChar);
+        case '\\':
+            return '\\';
+        case 't':
+            return '\t';
+        case 'r':
+            return '\r';
+        case '\'':
+            return '\'';
+        case '"':
+            return '"';
+        default:
+            throw new ParseException("illegal escape sequence: " + escapedChar);
         }
     }
 
     public static VariableResolverFactory finalLocalVariableFactory(VariableResolverFactory factory) {
         VariableResolverFactory v = factory;
         while (v != null) {
-            if (v instanceof LocalVariableResolverFactory) return v;
+            if (v instanceof LocalVariableResolverFactory)
+                return v;
             v = v.getNextFactory();
         }
         if (factory == null) {
             return new LocalVariableResolverFactory(new HashMap<String, Object>());
-        }
-        else {
+        } else {
             return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
         }
     }
-
 
     public static boolean debug(String str) {
         System.out.println(str);
@@ -514,48 +503,68 @@ public class ParseTools {
     }
 
     public static final int resolveType(Class cls) {
-        if (cls == null) return 0;
-        if (int.class == cls) return DataTypes.INTEGER;
-        if (short.class == cls) return DataTypes.SHORT;
-        if (float.class == cls) return DataTypes.FLOAT;
-        if (double.class == cls) return DataTypes.DOUBLE;
-        if (long.class == cls) return DataTypes.LONG;
-        if (boolean.class == cls) return DataTypes.BOOLEAN;
-        if (byte.class == cls) return DataTypes.BYTE;
-        if (char.class == cls) return DataTypes.CHAR;
-        if (String.class == cls) return DataTypes.STRING;
+        if (cls == null)
+            return 0;
+        if (int.class == cls)
+            return DataTypes.INTEGER;
+        if (short.class == cls)
+            return DataTypes.SHORT;
+        if (float.class == cls)
+            return DataTypes.FLOAT;
+        if (double.class == cls)
+            return DataTypes.DOUBLE;
+        if (long.class == cls)
+            return DataTypes.LONG;
+        if (boolean.class == cls)
+            return DataTypes.BOOLEAN;
+        if (byte.class == cls)
+            return DataTypes.BYTE;
+        if (char.class == cls)
+            return DataTypes.CHAR;
+        if (String.class == cls)
+            return DataTypes.STRING;
 
-        if (Integer.class == cls) return DataTypes.W_INTEGER;
-        if (Short.class == cls) return DataTypes.W_SHORT;
-        if (Float.class == cls) return DataTypes.W_FLOAT;
-        if (Double.class == cls) return DataTypes.W_DOUBLE;
-        if (Long.class == cls) return DataTypes.W_LONG;
-        if (Boolean.class == cls) return DataTypes.W_BOOLEAN;
-        if (Byte.class == cls) return DataTypes.W_BYTE;
-        if (Character.class == cls) return DataTypes.W_CHAR;
+        if (Integer.class == cls)
+            return DataTypes.W_INTEGER;
+        if (Short.class == cls)
+            return DataTypes.W_SHORT;
+        if (Float.class == cls)
+            return DataTypes.W_FLOAT;
+        if (Double.class == cls)
+            return DataTypes.W_DOUBLE;
+        if (Long.class == cls)
+            return DataTypes.W_LONG;
+        if (Boolean.class == cls)
+            return DataTypes.W_BOOLEAN;
+        if (Byte.class == cls)
+            return DataTypes.W_BYTE;
+        if (Character.class == cls)
+            return DataTypes.W_CHAR;
 
-        if (BigDecimal.class == cls) return DataTypes.BIG_DECIMAL;
+        if (BigDecimal.class == cls)
+            return DataTypes.BIG_DECIMAL;
 
         return DataTypes.OBJECT;
     }
 
     public static BigDecimal getBigDecimalFromType(Object in, int type) {
-        if (in == null) return new BigDecimal(0);
+        if (in == null)
+            return new BigDecimal(0);
         switch (type) {
-            case DataTypes.BIG_DECIMAL:
-                return (BigDecimal) in;
-            case DataTypes.W_INTEGER:
-                return new BigDecimal((Integer) in);
-            case DataTypes.W_LONG:
-                return new BigDecimal((Long) in);
-            case DataTypes.STRING:
-                return new BigDecimal((String) in);
-            case DataTypes.W_FLOAT:
-                return new BigDecimal((Float) in);
-            case DataTypes.W_DOUBLE:
-                return new BigDecimal((Double) in);
-            case DataTypes.W_SHORT:
-                return new BigDecimal((Short) in);
+        case DataTypes.BIG_DECIMAL:
+            return (BigDecimal) in;
+        case DataTypes.W_INTEGER:
+            return new BigDecimal((Integer) in);
+        case DataTypes.W_LONG:
+            return new BigDecimal((Long) in);
+        case DataTypes.STRING:
+            return new BigDecimal((String) in);
+        case DataTypes.W_FLOAT:
+            return new BigDecimal((Float) in);
+        case DataTypes.W_DOUBLE:
+            return new BigDecimal((Double) in);
+        case DataTypes.W_SHORT:
+            return new BigDecimal((Short) in);
 
         }
 
@@ -564,5 +573,18 @@ public class ParseTools {
 
     public static Object valueOnly(Object o) {
         return (o instanceof Token) ? ((Token) o).getLiteralValue() : o;
+    }
+    
+    public static boolean isNumericallyCoercible(Class target, Class parm) {
+        Class boxedTarget = target.isPrimitive() ? boxPrimitive( target ) : target;
+        
+        if ( boxedTarget != null && Number.class.isAssignableFrom( target ) ) {
+            Class boxedParm = parm.isPrimitive() ? boxPrimitive( parm ) : parm;
+            
+            if ( boxedParm != null ) {
+                return Number.class.isAssignableFrom( boxedParm );
+            }
+        }
+        return false;
     }
 }
