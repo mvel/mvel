@@ -22,6 +22,11 @@ public class ASTStatement implements ExecutableStatement {
         this.nextNode = nextNode;
     }
 
+
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+        return getValue(ctx, variableFactory);
+    }
+
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         return nextNode.getValue(this, staticContext, factory);
     }

@@ -32,7 +32,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     private boolean convertableIngressEgress;
 
-    private transient ExpressionParser expressionParser;
+ //   private transient ExpressionParser expressionParser;
 
     public CompiledExpression(char[] expression, TokenIterator tokenMap) {
         this.expression = expression;
@@ -84,15 +84,16 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public void computeTypeConversionRule() {
         if (knownIngressType != null && knownEgressType != null) {
-             convertableIngressEgress = knownIngressType.isAssignableFrom(knownEgressType);
+            convertableIngressEgress = knownIngressType.isAssignableFrom(knownEgressType);
         }
     }
 
+
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+        return getValue(ctx, variableFactory);
+    }
+
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-      //  if (expressionParser == null) {
-            return new ExpressionParser(factory, staticContext, tokenMap).parse();
-      //  }
-        
-      //  return expressionParser.resetParser().parse();
+        return new ExpressionParser(factory, staticContext, tokenMap).parse();
     }
 }

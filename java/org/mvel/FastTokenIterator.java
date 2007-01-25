@@ -27,6 +27,11 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
     private int length = 0;
     private int cursor = 0;
 
+
+    public FastTokenIterator(Token[] token) {
+        this.length = (this.token = token).length;
+    }
+
     public FastTokenIterator(TokenIterator map) {
         ArrayList<Token> tokens = new ArrayList<Token>();
         map.reset();
@@ -39,12 +44,6 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
 
     public void reset() {
         cursor = 0;
-//        for (int i = length - 1; i != -1; i--)
-//            token[i].reset();
-//
-////        for (Token tk : token) {
-////            tk.reset();
-////        }
     }
 
 
@@ -125,20 +124,7 @@ public class FastTokenIterator implements TokenIterator, Cloneable {
 
 
     public TokenIterator clone() {
-        try {
-            FastTokenIterator ti = (FastTokenIterator) super.clone();
-            ti.token = new Token[token.length];
-
-            for (int i = 0; i < token.length; i++) {
-                ti.token[i] = token[i].clone();
-            }
-            return ti;
-        }
-        catch (CloneNotSupportedException e) {
-            // no handling needed.
-            return null;
-        }
-
+        return new FastTokenIterator(token);
     }
 
 
