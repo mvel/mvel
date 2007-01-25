@@ -50,6 +50,8 @@ public class StringAppender implements CharSequence
     }
 
     public StringAppender append(String s) {
+        if (s == null) return this;
+
         int len = s.length();
         if (len > (capacity - size)) {
             grow(len);
