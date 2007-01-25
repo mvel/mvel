@@ -1019,7 +1019,7 @@ public class ExpressionParser extends AbstractParser {
     ExpressionParser(VariableResolverFactory resolverFactory, Object ctx, TokenIterator tokens) {
         this.ctx = ctx;
         this.variableFactory = resolverFactory;
-        this.tokens = tokens.clone();
+        this.tokens = new FastTokenIterator(tokens);
         this.fastExecuteMode = true;
     }
 
@@ -1035,7 +1035,7 @@ public class ExpressionParser extends AbstractParser {
 
     public void setTokens(TokenIterator tokenIterator) {
         fastExecuteMode = true;
-        this.tokens = tokenIterator.clone();
+        this.tokens = new FastTokenIterator(tokenIterator);
     }
 
     public void setVariableResolverFactory(VariableResolverFactory factory) {
