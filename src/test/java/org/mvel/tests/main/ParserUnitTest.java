@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 import org.mvel.ExpressionParser;
 import static org.mvel.ExpressionParser.evalToBoolean;
 import org.mvel.Interpreter;
+import org.mvel.util.FastList;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
@@ -463,11 +464,11 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testListCreation2() {
-        assertEquals(ArrayList.class, parseDirect("[\"test\"]").getClass());
+        assertEquals(FastList.class, parseDirect("[\"test\"]").getClass());
     }
 
     public void testListCreation3() {
-        assertEquals(ArrayList.class, parseDirect("[66]").getClass());
+        assertEquals(FastList.class, parseDirect("[66]").getClass());
     }
 
     public void testListCreationWithCall() {

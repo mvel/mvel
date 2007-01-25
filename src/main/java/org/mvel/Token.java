@@ -321,62 +321,6 @@ public class Token implements Cloneable, Serializable {
         accessor = new Deferral();
         return this;
     }
-//
-//    public Object optimizeAccessor(Object ctx, Object thisRef, VariableResolverFactory variableFactory, boolean thisRefPush) {
-//        try {
-//            AccessorOptimizer optimizer = getDefaultAccessorCompiler();
-//
-//            if ((fields & ASSIGN) != 0) {
-//                accessor = optimizer.optimizeAssignment(name, ctx, thisRef, variableFactory);
-//            }
-//            else if ((fields & FOLD) != 0) {
-//                accessor = optimizer.optimizeFold(name, ctx, thisRef, variableFactory);
-//            }
-//            else if ((fields & NEW) != 0) {
-//                accessor = optimizer.optimizeObjectCreation(name, ctx, thisRef, variableFactory);
-//            }
-//            else if ((fields & INLINE_COLLECTION) != 0) {
-//                accessor = optimizer.optimizeCollection(name, ctx, thisRef, variableFactory);
-//            }
-//            else {
-//                accessor = optimizer.optimize(name, ctx, thisRef, variableFactory, thisRefPush);
-//            }
-//
-//            setNumeric(false);
-//            setFlag(true, Token.OPTIMIZED_REF);
-//
-//            return optimizer.getResultOptPass();
-//        }
-//        catch (OptimizationNotSupported e) {
-//            // assert debug("[Falling Back to Reflective Optimizer]");
-//            // fall back to the safe reflective optimizer
-//            AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
-//
-//            if ((fields & ASSIGN) != 0) {
-//                accessor = optimizer.optimizeAssignment(name, ctx, thisRef, variableFactory);
-//            }
-//            else if ((fields & FOLD) != 0) {
-//                accessor = optimizer.optimizeFold(name, ctx, thisRef, variableFactory);
-//            }
-//            else if ((fields & NEW) != 0) {
-//                accessor = optimizer.optimizeObjectCreation(name, ctx, thisRef, variableFactory);
-//            }
-//            else if ((fields & INLINE_COLLECTION) != 0) {
-//                accessor = optimizer.optimizeCollection(name, ctx, thisRef, variableFactory);
-//            }
-//            else {
-//                accessor = optimizer.optimize(name, ctx, thisRef, variableFactory, thisRefPush);
-//            }
-//
-//            setNumeric(false);
-//            setFlag(true, Token.OPTIMIZED_REF);
-//
-//            return optimizer.getResultOptPass();
-//        }
-//        catch (Exception e) {
-//            throw new OptimizationFailure("failed to optimize accessor: " + new String(name), e);
-//        }
-//    }
 
     public void deOptimize() {
         accessor = null;

@@ -103,7 +103,7 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
         this.thisRef = thisRef;
         this.variableFactory = factory;
 
-        if (root) currNode = rootNode = new ThisValueAccessor();
+      //  if (root) currNode = rootNode = new ThisValueAccessor();
 
         return compileGetChain();
     }
