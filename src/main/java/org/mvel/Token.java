@@ -89,8 +89,6 @@ public class Token implements Cloneable, Serializable {
     private Class srcType;
 
     private int fields = 0;
-
-    private ExecutableStatement compiledExpression;
     private Accessor accessor;
     private int knownSize = 0;
 
@@ -335,25 +333,25 @@ public class Token implements Cloneable, Serializable {
                     if ("".equals(value))
                         v = new BigDecimal(0);
                     else
-                        v = new BigDecimal((String) value);
+                        v = new BigDecimal((String) v);
                 }
                 else if (srcType == BigDecimal.class) {
                     //  v = value;
                 }
                 else if (srcType == Integer.class) {
-                    v = new BigDecimal((Integer) value);
+                    v = new BigDecimal((Integer) v);
                 }
                 else if (srcType == Long.class) {
-                    v = new BigDecimal((Long) value);
+                    v = new BigDecimal((Long) v);
                 }
                 else if (srcType == Short.class) {
-                    v = new BigDecimal((Short) value);
+                    v = new BigDecimal((Short) v);
                 }
                 else if (srcType == Float.class) {
-                    v = new BigDecimal((Float) value);
+                    v = new BigDecimal((Float) v);
                 }
                 else if (srcType == Double.class) {
-                    v = new BigDecimal((Double) value);
+                    v = new BigDecimal((Double) v);
                 }
                 else {
                     throw new CompileException("expected numeric value: got: " + value);
@@ -422,7 +420,7 @@ public class Token implements Cloneable, Serializable {
             return optimizer.getResultOptPass();
         }
         catch (OptimizationNotSupported e) {
-            assert debug("[Falling Back to Reflective Optimizer]");
+            // assert debug("[Falling Back to Reflective Optimizer]");
             // fall back to the safe reflective optimizer
             AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
 
@@ -478,8 +476,9 @@ public class Token implements Cloneable, Serializable {
 
 
     public Object getReducedValueAccelerated(Object ctx, Object eCtx, VariableResolverFactory factory) {
-        assert debug("GET_RED_ACCL (literal=" + isLiteral() + "; assign=" + isAssign() + "; subeval=" + isSubeval()
-                + "; collections=" + isCollection() + "): <<" + new String(name) + ">>");
+        // assert debug("GET_RED_ACCL (literal=" + isLiteral() + "; assign=" + isAssign() + "; subeval=" + isSubeval()
+        //        + "; collections=" + isCollection() + "): <<" + new String(name) + ">>");
+
 
         if ((fields & (LITERAL)) != 0) {
             return valRet(value);
@@ -493,8 +492,8 @@ public class Token implements Cloneable, Serializable {
             return accessor.getValue(ctx, eCtx, factory);
         }
         else if ((fields & SUBEVAL) != 0) {
-            assert debug("SUBEVAL <<" + value + ">>");
-            return valRet(compiledExpression.getValue(ctx, factory));
+            // assert debug("SUBEVAL <<" + value + ">>");
+            return valRet(accessor.getValue(ctx, eCtx, factory));
         }
         else if ((fields & INLINE_COLLECTION) != 0) {
             if (accessor == null) {
@@ -530,6 +529,8 @@ public class Token implements Cloneable, Serializable {
                 throw new CompileException("optimization failure for: " + this, e);
             }
 
+            e.printStackTrace();
+
 
             try {
                 synchronized (this) {
@@ -548,7 +549,8 @@ public class Token implements Cloneable, Serializable {
 
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        assert debug("REDUCE <<" + new String(name) + ">> ctx=" + ctx + ";literal=" + (fields & LITERAL) + ";assign=" + (fields & ASSIGN));
+        // assert debug("REDUCE <<" + new String(name) + ">> ctx=" + ctx + ";literal=" + (fields & LITERAL) + ";assign=" + (fields & ASSIGN));
+
 
         String s;
         if ((fields & (LITERAL)) != 0) {
@@ -558,7 +560,7 @@ public class Token implements Cloneable, Serializable {
                 return value;
         }
         else if ((fields & ASSIGN) != 0) {
-            assert debug("TK_ASSIGN");
+            // assert debug("TK_ASSIGN");
 
             if (accessor == null) {
                 accessor = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)
@@ -568,13 +570,13 @@ public class Token implements Cloneable, Serializable {
             return accessor.getValue(ctx, thisValue, factory);
         }
         else if ((fields & SUBEVAL) != 0) {
-            assert debug("TK_SUBEVAL");
+            // assert debug("TK_SUBEVAL");
 
             return valRet(ExpressionParser.eval(name, ctx, factory));
         }
 
         else if ((fields & INLINE_COLLECTION) != 0) {
-            assert debug("TK_INLINE_COLLECTION");
+            // assert debug("TK_INLINE_COLLECTION");
 
             if (accessor == null) {
                 accessor = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)
@@ -584,7 +586,7 @@ public class Token implements Cloneable, Serializable {
             return accessor.getValue(ctx, thisValue, factory);
         }
         else if ((fields & FOLD) != 0) {
-            assert debug("FOLD");
+            // assert debug("FOLD");
 
             if (accessor == null) {
                 AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
@@ -594,7 +596,7 @@ public class Token implements Cloneable, Serializable {
             }
         }
         else if ((fields & NEW) != 0) {
-            assert debug("NEW");
+            // assert debug("NEW");
 
             if (accessor == null) {
                 AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
@@ -695,7 +697,7 @@ public class Token implements Cloneable, Serializable {
     }
 
     private Object valRet(Object value) {
-        assert debug("VAL_RET_SPECIAL <<" + value + ">>");
+        // assert debug("VAL_RET_SPECIAL <<" + value + ">>");
         //String s;
         try {
             if ((fields & NEGATION) != 0) {
@@ -895,10 +897,6 @@ public class Token implements Cloneable, Serializable {
         return firstUnion;
     }
 
-    public ExecutableStatement getCompiledExpression() {
-        return compiledExpression;
-    }
-
 
     public Accessor getAccessor() {
         return accessor;
@@ -908,9 +906,9 @@ public class Token implements Cloneable, Serializable {
         this.accessor = accessor;
     }
 
-    public void setCompiledExpression(ExecutableStatement compiledExpression) {
-        this.compiledExpression = compiledExpression;
-    }
+//    public void setCompiledExpression(ExecutableStatement compiledExpression) {
+//        this.compiledExpression = compiledExpression;
+//    }
 
     public Token clone() throws CloneNotSupportedException {
         try {
