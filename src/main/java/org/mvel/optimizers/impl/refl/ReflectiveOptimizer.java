@@ -19,6 +19,9 @@
 
 package org.mvel.optimizers.impl.refl;
 
+import static org.mvel.util.ParseTools.parseMethodOrConstructor;
+import static org.mvel.util.ParseTools.captureContructorAndResidual;
+import static org.mvel.util.ParseTools.getBestConstructorCanadidate;
 import org.mvel.*;
 import static org.mvel.ExpressionParser.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
@@ -629,15 +632,19 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
         if (!nextToken().isOperator(Operator.ASSIGN))
             throw new CompileException("expected assignment operator");
 
+        Token expr = nextToken();
+
         greedy = true; // turn greedy back on.
 
-        Token expr = nextToken();
 
         if (expr.isLiteral()) {
             assert ParseTools.debug("ASSIGN_LITERAL '" + expr.getName() + "'");
             Literal lit = new Literal(expr.getName());
             val = lit.getValue(ctx, thisRef, factory);
             return new Assignment(var.getName(), lit);
+        }
+        else if (expr.isNewObject()) {
+            return new Assignment(var.getName(), optimizeObjectCreation(expr.getNameAsArray(), ctx, thisRef, factory));
         }
         else {
             assert ParseTools.debug("ASSIGN_EXPR '" + expr.getName() + "'");
@@ -716,9 +723,9 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
             ClassNotFoundException, NoSuchMethodException {
 
 
-        String[] cnsRes = ParseTools.captureContructorAndResidual(expression);
+        String[] cnsRes = captureContructorAndResidual(expression);
 
-        String[] constructorParms = ParseTools.parseMethodOrConstructor(cnsRes[0].toCharArray());
+        String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
         if (constructorParms != null) {
             String s;
@@ -737,7 +744,7 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
                 parms[i] = cStmts[i].getValue(ctx, vars);
             }
 
-            Constructor cns = ParseTools.getBestConstructorCanadidate(parms, cls);
+            Constructor cns = getBestConstructorCanadidate(parms, cls);
 
             if (cns == null)
                 throw new CompileException("unable to find constructor for: " + cls.getName());

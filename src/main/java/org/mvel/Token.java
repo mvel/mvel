@@ -19,6 +19,7 @@
 
 package org.mvel;
 
+import static org.mvel.optimizers.OptimizerFactory.getDefaultAccessorCompiler;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
@@ -397,13 +398,19 @@ public class Token implements Cloneable, Serializable {
 
     public Object optimizeAccessor(Object ctx, Object thisRef, VariableResolverFactory variableFactory, boolean thisRefPush) {
         try {
-            AccessorOptimizer optimizer = OptimizerFactory.getDefaultAccessorCompiler();
+            AccessorOptimizer optimizer = getDefaultAccessorCompiler();
 
             if ((fields & ASSIGN) != 0) {
                 accessor = optimizer.optimizeAssignment(name, ctx, thisRef, variableFactory);
             }
             else if ((fields & FOLD) != 0) {
                 accessor = optimizer.optimizeFold(name, ctx, thisRef, variableFactory);
+            }
+            else if ((fields & NEW) != 0) {
+                accessor = optimizer.optimizeObjectCreation(name, ctx, thisRef, variableFactory);
+            }
+            else if ((fields & INLINE_COLLECTION) != 0) {
+                accessor = optimizer.optimizeCollection(name, ctx, thisRef, variableFactory);
             }
             else {
                 accessor = optimizer.optimize(name, ctx, thisRef, variableFactory, thisRefPush);
@@ -424,6 +431,12 @@ public class Token implements Cloneable, Serializable {
             }
             else if ((fields & FOLD) != 0) {
                 accessor = optimizer.optimizeFold(name, ctx, thisRef, variableFactory);
+            }
+            else if ((fields & NEW) != 0) {
+                accessor = optimizer.optimizeObjectCreation(name, ctx, thisRef, variableFactory);
+            }
+            else if ((fields & INLINE_COLLECTION) != 0) {
+                accessor = optimizer.optimizeCollection(name, ctx, thisRef, variableFactory);
             }
             else {
                 accessor = optimizer.optimize(name, ctx, thisRef, variableFactory, thisRefPush);
@@ -485,7 +498,7 @@ public class Token implements Cloneable, Serializable {
         }
         else if ((fields & COLLECTION) != 0) {
             if (accessor == null) {
-                accessor = OptimizerFactory.getDefaultAccessorCompiler().optimizeCollection(name, ctx, eCtx, factory);
+                accessor = getDefaultAccessorCompiler().optimizeCollection(name, ctx, eCtx, factory);
             }
 
             return accessor.getValue(ctx, eCtx, factory);
@@ -1020,9 +1033,12 @@ public class Token implements Cloneable, Serializable {
         return (fields & ASSIGN) != 0;
     }
 
-
     public boolean isReducable() {
         return ((fields & CAPTURE_ONLY) | (fields & LITERAL)) == 0;
+    }
+
+    public boolean isNewObject() {
+        return ((fields & NEW) != 0);
     }
 
     public int getKnownSize() {

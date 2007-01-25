@@ -442,6 +442,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals("happyBar", parseDirect("funMap.foo_bar.happy()"));
     }
 
+    public void testMapAccess4() {
+        assertEquals("happyBar", parseDirect("funMap['foo'].happy()"));
+    }
+
     public void testMapAsMethodParm() {
         assertEquals("happyBar", parseDirect("readBack(funMap.foo_bar.happy())"));
     }
