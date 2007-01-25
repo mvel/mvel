@@ -35,14 +35,18 @@ public class CollectionParser {
         this.cursor = 0;
         this.length = property.length;
 
-        while (Character.isWhitespace(property[length - 1]))
-            length--;
+
+        if (length > 0)
+            while (Character.isWhitespace(property[length - 1]))
+                length--;
 
         return parseCollection();
     }
 
 
     private Object parseCollection() {
+        if (length == 0) return new ArrayList();
+
         Map<Object, Object> map = null;
         List<Object> list = null;
 

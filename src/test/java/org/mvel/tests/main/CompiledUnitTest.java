@@ -342,6 +342,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(2, parseDirect("Array.getLength({'foo', 'bar'})"));
     }
 
+    public void testEmptyArray() {
+        assertTrue(parseDirect("[]") instanceof List);
+    }
+
     public void testArrayCreation() {
         assertEquals(0, parseDirect("arrayTest = {{1, 2, 3}, {2, 1, 0}}; arrayTest[1][2]"));
     }
