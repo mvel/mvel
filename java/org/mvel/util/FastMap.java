@@ -13,6 +13,12 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
     private Object[] lateInitKeys;
     private Object[] lateInitVals;
 
+    public FastMap(int size, Object[] keys, Object[] values) {
+        this.size = size;
+        lateInitKeys = keys;
+        lateInitVals = values;
+    }
+
     public FastMap(int capacity) {
         entrySet = new FastSet(capacity);
         values = new Node[capacity * 2];
@@ -124,12 +130,11 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
 
 
     public boolean equals(Object o) {
-        if (o instanceof FastMap) {
-            FastMap f = (FastMap) o;
-            return entrySet.equals(f.entrySet);
-        }
-        return false;
+        if (!init) initialize();
+        if ((o instanceof FastMap) && !((FastMap) o).init) ((FastMap) o).initialize();
+        return o instanceof FastMap && entrySet.equals(((FastMap) o).entrySet);
     }
+
 
     public String toString() {
         return String.valueOf(values);
