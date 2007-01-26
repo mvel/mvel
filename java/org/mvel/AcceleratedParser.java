@@ -57,7 +57,7 @@ public class AcceleratedParser extends AbstractParser {
     private final Stack stk = new ExecutionStack();
 
 
-    public AcceleratedParser(TokenIterator tokens) {
+    public AcceleratedParser(FastTokenIterator tokens) {
         this.tokens = new FastTokenIterator(tokens);
     }
 
@@ -67,7 +67,7 @@ public class AcceleratedParser extends AbstractParser {
 
         while ((tk = tokens.nextToken()) != null) {
             //     assert debug("\nSTART_FRAME <<" + tk + ">> STK_SIZE=" + stk.size() + "; STK_PEEK=" + stk.peek() + "; TOKEN#=" + tokens.index());
-            if (stk.size() == 0) {
+            if (stk.isEmpty()) {
                 stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
             }
 
