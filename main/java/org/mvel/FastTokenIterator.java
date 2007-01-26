@@ -32,6 +32,11 @@ public class FastTokenIterator implements TokenIterator {
         this.length = (this.token = token).length;
     }
 
+    public FastTokenIterator(final FastTokenIterator fi) {
+        token = fi.token;
+        length = fi.length;
+    }
+
     public FastTokenIterator(TokenIterator map) {
         if (map instanceof FastTokenIterator) {
             this.length = (this.token = ((FastTokenIterator) map).token).length;

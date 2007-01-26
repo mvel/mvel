@@ -11,6 +11,8 @@ import org.mvel.tests.main.res.Foo;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 public class CompiledPerformanceTests extends TestCase {
 
@@ -40,10 +42,11 @@ public class CompiledPerformanceTests extends TestCase {
         variableTable.pack();
 
         Serializable compiled = MVEL.compileExpression(text);
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 100000; i++) {
             MVEL.executeExpression(compiled, variableTable);
         }
     }
+
 
     public void testToListBenchmark2() {
         testToListBenchmark();

@@ -19,6 +19,7 @@
 
 package org.mvel;
 
+import static org.mvel.util.ParseTools.handleParserEgress;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
 
@@ -26,7 +27,7 @@ import java.io.Serializable;
 
 public class CompiledExpression implements Serializable, ExecutableStatement {
     private char[] expression;
-    private TokenIterator tokenMap;
+    private FastTokenIterator tokenMap;
 
     private Class knownEgressType;
     private Class knownIngressType;
@@ -95,6 +96,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        return ParseTools.handleParserEgress(new AcceleratedParser(tokenMap).execute(staticContext, factory), false, false);
+        return handleParserEgress(new AcceleratedParser(tokenMap).execute(staticContext, factory), false, false);
     }
 }
