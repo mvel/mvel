@@ -63,9 +63,11 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
     }
 
     private void initialize() {
-        init = true;
         int preInitSize = size;
         size = 0;
+        init = true;
+        entrySet = new FastSet(preInitSize);
+        values = new Node[preInitSize * 2];
         for (int i = 0; i < preInitSize; i++) {
             put(lateInitKeys[i], lateInitVals[i]);
         }
@@ -79,13 +81,6 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
 
     public boolean isEmpty() {
         return size == 0;
-    }
-    
-    public int hashCode() {
-        if (!init) {
-            initialize();
-        }        
-        return super.hashCode();
     }
 
     public int hash(Object key) {
@@ -120,6 +115,11 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
             n.next = this;
             return n;
         }
+
+
+        public String toString() {
+            return String.valueOf(value);
+        }
     }
 
 
@@ -128,7 +128,7 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
             FastMap f = (FastMap) o;
             return entrySet.equals(f.entrySet);
         }
-        return false;  
+        return false;
     }
 
     public String toString() {
