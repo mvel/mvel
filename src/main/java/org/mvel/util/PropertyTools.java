@@ -108,7 +108,7 @@ public class PropertyTools {
     public static Method getSetter(Class clazz, String property) {
         String setter = ReflectionUtil.getSetter(property);
 
-        for (Method meth : clazz.getDeclaredMethods()) {
+        for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) == 0
                     && meth.getParameterTypes().length != 0) continue;
 
@@ -136,7 +136,7 @@ public class PropertyTools {
         String get = ReflectionUtil.getGetter(property);
         String isGet = ReflectionUtil.getIsGetter(property);
 
-        for (Method meth : clazz.getDeclaredMethods()) {
+        for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) == 0
                     || meth.getParameterTypes().length != 0
                     ) {

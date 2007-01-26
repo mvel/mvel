@@ -2,7 +2,7 @@
     <description>
         MVFLEX Expression Language
     </description>
-    
+
 
     <property name="version" value="1.2.0b1"/>
 
@@ -57,24 +57,16 @@
 
 
     <target name="deploy" depends="release">
-        <copy file="mvel-${version}-java${java.version}.jar" tofile="${deploy_to}/mvel.jar" />
+        <copy file="mvel-${version}-java${java.version}.jar" tofile="${deploy_to}/mvel.jar"/>
     </target>
 
-    <target name="release" depends="clean,compile,el-tests"
-            description="generate the distribution">
-        <!-- Create the distribution directory -->
+    <target name="jar" depends="clean,compile,el-tests">
+        <delete file="mvel.jar"/>
 
-        <!--<mkdir dir="build"/>-->
-        <!--<copy todir="build/">-->
-            <!--<fileset dir="${build}"/>-->
-        <!--</copy>-->
-
-        <delete file="mvel-${version}-java${java.version}.jar"/>
-
-        <jar jarfile="mvel-${version}-java${java.version}.jar" basedir="build">
+        <jar jarfile="mvel.jar" basedir="build">
             <manifest>
                 <attribute name="Built-By" value="Mike Brock"/>
-                <attribute name="Main-Class" value="org.mvel.MVELSH" />
+                <attribute name="Main-Class" value="org.mvel.MVELSH"/>
 
                 <section name="org.mvel">
                     <attribute name="Sealed" value="false"/>
@@ -82,10 +74,34 @@
                     <attribute name="Specification-Version" value="${version}"/>
                     <attribute name="Implementation-Version" value="${version} ${TODAY}"/>
                     <attribute name="Implementation-Vendor" value="Mike Brock"/>
-                    <attribute name="Main-Class" value="org.mvel.MVELSH" />                    
+                    <attribute name="Main-Class" value="org.mvel.MVELSH"/>
                 </section>
             </manifest>
         </jar>
+    </target>
+
+    <target name="release" depends="jar"
+            description="generate the distribution">
+
+        <delete dir="distrib/${version}"/>
+        <mkdir dir="distrib/${version}/"/>
+
+        <copy todir="distrib/${version}" file="README.TXT" />
+        <copy todir="distrib/${version}" file="ASM-LICENSE.txt" />
+        <copy todir="distrib/${version}" file="LICENSE.txt" />
+        <copy todir="distrib/${version}" file="mvel.jar" />
+
+
+
+
+        <mkdir dir="distrib/${version}/lib/"/>
+
+        <copy todir="distrib/${version}/lib/" file="lib/asm.jar" />
+
+        <zip zipfile="distrib/mvel-${version}-java${java.version}.zip" basedir="distrib/${version}/"/>
+
+        <echo message="ALL DONE!"/>
+
         <delete dir="build"/>
     </target>
 
@@ -103,7 +119,7 @@
         <jar jarfile="mvel-${version}-java${java.version}-nd.jar" basedir="build">
             <manifest>
                 <attribute name="Built-By" value="Mike Brock"/>
-                <attribute name="Main-Class" value="org.mvel.MVELSH" />
+                <attribute name="Main-Class" value="org.mvel.MVELSH"/>
 
                 <section name="org.mvel">
                     <attribute name="Sealed" value="true"/>
