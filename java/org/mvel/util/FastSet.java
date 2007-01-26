@@ -12,6 +12,11 @@ public class FastSet extends AbstractSet {
         this.elements = new Object[size];
     }
 
+
+    public FastSet(Object[] elements) {
+        this.size = (this.elements = elements).length;
+    }
+
     public Iterator iterator() {
         return new SetIterator(elements);
     }
