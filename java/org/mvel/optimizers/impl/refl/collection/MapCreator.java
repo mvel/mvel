@@ -16,19 +16,11 @@ public class MapCreator implements Accessor {
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         Object[] k = new Object[size];
         Object[] v = new Object[size];
-        for (int i = 0; i < size; i++) {
+        for (int i = size - 1; i != -1; i--) {
             k[i] = keys[i].getValue(ctx, elCtx, variableFactory);
             v[i] = vals[i].getValue(ctx, elCtx, variableFactory);
         }
         return new FastMap(size, k, v);
-
-//        FastMap map = new FastMap(keys.length);
-//
-//        for (int i = 0; i < keys.length; i++) {
-//            map.put(keys[i].getValue(ctx, elCtx, variableFactory), vals[i].getValue(ctx, elCtx, variableFactory));
-//        }
-//
-//        return map;
     }
 
 
