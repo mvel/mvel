@@ -22,14 +22,6 @@ public class UtilsTests extends TestCase {
                         .append("resources/productimages/").toString());
     }
 
-    public void testMap1() {
-        FastMap map = new FastMap(10);
-        map.put("test", "foobar");
-        map.put("foo", "bar");
-
-        assertEquals("foobar", map.get("test"));
-        assertEquals("bar", map.get("foo"));
-    }
   
 
 //    public void testMainPerf() {
