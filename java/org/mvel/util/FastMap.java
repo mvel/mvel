@@ -80,6 +80,13 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
     public boolean isEmpty() {
         return size == 0;
     }
+    
+    public int hashCode() {
+        if (!init) {
+            initialize();
+        }        
+        return super.hashCode();
+    }
 
     public int hash(Object key) {
         int hashCode = key.hashCode();
@@ -121,7 +128,7 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
             FastMap f = (FastMap) o;
             return entrySet.equals(f.entrySet);
         }
-        return false;
+        return false;  
     }
 
     public String toString() {
