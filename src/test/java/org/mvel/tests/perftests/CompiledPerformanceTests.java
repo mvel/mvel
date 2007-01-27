@@ -33,7 +33,7 @@ public class CompiledPerformanceTests extends TestCase {
         map.put("pi", "3.14");
         map.put("hour", "60");
         map.put("zero", 0);
-    }
+    }                                                                    
 
     public void testToListBenchmark() {
         String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";

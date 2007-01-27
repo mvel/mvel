@@ -8,8 +8,7 @@ public class AccessorBMModel implements Accessor {
     private ExecutableStatement p0;
     private ExecutableStatement p1;
 
-    private int blah;
-    
+     
     public AccessorBMModel() {
     }
 
@@ -24,6 +23,8 @@ public class AccessorBMModel implements Accessor {
 //        return ((Foo)variableFactory.getVariableResolver("foo").getLiteralValue())
 //                .toUC(DataConversion.convert(p0.getLiteralValue(elCtx, variableFactory), String.class));
         
-        return blah;
+    	return String.class;
+    	
+     //   return blah;
     }
 }

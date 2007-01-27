@@ -13,7 +13,7 @@ import java.math.RoundingMode;
 public class ELComparisons {
     private Base baseClass = new Base();
 
-    private static final int TESTNUM = 100000;
+    private static final int TESTNUM = 10000;
 
     public ELComparisons() {
     }
@@ -31,11 +31,13 @@ public class ELComparisons {
         runTest("Simple String Pass-Through", "'Hello World'", TESTNUM);
         runTest("Shallow Property", "data", TESTNUM);
         runTest("Deep Property", "foo.bar.name", TESTNUM);
+        runTest("Static Field Access", "Integer.MAX_VALUE", TESTNUM);
         runTest("Arithmetic", "10 + 1 - 1", TESTNUM);
         runTest("Collection Access + Method Call", "funMap['foo'].happy()", TESTNUM);
         runTest("Boolean compare", "data == 'cat'", TESTNUM);
         runTest("Object instantiation", "new String('Hello')", TESTNUM);
         runTest("Method access", "readBack('this is a string')", TESTNUM);
+
     }
 
     public void runTest(String name, String expression, int count) throws Exception {
@@ -45,30 +47,55 @@ public class ELComparisons {
 
         System.out.println("Results              :");
 
-        System.gc();
+        long time;
+        long mem;
 
-        long time = System.currentTimeMillis();
-        long mem = Runtime.getRuntime().freeMemory();
-        for (int reps = 0; reps < 6; reps++) {
+
+        try {
+            // unbenched warm-up
             for (int i = 0; i < count; i++) {
                 Ognl.getValue(expression, baseClass);
             }
+
+            System.gc();
+
+            time = System.currentTimeMillis();
+            mem = Runtime.getRuntime().freeMemory();
+
+            for (int reps = 0; reps < 5; reps++) {
+                for (int i = 0; i < count; i++) {
+                    Ognl.getValue(expression, baseClass);
+                }
+            }
+            System.out.println("(OGNL)               : " + new BigDecimal(((System.currentTimeMillis() - time))).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
+                    + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
         }
-        System.out.println("(OGNL)               : " + new BigDecimal(((System.currentTimeMillis() - time))).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
-                + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
+        catch (Exception e) {
+            System.out.println("(OGNL)               : <<COULD NOT EXECUTE>>");
+        }
 
-        System.gc();
 
-        time = System.currentTimeMillis();
-        mem = Runtime.getRuntime().freeMemory();
-        for (int reps = 0; reps < 6; reps++) {
+        try {
             for (int i = 0; i < count; i++) {
                 MVEL.eval(expression, baseClass);
-                //   ExpressionParser.executeExpression(ExpressionParser.compileExpression(expression), baseClass);
             }
+
+            System.gc();
+
+            time = System.currentTimeMillis();
+            mem = Runtime.getRuntime().freeMemory();
+            for (int reps = 0; reps < 5; reps++) {
+                for (int i = 0; i < count; i++) {
+                    MVEL.eval(expression, baseClass);
+                }
+            }
+            System.out.println("(MVEL)               : " + new BigDecimal(((System.currentTimeMillis() - time))).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
+                    + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
+
         }
-        System.out.println("(MVEL)               : " + new BigDecimal(((System.currentTimeMillis() - time))).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
-                + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
+        catch (Exception e) {
+            System.out.println("(MVEL)               : <<COULD NOT EXECUTE>>");
+        }
 
         runTestCompiled(name, expression, count);
 
@@ -76,37 +103,57 @@ public class ELComparisons {
     }
 
     public void runTestCompiled(String name, String expression, int count) throws Exception {
-
+        Object compiled;
+        long time;
+        long mem;
 
         System.out.println("Compiled Results     :");
 
-        System.gc();
-
-        long time = System.currentTimeMillis();
-        long mem = Runtime.getRuntime().freeMemory();
-
-        Object compiled = Ognl.parseExpression(expression);
-        for (int reps = 0; reps < 6; reps++) {
+        try {
+            compiled = Ognl.parseExpression(expression);
             for (int i = 0; i < count; i++) {
                 Ognl.getValue(compiled, baseClass);
             }
+
+            System.gc();
+
+            time = System.currentTimeMillis();
+            mem = Runtime.getRuntime().freeMemory();
+
+            for (int reps = 0; reps < 5; reps++) {
+                for (int i = 0; i < count; i++) {
+                    Ognl.getValue(compiled, baseClass);
+                }
+            }
+            System.out.println("(OGNL Compiled)      : " + new BigDecimal(System.currentTimeMillis() - time).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
+                    + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
         }
-        System.out.println("(OGNL Compiled)      : " + new BigDecimal(System.currentTimeMillis() - time).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
-                + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
+        catch (Exception e) {
+            System.out.println("(OGNL)               : <<COULD NOT EXECUTE>>");
+        }
 
-        System.gc();
-
-        time = System.currentTimeMillis();
-        mem = Runtime.getRuntime().freeMemory();
-
-        compiled = MVEL.compileExpression(expression);
-        for (int reps = 0; reps < 6; reps++) {
+        try {
+            compiled = MVEL.compileExpression(expression);
             for (int i = 0; i < count; i++) {
                 MVEL.executeExpression(compiled, baseClass);
             }
+
+            System.gc();
+
+            time = System.currentTimeMillis();
+            mem = Runtime.getRuntime().freeMemory();
+
+            for (int reps = 0; reps < 5; reps++) {
+                for (int i = 0; i < count; i++) {
+                    MVEL.executeExpression(compiled, baseClass);
+                }
+            }
+            System.out.println("(MVEL Compiled)      : " + new BigDecimal(System.currentTimeMillis() - time).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
+                    + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
         }
-        System.out.println("(MVEL Compiled)      : " + new BigDecimal(System.currentTimeMillis() - time).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
-                + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
+        catch (Exception e) {
+            System.out.println("(MVEL)               : <<COULD NOT EXECUTE>>");
+        }
     }
 
 }
