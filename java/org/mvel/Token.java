@@ -597,7 +597,11 @@ public class Token implements Cloneable, Serializable {
                 switch (name[i]) {
                     case'.':
                         if (!meth) {
-                            return get(new String(name, last, name.length - last), forName(new String(name, 0, last)), factory, thisRef);
+                            try {
+                                return get(new String(name, last, name.length - last), forName(new String(name, 0, last)), factory, thisRef);
+                            } catch (ClassNotFoundException e) {
+                                return get(new String(name, i + 1, name.length - i - 1), forName(new String(name, 0, i)), factory, thisRef);
+                            }
                         }
                         meth = false;
                         last = i;
