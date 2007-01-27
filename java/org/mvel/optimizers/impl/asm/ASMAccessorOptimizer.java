@@ -20,11 +20,9 @@ package org.mvel.optimizers.impl.asm;
 
 import org.mvel.*;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
-import org.mvel.optimizers.AbstractOptimizer;
-import org.mvel.optimizers.impl.refl.StaticReferenceAccessor;
-import org.mvel.optimizers.impl.refl.StaticVarAccessor;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
@@ -275,14 +273,23 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitVarInsn(ALOAD, 2);
             }
 
-            debug("CHECKCAST " + getInternalName(cls));
-            mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
+            if (((member.getModifiers() & Modifier.STATIC) != 0)) {
+                debug("GETSTATIC " + getDescriptor(member.getDeclaringClass()) + "."
+                        + member.getName() + "::" + getDescriptor(((Field) member).getType()));
 
-            debug("GETFIELD " + property + ":" + getDescriptor(((Field) member).getType()));
-            mv.visitFieldInsn(GETFIELD, getInternalName(cls), property, getDescriptor(((Field) member).getType()));
+                mv.visitFieldInsn(GETSTATIC, getDescriptor(member.getDeclaringClass()),
+                        member.getName(), getDescriptor(returnType = ((Field) member).getType()));
+            }
+            else {
+                debug("CHECKCAST " + getInternalName(cls));
+                mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
+
+                debug("GETFIELD " + property + ":" + getDescriptor(((Field) member).getType()));
+                mv.visitFieldInsn(GETFIELD, getInternalName(cls), property, getDescriptor(((Field) member).getType()));
+            }
 
             returnType = ((Field) member).getType();
-            //  addAccessorComponent(cls, property, FIELD, ((Field) member).getType());
+
             return o;
         }
         else if (member != null) {
@@ -324,6 +331,13 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return this.thisRef;
         }
         else if (Token.LITERALS.containsKey(property)) {
+            Object lit = Token.LITERALS.get(property);
+
+            if (lit instanceof Class) {
+                debug("LDC " + getDescriptor((Class) lit));
+                mv.visitLdcInsn(getType(getDescriptor((Class) lit)));
+            }
+
             return Token.LITERALS.get(property);
         }
         else {
@@ -333,17 +347,18 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 if (ts instanceof Class) {
                     debug("LDC " + getDescriptor((Class) ts));
                     mv.visitLdcInsn(getType(getDescriptor((Class) ts)));
+                    return ts;
                 }
                 else {
                     debug("GETSTATIC " + getDescriptor(((Field) ts).getDeclaringClass()) + "."
-                            + ((Field) ts).getName());
-                    
+                            + ((Field) ts).getName() + "::" + getDescriptor(((Field) ts).getType()));
+
                     mv.visitFieldInsn(GETSTATIC, getDescriptor(((Field) ts).getDeclaringClass()),
-                            ((Field) ts).getName(), getDescriptor(((Field) ts).getType()));
+                            ((Field) ts).getName(), getDescriptor(returnType = ((Field) ts).getType()));
+
+
+                    return ((Field) ts).get(null);
                 }
-
-                return ts;
-
 
             }
             else
