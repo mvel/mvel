@@ -52,6 +52,9 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
 
     private boolean first = true;
 
+    private static final Map<String, Accessor> REFLECTIVE_ACCESSOR_CACHE =
+            new WeakHashMap<String, Accessor>();
+
 
     public ReflectiveOptimizer() {
     }
@@ -81,6 +84,17 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
     public ReflectiveOptimizer(String property, Object ctx) {
         this.length = (this.expr = property.toCharArray()).length;
         this.ctx = ctx;
+    }
+
+    public static Object get(String expression, Object ctx) {
+        if (REFLECTIVE_ACCESSOR_CACHE.containsKey(expression)) {
+            return REFLECTIVE_ACCESSOR_CACHE.get(expression).getValue(ctx, null, null);
+        }
+        else {
+            Accessor accessor = new ReflectiveOptimizer().optimize(expression.toCharArray(), ctx, null, null, false);
+            REFLECTIVE_ACCESSOR_CACHE.put(expression, accessor);
+            return accessor.getValue(ctx, null, null);
+        }
     }
 
 
