@@ -30,7 +30,6 @@ import org.mvel.optimizers.impl.refl.collection.MapCreator;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
 
-import static java.lang.Character.isWhitespace;
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
 import java.util.*;
@@ -235,7 +234,7 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
                     StaticVarAccessor accessor = new StaticVarAccessor((Field) tryStaticMethodRef);
                     addAccessorNode(accessor);
                 }
-                
+
                 return tryStaticMethodRef;
             }
             else
@@ -331,9 +330,6 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
         }
     }
 
-    private static final Map<String, ExecutableStatement[]> SUBEXPRESSION_CACHE
-            = new WeakHashMap<String, ExecutableStatement[]>();
-
     /**
      * Find an appropriate method, execute it, and return it's response.
      *
@@ -372,23 +368,12 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
             es = null;
         }
         else {
-            if (SUBEXPRESSION_CACHE.containsKey(tk)) {
-                es = SUBEXPRESSION_CACHE.get(tk);
-                args = new Object[es.length];
-                for (int i = 0; i < es.length; i++) {
-                    args[i] = es[i].getValue(this.ctx, variableFactory);
-                }
+            String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
+            es = new ExecutableStatement[subtokens.length];
+            args = new Object[subtokens.length];
+            for (int i = 0; i < subtokens.length; i++) {
+                args[i] = (es[i] = (ExecutableStatement) MVEL.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
             }
-            else {
-                String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
-                es = new ExecutableStatement[subtokens.length];
-                args = new Object[subtokens.length];
-                for (int i = 0; i < subtokens.length; i++) {
-                    args[i] = (es[i] = (ExecutableStatement) MVEL.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
-                }
-                SUBEXPRESSION_CACHE.put(tk, es);
-            }
-
         }
 
         /**
