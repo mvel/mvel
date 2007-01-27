@@ -28,6 +28,16 @@
         </javac>
     </target>
 
+    <taskdef name="retroweaver" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">
+    </taskdef>
+
+
+    <target name="compile-1.4">
+        <delete dir="build14" />
+        <mkdir dir="build14" />
+        <retroweaver srcdir="${build}" destdir="build14" target="1.4"/>
+    </target>
+
     <target name="compile-nodebug" depends="init"
             description="compile the source ">
         <javac source="1.5" srcdir="${src}" destdir="${build}" optimize="true" debug="off">
@@ -86,17 +96,15 @@
         <delete dir="distrib/${version}"/>
         <mkdir dir="distrib/${version}/"/>
 
-        <copy todir="distrib/${version}" file="README.TXT" />
-        <copy todir="distrib/${version}" file="ASM-LICENSE.txt" />
-        <copy todir="distrib/${version}" file="LICENSE.txt" />
-        <copy todir="distrib/${version}" file="mvel.jar" />
-
-
+        <copy todir="distrib/${version}" file="README.TXT"/>
+        <copy todir="distrib/${version}" file="ASM-LICENSE.txt"/>
+        <copy todir="distrib/${version}" file="LICENSE.txt"/>
+        <copy todir="distrib/${version}" file="mvel.jar"/>
 
 
         <mkdir dir="distrib/${version}/lib/"/>
 
-        <copy todir="distrib/${version}/lib/" file="lib/asm.jar" />
+        <copy todir="distrib/${version}/lib/" file="lib/asm.jar"/>
 
         <zip zipfile="distrib/mvel-${version}-java${java.version}.zip" basedir="distrib/${version}/"/>
 
