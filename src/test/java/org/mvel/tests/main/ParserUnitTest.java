@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ParserUnitTest extends TestCase {
+
     Foo foo = new Foo();
     Map<String, Object> map = new HashMap<String, Object>();
     Base base = new Base();
@@ -609,6 +610,10 @@ public class ParserUnitTest extends TestCase {
 
     public void testStaticNamespaceClassWithMethod() {
         assertEquals("FooBar", parseDirect("java.lang.String.valueOf('FooBar')"));
+    }
+
+    public void testStaticNamespaceClassWithField() {
+        assertEquals(String.CASE_INSENSITIVE_ORDER, parseDirect("java.lang.String.CASE_INSENSITIVE_ORDER"));
     }
 
     public Object parse(String ex) {
