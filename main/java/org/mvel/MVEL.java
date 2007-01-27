@@ -19,22 +19,20 @@
 
 package org.mvel;
 
-import static java.lang.String.valueOf;
-
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
 import org.mvel.optimizers.impl.refl.ReflectiveOptimizer;
 import org.mvel.util.ParseTools;
 
-import java.util.Map;
 import java.io.Serializable;
+import static java.lang.String.valueOf;
+import java.util.Map;
 
 public class MVEL {
     public static final String NAME = "MVEL (MVFLEX Expression Language)";
     public static final String VERSION = "1.2";
-    public static final String VERSION_SUB = "beta1";
+    public static final String VERSION_SUB = "beta2";
     public static final String CODENAME = "horizon";
 
     static boolean THREAD_SAFE = Boolean.getBoolean("mvel.threadsafety");
