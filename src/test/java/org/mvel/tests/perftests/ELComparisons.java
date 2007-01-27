@@ -2,10 +2,13 @@ package org.mvel.tests.perftests;
 
 import ognl.Ognl;
 import org.mvel.MVEL;
+import org.mvel.optimizers.impl.refl.ReflectiveOptimizer;
 import org.mvel.tests.main.res.Base;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+
+import wicket.util.lang.PropertyResolver;
 
 /**
  * Performance Tests Comparing MVEL to OGNL with Same Expressions.
@@ -97,6 +100,7 @@ public class ELComparisons {
         catch (Exception e) {
             System.out.println("(MVEL)               : <<COULD NOT EXECUTE>>");
         }
+
 //
 //        try {
 //            for (int i = 0; i < count; i++) {
