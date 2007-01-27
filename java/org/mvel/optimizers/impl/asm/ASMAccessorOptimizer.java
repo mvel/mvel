@@ -18,13 +18,13 @@
  */
 package org.mvel.optimizers.impl.asm;
 
-import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.*;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
 import org.objectweb.asm.ClassWriter;
@@ -543,7 +543,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             //noinspection ZeroLengthArrayAllocation
             args = new Object[0];
 
-            //noinspection ZeroLengthArrayAllocation            
+            //noinspection ZeroLengthArrayAllocation
             preConvArgs = new Object[0];
             es = null;
         }
@@ -729,27 +729,29 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
+    private static final Method defineClass;
+
+    static {
+        try {
+            defineClass =
+                    Class.forName("java.lang.ClassLoader").getDeclaredMethod("defineClass",
+                            new Class[]{String.class, byte[].class, int.class, int.class});
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
     private static java.lang.Class loadClass(String className, byte[] b) throws Exception {
-        //override classDefine (as it is protected) and define the class.
-        Class clazz = null;
-        ClassLoader loader = ASMAccessorOptimizer.class.getClassLoader();
-
-        Class cls = Class.forName("java.lang.ClassLoader");
-        java.lang.reflect.Method method =
-                cls.getDeclaredMethod("defineClass", new Class[]{String.class, byte[].class, int.class, int.class});
-
-        // protected method invocaton
-        method.setAccessible(true);
+        defineClass.setAccessible(true);
         try {
-            Object[] args = new Object[]{className, b, 0, (b.length)};
-            clazz = (Class) method.invoke(loader, args);
+            //noinspection RedundantArrayCreation
+            return (Class) defineClass.invoke(ASMAccessorOptimizer.class.getClassLoader(), new Object[]{className, b, 0, (b.length)});
         }
         finally {
-            method.setAccessible(false);
+            defineClass.setAccessible(false);
         }
-
-        return clazz;
     }
 
 
