@@ -484,7 +484,11 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testStaticNamespaceClassWithField() {
-        assertEquals(String.CASE_INSENSITIVE_ORDER, parseDirect("java.lang.String.CASE_INSENSITIVE_ORDER"));
+        assertEquals(Integer.MAX_VALUE, parseDirect("java.lang.Integer.MAX_VALUE"));
+    }
+
+    public void testStaticNamespaceClassWithField2() {
+        assertEquals(Integer.MAX_VALUE, parseDirect("Integer.MAX_VALUE"));
     }
 
 
