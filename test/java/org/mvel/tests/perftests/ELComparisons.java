@@ -13,7 +13,7 @@ import java.math.RoundingMode;
 public class ELComparisons {
     private Base baseClass = new Base();
 
-    private static final int TESTNUM = 10000;
+    private static final int TESTNUM = 100000;
 
     public ELComparisons() {
     }
@@ -31,7 +31,8 @@ public class ELComparisons {
         runTest("Simple String Pass-Through", "'Hello World'", TESTNUM);
         runTest("Shallow Property", "data", TESTNUM);
         runTest("Deep Property", "foo.bar.name", TESTNUM);
-        runTest("Static Field Access", "Integer.MAX_VALUE", TESTNUM);
+        runTest("Static Field Access (MVEL)", "Integer.MAX_VALUE", TESTNUM);
+        runTest("Static Field Access (OGNL)", "@java.lang.Integer@MAX_VALUE", TESTNUM);
         runTest("Arithmetic", "10 + 1 - 1", TESTNUM);
         runTest("Collection Access + Method Call", "funMap['foo'].happy()", TESTNUM);
         runTest("Boolean compare", "data == 'cat'", TESTNUM);
@@ -96,6 +97,52 @@ public class ELComparisons {
         catch (Exception e) {
             System.out.println("(MVEL)               : <<COULD NOT EXECUTE>>");
         }
+//
+//        try {
+//            for (int i = 0; i < count; i++) {
+//                ReflectiveOptimizer.get(expression, baseClass);
+//            }
+//
+//            System.gc();
+//
+//            time = System.currentTimeMillis();
+//            mem = Runtime.getRuntime().freeMemory();
+//            for (int reps = 0; reps < 5; reps++) {
+//                for (int i = 0; i < count; i++) {
+//                    ReflectiveOptimizer.get(expression, baseClass);
+//                }
+//            }
+//            System.out.println("(MVELPropAcc)        : " + new BigDecimal(((System.currentTimeMillis() - time))).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
+//                    + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
+//
+//        }
+//        catch (Exception e) {
+//            System.out.println("(MVELPropAcc)        : <<COULD NOT EXECUTE>>");
+//        }
+//
+//
+//        try {
+//            for (int i = 0; i < count; i++) {
+//                PropertyResolver.getValue(expression, baseClass);
+//            }
+//
+//            System.gc();
+//
+//            time = System.currentTimeMillis();
+//            mem = Runtime.getRuntime().freeMemory();
+//            for (int reps = 0; reps < 5; reps++) {
+//                for (int i = 0; i < count; i++) {
+//                    PropertyResolver.getValue(expression, baseClass);
+//                }
+//            }
+//            System.out.println("(WicketPropRes)      : " + new BigDecimal(((System.currentTimeMillis() - time)))
+//                    .divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
+//                    + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
+//        }
+//        catch (Exception e) {
+//            System.out.println("(WicketPropRes)      : <<COULD NOT EXECUTE>>");
+//        }
+
 
         runTestCompiled(name, expression, count);
 
