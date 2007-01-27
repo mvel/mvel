@@ -25,6 +25,7 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
+import org.mvel.optimizers.impl.refl.ReflectiveOptimizer;
 import org.mvel.util.ParseTools;
 
 import java.util.Map;
@@ -327,5 +328,13 @@ public class MVEL {
      */
     public static Boolean evalToBoolean(String expression, Map vars) {
         return evalToBoolean(expression, null, vars);
+    }
+
+    public static Object getProperty(String property, Object ctx) {
+        return ReflectiveOptimizer.get(property, ctx);
+    }
+
+    public static void setProperty(Object ctx, String property, Object value) {
+        PropertyAccessor.set(ctx, property, value);
     }
 }
