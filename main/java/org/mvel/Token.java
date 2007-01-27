@@ -844,7 +844,7 @@ public class Token implements Cloneable, Serializable {
     }
 
     public boolean isOperator(Integer operator) {
-        return (fields & OPERATOR) != 0 && literal == operator;
+        return (fields & OPERATOR) != 0 && operator.equals(literal);
     }
 
     public Integer getOperator() {
