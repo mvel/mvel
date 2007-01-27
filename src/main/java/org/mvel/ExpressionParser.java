@@ -31,6 +31,8 @@ import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
+import static org.mvel.util.ParseTools.debug;
+
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
@@ -149,11 +151,11 @@ public class ExpressionParser extends AbstractParser {
      * @return int - behaviour code
      */
     private int reduceBinary(int o) {
-        // assert debug("BINARY_OP " + o + " PEEK=<<" + stk.peek() + ">>");
+        assert debug("BINARY_OP " + o + " PEEK=<<" + stk.peek() + ">>");
         switch (o) {
             case AND:
                 if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
-                    // assert debug("STMT_UNWIND");
+                    assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
                         return -1;
                     }
@@ -168,7 +170,7 @@ public class ExpressionParser extends AbstractParser {
                 }
             case OR:
                 if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
-                    // assert debug("STMT_UNWIND");
+                    assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
                         return -1;
                     }
@@ -254,7 +256,7 @@ public class ExpressionParser extends AbstractParser {
                     v2 = processToken(stk.pop());
                 }
 
-                // assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
+                assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
 
                 switch (operator) {
                     case ADD:
