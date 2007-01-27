@@ -18,6 +18,7 @@
  */
 package org.mvel.optimizers.impl.asm;
 
+import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.*;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
@@ -176,7 +177,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             cw.visitEnd();
 
 
-            Class cls = loadClass(cw.toByteArray());
+            Class cls = loadClass(className, cw.toByteArray());
 
             debug("[MVEL JIT Completed Optimization <<" + new String(expr) + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
 
@@ -500,8 +501,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    private static final Map<String, ExecutableStatement[]> SUBEXPRESSION_CACHE
-            = new WeakHashMap<String, ExecutableStatement[]>();
 
     /**
      * Find an appropriate method, execute it, and return it's response.
@@ -549,26 +548,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             es = null;
         }
         else {
-            if (SUBEXPRESSION_CACHE.containsKey(tk)) {
-                es = SUBEXPRESSION_CACHE.get(tk);
-                args = new Object[es.length];
-                preConvArgs = new Object[es.length];
-                for (int i = 0; i < es.length; i++) {
-                    preConvArgs[i] = args[i] = es[i].getValue(this.ctx, variableFactory);
-                }
-            }
-            else {
-                String[] subtokens = ParseTools.parseParameterList(tk.toCharArray(), 0, -1);
-                es = new ExecutableStatement[subtokens.length];
-                args = new Object[subtokens.length];
-                preConvArgs = new Object[es.length];
+            String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
 
-                for (int i = 0; i < subtokens.length; i++) {
-                    preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) MVEL.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
-                }
-                SUBEXPRESSION_CACHE.put(tk, es);
-            }
+            es = new ExecutableStatement[subtokens.length];
+            args = new Object[subtokens.length];
+            preConvArgs = new Object[es.length];
 
+            for (int i = 0; i < subtokens.length; i++) {
+                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) MVEL.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+            }
         }
 
         if (es != null) {
@@ -643,12 +631,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             if (m.getParameterTypes().length == 0) {
                 if ((m.getModifiers() & Modifier.STATIC) != 0) {
-
                     debug("INVOKESTATIC " + m.getName());
                     mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(), getMethodDescriptor(m));
                 }
                 else {
-
                     debug("CHECKCAST " + getInternalName(m.getDeclaringClass()));
                     mv.visitTypeInsn(CHECKCAST, getInternalName(m.getDeclaringClass()));
 
@@ -739,16 +725,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 stacksize++;
             }
 
-
             return m.invoke(ctx, args);
         }
     }
 
 
-    private java.lang.Class loadClass(byte[] b) throws Exception {
+    private static java.lang.Class loadClass(String className, byte[] b) throws Exception {
         //override classDefine (as it is protected) and define the class.
         Class clazz = null;
-        ClassLoader loader = this.getClass().getClassLoader();
+        ClassLoader loader = ASMAccessorOptimizer.class.getClassLoader();
 
         Class cls = Class.forName("java.lang.ClassLoader");
         java.lang.reflect.Method method =

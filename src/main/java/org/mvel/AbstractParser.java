@@ -462,16 +462,10 @@ public class AbstractParser {
         while (cursor < length && expr[cursor] != ';') {
             cursor++;
         }
-    //    if (cursor < length) cursor--;
     }
-
 
     private void skipWhitespace() {
         while (isWhitespace(expr[cursor])) cursor++;
-    }
-
-    private void skipToLastWhitespace() {
-        while (cursor < length && isWhitespace(expr[cursor + 1])) cursor++;
     }
 
     private void trimWhitespace() {
