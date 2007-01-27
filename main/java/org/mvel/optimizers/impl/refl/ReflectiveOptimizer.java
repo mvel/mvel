@@ -98,7 +98,7 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
         this.thisRef = thisRef;
         this.variableFactory = factory;
 
-      //  if (root) currNode = rootNode = new ThisValueAccessor();
+        //  if (root) currNode = rootNode = new ThisValueAccessor();
 
         return compileGetChain();
     }
@@ -245,14 +245,19 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
             return accessor.getLiteral();
         }
         else {
-            Class tryStaticMethodRef = tryStaticAccess();
+            Object tryStaticMethodRef = tryStaticAccess();
 
             if (tryStaticMethodRef != null) {
-                StaticReferenceAccessor accessor = new StaticReferenceAccessor();
-                accessor.setLiteral(tryStaticMethodRef);
-
-                addAccessorNode(accessor);
-
+                if (tryStaticMethodRef instanceof Class) {
+                    StaticReferenceAccessor accessor = new StaticReferenceAccessor();
+                    accessor.setLiteral(tryStaticMethodRef);
+                    addAccessorNode(accessor);
+                }
+                else {
+                    StaticVarAccessor accessor = new StaticVarAccessor((Field) tryStaticMethodRef);
+                    addAccessorNode(accessor);
+                }
+                
                 return tryStaticMethodRef;
             }
             else
@@ -514,7 +519,7 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
         return rootNode.getValue(ctx, elCtx, variableFactory);
     }
 
-    private Class tryStaticAccess() {
+    private Object tryStaticAccess() {
         try {
             /**
              * Try to resolve this *smartly* as a static class reference.
@@ -533,7 +538,15 @@ public class ReflectiveOptimizer extends AbstractParser implements AccessorOptim
                 switch (expr[i]) {
                     case'.':
                         if (!meth) {
-                            return forName(new String(expr, 0, last));
+                            try {
+                                return forName(new String(expr, 0, last));
+                            }
+                            catch (ClassNotFoundException e) {
+                                // return a field instead
+
+                                return forName(new String(expr, 0, i))
+                                        .getField(new String(expr, i + 1, expr.length - i - 1));
+                            }
                         }
 
                         meth = false;

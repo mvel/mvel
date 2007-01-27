@@ -483,6 +483,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("101", parseDirect("new String(this.number)"));
     }
 
+    public void testStaticNamespaceClassWithField() {
+        assertEquals(String.CASE_INSENSITIVE_ORDER, parseDirect("java.lang.String.CASE_INSENSITIVE_ORDER"));
+    }
+
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
