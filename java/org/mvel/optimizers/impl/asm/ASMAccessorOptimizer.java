@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -23,6 +22,9 @@ import org.mvel.*;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
+import org.mvel.optimizers.AbstractOptimizer;
+import org.mvel.optimizers.impl.refl.StaticReferenceAccessor;
+import org.mvel.optimizers.impl.refl.StaticVarAccessor;
 import org.mvel.util.ParseTools;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
@@ -36,7 +38,7 @@ import static org.objectweb.asm.Type.*;
 import java.lang.reflect.*;
 import java.util.*;
 
-public class ASMAccessorOptimizer implements AccessorOptimizer {
+public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
     private static final int OPCODES_VERSION;
 
     static {
@@ -51,21 +53,10 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
             OPCODES_VERSION = Opcodes.V1_2;
     }
 
-    private int start = 0;
-    private int cursor = 0;
-
-    private char[] property;
-    private int length;
-
     private Object ctx;
     private Object thisRef;
 
     private VariableResolverFactory variableFactory;
-
-    private static final int DONE = -1;
-    private static final int BEAN = 0;
-    private static final int METH = 1;
-    private static final int COL = 2;
 
     private static final Object[] EMPTYARG = new Object[0];
 
@@ -86,7 +77,7 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
     private Class returnType;
 
     public ASMAccessorOptimizer(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableResolverFactory) {
-        this.property = property;
+        this.expr = property;
         this.ctx = ctx;
         this.variableFactory = variableResolverFactory;
         this.thisRef = thisRef;
@@ -111,7 +102,7 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
         this.val = null;
 
         this.length = property.length;
-        this.property = property;
+        this.expr = property;
         this.ctx = staticContext;
         this.thisRef = thisRef;
         this.variableFactory = factory;
@@ -138,13 +129,13 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
     }
 
     public Accessor compileAccessor() {
-        debug("\n{Initiate Compile: " + new String(property) + "}\n");
+        debug("\n{Initiate Compile: " + new String(expr) + "}\n");
 
         Object curr = ctx;
 
         try {
             while (cursor < length) {
-                switch (nextToken()) {
+                switch (nextSubToken()) {
                     case BEAN:
                         curr = getBeanProperty(curr, capture());
                         break;
@@ -153,8 +144,6 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
                         break;
                     case COL:
                         curr = getCollectionProperty(curr, capture());
-                        break;
-                    case DONE:
                         break;
                 }
 
@@ -191,7 +180,7 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
 
             Class cls = loadClass(cw.toByteArray());
 
-            debug("[MVEL JIT Completed Optimization <<" + new String(property) + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
+            debug("[MVEL JIT Completed Optimization <<" + new String(expr) + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
 
 
             Object o;
@@ -214,8 +203,9 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
                 throw new RuntimeException("Classloader problem detected. JIT Class is not subclass of org.mvel.Accessor.");
             }
 
-            Object test = ((Accessor)o).getValue(ctx, thisRef, variableFactory);
-            debug("[MVEL JIT Test Output: " + test + ":" + (test != null?test.getClass():null) + "]");
+            Object test = ((Accessor) o).getValue(ctx, thisRef, variableFactory);
+
+            debug("[MVEL JIT Test Output: " + test + ":" + (test != null ? test.getClass() : null) + "]");
 
             return (Accessor) o;
         }
@@ -226,53 +216,23 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
             throw new PropertyAccessException("could not access property", e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException("array or collections index out of bounds (property: " + new String(property) + ")", e);
+            throw new PropertyAccessException("array or collections index out of bounds (property: " + new String(expr) + ")", e);
         }
         catch (PropertyAccessException e) {
-            throw new PropertyAccessException("failed to access property: <<" + new String(property) + ">> in: " + (ctx != null ? ctx.getClass() : null), e);
+            throw new PropertyAccessException("failed to access property: <<" + new String(expr) + ">> in: " + (ctx != null ? ctx.getClass() : null), e);
         }
         catch (CompileException e) {
             throw e;
         }
         catch (NullPointerException e) {
-            throw new PropertyAccessException("null pointer exception in property: " + new String(property), e);
+            throw new PropertyAccessException("null pointer exception in property: " + new String(expr), e);
         }
         catch (OptimizationNotSupported e) {
             throw e;
         }
         catch (Exception e) {
-            throw new PropertyAccessException("unknown exception in expression: " + new String(property), e);
+            throw new PropertyAccessException("unknown exception in expression: " + new String(expr), e);
         }
-    }
-
-
-    private int nextToken() {
-        switch (property[start = cursor]) {
-            case'[':
-                return COL;
-            case'.':
-                cursor = ++start;
-        }
-
-        //noinspection StatementWithEmptyBody
-        while (++cursor < length && Character.isJavaIdentifierPart(property[cursor])) ;
-
-
-        if (cursor < length) {
-            switch (property[cursor]) {
-                case'[':
-                    return COL;
-                case'(':
-                    return METH;
-                default:
-                    return 0;
-            }
-        }
-        return 0;
-    }
-
-    private String capture() {
-        return new String(property, start, cursor - start);
     }
 
 
@@ -367,40 +327,29 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
             return Token.LITERALS.get(property);
         }
         else {
-            Class tryStaticMethodRef = tryStaticAccess();
+            Object ts = tryStaticAccess();
 
-            if (tryStaticMethodRef != null) {
-                throw new OptimizationNotSupported("class literal: " + tryStaticMethodRef);
+            if (ts != null) {
+                if (ts instanceof Class) {
+                    debug("LDC " + getDescriptor((Class) ts));
+                    mv.visitLdcInsn(getType(getDescriptor((Class) ts)));
+                }
+                else {
+                    debug("GETSTATIC " + getDescriptor(((Field) ts).getDeclaringClass()) + "."
+                            + ((Field) ts).getName());
+                    
+                    mv.visitFieldInsn(GETSTATIC, getDescriptor(((Field) ts).getDeclaringClass()),
+                            ((Field) ts).getName(), getDescriptor(((Field) ts).getType()));
+                }
+
+                return ts;
+
+
             }
             else
                 throw new PropertyAccessException("could not access property (" + property + ")");
         }
     }
-
-    private void whiteSpaceSkip() {
-        if (cursor < length)
-            //noinspection StatementWithEmptyBody
-            while (Character.isWhitespace(property[cursor]) && ++cursor < length) ;
-    }
-
-    private boolean scanTo(char c) {
-        for (; cursor < length; cursor++) {
-            if (property[cursor] == c) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private int containsStringLiteralTermination() {
-        int pos = cursor;
-        for (pos--; pos > 0; pos--) {
-            if (property[pos] == '\'' || property[pos] == '"') return pos;
-            else if (!Character.isWhitespace(property[pos])) return pos;
-        }
-        return -1;
-    }
-
 
     /**
      * Handle accessing a property embedded in a collections, map, or array
@@ -424,7 +373,7 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
 
         String item;
 
-        if (property[cursor] == '\'' || property[cursor] == '"') {
+        if (expr[cursor] == '\'' || expr[cursor] == '"') {
             start++;
 
             int end;
@@ -434,13 +383,13 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
             if ((end = containsStringLiteralTermination()) == -1)
                 throw new PropertyAccessException("unterminated string literal in collections accessor");
 
-            item = new String(property, start, end - start);
+            item = new String(expr, start, end - start);
         }
         else {
             if (!scanTo(']'))
                 throw new PropertyAccessException("unterminated '['");
 
-            item = new String(property, start, cursor - start);
+            item = new String(expr, start, cursor - start);
         }
 
         ++cursor;
@@ -557,7 +506,7 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
         int depth = 1;
 
         while (cursor++ < length - 1 && depth != 0) {
-            switch (property[cursor]) {
+            switch (expr[cursor]) {
                 case'(':
                     depth++;
                     continue;
@@ -568,7 +517,7 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
         }
         cursor--;
 
-        String tk = (cursor - st) > 1 ? new String(property, st + 1, cursor - st - 1) : "";
+        String tk = (cursor - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
 
         cursor++;
 
@@ -781,49 +730,6 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
     }
 
 
-    private Class tryStaticAccess() {
-        try {
-            /**
-             * Try to resolve this *smartly* as a static class reference.
-             *
-             * This starts at the end of the token and starts to step backwards to figure out whether
-             * or not this may be a static class reference.  We search for method calls simply by
-             * inspecting for ()'s.  The first union area we come to where no brackets are present is our
-             * test-point for a class reference.  If we find a class, we pass the reference to the
-             * property accessor along  with trailing methods (if any).
-             *
-             */
-            boolean meth = false;
-            int depth = 0;
-            int last = property.length;
-            for (int i = property.length - 1; i > 0; i--) {
-                switch (property[i]) {
-                    case'.':
-                        if (!meth) {
-                            return Class.forName(new String(property, 0, last));
-                        }
-
-                        meth = false;
-                        last = i;
-                        break;
-                    case')':
-                        if (depth++ == 0)
-                            meth = true;
-                        break;
-                    case'(':
-                        depth--;
-                        break;
-                }
-            }
-        }
-        catch (Exception cnfe) {
-            // do nothing.
-        }
-
-        return null;
-    }
-
-
     private java.lang.Class loadClass(byte[] b) throws Exception {
         //override classDefine (as it is protected) and define the class.
         Class clazz = null;
@@ -854,7 +760,6 @@ public class ASMAccessorOptimizer implements AccessorOptimizer {
     public String getName() {
         return "ASM";
     }
-
 
     public Object getResultOptPass() {
         return val;
