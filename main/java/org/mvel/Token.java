@@ -368,7 +368,7 @@ public class Token implements Cloneable, Serializable {
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & INLINE_COLLECTION) != 0) {
-                accessor = optimizer.optimizeCollection(name, ctx, thisValue, factory);
+                accessor = (optimizer = OptimizerFactory.getDefaultAccessorCompiler()).optimizeCollection(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & FOLD) != 0) {
@@ -384,7 +384,6 @@ public class Token implements Cloneable, Serializable {
                 }
                 catch (OptimizationNotSupported ne) {
                     accessor = (optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)).optimize(name, ctx, thisValue, factory, true);
-
                 }
             }
 
