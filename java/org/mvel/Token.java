@@ -19,6 +19,7 @@
 
 package org.mvel;
 
+import static org.mvel.util.ParseTools.getBigDecimalFromType;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
@@ -32,6 +33,7 @@ import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
+import org.mvel.conversion.Converter;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -79,13 +81,17 @@ public class Token implements Cloneable, Serializable {
     private String nameCache;
 
     private Object literal;
+    private int knownType = 0;
+
+    private Class type;
+    private Class exitType;
+    private Converter typeConverter;
 
     private int fields = 0;
 
     private Accessor accessor;
 
     private int knownSize = 0;
-    private int knownType = 0;
 
     public Token nextToken;
 
@@ -275,7 +281,6 @@ public class Token implements Cloneable, Serializable {
         return name;
     }
 
-
     public int getEndOfName() {
         return endOfName;
     }
@@ -300,7 +305,6 @@ public class Token implements Cloneable, Serializable {
         }
         else {
             return getName();
-
         }
     }
 
@@ -543,10 +547,10 @@ public class Token implements Cloneable, Serializable {
         if ((fields & (NEGATION | BOOLEAN_MODE | NUMERIC | INVERT)) == 0) return value;
         else if (knownType > 99) {
             if ((fields & INVERT) != 0) {
-                return ~ParseTools.getBigDecimalFromType(value, knownType).intValue();
+                return ~getBigDecimalFromType(value, knownType).intValue();
             }
             else {
-                return ParseTools.getBigDecimalFromType(value, knownType);
+                return getBigDecimalFromType(value, knownType);
             }
         }
         else if ((fields & NEGATION) != 0) {
@@ -566,12 +570,12 @@ public class Token implements Cloneable, Serializable {
         else if ((fields & INVERT) != 0) {
             if (isNumber(value)) {
                 knownType = ParseTools.resolveType(value.getClass());
-                value = ~ParseTools.getBigDecimalFromType(value, knownType).intValue();
+                value = ~getBigDecimalFromType(value, knownType).intValue();
             }
         }
         else if (isNumber(value)) {
             knownType = ParseTools.resolveType(value.getClass());
-            value = ParseTools.getBigDecimalFromType(value, knownType);
+            value = getBigDecimalFromType(value, knownType);
         }
 
 
@@ -756,9 +760,29 @@ public class Token implements Cloneable, Serializable {
         this.accessor = accessor;
     }
 
-//    public void setCompiledExpression(ExecutableStatement compiledExpression) {
-//        this.compiledExpression = compiledExpression;
-//    }
+    public Class getType() {
+        return type;
+    }
+
+    public void setType(Class type) {
+        this.type = type;
+    }
+
+    public Converter getTypeConverter() {
+        return typeConverter;
+    }
+
+    public void setTypeConverter(Converter typeConverter) {
+        this.typeConverter = typeConverter;
+    }
+
+    public Class getExitType() {
+        return exitType;
+    }
+
+    public void setExitType(Class exitType) {
+        this.exitType = exitType;
+    }
 
     public Token clone() throws CloneNotSupportedException {
         try {

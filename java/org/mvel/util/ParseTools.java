@@ -507,10 +507,13 @@ public class ParseTools {
         while (v != null) {
             if (v instanceof LocalVariableResolverFactory)
                 return v;
+
             v = v.getNextFactory();
         }
+
         if (factory == null) {
-            return new LocalVariableResolverFactory(new HashMap<String, Object>());
+            throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
+          //  return new LocalVariableResolverFactory(new HashMap<String, Object>());
         }
         else {
             return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
