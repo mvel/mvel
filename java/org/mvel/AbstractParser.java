@@ -28,10 +28,6 @@ public class AbstractParser {
      * @return -
      */
     protected Token nextToken() {
-//        if (fastExecuteMode) return tokens.nextToken();
-
-        Token tk;
-
         /**
          * If the cursor is at the end of the expression, we have nothing more to do:
          * return null.
@@ -162,8 +158,6 @@ public class AbstractParser {
                                 assert debug("GREEDY_CAPTURE_CONTINUE_FOR_ASSIGNMENT");
 
                                 captureToEOS();
-
-                                capture = false;
 
                                 break;
                             }

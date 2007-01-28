@@ -20,8 +20,8 @@ package org.mvel;
 
 import org.mvel.util.StringAppender;
 
-import java.util.ArrayList;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class FastTokenIterator implements TokenIterator, Serializable {
     private Token[] token;
@@ -92,8 +92,7 @@ public class FastTokenIterator implements TokenIterator, Serializable {
 
 
     public boolean peekNextTokenFlags(int flags) {
-        if (cursor >= length) return false;
-        return (token[cursor].getFlags() & flags) != 0;
+        return cursor < length && (token[cursor].getFlags() & flags) != 0;
     }
 
 

@@ -58,20 +58,7 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
     public ReflectiveOptimizer() {
     }
 
-    public ReflectiveOptimizer(char[] property, Object ctx) {
-        this.expr = property;
-        this.length = property.length;
-        this.ctx = ctx;
-    }
-
-    public ReflectiveOptimizer(char[] property, Object ctx, VariableResolverFactory variableFactory) {
-        this.expr = property;
-        this.length = property != null ? property.length : 0;
-        this.thisRef = this.ctx = ctx;
-        this.variableFactory = variableFactory;
-    }
-
-    public ReflectiveOptimizer(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableFactory) {
+    private ReflectiveOptimizer(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableFactory) {
         this.expr = property;
         this.length = property != null ? property.length : 0;
         this.ctx = ctx;
@@ -79,11 +66,6 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
         this.thisRef = thisRef;
     }
 
-
-    public ReflectiveOptimizer(String property, Object ctx) {
-        this.length = (this.expr = property.toCharArray()).length;
-        this.ctx = ctx;
-    }
 
     public static Object get(String expression, Object ctx) {
         if (REFLECTIVE_ACCESSOR_CACHE.containsKey(expression)) {
@@ -364,7 +346,7 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
         ExecutableStatement[] es;
 
         if (tk.length() == 0) {
-            args = new Object[0];
+            args = ParseTools.EMPTY_OBJ_ARR;
             es = null;
         }
         else {
@@ -507,7 +489,7 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
         this.ctx = ctx;
         this.thisRef = thisRef;
         this.variableFactory = factory;
-        
+
         CollectionParser parser = new CollectionParser();
         Object o = ((List) parser.parseCollection(property)).get(0);
 

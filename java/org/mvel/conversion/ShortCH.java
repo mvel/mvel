@@ -10,13 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ShortCH implements ConversionHandler {
-	/**
-	 * This is purely because Eclipse sucks, and has a serious bug with
-	 * it's java parser.
-	 */
-	private static final Short TRUE = new Short((short)1);
-	private static final Short FALSE = new Short((short)0);
-	
+    /**
+     * This is purely because Eclipse sucks, and has a serious bug with
+     * it's java parser.
+     */
+    private static final Short TRUE = (short) 1;
+    private static final Short FALSE = (short) 0;
+
     private static final Map<Class, Converter> CNV =
             new HashMap<Class, Converter>();
 
@@ -135,13 +135,13 @@ public class ShortCH implements ConversionHandler {
         CNV.put(Boolean.class,
                 new Converter() {
                     public Short convert(Object o) {
-                        
-                    	if ((Boolean) o)
-                        	return TRUE;
-						else {
-							return FALSE;
-						}
-                       
+
+                        if ((Boolean) o)
+                            return TRUE;
+                        else {
+                            return FALSE;
+                        }
+
                     }
                 }
         );

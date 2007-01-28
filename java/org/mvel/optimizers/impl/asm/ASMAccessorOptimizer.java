@@ -85,13 +85,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private Class returnType;
 
-    public ASMAccessorOptimizer(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableResolverFactory) {
-        this.expr = property;
-        this.ctx = ctx;
-        this.variableFactory = variableResolverFactory;
-        this.thisRef = thisRef;
-    }
-
 
     public ASMAccessorOptimizer() {
         //do this to confirm we're running the correct version
@@ -145,7 +138,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         return compileAccessor();
     }
 
-    public void _finishJIT() {
+    private void _finishJIT() {
         if (returnType != null && returnType.isPrimitive()) {
             //noinspection unchecked
             wrapPrimitive(returnType);
@@ -393,7 +386,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
      * @return -
      * @throws Exception -
      */
-    private Object getCollectionProperty(Object ctx, String prop) throws Exception {
+    private Object getCollectionProperty(Object ctx, String prop)
+            throws IllegalAccessException, InvocationTargetException {
         if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
 
         debug("{collections: " + prop + "} ctx=" + ctx);
@@ -498,7 +492,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
      * @throws Exception -
      */
     @SuppressWarnings({"unchecked"})
-    private Object getMethod(Object ctx, String name) throws Exception {
+    private Object getMethod(Object ctx, String name)
+            throws IllegalAccessException, InvocationTargetException {
         debug("{method: " + name + "}");
 
 
@@ -730,7 +725,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     }
 
-    private static java.lang.Class loadClass(String className, byte[] b) throws Exception {
+    private static java.lang.Class loadClass(String className, byte[] b)
+            throws IllegalAccessException, InvocationTargetException {
         defineClass.setAccessible(true);
         try {
             //noinspection RedundantArrayCreation
@@ -742,10 +738,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    public static void debug(String instruction) {
+    private static void debug(String instruction) {
         assert ParseTools.debug(instruction);
     }
 
+    @SuppressWarnings({"SameReturnValue"})
     public String getName() {
         return "ASM";
     }
@@ -836,7 +833,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    public void buildInputs() {
+    private void buildInputs() {
         if (inputs == 0) return;
 
         debug("\n{SETTING UP MEMBERS...}\n");
@@ -879,9 +876,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         debug("}");
     }
 
-    int cnum = 3;
-    int lastCnum = 0;
-    int curr;
+    private int cnum = 3;
+    private int lastCnum = 0;
 
     private static final int ARRAY = 0;
     private static final int LIST = 1;
@@ -893,8 +889,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         int c;
 
         if (o instanceof List) {
-            curr = LIST;
-
             debug("NEW " + LIST_IMPL);
             mv.visitTypeInsn(NEW, LIST_IMPL);
 
