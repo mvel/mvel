@@ -22,6 +22,7 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ArrayTools;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.getBestCanadidate;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
@@ -520,7 +521,7 @@ public class PropertyAccessor {
         Serializable[] es;
 
         if (tk.length() == 0) {
-            args = new Object[0];
+            args = ParseTools.EMPTY_OBJ_ARR;
             es = null;
         }
         else {

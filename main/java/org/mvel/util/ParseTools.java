@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public class ParseTools {
+    public static final Object[] EMPTY_OBJ_ARR = new Object[0];
+
     public static String[] parseMethodOrConstructor(char[] parm) {
         int start = -1;
         for (int i = 0; i < parm.length; i++) {
@@ -513,7 +515,7 @@ public class ParseTools {
 
         if (factory == null) {
             throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
-          //  return new LocalVariableResolverFactory(new HashMap<String, Object>());
+            //  return new LocalVariableResolverFactory(new HashMap<String, Object>());
         }
         else {
             return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
@@ -542,7 +544,7 @@ public class ParseTools {
         return newArray;
     }
 
-    public static final int resolveType(Class cls) {
+    public static int resolveType(Class cls) {
         if (cls == null)
             return 0;
         if (int.class == cls)

@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -31,10 +30,10 @@ public class TokenMap implements TokenIterator {
 
     public void addTokenNode(Token token) {
         if (this.firstToken == null) {
-            this.firstToken = this.current= token;
+            this.firstToken = this.current = token;
         }
         else {
-           this.current = (this.current.nextToken = token);
+            this.current = (this.current.nextToken = token);
         }
         size++;
     }
@@ -60,15 +59,15 @@ public class TokenMap implements TokenIterator {
         finally {
             current = current.nextToken;
         }
-       
-       // Token tk = current.token;
-      //  current = current.next;
-      //  return tk;
+
+        // Token tk = current.token;
+        //  current = current.next;
+        //  return tk;
     }
 
 
     public void skipToken() {
-         if (current != null)
+        if (current != null)
             current = current.nextToken;
     }
 
@@ -82,8 +81,7 @@ public class TokenMap implements TokenIterator {
 
 
     public boolean peekNextTokenFlags(int flags) {
-        if (current == null) return false;
-        return (flags & current.nextToken.getFlags()) != 0;
+        return current != null && (flags & current.nextToken.getFlags()) != 0;
     }
 
     public Token peekToken() {
@@ -111,19 +109,13 @@ public class TokenMap implements TokenIterator {
     }
 
     public String showTokenChain() {
-        throw new RuntimeException("unimplemented");        
+        throw new RuntimeException("unimplemented");
     }
 
 
     public int size() {
         return size;
     }
-
-    @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException"})
-    public TokenIterator clone() {
-        return null;
-    }
-
 
     public int index() {
         return -1;
