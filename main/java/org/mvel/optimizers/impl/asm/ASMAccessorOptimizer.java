@@ -24,16 +24,12 @@ import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.impl.refl.Union;
-import org.mvel.optimizers.impl.refl.collection.ListCreator;
-import org.mvel.optimizers.impl.refl.collection.MapCreator;
-import org.mvel.optimizers.impl.refl.collection.ArrayCreator;
-import org.mvel.optimizers.impl.refl.collection.ExprValueAccessor;
+import org.mvel.util.CollectionParser;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.ParseTools.subset;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
-import org.mvel.util.CollectionParser;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -44,6 +40,10 @@ import static org.objectweb.asm.Type.*;
 import java.lang.reflect.*;
 import java.util.*;
 
+/**
+ * Implementation of the MVEL Just-in-Time (JIT) compiler for Property Accessors using the ASM bytecode
+ * engineering library.
+ */
 public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
     private static final String MAP_IMPL = "org/mvel/util/FastMap";
     private static final String LIST_IMPL = "org/mvel/util/FastList";
@@ -469,38 +469,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("CHECKCAST [Ljava/lang/Object;");
             mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
 
-            if (index < 6) {
-                switch (index) {
-                    case 0:
-                        debug("ICONST_0");
-                        mv.visitInsn(ICONST_0);
-                        break;
-                    case 1:
-                        debug("ICONST_1");
-                        mv.visitInsn(ICONST_1);
-                        break;
-                    case 2:
-                        debug("ICONST_2");
-                        mv.visitInsn(ICONST_2);
-                        break;
-                    case 3:
-                        debug("ICONST_3");
-                        mv.visitInsn(ICONST_3);
-                        break;
-                    case 4:
-                        debug("ICONST_4");
-                        mv.visitInsn(ICONST_4);
-                        break;
-                    case 5:
-                        debug("ICONST_5");
-                        mv.visitInsn(ICONST_5);
-                        break;
-                }
-            }
-            else {
-                debug("BIPUSH " + index);
-                mv.visitIntInsn(BIPUSH, index);
-            }
+            intPush(index);
 
             mv.visitInsn(AALOAD);
 
@@ -932,7 +901,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("DUP");
             mv.visitInsn(DUP);
 
-            intPush(((List)o).size());
+            intPush(((List) o).size());
             debug("INVOKESPECIAL " + LIST_IMPL + ".<init>");
             mv.visitMethodInsn(INVOKESPECIAL, LIST_IMPL, "<init>", "(I)V");
             debug("ASTORE " + (cnum + 1));
@@ -963,7 +932,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("DUP");
             mv.visitInsn(DUP);
 
-            intPush(((Map)o).size());
+            intPush(((Map) o).size());
 
             debug("INVOKESPECIAL " + MAP_IMPL + ".<init>");
             mv.visitMethodInsn(INVOKESPECIAL, MAP_IMPL, "<init>", "(I)V");
