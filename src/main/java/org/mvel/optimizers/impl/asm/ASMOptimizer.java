@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -20,7 +19,6 @@
 package org.mvel.optimizers.impl.asm;
 
 import org.mvel.ExecutableStatement;
-import org.mvel.Token;
 import org.mvel.TokenIterator;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.Optimizer;
@@ -31,17 +29,6 @@ public class ASMOptimizer implements Optimizer {
         /**
          * NO THIS DOESN'T DO ANYTHING YET.
          */
-
-
-        Token token;
-        while (tokenIterator.hasMoreTokens()) {
-            token = tokenIterator.nextToken();
-
-            if (token.isIdentifier()) {
-                ASMAccessorOptimizer compiler = new ASMAccessorOptimizer(token.getNameAsArray(), staticContext, staticContext, factory);
-                token.setAccessor(compiler.compileAccessor());
-            }
-        }
 
         return null;
     }

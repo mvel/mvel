@@ -1,55 +1,22 @@
 package org.mvel;
 
-import org.mvel.integration.VariableResolverFactory;
-import org.mvel.util.Stack;
-import org.mvel.util.ExecutionStack;
-import org.mvel.util.StringAppender;
-import static org.mvel.util.ParseTools.containsCheck;
-import static org.mvel.util.PropertyTools.isEmpty;
-import static org.mvel.util.PropertyTools.similarity;
-import static org.mvel.util.PropertyTools.isNumber;
-import static org.mvel.Operator.AND;
-import static org.mvel.Operator.OR;
-import static org.mvel.Operator.TERNARY;
-import static org.mvel.Operator.TERNARY_ELSE;
-import static org.mvel.Operator.END_OF_STMT;
-import static org.mvel.Operator.ADD;
-import static org.mvel.Operator.SUB;
-import static org.mvel.Operator.DIV;
-import static org.mvel.Operator.MULT;
-import static org.mvel.Operator.MOD;
-import static org.mvel.Operator.EQUAL;
-import static org.mvel.Operator.NEQUAL;
-import static org.mvel.Operator.GTHAN;
-import static org.mvel.Operator.LTHAN;
-import static org.mvel.Operator.GETHAN;
-import static org.mvel.Operator.LETHAN;
-import static org.mvel.Operator.CHOR;
-import static org.mvel.Operator.REGEX;
-import static org.mvel.Operator.INSTANCEOF;
-import static org.mvel.Operator.CONVERTABLE_TO;
-import static org.mvel.Operator.CONTAINS;
-import static org.mvel.Operator.BW_AND;
-import static org.mvel.Operator.BW_OR;
-import static org.mvel.Operator.BW_XOR;
-import static org.mvel.Operator.BW_SHIFT_LEFT;
-import static org.mvel.Operator.BW_USHIFT_LEFT;
-import static org.mvel.Operator.BW_SHIFT_RIGHT;
-import static org.mvel.Operator.BW_USHIFT_RIGHT;
-import static org.mvel.Operator.STR_APPEND;
-import static org.mvel.Operator.PROJECTION;
-import static org.mvel.Operator.SOUNDEX;
-import static org.mvel.Operator.SIMILARITY;
 import static org.mvel.DataConversion.canConvert;
+import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
+import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.ExecutionStack;
+import static org.mvel.util.ParseTools.containsCheck;
+import static org.mvel.util.PropertyTools.*;
+import org.mvel.util.Stack;
+import org.mvel.util.StringAppender;
 
-import java.math.BigDecimal;
-import static java.lang.String.valueOf;
 import static java.lang.Class.forName;
-import static java.util.regex.Pattern.compile;
-import java.util.List;
+import static java.lang.String.valueOf;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import static java.util.regex.Pattern.compile;
 
 public class AcceleratedParser extends AbstractParser {
     private int roundingMode = BigDecimal.ROUND_HALF_DOWN;
@@ -433,6 +400,7 @@ public class AcceleratedParser extends AbstractParser {
         return !tokens.hasMoreTokens();
     }
 
+    @SuppressWarnings({"StatementWithEmptyBody"})
     private void skipToOperator(int operator) {
         while (tokens.hasMoreTokens() && !tokens.nextToken().isOperator(operator)) ;
     }
