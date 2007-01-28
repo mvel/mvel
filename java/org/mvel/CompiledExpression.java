@@ -26,7 +26,6 @@ import org.mvel.util.ParseTools;
 import java.io.Serializable;
 
 public class CompiledExpression implements Serializable, ExecutableStatement {
-    private char[] expression;
     private FastTokenIterator tokenMap;
 
     private Class knownEgressType;
@@ -34,19 +33,8 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     private boolean convertableIngressEgress;
 
- //   private transient ExpressionParser expressionParser;
-
-    public CompiledExpression(char[] expression, TokenIterator tokenMap) {
-        this.expression = expression;
+    public CompiledExpression(TokenIterator tokenMap) {
         this.tokenMap = new FastTokenIterator(tokenMap);
-    }
-
-    public char[] getExpression() {
-        return expression;
-    }
-
-    public void setExpression(char[] expression) {
-        this.expression = expression;
     }
 
     public TokenIterator getTokenMap() {
@@ -89,7 +77,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
             convertableIngressEgress = knownIngressType.isAssignableFrom(knownEgressType);
         }
     }
-
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         return getValue(ctx, variableFactory);
