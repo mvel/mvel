@@ -7,6 +7,10 @@ public class FastList extends AbstractList {
     private int size = 0;
 
 
+    public FastList(int size) {
+        elements = new Object[size];
+    }
+
     public FastList(Object[] elements) {
         this.size = (this.elements = elements).length;
     }
@@ -15,8 +19,13 @@ public class FastList extends AbstractList {
         return elements[index];
     }
 
-
     public int size() {
         return size;
+    }
+
+
+    public boolean add(Object o) {
+        elements[size++] = o;
+        return true;
     }
 }

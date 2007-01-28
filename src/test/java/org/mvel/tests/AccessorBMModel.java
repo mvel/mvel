@@ -35,13 +35,13 @@ public class AccessorBMModel implements Accessor {
 //
 //          return array;
 		
-//		 List list = new ArrayList();
-//		 list.add(p0.getValue(elCtx, variableFactory));
-//		 return list;
+		 List list = new ArrayList(10);
+		 list.add(p0.getValue(elCtx, variableFactory));
+		 return list;
 		
-		Map map = new HashMap();
-		map.put(p0.getValue(elCtx, variableFactory), p1.getValue(elCtx, variableFactory));
-		
-		return map;
+//		Map map = new HashMap();
+//		map.put(p0.getValue(elCtx, variableFactory), p1.getValue(elCtx, variableFactory));
+//		
+//		return map;
     }
 }
