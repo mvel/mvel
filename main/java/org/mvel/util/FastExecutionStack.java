@@ -1,7 +1,7 @@
 package org.mvel.util;
 
 public class FastExecutionStack implements Stack {
-    private Object[] stack = new Object[15];
+    private final Object[] stack = new Object[15];
     private int size = 0;
 
     public boolean isEmpty() {
