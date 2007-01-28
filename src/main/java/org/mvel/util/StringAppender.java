@@ -1,8 +1,7 @@
 package org.mvel.util;
 
 
-public class StringAppender implements CharSequence
-{
+public class StringAppender implements CharSequence {
     private static final int DEFAULT_SIZE = 15;
 
     private char[] str;
@@ -73,7 +72,7 @@ public class StringAppender implements CharSequence
         return size;
     }
 
-    public void grow(int s) {
+    private void grow(int s) {
         if (capacity == 0) capacity = DEFAULT_SIZE;
         final char[] newArray = new char[capacity += s * 2];
         System.arraycopy(str, 0, newArray, 0, size);
@@ -84,7 +83,6 @@ public class StringAppender implements CharSequence
         if (size == capacity) return new String(str);
         else return new String(str, 0, size);
     }
-
 
 
     public char charAt(int index) {
