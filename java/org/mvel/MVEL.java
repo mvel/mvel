@@ -36,8 +36,7 @@ public class MVEL {
     public static final String CODENAME = "horizon";
 
     static boolean THREAD_SAFE = Boolean.getBoolean("mvel.threadsafety");
-    static boolean USE_OPTIMIZER = Boolean.getBoolean("mvel.optimizer");
-
+    
     /**
      * Force MVEL to use thread-safe caching.  This can also be specified enivromentally using the
      * <tt>mvflex.expression.threadsafety</tt> system property.
@@ -51,18 +50,9 @@ public class MVEL {
         ExpressionParser.configureFactory();
     }
 
-    public static void setUseOptimizer(boolean optimizer) {
-        USE_OPTIMIZER = optimizer;
-    }
-
     public static boolean isThreadSafe() {
         return THREAD_SAFE;
     }
-
-    public static boolean useOptimizer() {
-        return USE_OPTIMIZER;
-    }
-
 
     public static Object eval(String expression, Object ctx) {
         return new ExpressionParser(expression, ctx).parse();
@@ -132,7 +122,7 @@ public class MVEL {
         return new CompiledExpression(tokens);
     }
 
-    public static Object executeExpression(Serializable compiledExpression) {
+    public static Object executeExpression(Object compiledExpression) {
         return ((ExecutableStatement) compiledExpression).getValue(null, null);
     }
 
@@ -146,12 +136,12 @@ public class MVEL {
      * @see #compileExpression(String)
      */
     @SuppressWarnings({"unchecked"})
-    public static Object executeExpression(final Serializable compiledExpression, final Object ctx, final Map vars) {
+    public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
         return ParseTools.handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars)),
                 false, false);
     }
 
-    public static Object executeExpression(final Serializable compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
+    public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
         return ParseTools.handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory), false, false);
     }
 
@@ -163,7 +153,7 @@ public class MVEL {
      * @return -
      * @see #compileExpression(String)
      */
-    public static Object executeExpression(final Serializable compiledExpression, final VariableResolverFactory factory) {
+    public static Object executeExpression(final Object compiledExpression, final VariableResolverFactory factory) {
         return ((ExecutableStatement) compiledExpression).getValue(null, factory);
     }
 
@@ -175,7 +165,7 @@ public class MVEL {
      * @return -
      * @see #compileExpression(String)
      */
-    public static Object executeExpression(final Serializable compiledExpression, final Object ctx) {
+    public static Object executeExpression(final Object compiledExpression, final Object ctx) {
         return ((ExecutableStatement) compiledExpression).getValue(ctx, null);
     }
 
@@ -188,7 +178,7 @@ public class MVEL {
      * @see #compileExpression(String)
      */
     @SuppressWarnings({"unchecked"})
-    public static Object executeExpression(final Serializable compiledExpression, final Map vars) {
+    public static Object executeExpression(final Object compiledExpression, final Map vars) {
         return ((ExecutableStatement) compiledExpression).getValue(null, new MapVariableResolverFactory(vars));
     }
 
@@ -202,7 +192,7 @@ public class MVEL {
      * @return -
      */
     @SuppressWarnings({"unchecked"})
-    public static <T> T executeExpression(final Serializable compiledExpression, final Object ctx, final Map vars, Class<T> toType) {
+    public static <T> T executeExpression(final Object compiledExpression, final Object ctx, final Map vars, Class<T> toType) {
         return DataConversion.convert(executeExpression(compiledExpression, ctx, vars), toType);
     }
 
@@ -215,7 +205,7 @@ public class MVEL {
      * @return -
      */
     @SuppressWarnings({"unchecked"})
-    public static <T> T executeExpression(final Serializable compiledExpression, Map vars, Class<T> toType) {
+    public static <T> T executeExpression(final Object compiledExpression, Map vars, Class<T> toType) {
         return DataConversion.convert(executeExpression(compiledExpression, vars), toType);
     }
 
@@ -227,7 +217,7 @@ public class MVEL {
      * @param toType             -
      * @return -
      */
-    public static <T> T executeExpression(final Serializable compiledExpression, final Object ctx, Class<T> toType) {
+    public static <T> T executeExpression(final Object compiledExpression, final Object ctx, Class<T> toType) {
         return DataConversion.convert(executeExpression(compiledExpression, ctx), toType);
     }
 
