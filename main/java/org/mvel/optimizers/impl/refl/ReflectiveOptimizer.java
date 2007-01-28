@@ -92,7 +92,7 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
         return compileGetChain();
     }
 
-    public Accessor compileGetChain() {
+    private Accessor compileGetChain() {
         Object curr = ctx;
 
         try {
@@ -446,7 +446,7 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
     }
 
 
-    public Accessor _getAccessor(Object o) {
+    private Accessor _getAccessor(Object o) {
         if (o instanceof List) {
             Accessor[] a = new Accessor[((List) o).size()];
             int i = 0;
@@ -588,11 +588,11 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
         }
     }
 
-    public void setRootNode(AccessorNode rootNode) {
+    private void setRootNode(AccessorNode rootNode) {
         this.rootNode = this.currNode = rootNode;
     }
 
-    public AccessorNode getRootNode() {
+    private AccessorNode getRootNode() {
         return rootNode;
     }
 
@@ -601,6 +601,7 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
         return val;
     }
 
+    @SuppressWarnings({"WeakerAccess"})
     public static AccessorNode compileConstructor(char[] expression, Object ctx, VariableResolverFactory vars) throws
             InstantiationException, IllegalAccessException, InvocationTargetException,
             ClassNotFoundException, NoSuchMethodException {

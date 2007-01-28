@@ -191,7 +191,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         return (Accessor) o;
     }
 
-    public Accessor compileAccessor() {
+    private Accessor compileAccessor() {
         debug("\n{Initiate Compile: " + new String(expr) + "}\n");
 
         Object curr = ctx;

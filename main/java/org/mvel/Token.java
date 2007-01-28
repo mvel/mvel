@@ -19,28 +19,25 @@
 
 package org.mvel;
 
-import static org.mvel.util.ParseTools.getBigDecimalFromType;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
-import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.optimizers.OptimizationNotSupported;
+import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
-import org.mvel.optimizers.impl.refl.Deferral;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.getBigDecimalFromType;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
-import org.mvel.conversion.Converter;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Class.forName;
 import static java.lang.Integer.parseInt;
-import static java.lang.String.valueOf;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,23 +54,17 @@ public class Token implements Cloneable, Serializable {
     public static final int INVERT = 1 << 8;
     public static final int FOLD = 1 << 9;
     public static final int BOOLEAN_MODE = 1 << 10;
-    public static final int TERNARY = 1 << 11;
     public static final int ASSIGN = 1 << 12;
     public static final int LOOKAHEAD = 1 << 13;
     public static final int COLLECTION = 1 << 14;
     public static final int NEW = 1 << 15;
-    public static final int DO_NOT_REDUCE = 1 << 16;
     public static final int CAPTURE_ONLY = 1 << 17;
     public static final int THISREF = 1 << 19;
     public static final int INLINE_COLLECTION = 1 << 20;
     public static final int NOCOMPILE = 1 << 21;
     public static final int STR_LITERAL = 1 << 25;
-    public static final int FLOATING_NUMERIC = 1 << 26;
     public static final int PUSH = 1 << 22;
-    public static final int OPTIMIZED_REF = 1 << 31; // future use
 
-    private int start;
-    private int end;
     private int firstUnion;
     private int endOfName;
 
@@ -83,15 +74,9 @@ public class Token implements Cloneable, Serializable {
     private Object literal;
     private int knownType = 0;
 
-    private Class type;
-    private Class exitType;
-    private Converter typeConverter;
-
     private int fields = 0;
 
     private Accessor accessor;
-
-    private int knownSize = 0;
 
     public Token nextToken;
 
@@ -207,7 +192,7 @@ public class Token implements Cloneable, Serializable {
         this.fields = fields;
 
         char[] name = new char[end - start];
-        System.arraycopy(expr, this.start = start, name, 0, (this.end = end) - start);
+        System.arraycopy(expr, start, name, 0, end - start);
         setName(name);
     }
 
@@ -221,59 +206,16 @@ public class Token implements Cloneable, Serializable {
         setName(expr);
     }
 
-    public int getStart() {
-        return start;
-    }
 
-    public void setStart(int start) {
-        this.start = start;
-    }
-
-    public int getEnd() {
-        return end;
-    }
-
-    public void setEnd(int end) {
-        this.end = end;
-    }
-
-    public boolean emptyRange() {
-        return this.start == this.end;
-    }
-
-
-    public char[] createRootElementArray() {
-        if ((fields & DEEP_PROPERTY) != 0) {
-            char[] root = new char[(firstUnion)];
-            System.arraycopy(name, 0, root, 0, root.length);
-            return root;
-        }
-        return null;
-    }
-
-    public String getAbsoluteRootElement() {
+    private String getAbsoluteRootElement() {
         if ((fields & (DEEP_PROPERTY | COLLECTION)) != 0) {
             return new String(name, 0, getAbsoluteFirstPart());
         }
         return null;
     }
 
-    public String getRootElement() {
-        return (fields & DEEP_PROPERTY) != 0 ? new String(name, 0, firstUnion) : getName();
-        //   return new String(root);
-    }
 
-    public char[] createRemainderArray() {
-        if ((fields & DEEP_PROPERTY) != 0) {
-            char[] remainder = new char[(name.length - firstUnion - 1)];
-            System.arraycopy(name, firstUnion + 1, remainder, 0, remainder.length);
-            return remainder;
-        }
-        return null;
-    }
-
-
-    public String getRemainder() {
+    private String getRemainder() {
         return (fields & DEEP_PROPERTY) != 0 ? new String(name, firstUnion + 1, name.length - firstUnion - 1) : null;
     }
 
@@ -281,11 +223,7 @@ public class Token implements Cloneable, Serializable {
         return name;
     }
 
-    public int getEndOfName() {
-        return endOfName;
-    }
-
-    public int getAbsoluteFirstPart() {
+    private int getAbsoluteFirstPart() {
         if ((fields & Token.COLLECTION) != 0) {
             if (firstUnion < 0 || endOfName < firstUnion) return endOfName;
             else return firstUnion;
@@ -299,7 +237,7 @@ public class Token implements Cloneable, Serializable {
 
     }
 
-    public String getAbsoluteName() {
+    private String getAbsoluteName() {
         if ((fields & COLLECTION) != 0) {
             return new String(name, 0, getAbsoluteFirstPart());
         }
@@ -316,31 +254,6 @@ public class Token implements Cloneable, Serializable {
 
     public Object getLiteralValue() {
         return literal;
-    }
-
-    public Token createDeferralOptimization() {
-        accessor = new Deferral();
-        return this;
-    }
-
-    public void deOptimize() {
-        accessor = null;
-    }
-
-    public boolean isOptimized() {
-        return accessor != null;
-    }
-
-    public String getValueAsString() {
-        if (literal instanceof String) return (String) literal;
-        else if (literal instanceof char[]) return new String((char[]) literal);
-        else return valueOf(literal);
-    }
-
-    public char[] getValueAsCharArray() {
-        if (literal instanceof char[]) return ((char[]) literal);
-        else if (literal instanceof String) return ((String) literal).toCharArray();
-        else return valueOf(literal).toCharArray();
     }
 
 
@@ -581,7 +494,7 @@ public class Token implements Cloneable, Serializable {
         return value;
     }
 
-    public Object tryStaticAccess(Object thisRef, VariableResolverFactory factory) {
+    private Object tryStaticAccess(Object thisRef, VariableResolverFactory factory) {
         try {
             /**
              * Try to resolve this *smartly* as a static class reference.
@@ -602,7 +515,8 @@ public class Token implements Cloneable, Serializable {
                         if (!meth) {
                             try {
                                 return get(new String(name, last, name.length - last), forName(new String(name, 0, last)), factory, thisRef);
-                            } catch (ClassNotFoundException e) {
+                            }
+                            catch (ClassNotFoundException e) {
                                 return get(new String(name, i + 1, name.length - i - 1), forName(new String(name, 0, i)), factory, thisRef);
                             }
                         }
@@ -627,20 +541,8 @@ public class Token implements Cloneable, Serializable {
     }
 
 
-    public Token setFinalValue(int fields, Object value) {
-        this.fields |= fields;
-        this.literal = value;
-        return this;
-    }
-
-    public Token setFinalValue(Object value) {
-        this.literal = value;
-        return this;
-    }
-
-
     @SuppressWarnings({"SuspiciousMethodCalls"})
-    public void setName(char[] name) {
+    private void setName(char[] name) {
         if ((fields & STR_LITERAL) != 0) {
             fields |= LITERAL;
 
@@ -712,19 +614,6 @@ public class Token implements Cloneable, Serializable {
         return fields;
     }
 
-    private boolean getFlag(int field) {
-        return (fields & field) != 0;
-    }
-
-    public void setFlag(boolean setting, int flag) {
-        if (getFlag(flag) ^ setting) {
-            fields = fields ^ flag;
-        }
-        else if (setting) {
-            fields = fields | flag;
-        }
-    }
-
 
     public String toString() {
         return isOperator() ? "OPCODE_" + getOperator() : new String(name);
@@ -741,46 +630,9 @@ public class Token implements Cloneable, Serializable {
         return literal == null ? super.hashCode() : literal.hashCode();
     }
 
-    public boolean isValidNameIdentifier() {
-        return !Character.isDigit(name[0]);
-    }
-
-
-    public int getFirstUnion() {
-        return firstUnion;
-    }
-
-
-    public Accessor getAccessor() {
-        return accessor;
-    }
 
     public void setAccessor(Accessor accessor) {
         this.accessor = accessor;
-    }
-
-    public Class getType() {
-        return type;
-    }
-
-    public void setType(Class type) {
-        this.type = type;
-    }
-
-    public Converter getTypeConverter() {
-        return typeConverter;
-    }
-
-    public void setTypeConverter(Converter typeConverter) {
-        this.typeConverter = typeConverter;
-    }
-
-    public Class getExitType() {
-        return exitType;
-    }
-
-    public void setExitType(Class exitType) {
-        this.exitType = exitType;
     }
 
     public Token clone() throws CloneNotSupportedException {
@@ -797,69 +649,13 @@ public class Token implements Cloneable, Serializable {
         return (fields & IDENTIFIER) != 0;
     }
 
-    public void setIdentifier(boolean identifier) {
-        setFlag(identifier, IDENTIFIER);
-    }
-
     public boolean isSubeval() {
         return (fields & SUBEVAL) != 0;
-    }
-
-    public void setExpand(boolean unreduced) {
-        setFlag(unreduced, SUBEVAL);
-    }
-
-    public boolean isNumeric() {
-        return (fields & NUMERIC) != 0;
-    }
-
-    public void setNumeric(boolean numeric) {
-        setFlag(numeric, NUMERIC);
-    }
-
-    public boolean isEvalRight() {
-        return (fields & EVAL_RIGHT) != 0;
-    }
-
-    public void setEvalRight(boolean evalRight) {
-        setFlag(evalRight, EVAL_RIGHT);
-    }
-
-    public boolean isInvert() {
-        return (fields & INVERT) != 0;
-    }
-
-    public void setInvert(boolean invert) {
-        setFlag(invert, INVERT);
-    }
-
-    public boolean isNoCompile() {
-        return (fields & NOCOMPILE) != 0;
-    }
-
-    public boolean isThisRef() {
-        return (fields & THISREF) != 0;
-    }
-
-    public boolean isDoNotReduce() {
-        return (fields & DO_NOT_REDUCE) != 0;
     }
 
 
     public boolean isLiteral() {
         return (fields & LITERAL) != 0;
-    }
-
-    public void setLiteral(boolean literal) {
-        setFlag(literal, LITERAL);
-    }
-
-    public boolean isDeepProperty() {
-        return (fields & DEEP_PROPERTY) != 0;
-    }
-
-    public void setDeepProperty(boolean deepProperty) {
-        setFlag(deepProperty, DEEP_PROPERTY);
     }
 
     public boolean isOperator() {
@@ -874,52 +670,12 @@ public class Token implements Cloneable, Serializable {
         return (Integer) literal;
     }
 
-    public void setOperator(boolean operator) {
-        setFlag(operator, OPERATOR);
-    }
-
-    public boolean isNegation() {
-        return getFlag(NEGATION);
-    }
-
-    public void setNegation(boolean negation) {
-        setFlag(negation, NEGATION);
-    }
-
-    public boolean isCollection() {
+    private boolean isCollection() {
         return (fields & COLLECTION) != 0;
-    }
-
-    public boolean isPush() {
-        return (fields & PUSH) != 0;
-    }
-
-    public boolean isCaptureOnly() {
-        return (fields & CAPTURE_ONLY) != 0;
-    }
-
-    public boolean isAssign() {
-        return (fields & ASSIGN) != 0;
-    }
-
-    public boolean isReducable() {
-        return ((fields & CAPTURE_ONLY) | (fields & LITERAL)) == 0;
     }
 
     public boolean isNewObject() {
         return ((fields & NEW) != 0);
-    }
-
-    public int getKnownSize() {
-        return knownSize;
-    }
-
-    public void setKnownSize(int knownSize) {
-        this.knownSize = knownSize;
-    }
-
-    public void setFlags(int flags) {
-        this.fields = flags;
     }
 
 }
