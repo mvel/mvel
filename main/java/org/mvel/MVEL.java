@@ -106,7 +106,7 @@ public class MVEL {
             return new ExecutableAccessor(tokens.firstToken(), false, false);
         }
 
-        return new CompiledExpression(parser.getExpressionArray(), tokens);
+        return new CompiledExpression(tokens);
     }
 
     /**
@@ -129,7 +129,7 @@ public class MVEL {
         }
 
 
-        return new CompiledExpression(parser.getExpressionArray(), tokens);
+        return new CompiledExpression(tokens);
     }
 
     public static Object executeExpression(Object compiledExpression) {

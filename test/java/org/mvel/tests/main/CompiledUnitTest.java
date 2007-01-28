@@ -491,6 +491,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(Integer.MAX_VALUE, parseDirect("Integer.MAX_VALUE"));
     }
 
+    public void testStaticFieldAsMethodParm() {
+        assertEquals(String.valueOf(Integer.MAX_VALUE), parseDirect("String.valueOf(Integer.MAX_VALUE)"));
+    }
+
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
