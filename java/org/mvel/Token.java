@@ -455,6 +455,7 @@ public class Token implements Cloneable, Serializable {
         }
     }
 
+
     private Object valRet(Object value) {
         if ((fields & (NEGATION | BOOLEAN_MODE | NUMERIC | INVERT)) == 0) return value;
         else if (knownType > 99) {

@@ -29,14 +29,15 @@ import java.io.Serializable;
 import static java.lang.String.valueOf;
 import java.util.Map;
 
-public class MVEL {
+public class
+        MVEL {
     public static final String NAME = "MVEL (MVFLEX Expression Language)";
     public static final String VERSION = "1.2";
     public static final String VERSION_SUB = "beta2";
     public static final String CODENAME = "horizon";
 
     static boolean THREAD_SAFE = Boolean.getBoolean("mvel.threadsafety");
-    
+
     /**
      * Force MVEL to use thread-safe caching.  This can also be specified enivromentally using the
      * <tt>mvflex.expression.threadsafety</tt> system property.
@@ -92,9 +93,18 @@ public class MVEL {
 
         TokenIterator tokens = parser.compileTokens();
 
-        if (tokens.size() == 1 && tokens.firstToken().isIdentifier()) {
-            return new ExecutableAccessor(tokens.firstToken(), false, false);
+        /**
+         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
+         */
+        if (tokens.size() == 1) {
+            if (tokens.firstToken().isIdentifier()) {
+                return new ExecutableAccessor(tokens.firstToken(), parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
+            }
+            else if (tokens.firstToken().isLiteral()) {
+                return new ExecutableLiteral(tokens.firstToken().getLiteralValue());
+            }
         }
+
 
         return new CompiledExpression(tokens);
     }
@@ -114,8 +124,13 @@ public class MVEL {
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
-        if (tokens.size() == 1 && tokens.firstToken().isIdentifier()) {
-            return new ExecutableAccessor(tokens.firstToken(), parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
+        if (tokens.size() == 1) {
+            if (tokens.firstToken().isIdentifier()) {
+                return new ExecutableAccessor(tokens.firstToken(), parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
+            }
+            else if (tokens.firstToken().isLiteral()) {
+                return new ExecutableLiteral(tokens.firstToken().getLiteralValue());
+            }
         }
 
 
