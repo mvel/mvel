@@ -143,17 +143,8 @@ public class PropertyAccessor {
         new PropertyAccessor(property, ctx).set(value);
     }
 
-    public PropertyAccessor setParameters(char[] property, int offset, int end, Object ctx, Object thisReference) {
-        this.property = property;
-        this.cursor = offset;
-        this.length = end;
-        this.ctx = ctx;
-        this.thisReference = thisReference;
-        return this;
-    }
 
-
-    public Object get() {
+    private Object get() {
         curr = ctx;
 
         try {
@@ -262,10 +253,6 @@ public class PropertyAccessor {
     }
 
 
-    private boolean hasMore() {
-        return cursor < length;
-    }
-
     private String captureNext() {
         nextToken();
         return capture();
@@ -329,7 +316,7 @@ public class PropertyAccessor {
         READ_PROPERTY_RESOLVER_CACHE.get(cls).put(property, member);
     }
 
-    public static Member checkReadCache(Class cls, Integer property) {
+    private static Member checkReadCache(Class cls, Integer property) {
         if (READ_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
             return READ_PROPERTY_RESOLVER_CACHE.get(cls).get(property);
         }
@@ -343,7 +330,7 @@ public class PropertyAccessor {
         WRITE_PROPERTY_RESOLVER_CACHE.get(cls).put(property, member);
     }
 
-    public static Member checkWriteCache(Class cls, Integer property) {
+    private static Member checkWriteCache(Class cls, Integer property) {
         if (WRITE_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
             return WRITE_PROPERTY_RESOLVER_CACHE.get(cls).get(property);
         }
@@ -358,7 +345,7 @@ public class PropertyAccessor {
         METHOD_RESOLVER_CACHE.get(cls).put(property, new Object[]{member, member.getParameterTypes()});
     }
 
-    public static Object[] checkMethodCache(Class cls, Integer property) {
+    private static Object[] checkMethodCache(Class cls, Integer property) {
         if (METHOD_RESOLVER_CACHE.containsKey(cls)) {
             return METHOD_RESOLVER_CACHE.get(cls).get(property);
         }
