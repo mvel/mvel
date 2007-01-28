@@ -2,14 +2,10 @@ package org.mvel.tests.perftests;
 
 import ognl.Ognl;
 import org.mvel.MVEL;
-import org.mvel.optimizers.impl.refl.ReflectiveOptimizer;
 import org.mvel.tests.main.res.Base;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.io.Serializable;
-
-import wicket.util.lang.PropertyResolver;
 
 /**
  * Performance Tests Comparing MVEL to OGNL with Same Expressions.
