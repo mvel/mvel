@@ -136,7 +136,7 @@ public class Interpreter {
 
     private static Map<CharSequence, char[]> EX_PRECACHE;
     private static Map<Object, Node[]> EX_NODE_CACHE;
-    private static Map<Object, Object> EX_PRECOMP_CACHE;
+    private static Map<Object, Serializable> EX_PRECOMP_CACHE;
 
     static {
         configureFactory();
@@ -146,12 +146,12 @@ public class Interpreter {
         if (MVEL.THREAD_SAFE) {
             EX_PRECACHE = synchronizedMap(new WeakHashMap<CharSequence, char[]>());
             EX_NODE_CACHE = synchronizedMap(EX_NODE_CACHE = new WeakHashMap<Object, Node[]>());
-            EX_PRECOMP_CACHE = synchronizedMap(EX_PRECOMP_CACHE = new WeakHashMap<Object, Object>());
+            EX_PRECOMP_CACHE = synchronizedMap(EX_PRECOMP_CACHE = new WeakHashMap<Object, Serializable>());
         }
         else {
             EX_PRECACHE = (new WeakHashMap<CharSequence, char[]>());
             EX_NODE_CACHE = (EX_NODE_CACHE = new WeakHashMap<Object, Node[]>());
-            EX_PRECOMP_CACHE = (EX_PRECOMP_CACHE = new WeakHashMap<Object, Object>());
+            EX_PRECOMP_CACHE = (EX_PRECOMP_CACHE = new WeakHashMap<Object, Serializable>());
         }
     }
 
