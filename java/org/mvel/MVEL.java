@@ -132,7 +132,7 @@ public class MVEL {
         return new CompiledExpression(tokens);
     }
 
-    public static Object executeExpression(Object compiledExpression) {
+    public static Object executeExpression(Serializable compiledExpression) {
         return ((ExecutableStatement) compiledExpression).getValue(null, null);
     }
 
@@ -146,12 +146,12 @@ public class MVEL {
      * @see #compileExpression(String)
      */
     @SuppressWarnings({"unchecked"})
-    public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
+    public static Object executeExpression(final Serializable compiledExpression, final Object ctx, final Map vars) {
         return ParseTools.handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars)),
                 false, false);
     }
 
-    public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
+    public static Object executeExpression(final Serializable compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
         return ParseTools.handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory), false, false);
     }
 
@@ -163,7 +163,7 @@ public class MVEL {
      * @return -
      * @see #compileExpression(String)
      */
-    public static Object executeExpression(final Object compiledExpression, final VariableResolverFactory factory) {
+    public static Object executeExpression(final Serializable compiledExpression, final VariableResolverFactory factory) {
         return ((ExecutableStatement) compiledExpression).getValue(null, factory);
     }
 
@@ -175,7 +175,7 @@ public class MVEL {
      * @return -
      * @see #compileExpression(String)
      */
-    public static Object executeExpression(final Object compiledExpression, final Object ctx) {
+    public static Object executeExpression(final Serializable compiledExpression, final Object ctx) {
         return ((ExecutableStatement) compiledExpression).getValue(ctx, null);
     }
 
@@ -188,7 +188,7 @@ public class MVEL {
      * @see #compileExpression(String)
      */
     @SuppressWarnings({"unchecked"})
-    public static Object executeExpression(final Object compiledExpression, final Map vars) {
+    public static Object executeExpression(final Serializable compiledExpression, final Map vars) {
         return ((ExecutableStatement) compiledExpression).getValue(null, new MapVariableResolverFactory(vars));
     }
 
@@ -202,7 +202,7 @@ public class MVEL {
      * @return -
      */
     @SuppressWarnings({"unchecked"})
-    public static <T> T executeExpression(final Object compiledExpression, final Object ctx, final Map vars, Class<T> toType) {
+    public static <T> T executeExpression(final Serializable compiledExpression, final Object ctx, final Map vars, Class<T> toType) {
         return DataConversion.convert(executeExpression(compiledExpression, ctx, vars), toType);
     }
 
@@ -215,7 +215,7 @@ public class MVEL {
      * @return -
      */
     @SuppressWarnings({"unchecked"})
-    public static <T> T executeExpression(final Object compiledExpression, Map vars, Class<T> toType) {
+    public static <T> T executeExpression(final Serializable compiledExpression, Map vars, Class<T> toType) {
         return DataConversion.convert(executeExpression(compiledExpression, vars), toType);
     }
 
@@ -227,7 +227,7 @@ public class MVEL {
      * @param toType             -
      * @return -
      */
-    public static <T> T executeExpression(final Object compiledExpression, final Object ctx, Class<T> toType) {
+    public static <T> T executeExpression(final Serializable compiledExpression, final Object ctx, Class<T> toType) {
         return DataConversion.convert(executeExpression(compiledExpression, ctx), toType);
     }
 
