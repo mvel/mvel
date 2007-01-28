@@ -7,6 +7,7 @@ import org.mvel.tests.main.res.Base;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.io.Serializable;
 
 import wicket.util.lang.PropertyResolver;
 
