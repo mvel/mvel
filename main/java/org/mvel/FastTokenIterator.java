@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class FastTokenIterator implements TokenIterator, Serializable {
-    private Token[] token;
+    private final Token[] token;
     private int length = 0;
     private int cursor = 0;
 
