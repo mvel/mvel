@@ -16,7 +16,6 @@ import static java.util.regex.Pattern.compile;
 
 public class PropertyTools {
     private static final Pattern truePattern = compile("(on|yes|true|1|hi|high|y)");
-    public static final Pattern ognlStatement = compile("[{}\\[\\]'\"]");
 
     public static Object[] arrayWrap(Object o) {
         if (o == null) return null;
@@ -207,7 +206,7 @@ public class PropertyTools {
         return getSetter(clazz, property);
     }
 
-  
+
     public static boolean isNumeric(Object val) {
         if (val == null) return false;
 
@@ -239,7 +238,7 @@ public class PropertyTools {
             if (!isDigit(c = val[i]) && c != '.') return false;
         }
 
-        return len > 0;      
+        return len > 0;
     }
 
 
@@ -251,7 +250,7 @@ public class PropertyTools {
                 || val instanceof Float || val instanceof Double || val instanceof Long
                 || val instanceof Short;
     }
-   
+
     public static boolean isNumber(final String val) {
         int len = val.length();
         char[] a = val.toCharArray();
@@ -318,7 +317,7 @@ public class PropertyTools {
 
         char[] c1 = s1.toCharArray();
         char[] c2 = s2.toCharArray();
-        
+
         char[] comp;
         char[] against;
 

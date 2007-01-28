@@ -38,7 +38,6 @@ public class ReflectionUtil {
     }
 
 
-
     public static String getGetter(String s) {
         char[] c = s.toCharArray();
         char[] chars = new char[c.length + 3];
@@ -66,12 +65,12 @@ public class ReflectionUtil {
         if (s.charAt(0) > 'Z')
             chars[2] = (char) (s.charAt(0) - ('z' - 'Z'));
 
-        System.arraycopy(c, 1, chars, 3, c.length - 1);        
+        System.arraycopy(c, 1, chars, 3, c.length - 1);
 
         return new String(chars);
     }
 
-    public static String parameterizeClassName(String s) {
+    private static String parameterizeClassName(String s) {
         char[] chars = s.toCharArray();
         if (s.charAt(0) < 'a') {
             chars[0] = (char) (s.charAt(0) + ('z' - 'Z'));
@@ -81,7 +80,7 @@ public class ReflectionUtil {
     }
 
     public static String parameterizeClassName(Class c) {
-        return parameterizeClassName(c.getName().substring(c.getName().lastIndexOf('.')+1));
+        return parameterizeClassName(c.getName().substring(c.getName().lastIndexOf('.') + 1));
     }
 
 
@@ -114,10 +113,10 @@ public class ReflectionUtil {
         }
     }
 
-    static final Pattern GETTER_PATTERN = compile("^compileAccessor.+");
+    private static final Pattern GETTER_PATTERN = compile("^compileAccessor.+");
+
     public static boolean isAccessor(Method method) {
-        if (method == null) return false;
-        return GETTER_PATTERN.matcher(method.getName()).matches()
+        return method != null && GETTER_PATTERN.matcher(method.getName()).matches()
                 && method.getReturnType() != null;
     }
 
