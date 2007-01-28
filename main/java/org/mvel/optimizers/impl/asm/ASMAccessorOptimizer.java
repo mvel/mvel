@@ -45,6 +45,9 @@ import java.lang.reflect.*;
 import java.util.*;
 
 public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
+    private static final String MAP_IMPL = "org/mvel/util/FastMap";
+    private static final String LIST_IMPL = "org/mvel/util/FastList";
+
     private static final int OPCODES_VERSION;
 
     static {
@@ -927,15 +930,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (o instanceof List) {
             curr = LIST;
 
-            debug("NEW java/util/ArrayList");
-            mv.visitTypeInsn(NEW, "java/util/ArrayList");
+            debug("NEW " + LIST_IMPL);
+            mv.visitTypeInsn(NEW, LIST_IMPL);
 
             debug("DUP");
             mv.visitInsn(DUP);
 
-            debug("INVOKESPECIAL java/util/ArrayList.<init>");
-            mv.visitMethodInsn(INVOKESPECIAL, "java/util/ArrayList", "<init>", "()V");
-
+            intPush(((List)o).size());
+            debug("INVOKESPECIAL " + LIST_IMPL + ".<init>");
+            mv.visitMethodInsn(INVOKESPECIAL, LIST_IMPL, "<init>", "(I)V");
             debug("ASTORE " + (cnum + 1));
             mv.visitVarInsn(ASTORE, c = ++cnum);
 
@@ -959,13 +962,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return LIST;
         }
         else if (o instanceof Map) {
-            debug("NEW java/util/HashMap");
-            mv.visitTypeInsn(NEW, "java/util/HashMap");
+            debug("NEW " + MAP_IMPL);
+            mv.visitTypeInsn(NEW, MAP_IMPL);
             debug("DUP");
             mv.visitInsn(DUP);
 
-            debug("INVOKESPECIAL java/util/HashMap.<init>");
-            mv.visitMethodInsn(INVOKESPECIAL, "java/util/HashMap", "<init>", "()V");
+            intPush(((Map)o).size());
+
+            debug("INVOKESPECIAL " + MAP_IMPL + ".<init>");
+            mv.visitMethodInsn(INVOKESPECIAL, MAP_IMPL, "<init>", "(I)V");
 
             debug("ASTORE " + (cnum + 1));
             mv.visitVarInsn(ASTORE, c = ++cnum);
@@ -1083,7 +1088,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         _initJIT();
 
-         _getAccessor(o, LIST, 0, 0);
+        _getAccessor(o, LIST, 0, 0);
 
         debug("ALOAD 4");
         mv.visitVarInsn(ALOAD, 4);
