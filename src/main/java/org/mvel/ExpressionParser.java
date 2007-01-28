@@ -25,18 +25,14 @@ import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.util.ExecutionStack;
-import static org.mvel.util.ParseTools.containsCheck;
-import static org.mvel.util.ParseTools.handleParserEgress;
+import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
-import static org.mvel.util.ParseTools.debug;
-
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
-import static java.lang.System.arraycopy;
 import java.math.BigDecimal;
 import java.util.*;
 import static java.util.Collections.synchronizedMap;
@@ -46,8 +42,6 @@ import static java.util.regex.Pattern.compile;
 public class ExpressionParser extends AbstractParser {
     private boolean returnBigDecimal = false;
     private int roundingMode = BigDecimal.ROUND_HALF_DOWN;
-
-    private boolean compileMode = false;
 
     private Object ctx;
     private VariableResolverFactory variableFactory;
@@ -79,17 +73,13 @@ public class ExpressionParser extends AbstractParser {
         return handleParserEgress(stk.peek(), (fields & Token.BOOLEAN_MODE) != 0, returnBigDecimal);
     }
 
-    boolean lookAhead = false;
-
     private void parseAndExecuteInterpreted() {
         Token tk;
         Integer operator;
 
         while ((tk = nextToken()) != null) {
             if (stk.size() == 0) {
-                if (!compileMode) {
-                    stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
-                }
+                stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
             }
 
             if (!tk.isOperator()) {
@@ -186,8 +176,7 @@ public class ExpressionParser extends AbstractParser {
 
             case TERNARY:
                 Token tk;
-                if (!compileMode && (Boolean) stk.pop()) {
-                    //   stk.discard();
+                if ((Boolean) stk.pop()) {
                     return 1;
                 }
                 else {
@@ -478,11 +467,6 @@ public class ExpressionParser extends AbstractParser {
     }
 
 
-    public String getExpression() {
-        return new String(expr);
-    }
-
-
     /**
      * This method is called to unwind the current statement without any reduction or further parsing.
      *
@@ -497,7 +481,7 @@ public class ExpressionParser extends AbstractParser {
     }
 
 
-    public void setExpression(String expression) {
+    private void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
             if (!EX_PRECACHE.containsKey(expression)) {
                 length = (this.expr = expression.toCharArray()).length;
@@ -520,14 +504,6 @@ public class ExpressionParser extends AbstractParser {
     public ExpressionParser setExpressionArray(char[] expressionArray) {
         this.length = (this.expr = expressionArray).length;
         return this;
-    }
-
-    public void setExpressionArray(char[] expressionArray, int start, int offset) {
-        arraycopy(expressionArray, start, this.expr = new char[this.length = offset - start], 0, offset);
-    }
-
-    public char[] getExpressionArray() {
-        return expr;
     }
 
     public int getRoundingMode() {
@@ -652,8 +628,5 @@ public class ExpressionParser extends AbstractParser {
     }
 
 
-    public void setVariableResolverFactory(VariableResolverFactory factory) {
-        this.variableFactory = factory;
-    }
 }
 

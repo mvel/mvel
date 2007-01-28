@@ -19,8 +19,8 @@ import java.util.List;
 import static java.util.regex.Pattern.compile;
 
 public class AcceleratedParser extends AbstractParser {
-    private int roundingMode = BigDecimal.ROUND_HALF_DOWN;
-    private TokenIterator tokens;
+    private final int roundingMode = BigDecimal.ROUND_HALF_DOWN;
+    private final TokenIterator tokens;
     private final Stack stk = new ExecutionStack();
 
 

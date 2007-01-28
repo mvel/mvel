@@ -1,6 +1,5 @@
 package org.mvel;
 
-import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.debug;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isDigit;
@@ -12,12 +11,11 @@ import static java.lang.Character.isWhitespace;
  * @author Christopher Brock
  */
 public class AbstractParser {
+
     protected char[] expr;
     protected int cursor;
     protected int length;
     protected int fields;
-    protected ExecutionStack stk;
-    protected int lastTkIdx;
 
     protected boolean greedy = true;
 
