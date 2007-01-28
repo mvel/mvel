@@ -319,11 +319,11 @@ public class CompiledUnitTest extends TestCase {
 
 
     public void testListCreation2() {
-        assertEquals(FastList.class, parseDirect("[\"test\"]").getClass());
+        assertTrue(parseDirect("[\"test\"]") instanceof List);
     }
 
     public void testListCreation3() {
-        assertEquals(FastList.class, parseDirect("[66]").getClass());
+        assertTrue(parseDirect("[66]") instanceof List);
     }
 
     public void testListCreation4() {
