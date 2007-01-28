@@ -463,29 +463,14 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
         new ReflectiveOptimizer().optimizeCollection("[test, foo, bar, {1,2,3}]".toCharArray(), null, null, null);
     }
 
-    public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        CollectionParser parser = new CollectionParser();
-        Object o = ((List) parser.parseCollection(property)).get(0);
 
-
-        Accessor root = get(o);
-        int end = parser.getEnd() + 2;
-
-        if (end < property.length) {
-            return new Union(root, subset(property, end));
-        }
-        else {
-            return root;
-        }
-    }
-
-    public Accessor get(Object o) {
+    public Accessor _getAccessor(Object o) {
         if (o instanceof List) {
             Accessor[] a = new Accessor[((List) o).size()];
             int i = 0;
 
             for (Object item : (List) o) {
-                a[i++] = get(item);
+                a[i++] = _getAccessor(item);
             }
 
             return new ListCreator(a);
@@ -496,8 +481,8 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
             int i = 0;
 
             for (Object item : ((Map) o).keySet()) {
-                k[i] = get(item); // key
-                v[i++] = get(((Map) o).get(item)); // value
+                k[i] = _getAccessor(item); // key
+                v[i++] = _getAccessor(((Map) o).get(item)); // value
             }
 
             return new MapCreator(k, v);
@@ -507,7 +492,7 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
             int i = 0;
 
             for (Object item : (Object[]) o) {
-                a[i++] = get(item); // item
+                a[i++] = _getAccessor(item); // item
             }
 
             return new ArrayCreator(a);
@@ -518,6 +503,25 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
 
     }
 
+    public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        this.ctx = ctx;
+        this.thisRef = thisRef;
+        this.variableFactory = factory;
+        
+        CollectionParser parser = new CollectionParser();
+        Object o = ((List) parser.parseCollection(property)).get(0);
+
+
+        Accessor root = _getAccessor(o);
+        int end = parser.getEnd() + 2;
+
+        if (end < property.length) {
+            return new Union(root, subset(property, end));
+        }
+        else {
+            return root;
+        }
+    }
 
     public Accessor optimizeAssignment(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         this.length = (this.expr = property).length;

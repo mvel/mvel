@@ -28,20 +28,18 @@ import org.mvel.optimizers.Optimizer;
 public class ASMOptimizer implements Optimizer {
 
     public ExecutableStatement optimize(TokenIterator tokenIterator, Object staticContext, VariableResolverFactory factory) {
+        /**
+         * NO THIS DOESN'T DO ANYTHING YET.
+         */
+
 
         Token token;
-
-
         while (tokenIterator.hasMoreTokens()) {
             token = tokenIterator.nextToken();
 
             if (token.isIdentifier()) {
                 ASMAccessorOptimizer compiler = new ASMAccessorOptimizer(token.getNameAsArray(), staticContext, staticContext, factory);
                 token.setAccessor(compiler.compileAccessor());
-
-
-
-
             }
         }
 
