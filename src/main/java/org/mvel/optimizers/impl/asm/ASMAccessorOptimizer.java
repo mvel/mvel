@@ -195,9 +195,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw new RuntimeException("Classloader problem detected. JIT Class is not subclass of org.mvel.Accessor.");
         }
 
-        Object test = ((Accessor) o).getValue(ctx, thisRef, variableFactory);
-
-        debug("[MVEL JIT Test Output: " + test + ":" + (test != null ? test.getClass() : null) + "]");
+//        Object test = ((Accessor) o).getValue(ctx, thisRef, variableFactory);
+//
+//        debug("[MVEL JIT Test Output: " + test + ":" + (test != null ? test.getClass() : null) + "]");
 
         return (Accessor) o;
     }

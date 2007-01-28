@@ -590,7 +590,9 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public static class MiscTestClass {
+        int exec = 0;
         public List toList(Object object1, String string, int integer, Map map, List list) {
+            exec++;
             List l = new ArrayList();
             l.add(object1);
             l.add(string);
@@ -598,6 +600,11 @@ public class CompiledUnitTest extends TestCase {
             l.add(map);
             l.add(list);
             return l;
+        }
+
+
+        public int getExec() {
+            return exec;
         }
     }
 

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class CompiledPerformanceTests extends TestCase {
+    private static final int ITERATIONS = 1000000;
 
     protected Foo foo = new Foo();
     protected Map<String, Object> map = new HashMap<String, Object>();
@@ -42,9 +43,11 @@ public class CompiledPerformanceTests extends TestCase {
         variableTable.pack();
 
         Serializable compiled = MVEL.compileExpression(text);
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < ITERATIONS; i++) {
             MVEL.executeExpression(compiled, variableTable);
         }
+
+        assertEquals(ITERATIONS, ((CompiledUnitTest.MiscTestClass) map.get("misc")).getExec());
     }
 
 
