@@ -21,8 +21,9 @@ package org.mvel;
 import org.mvel.util.StringAppender;
 
 import java.util.ArrayList;
+import java.io.Serializable;
 
-public class FastTokenIterator implements TokenIterator {
+public class FastTokenIterator implements TokenIterator, Serializable {
     private Token[] token;
     private int length = 0;
     private int cursor = 0;
