@@ -43,7 +43,6 @@ public class FastTokenIterator implements TokenIterator, Serializable {
             this.length = (this.token = ((FastTokenIterator) map).token).length;
         }
         else {
-
             ArrayList<Token> tokens = new ArrayList<Token>();
             map.reset();
             while (map.hasMoreTokens()) {
