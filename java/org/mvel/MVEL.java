@@ -97,10 +97,11 @@ public class
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
         if (tokens.size() == 1) {
-            if (tokens.firstToken().isIdentifier()) {
-                return new ExecutableAccessor(tokens.firstToken(), parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
+            Token tk = tokens.firstToken();
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
             }
-            else if (tokens.firstToken().isLiteral()) {
+            else if (tk.isLiteral() && !tk.isThisVal()) {
                 return new ExecutableLiteral(tokens.firstToken().getLiteralValue());
             }
         }
@@ -125,14 +126,14 @@ public class
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
         if (tokens.size() == 1) {
-            if (tokens.firstToken().isIdentifier()) {
-                return new ExecutableAccessor(tokens.firstToken(), parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
+            Token tk = tokens.firstToken();
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
             }
-            else if (tokens.firstToken().isLiteral()) {
+            else if (tk.isLiteral() && !tk.isThisVal()) {
                 return new ExecutableLiteral(tokens.firstToken().getLiteralValue());
             }
         }
-
 
         return new CompiledExpression(tokens);
     }
