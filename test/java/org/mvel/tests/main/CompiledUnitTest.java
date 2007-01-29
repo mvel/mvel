@@ -5,10 +5,8 @@ import org.mvel.MVEL;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
-import org.mvel.util.FastList;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.*;
 
 public class CompiledUnitTest extends TestCase {
@@ -29,6 +27,14 @@ public class CompiledUnitTest extends TestCase {
         map.put("pi", "3.14");
         map.put("hour", "60");
         map.put("zero", 0);
+
+        map.put("testImpl",
+                new ParserUnitTest.TestInterface() {
+
+                    public String getName() {
+                        return "FOOBAR!";
+                    }
+                });
     }
 
     public void testSingleProperty() {
@@ -42,6 +48,10 @@ public class CompiledUnitTest extends TestCase {
 
     public void testSimpleProperty() {
         assertEquals("dog", parseDirect("foo.bar.name"));
+    }
+
+    public void testThroughInterface() {
+        assertEquals("FOOBAR!", parseDirect("testImpl.name"));
     }
 
     public void testMapAccessWithMethodCall() {
@@ -591,6 +601,7 @@ public class CompiledUnitTest extends TestCase {
 
     public static class MiscTestClass {
         int exec = 0;
+
         public List toList(Object object1, String string, int integer, Map map, List list) {
             exec++;
             List l = new ArrayList();

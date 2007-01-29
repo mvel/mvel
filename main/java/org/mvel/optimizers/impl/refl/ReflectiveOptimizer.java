@@ -175,10 +175,22 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
             return ((Field) member).get(ctx);
         }
         else if (member != null) {
-            GetterAccessor accessor = new GetterAccessor((Method) member);
-            addAccessorNode(accessor);
+            Object o;
 
-            return ((Method) member).invoke(ctx, EMPTYARG);
+            try {
+                o = ((Method) member).invoke(ctx, EMPTYARG);
+
+                GetterAccessor accessor = new GetterAccessor((Method) member);
+                addAccessorNode(accessor);
+            }
+            catch (IllegalAccessException e) {
+                Method iFaceMeth = ParseTools.determineActualTargetMethod((Method) member);
+                GetterAccessor accessor = new GetterAccessor(iFaceMeth);
+                addAccessorNode(accessor);
+
+                o = iFaceMeth.invoke(ctx, EMPTYARG);
+            }
+            return o;
         }
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
             MapAccessor accessor = new MapAccessor();
@@ -223,7 +235,6 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
                 throw new PropertyAccessException("could not access property ('" + property + "')");
         }
     }
-
 
     /**
      * Handle accessing a property embedded in a collections, map, or array

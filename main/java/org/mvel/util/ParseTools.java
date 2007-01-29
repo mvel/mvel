@@ -657,4 +657,18 @@ public class ParseTools {
             return result;
 
     }
+
+    public static Method determineActualTargetMethod(Method method) {
+        String name = method.getName();
+
+        for (Class cls : method.getDeclaringClass().getInterfaces()) {
+            for (Method meth : cls.getMethods()) {
+                if (meth.getParameterTypes().length == 0 && name.equals(meth.getName())) {
+                    return meth;
+                }
+            }
+        }
+
+        return null;
+    }
 }

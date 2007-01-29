@@ -301,23 +301,43 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return o;
         }
         else if (member != null) {
+
+            Object o;
+
             if (first) {
                 debug("ALOAD 2");
                 mv.visitVarInsn(ALOAD, 2);
             }
 
-            debug("CHECKCAST " + getInternalName(member.getDeclaringClass()));
-            mv.visitTypeInsn(CHECKCAST, getInternalName(member.getDeclaringClass()));
+            try {
+                o = ((Method) member).invoke(ctx, EMPTYARG);
 
-            returnType = ((Method) member).getReturnType();
+                debug("CHECKCAST " + getInternalName(member.getDeclaringClass()));
+                mv.visitTypeInsn(CHECKCAST, getInternalName(member.getDeclaringClass()));
 
-            debug("INVOKEVIRTUAL " + member.getName() + ":" + returnType);
-            mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(member.getDeclaringClass()), member.getName(),
-                    getMethodDescriptor((Method) member));
+                returnType = ((Method) member).getReturnType();
 
-            stacksize++;
+                debug("INVOKEVIRTUAL " + member.getName() + ":" + returnType);
+                mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(member.getDeclaringClass()), member.getName(),
+                        getMethodDescriptor((Method) member));
 
-            return ((Method) member).invoke(ctx, EMPTYARG);
+            }
+            catch (IllegalAccessException e) {
+                Method iFaceMeth = determineActualTargetMethod((Method) member);
+
+                debug("CHECKCAST " + getInternalName(iFaceMeth.getDeclaringClass()));
+                mv.visitTypeInsn(CHECKCAST, getInternalName(iFaceMeth.getDeclaringClass()));
+
+                returnType = iFaceMeth.getReturnType();
+
+                debug("INVOKEINTERFACE " + member.getName() + ":" + returnType);
+                mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(iFaceMeth.getDeclaringClass()), member.getName(),
+                        getMethodDescriptor((Method) member));
+
+                o = iFaceMeth.invoke(ctx, EMPTYARG);
+            }
+            return o;
+
         }
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
 
