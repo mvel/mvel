@@ -367,7 +367,20 @@ public class PropertyAccessor {
             return ((Field) member).get(ctx);
         }
         else if (member != null) {
-            return ((Method) member).invoke(ctx, EMPTYARG);
+            try {
+                return ((Method) member).invoke(ctx, EMPTYARG);
+            }
+            catch (IllegalAccessException e) {
+                try {
+                    ((Method) member).setAccessible(true);
+                    return ((Method) member).invoke(ctx, EMPTYARG);
+                }
+                finally {
+                    ((Method) member).setAccessible(false);
+                }
+
+            }
+
         }
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
             return ((Map) ctx).get(property);

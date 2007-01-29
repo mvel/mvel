@@ -3,11 +3,11 @@ package org.mvel.tests.main;
 import junit.framework.TestCase;
 import org.mvel.Interpreter;
 import org.mvel.MVEL;
-import org.mvel.util.FastList;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
 import org.mvel.tests.main.res.PDFFieldUtil;
+import org.mvel.util.FastList;
 
 import java.io.Serializable;
 import java.util.Calendar;
@@ -37,6 +37,19 @@ public class ParserUnitTest extends TestCase {
         map.put("doubleTen", new Double(10));
 
         map.put("variable_with_underscore", "HELLO");
+
+        map.put("testImpl",
+                new TestInterface() {
+
+                    public String getName() {
+                        return "FOOBAR!";
+                    }
+                });
+
+    }
+
+    public static interface TestInterface {
+        public String getName();
     }
 
     public void testPassThru() {
@@ -53,6 +66,10 @@ public class ParserUnitTest extends TestCase {
 
     public void testSimpleProperty() {
         assertEquals("dog", parse("@{foo.bar.name}"));
+    }
+
+    public void testThroughInterface() {
+        assertEquals("FOOBAR!", parseDirect("testImpl.name"));
     }
 
     public void testBooleanOperator() {
@@ -405,7 +422,7 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testInvert3() {
-        assertEquals(~10 + (1 + ~50), parseDirect("~10 + (1 + ~50)"));        
+        assertEquals(~10 + (1 + ~50), parseDirect("~10 + (1 + ~50)"));
     }
 
 
@@ -511,7 +528,7 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testObjectInstantiationWithMethodCall() {
-       assertEquals("foobie", parse("@{new String('foobie').toString()}"));
+        assertEquals("foobie", parse("@{new String('foobie').toString()}"));
     }
 
     public void testObjectInstantiation2() {
