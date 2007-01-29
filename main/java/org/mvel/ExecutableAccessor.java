@@ -18,11 +18,8 @@
  */
 package org.mvel;
 
-import static org.mvel.util.ParseTools.handleParserEgress;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.util.ParseTools;
-
-import java.math.BigDecimal;
+import static org.mvel.util.ParseTools.handleParserEgress;
 
 public class ExecutableAccessor implements ExecutableStatement {
     private Token accessor;

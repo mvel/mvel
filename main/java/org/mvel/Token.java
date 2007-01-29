@@ -269,27 +269,33 @@ public class Token implements Cloneable, Serializable {
         }
         catch (NullPointerException e) {
             //todo: FIX JIT, so we don't have to force safe reflective mode.
-            AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+            AccessorOptimizer optimizer = null;
             Object retVal = null;
 
             if ((fields & ASSIGN) != 0) {
+                optimizer = OptimizerFactory.getDefaultAccessorCompiler();
                 accessor = optimizer.optimizeAssignment(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & SUBEVAL) != 0) {
+                optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
                 accessor = (ExecutableStatement) MVEL.compileExpression(name);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & INLINE_COLLECTION) != 0) {
-                accessor = (optimizer = OptimizerFactory.getDefaultAccessorCompiler()).optimizeCollection(name, ctx, thisValue, factory);
+                optimizer = OptimizerFactory.getDefaultAccessorCompiler();
+                accessor = optimizer.optimizeCollection(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & FOLD) != 0) {
+                optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
                 accessor = optimizer.optimizeFold(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & NEW) != 0) {
+                optimizer = OptimizerFactory.getDefaultAccessorCompiler();
                 accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
+                retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else {
                 try {
@@ -654,9 +660,12 @@ public class Token implements Cloneable, Serializable {
         return (fields & SUBEVAL) != 0;
     }
 
-
     public boolean isLiteral() {
         return (fields & LITERAL) != 0;
+    }
+
+    public boolean isThisVal() {
+        return (fields & THISREF) != 0;
     }
 
     public boolean isOperator() {
