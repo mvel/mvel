@@ -44,12 +44,19 @@ public class ParserUnitTest extends TestCase {
                     public String getName() {
                         return "FOOBAR!";
                     }
+
+
+                    public boolean isFoo() {
+                        return true;
+                    }
                 });
 
     }
 
     public static interface TestInterface {
         public String getName();
+
+        public boolean isFoo();
     }
 
     public void testPassThru() {
