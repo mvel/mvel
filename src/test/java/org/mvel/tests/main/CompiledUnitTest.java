@@ -34,6 +34,11 @@ public class CompiledUnitTest extends TestCase {
                     public String getName() {
                         return "FOOBAR!";
                     }
+
+
+                    public boolean isFoo() {
+                        return true;
+                    }
                 });
     }
 
@@ -52,6 +57,10 @@ public class CompiledUnitTest extends TestCase {
 
     public void testThroughInterface() {
         assertEquals("FOOBAR!", parseDirect("testImpl.name"));
+    }
+
+    public void testThroughInterface2() {
+        assertEquals(true, parseDirect("testImpl.foo"));
     }
 
     public void testMapAccessWithMethodCall() {
