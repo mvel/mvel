@@ -24,12 +24,8 @@ import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.impl.refl.Union;
-import org.mvel.util.CollectionParser;
-import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.parseParameterList;
-import static org.mvel.util.ParseTools.subset;
-import org.mvel.util.PropertyTools;
-import org.mvel.util.StringAppender;
+import org.mvel.util.*;
+import static org.mvel.util.ParseTools.*;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -681,8 +677,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         mv.visitTypeInsn(CHECKCAST, getInternalName(parameterTypes[i]));
                     }
 
-
-                    stacksize += 3;
+                    //           stacksize += 3;
                 }
 
                 if ((m.getModifiers() & Modifier.STATIC) != 0) {
@@ -706,6 +701,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 stacksize++;
             }
+
+            //    debug(">>" + m + " :: " + ctx);
 
             return m.invoke(ctx, args);
         }
@@ -751,6 +748,35 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         return val;
     }
 
+    private Class getWrapperClass(Class cls) {
+        if (cls == boolean.class) {
+            return Boolean.class;
+        }
+        else if (cls == int.class) {
+            return Integer.class;
+        }
+        else if (cls == float.class) {
+            return Float.class;
+        }
+        else if (cls == double.class) {
+            return Double.class;
+        }
+        else if (cls == short.class) {
+            return Short.class;
+        }
+        else if (cls == long.class) {
+            return Long.class;
+        }
+        else if (cls == byte.class) {
+            return Byte.class;
+        }
+        else if (cls == char.class) {
+            return Character.class;
+        }
+
+        return null;
+    }
+
     private void unwrapPrimitive(Class cls) {
         if (cls == boolean.class) {
             debug("CHECKCAST java/lang/Boolean");
@@ -786,7 +812,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("CHECKCAST java/lang/Long");
             mv.visitTypeInsn(CHECKCAST, "java/lang/Long");
             debug("INVOKEVIRTUAL java/lang/Long.longValue");
-            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Long", "longValue", "()L");
+            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Long", "longValue", "()J");
         }
         else if (cls == byte.class) {
             debug("CHECKCAST java/lang/Byte");
@@ -822,6 +848,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             mv.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;");
         }
         else if (cls == long.class) {
+            debug("INVOKESTATIC java/lang/Long.valueOf");
             mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;");
         }
         else if (cls == byte.class) {
@@ -1107,12 +1134,215 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     public Accessor optimizeAssignment(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        throw new OptimizationNotSupported("JIT does not yet support assignments");
+        this.length = (this.expr = property).length;
+        this.ctx = ctx;
+        this.thisRef = thisRef;
+        this.variableFactory = factory;
+        compiledInputs = new ArrayList<ExecutableStatement>();
+
+        _initJIT();
+
+        greedy = false;
+        String varName = nextToken().getName();
+
+        if (!nextToken().isOperator(Operator.ASSIGN))
+            throw new OptimizationFailure("expected assignment operator");
+        greedy = true;
+
+        Token valTk = nextToken();
+        ExecutableStatement value;
+        if (valTk.isLiteral()) {
+            value = new ExecutableLiteral(valTk.getLiteralValue());
+        }
+        else if (valTk.isNewObject()) {
+            value = new ExecutableAccessor(valTk, false, false);
+        }
+        else {
+            value = (ExecutableStatement) MVEL.compileExpression(valTk.getNameAsArray());
+        }
+
+        inputs++;
+        compiledInputs.add(value);
+
+
+        debug("ALOAD 3");
+        mv.visitVarInsn(ALOAD, 3);
+
+        debug("INVOKESTATIC org/mvel/util/ParseTools.findLocalVariableFactory");
+        mv.visitMethodInsn(INVOKESTATIC, "org/mvel/util/ParseTools", "finalLocalVariableFactory", "(Lorg/mvel/integration/VariableResolverFactory;)Lorg/mvel/integration/VariableResolverFactory;");
+
+        debug("LDC '" + varName + "'");
+        mv.visitLdcInsn(varName);
+
+        debug("ALOAD 0: this");
+        mv.visitVarInsn(ALOAD, 0);
+
+        debug("GETFIELD p0");
+        mv.visitFieldInsn(GETFIELD, className, "p0", "Lorg/mvel/ExecutableStatement;");
+
+        debug("ALOAD 2");
+        mv.visitVarInsn(ALOAD, 2);
+
+        debug("ALOAD 3");
+        mv.visitVarInsn(ALOAD, 3);
+
+        debug("INVOKEINTERFACE org/mvel/ExecutableStatement.getValue");
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/ExecutableStatement", "getValue", "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+
+        debug("DUP");
+        mv.visitInsn(DUP);
+
+        debug("ASTORE 4");
+        mv.visitVarInsn(ASTORE, 4);
+
+        debug("INVOKEINTERFACE org/mvel/integration/VariableResolverFactory.createVariable");
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolverFactory", "createVariable", "(Ljava/lang/String;Ljava/lang/Object;)Lorg/mvel/integration/VariableResolver;");
+
+        debug("POP");
+        mv.visitInsn(POP);
+
+        debug("ALOAD 4");
+        mv.visitVarInsn(ALOAD, 4);
+
+        returnType = Object.class;
+
+        try {
+            _finishJIT();
+            return _initializeAccessor();
+        }
+        catch (Exception e) {
+            throw new OptimizationFailure("could not create assignment", e);
+        }
     }
 
     public Accessor optimizeObjectCreation(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        throw new OptimizationNotSupported("JIT does not yet support object creation");
+        _initJIT();
+
+        compiledInputs = new ArrayList<ExecutableStatement>();
+        this.length = (this.expr = property).length;
+        this.ctx = ctx;
+        this.thisRef = thisRef;
+        this.variableFactory = factory;
+
+        String[] cnsRes = captureContructorAndResidual(property);
+        String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
+
+        try {
+            if (constructorParms != null) {
+                for (String constructorParm : constructorParms) {
+                    compiledInputs.add((ExecutableStatement) MVEL.compileExpression(constructorParm));
+                }
+
+                debug("------");
+
+                String s;
+
+                Class cls = Token.LITERALS.containsKey(s = new String(subset(property, 0, ArrayTools.findFirst('(', property)))) ?
+                        ((Class) Token.LITERALS.get(s)) : ParseTools.createClass(s);
+
+                debug("NEW " + getDescriptor(cls));
+                mv.visitTypeInsn(NEW, getDescriptor(cls));
+                debug("DUP");
+                mv.visitInsn(DUP);
+
+//                debug("ASTORE 4");
+//                mv.visitVarInsn(ASTORE, 4);
+
+                inputs = constructorParms.length;
+
+
+                Object[] parms = new Object[constructorParms.length];
+
+                int i = 0;
+                for (ExecutableStatement es : compiledInputs) {
+                    parms[i++] = es.getValue(ctx, factory);
+                }
+
+                Constructor cns = getBestConstructorCanadidate(parms, cls);
+
+                if (cns == null)
+                    throw new CompileException("unable to find constructor for: " + cls.getName());
+
+                Class tg;
+                for (i = 0; i < constructorParms.length; i++) {
+                    debug("ALOAD 0");
+                    mv.visitVarInsn(ALOAD, 0);
+                    debug("GETFIELD p" + i);
+                    mv.visitFieldInsn(GETFIELD, className, "p" + i, "Lorg/mvel/ExecutableStatement;");
+                    debug("ALOAD 2");
+                    mv.visitVarInsn(ALOAD, 2);
+                    debug("ALOAD 3");
+                    mv.visitVarInsn(ALOAD, 3);
+                    debug("INVOKEINTERFACE org/mvel/ExecutableStatement.getValue");
+                    mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/ExecutableStatement", "getValue", "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+
+                    tg = cns.getParameterTypes()[i].isPrimitive()
+                            ? getWrapperClass(cns.getParameterTypes()[i]) : cns.getParameterTypes()[i];
+
+                    if (!parms[i].getClass().isAssignableFrom(cns.getParameterTypes()[i])) {
+                        debug("LDC " + getType(tg));
+                        mv.visitLdcInsn(getType(tg));
+                        debug("INVOKESTATIC org/mvel/DataConversion.convert");
+                        mv.visitMethodInsn(INVOKESTATIC, "org/mvel/DataConversion", "convert", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
+
+                        if (cns.getParameterTypes()[i].isPrimitive()) {
+                            unwrapPrimitive(cns.getParameterTypes()[i]);
+                        }
+                        else {
+                            debug("CHECKCAST " + getInternalName(tg));
+                            mv.visitTypeInsn(CHECKCAST, getInternalName(tg));
+                        }
+
+                    }
+                    else {
+                        debug("CHECKCAST " + getInternalName(cns.getParameterTypes()[i]));
+                        mv.visitTypeInsn(CHECKCAST, getInternalName(cns.getParameterTypes()[i]));
+                    }
+
+                }
+
+                debug("INVOKESPECIAL " + getDescriptor(cls) + ".<init> : " + getConstructorDescriptor(cns));
+                mv.visitMethodInsn(INVOKESPECIAL, getDescriptor(cls), "<init>", getConstructorDescriptor(cns));
+
+                _finishJIT();
+                Accessor acc = _initializeAccessor();
+
+                if (cnsRes.length > 1 && cnsRes[1] != null && !cnsRes[1].trim().equals("")) {
+                    return new Union(acc, cnsRes[1].toCharArray());
+                }
+
+                return acc;
+            }
+            else {
+                Class cls = Class.forName(new String(property));
+
+                debug("NEW " + getDescriptor(cls));
+                mv.visitTypeInsn(NEW, getDescriptor(cls));
+                debug("DUP");
+                mv.visitInsn(DUP);
+
+
+                Constructor cns = cls.getConstructor();
+
+                debug("INVOKESPECIAL <init>");
+
+                mv.visitMethodInsn(INVOKESPECIAL, getDescriptor(cls), "<init>", getConstructorDescriptor(cns));
+
+                _finishJIT();
+                Accessor acc = _initializeAccessor();
+
+                if (cnsRes.length > 1 && cnsRes[1] != null && !cnsRes[1].trim().equals("")) {
+                    return new Union(acc, cnsRes[1].toCharArray());
+                }
+
+                return acc;
+            }
+        }
+        catch (Exception e) {
+            throw new OptimizationFailure("could not optimize construtor", e);
+        }
     }
+
 
     public Accessor optimizeFold(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         throw new OptimizationNotSupported("JIT does not yet support fold operations.");
