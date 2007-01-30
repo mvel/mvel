@@ -183,6 +183,9 @@ public class PropertyTools {
             if ((fld.getModifiers() & PUBLIC) != 0) return fld;
         }
         catch (Exception e) {
+//            if (clazz.getSuperclass() != Object.class) {
+//                return getFieldOrAccessor(clazz.getSuperclass(), property);
+//            }
             // do nothing.
         }
         return getGetter(clazz, property);
