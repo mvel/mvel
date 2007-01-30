@@ -5,6 +5,8 @@ import org.mvel.MVEL;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
+import org.mvel.tests.main.res.DerivedClass;
+import org.mvel.tests.main.ParserUnitTest;
 
 import java.io.Serializable;
 import java.util.*;
@@ -13,6 +15,7 @@ public class CompiledUnitTest extends TestCase {
     protected Foo foo = new Foo();
     protected Map<String, Object> map = new HashMap<String, Object>();
     protected Base base = new Base();
+    protected DerivedClass derived = new DerivedClass();
 
     public CompiledUnitTest() {
         foo.setBar(new Bar());
@@ -40,6 +43,8 @@ public class CompiledUnitTest extends TestCase {
                         return true;
                     }
                 });
+
+        map.put("derived", derived);
     }
 
     public void testSingleProperty() {
@@ -53,6 +58,10 @@ public class CompiledUnitTest extends TestCase {
 
     public void testSimpleProperty() {
         assertEquals("dog", parseDirect("foo.bar.name"));
+    }
+
+    public void testPropertyViaDerivedClass() {
+        assertEquals("cat", parseDirect("derived.data"));
     }
 
     public void testThroughInterface() {

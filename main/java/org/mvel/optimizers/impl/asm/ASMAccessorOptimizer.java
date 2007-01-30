@@ -250,6 +250,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
 
+
         if (first && variableFactory != null && variableFactory.isResolveable(property)) {
             try {
                 debug("ALOAD 3");
