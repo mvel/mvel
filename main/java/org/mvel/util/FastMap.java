@@ -136,6 +136,16 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
     }
 
 
+    public int hashCode() {
+        if (!init) initialize();
+        int h = 0;
+        for (Object o : entrySet) {
+            h += o.hashCode();
+        }
+
+        return h;
+    }
+
     public String toString() {
         return String.valueOf(values);
     }
