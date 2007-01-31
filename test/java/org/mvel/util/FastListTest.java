@@ -1,7 +1,9 @@
 package org.mvel.util;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.mvel.MVEL;
@@ -9,26 +11,28 @@ import org.mvel.MVEL;
 
 import junit.framework.TestCase;
 
-public class FastMapTest extends TestCase {
+public class FastListTest extends TestCase {
     protected Map<String, Object> map = new HashMap<String, Object>();
 
 
-    public FastMapTest() {
+    public FastListTest() {
         map.put("var", "var");
     }
     
     public void testHashCode() {
-        Map map = (Map) parseDirect( "[ 'key1' : var ]" );
-        int i = map.hashCode();
+        List list = (List) parseDirect( "[ 'key1', var ]" );
+        System.out.println( list.hashCode() );
     }
     
+    
     public void testEquals() {
-        Map map1 = (Map) parseDirect( "[ 'key1' : var ]" );
-        Map map2 = new HashMap();
-        map2.put( "key1", "var" );
-        assertEquals( map2, map1);
-        assertEquals( map1, map2);
-    }    
+        List list1 = (List) parseDirect( "[ 'key1', var ]" );
+        List list2 = new ArrayList();
+        list2.add( "key1" );
+        list2.add( "var" );
+        assertEquals( list2, list1);
+        assertEquals( list1, list2);        
+    }
     
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
