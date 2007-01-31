@@ -3,6 +3,7 @@ package org.mvel.util;
 
 import java.util.AbstractMap;
 import java.util.Set;
+import java.util.Map;
 
 public class FastMap<K, V> extends AbstractMap<K, V> {
     private Set entrySet;
@@ -130,9 +131,25 @@ public class FastMap<K, V> extends AbstractMap<K, V> {
 
 
     public boolean equals(Object o) {
+        if (!(o instanceof Map)) return false;
         if (!init) initialize();
+
         if ((o instanceof FastMap) && !((FastMap) o).init) ((FastMap) o).initialize();
-        return o instanceof FastMap && entrySet.equals(((FastMap) o).entrySet);
+
+        if (o instanceof FastMap) return entrySet.equals(((FastMap) o).entrySet);
+        else {
+            Map map = (Map) o;
+            Object v;
+            for (Object key : map.keySet()) {
+                v = map.get(key);
+                if (v == null) {
+                    if (get(key) == null) continue;
+                    else return false;
+                }
+                if (!v.equals(get(key))) return false;
+            }
+            return true;
+        }
     }
 
 
