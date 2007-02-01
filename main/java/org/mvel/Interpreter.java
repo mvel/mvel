@@ -364,11 +364,9 @@ public class Interpreter {
                     case IF:
                     case ELSEIF: {
                         try {
-                            oParser.setBooleanModeOnly(true);
                             if (!((Boolean) oParser.setExpressionArray(getInternalSegment(currNode)).parse())) {
                                 exitContext();
                             }
-                            oParser.setBooleanModeOnly(false);
                         }
                         catch (ClassCastException e) {
                             throw new CompileException("IF expression does not return a boolean: " + new String(getSegment(currNode)));

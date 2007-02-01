@@ -28,12 +28,10 @@ public class ExecutableAccessor implements ExecutableStatement {
     private Class egress;
     private boolean convertable;
 
-    private boolean booleanMode;
     private boolean returnBigDecimal;
 
-    public ExecutableAccessor(Token accessor, boolean booleanMode, boolean returnBigDecimal) {
+    public ExecutableAccessor(Token accessor, boolean returnBigDecimal) {
         this.accessor = accessor;
-        this.booleanMode = booleanMode;
         this.returnBigDecimal = returnBigDecimal;
     }
 
@@ -44,7 +42,7 @@ public class ExecutableAccessor implements ExecutableStatement {
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         return handleParserEgress(accessor.getReducedValueAccelerated(staticContext, staticContext, factory),
-                booleanMode, returnBigDecimal);
+                 returnBigDecimal);
     }
 
 

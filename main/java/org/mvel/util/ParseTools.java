@@ -630,14 +630,7 @@ public class ParseTools {
         return false;
     }
 
-    public static Object handleParserEgress(Object result, boolean booleanMode, boolean returnBigDecimal) {
-        if (booleanMode) {
-            if (result instanceof Boolean) return result;
-            else if (result instanceof BigDecimal) {
-                return !BlankLiteral.INSTANCE.equals(((BigDecimal) result).floatValue());
-            }
-        }
-
+    public static Object handleParserEgress(Object result,  boolean returnBigDecimal) {
         if (result instanceof BigDecimal) {
             if (returnBigDecimal) return result;
             else if (((BigDecimal) result).scale() > 14) {

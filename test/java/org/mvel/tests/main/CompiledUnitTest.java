@@ -4,9 +4,8 @@ import junit.framework.TestCase;
 import org.mvel.MVEL;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
-import org.mvel.tests.main.res.Foo;
 import org.mvel.tests.main.res.DerivedClass;
-import org.mvel.tests.main.ParserUnitTest;
+import org.mvel.tests.main.res.Foo;
 
 import java.io.Serializable;
 import java.util.*;
@@ -237,16 +236,8 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(true, parseDirect("BWAH == empty"));
     }
 
-    public void testBooleanModeOnly() {
-        assertEquals(true, (Object) MVEL.evalToBoolean("!BWAH", base, map));
-    }
-
     public void testBooleanModeOnly2() {
         assertEquals(false, (Object) MVEL.evalToBoolean("BWAH", base, map));
-    }
-
-    public void testBooleanModeOnly3() {
-        assertEquals(true, (Object) MVEL.evalToBoolean("!zero", base, map));
     }
 
     public void testBooleanModeOnly4() {

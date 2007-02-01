@@ -151,6 +151,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals(true, parse("@{(pi * hour) > 0 && foo.happy() == 'happyBar'}"));
     }
 
+    public void testGthan() {
+        assertEquals(true, (boolean) parseBooleanMode("hour>0"));
+    }
+
     public void testModulus() {
         assertEquals(38392 % 2,
                 parse("@{38392 % 2}"));
@@ -294,16 +298,9 @@ public class ParserUnitTest extends TestCase {
         assertEquals(true, parse("@{BWAH == empty}"));
     }
 
-    public void testBooleanModeOnly() {
-        assertEquals(true, (Object) MVEL.evalToBoolean("!BWAH", base, map));
-    }
 
     public void testBooleanModeOnly2() {
         assertEquals(false, (Object) MVEL.evalToBoolean("BWAH", base, map));
-    }
-
-    public void testBooleanModeOnly3() {
-        assertEquals(true, (Object) MVEL.evalToBoolean("!zero", base, map));
     }
 
     public void testBooleanModeOnly4() {
@@ -647,6 +644,10 @@ public class ParserUnitTest extends TestCase {
     public Object parseDirect(String ex) {
         //  return compiledExecute(ex);
         return MVEL.eval(ex, base, map);
+    }
+
+    public Boolean parseBooleanMode(String ex) {
+        return MVEL.evalToBoolean(ex, base, map);
     }
 
     public Object compiledExecute(String ex) {
