@@ -42,8 +42,7 @@ public class AbstractParser {
          * a capture only mode.
          */
 
-        fields = fields & (Token.BOOLEAN_MODE | Token.CAPTURE_ONLY | Token.NOCOMPILE | Token.INLINE_COLLECTION |
-                Token.PUSH);
+        fields = fields & (Token.CAPTURE_ONLY | Token.NOCOMPILE | Token.INLINE_COLLECTION | Token.PUSH);
 
         boolean capture = false;
 

@@ -53,7 +53,7 @@ public class Token implements Cloneable, Serializable {
     public static final int EVAL_RIGHT = 1 << 7;
     public static final int INVERT = 1 << 8;
     public static final int FOLD = 1 << 9;
-    public static final int BOOLEAN_MODE = 1 << 10;
+
     public static final int ASSIGN = 1 << 12;
     public static final int LOOKAHEAD = 1 << 13;
     public static final int COLLECTION = 1 << 14;
@@ -256,7 +256,6 @@ public class Token implements Cloneable, Serializable {
         return literal;
     }
 
-
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((fields & (LITERAL)) != 0) {
             if ((fields & THISREF) != 0)
@@ -269,7 +268,7 @@ public class Token implements Cloneable, Serializable {
         }
         catch (NullPointerException e) {
             //todo: FIX JIT, so we don't have to force safe reflective mode.
-            AccessorOptimizer optimizer = null;
+            AccessorOptimizer optimizer;
             Object retVal = null;
 
             if ((fields & ASSIGN) != 0) {
@@ -463,7 +462,7 @@ public class Token implements Cloneable, Serializable {
 
 
     private Object valRet(Object value) {
-        if ((fields & (NEGATION | BOOLEAN_MODE | NUMERIC | INVERT)) == 0) return value;
+        if ((fields & (NEGATION  | NUMERIC | INVERT)) == 0) return value;
         else if (knownType > 99) {
             if ((fields & INVERT) != 0) {
                 return ~getBigDecimalFromType(value, knownType).intValue();
@@ -476,15 +475,6 @@ public class Token implements Cloneable, Serializable {
             if (value instanceof Boolean) {
                 return !((Boolean) value);
             }
-            else if ((fields & BOOLEAN_MODE) != 0) {
-                return BlankLiteral.INSTANCE.equals(value);
-            }
-            else {
-                throw new CompileException("illegal negation - not a boolean expression");
-            }
-        }
-        else if ((fields & BOOLEAN_MODE) != 0) {
-            return !BlankLiteral.INSTANCE.equals(value);
         }
         else if ((fields & INVERT) != 0) {
             if (isNumber(value)) {

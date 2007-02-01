@@ -83,6 +83,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        return handleParserEgress(new AcceleratedParser(tokenMap).execute(staticContext, factory), false, false);
+        return handleParserEgress(new AcceleratedParser(tokenMap).execute(staticContext, factory), false);
     }
 }

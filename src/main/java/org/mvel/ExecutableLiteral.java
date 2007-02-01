@@ -11,7 +11,7 @@ public class ExecutableLiteral implements ExecutableStatement {
 
 
     public ExecutableLiteral(Object literal) {
-        this.literal = ParseTools.handleParserEgress(literal, false, false);
+        this.literal = ParseTools.handleParserEgress(literal, false);
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {

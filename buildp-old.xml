@@ -25,18 +25,21 @@
         <!-- Compile the java code from ${src} into ${build} debuglevel="vars,lines,source" -->
         <javac source="1.5" srcdir="${src}" destdir="${build}" optimize="true" debug="on"
                debuglevel="vars,lines,source">
+            <classpath>
+                <pathelement path="lib/asm.jar" />
+            </classpath>
         </javac>
     </target>
 
-    <taskdef name="retroweaver" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">
-    </taskdef>
+    <!--<taskdef name="retroweaver" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">-->
+    <!--</taskdef>-->
 
 
-    <target name="compile-1.4">
-        <delete dir="build14"/>
-        <mkdir dir="build14"/>
-        <retroweaver srcdir="${build}" destdir="build14" target="1.4"/>
-    </target>
+    <!--<target name="compile-1.4">-->
+        <!--<delete dir="build14"/>-->
+        <!--<mkdir dir="build14"/>-->
+        <!--<retroweaver srcdir="${build}" destdir="build14" target="1.4"/>-->
+    <!--</target>-->
 
     <target name="compile-nodebug" depends="init"
             description="compile the source ">

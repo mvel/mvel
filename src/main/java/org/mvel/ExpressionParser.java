@@ -65,12 +65,12 @@ public class ExpressionParser extends AbstractParser {
 
     Object parse() {
         stk.clear();
-        fields = (Token.BOOLEAN_MODE & fields);
+
         cursor = 0;
 
         parseAndExecuteInterpreted();
 
-        return handleParserEgress(stk.peek(), (fields & Token.BOOLEAN_MODE) != 0, returnBigDecimal);
+        return handleParserEgress(stk.peek(), returnBigDecimal);
     }
 
     private void parseAndExecuteInterpreted() {
@@ -227,7 +227,7 @@ public class ExpressionParser extends AbstractParser {
      * current state against 2 downrange structures (usually an op and a val).
      */
     private void reduceTrinary() {
-        Object v1 = null, v2;
+        Object v1 = null, v2 = null;
         Integer operator;
         try {
             while (stk.size() > 1) {
@@ -439,7 +439,9 @@ public class ExpressionParser extends AbstractParser {
                     return;
                 }
             }
-            throw new CompileException("syntax error or incomptable types", expr, cursor, e);
+            throw new CompileException("syntax error or incomptable types (left=" +
+                    (v1 != null ? v1.getClass().getName() : "null") + ", right=" +
+                    (v2 != null ? v2.getClass().getName() : "null") + ")", expr, cursor, e);
 
         }
         catch (Exception e) {
@@ -523,29 +525,7 @@ public class ExpressionParser extends AbstractParser {
     }
 
 
-    public boolean isBooleanModeOnly() {
-        return (fields & Token.BOOLEAN_MODE) != 0;
-    }
 
-    /**
-     * <p>Sets the compiler into boolean mode.  When operating in boolean-mode, the
-     * parser ALWAYS returns a Boolean value based on the Boolean-only rules.</p>
-     * <p/>
-     * The returned boolean value will be returned based on the following rules, in this order:
-     * <p/>
-     * 1. Is the terminal value on the stack a Boolean? If so, return it directly.<br/>
-     * 2. Is the value on the stack null? If so, return false.<br/>
-     * 3. Is the value on the stack empty (0, zero-length, or an empty collections? If so, return false.<br/>
-     * 4. Otherwise return true.<br/>
-     *
-     * @param booleanModeOnly - boolean denoting mode.
-     */
-    public void setBooleanModeOnly(boolean booleanModeOnly) {
-        if (booleanModeOnly)
-            fields |= Token.BOOLEAN_MODE;
-        else
-            setFieldFalse(Token.BOOLEAN_MODE);
-    }
 
 
     ExpressionParser(char[] expression, Object ctx, Map<String, Object> variables) {
@@ -554,6 +534,13 @@ public class ExpressionParser extends AbstractParser {
         this.ctx = ctx;
         this.variableFactory = new MapVariableResolverFactory(variables);
     }
+
+    ExpressionParser(char[] expression, Object ctx) {
+        this.expr = expression;
+        this.length = expr.length;
+        this.ctx = ctx;
+    }
+
 
     ExpressionParser(String expression, Object ctx, Map<String, Object> variables) {
         setExpression(expression);
@@ -581,28 +568,6 @@ public class ExpressionParser extends AbstractParser {
         this.length = (this.expr = expr).length;
         this.ctx = ctx;
         this.variableFactory = resolverFactory;
-    }
-
-
-    ExpressionParser(String expression, Object ctx, Map<String, Object> variables, boolean booleanMode) {
-        setExpression(expression);
-        this.ctx = ctx;
-        this.variableFactory = new MapVariableResolverFactory(variables);
-        this.fields = booleanMode ? fields | Token.BOOLEAN_MODE : fields;
-    }
-
-    ExpressionParser(String expression, Object ctx, boolean booleanMode) {
-        setExpression(expression);
-        this.ctx = ctx;
-        this.fields = booleanMode ? fields | Token.BOOLEAN_MODE : fields;
-    }
-
-
-    ExpressionParser(String expression, Object ctx, VariableResolverFactory resolverFactory, boolean booleanMode) {
-        setExpression(expression);
-        this.ctx = ctx;
-        this.variableFactory = resolverFactory;
-        this.fields = booleanMode ? fields | Token.BOOLEAN_MODE : fields;
     }
 
     ExpressionParser(Object ctx, Map<String, Object> variables) {

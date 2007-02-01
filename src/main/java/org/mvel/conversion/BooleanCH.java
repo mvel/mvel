@@ -27,10 +27,11 @@ public class BooleanCH implements ConversionHandler {
         CNV.put(String.class,
                 new Converter() {
                     public Object convert(Object o) {
-                        return !(((String) o).equalsIgnoreCase("false"))
+                        return !(((String) o).equalsIgnoreCase("false")
                                 || (((String) o).equalsIgnoreCase("no"))
                                 || (((String) o).equalsIgnoreCase("off"))
-                                || (o.equals("0"));
+                                || ("0".equals(o)) 
+                                || ("".equals(o)));
                     }
                 }
         );
