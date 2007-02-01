@@ -1176,7 +1176,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             value = new ExecutableLiteral(valTk.getLiteralValue());
         }
         else if (valTk.isNewObject()) {
-            value = new ExecutableAccessor(valTk, false, false);
+            value = new ExecutableAccessor(valTk, false);
         }
         else {
             value = (ExecutableStatement) MVEL.compileExpression(valTk.getNameAsArray());

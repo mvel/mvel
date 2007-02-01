@@ -99,7 +99,7 @@ public class
         if (tokens.size() == 1) {
             Token tk = tokens.firstToken();
             if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
+                return new ExecutableAccessor(tk, parser.isReturnBigDecimal());
             }
             else if (tk.isLiteral() && !tk.isThisVal()) {
                 return new ExecutableLiteral(tokens.firstToken().getLiteralValue());
@@ -128,7 +128,7 @@ public class
         if (tokens.size() == 1) {
             Token tk = tokens.firstToken();
             if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, parser.isBooleanModeOnly(), parser.isReturnBigDecimal());
+                return new ExecutableAccessor(tk, parser.isReturnBigDecimal());
             }
             else if (tk.isLiteral() && !tk.isThisVal()) {
                 return new ExecutableLiteral(tokens.firstToken().getLiteralValue());
@@ -153,12 +153,12 @@ public class
      */
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
-        return ParseTools.handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars)),
-                false, false);
+        return ParseTools.handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars))
+                , false);
     }
 
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
-        return ParseTools.handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory), false, false);
+        return ParseTools.handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory), false);
     }
 
     /**
@@ -253,6 +253,42 @@ public class
     }
 
     @SuppressWarnings({"unchecked"})
+    public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
+        return DataConversion.convert(new ExpressionParser(expression, ctx).parse(), toType);
+    }
+        @SuppressWarnings({"unchecked"})
+    public static <T> T eval(String expression, Object ctx, Class<T> toType) {
+        return DataConversion.convert(new ExpressionParser(expression, ctx).parse(), toType);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <T> T eval(String expression, Object ctx, Map vars, Class<T> toType) {
+        return DataConversion.convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <T> T eval(char[] expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
+        return DataConversion.convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <T> T eval(String expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
+        return DataConversion.convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+    }
+
+
+    @SuppressWarnings({"unchecked"})
+    public static <T> T eval(String expression, Map vars, Class<T> toType) {
+        return DataConversion.convert(new ExpressionParser(expression, null, vars).parse(), toType);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <T> T eval(String expression, VariableResolverFactory vars, Class<T> toType) {
+        return DataConversion.convert(new ExpressionParser(expression, null, vars).parse(), toType);
+    }
+    
+
+    @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Map vars, Class<T> toType) {
         return DataConversion.convert(new ExpressionParser(expression, null, vars).parse(), toType);
     }
@@ -286,7 +322,8 @@ public class
      */
     @SuppressWarnings({"unchecked"})
     public static Boolean evalToBoolean(String expression, Object ctx, Map vars) {
-        return (Boolean) new ExpressionParser(expression, ctx, vars, true).parse();
+        return eval(expression, ctx, vars, Boolean.class);
+        //    return (Boolean) new ExpressionParser(expression, ctx, vars, true).parse();
     }
 
     /**
@@ -297,7 +334,8 @@ public class
      * @return -
      */
     public static Boolean evalToBoolean(String expression, Object ctx) {
-        return (Boolean) new ExpressionParser(expression, ctx, true).parse();
+        return eval(expression, ctx, Boolean.class);
+        //  return (Boolean) new ExpressionParser(expression, ctx, true).parse();
     }
 
     /**
@@ -309,7 +347,7 @@ public class
      * @return -
      */
     public static Boolean evalToBoolean(String expression, Object ctx, VariableResolverFactory factory) {
-        return (Boolean) new ExpressionParser(expression, ctx, factory, true).parse();
+        return eval(expression, ctx, factory, Boolean.class);
     }
 
     /**
@@ -320,7 +358,7 @@ public class
      * @return -
      */
     public static Boolean evalToBoolean(String expression, VariableResolverFactory factory) {
-        return (Boolean) new ExpressionParser(expression, null, factory, true).parse();
+        return (Boolean) new ExpressionParser(expression, null, factory).parse();
     }
 
     /**

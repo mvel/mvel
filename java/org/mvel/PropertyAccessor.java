@@ -196,10 +196,14 @@ public class PropertyAccessor {
     private void set(Object value) {
         curr = ctx;
 
+
         try {
             int oLength = length;
             length = ArrayTools.findLast('.', property);
             curr = get();
+
+            if (curr == null)
+                throw new PropertyAccessException("cannot bind to null context: " + new String(property));
 
             length = oLength;
 
