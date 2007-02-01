@@ -155,22 +155,11 @@ public class AcceleratedParser extends AbstractParser {
         Integer operator;
         try {
             while (stk.size() > 1) {
-                if ((v1 = stk.pop()) instanceof Boolean) {
-                    /**
-                     * There is a boolean value at the top of the stk, so we
-                     * are at a boolean junction.
-                     */
-                    operator = (Integer) stk.pop();
-                    v2 = processToken(stk.pop());
-                }
-                else {
-                    operator = (Integer) v1;
-                    v1 = processToken(stk.pop());
-                    v2 = processToken(stk.pop());
-                }
+                operator = (Integer) stk.pop();
+                v1 = processToken(stk.pop());
+                v2 = processToken(stk.pop());
 
                 // assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
-
                 switch (operator) {
                     case ADD:
                         if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
