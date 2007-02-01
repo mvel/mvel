@@ -9,8 +9,6 @@ public class ExecutionStack implements Stack {
     }
 
     public void push(Object o) {
-        assert ParseTools.debug("PUSH <<" + o + ">> SIZE=" + size);
-
         size++;
         element = new StackElement(element, o);
     }
@@ -23,10 +21,6 @@ public class ExecutionStack implements Stack {
 
 
     public void push(Object obj1, Object obj2) {
-        assert ParseTools.debug("PUSH <<" + obj1 + ">>");
-        assert ParseTools.debug("PUSH <<" + obj2 + ">>");
-
-
         size += 2;
         element = new StackElement(new StackElement(element, obj1), obj2);
     }
@@ -46,12 +40,10 @@ public class ExecutionStack implements Stack {
         Object el = element.value;
         element = element.next;
 
-        assert ParseTools.debug("POP <<" + el + ">>");
         return el;
     }
 
     public void discard() {
-        assert ParseTools.debug("DISCARD");
         if (size != 0) {
             size--;
             element = element.next;
