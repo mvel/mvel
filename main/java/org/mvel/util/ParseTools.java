@@ -1,5 +1,7 @@
 package org.mvel.util;
 
+import static java.lang.String.valueOf;
+
 import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
@@ -463,7 +465,7 @@ public class ParseTools {
         if (compareTo == null)
             return false;
         else if (compareTo instanceof String)
-            return ((String) compareTo).contains(String.valueOf(compareTest));
+            return ((String) compareTo).contains(valueOf(compareTest));
         else if (compareTo instanceof Collection)
             return ((Collection) compareTo).contains(compareTest);
         else if (compareTo instanceof Map)
@@ -737,7 +739,7 @@ public class ParseTools {
     private static Object doOperationNonNumeric(Object val1, int operation, Object val2) {
         switch (operation) {
             case Operator.ADD:
-                return String.valueOf(val1) + String.valueOf(val2);
+                return valueOf(val1) + valueOf(val2);
 
             case Operator.EQUAL:
                 return safeEquals(val2, val1);
@@ -753,10 +755,7 @@ public class ParseTools {
             case Operator.GETHAN:
             case Operator.LTHAN:
             case Operator.LETHAN:
-
                 throw new CompileException("could not perform numeric operation on non-numeric types");
-
-
         }
 
         throw new CompileException("unable to perform operation");
@@ -931,7 +930,7 @@ public class ParseTools {
                     case Operator.NEQUAL:
                         return safeNotEquals(val2, val1);
                     case Operator.ADD:
-                        return String.valueOf(val1) + String.valueOf(val2);
+                        return valueOf(val1) + valueOf(val2);
                 }
         }
         return null;
