@@ -24,6 +24,10 @@ public class TokenMap implements TokenIterator {
     private Token current;
     private int size;
 
+
+    public TokenMap() {
+    }
+
     public TokenMap(Token firstToken) {
         this.current = this.firstToken = firstToken;
     }

@@ -105,23 +105,70 @@ public class ExpressionParser extends AbstractParser {
 
     public TokenIterator compileTokens() {
         Token tk;
-        TokenMap tokenMap = null;
+        Token tkOp;
+        Token tkLA;
+        Token tkLA2;
+        TokenMap tokenMap = new TokenMap();
+
+        boolean firstLA;
 
         while ((tk = nextToken()) != null) {
             if (tk.isSubeval()) {
                 tk.setAccessor((ExecutableStatement) MVEL.compileExpression(tk.getNameAsArray()));
             }
 
-            if (tokenMap == null) {
-                tokenMap = new TokenMap(tk);
-            }
-            else {
-                tokenMap.addTokenNode(tk);
-            }
-        }
+            /**
+             * This kludge of code is to handle compile-time literal reduction.
+             */
+            if (tk.isLiteral() && tk.getLiteralValue() != Token.LITERALS.get("this")) {
+                if ((tkOp = nextToken()) != null && tkOp.isOperator()
+                        && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
+                    if ((tkLA = nextToken()) != null && tkLA.isLiteral()) {
+                        stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), tkOp.getLiteralValue());
+                        reduceTrinary();
 
-        if (tokenMap == null)
-            throw new CompileException("Nothing to do.");
+                        firstLA = true;
+
+                        while ((tkOp = nextToken()) != null) {
+                            if ((tkLA2 = nextToken()) != null && tkLA2.isLiteral()) {
+                                stk.push(tkLA2.getLiteralValue(), tkOp.getLiteralValue());
+                                reduceTrinary();
+                                firstLA = false;
+                            }
+                            else {
+                                if (firstLA) {
+                                    tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()));
+                                }
+                                else {
+                                    tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()));
+                                    tokenMap.addTokenNode(tkOp);
+                                    if (tkLA2 != null) tokenMap.addTokenNode(tkLA2);
+                                }
+                                break;
+                            }
+                        }
+
+                        if (!stk.isEmpty())
+                            tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()));
+
+                        continue;
+                    }
+                    else {
+                        tokenMap.addTokenNode(tk);
+                        tokenMap.addTokenNode(tkOp);
+                        if (tkLA != null) tokenMap.addTokenNode(tkLA);
+                        continue;
+                    }
+                }
+                else {
+                    tokenMap.addTokenNode(tk);
+                    if (tkOp != null) tokenMap.addTokenNode(tkOp);
+                    continue;
+                }
+            }
+
+            tokenMap.addTokenNode(tk);
+        }
 
         return new FastTokenIterator(tokenMap);
     }

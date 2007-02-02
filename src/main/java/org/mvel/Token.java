@@ -207,6 +207,11 @@ public class Token implements Cloneable, Serializable {
         setName(expr);
     }
 
+    public Token(int fields, Object literalValue) {
+        this.fields = fields;
+        this.literal = literalValue;
+    }
+
 
     private String getAbsoluteRootElement() {
         if ((fields & (DEEP_PROPERTY | COLLECTION)) != 0) {
