@@ -190,7 +190,7 @@ public class ExpressionParser extends AbstractParser {
         switch (o) {
             case AND:
                 if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
-                    assert debug("STMT_UNWIND");
+           //         assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
                         return -1;
                     }
@@ -205,7 +205,7 @@ public class ExpressionParser extends AbstractParser {
                 }
             case OR:
                 if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
-                    assert debug("STMT_UNWIND");
+                   // assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
                         return -1;
                     }
