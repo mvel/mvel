@@ -50,7 +50,6 @@ public class Token implements Cloneable, Serializable {
     public static final int SUBEVAL = 1 << 4;
     public static final int NUMERIC = 1 << 5;
     public static final int NEGATION = 1 << 6;
-    public static final int EVAL_RIGHT = 1 << 7;
     public static final int INVERT = 1 << 8;
     public static final int FOLD = 1 << 9;
 
@@ -462,7 +461,7 @@ public class Token implements Cloneable, Serializable {
 
 
     private Object valRet(Object value) {
-        if ((fields & (NEGATION  | NUMERIC | INVERT)) == 0) return value;
+        if ((fields & (NEGATION | NUMERIC | INVERT)) == 0) return value;
         else if (knownType > 99) {
             if ((fields & INVERT) != 0) {
                 return ~getBigDecimalFromType(value, knownType).intValue();
@@ -572,7 +571,7 @@ public class Token implements Cloneable, Serializable {
             //    return;
         }
         else if (LITERALS.containsKey(literal)) {
-            fields |= EVAL_RIGHT | LITERAL;
+            fields |= LITERAL;
             if ((literal = LITERALS.get(literal)) == ThisLiteral.class) fields |= THISREF;
         }
         else if (OPERATORS.containsKey(literal)) {

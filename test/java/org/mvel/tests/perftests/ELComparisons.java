@@ -33,17 +33,17 @@ public class ELComparisons {
     }
 
     public void runTests() throws Exception {
-        runTest("Simple String Pass-Through", "'Hello World'", TESTNUM, ALL);
-        runTest("Shallow Property", "data", TESTNUM, ALL);
-        runTest("Deep Property", "foo.bar.name", TESTNUM, ALL);
-        runTest("Static Field Access (MVEL)", "Integer.MAX_VALUE", TESTNUM, mvel);
-        runTest("Static Field Access (OGNL)", "@java.lang.Integer@MAX_VALUE", TESTNUM, ognl);
-        runTest("Inline Array Creation (MVEL)", "{'foo', 'bar'}", TESTNUM, mvel);
-        runTest("Inline Array Creation (OGNL)", "new String[] {'foo', 'bar'}", TESTNUM, ognl);
-        runTest("Collection Access + Method Call", "funMap['foo'].happy()", TESTNUM, ALL);
-        runTest("Boolean compare", "data == 'cat'", TESTNUM, ALL);
-        runTest("Object instantiation", "new String('Hello')", TESTNUM, ALL);
-        runTest("Method access", "readBack('this is a string')", TESTNUM, ALL);
+//        runTest("Simple String Pass-Through", "'Hello World'", TESTNUM, ALL);
+//        runTest("Shallow Property", "data", TESTNUM, ALL);
+//        runTest("Deep Property", "foo.bar.name", TESTNUM, ALL);
+//        runTest("Static Field Access (MVEL)", "Integer.MAX_VALUE", TESTNUM, mvel);
+//        runTest("Static Field Access (OGNL)", "@java.lang.Integer@MAX_VALUE", TESTNUM, ognl);
+//        runTest("Inline Array Creation (MVEL)", "{'foo', 'bar'}", TESTNUM, mvel);
+//        runTest("Inline Array Creation (OGNL)", "new String[] {'foo', 'bar'}", TESTNUM, ognl);
+//        runTest("Collection Access + Method Call", "funMap['foo'].happy()", TESTNUM, ALL);
+//        runTest("Boolean compare", "data == 'cat'", TESTNUM, ALL);
+//        runTest("Object instantiation", "new String('Hello')", TESTNUM, ALL);
+//        runTest("Method access", "readBack('this is a string')", TESTNUM, ALL);
         runTest("Arithmetic", "10 + 1 - 1", TESTNUM, ALL);
 
 
