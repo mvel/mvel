@@ -18,19 +18,20 @@ public class ELComparisons {
 
     private static int ALL = mvel + ognl;
 
-    private static final int TESTNUM = 100000;
+    private static final int TESTNUM = 10000;
 
     public ELComparisons() {
     }
 
     public static void main(String[] args) throws Exception {
+        
         ELComparisons omc = new ELComparisons();
         if (args.length > 0 && args[0].equals("-continuous")) {
             while (true) omc.runTests();
         }
 
         omc.runTests();
-    }
+    }                                                                                                                              
 
     public void runTests() throws Exception {
         runTest("Simple String Pass-Through", "'Hello World'", TESTNUM, ALL);
@@ -45,8 +46,6 @@ public class ELComparisons {
         runTest("Object instantiation", "new String('Hello')", TESTNUM, ALL);
         runTest("Method access", "readBack('this is a string')", TESTNUM, ALL);
         runTest("Arithmetic", "10 + 1 - 1", TESTNUM, ALL);
-
-
     }
 
     public void runTest(String name, String expression, int count, int totest) throws Exception {
