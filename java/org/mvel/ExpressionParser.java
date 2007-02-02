@@ -118,17 +118,30 @@ public class ExpressionParser extends AbstractParser {
             }
 
             /**
-             * This kludge of code is to handle compile-time literal reduction.
+             * This kludge of code is to handle compile-time literal reduction.  We need to avoid
+             * reducing for certain literals like, 'this', ternary and ternary else.
              */
             if (tk.isLiteral() && tk.getLiteralValue() != Token.LITERALS.get("this")) {
                 if ((tkOp = nextToken()) != null && tkOp.isOperator()
                         && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
+
+                    /**
+                     * If the next token is ALSO a literal, then we have a candidate for a compile-time
+                     * reduction.
+                     */
                     if ((tkLA = nextToken()) != null && tkLA.isLiteral()) {
                         stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), tkOp.getLiteralValue());
+
+                        /**
+                         * Reduce the token now.
+                         */
                         reduceTrinary();
 
                         firstLA = true;
 
+                        /**
+                         * Now we need to check to see if this is actually a continuing reduction.
+                         */
                         while ((tkOp = nextToken()) != null) {
                             if ((tkLA2 = nextToken()) != null && tkLA2.isLiteral()) {
                                 stk.push(tkLA2.getLiteralValue(), tkOp.getLiteralValue());
@@ -137,9 +150,17 @@ public class ExpressionParser extends AbstractParser {
                             }
                             else {
                                 if (firstLA) {
+                                    /**
+                                     * There are more tokens, but we can't reduce anymore.  So
+                                     * we create a reduced token for what we've got.
+                                     */
                                     tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()));
                                 }
                                 else {
+                                    /**
+                                     * We have reduced additional tokens, but we can't reduce
+                                     * anymore.
+                                     */
                                     tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()));
                                     tokenMap.addTokenNode(tkOp);
                                     if (tkLA2 != null) tokenMap.addTokenNode(tkLA2);
@@ -148,6 +169,11 @@ public class ExpressionParser extends AbstractParser {
                             }
                         }
 
+                        /**
+                         * If there are no more tokens left to parse, we check to see if
+                         * we've been doing any reducing, and if so we create the token
+                         * now.
+                         */
                         if (!stk.isEmpty())
                             tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()));
 
@@ -190,7 +216,6 @@ public class ExpressionParser extends AbstractParser {
         switch (o) {
             case AND:
                 if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
-           //         assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
                         return -1;
                     }
