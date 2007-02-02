@@ -3,13 +3,11 @@
         MVFLEX Expression Language
     </description>
 
-
     <property name="version" value="1.2.0b5"/>
 
     <property name="src" location="src"/>
     <property name="build" location="build"/>
     <property name="dist" location="dist"/>
-
 
     <property name="deploy_to" location="c:\projects\rwhoist\WEB-INF\lib"/>
 
@@ -26,7 +24,7 @@
         <javac source="1.5" srcdir="${src}" destdir="${build}" optimize="true" debug="on"
                debuglevel="vars,lines,source">
             <classpath>
-                <pathelement path="lib/asm.jar" />
+                <pathelement path="lib/asm.jar"/>
             </classpath>
         </javac>
     </target>
@@ -34,11 +32,10 @@
     <!--<taskdef name="retroweaver" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">-->
     <!--</taskdef>-->
 
-
     <!--<target name="compile-1.4">-->
-        <!--<delete dir="build14"/>-->
-        <!--<mkdir dir="build14"/>-->
-        <!--<retroweaver srcdir="${build}" destdir="build14" target="1.4"/>-->
+    <!--<delete dir="build14"/>-->
+    <!--<mkdir dir="build14"/>-->
+    <!--<retroweaver srcdir="${build}" destdir="build14" target="1.4"/>-->
     <!--</target>-->
 
     <target name="compile-nodebug" depends="init"
@@ -67,7 +64,6 @@
             <classpath refid="test.classpath"/>
         </junit>
     </target>
-
 
     <target name="deploy" depends="release">
         <copy file="mvel-${version}-java${java.version}.jar" tofile="${deploy_to}/mvel.jar"/>
@@ -143,7 +139,6 @@
         </jar>
         <delete dir="build"/>
     </target>
-
 
     <target name="clean"
             description="clean up">
