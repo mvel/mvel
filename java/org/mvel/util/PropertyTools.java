@@ -246,7 +246,7 @@ public class PropertyTools {
         return len > 0;
     }
 
-    public static Object handleNumericConversion(char[] val) {
+    public static Object handleNumericConversion(final char[] val) {
         switch (numericTest(val)) {
             case DataTypes.FLOAT:
                 return Float.parseFloat(new String(val));
@@ -256,17 +256,20 @@ public class PropertyTools {
                 return Long.parseLong(new String(val));
             case DataTypes.DOUBLE:
                 return Double.parseDouble(new String(val));
+            case DataTypes.BIG_DECIMAL:
+                return new BigDecimal(val);
             default:
                 return new String(val);
         }
     }
 
-    public static int numericTest(char[] val) {
+    public static int numericTest(final char[] val) {
         boolean fp = false;
 
         int len = val.length;
         char c;
         int i = 0;
+
         if (len > 1) {
             if (val[0] == '-') i++;
             else if (val[0] == '~') {
@@ -274,13 +277,13 @@ public class PropertyTools {
                 if (val[1] == '-') i++;
             }
         }
-        for (; i < len; i++) {
 
+        for (; i < len; i++) {
             if (!isDigit(c = val[i])) {
                 if (c == '.') {
                     len = 0;
                     fp = true;
-                    continue;
+                    // continue;
                 }
                 else {
                     return -1;
@@ -290,13 +293,19 @@ public class PropertyTools {
 
         if (len > 0) {
             if (fp) {
-                if (len > 15) {
+                if (len > 17) {
+                    return DataTypes.BIG_DECIMAL;
+                }
+                else if (len > 15) {
                     // requires float
                     return DataTypes.FLOAT;
                 }
                 else {
                     return DataTypes.DOUBLE;
                 }
+            }
+            else if (len > 11) {
+                return DataTypes.BIG_DECIMAL;
             }
             else if (len > 9) {
                 return DataTypes.LONG;
