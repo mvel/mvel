@@ -1,6 +1,8 @@
 package org.mvel.util;
 
 
+import org.mvel.DataTypes;
+
 import static java.lang.String.valueOf;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -242,6 +244,68 @@ public class PropertyTools {
         }
 
         return len > 0;
+    }
+
+    public static Object handleNumericConversion(char[] val) {
+        switch (numericTest(val)) {
+            case DataTypes.FLOAT:
+                return Float.parseFloat(new String(val));
+            case DataTypes.INTEGER:
+                return Integer.parseInt(new String(val));
+            case DataTypes.LONG:
+                return Long.parseLong(new String(val));
+            case DataTypes.DOUBLE:
+                return Double.parseDouble(new String(val));
+            default:
+                return new String(val);
+        }
+    }
+
+    public static int numericTest(char[] val) {
+        boolean fp = false;
+
+        int len = val.length;
+        char c;
+        int i = 0;
+        if (len > 1) {
+            if (val[0] == '-') i++;
+            else if (val[0] == '~') {
+                i++;
+                if (val[1] == '-') i++;
+            }
+        }
+        for (; i < len; i++) {
+
+            if (!isDigit(c = val[i])) {
+                if (c == '.') {
+                    len = 0;
+                    fp = true;
+                    continue;
+                }
+                else {
+                    return -1;
+                }
+            }
+        }
+
+        if (len > 0) {
+            if (fp) {
+                if (len > 15) {
+                    // requires float
+                    return DataTypes.FLOAT;
+                }
+                else {
+                    return DataTypes.DOUBLE;
+                }
+            }
+            else if (len > 9) {
+                return DataTypes.LONG;
+            }
+            else {
+                return DataTypes.INTEGER;
+            }
+        }
+        return -1;
     }
 
 

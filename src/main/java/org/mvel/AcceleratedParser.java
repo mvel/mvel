@@ -361,7 +361,7 @@ public class AcceleratedParser extends AbstractParser {
     }
 
     private static int asInt(final Object o) {
-        return ((BigDecimal) o).intValue();
+        return (Integer) o;
     }
 
     private Object processToken(Object operand) {

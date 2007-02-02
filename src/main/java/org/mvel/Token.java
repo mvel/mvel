@@ -19,6 +19,7 @@
 
 package org.mvel;
 
+import static org.mvel.util.PropertyTools.handleNumericConversion;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
@@ -32,6 +33,7 @@ import static org.mvel.util.ParseTools.getBigDecimalFromType;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
+import org.mvel.util.PropertyTools;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -579,21 +581,34 @@ public class Token implements Cloneable, Serializable {
             literal = OPERATORS.get(literal);
             return;
         }
-        else if (((fields & NUMERIC) != 0) || isNumber(name)) {
-            fields |= NUMERIC;
-            if ((fields |= LITERAL) != 0) {
-                if ((fields & INVERT) != 0) {
-                    literal = new BigDecimal(~parseInt((String) literal));
+//        else if (((fields & NUMERIC) != 0)) {
+//            fields |= NUMERIC;
+//            if ((fields |= LITERAL) != 0) {
+//                if ((fields & INVERT) != 0) {
+//                    literal = new BigDecimal(~parseInt((String) literal));
+//                }
+//                else {
+//                    literal = new BigDecimal((String) literal);
+//                }
+//            }
+//            else {
+//                literal = new BigDecimal((String) literal);
+//            }
+//            return;
+//        }
+        else if (isNumber(name)) {
+            fields |= NUMERIC | LITERAL;
+            literal = handleNumericConversion(name);
+
+            if ((fields & INVERT) != 0) {
+                try {
+                    literal = ~((Integer) literal);
                 }
-                else {
-                    literal = new BigDecimal((String) literal);
+                catch (ClassCastException e) {
+                    throw new CompileException("bitwise (~) operator can only be applied to integers");
                 }
             }
-            else {
-                literal = new BigDecimal((String) literal);
-            }
-
-
+            return;
         }
         else if ((firstUnion = findFirst('.', name)) > 0) {
             fields |= DEEP_PROPERTY | IDENTIFIER;
