@@ -289,19 +289,16 @@ public class Interpreter {
         return null;
     }
 
-
     public static Object parse(CharSequence expression, Object ctx, Map<String, Object> vars) {
         if (expression == null) return null;
         return new Interpreter(expression).execute(ctx, vars);
     }
-
 
     public static Object parse(String expression, Object ctx, Map<String, Object> vars) {
         if (expression == null) return null;
 
         return new Interpreter(expression).execute(ctx, vars);
     }
-
 
     public Object execute(Object ctx, Map tokens) {
         if (nodes == null) {
@@ -434,7 +431,6 @@ public class Interpreter {
         }
     }
 
-
     private void initStack() {
         stack = new ExecutionStack();
     }
@@ -456,7 +452,6 @@ public class Interpreter {
         node = nodes[node].getEndNode();
     }
 
-
     public void forwardAndPush() {
         node++;
         push();
@@ -470,7 +465,6 @@ public class Interpreter {
     private Node pop() {
         return (Node) stack.pop();
     }
-
 
     /**
      * @param expression -
@@ -539,7 +533,6 @@ public class Interpreter {
             return n.getName();
         }
     }
-
 
     public static boolean isCacheAggressively() {
         return cacheAggressively;

@@ -9,6 +9,7 @@ import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
+import org.mvel.util.ParseTools;
 
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
@@ -162,66 +163,66 @@ public class AcceleratedParser extends AbstractParser {
                 // assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
                 switch (operator) {
                     case ADD:
-                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
-                            stk.push(((BigDecimal) v1).add((BigDecimal) v2));
-                        }
-                        else {
-                            stk.push(valueOf(v2) + valueOf(v1));
-                        }
-                        break;
+//                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
+//                            stk.push(((BigDecimal) v1).add((BigDecimal) v2));
+//                        }
+//                        else {
+//                            stk.push(valueOf(v2) + valueOf(v1));
+//                        }
+//                        break;
 
                     case SUB:
-                        stk.push(((BigDecimal) v2).subtract(((BigDecimal) v1)));
-                        break;
+//                        stk.push(((BigDecimal) v2).subtract(((BigDecimal) v1)));
+//                        break;
 
                     case DIV:
-                        stk.push(((BigDecimal) v2).divide(((BigDecimal) v1), 20, roundingMode));
-                        break;
+//                        stk.push(((BigDecimal) v2).divide(((BigDecimal) v1), 20, roundingMode));
+//                        break;
 
                     case MULT:
-                        stk.push(((BigDecimal) v2).multiply((BigDecimal) v1));
-                        break;
+//                        stk.push(((BigDecimal) v2).multiply((BigDecimal) v1));
+//                        break;
 
                     case MOD:
-                        stk.push(((BigDecimal) v2).remainder((BigDecimal) v1));
-                        break;
+//                        stk.push(((BigDecimal) v2).remainder((BigDecimal) v1));
+//                        break;
 
                     case EQUAL:
-
-                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
-                            stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == 0);
-                        }
-                        else if (v1 != null)
-                            stk.push(v1.equals(v2));
-                        else if (v2 != null)
-                            stk.push(v2.equals(v1));
-                        else
-                            stk.push(v1 == v2);
-                        break;
+//                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
+//                            stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == 0);
+//                        }
+//                        else if (v1 != null)
+//                            stk.push(v1.equals(v2));
+//                        else if (v2 != null)
+//                            stk.push(v2.equals(v1));
+//                        else
+//                            stk.push(v1 == v2);
+//                        break;
 
                     case NEQUAL:
-
-                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
-                            stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) != 0);
-                        }
-                        else if (v1 != null)
-                            stk.push(!v1.equals(v2));
-                        else if (v2 != null)
-                            stk.push(!v2.equals(v1));
-                        else
-                            stk.push(v1 != v2);
-                        break;
+//                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
+//                            stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) != 0);
+//                        }
+//                        else if (v1 != null)
+//                            stk.push(!v1.equals(v2));
+//                        else if (v2 != null)
+//                            stk.push(!v2.equals(v1));
+//                        else
+//                            stk.push(v1 != v2);
+//                        break;
                     case GTHAN:
-                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == 1);
-                        break;
+//                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == 1);
+//                        break;
                     case LTHAN:
-                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == -1);
-                        break;
+//                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == -1);
+//                        break;
                     case GETHAN:
-                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) >= 0);
-                        break;
+//                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) >= 0);
+//                        break;
                     case LETHAN:
-                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) <= 0);
+                        //                     stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) <= 0);
+
+                        stk.push(ParseTools.doOperations(v2, operator, v1));
                         break;
 
                     case AND:
@@ -330,7 +331,6 @@ public class AcceleratedParser extends AbstractParser {
                     case SIMILARITY:
                         stk.push(similarity(valueOf(v1), valueOf(v2)));
                         break;
-
                 }
             }
         }
@@ -365,14 +365,12 @@ public class AcceleratedParser extends AbstractParser {
     }
 
     private Object processToken(Object operand) {
-        setFieldFalse(Token.EVAL_RIGHT);
-
         if (operand instanceof BigDecimal) {
             return operand;
         }
-        else if (isNumber(operand)) {
-            return new BigDecimal(valueOf(operand));
-        }
+//        else if (isNumber(operand)) {
+//            return new BigDecimal(valueOf(operand));
+//        }
         else {
             return operand;
         }
@@ -380,7 +378,6 @@ public class AcceleratedParser extends AbstractParser {
 
     private boolean hasNoMore() {
         return !tokens.hasMoreTokens();
-
     }
 
     private boolean unwindStatement() {

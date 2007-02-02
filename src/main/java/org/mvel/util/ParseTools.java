@@ -1,5 +1,6 @@
 package org.mvel.util;
 
+import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
@@ -630,7 +631,7 @@ public class ParseTools {
         return false;
     }
 
-    public static Object handleParserEgress(Object result,  boolean returnBigDecimal) {
+    public static Object handleParserEgress(Object result, boolean returnBigDecimal) {
         if (result instanceof BigDecimal) {
             if (returnBigDecimal) return result;
             else if (((BigDecimal) result).scale() > 14) {
@@ -663,5 +664,275 @@ public class ParseTools {
         }
 
         return null;
+    }
+
+    public static Object doOperations(Object val1, int operation, Object val2) {
+        int type1 = val1 == null ? DataTypes.NULL : resolveType(val1.getClass());
+        int type2 = val2 == null ? DataTypes.NULL : resolveType(val2.getClass());
+
+        if (type1 == DataTypes.BIG_DECIMAL) {
+            if (type2 == DataTypes.BIG_DECIMAL) {
+                return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2);
+            }
+            else if (type2 > 99) {
+                return doBigDecimalArithmetic((BigDecimal) val1, operation, getBigDecimalFromType(val2, type2));
+            }
+            else {
+                return _doOperations(type1, val1, operation, type2, val2);
+            }
+        }
+        else if (type2 == DataTypes.BIG_DECIMAL && (type1 > 99 || (type1 == DataTypes.STRING && isNumber(val1)))) {
+            return doBigDecimalArithmetic(getBigDecimalFromType(val1, type1), operation, (BigDecimal) val2);
+        }
+        else {
+            return _doOperations(type1, val1, operation, type2, val2);
+        }
+    }
+
+    private static Object doBigDecimalArithmetic(BigDecimal val1, int operation, BigDecimal val2) {
+        switch (operation) {
+            case Operator.ADD:
+                return val1.add(val2);
+            case Operator.DIV:
+                return val1.divide(val2);
+            case Operator.SUB:
+                return val1.subtract(val2);
+            case Operator.MULT:
+                return val1.multiply(val2);
+            case Operator.MOD:
+                return val1.remainder(val2);
+
+            case Operator.GTHAN:
+                return val1.compareTo(val2) == 1;
+            case Operator.GETHAN:
+                return val1.compareTo(val2) >= 0;
+            case Operator.LTHAN:
+                return val1.compareTo(val2) == -1;
+            case Operator.LETHAN:
+                return val1.compareTo(val2) <= 0;
+            case Operator.EQUAL:
+                return val1.compareTo(val2) == 0;
+            case Operator.NEQUAL:
+                return val1.compareTo(val2) != 0;
+        }
+        return null;
+    }
+
+    private static Object _doOperations(int type1, Object val1, int operation, int type2, Object val2) {
+        if (type1 > 99 && type1 == type2) {
+            return doOperationsSameType(type1, val1, operation, val2);
+        }
+        else if ((type1 > 99 && type2 > 99)
+                || (type1 == DataTypes.STRING && isNumber(val1) && type2 == DataTypes.STRING && isNumber(val2))) {
+            // go into big decimal mode
+            return doBigDecimalArithmetic(getBigDecimalFromType(val1, type1), operation, getBigDecimalFromType(val2, type2));
+        }
+        else {
+            return doOperationNonNumeric(val1, operation, val2);
+        }
+    }
+
+    private static Object doOperationNonNumeric(Object val1, int operation, Object val2) {
+        switch (operation) {
+            case Operator.ADD:
+                return String.valueOf(val1) + String.valueOf(val2);
+
+            case Operator.EQUAL:
+                return safeEquals(val2, val1);
+
+            case Operator.NEQUAL:
+                return safeNotEquals(val2, val1);
+
+            case Operator.SUB:
+            case Operator.DIV:
+            case Operator.MULT:
+            case Operator.MOD:
+            case Operator.GTHAN:
+            case Operator.GETHAN:
+            case Operator.LTHAN:
+            case Operator.LETHAN:
+
+                throw new CompileException("could not perform numeric operation on non-numeric types");
+
+
+        }
+
+        throw new CompileException("unable to perform operation");
+    }
+
+    private static Boolean safeEquals(Object val1, Object val2) {
+        if (val1 != null)
+            return val1.equals(val2);
+        else if (val2 != null)
+            return val2.equals(val1);
+        else
+            return val1 == val2;
+    }
+
+    private static Boolean safeNotEquals(Object val1, Object val2) {
+        if (val1 != null)
+            return !val1.equals(val2);
+        else if (val2 != null)
+            return !val2.equals(val1);
+        else
+            return val1 != val2;
+    }
+
+    private static Object doOperationsSameType(int type1, Object val1, int operation, Object val2) {
+        switch (type1) {
+            case DataTypes.INTEGER:
+            case DataTypes.W_INTEGER:
+                switch (operation) {
+                    case Operator.ADD:
+                        return ((Integer) val1) + ((Integer) val2);
+                    case Operator.SUB:
+                        return ((Integer) val1) - ((Integer) val2);
+                    case Operator.DIV:
+                        return ((Integer) val1) / ((Integer) val2);
+                    case Operator.MULT:
+                        return ((Integer) val1) * ((Integer) val2);
+                    case Operator.MOD:
+                        return ((Integer) val1) % ((Integer) val2);
+
+                    case Operator.GTHAN:
+                        return ((Integer) val1) > ((Integer) val2);
+                    case Operator.GETHAN:
+                        return ((Integer) val1) >= ((Integer) val2);
+                    case Operator.LTHAN:
+                        return ((Integer) val1) < ((Integer) val2);
+                    case Operator.LETHAN:
+                        return ((Integer) val1) <= ((Integer) val2);
+                    case Operator.EQUAL:
+                        return val1 == val2;
+                    case Operator.NEQUAL:
+                        return val1 != val2;
+
+                }
+
+            case DataTypes.SHORT:
+            case DataTypes.W_SHORT:
+                switch (operation) {
+                    case Operator.ADD:
+                        return ((Short) val1) + ((Short) val2);
+                    case Operator.SUB:
+                        return ((Short) val1) - ((Short) val2);
+                    case Operator.DIV:
+                        return ((Short) val1) / ((Short) val2);
+                    case Operator.MULT:
+                        return ((Short) val1) * ((Short) val2);
+                    case Operator.MOD:
+                        return ((Short) val1) % ((Short) val2);
+
+                    case Operator.GTHAN:
+                        return ((Short) val1) > ((Short) val2);
+                    case Operator.GETHAN:
+                        return ((Short) val1) >= ((Short) val2);
+                    case Operator.LTHAN:
+                        return ((Short) val1) < ((Short) val2);
+                    case Operator.LETHAN:
+                        return ((Short) val1) <= ((Short) val2);
+                    case Operator.EQUAL:
+                        return val1 == val2;
+                    case Operator.NEQUAL:
+                        return val1 != val2;
+                }
+
+            case DataTypes.LONG:
+            case DataTypes.W_LONG:
+                switch (operation) {
+                    case Operator.ADD:
+                        return ((Long) val1) + ((Long) val2);
+                    case Operator.SUB:
+                        return ((Long) val1) - ((Long) val2);
+                    case Operator.DIV:
+                        return ((Long) val1) / ((Long) val2);
+                    case Operator.MULT:
+                        return ((Long) val1) * ((Long) val2);
+                    case Operator.MOD:
+                        return ((Long) val1) % ((Long) val2);
+
+                    case Operator.GTHAN:
+                        return ((Long) val1) > ((Long) val2);
+                    case Operator.GETHAN:
+                        return ((Long) val1) >= ((Long) val2);
+                    case Operator.LTHAN:
+                        return ((Long) val1) < ((Long) val2);
+                    case Operator.LETHAN:
+                        return ((Long) val1) <= ((Long) val2);
+                    case Operator.EQUAL:
+                        return val1 == val2;
+                    case Operator.NEQUAL:
+                        return val1 != val2;
+                }
+
+            case DataTypes.DOUBLE:
+            case DataTypes.W_DOUBLE:
+                switch (operation) {
+                    case Operator.ADD:
+                        return ((Double) val1) + ((Double) val2);
+                    case Operator.SUB:
+                        return ((Double) val1) - ((Double) val2);
+                    case Operator.DIV:
+                        return ((Double) val1) / ((Double) val2);
+                    case Operator.MULT:
+                        return ((Double) val1) * ((Double) val2);
+                    case Operator.MOD:
+                        return ((Double) val1) % ((Double) val2);
+
+                    case Operator.GTHAN:
+                        return ((Double) val1) > ((Double) val2);
+                    case Operator.GETHAN:
+                        return ((Double) val1) >= ((Double) val2);
+                    case Operator.LTHAN:
+                        return ((Double) val1) < ((Double) val2);
+                    case Operator.LETHAN:
+                        return ((Double) val1) <= ((Double) val2);
+                    case Operator.EQUAL:
+                        return val1 == val2;
+                    case Operator.NEQUAL:
+                        return val1 != val2;
+                }
+
+            case DataTypes.FLOAT:
+            case DataTypes.W_FLOAT:
+                switch (operation) {
+                    case Operator.ADD:
+                        return ((Float) val1) + ((Float) val2);
+                    case Operator.SUB:
+                        return ((Float) val1) - ((Float) val2);
+                    case Operator.DIV:
+                        return ((Float) val1) / ((Float) val2);
+                    case Operator.MULT:
+                        return ((Float) val1) * ((Float) val2);
+                    case Operator.MOD:
+                        return ((Float) val1) % ((Float) val2);
+
+                    case Operator.GTHAN:
+                        return ((Float) val1) > ((Float) val2);
+                    case Operator.GETHAN:
+                        return ((Float) val1) >= ((Float) val2);
+                    case Operator.LTHAN:
+                        return ((Float) val1) < ((Float) val2);
+                    case Operator.LETHAN:
+                        return ((Float) val1) <= ((Float) val2);
+                    case Operator.EQUAL:
+                        return val1 == val2;
+                    case Operator.NEQUAL:
+                        return val1 != val2;
+                }
+
+
+            default:
+                switch (operation) {
+                    case Operator.EQUAL:
+                        return safeEquals(val2, val1);
+                    case Operator.NEQUAL:
+                        return safeNotEquals(val2, val1);
+                    case Operator.ADD:
+                        return String.valueOf(val1) + String.valueOf(val2);
+                }
+        }
+        return null;
+
     }
 }

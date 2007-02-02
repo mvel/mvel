@@ -29,6 +29,7 @@ import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
+import org.mvel.util.ParseTools;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
@@ -61,7 +62,6 @@ public class ExpressionParser extends AbstractParser {
             EX_PRECACHE = new WeakHashMap<String, char[]>(10);
         }
     }
-
 
     Object parse() {
         stk.clear();
@@ -103,7 +103,6 @@ public class ExpressionParser extends AbstractParser {
         }
     }
 
-
     public TokenIterator compileTokens() {
         Token tk;
         TokenMap tokenMap = null;
@@ -126,7 +125,6 @@ public class ExpressionParser extends AbstractParser {
 
         return new FastTokenIterator(tokenMap);
     }
-
 
     /**
      * This method is called to subEval a binary statement (or junction).  The difference between a binary and
@@ -231,80 +229,25 @@ public class ExpressionParser extends AbstractParser {
         Integer operator;
         try {
             while (stk.size() > 1) {
-//                if ((v1 = stk.pop()) instanceof Boolean) {
-//                    operator = (Integer) stk.pop();
-//                    v2 = processToken(stk.pop());
-//                }
-//                else {
                 operator = (Integer) stk.pop();
                 v1 = processToken(stk.pop());
                 v2 = processToken(stk.pop());
-//                }
 
-                assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
+//                assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
 
                 switch (operator) {
                     case ADD:
-                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
-                            stk.push(((BigDecimal) v1).add((BigDecimal) v2));
-                        }
-                        else {
-                            stk.push(valueOf(v2) + valueOf(v1));
-                        }
-                        break;
-
                     case SUB:
-                        stk.push(((BigDecimal) v2).subtract(((BigDecimal) v1)));
-                        break;
-
                     case DIV:
-                        stk.push(((BigDecimal) v2).divide(((BigDecimal) v1), 20, roundingMode));
-                        break;
-
                     case MULT:
-                        stk.push(((BigDecimal) v2).multiply((BigDecimal) v1));
-                        break;
-
                     case MOD:
-                        stk.push(((BigDecimal) v2).remainder((BigDecimal) v1));
-                        break;
-
                     case EQUAL:
-
-                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
-                            stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == 0);
-                        }
-                        else if (v1 != null)
-                            stk.push(v1.equals(v2));
-                        else if (v2 != null)
-                            stk.push(v2.equals(v1));
-                        else
-                            stk.push(v1 == v2);
-                        break;
-
                     case NEQUAL:
-
-                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
-                            stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) != 0);
-                        }
-                        else if (v1 != null)
-                            stk.push(!v1.equals(v2));
-                        else if (v2 != null)
-                            stk.push(!v2.equals(v1));
-                        else
-                            stk.push(v1 != v2);
-                        break;
                     case GTHAN:
-                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == 1);
-                        break;
                     case LTHAN:
-                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == -1);
-                        break;
                     case GETHAN:
-                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) >= 0);
-                        break;
                     case LETHAN:
-                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) <= 0);
+                        stk.push(ParseTools.doOperations(v2, operator, v1));
                         break;
 
                     case AND:
@@ -451,7 +394,7 @@ public class ExpressionParser extends AbstractParser {
     }
 
     private Object processToken(Object operand) {
-        setFieldFalse(Token.EVAL_RIGHT);
+        //   setFieldFalse(Token.EVAL_RIGHT);
 
         if (operand instanceof BigDecimal) {
             return operand;
@@ -463,7 +406,6 @@ public class ExpressionParser extends AbstractParser {
             return operand;
         }
     }
-
 
     /**
      * This method is called to unwind the current statement without any reduction or further parsing.
@@ -477,7 +419,6 @@ public class ExpressionParser extends AbstractParser {
         }
         return tk == null;
     }
-
 
     private void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
@@ -497,7 +438,6 @@ public class ExpressionParser extends AbstractParser {
             }
         }
     }
-
 
     public ExpressionParser setExpressionArray(char[] expressionArray) {
         this.length = (this.expr = expressionArray).length;
@@ -519,7 +459,6 @@ public class ExpressionParser extends AbstractParser {
     public void setReturnBigDecimal(boolean returnBigDecimal) {
         this.returnBigDecimal = returnBigDecimal;
     }
-
 
     ExpressionParser(char[] expression, Object ctx, Map<String, Object> variables) {
         this.expr = expression;
@@ -549,13 +488,11 @@ public class ExpressionParser extends AbstractParser {
         this.length = (this.expr = expression).length;
     }
 
-
     /**
      * Lots of messy constructors beyond here.  Most exist for performance considerations (code inlinability, etc.)
      */
     public ExpressionParser() {
     }
-
 
     ExpressionParser(char[] expr, Object ctx, VariableResolverFactory resolverFactory) {
         this.length = (this.expr = expr).length;
@@ -579,12 +516,9 @@ public class ExpressionParser extends AbstractParser {
         this.variableFactory = resolverFactory;
     }
 
-
     ExpressionParser(String expression, Object ctx) {
         setExpression(expression);
         this.ctx = ctx;
     }
-
-
 }
 
