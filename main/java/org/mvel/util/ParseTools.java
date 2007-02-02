@@ -548,6 +548,11 @@ public class ParseTools {
     public static int resolveType(Class cls) {
         if (cls == null)
             return 0;
+        if (BigDecimal.class == cls)
+            return DataTypes.BIG_DECIMAL;
+        if (String.class == cls)
+            return DataTypes.STRING;
+
         if (int.class == cls)
             return DataTypes.INTEGER;
         if (short.class == cls)
@@ -564,8 +569,7 @@ public class ParseTools {
             return DataTypes.BYTE;
         if (char.class == cls)
             return DataTypes.CHAR;
-        if (String.class == cls)
-            return DataTypes.STRING;
+
 
         if (Integer.class == cls)
             return DataTypes.W_INTEGER;
@@ -584,8 +588,6 @@ public class ParseTools {
         if (Character.class == cls)
             return DataTypes.W_CHAR;
 
-        if (BigDecimal.class == cls)
-            return DataTypes.BIG_DECIMAL;
 
         return DataTypes.OBJECT;
     }
