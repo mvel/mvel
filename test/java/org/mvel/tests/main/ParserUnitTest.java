@@ -143,6 +143,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals(10d / 4d, parseDirect("10 / 4"));
     }
 
+    public void testMath3() {
+        assertEquals(10 + 1 - 1, parseDirect("10 + 1 - 1"));
+    }
+
     public void testTemplating() {
         assertEquals("dogDOGGIE133.5", parse("@{foo.bar.name}DOGGIE@{hour*2.225+1-1}"));
     }
