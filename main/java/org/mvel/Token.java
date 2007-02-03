@@ -27,8 +27,6 @@ import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
 import static org.mvel.util.ArrayTools.findFirst;
-import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.getBigDecimalFromType;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.handleNumericConversion;
 import static org.mvel.util.PropertyTools.isNumber;
@@ -66,16 +64,14 @@ public class Token implements Cloneable, Serializable {
     private int firstUnion;
     private int endOfName;
 
+    private int fields = 0;
+
     private char[] name;
     private String nameCache;
 
     private Object literal;
-    private int knownType = 0;
-
-    private int fields = 0;
 
     private Accessor accessor;
-
     public Token nextToken;
 
     public static final Map<String, Object> LITERALS =
@@ -194,16 +190,6 @@ public class Token implements Cloneable, Serializable {
         setName(name);
     }
 
-    public Token(char expr, int fields) {
-        this.fields = fields;
-        setName(new char[]{expr});
-    }
-
-    public Token(char[] expr, int fields) {
-        this.fields = fields;
-        setName(expr);
-    }
-
     public Token(int fields, Object literalValue) {
         this.fields = fields;
         this.literal = literalValue;
@@ -315,8 +301,6 @@ public class Token implements Cloneable, Serializable {
                 retVal = optimizer.getResultOptPass();
             }
 
-            knownType = ParseTools.resolveType(retVal == null ? null : retVal.getClass());
-
             return valRet(retVal);
         }
 
@@ -325,8 +309,6 @@ public class Token implements Cloneable, Serializable {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         // assert debug("REDUCE <<" + new String(name) + ">> ctx=" + ctx + ";literal=" + (fields & LITERAL) + ";assign=" + (fields & ASSIGN));
-
-
         String s;
         if ((fields & (LITERAL)) != 0) {
             if ((fields & THISREF) != 0)
@@ -335,8 +317,6 @@ public class Token implements Cloneable, Serializable {
                 return literal;
         }
         else if ((fields & ASSIGN) != 0) {
-            // assert debug("TK_ASSIGN");
-
             if (accessor == null) {
                 accessor = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)
                         .optimizeAssignment(name, ctx, thisValue, factory);
@@ -345,14 +325,10 @@ public class Token implements Cloneable, Serializable {
             return accessor.getValue(ctx, thisValue, factory);
         }
         else if ((fields & SUBEVAL) != 0) {
-            // assert debug("TK_SUBEVAL");
-
             return valRet(MVEL.eval(name, ctx, factory));
         }
 
         else if ((fields & INLINE_COLLECTION) != 0) {
-            // assert debug("TK_INLINE_COLLECTION");
-
             if (accessor == null) {
                 accessor = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)
                         .optimizeCollection(name, ctx, thisValue, factory);
@@ -361,8 +337,6 @@ public class Token implements Cloneable, Serializable {
             return accessor.getValue(ctx, thisValue, factory);
         }
         else if ((fields & FOLD) != 0) {
-            // assert debug("FOLD");
-
             if (accessor == null) {
                 AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
                 accessor = optimizer.optimizeFold(name, ctx, thisValue, factory);
@@ -371,8 +345,6 @@ public class Token implements Cloneable, Serializable {
             }
         }
         else if ((fields & NEW) != 0) {
-            // assert debug("NEW");
-
             if (accessor == null) {
                 AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
                 accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
@@ -386,7 +358,7 @@ public class Token implements Cloneable, Serializable {
              * The token is a DEEP PROPERTY (meaning it contains unions) in which case we need to traverse an object
              * graph.
              */
-            if (Token.LITERALS.containsKey(s = getAbsoluteRootElement())) {
+            if (LITERALS.containsKey(s = getAbsoluteRootElement())) {
                 /**
                  * The root of the DEEP PROPERTY is a literal.
                  */
@@ -420,20 +392,20 @@ public class Token implements Cloneable, Serializable {
                     return valRet(sa);
                 }
             }
-            else {
-                Object sa = tryStaticAccess(ctx, factory);
-                if (sa == null) throw new CompileException("unable to resolve token: " + s);
-                return valRet(sa);
-            }
+//            else {
+//                Object sa = tryStaticAccess(ctx, factory);
+//                if (sa == null) throw new CompileException("unable to resolve token: " + s);
+//                return valRet(sa);
+//            }
         }
         else {
-            if (Token.LITERALS.containsKey(s = getAbsoluteName())) {
-                /**
-                 * The token is actually a literal.
-                 */
-                return valRet(Token.LITERALS.get(s));
-            }
-            else if (factory != null && factory.isResolveable(s)) {
+//            if (LITERALS.containsKey(s = getAbsoluteName())) {
+//                /**
+//                 * The token is actually a literal.
+//                 */
+//                return valRet(Token.LITERALS.get(s));
+//            }
+            if (factory != null && factory.isResolveable(s = getAbsoluteName())) {
                 /**
                  * The token is a local or global var.
                  */
@@ -461,14 +433,18 @@ public class Token implements Cloneable, Serializable {
                 throw new UnresolveablePropertyException(this);
             }
         }
+
+        return null;
     }
 
 
-    private Object valRet(Object value) {
-        if ((fields & (NEGATION | INVERT)) == 0) return value;
-        else if ((fields & NEGATION) != 0) {
-            if (value instanceof Boolean) {
+    private Object valRet(final Object value) {
+        if ((fields & NEGATION) != 0) {
+            try {
                 return !((Boolean) value);
+            }
+            catch (Exception e) {
+                throw new CompileException("illegal negation of non-boolean value");
             }
         }
         else if ((fields & INVERT) != 0) {
@@ -597,39 +573,8 @@ public class Token implements Cloneable, Serializable {
 
     }
 
-    public int getFlags() {
-        return fields;
-    }
-
-
-    public String toString() {
-        return isOperator() ? "OPCODE_" + getOperator() : new String(name);
-    }
-
-    public boolean equals(Object obj) {
-        if (obj instanceof Token)
-            return literal == null ? ((Token) obj).literal == null : literal.equals(((Token) obj).literal);
-        else
-            return literal == null ? obj == literal : literal.equals(obj);
-    }
-
-    public int hashCode() {
-        return literal == null ? super.hashCode() : literal.hashCode();
-    }
-
-
     public void setAccessor(Accessor accessor) {
         this.accessor = accessor;
-    }
-
-    public Token clone() throws CloneNotSupportedException {
-        try {
-            return (Token) super.clone();
-        }
-        catch (CloneNotSupportedException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public boolean isIdentifier() {

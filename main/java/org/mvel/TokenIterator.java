@@ -27,7 +27,7 @@ public interface TokenIterator {
     public Token peekNext();
     public Token peekToken();
     public Token peekLast();
-    public boolean peekNextTokenFlags(int flags);
+  //  public boolean peekNextTokenFlags(int flags);
     public void back();
     public Token tokensBack(int offset);
     public boolean hasMoreTokens();
