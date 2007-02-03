@@ -19,11 +19,9 @@
 
 package org.mvel;
 
-import static org.mvel.util.ParseTools.doOperations;
-import static org.mvel.MVEL.compileExpression;
 import static org.mvel.DataConversion.canConvert;
+import static org.mvel.MVEL.compileExpression;
 import static org.mvel.Operator.*;
-import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.util.ExecutionStack;
@@ -31,14 +29,14 @@ import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
-import org.mvel.util.ParseTools;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
 import java.math.BigDecimal;
-import java.util.*;
 import static java.util.Collections.synchronizedMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 import static java.util.regex.Pattern.compile;
 
 
@@ -301,8 +299,8 @@ public class ExpressionParser extends AbstractParser {
         try {
             while (stk.size() > 1) {
                 operator = (Integer) stk.pop();
-                v1 = processToken(stk.pop());
-                v2 = processToken(stk.pop());
+                v1 = stk.pop();
+                v2 = stk.pop();
 
                 switch (operator) {
                     case ADD:
@@ -426,21 +424,7 @@ public class ExpressionParser extends AbstractParser {
     }
 
     private static int asInt(final Object o) {
-        return ((BigDecimal) o).intValue();
-    }
-
-    private Object processToken(Object operand) {
-        //   setFieldFalse(Token.EVAL_RIGHT);
-
-        if (operand instanceof BigDecimal) {
-            return operand;
-        }
-        else if (isNumber(operand)) {
-            return new BigDecimal(valueOf(operand));
-        }
-        else {
-            return operand;
-        }
+        return (Integer) o;
     }
 
     /**
@@ -509,7 +493,6 @@ public class ExpressionParser extends AbstractParser {
         this.ctx = ctx;
     }
 
-
     ExpressionParser(String expression, Object ctx, Map<String, Object> variables) {
         setExpression(expression);
         this.ctx = ctx;
@@ -522,12 +505,6 @@ public class ExpressionParser extends AbstractParser {
 
     ExpressionParser(char[] expression) {
         this.length = (this.expr = expression).length;
-    }
-
-    /**
-     * Lots of messy constructors beyond here.  Most exist for performance considerations (code inlinability, etc.)
-     */
-    public ExpressionParser() {
     }
 
     ExpressionParser(char[] expr, Object ctx, VariableResolverFactory resolverFactory) {

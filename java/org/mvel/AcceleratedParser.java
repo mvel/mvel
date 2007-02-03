@@ -156,8 +156,8 @@ public class AcceleratedParser extends AbstractParser {
         try {
             while (stk.size() > 1) {
                 operator = (Integer) stk.pop();
-                v1 = processToken(stk.pop());
-                v2 = processToken(stk.pop());
+                v1 = stk.pop();
+                v2 = stk.pop();
 
                 // assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
                 switch (operator) {
@@ -281,17 +281,6 @@ public class AcceleratedParser extends AbstractParser {
         return (Integer) o;
     }
 
-    private Object processToken(Object operand) {
-        if (operand instanceof BigDecimal) {
-            return operand;
-        }
-//        else if (isNumber(operand)) {
-//            return new BigDecimal(valueOf(operand));
-//        }
-        else {
-            return operand;
-        }
-    }
 
     private boolean hasNoMore() {
         return !tokens.hasMoreTokens();
