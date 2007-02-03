@@ -775,12 +775,7 @@ public class ParseTools {
         if (val1 != null) {
             return !val1.equals(val2);
         }
-        else if (val2 != null) {
-            return !val2.equals(val1);
-        }
-        else {
-            return val1 != val2;
-        }
+        else return val2 != null && !val2.equals(val1);
     }
 
     private static Object doOperationsSameType(int type1, Object val1, int operation, Object val2) {
