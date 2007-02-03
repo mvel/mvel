@@ -90,9 +90,9 @@ public class FastTokenIterator implements TokenIterator, Serializable {
     }
 
 
-    public boolean peekNextTokenFlags(int flags) {
-        return cursor < length && (token[cursor].getFlags() & flags) != 0;
-    }
+//    public boolean peekNextTokenFlags(int flags) {
+//        return cursor < length && (token[cursor].getFlags() & flags) != 0;
+//    }
 
 
     public Token peekLast() {

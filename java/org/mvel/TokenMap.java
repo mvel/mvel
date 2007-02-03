@@ -93,9 +93,9 @@ public class TokenMap implements TokenIterator {
     }
 
 
-    public boolean peekNextTokenFlags(int flags) {
-        return current != null && (flags & current.nextToken.getFlags()) != 0;
-    }
+//    public boolean peekNextTokenFlags(int flags) {
+//        return current != null && (flags & current.nextToken.getFlags()) != 0;
+//    }
 
     public Token peekToken() {
         if (current == null) return null;
