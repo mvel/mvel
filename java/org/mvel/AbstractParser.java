@@ -19,6 +19,10 @@ public class AbstractParser {
 
     protected boolean greedy = true;
 
+    protected static final int FRAME_END = -1;
+    protected static final int FRAME_CONTINUE = 0;
+    protected static final int FRAME_NEXT = 1;
+
 
     /**
      * Retrieve the next token in the expression.

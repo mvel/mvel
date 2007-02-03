@@ -762,21 +762,27 @@ public class ParseTools {
     }
 
     private static Boolean safeEquals(Object val1, Object val2) {
-        if (val1 != null)
+        if (val1 != null) {
             return val1.equals(val2);
-        else if (val2 != null)
+        }
+        else if (val2 != null) {
             return val2.equals(val1);
-        else
+        }
+        else {
             return val1 == val2;
+        }
     }
 
     private static Boolean safeNotEquals(Object val1, Object val2) {
-        if (val1 != null)
+        if (val1 != null) {
             return !val1.equals(val2);
-        else if (val2 != null)
+        }
+        else if (val2 != null) {
             return !val2.equals(val1);
-        else
+        }
+        else {
             return val1 != val2;
+        }
     }
 
     private static Object doOperationsSameType(int type1, Object val1, int operation, Object val2) {

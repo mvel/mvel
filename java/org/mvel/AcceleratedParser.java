@@ -1,5 +1,6 @@
 package org.mvel;
 
+import static org.mvel.util.ParseTools.doOperations;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
@@ -28,6 +29,13 @@ public class AcceleratedParser extends AbstractParser {
         this.tokens = new FastTokenIterator(tokens);
     }
 
+    /**
+     * Main interpreter loop.
+     *
+     * @param ctx             -
+     * @param variableFactory -
+     * @return -
+     */
     public Object execute(Object ctx, VariableResolverFactory variableFactory) {
         Token tk;
         Integer operator;
@@ -43,18 +51,13 @@ public class AcceleratedParser extends AbstractParser {
             }
 
             switch (reduceBinary(operator = tk.getOperator())) {
-                case-1:
-                    // assert debug("FRAME_KILL_PROC");
+                case FRAME_END:
                     return stk.pop();
-                case 0:
-                    // assert debug("FRAME_CONTINUE");
+                case FRAME_CONTINUE:
                     break;
-                case 1:
-                    // assert debug("FRAME_NEXT");
+                case FRAME_NEXT:
                     continue;
             }
-
-            if (!tokens.hasMoreTokens()) return stk.pop();
 
             stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
 
@@ -83,11 +86,11 @@ public class AcceleratedParser extends AbstractParser {
                 if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
                     // assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
-                        return -1;
+                        return FRAME_END;
                     }
                     else {
                         stk.clear();
-                        return 1;
+                        return FRAME_NEXT;
                     }
                 }
                 else {
@@ -98,16 +101,16 @@ public class AcceleratedParser extends AbstractParser {
                 if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
                     // assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
-                        return -1;
+                        return FRAME_END;
                     }
                     else {
                         stk.clear();
-                        return 1;
+                        return FRAME_NEXT;
                     }
                 }
                 else {
                     stk.discard();
-                    return 1;
+                    return FRAME_NEXT;
                 }
 
             case TERNARY:
@@ -115,11 +118,11 @@ public class AcceleratedParser extends AbstractParser {
                     skipToOperator(Operator.TERNARY_ELSE);
                 }
                 stk.clear();
-                return 1;
+                return FRAME_NEXT;
 
 
             case TERNARY_ELSE:
-                return -1;
+                return FRAME_END;
 
             case END_OF_STMT:
                 /**
@@ -133,15 +136,15 @@ public class AcceleratedParser extends AbstractParser {
                  */
 
                 if ((fields & Token.ASSIGN) != 0) {
-                    return -1;
+                    return FRAME_END;
                 }
                 else if (!hasNoMore()) {
                     stk.clear();
                 }
 
-                return 1;
+                return FRAME_NEXT;
         }
-        return 0;
+        return FRAME_CONTINUE;
     }
 
     /**
@@ -162,66 +165,17 @@ public class AcceleratedParser extends AbstractParser {
                 // assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
                 switch (operator) {
                     case ADD:
-//                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
-//                            stk.push(((BigDecimal) v1).add((BigDecimal) v2));
-//                        }
-//                        else {
-//                            stk.push(valueOf(v2) + valueOf(v1));
-//                        }
-//                        break;
-
                     case SUB:
-//                        stk.push(((BigDecimal) v2).subtract(((BigDecimal) v1)));
-//                        break;
-
                     case DIV:
-//                        stk.push(((BigDecimal) v2).divide(((BigDecimal) v1), 20, roundingMode));
-//                        break;
-
                     case MULT:
-//                        stk.push(((BigDecimal) v2).multiply((BigDecimal) v1));
-//                        break;
-
                     case MOD:
-//                        stk.push(((BigDecimal) v2).remainder((BigDecimal) v1));
-//                        break;
-
                     case EQUAL:
-//                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
-//                            stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == 0);
-//                        }
-//                        else if (v1 != null)
-//                            stk.push(v1.equals(v2));
-//                        else if (v2 != null)
-//                            stk.push(v2.equals(v1));
-//                        else
-//                            stk.push(v1 == v2);
-//                        break;
-
                     case NEQUAL:
-//                        if (v1 instanceof BigDecimal && v2 instanceof BigDecimal) {
-//                            stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) != 0);
-//                        }
-//                        else if (v1 != null)
-//                            stk.push(!v1.equals(v2));
-//                        else if (v2 != null)
-//                            stk.push(!v2.equals(v1));
-//                        else
-//                            stk.push(v1 != v2);
-//                        break;
                     case GTHAN:
-//                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == 1);
-//                        break;
                     case LTHAN:
-//                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) == -1);
-//                        break;
                     case GETHAN:
-//                        stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) >= 0);
-//                        break;
                     case LETHAN:
-                        //                     stk.push(((BigDecimal) v2).compareTo((BigDecimal) v1) <= 0);
-
-                        stk.push(ParseTools.doOperations(v2, operator, v1));
+                        stk.push(doOperations(v2, operator, v1));
                         break;
 
                     case AND:
