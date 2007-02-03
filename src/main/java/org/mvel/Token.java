@@ -19,7 +19,6 @@
 
 package org.mvel;
 
-import static org.mvel.util.PropertyTools.handleNumericConversion;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
@@ -31,16 +30,14 @@ import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.getBigDecimalFromType;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
+import static org.mvel.util.PropertyTools.handleNumericConversion;
 import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
-import org.mvel.util.PropertyTools;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Class.forName;
-import static java.lang.Integer.parseInt;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -468,31 +465,20 @@ public class Token implements Cloneable, Serializable {
 
 
     private Object valRet(Object value) {
-        if ((fields & (NEGATION | NUMERIC | INVERT)) == 0) return value;
-        else if (knownType > 99) {
-            if ((fields & INVERT) != 0) {
-                return ~getBigDecimalFromType(value, knownType).intValue();
-            }
-            else {
-                return getBigDecimalFromType(value, knownType);
-            }
-        }
+        if ((fields & (NEGATION | INVERT)) == 0) return value;
         else if ((fields & NEGATION) != 0) {
             if (value instanceof Boolean) {
                 return !((Boolean) value);
             }
         }
         else if ((fields & INVERT) != 0) {
-            if (isNumber(value)) {
-                knownType = ParseTools.resolveType(value.getClass());
-                value = ~getBigDecimalFromType(value, knownType).intValue();
+            try {
+                return ~((Integer) value);
+            }
+            catch (Exception e) {
+                throw new CompileException("bitwise (~) operator can only be applied to integers");
             }
         }
-        else if (isNumber(value)) {
-            knownType = ParseTools.resolveType(value.getClass());
-            value = getBigDecimalFromType(value, knownType);
-        }
-
 
         return value;
     }
@@ -586,21 +572,6 @@ public class Token implements Cloneable, Serializable {
             literal = OPERATORS.get(literal);
             return;
         }
-//        else if (((fields & NUMERIC) != 0)) {
-//            fields |= NUMERIC;
-//            if ((fields |= LITERAL) != 0) {
-//                if ((fields & INVERT) != 0) {
-//                    literal = new BigDecimal(~parseInt((String) literal));
-//                }
-//                else {
-//                    literal = new BigDecimal((String) literal);
-//                }
-//            }
-//            else {
-//                literal = new BigDecimal((String) literal);
-//            }
-//            return;
-//        }
         else if (isNumber(name)) {
             fields |= NUMERIC | LITERAL;
             literal = handleNumericConversion(name);
