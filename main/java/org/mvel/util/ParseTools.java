@@ -723,17 +723,15 @@ public class ParseTools {
     }
 
     private static Object _doOperations(int type1, Object val1, int operation, int type2, Object val2) {
-        if (type1 > 99 && type1 == type2) {
-            return doOperationsSameType(type1, val1, operation, val2);
+        if (operation < 9 || operation == Operator.EQUAL || operation == Operator.NEQUAL) {
+            if (type1 > 99 && type1 == type2) {
+                return doOperationsSameType(type1, val1, operation, val2);
+            }
+            else if ((type1 > 99 && (type2 > 99)) || (isNumber(val1) && isNumber(val2))) {
+                return doBigDecimalArithmetic(getBigDecimalFromType(val1, type1), operation, getBigDecimalFromType(val2, type2));
+            }
         }
-        else if ((type1 > 99 && type2 > 99)
-                || (type1 == DataTypes.STRING && isNumber(val1) && type2 == DataTypes.STRING && isNumber(val2))) {
-            // go into big decimal mode
-            return doBigDecimalArithmetic(getBigDecimalFromType(val1, type1), operation, getBigDecimalFromType(val2, type2));
-        }
-        else {
-            return doOperationNonNumeric(val1, operation, val2);
-        }
+        return doOperationNonNumeric(val1, operation, val2);
     }
 
     private static Object doOperationNonNumeric(Object val1, int operation, Object val2) {
@@ -795,7 +793,7 @@ public class ParseTools {
                     case Operator.SUB:
                         return ((Integer) val1) - ((Integer) val2);
                     case Operator.DIV:
-                        return ((Integer) val1) / ((Integer) val2);
+                        return new BigDecimal((Integer) val1).divide(new BigDecimal((Integer) val2));
                     case Operator.MULT:
                         return ((Integer) val1) * ((Integer) val2);
                     case Operator.MOD:
@@ -810,9 +808,9 @@ public class ParseTools {
                     case Operator.LETHAN:
                         return ((Integer) val1) <= ((Integer) val2);
                     case Operator.EQUAL:
-                        return val1 == val2;
+                        return ((Integer) val1).intValue() == ((Integer) val2).intValue();
                     case Operator.NEQUAL:
-                        return val1 != val2;
+                        return ((Integer) val1).intValue() != ((Integer) val2).intValue();
 
                 }
 
@@ -824,7 +822,7 @@ public class ParseTools {
                     case Operator.SUB:
                         return ((Short) val1) - ((Short) val2);
                     case Operator.DIV:
-                        return ((Short) val1) / ((Short) val2);
+                        return new BigDecimal((Short) val1).divide(new BigDecimal((Short) val2));
                     case Operator.MULT:
                         return ((Short) val1) * ((Short) val2);
                     case Operator.MOD:
@@ -839,9 +837,9 @@ public class ParseTools {
                     case Operator.LETHAN:
                         return ((Short) val1) <= ((Short) val2);
                     case Operator.EQUAL:
-                        return val1 == val2;
+                        return ((Short) val1).shortValue() == ((Short) val2).shortValue();
                     case Operator.NEQUAL:
-                        return val1 != val2;
+                        return ((Short) val1).shortValue() != ((Short) val2).shortValue();
                 }
 
             case DataTypes.LONG:
@@ -852,7 +850,7 @@ public class ParseTools {
                     case Operator.SUB:
                         return ((Long) val1) - ((Long) val2);
                     case Operator.DIV:
-                        return ((Long) val1) / ((Long) val2);
+                        return new BigDecimal((Long) val1).divide(new BigDecimal((Long) val2));
                     case Operator.MULT:
                         return ((Long) val1) * ((Long) val2);
                     case Operator.MOD:
@@ -867,9 +865,9 @@ public class ParseTools {
                     case Operator.LETHAN:
                         return ((Long) val1) <= ((Long) val2);
                     case Operator.EQUAL:
-                        return val1 == val2;
+                        return ((Long) val1).longValue() == ((Long) val2).longValue();
                     case Operator.NEQUAL:
-                        return val1 != val2;
+                        return ((Long) val1).longValue() != ((Long) val2).longValue();
                 }
 
             case DataTypes.DOUBLE:
@@ -880,7 +878,7 @@ public class ParseTools {
                     case Operator.SUB:
                         return ((Double) val1) - ((Double) val2);
                     case Operator.DIV:
-                        return ((Double) val1) / ((Double) val2);
+                        return new BigDecimal((Double) val1).divide(new BigDecimal((Double) val2));
                     case Operator.MULT:
                         return ((Double) val1) * ((Double) val2);
                     case Operator.MOD:
@@ -895,9 +893,9 @@ public class ParseTools {
                     case Operator.LETHAN:
                         return ((Double) val1) <= ((Double) val2);
                     case Operator.EQUAL:
-                        return val1 == val2;
+                        return ((Double) val1).doubleValue() == ((Double) val2).doubleValue();
                     case Operator.NEQUAL:
-                        return val1 != val2;
+                        return ((Double) val1).doubleValue() != ((Double) val2).doubleValue();
                 }
 
             case DataTypes.FLOAT:
@@ -908,7 +906,7 @@ public class ParseTools {
                     case Operator.SUB:
                         return ((Float) val1) - ((Float) val2);
                     case Operator.DIV:
-                        return ((Float) val1) / ((Float) val2);
+                        return new BigDecimal((Float) val1).divide(new BigDecimal((Float) val2));
                     case Operator.MULT:
                         return ((Float) val1) * ((Float) val2);
                     case Operator.MOD:
@@ -923,9 +921,9 @@ public class ParseTools {
                     case Operator.LETHAN:
                         return ((Float) val1) <= ((Float) val2);
                     case Operator.EQUAL:
-                        return val1 == val2;
+                        return ((Float) val1).floatValue() == ((Float) val2).floatValue();
                     case Operator.NEQUAL:
-                        return val1 != val2;
+                        return ((Float) val1).floatValue() != ((Float) val2).floatValue();
                 }
 
 
