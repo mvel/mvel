@@ -18,6 +18,7 @@
  */
 package org.mvel.optimizers.impl.asm;
 
+import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.*;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
@@ -165,9 +166,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         debug("[MVEL JIT Completed Optimization <<" + new String(expr) + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
 
         Object o;
-
-        //   Accessor a;
-
 
         if (inputs == 0) {
             o = cls.newInstance();
@@ -341,7 +339,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         }
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
-
             debug("CHECKCAST java/util/Map");
             mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 
@@ -353,7 +350,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return ((Map) ctx).get(property);
         }
         else if ("this".equals(property)) {
-
             debug("ALOAD 2");
             mv.visitVarInsn(ALOAD, 2); // load the thisRef value.
 
@@ -457,8 +453,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("CHECKCAST java/util/List");
             mv.visitTypeInsn(CHECKCAST, "java/util/List");
 
-            debug("BIGPUSH: " + 6);
-            mv.visitIntInsn(BIPUSH, index);
+            intPush(index);
 
             debug("INVOKEINTERFACE: java/util/List.get");
             mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
@@ -489,7 +484,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         else if (ctx instanceof CharSequence) {
             int index = Integer.parseInt(item);
 
-            mv.visitIntInsn(BIPUSH, index);
+            intPush(index);
+
             mv.visitMethodInsn(INVOKEINTERFACE, "java/lang/CharSequence", "charAt", "(I)C");
 
             return ((CharSequence) ctx).charAt(index);
@@ -698,7 +694,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         mv.visitTypeInsn(CHECKCAST, getInternalName(parameterTypes[i]));
                     }
 
-                    //           stacksize += 3;
                 }
 
                 if ((m.getModifiers() & Modifier.STATIC) != 0) {
@@ -971,6 +966,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         else if (o instanceof Map) {
             debug("NEW " + MAP_IMPL);
             mv.visitTypeInsn(NEW, MAP_IMPL);
+
             debug("DUP");
             mv.visitInsn(DUP);
 
@@ -1254,11 +1250,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     compiledInputs.add((ExecutableStatement) MVEL.compileExpression(constructorParm));
                 }
 
-                debug("------");
-
                 String s;
 
-                Class cls = Token.LITERALS.containsKey(s = new String(subset(property, 0, ArrayTools.findFirst('(', property)))) ?
+                Class cls = Token.LITERALS.containsKey(s = new String(subset(property, 0, findFirst('(', property)))) ?
                         ((Class) Token.LITERALS.get(s)) : ParseTools.createClass(s);
 
                 debug("NEW " + getDescriptor(cls));
@@ -1266,11 +1260,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("DUP");
                 mv.visitInsn(DUP);
 
-//                debug("ASTORE 4");
-//                mv.visitVarInsn(ASTORE, 4);
-
                 inputs = constructorParms.length;
-
 
                 Object[] parms = new Object[constructorParms.length];
 
@@ -1341,7 +1331,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitTypeInsn(NEW, getDescriptor(cls));
                 debug("DUP");
                 mv.visitInsn(DUP);
-
 
                 Constructor cns = cls.getConstructor();
 

@@ -7,7 +7,7 @@ public class UnresolveablePropertyException extends RuntimeException {
     private Token token;
 
     public UnresolveablePropertyException(Token token) {
-        super(token.getName());
+        super("unable to resolve token: " + token.getName());
         this.token = token;
     }
 
