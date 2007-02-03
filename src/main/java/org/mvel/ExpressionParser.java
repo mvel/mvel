@@ -161,8 +161,8 @@ public class ExpressionParser extends AbstractParser {
                                      * We have reduced additional tokens, but we can't reduce
                                      * anymore.
                                      */
-                                    tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()));
-                                    tokenMap.addTokenNode(tkOp);
+                                    tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()), tkOp);
+
                                     if (tkLA2 != null) tokenMap.addTokenNode(tkLA2);
                                 }
                                 break;
@@ -180,8 +180,7 @@ public class ExpressionParser extends AbstractParser {
                         continue;
                     }
                     else {
-                        tokenMap.addTokenNode(tk);
-                        tokenMap.addTokenNode(tkOp);
+                        tokenMap.addTokenNode(tk, tkOp);
                         if (tkLA != null) tokenMap.addTokenNode(tkLA);
                         continue;
                     }
