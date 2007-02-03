@@ -1,16 +1,16 @@
 package org.mvel;
 
-import static org.mvel.util.ParseTools.doOperations;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
-import static org.mvel.util.PropertyTools.*;
+import static org.mvel.util.ParseTools.doOperations;
+import static org.mvel.util.PropertyTools.isEmpty;
+import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
-import org.mvel.util.ParseTools;
 
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
@@ -135,10 +135,7 @@ public class AcceleratedParser extends AbstractParser {
                  * statement, because that top stack value is the value we want back from the parser.
                  */
 
-                if ((fields & Token.ASSIGN) != 0) {
-                    return FRAME_END;
-                }
-                else if (!hasNoMore()) {
+                if (!hasNoMore()) {
                     stk.clear();
                 }
 
@@ -177,26 +174,6 @@ public class AcceleratedParser extends AbstractParser {
                     case LETHAN:
                         stk.push(doOperations(v2, operator, v1));
                         break;
-
-                    case AND:
-                        if (v2 instanceof Boolean && v1 instanceof Boolean) {
-                            stk.push(((Boolean) v2) && ((Boolean) v1));
-                            break;
-                        }
-                        else if (((Boolean) v2)) {
-                            stk.push(v2, Operator.AND, v1);
-                        }
-                        return;
-
-                    case OR:
-                        if (v2 instanceof Boolean && v1 instanceof Boolean) {
-                            stk.push(((Boolean) v2) || ((Boolean) v1));
-                            break;
-                        }
-                        else {
-                            stk.push(v2, Operator.OR, v1);
-                            return;
-                        }
 
                     case CHOR:
                         if (!isEmpty(v2) || !isEmpty(v1)) {
@@ -262,19 +239,6 @@ public class AcceleratedParser extends AbstractParser {
 
                     case STR_APPEND:
                         stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
-                        break;
-
-                    case PROJECTION:
-                        try {
-                            List<Object> list = new ArrayList<Object>(((Collection) v1).size());
-                            for (Object o : (Collection) v1) {
-                                list.add(get(valueOf(v2), o));
-                            }
-                            stk.push(list);
-                        }
-                        catch (ClassCastException e) {
-                            throw new ParseException("projections can only be peformed on collections");
-                        }
                         break;
 
                     case SOUNDEX:
