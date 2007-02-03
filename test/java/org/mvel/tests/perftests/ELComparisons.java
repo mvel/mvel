@@ -18,7 +18,7 @@ public class ELComparisons {
 
     private static int ALL = mvel + ognl;
 
-    private static final int TESTNUM = 10000;
+    private static final int TESTNUM = 100000;
 
     public ELComparisons() {
     }
