@@ -214,7 +214,7 @@ public class ExpressionParser extends AbstractParser {
      * @return int - behaviour code
      */
     private int reduceBinary(int o) {
-     //   assert debug("BINARY_OP " + o + " PEEK=<<" + stk.peek() + ">>");
+        //   assert debug("BINARY_OP " + o + " PEEK=<<" + stk.peek() + ">>");
         switch (o) {
             case AND:
                 if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
@@ -232,7 +232,7 @@ public class ExpressionParser extends AbstractParser {
                 }
             case OR:
                 if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
-                   // assert debug("STMT_UNWIND");
+                    // assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
                         return FRAME_END;
                     }
@@ -276,10 +276,7 @@ public class ExpressionParser extends AbstractParser {
                  * statement, because that top stack value is the value we want back from the parser.
                  */
 
-                if ((fields & Token.ASSIGN) != 0) {
-                    return FRAME_END;
-                }
-                else if (!hasNoMore()) {
+                if (!hasNoMore()) {
                     stk.clear();
                 }
 
@@ -307,8 +304,6 @@ public class ExpressionParser extends AbstractParser {
                 v1 = processToken(stk.pop());
                 v2 = processToken(stk.pop());
 
-//                assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
-
                 switch (operator) {
                     case ADD:
                     case SUB:
@@ -323,26 +318,6 @@ public class ExpressionParser extends AbstractParser {
                     case LETHAN:
                         stk.push(doOperations(v2, operator, v1));
                         break;
-
-                    case AND:
-                        if (v2 instanceof Boolean && v1 instanceof Boolean) {
-                            stk.push(((Boolean) v2) && ((Boolean) v1));
-                            break;
-                        }
-                        else if (((Boolean) v2)) {
-                            stk.push(v2, Operator.AND, v1);
-                        }
-                        return;
-
-                    case OR:
-                        if (v2 instanceof Boolean && v1 instanceof Boolean) {
-                            stk.push(((Boolean) v2) || ((Boolean) v1));
-                            break;
-                        }
-                        else {
-                            stk.push(v2, Operator.OR, v1);
-                            return;
-                        }
 
                     case CHOR:
                         if (!isEmpty(v2) || !isEmpty(v1)) {
@@ -408,19 +383,6 @@ public class ExpressionParser extends AbstractParser {
 
                     case STR_APPEND:
                         stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
-                        break;
-
-                    case PROJECTION:
-                        try {
-                            List<Object> list = new ArrayList<Object>(((Collection) v1).size());
-                            for (Object o : (Collection) v1) {
-                                list.add(get(valueOf(v2), o));
-                            }
-                            stk.push(list);
-                        }
-                        catch (ClassCastException e) {
-                            throw new ParseException("projections can only be peformed on collections");
-                        }
                         break;
 
                     case SOUNDEX:
