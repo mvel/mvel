@@ -42,6 +42,15 @@ public class TokenMap implements TokenIterator {
         size++;
     }
 
+    public void addTokenNode(Token token, Token token2) {
+        if (this.firstToken == null) {
+            this.current = ((this.firstToken = token).nextToken = token2);
+        }
+        else {
+            this.current = (this.current.nextToken = token).nextToken = token2;
+        }
+    }
+
 
     public Token firstToken() {
         return firstToken;
