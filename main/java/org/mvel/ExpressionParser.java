@@ -19,6 +19,8 @@
 
 package org.mvel;
 
+import static org.mvel.util.ParseTools.doOperations;
+import static org.mvel.MVEL.compileExpression;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
 import static org.mvel.PropertyAccessor.get;
@@ -73,6 +75,9 @@ public class ExpressionParser extends AbstractParser {
         return handleParserEgress(stk.peek(), returnBigDecimal);
     }
 
+    /**
+     * Main interpreter loop.
+     */
     private void parseAndExecuteInterpreted() {
         Token tk;
         Integer operator;
@@ -87,17 +92,15 @@ public class ExpressionParser extends AbstractParser {
             }
 
             switch (reduceBinary(operator = tk.getOperator())) {
-                case-1:
+                case FRAME_END:
                     return;
-                case 0:
+                case FRAME_CONTINUE:
                     break;
-                case 1:
+                case FRAME_NEXT:
                     continue;
             }
 
-            if ((tk = nextToken()) == null) continue;
-
-            stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
+            stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 
             reduceTrinary();
         }
@@ -114,7 +117,7 @@ public class ExpressionParser extends AbstractParser {
 
         while ((tk = nextToken()) != null) {
             if (tk.isSubeval()) {
-                tk.setAccessor((ExecutableStatement) MVEL.compileExpression(tk.getNameAsArray()));
+                tk.setAccessor((ExecutableStatement) compileExpression(tk.getNameAsArray()));
             }
 
             /**
@@ -211,42 +214,42 @@ public class ExpressionParser extends AbstractParser {
      * @return int - behaviour code
      */
     private int reduceBinary(int o) {
-        assert debug("BINARY_OP " + o + " PEEK=<<" + stk.peek() + ">>");
+     //   assert debug("BINARY_OP " + o + " PEEK=<<" + stk.peek() + ">>");
         switch (o) {
             case AND:
                 if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
                     if (unwindStatement()) {
-                        return -1;
+                        return FRAME_END;
                     }
                     else {
                         stk.clear();
-                        return 1;
+                        return FRAME_NEXT;
                     }
                 }
                 else {
                     stk.discard();
-                    return 1;
+                    return FRAME_NEXT;
                 }
             case OR:
                 if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
                    // assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
-                        return -1;
+                        return FRAME_END;
                     }
                     else {
                         stk.clear();
-                        return 1;
+                        return FRAME_NEXT;
                     }
                 }
                 else {
                     stk.discard();
-                    return 1;
+                    return FRAME_NEXT;
                 }
 
             case TERNARY:
                 Token tk;
                 if ((Boolean) stk.pop()) {
-                    return 1;
+                    return FRAME_NEXT;
                 }
                 else {
                     stk.clear();
@@ -255,12 +258,12 @@ public class ExpressionParser extends AbstractParser {
                         //nothing
                     }
 
-                    return 1;
+                    return FRAME_NEXT;
                 }
 
 
             case TERNARY_ELSE:
-                return -1;
+                return FRAME_END;
 
             case END_OF_STMT:
                 /**
@@ -274,15 +277,15 @@ public class ExpressionParser extends AbstractParser {
                  */
 
                 if ((fields & Token.ASSIGN) != 0) {
-                    return -1;
+                    return FRAME_END;
                 }
                 else if (!hasNoMore()) {
                     stk.clear();
                 }
 
-                return 1;
+                return FRAME_NEXT;
         }
-        return 0;
+        return FRAME_CONTINUE;
     }
 
     private boolean hasNoMore() {
@@ -318,7 +321,7 @@ public class ExpressionParser extends AbstractParser {
                     case LTHAN:
                     case GETHAN:
                     case LETHAN:
-                        stk.push(ParseTools.doOperations(v2, operator, v1));
+                        stk.push(doOperations(v2, operator, v1));
                         break;
 
                     case AND:
