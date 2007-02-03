@@ -24,12 +24,13 @@ public interface Operator {
     public static final int MULT = 2;
     public static final int DIV = 3;
     public static final int MOD = 4;
-    public static final int EQUAL = 5;
-    public static final int NEQUAL = 6;
-    public static final int LTHAN = 7;
-    public static final int GTHAN = 8;
-    public static final int LETHAN = 9;
-    public static final int GETHAN = 10;
+    public static final int LTHAN = 5;
+    public static final int GTHAN = 6;
+    public static final int LETHAN = 7;
+    public static final int GETHAN = 8;
+
+    public static final int EQUAL = 9;
+    public static final int NEQUAL = 10;
 
     public static final int AND = 11;
     public static final int OR = 12;
