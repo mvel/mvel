@@ -518,7 +518,6 @@ public class ParseTools {
 
         if (factory == null) {
             throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
-            //  return new LocalVariableResolverFactory(new HashMap<String, Object>());
         }
         else {
             return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
@@ -703,6 +702,8 @@ public class ParseTools {
                 return val1.subtract(val2);
             case Operator.MULT:
                 return val1.multiply(val2);
+            case Operator.POWER:
+                return Math.pow(val1.doubleValue(), val2.doubleValue());
             case Operator.MOD:
                 return val1.remainder(val2);
 
@@ -723,7 +724,7 @@ public class ParseTools {
     }
 
     private static Object _doOperations(int type1, Object val1, int operation, int type2, Object val2) {
-        if (operation < 9 || operation == Operator.EQUAL || operation == Operator.NEQUAL) {
+        if (operation < 10 || operation == Operator.EQUAL || operation == Operator.NEQUAL) {
             if (type1 > 99 && type1 == type2) {
                 return doOperationsSameType(type1, val1, operation, val2);
             }
@@ -791,6 +792,8 @@ public class ParseTools {
                         return new BigDecimal((Integer) val1).divide(new BigDecimal((Integer) val2));
                     case Operator.MULT:
                         return ((Integer) val1) * ((Integer) val2);
+                    case Operator.POWER:
+                        return (int) Math.pow((Integer) val1, (Integer) val2);
                     case Operator.MOD:
                         return ((Integer) val1) % ((Integer) val2);
 
@@ -820,6 +823,8 @@ public class ParseTools {
                         return new BigDecimal((Short) val1).divide(new BigDecimal((Short) val2));
                     case Operator.MULT:
                         return ((Short) val1) * ((Short) val2);
+                    case Operator.POWER:
+                        return Math.pow((Short) val1, (Short) val2);
                     case Operator.MOD:
                         return ((Short) val1) % ((Short) val2);
 
@@ -848,6 +853,8 @@ public class ParseTools {
                         return new BigDecimal((Long) val1).divide(new BigDecimal((Long) val2));
                     case Operator.MULT:
                         return ((Long) val1) * ((Long) val2);
+                    case Operator.POWER:
+                        return Math.pow((Long) val1, (Long) val2);
                     case Operator.MOD:
                         return ((Long) val1) % ((Long) val2);
 
@@ -876,6 +883,8 @@ public class ParseTools {
                         return new BigDecimal((Double) val1).divide(new BigDecimal((Double) val2));
                     case Operator.MULT:
                         return ((Double) val1) * ((Double) val2);
+                    case Operator.POWER:
+                        return Math.pow((Double) val1, (Double) val2);
                     case Operator.MOD:
                         return ((Double) val1) % ((Double) val2);
 
@@ -904,6 +913,8 @@ public class ParseTools {
                         return new BigDecimal((Float) val1).divide(new BigDecimal((Float) val2));
                     case Operator.MULT:
                         return ((Float) val1) * ((Float) val2);
+                    case Operator.POWER:
+                        return new BigDecimal((Float) val1).pow(new BigDecimal((Float) val2).intValue());                 
                     case Operator.MOD:
                         return ((Float) val1) % ((Float) val2);
 

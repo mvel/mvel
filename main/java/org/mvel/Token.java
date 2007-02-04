@@ -139,6 +139,7 @@ public class Token implements Cloneable, Serializable {
         OPERATORS.put("+", ADD);
         OPERATORS.put("-", SUB);
         OPERATORS.put("*", MULT);
+        OPERATORS.put("**", POWER);
         OPERATORS.put("/", DIV);
         OPERATORS.put("%", MOD);
         OPERATORS.put("==", EQUAL);
