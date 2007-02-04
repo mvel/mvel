@@ -314,6 +314,7 @@ public class ExpressionParser extends AbstractParser {
                     case LTHAN:
                     case GETHAN:
                     case LETHAN:
+                    case POWER:
                         stk.push(doOperations(v2, operator, v1));
                         break;
 

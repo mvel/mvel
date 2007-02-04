@@ -207,6 +207,12 @@ public class AbstractParser {
                             break;
                         }
 
+
+                    case'*':
+                        if (cursor < length && expr[cursor + 1] == '*') {
+                            cursor++;
+                            return createToken(expr, start, cursor++ + 1, fields);
+                        }
                     case';':
                     case'#':
                     case'?':
@@ -214,7 +220,7 @@ public class AbstractParser {
                     case'^':
                     case'/':
                     case'+':
-                    case'*':
+
                     case'%': {
                         return createToken(expr, start, cursor++ + 1, fields);
                     }
