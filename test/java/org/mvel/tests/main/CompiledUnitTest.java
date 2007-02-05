@@ -200,6 +200,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(java.lang.Integer.class, parseDirect("blah = 5").getClass());
     }
 
+    public void testAssignment4() {
+        assertEquals(102, parseDirect("a = 100 + 1 + 1"));
+    }
+
     public void testOr() {
         assertEquals(true, parseDirect("fun || true"));
     }
