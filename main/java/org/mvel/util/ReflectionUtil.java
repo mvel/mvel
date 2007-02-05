@@ -1,11 +1,12 @@
 package org.mvel.util;
 
+import static java.util.regex.Pattern.compile;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
-import static java.util.regex.Pattern.compile;
 
 /**
  * Utilities for working with reflection.
@@ -133,11 +134,9 @@ public class ReflectionUtil {
     }
 
     public static Set<Field> getAllFields(Class cls) {
-        Set<Field> allFields = new HashSet<Field>(cls.getFields().length + cls.getDeclaredFields().length, 1.0f);
-
+        Set<Field> allFields = new HashSet<Field>(cls.getFields().length, 1.0f);
         for (Field fld : cls.getFields()) allFields.add(fld);
-        for (Field fld : cls.getDeclaredFields()) allFields.add(fld);
-
         return allFields;
     }
+    
 }
