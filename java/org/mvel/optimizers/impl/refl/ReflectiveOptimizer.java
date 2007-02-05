@@ -526,9 +526,12 @@ public class ReflectiveOptimizer extends AbstractOptimizer implements AccessorOp
         if (!nextToken().isOperator(Operator.ASSIGN))
             throw new CompileException("expected assignment operator");
 
-        start = cursor;
-        captureToEOS();
-        Token expr = new Token(property, start, cursor, 0);
+
+        Token expr = captureTokenToEOS();
+
+//        start = cursor;
+//        captureToEOS();
+//        Token expr = new Token(property, start, cursor, 0);
 
         if (expr.isLiteral()) {
             assert ParseTools.debug("ASSIGN_LITERAL '" + expr.getName() + "'");

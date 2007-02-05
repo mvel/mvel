@@ -478,4 +478,10 @@ public class AbstractParser {
             fields = fields ^ flag;
         }
     }
+
+    protected Token captureTokenToEOS() {
+        int start = cursor;
+        captureToEOS();
+        return new Token(expr, start, cursor, 0);
+    }
 }
