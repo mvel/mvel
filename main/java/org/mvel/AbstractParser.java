@@ -70,7 +70,7 @@ public class AbstractParser {
                 cursor++;
             }
             else if (capture) {
-                assert debug("END_OF_IDENTIFIER");
+//                assert debug("END_OF_IDENTIFIER");
 
                 /**
                  * This hack is needed to handle inline collections within a projection.
@@ -459,17 +459,17 @@ public class AbstractParser {
         return new Token(expr, start, end, fields);
     }
 
-    private void captureToEOS() {
+    protected void captureToEOS() {
         while (cursor < length && expr[cursor] != ';') {
             cursor++;
         }
     }
 
-    private void skipWhitespace() {
+    protected void skipWhitespace() {
         while (isWhitespace(expr[cursor])) cursor++;
     }
 
-    private void trimWhitespace() {
+    protected void trimWhitespace() {
         while (cursor > 0 && isWhitespace(expr[cursor - 1])) cursor--;
     }
 

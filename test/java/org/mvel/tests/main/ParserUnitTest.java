@@ -228,6 +228,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals("sarah", parse("@{populate(); blahfoo = barfoo}"));
     }
 
+    public void testAssignment3() {
+        assertEquals(102, parseDirect("a = 100 + 1 + 1"));
+    }
+
     public void testOr() {
         assertEquals(true, parse("@{fun || true}"));
     }
