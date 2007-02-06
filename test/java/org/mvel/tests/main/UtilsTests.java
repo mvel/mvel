@@ -1,7 +1,7 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-import org.mvel.util.FastMap;
+//import org.mvel.util.FastMap;
 import org.mvel.util.StringAppender;
 
 public class UtilsTests extends TestCase {

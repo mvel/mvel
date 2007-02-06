@@ -21,6 +21,7 @@ package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
 import org.mvel.CompileException;
+import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Method;
@@ -41,9 +42,14 @@ public class GetterAccessor implements AccessorNode {
                 return method.invoke(ctx, EMPTY);
             }
         }
+        catch (IllegalArgumentException e) {
+            /**
+             * HACK: Try to access this another way.
+             */
+            return MVEL.getProperty(method.getName() + "()", ctx);
+        }
         catch (Exception e) {
             throw new CompileException("cannot invoke getter", e);
-
         }
     }
 
