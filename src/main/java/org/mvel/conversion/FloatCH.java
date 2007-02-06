@@ -29,6 +29,8 @@ public class FloatCH implements ConversionHandler {
         CNV.put(String.class,
                 new Converter() {
                     public Object convert(Object o) {
+                        if (((String) o).length() == 0) return (float) 0;
+                        
                         return Float.parseFloat(((String) o));
                     }
                 }

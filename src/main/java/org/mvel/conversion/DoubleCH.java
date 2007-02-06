@@ -29,6 +29,9 @@ public class DoubleCH implements ConversionHandler {
         CNV.put(String.class,
                 new Converter() {
                     public Object convert(Object o) {
+                        if (((String) o).length() == 0) return (double) 0;
+
+
                         return Double.parseDouble(((String) o));
                     }
                 }

@@ -31,6 +31,8 @@ public class IntegerCH implements ConversionHandler {
         CNV.put(Object.class,
                 new Converter() {
                     public Object convert(Object o) {
+                        if (((String) o).length() == 0) return 0;
+
                         return parseInt(valueOf(o));
                     }
                 }
