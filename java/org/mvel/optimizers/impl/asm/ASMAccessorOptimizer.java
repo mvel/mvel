@@ -42,7 +42,7 @@ import java.util.*;
  * engineering library.
  */
 public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
-    private static final String MAP_IMPL = "org/mvel/util/FastMap";
+    private static final String MAP_IMPL = "java/util/HashMap";
     private static final String LIST_IMPL = "org/mvel/util/FastList";
 
     private static final int OPCODES_VERSION;
