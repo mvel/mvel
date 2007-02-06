@@ -29,6 +29,8 @@ public class LongCH implements ConversionHandler {
         CNV.put(String.class,
                 new Converter() {
                     public Object convert(Object o) {
+                        if (((String) o).length() == 0) return (long) 0;
+
                         return Long.parseLong(((String) o));
                     }
                 }
