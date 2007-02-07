@@ -828,7 +828,9 @@ public class ParseTools {
                     case Operator.MULT:
                         return ((Short) val1) * ((Short) val2);
                     case Operator.POWER:
-                        return Math.pow((Short) val1, (Short) val2);
+                        double d = Math.pow((Short) val1, (Short) val2);
+                        if (d > Short.MAX_VALUE) return d;
+                        else return (short) d;
                     case Operator.MOD:
                         return ((Short) val1) % ((Short) val2);
 
@@ -858,7 +860,9 @@ public class ParseTools {
                     case Operator.MULT:
                         return ((Long) val1) * ((Long) val2);
                     case Operator.POWER:
-                        return Math.pow((Long) val1, (Long) val2);
+                        double d = Math.pow((Long) val1, (Long) val2);
+                        if (d > Long.MAX_VALUE) return d;
+                        else return (long) d;
                     case Operator.MOD:
                         return ((Long) val1) % ((Long) val2);
 
@@ -918,7 +922,7 @@ public class ParseTools {
                     case Operator.MULT:
                         return ((Float) val1) * ((Float) val2);
                     case Operator.POWER:
-                        return new BigDecimal((Float) val1).pow(new BigDecimal((Float) val2).intValue());                 
+                        return new BigDecimal((Float) val1).pow(new BigDecimal((Float) val2).intValue());
                     case Operator.MOD:
                         return ((Float) val1) % ((Float) val2);
 
