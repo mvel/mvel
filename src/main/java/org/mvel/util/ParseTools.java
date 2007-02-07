@@ -15,10 +15,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.*;
 
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
+    public static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
 
     public static String[] parseMethodOrConstructor(char[] parm) {
         int start = -1;
@@ -638,10 +640,10 @@ public class ParseTools {
         if (result instanceof BigDecimal) {
             if (returnBigDecimal) return result;
             else if (((BigDecimal) result).scale() > 14) {
-                return ((BigDecimal) result).floatValue();
+                return ((BigDecimal) result).doubleValue();
             }
             else if (((BigDecimal) result).scale() > 0) {
-                return ((BigDecimal) result).doubleValue();
+                return ((BigDecimal) result).floatValue();
             }
             else if (((BigDecimal) result).longValue() > Integer.MAX_VALUE) {
                 return ((BigDecimal) result).longValue();
@@ -697,7 +699,7 @@ public class ParseTools {
             case Operator.ADD:
                 return val1.add(val2);
             case Operator.DIV:
-                return val1.divide(val2);
+                return val1.divide(val2, MATH_CONTEXT);
             case Operator.SUB:
                 return val1.subtract(val2);
             case Operator.MULT:
@@ -789,11 +791,13 @@ public class ParseTools {
                     case Operator.SUB:
                         return ((Integer) val1) - ((Integer) val2);
                     case Operator.DIV:
-                        return new BigDecimal((Integer) val1).divide(new BigDecimal((Integer) val2));
+                        return new BigDecimal((Integer) val1).divide(new BigDecimal((Integer) val2), MATH_CONTEXT);
                     case Operator.MULT:
                         return ((Integer) val1) * ((Integer) val2);
                     case Operator.POWER:
-                        return (int) Math.pow((Integer) val1, (Integer) val2);
+                        double d = Math.pow((Integer) val1, (Integer) val2);
+                        if (d > Integer.MAX_VALUE) return d;
+                        else return (int) d;
                     case Operator.MOD:
                         return ((Integer) val1) % ((Integer) val2);
 
@@ -820,7 +824,7 @@ public class ParseTools {
                     case Operator.SUB:
                         return ((Short) val1) - ((Short) val2);
                     case Operator.DIV:
-                        return new BigDecimal((Short) val1).divide(new BigDecimal((Short) val2));
+                        return new BigDecimal((Short) val1).divide(new BigDecimal((Short) val2), MATH_CONTEXT);
                     case Operator.MULT:
                         return ((Short) val1) * ((Short) val2);
                     case Operator.POWER:
@@ -850,7 +854,7 @@ public class ParseTools {
                     case Operator.SUB:
                         return ((Long) val1) - ((Long) val2);
                     case Operator.DIV:
-                        return new BigDecimal((Long) val1).divide(new BigDecimal((Long) val2));
+                        return new BigDecimal((Long) val1).divide(new BigDecimal((Long) val2), MATH_CONTEXT);
                     case Operator.MULT:
                         return ((Long) val1) * ((Long) val2);
                     case Operator.POWER:
@@ -880,7 +884,7 @@ public class ParseTools {
                     case Operator.SUB:
                         return ((Double) val1) - ((Double) val2);
                     case Operator.DIV:
-                        return new BigDecimal((Double) val1).divide(new BigDecimal((Double) val2));
+                        return new BigDecimal((Double) val1).divide(new BigDecimal((Double) val2), MATH_CONTEXT);
                     case Operator.MULT:
                         return ((Double) val1) * ((Double) val2);
                     case Operator.POWER:
@@ -910,7 +914,7 @@ public class ParseTools {
                     case Operator.SUB:
                         return ((Float) val1) - ((Float) val2);
                     case Operator.DIV:
-                        return new BigDecimal((Float) val1).divide(new BigDecimal((Float) val2));
+                        return new BigDecimal((Float) val1).divide(new BigDecimal((Float) val2), MATH_CONTEXT);
                     case Operator.MULT:
                         return ((Float) val1) * ((Float) val2);
                     case Operator.POWER:
