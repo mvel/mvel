@@ -112,7 +112,7 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testMath() {
-        assertEquals(188.4, parseDirect("pi * hour"));
+        assertEquals(188.4f, parseDirect("pi * hour"));
     }
 
     public void testComplexExpression() {

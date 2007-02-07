@@ -136,11 +136,11 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testMath() {
-        assertEquals(188.4, parse("@{pi * hour}"));
+        assertEquals(188.4f, parse("@{pi * hour}"));
     }
 
     public void testMath2() {
-        assertEquals(10d / 4d, parseDirect("10 / 4"));
+        assertEquals(10f / 4f, parseDirect("10 / 4"));
     }
 
     public void testMath3() {
