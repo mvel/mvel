@@ -21,7 +21,7 @@ public class CompiledPerformanceTests extends TestCase {
 
     public CompiledPerformanceTests() {
         foo.setBar(new Bar());
-        map.put("foo", foo);
+        map.put("foo", foo);    
         map.put("a", null);
         map.put("b", null);
         map.put("c", "cat");
