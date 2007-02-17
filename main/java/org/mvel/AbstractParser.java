@@ -202,18 +202,7 @@ public class AbstractParser {
                 cursor++;
             }
             else if (capture) {
-//                assert debug("END_OF_IDENTIFIER");
-
-                /**
-                 * This hack is needed to handle inline collections within a projection.
-                 */
-
                 switch (expr[start]) {
-//                    case'i': //handle 'in'
-//                        if (cursor < (length - 2) && expr[start + 1] == 'n' && isWhitespace(expr[start + 2])) {
-//                            return createToken(expr, start, cursor, fields);
-//                        }
-//                        break;
                     case'n': //handle 'new'
                         if (cursor < (length - 3) && expr[start + 1] == 'e' && expr[start + 2] == 'w'
                                 && isWhitespace(expr[start + 3])) {
