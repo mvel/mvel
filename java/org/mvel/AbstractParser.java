@@ -6,6 +6,9 @@ import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import static java.lang.Character.isWhitespace;
+import static java.util.Collections.synchronizedMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * @author Christopher Brock
@@ -23,6 +26,20 @@ public class AbstractParser {
     protected static final int FRAME_CONTINUE = 0;
     protected static final int FRAME_NEXT = 1;
 
+    private static Map<String, char[]> EX_PRECACHE;
+
+    static {
+        configureFactory();
+    }
+
+    static void configureFactory() {
+        if (MVEL.THREAD_SAFE) {
+            EX_PRECACHE = synchronizedMap(new WeakHashMap<String, char[]>(10));
+        }
+        else {
+            EX_PRECACHE = new WeakHashMap<String, char[]>(10);
+        }
+    }
 
     /**
      * Retrieve the next token in the expression.
@@ -483,5 +500,29 @@ public class AbstractParser {
         int start = cursor;
         captureToEOS();
         return new Token(expr, start, cursor, 0);
+    }
+
+    protected void setExpression(String expression) {
+        if (expression != null && !"".equals(expression)) {
+            if (!EX_PRECACHE.containsKey(expression)) {
+                length = (this.expr = expression.toCharArray()).length;
+
+                // trim any whitespace.
+                while (isWhitespace(this.expr[length - 1])) length--;
+
+                char[] e = new char[length];
+                System.arraycopy(this.expr, 0, e, 0, length);
+
+                EX_PRECACHE.put(expression, e);
+            }
+            else {
+                length = (expr = EX_PRECACHE.get(expression)).length;
+            }
+        }
+    }
+
+    protected void setExpression(char[] expression) {
+        length = (this.expr = expression).length;
+        while (isWhitespace(this.expr[length - 1])) length--;
     }
 }

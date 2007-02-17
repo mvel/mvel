@@ -20,23 +20,20 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
-import static org.mvel.MVEL.compileExpression;
 import static org.mvel.Operator.*;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.*;
+import static org.mvel.util.PropertyTools.isEmpty;
+import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
-import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
 import java.math.BigDecimal;
-import static java.util.Collections.synchronizedMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import static java.util.regex.Pattern.compile;
 
 
@@ -48,20 +45,6 @@ public class ExpressionParser extends AbstractParser {
     private VariableResolverFactory variableFactory;
     private final Stack stk = new ExecutionStack();
 
-    private static Map<String, char[]> EX_PRECACHE;
-
-    static {
-        configureFactory();
-    }
-
-    static void configureFactory() {
-        if (MVEL.THREAD_SAFE) {
-            EX_PRECACHE = synchronizedMap(new WeakHashMap<String, char[]>(10));
-        }
-        else {
-            EX_PRECACHE = new WeakHashMap<String, char[]>(10);
-        }
-    }
 
     Object parse() {
         stk.clear();
@@ -104,100 +87,6 @@ public class ExpressionParser extends AbstractParser {
         }
     }
 
-    public TokenIterator compileTokens() {
-        Token tk;
-        Token tkOp;
-        Token tkLA;
-        Token tkLA2;
-        TokenMap tokenMap = new TokenMap();
-
-        boolean firstLA;
-
-        while ((tk = nextToken()) != null) {
-            if (tk.isSubeval()) {
-                tk.setAccessor((ExecutableStatement) compileExpression(tk.getNameAsArray()));
-            }
-
-            /**
-             * This kludge of code is to handle compile-time literal reduction.  We need to avoid
-             * reducing for certain literals like, 'this', ternary and ternary else.
-             */
-            if (tk.isLiteral() && tk.getLiteralValue() != Token.LITERALS.get("this")) {
-                if ((tkOp = nextToken()) != null && tkOp.isOperator()
-                        && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
-
-                    /**
-                     * If the next token is ALSO a literal, then we have a candidate for a compile-time
-                     * reduction.
-                     */
-                    if ((tkLA = nextToken()) != null && tkLA.isLiteral()) {
-                        stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), tkOp.getLiteralValue());
-
-                        /**
-                         * Reduce the token now.
-                         */
-                        reduceTrinary();
-
-                        firstLA = true;
-
-                        /**
-                         * Now we need to check to see if this is actually a continuing reduction.
-                         */
-                        while ((tkOp = nextToken()) != null) {
-                            if ((tkLA2 = nextToken()) != null && tkLA2.isLiteral()) {
-                                stk.push(tkLA2.getLiteralValue(), tkOp.getLiteralValue());
-                                reduceTrinary();
-                                firstLA = false;
-                            }
-                            else {
-                                if (firstLA) {
-                                    /**
-                                     * There are more tokens, but we can't reduce anymore.  So
-                                     * we create a reduced token for what we've got.
-                                     */
-                                    tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()));
-                                }
-                                else {
-                                    /**
-                                     * We have reduced additional tokens, but we can't reduce
-                                     * anymore.
-                                     */
-                                    tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()), tkOp);
-
-                                    if (tkLA2 != null) tokenMap.addTokenNode(tkLA2);
-                                }
-                                break;
-                            }
-                        }
-
-                        /**
-                         * If there are no more tokens left to parse, we check to see if
-                         * we've been doing any reducing, and if so we create the token
-                         * now.
-                         */
-                        if (!stk.isEmpty())
-                            tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()));
-
-                        continue;
-                    }
-                    else {
-                        tokenMap.addTokenNode(tk, tkOp);
-                        if (tkLA != null) tokenMap.addTokenNode(tkLA);
-                        continue;
-                    }
-                }
-                else {
-                    tokenMap.addTokenNode(tk);
-                    if (tkOp != null) tokenMap.addTokenNode(tkOp);
-                    continue;
-                }
-            }
-
-            tokenMap.addTokenNode(tk);
-        }
-
-        return new FastTokenIterator(tokenMap);
-    }
 
     /**
      * This method is called to subEval a binary statement (or junction).  The difference between a binary and
@@ -439,25 +328,6 @@ public class ExpressionParser extends AbstractParser {
             //nothing
         }
         return tk == null;
-    }
-
-    private void setExpression(String expression) {
-        if (expression != null && !"".equals(expression)) {
-            if (!EX_PRECACHE.containsKey(expression)) {
-                length = (this.expr = expression.toCharArray()).length;
-
-                // trim any whitespace.
-                while (isWhitespace(this.expr[length - 1])) length--;
-
-                char[] e = new char[length];
-                System.arraycopy(this.expr, 0, e, 0, length);
-
-                EX_PRECACHE.put(expression, e);
-            }
-            else {
-                length = (expr = EX_PRECACHE.get(expression)).length;
-            }
-        }
     }
 
     public ExpressionParser setExpressionArray(char[] expressionArray) {
