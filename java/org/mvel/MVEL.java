@@ -19,6 +19,8 @@
 
 package org.mvel;
 
+import static org.mvel.DataConversion.convert;
+import static org.mvel.util.ParseTools.handleParserEgress;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
@@ -29,8 +31,7 @@ import java.io.Serializable;
 import static java.lang.String.valueOf;
 import java.util.Map;
 
-public class
-        MVEL {
+public class MVEL {
     public static final String NAME = "MVEL (MVFLEX Expression Language)";
     public static final String VERSION = "1.2";
     public static final String VERSION_SUB = "beta2";
@@ -56,7 +57,7 @@ public class
     }
 
     public static Object eval(String expression, Object ctx) {
-        return new ExpressionParser(expression, ctx).parse();
+       return new ExpressionParser(expression, ctx).parse();
     }
 
     public static Object eval(String expression, VariableResolverFactory resolverFactory) {
@@ -153,12 +154,12 @@ public class
      */
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
-        return ParseTools.handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars))
+        return handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars))
                 , false);
     }
 
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
-        return ParseTools.handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory), false);
+        return handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory), false);
     }
 
     /**
@@ -209,7 +210,7 @@ public class
      */
     @SuppressWarnings({"unchecked"})
     public static <T> T executeExpression(final Object compiledExpression, final Object ctx, final Map vars, Class<T> toType) {
-        return DataConversion.convert(executeExpression(compiledExpression, ctx, vars), toType);
+        return convert(executeExpression(compiledExpression, ctx, vars), toType);
     }
 
     /**
@@ -222,7 +223,7 @@ public class
      */
     @SuppressWarnings({"unchecked"})
     public static <T> T executeExpression(final Object compiledExpression, Map vars, Class<T> toType) {
-        return DataConversion.convert(executeExpression(compiledExpression, vars), toType);
+        return convert(executeExpression(compiledExpression, vars), toType);
     }
 
     /**
@@ -234,7 +235,7 @@ public class
      * @return -
      */
     public static <T> T executeExpression(final Object compiledExpression, final Object ctx, Class<T> toType) {
-        return DataConversion.convert(executeExpression(compiledExpression, ctx), toType);
+        return convert(executeExpression(compiledExpression, ctx), toType);
     }
 
     public static Object[] executeAllExpression(Serializable[] compiledExpressions, Object ctx, VariableResolverFactory vars) {
@@ -249,49 +250,49 @@ public class
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, Map vars, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, ctx).parse(), toType);
+        return convert(new ExpressionParser(expression, ctx).parse(), toType);
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Object ctx, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, ctx).parse(), toType);
+        return convert(new ExpressionParser(expression, ctx).parse(), toType);
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Object ctx, Map vars, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
     }
 
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Map vars, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, null, vars).parse(), toType);
+        return convert(new ExpressionParser(expression, null, vars).parse(), toType);
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, VariableResolverFactory vars, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, null, vars).parse(), toType);
+        return convert(new ExpressionParser(expression, null, vars).parse(), toType);
     }
 
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Map vars, Class<T> toType) {
-        return DataConversion.convert(new ExpressionParser(expression, null, vars).parse(), toType);
+        return convert(new ExpressionParser(expression, null, vars).parse(), toType);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -324,7 +325,6 @@ public class
     @SuppressWarnings({"unchecked"})
     public static Boolean evalToBoolean(String expression, Object ctx, Map vars) {
         return eval(expression, ctx, vars, Boolean.class);
-        //    return (Boolean) new ExpressionParser(expression, ctx, vars, true).parse();
     }
 
     /**
@@ -336,7 +336,6 @@ public class
      */
     public static Boolean evalToBoolean(String expression, Object ctx) {
         return eval(expression, ctx, Boolean.class);
-        //  return (Boolean) new ExpressionParser(expression, ctx, true).parse();
     }
 
     /**
