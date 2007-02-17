@@ -1,5 +1,6 @@
 package org.mvel;
 
+import static org.mvel.MVEL.compileExpression;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.doOperations;
 
@@ -13,13 +14,13 @@ public class ExpressionCompiler extends AbstractParser {
         Token tkOp;
         Token tkLA;
         Token tkLA2;
-        TokenMap tokenMap = new TokenMap();
+        TokenSet tokenSet = new TokenSet();
 
         boolean firstLA;
 
         while ((tk = nextToken()) != null) {
             if (tk.isSubeval()) {
-                tk.setAccessor((ExecutableStatement) MVEL.compileExpression(tk.getNameAsArray()));
+                tk.setAccessor((ExecutableStatement) compileExpression(tk.getNameAsArray()));
             }
 
             /**
@@ -59,16 +60,16 @@ public class ExpressionCompiler extends AbstractParser {
                                      * There are more tokens, but we can't reduce anymore.  So
                                      * we create a reduced token for what we've got.
                                      */
-                                    tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()));
+                                    tokenSet.addTokenNode(new Token(Token.LITERAL, stk.pop()));
                                 }
                                 else {
                                     /**
                                      * We have reduced additional tokens, but we can't reduce
                                      * anymore.
                                      */
-                                    tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()), tkOp);
+                                    tokenSet.addTokenNode(new Token(Token.LITERAL, stk.pop()), tkOp);
 
-                                    if (tkLA2 != null) tokenMap.addTokenNode(tkLA2);
+                                    if (tkLA2 != null) tokenSet.addTokenNode(tkLA2);
                                 }
                                 break;
                             }
@@ -80,28 +81,29 @@ public class ExpressionCompiler extends AbstractParser {
                          * now.
                          */
                         if (!stk.isEmpty())
-                            tokenMap.addTokenNode(new Token(Token.LITERAL, stk.pop()));
+                            tokenSet.addTokenNode(new Token(Token.LITERAL, stk.pop()));
 
                         continue;
                     }
                     else {
-                        tokenMap.addTokenNode(tk, tkOp);
-                        if (tkLA != null) tokenMap.addTokenNode(tkLA);
+                        tokenSet.addTokenNode(tk, tkOp);
+                        if (tkLA != null) tokenSet.addTokenNode(tkLA);
                         continue;
                     }
                 }
                 else {
-                    tokenMap.addTokenNode(tk);
-                    if (tkOp != null) tokenMap.addTokenNode(tkOp);
+                    tokenSet.addTokenNode(tk);
+                    if (tkOp != null) tokenSet.addTokenNode(tkOp);
                     continue;
                 }
             }
 
-            tokenMap.addTokenNode(tk);
+            tokenSet.addTokenNode(tk);
         }
 
-        return new FastTokenIterator(tokenMap);
+        return new FastTokenIterator(tokenSet);
     }
+
 
     /**
      * This method is called when we reach the point where we must subEval a trinary operation in the expression.
