@@ -4,6 +4,7 @@ import ognl.Ognl;
 import org.mvel.MVEL;
 import org.mvel.tests.main.res.Base;
 
+import static java.lang.System.currentTimeMillis;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -18,20 +19,21 @@ public class ELComparisons {
 
     private static int ALL = mvel + ognl;
 
-    private static final int TESTNUM = 100000;
+    private static final int TESTNUM = 50000;
+    private static final int TESTITER = 5;
 
     public ELComparisons() {
     }
 
     public static void main(String[] args) throws Exception {
-        
+
         ELComparisons omc = new ELComparisons();
         if (args.length > 0 && args[0].equals("-continuous")) {
             while (true) omc.runTests();
         }
 
         omc.runTests();
-    }                                                                                                                              
+    }
 
     public void runTests() throws Exception {
         runTest("Simple String Pass-Through", "'Hello World'", TESTNUM, ALL);
@@ -57,6 +59,8 @@ public class ELComparisons {
 
         long time;
         long mem;
+        long total = 0;
+        long[] res = new long[TESTITER];
 
 
         if ((totest & ognl) != 0) {
@@ -68,22 +72,27 @@ public class ELComparisons {
 
                 System.gc();
 
-                time = System.currentTimeMillis();
+                time = currentTimeMillis();
                 mem = Runtime.getRuntime().freeMemory();
 
-                for (int reps = 0; reps < 5; reps++) {
+                for (int reps = 0; reps < TESTITER; reps++) {
                     for (int i = 0; i < count; i++) {
                         Ognl.getValue(expression, baseClass);
                     }
+
+                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
+                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
                 }
-                System.out.println("(OGNL)               : " + new BigDecimal(((System.currentTimeMillis() - time))).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
-                        + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
+                System.out.println("(OGNL)               : " + new BigDecimal(((currentTimeMillis() - time))).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+                        + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
             }
             catch (Exception e) {
                 System.out.println("(OGNL)               : <<COULD NOT EXECUTE>>");
             }
 
         }
+
+        total = 0;
 
         if ((totest & mvel) != 0) {
             try {
@@ -93,15 +102,18 @@ public class ELComparisons {
 
                 System.gc();
 
-                time = System.currentTimeMillis();
+                time = currentTimeMillis();
                 mem = Runtime.getRuntime().freeMemory();
-                for (int reps = 0; reps < 5; reps++) {
+                for (int reps = 0; reps < TESTITER; reps++) {
                     for (int i = 0; i < count; i++) {
                         MVEL.eval(expression, baseClass);
                     }
+
+                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
+                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
                 }
-                System.out.println("(MVEL)               : " + new BigDecimal(((System.currentTimeMillis() - time))).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
-                        + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
+                System.out.println("(MVEL)               : " + new BigDecimal(((currentTimeMillis() - time))).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+                        + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
 
             }
             catch (Exception e) {
@@ -163,8 +175,12 @@ public class ELComparisons {
 
     public void runTestCompiled(String name, String expression, int count, int totest) throws Exception {
         Object compiled;
+
         long time;
         long mem;
+        long total = 0;
+        long[] res = new long[TESTITER];
+
 
         System.out.println("Compiled Results     :");
 
@@ -178,21 +194,26 @@ public class ELComparisons {
 
                 System.gc();
 
-                time = System.currentTimeMillis();
+                time = currentTimeMillis();
                 mem = Runtime.getRuntime().freeMemory();
 
-                for (int reps = 0; reps < 5; reps++) {
+                for (int reps = 0; reps < TESTITER; reps++) {
                     for (int i = 0; i < count; i++) {
                         Ognl.getValue(compiled, baseClass);
                     }
+
+                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
+                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
                 }
-                System.out.println("(OGNL Compiled)      : " + new BigDecimal(System.currentTimeMillis() - time).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
-                        + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
+                System.out.println("(OGNL Compiled)      : " + new BigDecimal(currentTimeMillis() - time).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+                        + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
             }
             catch (Exception e) {
                 System.out.println("(OGNL)               : <<COULD NOT EXECUTE>>");
             }
         }
+
+        total = 0;
 
         if ((totest & mvel) != 0) {
 
@@ -204,16 +225,19 @@ public class ELComparisons {
 
                 System.gc();
 
-                time = System.currentTimeMillis();
+                time = currentTimeMillis();
                 mem = Runtime.getRuntime().freeMemory();
 
-                for (int reps = 0; reps < 5; reps++) {
+                for (int reps = 0; reps < TESTITER; reps++) {
                     for (int i = 0; i < count; i++) {
                         MVEL.executeExpression(compiled, baseClass);
                     }
+
+                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
+                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
                 }
-                System.out.println("(MVEL Compiled)      : " + new BigDecimal(System.currentTimeMillis() - time).divide(new BigDecimal(6), 2, RoundingMode.HALF_UP)
-                        + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb)");
+                System.out.println("(MVEL Compiled)      : " + new BigDecimal(currentTimeMillis() - time).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+                        + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
             }
             catch (Exception e) {
                 System.out.println("(MVEL)               : <<COULD NOT EXECUTE>>");
@@ -221,5 +245,16 @@ public class ELComparisons {
         }
     }
 
+    private static String resultsToString(long[] res) {
+        StringBuffer sbuf = new StringBuffer("[");
+        for (int i = 0; i < res.length; i++) {
+            sbuf.append(res[i]);
+
+            if ((i + 1) < res.length) sbuf.append(",");
+        }
+        sbuf.append("]");
+
+        return sbuf.toString();
+    }
 
 }
