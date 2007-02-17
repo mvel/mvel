@@ -1,16 +1,15 @@
 package org.mvel.util;
 
-import static java.lang.String.valueOf;
-
-import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
+import static org.mvel.util.PropertyTools.isNumber;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
+import static java.lang.String.valueOf;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -309,7 +308,7 @@ public class ParseTools {
         String[] constructorParms = parseMethodOrConstructor(expression.toCharArray());
 
         if (constructorParms != null) {
-            Class cls = Token.LITERALS.containsKey(expression = expression.substring(0, expression.indexOf('('))) ? ((Class) Token.LITERALS.get(expression))
+            Class cls = AbstractParser.LITERALS.containsKey(expression = expression.substring(0, expression.indexOf('('))) ? ((Class) AbstractParser.LITERALS.get(expression))
                     : createClass(expression);
 
             Object[] parms = new Object[constructorParms.length];
