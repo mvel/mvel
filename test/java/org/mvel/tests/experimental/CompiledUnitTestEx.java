@@ -1,12 +1,7 @@
 package org.mvel.tests.experimental;
 
 import junit.framework.TestCase;
-import org.mvel.CompiledExpression;
-import org.mvel.ExecutableStatement;
-import org.mvel.ExpressionParser;
 import org.mvel.MVEL;
-import org.mvel.integration.VariableResolverFactory;
-import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
@@ -479,16 +474,7 @@ public class CompiledUnitTestEx extends TestCase {
     }
 
     public Object compiledExecute(String ex) {
-//        CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(ex);
-//
-////       VariableResolverFactory factory = new MapVariableResolverFactory(map);
-////
-////      //  ExecutableStatement stmt = MVEL.optimize(compiled.getTokenMap(), base, factory);
-////
-////        Object first = stmt.getValue(base, factory);
-////        Object second = stmt.getValue(base, factory);
-//        assertEquals(first, second);
-//        return second;
+
         return null;
     }
 
