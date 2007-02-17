@@ -89,9 +89,9 @@ public class
      * @return -
      */
     public static Serializable compileExpression(String expression) {
-        ExpressionParser parser = new ExpressionParser(expression);
+        ExpressionCompiler parser = new ExpressionCompiler(expression);
 
-        TokenIterator tokens = parser.compileTokens();
+        TokenIterator tokens = parser.compile();
 
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
@@ -99,7 +99,7 @@ public class
         if (tokens.size() == 1) {
             Token tk = tokens.firstToken();
             if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, parser.isReturnBigDecimal());
+                return new ExecutableAccessor(tk, false);
             }
             else if (tk.isLiteral() && !tk.isThisVal()) {
                 return new ExecutableLiteral(tokens.firstToken().getLiteralValue());
@@ -118,9 +118,9 @@ public class
      * @return -
      */
     public static Serializable compileExpression(char[] expression) {
-        ExpressionParser parser = new ExpressionParser(expression);
+        ExpressionCompiler parser = new ExpressionCompiler(expression);
 
-        TokenIterator tokens = parser.compileTokens();
+        TokenIterator tokens = parser.compile();
 
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
@@ -128,7 +128,7 @@ public class
         if (tokens.size() == 1) {
             Token tk = tokens.firstToken();
             if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, parser.isReturnBigDecimal());
+                return new ExecutableAccessor(tk, false);
             }
             else if (tk.isLiteral() && !tk.isThisVal()) {
                 return new ExecutableLiteral(tokens.firstToken().getLiteralValue());
@@ -256,7 +256,8 @@ public class
     public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
         return DataConversion.convert(new ExpressionParser(expression, ctx).parse(), toType);
     }
-        @SuppressWarnings({"unchecked"})
+
+    @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Object ctx, Class<T> toType) {
         return DataConversion.convert(new ExpressionParser(expression, ctx).parse(), toType);
     }
@@ -286,7 +287,7 @@ public class
     public static <T> T eval(String expression, VariableResolverFactory vars, Class<T> toType) {
         return DataConversion.convert(new ExpressionParser(expression, null, vars).parse(), toType);
     }
-    
+
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Map vars, Class<T> toType) {
