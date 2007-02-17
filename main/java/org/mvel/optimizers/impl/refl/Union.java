@@ -16,7 +16,7 @@ public class Union implements Accessor {
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         if (nextAccessor == null) {
             Object o = accessor.getValue(ctx, elCtx, variableFactory);
-            nextAccessor = new ReflectiveOptimizer().optimize(nextExpr, o, elCtx, variableFactory, false);
+            nextAccessor = new ReflectiveAccessorOptimizer().optimize(nextExpr, o, elCtx, variableFactory, false);
             return nextAccessor.getValue(o, elCtx, variableFactory);
         }
         else {

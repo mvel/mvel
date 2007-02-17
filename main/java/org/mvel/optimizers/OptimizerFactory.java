@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -22,7 +21,7 @@ package org.mvel.optimizers;
 import org.mvel.CompileException;
 import org.mvel.optimizers.impl.asm.ASMAccessorOptimizer;
 import org.mvel.optimizers.impl.asm.ASMOptimizer;
-import org.mvel.optimizers.impl.refl.ReflectiveOptimizer;
+import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +34,7 @@ public class OptimizerFactory {
     private static final Map<String, AccessorOptimizer> accessorCompilers = new HashMap<String, AccessorOptimizer>();
 
     static {
-        accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveOptimizer());
+        accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveAccessorOptimizer());
         /**
          * By default, activate the JIT if ASM is present in the classpath
          */
