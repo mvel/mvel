@@ -18,18 +18,15 @@
  */
 package org.mvel.optimizers.impl.asm;
 
-import org.mvel.ExecutableStatement;
 import org.mvel.TokenIterator;
+import org.mvel.TokenSet;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.Optimizer;
 
 public class ASMOptimizer implements Optimizer {
 
-    public ExecutableStatement optimize(TokenIterator tokenIterator, Object staticContext, VariableResolverFactory factory) {
-        /**
-         * NO THIS DOESN'T DO ANYTHING YET.
-         */
 
+    public TokenIterator optimize(TokenSet tokens, Object ctx, VariableResolverFactory variableFactory) {
         return null;
     }
 

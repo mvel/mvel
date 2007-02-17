@@ -19,16 +19,16 @@
 
 package org.mvel;
 
-public class TokenMap implements TokenIterator {
+public class TokenSet implements TokenIterator {
     private Token firstToken;
     private Token current;
     private int size;
 
 
-    public TokenMap() {
+    public TokenSet() {
     }
 
-    public TokenMap(Token firstToken) {
+    public TokenSet(Token firstToken) {
         this.current = this.firstToken = firstToken;
     }
 
@@ -91,7 +91,6 @@ public class TokenMap implements TokenIterator {
         else
             return null;
     }
-
 
 //    public boolean peekNextTokenFlags(int flags) {
 //        return current != null && (flags & current.nextToken.getFlags()) != 0;
