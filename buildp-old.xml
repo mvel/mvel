@@ -29,15 +29,6 @@
         </javac>
     </target>
 
-    <!--<taskdef name="retroweaver" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">-->
-    <!--</taskdef>-->
-
-    <!--<target name="compile-1.4">-->
-    <!--<delete dir="build14"/>-->
-    <!--<mkdir dir="build14"/>-->
-    <!--<retroweaver srcdir="${build}" destdir="build14" target="1.4"/>-->
-    <!--</target>-->
-
     <target name="compile-nodebug" depends="init"
             description="compile the source ">
         <javac source="1.5" srcdir="${src}" destdir="${build}" optimize="true" debug="off">
