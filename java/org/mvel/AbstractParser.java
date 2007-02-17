@@ -209,11 +209,11 @@ public class AbstractParser {
                  */
 
                 switch (expr[start]) {
-                    case'i': //handle 'in'
-                        if (cursor < (length - 2) && expr[start + 1] == 'n' && isWhitespace(expr[start + 2])) {
-                            return createToken(expr, start, cursor, fields);
-                        }
-                        break;
+//                    case'i': //handle 'in'
+//                        if (cursor < (length - 2) && expr[start + 1] == 'n' && isWhitespace(expr[start + 2])) {
+//                            return createToken(expr, start, cursor, fields);
+//                        }
+//                        break;
                     case'n': //handle 'new'
                         if (cursor < (length - 3) && expr[start + 1] == 'e' && expr[start + 2] == 'w'
                                 && isWhitespace(expr[start + 3])) {
@@ -224,6 +224,12 @@ public class AbstractParser {
                             continue;
                         }
                         break;
+
+                    default:
+                        if (isIdentifierPart(expr[cursor])) {
+                            capture = true;
+                            continue;
+                        }
                 }
 
                 /**
