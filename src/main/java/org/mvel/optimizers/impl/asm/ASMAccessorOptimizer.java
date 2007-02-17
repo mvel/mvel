@@ -18,15 +18,18 @@
  */
 package org.mvel.optimizers.impl.asm;
 
-import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.*;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.impl.refl.Union;
-import org.mvel.util.*;
+import static org.mvel.util.ArrayTools.findFirst;
+import org.mvel.util.CollectionParser;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
+import org.mvel.util.PropertyTools;
+import org.mvel.util.StringAppender;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -355,15 +358,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             return this.thisRef;
         }
-        else if (Token.LITERALS.containsKey(property)) {
-            Object lit = Token.LITERALS.get(property);
+        else if (LITERALS.containsKey(property)) {
+            Object lit = LITERALS.get(property);
 
             if (lit instanceof Class) {
                 debug("LDC " + getDescriptor((Class) lit));
                 mv.visitLdcInsn(getType(getDescriptor((Class) lit)));
             }
 
-            return Token.LITERALS.get(property);
+            return LITERALS.get(property);
         }
         else {
             Object ts = tryStaticAccess();
@@ -1164,10 +1167,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         if (!nextToken().isOperator(Operator.ASSIGN))
             throw new OptimizationFailure("expected assignment operator");
-     //   greedy = true;
+        //   greedy = true;
 
         Token valTk = captureTokenToEOS();
-        
+
         ExecutableStatement value;
         if (valTk.isLiteral()) {
             value = new ExecutableLiteral(valTk.getLiteralValue());
@@ -1253,8 +1256,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 String s;
 
-                Class cls = Token.LITERALS.containsKey(s = new String(subset(property, 0, findFirst('(', property)))) ?
-                        ((Class) Token.LITERALS.get(s)) : ParseTools.createClass(s);
+                Class cls = LITERALS.containsKey(s = new String(subset(property, 0, findFirst('(', property)))) ?
+                        ((Class) LITERALS.get(s)) : ParseTools.createClass(s);
 
                 debug("NEW " + getDescriptor(cls));
                 mv.visitTypeInsn(NEW, getDescriptor(cls));
