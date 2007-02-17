@@ -27,7 +27,7 @@ public class ExpressionCompiler extends AbstractParser {
              * This kludge of code is to handle compile-time literal reduction.  We need to avoid
              * reducing for certain literals like, 'this', ternary and ternary else.
              */
-            if (tk.isLiteral() && tk.getLiteralValue() != Token.LITERALS.get("this")) {
+            if (tk.isLiteral() && tk.getLiteralValue() != LITERALS.get("this")) {
                 if ((tkOp = nextToken()) != null && tkOp.isOperator()
                         && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
 

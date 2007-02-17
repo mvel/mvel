@@ -58,4 +58,11 @@ public interface Operator {
     public static final int PROJECTION = 34;
     public static final int CONVERTABLE_TO = 35;
     public static final int END_OF_STMT = 36;
+
+    public static final int FOREACH = 37;
+    public static final int IF = 38;
+    public static final int ELSE = 39;
+    public static final int WHILE = 40;
+
+    public static final int FUNCTION = 100;
 }

@@ -207,9 +207,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             return this.thisRef;
         }
-        else if (Token.LITERALS.containsKey(property)) {
+        else if (LITERALS.containsKey(property)) {
             StaticReferenceAccessor accessor = new StaticReferenceAccessor();
-            accessor.setLiteral(Token.LITERALS.get(property));
+            accessor.setLiteral(LITERALS.get(property));
 
             addAccessorNode(accessor);
 
@@ -627,8 +627,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         if (constructorParms != null) {
             String s;
 
-            Class cls = Token.LITERALS.containsKey(s = new String(subset(expression, 0, ArrayTools.findFirst('(', expression)))) ?
-                    ((Class) Token.LITERALS.get(s)) : ParseTools.createClass(s);
+            Class cls = LITERALS.containsKey(s = new String(subset(expression, 0, ArrayTools.findFirst('(', expression)))) ?
+                    ((Class) LITERALS.get(s)) : ParseTools.createClass(s);
 
             ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
 

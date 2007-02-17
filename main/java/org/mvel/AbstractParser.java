@@ -1,12 +1,17 @@
 package org.mvel;
 
+import static org.mvel.Operator.*;
 import static org.mvel.util.ParseTools.debug;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
+import org.mvel.util.ThisLiteral;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.lang.Character.isWhitespace;
 import static java.util.Collections.synchronizedMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -28,8 +33,118 @@ public class AbstractParser {
 
     private static Map<String, char[]> EX_PRECACHE;
 
+    public static final Map<String, Object> LITERALS =
+            new HashMap<String, Object>(35, 0.6f);
+
+    public static final Map<String, Integer> OPERATORS =
+            new HashMap<String, Integer>(25 * 2, 0.6f);
+
     static {
         configureFactory();
+
+        /**
+         * Setup the basic literals
+         */
+        AbstractParser.LITERALS.put("true", TRUE);
+        AbstractParser.LITERALS.put("false", FALSE);
+
+        AbstractParser.LITERALS.put("null", null);
+        AbstractParser.LITERALS.put("nil", null);
+
+        AbstractParser.LITERALS.put("empty", BlankLiteral.INSTANCE);
+
+        AbstractParser.LITERALS.put("this", ThisLiteral.class);
+
+        /**
+         * Add System and all the class wrappers from the JCL.
+         */
+        LITERALS.put("System", System.class);
+
+        LITERALS.put("String", String.class);
+        LITERALS.put("Integer", Integer.class);
+        LITERALS.put("Long", Long.class);
+        LITERALS.put("Boolean", Boolean.class);
+        LITERALS.put("Short", Short.class);
+        LITERALS.put("Character", Character.class);
+        LITERALS.put("Double", Double.class);
+        LITERALS.put("Float", Float.class);
+        LITERALS.put("Math", Math.class);
+        LITERALS.put("Void", Void.class);
+        LITERALS.put("Object", Object.class);
+
+        LITERALS.put("Class", Class.class);
+        LITERALS.put("ClassLoader", ClassLoader.class);
+        LITERALS.put("Runtime", Runtime.class);
+        LITERALS.put("Thread", Thread.class);
+        LITERALS.put("Compiler", Compiler.class);
+        LITERALS.put("StringBuffer", StringBuffer.class);
+        LITERALS.put("ThreadLocal", ThreadLocal.class);
+        LITERALS.put("SecurityManager", SecurityManager.class);
+        LITERALS.put("StrictMath", StrictMath.class);
+
+        LITERALS.put("Array", java.lang.reflect.Array.class);
+
+        float version = Float.parseFloat(System.getProperty("java.version").substring(0, 2));
+        if (version >= 1.5) {
+            try {
+                LITERALS.put("StringBuilder", Class.forName("java.lang.StringBuilder"));
+            }
+            catch (Exception e) {
+                throw new RuntimeException("cannot resolve a built-in literal", e);
+            }
+        }
+
+
+        OPERATORS.put("+", ADD);
+        OPERATORS.put("-", SUB);
+        OPERATORS.put("*", MULT);
+        OPERATORS.put("**", POWER);
+        OPERATORS.put("/", DIV);
+        OPERATORS.put("%", MOD);
+        OPERATORS.put("==", EQUAL);
+        OPERATORS.put("!=", NEQUAL);
+        OPERATORS.put(">", GTHAN);
+        OPERATORS.put(">=", GETHAN);
+        OPERATORS.put("<", LTHAN);
+        OPERATORS.put("<=", LETHAN);
+        OPERATORS.put("&&", AND);
+        OPERATORS.put("and", AND);
+        OPERATORS.put("||", OR);
+        OPERATORS.put("or", CHOR);
+        OPERATORS.put("~=", REGEX);
+        OPERATORS.put("instanceof", INSTANCEOF);
+        OPERATORS.put("is", INSTANCEOF);
+        OPERATORS.put("contains", CONTAINS);
+        OPERATORS.put("soundslike", SOUNDEX);
+        OPERATORS.put("strsim", SIMILARITY);
+        OPERATORS.put("convertable_to", CONVERTABLE_TO);
+
+        OPERATORS.put("#", STR_APPEND);
+
+        OPERATORS.put("&", BW_AND);
+        OPERATORS.put("|", BW_OR);
+        OPERATORS.put("^", BW_XOR);
+        OPERATORS.put("<<", BW_SHIFT_LEFT);
+        OPERATORS.put("<<<", BW_USHIFT_LEFT);
+        OPERATORS.put(">>", BW_SHIFT_RIGHT);
+        OPERATORS.put(">>>", BW_USHIFT_RIGHT);
+
+        OPERATORS.put("?", Operator.TERNARY);
+        OPERATORS.put(":", TERNARY_ELSE);
+
+        OPERATORS.put("=", Operator.ASSIGN);
+
+        OPERATORS.put(";", END_OF_STMT);
+
+        OPERATORS.put("new", Operator.NEW);
+
+        OPERATORS.put("in", PROJECTION);
+
+        OPERATORS.put("foreach", FOREACH);
+        OPERATORS.put("while", WHILE);
+        OPERATORS.put("if", IF);
+        OPERATORS.put("else", ELSE);
+
     }
 
     static void configureFactory() {
@@ -109,7 +224,6 @@ public class AbstractParser {
                             continue;
                         }
                         break;
-
                 }
 
                 /**
