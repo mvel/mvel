@@ -2,13 +2,21 @@ package org.mvel.tests.perftests;
 
 import ognl.Ognl;
 import org.mvel.MVEL;
+import org.mvel.integration.impl.MapVariableResolver;
+import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.main.res.Base;
+import org.apache.commons.el.ExpressionEvaluatorImpl;
+import org.apache.commons.el.VariableResolverImpl;
 
+import javax.servlet.jsp.el.VariableResolver;
+import javax.servlet.jsp.el.Expression;
 import static java.lang.System.currentTimeMillis;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Performance Tests Comparing MVEL to OGNL with Same Expressions.
@@ -18,17 +26,19 @@ public class ELComparisons implements Runnable {
 
     public static int RUN_MVEL = 1;
     public static int RUN_OGNL = 1 << 1;
+    public static int RUN_COMMONS_EL = 1 << 2;
 
     private static int COMPILED = 1 << 30;
     private static int INTERPRETED = 1 << 31;
 
-    private static int ALL = RUN_MVEL + RUN_OGNL;
+    private static int ALL = RUN_MVEL + RUN_OGNL + RUN_COMMONS_EL;
 
     private static final int TESTNUM = 50000;
     private static final int TESTITER = 5;
 
     private long ognlTotal = 0;
     private long mvelTotal = 0;
+    private long commonElTotal = 0;
 
     private int testFlags = 0;
 
@@ -36,8 +46,9 @@ public class ELComparisons implements Runnable {
 
     private static List<PerfTest> tests = new ArrayList<PerfTest>();
 
-    static {
+    private static Map<String, Object> variables = new HashMap<String, Object>();
 
+    static {
 //        tests.add(new PerfTest("Simple String Pass-Through", "'Hello World'", ALL));
 //        tests.add(new PerfTest("Shallow Property", "data", ALL));
 //        tests.add(new PerfTest("Deep Property", "foo.bar.name", ALL));
@@ -45,17 +56,18 @@ public class ELComparisons implements Runnable {
 //        tests.add(new PerfTest("Static Field Access (OGNL)", "@java.lang.Integer@MAX_VALUE", RUN_OGNL));
 //        tests.add(new PerfTest("Inline Array Creation (MVEL)", "{'foo', 'bar'}", RUN_MVEL));
 //        tests.add(new PerfTest("Inline Array Creation (OGNL)", "new String[] {'foo', 'bar'}", RUN_OGNL));
-        tests.add(new PerfTest("Collection Access + Method Call", "funMap['foo'].happy()", ALL));
+        tests.add(new PerfTest("Collection Access + Method Call", "funMap['foo'].happy()",  RUN_MVEL));
 //        tests.add(new PerfTest("Boolean compare", "data == 'cat'", ALL));
-//        tests.add(new PerfTest("Object instantiation", "new String('Hello')", ALL));
-//        tests.add(new PerfTest("Method access", "readBack('this is a string')", ALL));
+//        tests.add(new PerfTest("Object instantiation", "new String('Hello')", RUN_OGNL + RUN_MVEL));
+//        tests.add(new PerfTest("Method access", "readBack('this is a string')", RUN_OGNL + RUN_MVEL));
 //        tests.add(new PerfTest("Arithmetic", "10 + 1 - 1", ALL));
     }
 
 
     public ELComparisons() {
-
-
+        variables.put("data", baseClass.data);
+        variables.put("foo", baseClass.foo);
+        variables.put("funMap", baseClass.funMap);
     }
 
 
@@ -151,7 +163,10 @@ public class ELComparisons implements Runnable {
                 System.out.println("MVEL Total Runtime (ms): " + mvelTotals + " :: " + new BigDecimal(mvelTotals).divide(new BigDecimal(ognlTotals), 4, RoundingMode.HALF_UP));
 
             }
-
+        }
+        else {
+            omc.setTestFlags(ALL + INTERPRETED + COMPILED);
+            omc.run();
         }
 
     }
@@ -178,21 +193,21 @@ public class ELComparisons implements Runnable {
             System.out.println("Iterations           : " + count);
         }
 
+        long time;
+        long mem;
+        long total = 0;
+        long[] res = new long[TESTITER];
+
         if ((testFlags & INTERPRETED) != 0) {
 
             if (!silent) System.out.println("Interpreted Results  :");
 
-            long time;
-            long mem;
-            long total = 0;
-            long[] res = new long[TESTITER];
 
-
-            if ((testFlags & RUN_OGNL) != 0 && ((total & RUN_OGNL)) != 0) {
+            if ((testFlags & RUN_OGNL) != 0 && ((exFlags & RUN_OGNL)) != 0) {
                 try {
                     // unbenched warm-up
                     for (int i = 0; i < count; i++) {
-                        Ognl.getValue(expression, baseClass);
+                        Ognl.getValue(expression, variables, baseClass);
                     }
 
                     System.gc();
@@ -202,7 +217,7 @@ public class ELComparisons implements Runnable {
 
                     for (int reps = 0; reps < TESTITER; reps++) {
                         for (int i = 0; i < count; i++) {
-                            Ognl.getValue(expression, baseClass);
+                            Ognl.getValue(expression, variables, baseClass);
                         }
 
                         if (reps == 0) res[0] = total += currentTimeMillis() - time;
@@ -229,9 +244,11 @@ public class ELComparisons implements Runnable {
             total = 0;
 
             if ((testFlags & RUN_MVEL) != 0 && ((exFlags & RUN_MVEL) != 0)) {
+                MapVariableResolverFactory resolver = new MapVariableResolverFactory(variables);
+
                 try {
                     for (int i = 0; i < count; i++) {
-                        MVEL.eval(expression, baseClass);
+                        MVEL.eval(expression, resolver);
                     }
 
                     System.gc();
@@ -240,7 +257,7 @@ public class ELComparisons implements Runnable {
                     mem = Runtime.getRuntime().freeMemory();
                     for (int reps = 0; reps < TESTITER; reps++) {
                         for (int i = 0; i < count; i++) {
-                            MVEL.eval(expression, baseClass);
+                            MVEL.eval(expression, resolver);
                         }
 
                         if (reps == 0) res[0] = total += currentTimeMillis() - time;
@@ -253,6 +270,8 @@ public class ELComparisons implements Runnable {
 
                 }
                 catch (Exception e) {
+                    e.printStackTrace();
+
                     if (!silent)
                         System.out.println("(MVEL)               : <<COULD NOT EXECUTE>>");
                 }
@@ -262,17 +281,61 @@ public class ELComparisons implements Runnable {
                 mvelTotal += total;
             }
 
+
         }
 
-        if ((testFlags & COMPILED) != 0) {
-            runTestCompiled(name, test.getOgnlCompiled(), test.getMvelCompiled(), count, exFlags);
+
+        if ((testFlags & RUN_COMMONS_EL) != 0 && ((exFlags & RUN_COMMONS_EL) != 0)) {
+            VariableResolver vars = new JSPMapVariableResolver(variables);
+
+            String commonsEx = "${" + expression + "}";
+
+            try {
+                for (int i = 0; i < count; i++) {
+                    new ExpressionEvaluatorImpl(true).parseExpression(commonsEx, Object.class, null).evaluate(vars);
+                }
+
+                System.gc();
+
+                time = currentTimeMillis();
+                mem = Runtime.getRuntime().freeMemory();
+                for (int reps = 0; reps < TESTITER; reps++) {
+                    for (int i = 0; i < count; i++) {
+                        new ExpressionEvaluatorImpl(true).parseExpression(commonsEx, Object.class, null).evaluate(vars);
+                    }
+
+                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
+                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
+                }
+
+                if (!silent)
+                    System.out.println("(CommonsEL)          : " + new BigDecimal(((currentTimeMillis() - time))).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+                            + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
+
+            }
+            catch (Exception e) {
+                if (!silent)
+                    System.out.println("(CommonsEL)          : <<COULD NOT EXECUTE>>");
+            }
         }
+
+        synchronized (this) {
+            commonElTotal += total;
+        }
+
+
+        if ((testFlags & COMPILED) != 0) {
+            runTestCompiled(name, test.getOgnlCompiled(), test.getMvelCompiled(), test.getElCompiled(), count, exFlags);
+        }
+
+        total = 0;
+
 
         if (!silent)
             System.out.println("------------------------------------------------");
     }
 
-    public void runTestCompiled(String name, Object compiledOgnl, Object compiledMvel, int count, int totest) throws Exception {
+    public void runTestCompiled(String name, Object compiledOgnl, Object compiledMvel, Expression compiledEl, int count, int exFlags) throws Exception {
 
         long time;
         long mem;
@@ -284,11 +347,11 @@ public class ELComparisons implements Runnable {
             System.out.println("Compiled Results     :");
 
 
-        if ((testFlags & RUN_OGNL) != 0 && ((totest & RUN_OGNL) != 0)) {
+        if ((testFlags & RUN_OGNL) != 0 && ((exFlags & RUN_OGNL) != 0)) {
             try {
                 //    compiled = Ognl.parseExpression(expression);
                 for (int i = 0; i < count; i++) {
-                    Ognl.getValue(compiledOgnl, baseClass);
+                    Ognl.getValue(compiledOgnl, variables, baseClass);
                 }
 
                 System.gc();
@@ -298,7 +361,7 @@ public class ELComparisons implements Runnable {
 
                 for (int reps = 0; reps < TESTITER; reps++) {
                     for (int i = 0; i < count; i++) {
-                        Ognl.getValue(compiledOgnl, baseClass);
+                        Ognl.getValue(compiledOgnl, variables, baseClass);
                     }
 
                     if (reps == 0) res[0] = total += currentTimeMillis() - time;
@@ -322,10 +385,10 @@ public class ELComparisons implements Runnable {
 
         total = 0;
 
-        if ((testFlags & RUN_MVEL) != 0 && ((totest & RUN_MVEL)) != 0) {
+        if ((testFlags & RUN_MVEL) != 0 && ((exFlags & RUN_MVEL)) != 0) {
+            MapVariableResolverFactory resolver = new MapVariableResolverFactory(variables);
 
             try {
-                //    compiled = MVEL.compileExpression(expression);
                 for (int i = 0; i < count; i++) {
                     MVEL.executeExpression(compiledMvel, baseClass);
                 }
@@ -358,6 +421,43 @@ public class ELComparisons implements Runnable {
             synchronized (this) {
                 mvelTotal += total;
             }
+
+            if ((testFlags & RUN_COMMONS_EL) != 0 && ((exFlags & RUN_COMMONS_EL) != 0)) {
+                VariableResolver vars = new JSPMapVariableResolver(variables);
+                try {
+                    for (int i = 0; i < count; i++) {
+                        compiledEl.evaluate(vars);
+                    }
+
+                    System.gc();
+
+                    time = currentTimeMillis();
+                    mem = Runtime.getRuntime().freeMemory();
+                    for (int reps = 0; reps < TESTITER; reps++) {
+                        for (int i = 0; i < count; i++) {
+                            compiledEl.evaluate(vars);
+                        }
+
+                        if (reps == 0) res[0] = total += currentTimeMillis() - time;
+                        else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
+                    }
+
+                    if (!silent)
+                        System.out.println("(CommonsEL Compiled) : " + new BigDecimal(((currentTimeMillis() - time))).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+                                + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
+
+                }
+                catch (Exception e) {
+                    if (!silent)
+                        System.out.println("(CommonsEL Compiled) : <<COULD NOT EXECUTE>>");
+                }
+            }
+
+            synchronized (this) {
+                commonElTotal += total;
+            }
+
+
         }
     }
 

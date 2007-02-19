@@ -2,6 +2,9 @@ package org.mvel.tests.perftests;
 
 import ognl.Ognl;
 import org.mvel.MVEL;
+import org.apache.commons.el.ExpressionEvaluatorImpl;
+
+import javax.servlet.jsp.el.Expression;
 
 /**
  * @author Christopher Brock
@@ -13,7 +16,7 @@ public class PerfTest {
 
     private Object ognlCompiled;
     private Object mvelCompiled;
-
+    private Expression elCompiled;
 
     public String getName() {
         return name;
@@ -57,6 +60,14 @@ public class PerfTest {
     }
 
 
+    public Expression getElCompiled() {
+        return elCompiled;
+    }
+
+    public void setElCompiled(Expression elCompiled) {
+        this.elCompiled = elCompiled;
+    }
+
     public PerfTest(String name, String expression, int runFlags) {
         this.name = name;
         this.expression = expression;
@@ -73,5 +84,17 @@ public class PerfTest {
             throw new RuntimeException(e);
         }
 
+        ExpressionEvaluatorImpl factory = new ExpressionEvaluatorImpl();
+
+        try {
+            if ((runFlags & ELComparisons.RUN_COMMONS_EL) != 0)
+                this.elCompiled = factory.parseExpression("${" + expression + "}", Object.class, null);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
     }
+
+
 }
