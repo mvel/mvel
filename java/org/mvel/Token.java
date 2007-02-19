@@ -94,7 +94,12 @@ public class Token implements Cloneable, Serializable {
 
 
     private String getRemainder() {
-        return (fields & DEEP_PROPERTY) != 0 ? new String(name, firstUnion + 1, name.length - firstUnion - 1) : null;
+        return (fields & DEEP_PROPERTY) != 0 ? new String(name, firstUnion + 1, name.length - firstUnion) : null;
+    }
+
+    private String getAbsoluteRemainder() {
+        return (fields & COLLECTION) != 0 ? new String(name, endOfName, name.length - endOfName)
+                : ((fields & DEEP_PROPERTY) != 0 ? new String(name, firstUnion + 1, name.length - firstUnion - 1) : null);
     }
 
     public char[] getNameAsArray() {
@@ -254,13 +259,13 @@ public class Token implements Cloneable, Serializable {
                 Object literal = AbstractParser.LITERALS.get(s);
                 if (literal == ThisLiteral.class) literal = thisValue;
 
-                return valRet(get(getRemainder(), literal, factory, thisValue));
+                return valRet(get(getAbsoluteRemainder(), literal, factory, thisValue));
             }
             else if (factory != null && factory.isResolveable(s)) {
                 /**
                  * The root of the DEEP PROPERTY is a local or global var.
                  */
-                return valRet(get(getRemainder(), factory.getVariableResolver(s).getValue(), factory, thisValue));
+                return valRet(get(getAbsoluteRemainder(), factory.getVariableResolver(s).getValue(), factory, thisValue));
 
             }
             else if (ctx != null) {
