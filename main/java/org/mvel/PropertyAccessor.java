@@ -375,14 +375,15 @@ public class PropertyAccessor {
                 return ((Method) member).invoke(ctx, EMPTYARG);
             }
             catch (IllegalAccessException e) {
-                try {
-                    ((Method) member).setAccessible(true);
-                    return ((Method) member).invoke(ctx, EMPTYARG);
+                synchronized (member) {
+                    try {
+                        ((Method) member).setAccessible(true);
+                        return ((Method) member).invoke(ctx, EMPTYARG);
+                    }
+                    finally {
+                        ((Method) member).setAccessible(false);
+                    }
                 }
-                finally {
-                    ((Method) member).setAccessible(false);
-                }
-
             }
 
         }
