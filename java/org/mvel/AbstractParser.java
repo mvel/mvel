@@ -217,36 +217,7 @@ public class AbstractParser {
 
                             continue;
                         case IF:
-                            fields |= Token.BLOCK_IF;
-
-                            skipWhitespace();
-
-                            if (expr[cursor] != '(') {
-                                throw new CompileException("expected (<condition>) after: " + t);
-                            }
-                            else {
-                                int startCond = ++cursor;
-                                int endCond = balancedCapture('(');
-
-                                int blockStart = ++cursor;
-                                int blockEnd;
-
-                                skipWhitespace();
-
-                                if (expr[cursor] == '{') {
-                                    if ((blockEnd = balancedCapture('{')) == -1) {
-                                        throw new CompileException("unbalanced braces { }");
-                                    }
-                                }
-                                else {
-                                    captureToEOLorOF();
-                                    blockEnd = cursor;
-                                }
-
-                                return createBlockToken(expr, startCond, endCond, trimRight(blockStart + 2),
-                                        trimLeft(blockEnd));
-                            }
-
+                            return captureIfBlock(expr);
                     }
                 }
                 else if (isIdentifierPart(expr[cursor])) {
@@ -631,6 +602,102 @@ public class AbstractParser {
         System.arraycopy(expr, blockStart, block, 0, block.length);
 
         return new IfToken(cond, block, fields);
+    }
+
+    private IfToken captureIfBlock(final char[] expr) {
+        fields |= Token.BLOCK_IF;
+
+        boolean cond = true;
+        IfToken tk = null;
+        do {
+            if (tk != null) {
+                while (cursor < length && !isWhitespace(expr[cursor])) cursor++;
+
+                skipWhitespace();
+
+                if (expr[cursor] != '{') {
+                    if (expr[cursor] == 'i' && expr[++cursor] == 'f'
+                            && (isWhitespace(expr[++cursor]) || expr[cursor] == '{')) {
+                        cond = true;
+                    }
+                    else {
+                        throw new CompileException("expected 'if'");
+                    }
+                }
+                else {
+                    cond = false;
+                }
+            }
+
+            if ((tk = _captureIfToken(tk, expr, cond)).getElseBlock() != null) {
+                return tk;
+            }
+
+            cursor++;
+        }
+        while (blockContinues());
+
+        return tk;
+    }
+
+    private IfToken _captureIfToken(IfToken node, final char[] expr, boolean cond) {
+        skipWhitespace();
+        int startCond = 0;
+        int endCond = 0;
+
+        if (cond) {
+            startCond = ++cursor;
+            endCond = balancedCapture('(');
+        }
+
+        int blockStart = ++cursor;
+        int blockEnd;
+
+        skipWhitespace();
+
+        if (expr[cursor] == '{') {
+            if ((blockEnd = balancedCapture('{')) == -1) {
+                throw new CompileException("unbalanced braces { }");
+            }
+        }
+        else {
+            captureToEOLorOF();
+            blockEnd = cursor;
+        }
+
+        if (node != null) {
+            if (!cond) {
+                blockStart = trimRight(blockStart + 1);
+                blockEnd = trimLeft(blockEnd - 1);
+                char[] block = new char[blockEnd - blockStart];
+                System.arraycopy(expr, blockStart, block, 0, block.length);
+                node.setElseBlock(block);
+                return node;
+            }
+            else {
+
+                IfToken tk = createBlockToken(expr, startCond, endCond, trimRight(blockStart + 2),
+                        trimLeft(blockEnd));
+
+                node.setElseIf(tk);
+
+                return tk;
+            }
+        }
+        else {
+            return createBlockToken(expr, startCond, endCond, trimRight(blockStart + 2),
+                    trimLeft(blockEnd));
+        }
+
+    }
+
+    protected boolean blockContinues() {
+        if ((cursor + 5) < length) {
+            skipWhitespace();
+            return expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
+                    && isWhitespace(expr[cursor + 4]);
+        }
+        return false;
     }
 
     protected void captureToEOS() {
