@@ -34,7 +34,7 @@ public class ForEachToken extends Token {
         LocalVariableResolverFactory local = new LocalVariableResolverFactory(locals);
         local.setNextFactory(factory);
 
-        Object ret;
+        Object ret = null;
 
         Object iterCond = condition.getValue(ctx, thisValue, factory);
 
@@ -42,22 +42,22 @@ public class ForEachToken extends Token {
         if (iterCond instanceof Iterable) {
             for (Object o : (Iterable) iterCond) {
                 locals.put(item, o);
-                if ((ret = compiledBlock.getValue(ctx, thisValue, local)) != null) {
-                    return ret;
-                }
+                ret = compiledBlock.getValue(ctx, thisValue, local);
             }
         }
         else if (iterCond instanceof Object[]) {
             for (Object o : (Object[]) iterCond) {
                 locals.put(item, o);
-                if ((ret = compiledBlock.getValue(ctx, thisValue, local)) != null) {
-                    return ret;
-                }
+                ret = compiledBlock.getValue(ctx, thisValue, local);
             }
         }
 
+        return ret == null ? Void.class : ret;
+    }
 
-        return Void.class;
+
+    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        return getReducedValueAccelerated(ctx, thisValue, factory);
     }
 
     private void handleCond(char[] condition) {
