@@ -1361,4 +1361,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     public Accessor optimizeFold(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         throw new OptimizationNotSupported("JIT does not yet support fold operations.");
     }
+
+
+    public Accessor optimizeReturn(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        throw new OptimizationNotSupported("JIT does not yet support return");
+    }
 }

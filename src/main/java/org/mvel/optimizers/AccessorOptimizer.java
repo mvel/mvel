@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -24,9 +23,16 @@ import org.mvel.integration.VariableResolverFactory;
 
 public interface AccessorOptimizer {
     public Accessor optimize(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef);
+
     public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
+
     public Accessor optimizeAssignment(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
+
     public Accessor optimizeObjectCreation(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
+
     public Accessor optimizeFold(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
+
+    public Accessor optimizeReturn(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
+
     public Object getResultOptPass();
 }

@@ -678,4 +678,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return ca;
         }
     }
+
+
+    public Accessor optimizeReturn(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(property);
+        Return ret = new Return(stmt);
+        val = stmt.getValue(ctx, thisRef, factory);
+
+        return ret;
+    }
 }

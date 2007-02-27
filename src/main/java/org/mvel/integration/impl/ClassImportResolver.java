@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -62,4 +61,7 @@ public class ClassImportResolver implements VariableResolver {
     }
 
 
+    public void setValue(Object value) {
+
+    }
 }

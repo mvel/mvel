@@ -36,12 +36,26 @@ public class ForEachToken extends Token {
 
         Object ret;
 
-        for (Object o : ((Iterable) condition.getValue(ctx, thisValue, factory))) {
-            locals.put(item, o);
-            if ((ret = compiledBlock.getValue(ctx, thisValue, local)) != null) {
-                return ret;
+        Object iterCond = condition.getValue(ctx, thisValue, factory);
+
+
+        if (iterCond instanceof Iterable) {
+            for (Object o : (Iterable) iterCond) {
+                locals.put(item, o);
+                if ((ret = compiledBlock.getValue(ctx, thisValue, local)) != null) {
+                    return ret;
+                }
             }
         }
+        else if (iterCond instanceof Object[]) {
+            for (Object o : (Object[]) iterCond) {
+                locals.put(item, o);
+                if ((ret = compiledBlock.getValue(ctx, thisValue, local)) != null) {
+                    return ret;
+                }
+            }
+        }
+
 
         return Void.class;
     }

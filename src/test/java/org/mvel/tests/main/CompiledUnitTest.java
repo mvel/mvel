@@ -539,6 +539,10 @@ public class CompiledUnitTest extends TestCase {
         parseDirect("foreach (bleh : list) { System.out.println(bleh) }");
     }
 
+    public void testForeAch2() {
+        assertEquals(5, parseDirect("total = 0; a = {1,2,3}; foreach (item : a) { total = total + item }; total"));
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile(true);
