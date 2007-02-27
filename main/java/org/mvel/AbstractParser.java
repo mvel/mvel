@@ -205,8 +205,8 @@ public class AbstractParser {
                 cursor++;
             }
             else if (capture) {
-                String t = new String(expr, start, cursor - start);
-                if (OPERATORS.containsKey(t)) {
+                String t;
+                if (OPERATORS.containsKey(t = new String(expr, start, cursor - start))) {
                     switch (OPERATORS.get(t)) {
                         case NEW:
                             fields |= Token.NEW;
@@ -214,8 +214,8 @@ public class AbstractParser {
                         case RETURN:
                             start = cursor + 1;
                             capture = false;
-
                             continue;
+
                         case IF:
                             return captureIfBlock(expr);
                     }
