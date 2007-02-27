@@ -211,8 +211,12 @@ public class AbstractParser {
                     switch (OPERATORS.get(t)) {
                         case NEW:
                             fields |= Token.NEW;
+                            start = cursor + 1;
+                            capture = false;
+                            continue;
 
                         case RETURN:
+                            fields |= Token.RETURN;
                             start = cursor + 1;
                             capture = false;
                             continue;

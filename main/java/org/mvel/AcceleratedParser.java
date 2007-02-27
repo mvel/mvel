@@ -32,36 +32,39 @@ public class AcceleratedParser extends AbstractParser {
      * @return -
      */
     public Object execute(Object ctx, VariableResolverFactory variableFactory) {
-        Token tk;
-        Integer operator;
+        try {
+            Token tk;
+            Integer operator;
 
-        while ((tk = tokens.nextToken()) != null) {
-            //     assert debug("\nSTART_FRAME <<" + tk + ">> STK_SIZE=" + stk.size() + "; STK_PEEK=" + stk.peek() + "; TOKEN#=" + tokens.index());
-            if (stk.isEmpty()) {
-                stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
-            }
+            while ((tk = tokens.nextToken()) != null) {
+                //     assert debug("\nSTART_FRAME <<" + tk + ">> STK_SIZE=" + stk.size() + "; STK_PEEK=" + stk.peek() + "; TOKEN#=" + tokens.index());
+                if (stk.isEmpty()) {
+                    stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
+                }
 
-            if (!tk.isOperator()) {
-                continue;
-            }
-
-            switch (reduceBinary(operator = tk.getOperator())) {
-                case FRAME_END:
-                    return stk.pop();
-                case FRAME_CONTINUE:
-                    break;
-                case FRAME_NEXT:
+                if (!tk.isOperator()) {
                     continue;
-                case FRAME_RETURN:
-                    return nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory);
+                }
+
+                switch (reduceBinary(operator = tk.getOperator())) {
+                    case FRAME_END:
+                        return stk.pop();
+                    case FRAME_CONTINUE:
+                        break;
+                    case FRAME_NEXT:
+                        continue;
+                }
+
+                stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
+
+                reduceTrinary();
             }
 
-            stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
-
-            reduceTrinary();
+            return stk.peek();
         }
-
-        return stk.peek();
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
     }
 
     /**
