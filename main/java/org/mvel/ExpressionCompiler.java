@@ -100,14 +100,21 @@ public class ExpressionCompiler extends AbstractParser {
                     }
                 }
                 else {
-                    if (verifying && tk.isIdentifier()) {
-                        inputs.add(tk.getName());
-                    }
+
 
                     tokenSet.addTokenNode(tk);
                     if (tkOp != null) tokenSet.addTokenNode(tkOp);
                     continue;
                 }
+            }
+
+            if (verifying && tk.isIdentifier()) {
+                inputs.add(tk.getAbsoluteName());
+
+                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray());
+                propVerifier.analyze();
+
+                inputs.addAll(propVerifier.getInputs());
             }
 
             tokenSet.addTokenNode(tk);

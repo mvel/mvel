@@ -99,10 +99,9 @@ public class Token implements Cloneable, Serializable {
         return null;
     }
 
-
-    private String getRemainder() {
-        return (fields & DEEP_PROPERTY) != 0 ? new String(name, firstUnion + 1, name.length - firstUnion) : null;
-    }
+//    private String getRemainder() {
+//        return (fields & DEEP_PROPERTY) != 0 ? new String(name, firstUnion + 1, name.length - firstUnion) : null;
+//    }
 
     private String getAbsoluteRemainder() {
         return (fields & COLLECTION) != 0 ? new String(name, endOfName, name.length - endOfName)
@@ -127,8 +126,8 @@ public class Token implements Cloneable, Serializable {
 
     }
 
-    private String getAbsoluteName() {
-        if ((fields & COLLECTION) != 0) {
+    public String getAbsoluteName() {
+        if ((fields & (COLLECTION | DEEP_PROPERTY)) != 0) {
             return new String(name, 0, getAbsoluteFirstPart());
         }
         else {
