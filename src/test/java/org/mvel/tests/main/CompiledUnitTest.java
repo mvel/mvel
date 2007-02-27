@@ -536,10 +536,10 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testVarInputs() {
-        ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble)");
+        ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile(true);
 
-        System.out.println(compiler.getInputs());
+        System.out.println(compiler.getInputs() + " >>> " + compiler.getLocals());
     }
 
     public Object parseDirect(String ex) {
