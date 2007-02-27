@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 public class ExpressionCompiler extends AbstractParser {
     private final Stack stk = new ExecutionStack();
     private List<String> inputs;
+    private List<String> locals;
 
     public CompiledExpression compile(boolean verifying) {
         Token tk;
@@ -20,7 +21,10 @@ public class ExpressionCompiler extends AbstractParser {
 
         boolean firstLA;
 
-        if (verifying) inputs = new LinkedList<String>();
+        if (verifying) {
+            inputs = new LinkedList<String>();
+            locals = new LinkedList<String>();
+        }
 
         while ((tk = nextToken()) != null) {
             if (tk.isSubeval()) {
@@ -108,16 +112,40 @@ public class ExpressionCompiler extends AbstractParser {
                 }
             }
 
-            if (verifying && tk.isIdentifier()) {
-                inputs.add(tk.getAbsoluteName());
+            if (verifying) {
+                if (tk.isAssignment()) {
+                    char[] assign = tk.getNameAsArray();
+                    int c = 0;
+                    while (c < assign.length && assign[c] != '=') c++;
 
-                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray());
-                propVerifier.analyze();
+                    String name = new String(assign, 0, c++).trim();
 
-                inputs.addAll(propVerifier.getInputs());
+                    ExpressionCompiler subCompiler =
+                            new ExpressionCompiler(new String(assign, c, assign.length - c).trim());
+
+                    subCompiler.compile(true);
+
+                    inputs.addAll(subCompiler.getInputs());
+
+
+                }
+                else if (tk.isIdentifier()) {
+                    inputs.add(tk.getAbsoluteName());
+
+                    PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray());
+                    propVerifier.analyze();
+
+                    inputs.addAll(propVerifier.getInputs());
+                }
             }
 
             tokenSet.addTokenNode(tk);
+        }
+
+        if (verifying) {
+            for (String s : locals) {
+                inputs.remove(s);
+            }
         }
 
         return new CompiledExpression(new FastTokenIterator(tokenSet));
@@ -270,8 +298,9 @@ public class ExpressionCompiler extends AbstractParser {
         return inputs;
     }
 
-    public void setInputs(List<String> inputs) {
-        this.inputs = inputs;
+
+    public List<String> getLocals() {
+        return locals;
     }
 
     public ExpressionCompiler(String expression) {
