@@ -31,26 +31,19 @@ public class IfToken extends Token {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        switch ((fields & BLOCK_IF)) {
-            case BLOCK_IF:
-                if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
-                    Object o = compiledBlock.getValue(ctx, thisValue, factory);
-                    if (o == null) {
-                        return Void.class;
-                    }
-                    else {
-                        return o;
-                    }
-                }
-                else if (elseIf != null)
-                    return elseIf.getReducedValueAccelerated(ctx, thisValue, factory);
-                else
-                    return elseBlock.getValue(ctx, thisValue, factory);
-
-            default:
-                throw new RuntimeException("critical execution error: unknown block state: " + fields);
+        if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
+            Object o = compiledBlock.getValue(ctx, thisValue, factory);
+            if (o == null) {
+                return Void.class;
+            }
+            else {
+                return o;
+            }
         }
-
+        else if (elseIf != null)
+            return elseIf.getReducedValueAccelerated(ctx, thisValue, factory);
+        else
+            return elseBlock.getValue(ctx, thisValue, factory);
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {

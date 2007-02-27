@@ -535,11 +535,21 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(true, parseDirect("if (false) { return false; } else if (100 < 50) { return false; } else if (10 > 5) { return true; }"));
     }
 
+    public void testForEach() {
+        parseDirect("foreach (bleh : list) { System.out.println(bleh) }");
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile(true);
 
-        System.out.println(compiler.getInputs() + " >>> " + compiler.getLocals());
+        assertTrue(compiler.getInputs().contains("test"));
+        assertTrue(compiler.getInputs().contains("foo"));
+        assertTrue(compiler.getInputs().contains("bo"));
+        assertTrue(compiler.getInputs().contains("trouble"));
+
+        assertTrue(compiler.getLocals().contains("bleh"));
+        assertTrue(compiler.getLocals().contains("twa"));
     }
 
     public Object parseDirect(String ex) {
