@@ -298,7 +298,6 @@ public class ExpressionCompiler extends AbstractParser {
         return inputs;
     }
 
-
     public List<String> getLocals() {
         return locals;
     }
