@@ -81,12 +81,6 @@ public class PropertyVerifier {
 
     }
 
-
-    private String captureNext() {
-        nextToken();
-        return capture();
-    }
-
     private int nextToken() {
         switch (property[start = cursor]) {
             case'[':
