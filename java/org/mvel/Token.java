@@ -502,6 +502,10 @@ public class Token implements Cloneable, Serializable {
         return ((fields & NEW) != 0);
     }
 
+    public boolean isAssignment() {
+        return ((fields & ASSIGN) != 0);
+    }
+
 }
 
 
