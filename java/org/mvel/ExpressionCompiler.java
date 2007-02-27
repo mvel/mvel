@@ -118,7 +118,7 @@ public class ExpressionCompiler extends AbstractParser {
                     int c = 0;
                     while (c < assign.length && assign[c] != '=') c++;
 
-                    String name = new String(assign, 0, c++).trim();
+                    locals.add(new String(assign, 0, c++).trim());
 
                     ExpressionCompiler subCompiler =
                             new ExpressionCompiler(new String(assign, c, assign.length - c).trim());
