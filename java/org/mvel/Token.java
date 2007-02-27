@@ -60,6 +60,8 @@ public class Token implements Cloneable, Serializable {
     public static final int BLOCK_IF = 1 << 23;
     public static final int BLOCK_FOREACH = 1 << 24;
 
+    public static final int RETURN = 1 << 31;
+
 
     protected int firstUnion;
     protected int endOfName;
@@ -100,9 +102,6 @@ public class Token implements Cloneable, Serializable {
         return null;
     }
 
-//    private String getRemainder() {
-//        return (fields & DEEP_PROPERTY) != 0 ? new String(name, firstUnion + 1, name.length - firstUnion) : null;
-//    }
 
     private String getAbsoluteRemainder() {
         return (fields & COLLECTION) != 0 ? new String(name, endOfName, name.length - endOfName)
@@ -185,6 +184,11 @@ public class Token implements Cloneable, Serializable {
                 optimizer = OptimizerFactory.getDefaultAccessorCompiler();
                 accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
+            }
+            else if ((fields & RETURN) != 0) {
+                optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+                accessor = optimizer.optimizeReturn(name, ctx, thisValue, factory);
+                throw new EndWithValue(optimizer.getResultOptPass());
             }
             else {
                 try {
@@ -398,6 +402,10 @@ public class Token implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     private void setName(char[] name) {
+        if ((fields & RETURN) != 0) {
+            this.name = name;
+            return;
+        }
         if ((fields & STR_LITERAL) != 0) {
             fields |= LITERAL;
 

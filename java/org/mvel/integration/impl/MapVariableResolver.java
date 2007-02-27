@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -59,6 +58,11 @@ public class MapVariableResolver implements VariableResolver {
         }
 
         return knownType;
+    }
+
+
+    public void setValue(Object value) {
+        variableMap.put(name, value);
     }
 
     public Object getValue() {

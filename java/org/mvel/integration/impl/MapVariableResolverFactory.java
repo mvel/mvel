@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -40,8 +39,15 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
     }
 
     public VariableResolver createVariable(String name, Object value) {
-        variables.put(name, value);
-        return new MapVariableResolver(variables, name);
+        if (nextFactory != null && nextFactory.isResolveable(name)) {
+            VariableResolver vr = nextFactory.getVariableResolver(name);
+            vr.setValue(value);
+            return vr;
+        }
+        else {
+            variables.put(name, value);
+            return new MapVariableResolver(variables, name);
+        }
     }
 
     public VariableResolverFactory getNextFactory() {
@@ -53,8 +59,12 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
     }
 
     public VariableResolver getVariableResolver(String name) {
-        return isResolveable(name) ? variableResolvers.get(name) :
-                nextFactory != null ? nextFactory.getVariableResolver(name) : null;
+        if (isResolveable(name)) {
+            if (variableResolvers != null && variableResolvers.containsKey(name)) return variableResolvers.get(name);
+            else return nextFactory.getVariableResolver(name);
+        }
+        return null;
+
     }
 
 
@@ -75,7 +85,7 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
 
     public void pack() {
         if (variables != null) {
-            if (variableResolvers == null) variableResolvers = new HashMap<String,VariableResolver>();
+            if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
             for (String s : variables.keySet()) {
                 variableResolvers.put(s, new MapVariableResolver(variables, s));
             }

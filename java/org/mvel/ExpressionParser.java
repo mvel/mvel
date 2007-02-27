@@ -47,13 +47,18 @@ public class ExpressionParser extends AbstractParser {
 
 
     Object parse() {
-        stk.clear();
+        try {
+            stk.clear();
 
-        cursor = 0;
+            cursor = 0;
 
-        parseAndExecuteInterpreted();
+            parseAndExecuteInterpreted();
 
-        return handleParserEgress(stk.peek(), returnBigDecimal);
+            return handleParserEgress(stk.peek(), returnBigDecimal);
+        }
+        catch (EndWithValue end) {
+            return handleParserEgress(end.getValue(), returnBigDecimal);
+        }
     }
 
     /**
