@@ -1,15 +1,17 @@
 package org.mvel;
 
-import static org.mvel.MVEL.compileExpression;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.doOperations;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
     private final Stack stk = new ExecutionStack();
+    private List<String> inputs;
 
-    public TokenIterator compile() {
+    public CompiledExpression compile(boolean verifying) {
         Token tk;
         Token tkOp;
         Token tkLA;
@@ -18,9 +20,15 @@ public class ExpressionCompiler extends AbstractParser {
 
         boolean firstLA;
 
+        if (verifying) inputs = new LinkedList<String>();
+
         while ((tk = nextToken()) != null) {
             if (tk.isSubeval()) {
-                tk.setAccessor((ExecutableStatement) compileExpression(tk.getNameAsArray()));
+                ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
+                tk.setAccessor(subCompiler.compile(verifying));
+
+                if (verifying)
+                    inputs.addAll(subCompiler.getInputs());
             }
 
             /**
@@ -92,6 +100,10 @@ public class ExpressionCompiler extends AbstractParser {
                     }
                 }
                 else {
+                    if (verifying && tk.isIdentifier()) {
+                        inputs.add(tk.getName());
+                    }
+
                     tokenSet.addTokenNode(tk);
                     if (tkOp != null) tokenSet.addTokenNode(tkOp);
                     continue;
@@ -101,7 +113,7 @@ public class ExpressionCompiler extends AbstractParser {
             tokenSet.addTokenNode(tk);
         }
 
-        return new FastTokenIterator(tokenSet);
+        return new CompiledExpression(new FastTokenIterator(tokenSet));
     }
 
 
@@ -246,6 +258,14 @@ public class ExpressionCompiler extends AbstractParser {
         return (Integer) o;
     }
 
+
+    public List<String> getInputs() {
+        return inputs;
+    }
+
+    public void setInputs(List<String> inputs) {
+        this.inputs = inputs;
+    }
 
     public ExpressionCompiler(String expression) {
         setExpression(expression);

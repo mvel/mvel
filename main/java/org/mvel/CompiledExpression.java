@@ -25,7 +25,7 @@ import static org.mvel.util.ParseTools.handleParserEgress;
 import java.io.Serializable;
 
 public class CompiledExpression implements Serializable, ExecutableStatement {
-    private FastTokenIterator tokenMap;
+    private FastTokenIterator tokens;
 
     private Class knownEgressType;
     private Class knownIngressType;
@@ -33,15 +33,15 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private boolean convertableIngressEgress;
 
     public CompiledExpression(TokenIterator tokenMap) {
-        this.tokenMap = new FastTokenIterator(tokenMap);
+        this.tokens = new FastTokenIterator(tokenMap);
     }
 
-    public TokenIterator getTokenMap() {
-        return tokenMap;
+    public TokenIterator getTokens() {
+        return tokens;
     }
 
-    public void setTokenMap(TokenIterator tokenMap) {
-        this.tokenMap = new FastTokenIterator(tokenMap);
+    public void setTokens(TokenIterator tokens) {
+        this.tokens = new FastTokenIterator(tokens);
     }
 
 
@@ -82,6 +82,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        return handleParserEgress(new AcceleratedParser(tokenMap).execute(staticContext, factory), false);
+        return handleParserEgress(new AcceleratedParser(tokens).execute(staticContext, factory), false);
     }
 }
