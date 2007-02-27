@@ -1,6 +1,7 @@
 package org.mvel;
 
 import static org.mvel.Operator.*;
+import org.mvel.block.ForEachToken;
 import org.mvel.block.IfToken;
 import static org.mvel.util.ParseTools.debug;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
@@ -217,7 +218,12 @@ public class AbstractParser {
                             continue;
 
                         case IF:
-                            return captureIfBlock(expr);
+                            fields |= Token.BLOCK_IF;
+                            return captureConditionalBlock(expr);
+
+                        case FOREACH:
+                            fields |= Token.BLOCK_FOREACH;
+                            return captureConditionalBlock(expr);
                     }
                 }
                 else if (isIdentifierPart(expr[cursor])) {
@@ -592,55 +598,70 @@ public class AbstractParser {
         return new Token(expr, start, end, fields);
     }
 
-    private IfToken createBlockToken(final char[] expr, final int condStart,
-                                     final int condEnd, final int blockStart, final int blockEnd) {
-
-        char[] cond = new char[condEnd - condStart];
-        char[] block = new char[blockEnd - blockStart];
-
-        System.arraycopy(expr, condStart, cond, 0, cond.length);
-        System.arraycopy(expr, blockStart, block, 0, block.length);
-
-        return new IfToken(cond, block, fields);
+    private char[] subArray(final int start, final int end) {
+        char[] newA = new char[end - start];
+        System.arraycopy(expr, start, newA, 0, newA.length);
+        return newA;
     }
 
-    private IfToken captureIfBlock(final char[] expr) {
-        fields |= Token.BLOCK_IF;
+    private Token createBlockToken(final int condStart,
+                                   final int condEnd, final int blockStart, final int blockEnd) {
+        if (isFlag(Token.BLOCK_IF)) {
+            return new IfToken(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+        }
+        else if (isFlag(Token.BLOCK_FOREACH)) {
+            return new ForEachToken(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+        }
+        else {
+            return null;
+        }
+    }
+
+    private Token captureConditionalBlock(final char[] expr) {
 
         boolean cond = true;
-        IfToken tk = null;
-        do {
-            if (tk != null) {
-                while (cursor < length && !isWhitespace(expr[cursor])) cursor++;
+        Token tk = null;
 
-                skipWhitespace();
+        if (isFlag(Token.BLOCK_IF)) {
 
-                if (expr[cursor] != '{') {
-                    if (expr[cursor] == 'i' && expr[++cursor] == 'f'
-                            && (isWhitespace(expr[++cursor]) || expr[cursor] == '{')) {
-                        cond = true;
+            do {
+                if (tk != null) {
+                    skipToWhitespace();
+                    skipWhitespace();
+
+                    if (expr[cursor] != '{') {
+                        if (expr[cursor] == 'i' && expr[++cursor] == 'f'
+                                && (isWhitespace(expr[++cursor]) || expr[cursor] == '{')) {
+                            cond = true;
+                        }
+                        else {
+                            throw new CompileException("expected 'if'");
+                        }
                     }
                     else {
-                        throw new CompileException("expected 'if'");
+                        cond = false;
                     }
                 }
-                else {
-                    cond = false;
+
+                if (((IfToken) (tk = _captureConditionalBlock(tk, expr, cond))).getElseBlock() != null) {
+                    return tk;
                 }
-            }
 
-            if ((tk = _captureIfToken(tk, expr, cond)).getElseBlock() != null) {
-                return tk;
+                cursor++;
             }
-
-            cursor++;
+            while (blockContinues());
         }
-        while (blockContinues());
+        else if (isFlag(Token.BLOCK_FOREACH)) {
+            skipToWhitespace();
+            skipWhitespace();
+
+            return _captureConditionalBlock(null, expr, true);
+        }
 
         return tk;
     }
 
-    private IfToken _captureIfToken(IfToken node, final char[] expr, boolean cond) {
+    private Token _captureConditionalBlock(Token node, final char[] expr, boolean cond) {
         skipWhitespace();
         int startCond = 0;
         int endCond = 0;
@@ -665,30 +686,33 @@ public class AbstractParser {
             blockEnd = cursor;
         }
 
-        if (node != null) {
-            if (!cond) {
-                blockStart = trimRight(blockStart + 1);
-                blockEnd = trimLeft(blockEnd - 1);
-                char[] block = new char[blockEnd - blockStart];
-                System.arraycopy(expr, blockStart, block, 0, block.length);
-                node.setElseBlock(block);
-                return node;
+        if (isFlag(Token.BLOCK_IF)) {
+            IfToken ifNode = (IfToken) node;
+
+            if (node != null) {
+                if (!cond) {
+                    ifNode.setElseBlock(subArray(trimRight(blockStart + 1), trimLeft(blockEnd - 1)));
+                    return node;
+                }
+                else {
+                    IfToken tk = (IfToken) createBlockToken(startCond, endCond, trimRight(blockStart + 2),
+                            trimLeft(blockEnd));
+
+                    ifNode.setElseIf(tk);
+
+                    return tk;
+                }
             }
             else {
-
-                IfToken tk = createBlockToken(expr, startCond, endCond, trimRight(blockStart + 2),
+                return createBlockToken(startCond, endCond, trimRight(blockStart + 2),
                         trimLeft(blockEnd));
-
-                node.setElseIf(tk);
-
-                return tk;
             }
         }
-        else {
-            return createBlockToken(expr, startCond, endCond, trimRight(blockStart + 2),
-                    trimLeft(blockEnd));
+        else if (isFlag(Token.BLOCK_FOREACH)) {
+            return createBlockToken(startCond, endCond, trimRight(blockStart + 2), trimLeft(blockEnd));
         }
 
+        return null;
     }
 
     protected boolean blockContinues() {
@@ -724,6 +748,14 @@ public class AbstractParser {
 
     protected void skipWhitespace() {
         while (isWhitespace(expr[cursor])) cursor++;
+    }
+
+    protected void skipWhitlespaceSafe() {
+        while (cursor < length && isWhitespace(expr[cursor])) cursor++;
+    }
+
+    protected void skipToWhitespace() {
+        while (cursor < length && !isWhitespace(expr[cursor])) cursor++;
     }
 
     protected void trimWhitespace() {
@@ -764,5 +796,9 @@ public class AbstractParser {
     protected void setExpression(char[] expression) {
         length = (this.expr = expression).length;
         while (isWhitespace(this.expr[length - 1])) length--;
+    }
+
+    private boolean isFlag(int bit) {
+        return (fields & bit) != 0;
     }
 }
