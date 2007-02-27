@@ -64,5 +64,7 @@ public interface Operator {
     public static final int ELSE = 39;
     public static final int WHILE = 40;
 
+    public static final int RETURN = 99;
+
     public static final int FUNCTION = 100;
 }

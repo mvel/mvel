@@ -1,6 +1,7 @@
 package org.mvel;
 
 import static org.mvel.Operator.*;
+import org.mvel.block.IfToken;
 import static org.mvel.util.ParseTools.debug;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isDigit;
@@ -30,6 +31,7 @@ public class AbstractParser {
     protected static final int FRAME_END = -1;
     protected static final int FRAME_CONTINUE = 0;
     protected static final int FRAME_NEXT = 1;
+    protected static final int FRAME_RETURN = 2;
 
     private static Map<String, char[]> EX_PRECACHE;
 
@@ -145,6 +147,7 @@ public class AbstractParser {
         OPERATORS.put("if", IF);
         OPERATORS.put("else", ELSE);
 
+        OPERATORS.put("return", RETURN);
     }
 
     static void configureFactory() {
@@ -202,23 +205,53 @@ public class AbstractParser {
                 cursor++;
             }
             else if (capture) {
-                switch (expr[start]) {
-                    case'n': //handle 'new'
-                        if (cursor < (length - 3) && expr[start + 1] == 'e' && expr[start + 2] == 'w'
-                                && isWhitespace(expr[start + 3])) {
-
+                String t = new String(expr, start, cursor - start);
+                if (OPERATORS.containsKey(t)) {
+                    switch (OPERATORS.get(t)) {
+                        case NEW:
                             fields |= Token.NEW;
-                            start += 4;
-                            capture = false;
-                            continue;
-                        }
-                        break;
 
-                    default:
-                        if (isIdentifierPart(expr[cursor])) {
-                            capture = true;
+                        case RETURN:
+                            start = cursor + 1;
+                            capture = false;
+
                             continue;
-                        }
+                        case IF:
+                            fields |= Token.BLOCK_IF;
+
+                            skipWhitespace();
+
+                            if (expr[cursor] != '(') {
+                                throw new CompileException("expected (<condition>) after: " + t);
+                            }
+                            else {
+                                int startCond = ++cursor;
+                                int endCond = balancedCapture('(');
+
+                                int blockStart = ++cursor;
+                                int blockEnd;
+
+                                skipWhitespace();
+
+                                if (expr[cursor] == '{') {
+                                    if ((blockEnd = balancedCapture('{')) == -1) {
+                                        throw new CompileException("unbalanced braces { }");
+                                    }
+                                }
+                                else {
+                                    captureToEOLorOF();
+                                    blockEnd = cursor;
+                                }
+
+                                return createBlockToken(expr, startCond, endCond, trimRight(blockStart + 2),
+                                        trimLeft(blockEnd));
+                            }
+
+                    }
+                }
+                else if (isIdentifierPart(expr[cursor])) {
+                    capture = true;
+                    continue;
                 }
 
                 /**
@@ -260,6 +293,8 @@ public class AbstractParser {
                  * a contiguous token.
                  */
                 if (cursor < length) {
+
+
                     switch (expr[cursor]) {
                         case']':
                             if ((fields & (Token.INLINE_COLLECTION)) != 0) {
@@ -582,13 +617,42 @@ public class AbstractParser {
      * @return -
      */
     private Token createToken(final char[] expr, final int start, final int end, int fields) {
+        assert debug("CAPTURE_TOKEN <<" + new String(expr, start, end - start) + ">>");
         return new Token(expr, start, end, fields);
+    }
+
+    private IfToken createBlockToken(final char[] expr, final int condStart,
+                                     final int condEnd, final int blockStart, final int blockEnd) {
+
+        char[] cond = new char[condEnd - condStart];
+        char[] block = new char[blockEnd - blockStart];
+
+        System.arraycopy(expr, condStart, cond, 0, cond.length);
+        System.arraycopy(expr, blockStart, block, 0, block.length);
+
+        return new IfToken(cond, block, fields);
     }
 
     protected void captureToEOS() {
         while (cursor < length && expr[cursor] != ';') {
             cursor++;
         }
+    }
+
+    protected void captureToEOLorOF() {
+        while (cursor < length && (expr[cursor] != '\n' || expr[cursor] != '\r')) {
+            cursor++;
+        }
+    }
+
+    protected int trimLeft(int pos) {
+        while (pos > 0 && isWhitespace(expr[pos - 1])) pos--;
+        return pos;
+    }
+
+    protected int trimRight(int pos) {
+        while (pos < length && isWhitespace(expr[pos])) pos++;
+        return pos;
     }
 
     protected void skipWhitespace() {

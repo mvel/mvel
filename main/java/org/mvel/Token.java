@@ -57,18 +57,20 @@ public class Token implements Cloneable, Serializable {
     public static final int PUSH = 1 << 21;
 
     public static final int BLOCK = 1 << 22;
+    public static final int BLOCK_IF = 1 << 23;
 
-    private int firstUnion;
-    private int endOfName;
 
-    private int fields = 0;
+    protected int firstUnion;
+    protected int endOfName;
 
-    private char[] name;
-    private String nameCache;
+    protected int fields = 0;
 
-    private Object literal;
+    protected char[] name;
+    protected String nameCache;
 
-    private Accessor accessor;
+    protected Object literal;
+
+    protected Accessor accessor;
     public Token nextToken;
 
     public Token(char[] expr, int start, int end, int fields) {
@@ -77,6 +79,11 @@ public class Token implements Cloneable, Serializable {
         char[] name = new char[end - start];
         System.arraycopy(expr, start, name, 0, end - start);
         setName(name);
+    }
+
+    public Token(char[] expr, int fields) {
+        this.fields = fields;
+        this.name = expr;
     }
 
     public Token(int fields, Object literalValue) {

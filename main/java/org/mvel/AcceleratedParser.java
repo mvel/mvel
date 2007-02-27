@@ -2,7 +2,6 @@ package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
-import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
@@ -14,10 +13,6 @@ import org.mvel.util.StringAppender;
 
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import static java.util.regex.Pattern.compile;
 
 public class AcceleratedParser extends AbstractParser {
@@ -57,6 +52,8 @@ public class AcceleratedParser extends AbstractParser {
                     break;
                 case FRAME_NEXT:
                     continue;
+                case FRAME_RETURN:
+                    return nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory);
             }
 
             stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
@@ -140,6 +137,10 @@ public class AcceleratedParser extends AbstractParser {
                 }
 
                 return FRAME_NEXT;
+
+            case RETURN:
+                return FRAME_RETURN;
+
         }
         return FRAME_CONTINUE;
     }
