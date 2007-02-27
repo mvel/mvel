@@ -168,6 +168,12 @@ public class ExpressionParser extends AbstractParser {
                 }
 
                 return FRAME_NEXT;
+
+            case RETURN:
+                stk.clear();
+                stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory));
+                return FRAME_END;
+
         }
         return FRAME_CONTINUE;
     }
