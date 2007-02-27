@@ -1,6 +1,7 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
+import org.mvel.ExpressionCompiler;
 import org.mvel.MVEL;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
@@ -534,6 +535,12 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(true, parseDirect("if (false) { return false; } else if (100 < 50) { return false; } else if (10 > 5) { return true; }"));
     }
 
+    public void testVarInputs() {
+        ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble)");
+        compiler.compile(true);
+
+        System.out.println(compiler.getInputs());
+    }
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
