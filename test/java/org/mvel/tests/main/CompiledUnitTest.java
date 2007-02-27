@@ -518,6 +518,14 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(String.valueOf(Integer.MAX_VALUE), parseDirect("String.valueOf(Integer.MAX_VALUE)"));
     }
 
+    public void testIf() {
+        assertEquals(10, parseDirect("if (5 > 4) { return 10; } else { return 5; }"));
+    }
+
+    public void testIf2() {
+        assertEquals(10, parseDirect("if (5 < 4) { return 5; } else { return 10; }"));
+    }
+
     public void testIfAndElse() {
         assertEquals(true, parseDirect("if (false) { return false; } else { return true; }"));
     }
