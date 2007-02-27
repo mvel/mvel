@@ -20,12 +20,11 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.convert;
-import static org.mvel.util.ParseTools.handleParserEgress;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
-import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.handleParserEgress;
 
 import java.io.Serializable;
 import static java.lang.String.valueOf;
@@ -57,7 +56,7 @@ public class MVEL {
     }
 
     public static Object eval(String expression, Object ctx) {
-       return new ExpressionParser(expression, ctx).parse();
+        return new ExpressionParser(expression, ctx).parse();
     }
 
     public static Object eval(String expression, VariableResolverFactory resolverFactory) {
@@ -92,7 +91,9 @@ public class MVEL {
     public static Serializable compileExpression(String expression) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
 
-        TokenIterator tokens = parser.compile();
+        CompiledExpression cExpr = parser.compile(false);
+
+        TokenIterator tokens = cExpr.getTokens();
 
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
@@ -108,7 +109,7 @@ public class MVEL {
         }
 
 
-        return new CompiledExpression(tokens);
+        return cExpr;
     }
 
     /**
@@ -121,7 +122,8 @@ public class MVEL {
     public static Serializable compileExpression(char[] expression) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
 
-        TokenIterator tokens = parser.compile();
+        CompiledExpression cExpr = parser.compile(false);
+        TokenIterator tokens = cExpr.getTokens();
 
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
@@ -136,7 +138,7 @@ public class MVEL {
             }
         }
 
-        return new CompiledExpression(tokens);
+        return cExpr;
     }
 
     public static Object executeExpression(Object compiledExpression) {
