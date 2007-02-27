@@ -13,6 +13,9 @@ public class IfToken extends Token {
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
 
+    protected IfToken elseIf;
+    protected ExecutableStatement elseBlock;
+
     public IfToken(char[] condition, char[] block, int fields) {
         super(condition, fields);
         this.condition = (ExecutableStatement) MVEL.compileExpression(this.name = condition);
@@ -39,9 +42,11 @@ public class IfToken extends Token {
                         return o;
                     }
                 }
-                else {
-                    return Void.class;
-                }
+                else if (elseIf != null)
+                    return elseIf.getReducedValueAccelerated(ctx, thisValue, factory);
+                else
+                    return elseBlock.getValue(ctx, thisValue, factory);
+
             default:
                 throw new RuntimeException("critical execution error: unknown block state: " + fields);
         }
@@ -50,5 +55,42 @@ public class IfToken extends Token {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return getReducedValueAccelerated(ctx, thisValue, factory);
+    }
+
+
+    public ExecutableStatement getCondition() {
+        return condition;
+    }
+
+    public void setCondition(ExecutableStatement condition) {
+        this.condition = condition;
+    }
+
+    public ExecutableStatement getCompiledBlock() {
+        return compiledBlock;
+    }
+
+    public void setCompiledBlock(ExecutableStatement compiledBlock) {
+        this.compiledBlock = compiledBlock;
+    }
+
+    public IfToken getElseIf() {
+        return elseIf;
+    }
+
+    public void setElseIf(IfToken elseIf) {
+        this.elseIf = elseIf;
+    }
+
+    public ExecutableStatement getElseBlock() {
+        return elseBlock;
+    }
+
+    public void setElseBlock(ExecutableStatement elseBlock) {
+        this.elseBlock = elseBlock;
+    }
+
+    public void setElseBlock(char[] block) {
+        elseBlock = (ExecutableStatement) MVEL.compileExpression(block);
     }
 }
