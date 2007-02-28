@@ -17,14 +17,26 @@
       <configuration>
         <includes>
           <include>**/*Test.java</include>
+          <include>**/*Tests.java</include>
+          <include>**/UsageDemos.java</include>
         </includes>
         <excludes>
+          <exclude>**/CompiledUnitTestEx.java</exclude>
           <exclude>**/PerfTest.java</exclude>
         </excludes>
       </configuration>
     </plugin>      
     </plugins>
   </build>
+  
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
 
   <dependencies>
     <dependency>
