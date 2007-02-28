@@ -650,6 +650,11 @@ public class ParserUnitTest extends TestCase {
     }
 
 
+    public void testForEach3() {
+        assertEquals(true, parseDirect("a = {1,2,3}; foreach (i : a) { if (i == 1) { return true; } }"));
+    }
+
+
     public void testStaticNamespaceClassWithField() {
         assertEquals(String.CASE_INSENSITIVE_ORDER, parseDirect("java.lang.String.CASE_INSENSITIVE_ORDER"));
     }
