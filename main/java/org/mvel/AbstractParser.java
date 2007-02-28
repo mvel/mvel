@@ -632,12 +632,12 @@ public class AbstractParser {
 
             do {
                 if (tk != null) {
-                    skipToWhitespace();
+                    skipToNextTokenJunction();
                     skipWhitespace();
 
                     if (expr[cursor] != '{') {
                         if (expr[cursor] == 'i' && expr[++cursor] == 'f'
-                                && (isWhitespace(expr[++cursor]) || expr[cursor] == '{')) {
+                                && (isWhitespace(expr[++cursor]) || expr[cursor] == '(')) {
                             cond = true;
                         }
                         else {
@@ -660,7 +660,7 @@ public class AbstractParser {
             while (blockContinues());
         }
         else if (isFlag(Token.BLOCK_FOREACH)) {
-            skipToWhitespace();
+            skipToNextTokenJunction();
             skipWhitespace();
 
             return _captureConditionalBlock(null, expr, true);
@@ -764,6 +764,20 @@ public class AbstractParser {
 
     protected void skipToWhitespace() {
         while (cursor < length && !isWhitespace(expr[cursor])) cursor++;
+    }
+
+    protected void skipToNextTokenJunction() {
+        while (cursor < length) {
+            switch (expr[cursor]) {
+                case'{':
+                    return;
+                case'(':
+                    return;
+                default:
+                    if (isWhitespace(expr[cursor])) return;
+                    cursor++;
+            }
+        }
     }
 
     protected void trimWhitespace() {

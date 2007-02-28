@@ -532,11 +532,11 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testIfAndElseif() {
-        assertEquals(true, parseDirect("if (false) { return false; } else if (100 < 50) { return false; } else if (10 > 5) { return true; }"));
+        assertEquals(true, parseDirect("if (false) { return false; } else if(100 < 50) { return false; } else if (10 > 5) { return true; }"));
     }
 
     public void testForeEach2() {
-        assertEquals(6, parseDirect("total = 0; a = {1,2,3}; foreach (item : a) { total = total + item }; total"));
+        assertEquals(6, parseDirect("total = 0; a = {1,2,3}; foreach(item : a) { total = total + item }; total"));
     }
 
     public void testForEach3() {
@@ -544,8 +544,9 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testForEach4() {
-        assertEquals("OneTwoThree", parseDirect("a = {1,2,3}; builder = ''; foreach (i : a) {" +
-                " if (i == 1) { builder = builder + 'One' } else if (i == 2) { builder = builder + 'Two' } else if (i == 3) { builder = builder + 'Three' }" +
+        assertEquals("OneTwoThreeFour", parseDirect("a = {1,2,3,4}; builder = ''; foreach (i : a) {" +
+                " if (i == 1) { builder = builder + 'One' } else if (i == 2) { builder = builder + 'Two' } " +
+                "else if (i == 3) { builder = builder + 'Three' } else { builder = builder + 'Four' }" +
                 "}; builder;"));
     }
 
