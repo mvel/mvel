@@ -319,10 +319,14 @@ public class Interpreter {
                     else {
                         String s = new String(expression, 2, expression.length - 3);
                         if (!EX_PRECOMP_CACHE.containsKey(s)) {
-                            EX_PRECOMP_CACHE.put(s, MVEL.compileExpression(s));
+                            synchronized (EX_PRECOMP_CACHE) {
+                                EX_PRECOMP_CACHE.put(s, MVEL.compileExpression(s));
+                                return MVEL.executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
+                            }
                         }
-
-                        return MVEL.executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
+                        else {
+                            return MVEL.executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
+                        }
 
                     }
                 case LITERAL:
