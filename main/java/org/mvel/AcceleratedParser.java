@@ -136,9 +136,6 @@ public class AcceleratedParser extends AbstractParser {
 
                 return FRAME_NEXT;
 
-            case RETURN:
-                return FRAME_END;
-
         }
         return FRAME_CONTINUE;
     }
