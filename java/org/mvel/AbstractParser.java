@@ -624,6 +624,8 @@ public class AbstractParser {
     private Token captureConditionalBlock(final char[] expr) {
 
         boolean cond = true;
+
+        Token first = null;
         Token tk = null;
 
         if (isFlag(Token.BLOCK_IF)) {
@@ -648,8 +650,10 @@ public class AbstractParser {
                 }
 
                 if (((IfToken) (tk = _captureConditionalBlock(tk, expr, cond))).getElseBlock() != null) {
-                    return tk;
+                    return first;
                 }
+
+                if (first == null) first = tk;
 
                 cursor++;
             }
@@ -662,7 +666,7 @@ public class AbstractParser {
             return _captureConditionalBlock(null, expr, true);
         }
 
-        return tk;
+        return first;
     }
 
     private Token _captureConditionalBlock(Token node, final char[] expr, boolean cond) {
