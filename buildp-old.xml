@@ -23,21 +23,19 @@
         <!-- Compile the java code from ${src} into ${build} debuglevel="vars,lines,source" -->
         <javac source="1.5" srcdir="${src}" destdir="${build}" optimize="true" debug="on"
                debuglevel="vars,lines,source">
-            <classpath>
-                <pathelement path="lib/asm.jar"/>
-            </classpath>
+            <classpath refid="classpath" />
         </javac>
     </target>
 
     <target name="compile-nodebug" depends="init"
             description="compile the source ">
         <javac source="1.5" srcdir="${src}" destdir="${build}" optimize="true" debug="off">
+            <classpath refid="classpath" />
         </javac>
     </target>
 
-    <path id="test.classpath">
+    <path id="classpath">
         <pathelement location="${build}"/>
-        <pathelement location="/path/to/junit.jar"/>
         <fileset dir="lib">
             <include name="**/*.jar"/>
         </fileset>
@@ -47,12 +45,12 @@
         <junit fork="yes" haltonfailure="yes">
             <test name="org.mvel.tests.main.ParserUnitTest"/>
             <formatter type="plain" usefile="false"/>
-            <classpath refid="test.classpath"/>
+            <classpath refid="classpath"/>
         </junit>
         <junit fork="yes" haltonfailure="yes">
             <test name="org.mvel.tests.main.CompiledUnitTest"/>
             <formatter type="plain" usefile="false"/>
-            <classpath refid="test.classpath"/>
+            <classpath refid="classpath"/>
         </junit>
     </target>
 
