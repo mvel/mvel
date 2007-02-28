@@ -219,6 +219,8 @@ public class AbstractParser {
                             fields |= Token.RETURN;
                             start = cursor + 1;
                             capture = false;
+
+                            System.out.println("RETURN");
                             continue;
 
                         case IF:
