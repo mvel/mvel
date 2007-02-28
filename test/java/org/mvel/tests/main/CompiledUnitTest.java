@@ -535,6 +535,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(true, parseDirect("if (false) { return false; } else if(100 < 50) { return false; } else if (10 > 5) return true;"));
     }
 
+    public void testIfAndElseIfCondensedGrammar() {
+        assertEquals("Foo", parseDirect("if (false) return 'Bar'; else return 'Foo';"));
+    }
+
     public void testForeEach2() {
         assertEquals(6, parseDirect("total = 0; a = {1,2,3}; foreach(item : a) { total = total + item }; total"));
     }

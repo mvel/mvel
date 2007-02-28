@@ -667,22 +667,24 @@ public class AbstractParser {
         if (cond) {
             startCond = ++cursor;
             endCond = balancedCapture('(');
+            cursor++;
         }
 
-        int blockStart = cursor++;
+        int blockStart;
         int blockEnd;
 
         skipWhitespace();
 
         if (expr[cursor] == '{') {
-            blockStart++;
+            blockStart = ++cursor;
             if ((blockEnd = balancedCapture('{')) == -1) {
                 throw new CompileException("unbalanced braces { }");
             }
         }
         else {
+            blockStart = cursor - 1;
             captureToEOLorOF();
-            blockEnd = cursor;
+            blockEnd = cursor + 1;
         }
 
         if (isFlag(Token.BLOCK_IF)) {
@@ -690,11 +692,11 @@ public class AbstractParser {
 
             if (node != null) {
                 if (!cond) {
-                    ifNode.setElseBlock(subArray(trimRight(blockStart + 1), trimLeft(blockEnd - 1)));
+                    ifNode.setElseBlock(subArray(trimRight(blockStart), trimLeft(blockEnd - 1)));
                     return node;
                 }
                 else {
-                    IfToken tk = (IfToken) createBlockToken(startCond, endCond, trimRight(blockStart + 2),
+                    IfToken tk = (IfToken) createBlockToken(startCond, endCond, trimRight(blockStart ),
                             trimLeft(blockEnd));
 
                     ifNode.setElseIf(tk);
@@ -703,22 +705,22 @@ public class AbstractParser {
                 }
             }
             else {
-                return createBlockToken(startCond, endCond, trimRight(blockStart + 2),
+                return createBlockToken(startCond, endCond, trimRight(blockStart + 1),
                         trimLeft(blockEnd));
             }
         }
         else if (isFlag(Token.BLOCK_FOREACH)) {
-            return createBlockToken(startCond, endCond, trimRight(blockStart + 2), trimLeft(blockEnd));
+            return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd));
         }
 
         return null;
     }
 
     protected boolean blockContinues() {
-        if ((cursor + 5) < length) {
+        if ((cursor + 4) < length) {
             skipWhitespace();
             return expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
-                    && isWhitespace(expr[cursor + 4]);
+                    && (isWhitespace(expr[cursor + 4]) || expr[cursor] == '{');
         }
         return false;
     }
@@ -730,7 +732,7 @@ public class AbstractParser {
     }
 
     protected void captureToEOLorOF() {
-        while (cursor < length && (expr[cursor] != '\n' || expr[cursor] != '\r' || expr[cursor] != ';')) {
+        while (cursor < length && (expr[cursor] != '\n' && expr[cursor] != '\r' && expr[cursor] != ';')) {
             cursor++;
         }
     }

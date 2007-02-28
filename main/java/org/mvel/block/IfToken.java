@@ -18,6 +18,7 @@ public class IfToken extends Token {
 
     public IfToken(char[] condition, char[] block, int fields) {
         super(condition, fields);
+
         this.condition = (ExecutableStatement) MVEL.compileExpression(this.name = condition);
         this.compiledBlock = (ExecutableStatement) MVEL.compileExpression(this.block = block);
     }
