@@ -543,6 +543,12 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(true, parseDirect("a = {1,2,3}; foreach (i : a) { if (i == 1) { return true; } }"));
     }
 
+    public void testForEach4() {
+        assertEquals("OneTwoThree", parseDirect("a = {1,2,3}; builder = ''; foreach (i : a) {" +
+                " if (i == 1) { builder = builder + 'One' } else if (i == 2) { builder = builder + 'Two' } else if (i == 3) { builder = builder + 'Three' }" +
+                "}; builder;"));
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile(true);
