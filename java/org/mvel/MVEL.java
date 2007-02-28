@@ -33,7 +33,7 @@ import java.util.Map;
 public class MVEL {
     public static final String NAME = "MVEL (MVFLEX Expression Language)";
     public static final String VERSION = "1.2";
-    public static final String VERSION_SUB = "beta2";
+    public static final String VERSION_SUB = "beta13";
     public static final String CODENAME = "horizon";
 
     static boolean THREAD_SAFE = Boolean.getBoolean("mvel.threadsafety");
