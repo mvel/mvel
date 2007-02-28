@@ -63,6 +63,15 @@ public interface Operator {
     public static final int IF = 38;
     public static final int ELSE = 39;
     public static final int WHILE = 40;
+    public static final int FOR = 41;
+    public static final int SWITCH = 42;
+    public static final int DO = 43;
+
+    public static final int INC = 50;
+    public static final int DEC = 51;
+    public static final int ASSIGN_ADD = 52;
+    public static final int ASSIGN_SUB = 53;
+    public static final int ASSIGN_STR_APPEND = 54;
 
     public static final int RETURN = 99;
 
