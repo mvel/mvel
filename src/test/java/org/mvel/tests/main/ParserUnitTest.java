@@ -448,7 +448,7 @@ public class ParserUnitTest extends TestCase {
 
 
     public void testExpression10() {
-        assertEquals(true, parse("@{10 + 1 > 5 && 10 + 1 < 20}"));
+        assertEquals(true, parseDirect("10 + 1 > 5 && 10 + 1 < 20"));
     }
 
     public void testArrayAccess() {
