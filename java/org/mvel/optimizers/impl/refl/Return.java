@@ -11,7 +11,6 @@ public class Return extends BaseAccessor {
 
     private ExecutableStatement statement;
 
-
     public Return(ExecutableStatement statement) {
         this.statement = statement;
     }

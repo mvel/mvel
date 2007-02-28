@@ -24,7 +24,7 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
-import static org.mvel.util.ParseTools.handleParserEgress;
+import org.mvel.util.ParseTools;
 
 import java.io.Serializable;
 import static java.lang.String.valueOf;
@@ -61,6 +61,7 @@ public class MVEL {
 
     public static Object eval(String expression, VariableResolverFactory resolverFactory) {
         return new ExpressionParser(expression, resolverFactory).parse();
+
     }
 
     public static Object eval(char[] expression, Object ctx, VariableResolverFactory resolverFactory) {
@@ -156,12 +157,21 @@ public class MVEL {
      */
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
-        return handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars))
-                , false);
+        try {
+            return ((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars));
+        }
+        catch (EndWithValue end) {
+            return ParseTools.handleParserEgress(end.getValue(), false);
+        }
     }
 
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
-        return handleParserEgress(((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory), false);
+        try {
+            return ((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory);
+        }
+        catch (EndWithValue end) {
+            return ParseTools.handleParserEgress(end.getValue(), false);
+        }
     }
 
     /**
@@ -173,7 +183,12 @@ public class MVEL {
      * @see #compileExpression(String)
      */
     public static Object executeExpression(final Object compiledExpression, final VariableResolverFactory factory) {
-        return ((ExecutableStatement) compiledExpression).getValue(null, factory);
+        try {
+            return ((ExecutableStatement) compiledExpression).getValue(null, factory);
+        }
+        catch (EndWithValue end) {
+            return ParseTools.handleParserEgress(end.getValue(), false);
+        }
     }
 
     /**
@@ -185,7 +200,12 @@ public class MVEL {
      * @see #compileExpression(String)
      */
     public static Object executeExpression(final Object compiledExpression, final Object ctx) {
-        return ((ExecutableStatement) compiledExpression).getValue(ctx, null);
+        try {
+            return ((ExecutableStatement) compiledExpression).getValue(ctx, null);
+        }
+        catch (EndWithValue end) {
+            return ParseTools.handleParserEgress(end.getValue(), false);
+        }
     }
 
     /**
@@ -198,7 +218,12 @@ public class MVEL {
      */
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Map vars) {
-        return ((ExecutableStatement) compiledExpression).getValue(null, new MapVariableResolverFactory(vars));
+        try {
+            return ((ExecutableStatement) compiledExpression).getValue(null, new MapVariableResolverFactory(vars));
+        }
+        catch (EndWithValue end) {
+            return ParseTools.handleParserEgress(end.getValue(), false);
+        }
     }
 
     /**
@@ -212,7 +237,12 @@ public class MVEL {
      */
     @SuppressWarnings({"unchecked"})
     public static <T> T executeExpression(final Object compiledExpression, final Object ctx, final Map vars, Class<T> toType) {
-        return convert(executeExpression(compiledExpression, ctx, vars), toType);
+        try {
+            return convert(executeExpression(compiledExpression, ctx, vars), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
     /**
@@ -225,7 +255,12 @@ public class MVEL {
      */
     @SuppressWarnings({"unchecked"})
     public static <T> T executeExpression(final Object compiledExpression, Map vars, Class<T> toType) {
-        return convert(executeExpression(compiledExpression, vars), toType);
+        try {
+            return convert(executeExpression(compiledExpression, vars), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
     /**
@@ -237,7 +272,12 @@ public class MVEL {
      * @return -
      */
     public static <T> T executeExpression(final Object compiledExpression, final Object ctx, Class<T> toType) {
-        return convert(executeExpression(compiledExpression, ctx), toType);
+        try {
+            return convert(executeExpression(compiledExpression, ctx), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
     public static Object[] executeAllExpression(Serializable[] compiledExpressions, Object ctx, VariableResolverFactory vars) {
@@ -252,58 +292,113 @@ public class MVEL {
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, Map vars, Class<T> toType) {
-        return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        try {
+            return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
-        return convert(new ExpressionParser(expression, ctx).parse(), toType);
+        try {
+            return convert(new ExpressionParser(expression, ctx).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Object ctx, Class<T> toType) {
-        return convert(new ExpressionParser(expression, ctx).parse(), toType);
+        try {
+            return convert(new ExpressionParser(expression, ctx).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Object ctx, Map vars, Class<T> toType) {
-        return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        try {
+            return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
-        return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        try {
+            return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
-        return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        try {
+            return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Map vars, Class<T> toType) {
-        return convert(new ExpressionParser(expression, null, vars).parse(), toType);
+        try {
+            return convert(new ExpressionParser(expression, null, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, VariableResolverFactory vars, Class<T> toType) {
-        return convert(new ExpressionParser(expression, null, vars).parse(), toType);
+        try {
+            return convert(new ExpressionParser(expression, null, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Map vars, Class<T> toType) {
-        return convert(new ExpressionParser(expression, null, vars).parse(), toType);
+        try {
+            return convert(new ExpressionParser(expression, null, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+        }
     }
 
     @SuppressWarnings({"unchecked"})
     public static Object eval(char[] expression, Object ctx, Map vars) {
-        return new ExpressionParser(expression, ctx, vars).parse();
+        try {
+            return new ExpressionParser(expression, ctx, vars).parse();
+        }
+        catch (EndWithValue end) {
+            return ParseTools.handleParserEgress(end.getValue(), false);
+        }
     }
 
     public static String evalToString(String expression, Object ctx) {
-        return valueOf(eval(expression, ctx));
+        try {
+            return valueOf(eval(expression, ctx));
+        }
+        catch (EndWithValue end) {
+            return valueOf(ParseTools.handleParserEgress(end.getValue(), false));
+        }
     }
 
     @SuppressWarnings({"unchecked"})
@@ -313,7 +408,12 @@ public class MVEL {
 
     @SuppressWarnings({"unchecked"})
     public static String evalToString(String expression, Object ctx, Map vars) {
-        return valueOf(eval(expression, ctx, vars));
+        try {
+            return valueOf(eval(expression, ctx, vars));
+        }
+        catch (EndWithValue end) {
+            return valueOf(ParseTools.handleParserEgress(end.getValue(), false));
+        }
     }
 
     /**
@@ -360,7 +460,7 @@ public class MVEL {
      * @return -
      */
     public static Boolean evalToBoolean(String expression, VariableResolverFactory factory) {
-        return (Boolean) new ExpressionParser(expression, null, factory).parse();
+        return eval(expression, factory, Boolean.class);
     }
 
     /**

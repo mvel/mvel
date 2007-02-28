@@ -38,7 +38,6 @@ public class ForEachToken extends Token {
 
         Object iterCond = condition.getValue(ctx, thisValue, factory);
 
-
         if (iterCond instanceof Iterable) {
             for (Object o : (Iterable) iterCond) {
                 locals.put(item, o);
