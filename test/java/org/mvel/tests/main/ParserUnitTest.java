@@ -622,16 +622,6 @@ public class ParserUnitTest extends TestCase {
         assertEquals(true, (boolean) MVEL.evalToBoolean("true ", "true"));
     }
 
-//    public void testCompiledListStructures() {
-//        Serializable compiled = ExpressionParser.compileExpression("[\"test\", \"yeolpass\"] contains \"yeolpass\"");
-//        assertEquals(true, ExpressionParser.executeExpression(compiled));
-//    }
-
-//    public void testCompiledMapStructures() {
-//        Serializable compiled = ExpressionParser.compileExpression("['foo':'bar'] contains 'foo'");
-//        ExpressionParser.executeExpression(compiled, null, null, Boolean.class);
-//    }
-
     public void testCompiledMethodCall() {
         Serializable compiled = MVEL.compileExpression("c.getClass()");
         assertEquals(String.class, MVEL.executeExpression(compiled, base, map));
@@ -651,7 +641,7 @@ public class ParserUnitTest extends TestCase {
 
 
     public void testForEach3() {
-        assertEquals(true, parseDirect("a = {1,2,3}; foreach (i : a) { if (i == 1) { return true; } }"));
+        assertEquals(true, parseDirect("a = {1,2,3}; foreach (i : a)\n{\nif (i == 1){\t return true; } \n}"));
     }
 
 
