@@ -284,7 +284,7 @@ public class ExpressionCompiler extends AbstractParser {
 
         }
         catch (Exception e) {
-            throw new CompileException("failed to subEval expression", e);
+            throw new CompileException("failed to subEval expression: <<" + new String (expr) + ">>", e);
         }
 
     }
