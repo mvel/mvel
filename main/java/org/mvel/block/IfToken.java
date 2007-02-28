@@ -42,8 +42,10 @@ public class IfToken extends Token {
         }
         else if (elseIf != null)
             return elseIf.getReducedValueAccelerated(ctx, thisValue, factory);
-        else
+        else if (elseBlock != null)
             return elseBlock.getValue(ctx, thisValue, factory);
+        else
+            return Void.class; 
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {

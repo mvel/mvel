@@ -79,6 +79,11 @@ public class Token implements Cloneable, Serializable {
     public Token(char[] expr, int start, int end, int fields) {
         this.fields = fields;
 
+        if ((fields & RETURN) != 0) {
+            this.fields |= OPERATOR;
+            literal = Operator.RETURN;
+        }
+
         char[] name = new char[end - start];
         System.arraycopy(expr, start, name, 0, end - start);
         setName(name);
@@ -208,9 +213,7 @@ public class Token implements Cloneable, Serializable {
 
             return valRet(retVal);
         }
-
     }
-
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         // assert debug("REDUCE <<" + new String(name) + ">> ctx=" + ctx + ";literal=" + (fields & LITERAL) + ";assign=" + (fields & ASSIGN));
@@ -256,6 +259,11 @@ public class Token implements Cloneable, Serializable {
 
                 return optimizer.getResultOptPass();
             }
+        }
+        else if ((fields & RETURN) != 0) {
+            AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+            accessor = optimizer.optimizeReturn(name, ctx, thisValue, factory);
+            throw new EndWithValue(optimizer.getResultOptPass());
         }
 
         if ((fields & Token.DEEP_PROPERTY) != 0) {

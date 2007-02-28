@@ -1,37 +1,37 @@
 package org.mvel.tests.perftests;
 
 import ognl.Ognl;
-import org.mvel.MVEL;
-import org.mvel.integration.impl.MapVariableResolver;
-import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.tests.main.res.Base;
 import org.apache.commons.el.ExpressionEvaluatorImpl;
-import org.apache.commons.el.VariableResolverImpl;
+import org.mvel.MVEL;
+import org.mvel.tests.main.res.Base;
+import org.mvel.tests.main.res.Foo;
 
-import javax.servlet.jsp.el.VariableResolver;
 import javax.servlet.jsp.el.Expression;
+import javax.servlet.jsp.el.VariableResolver;
+import static java.lang.Integer.parseInt;
 import static java.lang.System.currentTimeMillis;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Performance Tests Comparing MVEL to OGNL with Same Expressions.
  */
 public class ELComparisons implements Runnable {
-    private Base baseClass = new Base();
+    private final Base baseClass = new Base();
 
     public static int RUN_MVEL = 1;
     public static int RUN_OGNL = 1 << 1;
     public static int RUN_COMMONS_EL = 1 << 2;
+    public static int RUN_JAVA_NATIVE = 1 << 3;
 
     private static int COMPILED = 1 << 30;
     private static int INTERPRETED = 1 << 31;
 
-    private static int ALL = RUN_MVEL + RUN_OGNL + RUN_COMMONS_EL;
+    private static int ALL = RUN_MVEL + RUN_OGNL + RUN_COMMONS_EL + RUN_JAVA_NATIVE;
 
     private static final int TESTNUM = 50000;
     private static final int TESTITER = 5;
@@ -39,6 +39,7 @@ public class ELComparisons implements Runnable {
     private long ognlTotal = 0;
     private long mvelTotal = 0;
     private long commonElTotal = 0;
+    private long javaNativeTotal = 0;
 
     private int testFlags = 0;
 
@@ -46,17 +47,47 @@ public class ELComparisons implements Runnable {
 
     private static List<PerfTest> tests = new ArrayList<PerfTest>();
 
-    private static Map<String, Object> variables = new HashMap<String, Object>();
+    private final static Map<String, Object> variables = new HashMap<String, Object>();
 
     static {
+        NativeTest nt = new NativeTest() {
+
+            public Object run(Object baseClass, Map vars) {
+                return "Hello World";
+            }
+        };
+
 //        tests.add(new PerfTest("Simple String Pass-Through", "'Hello World'", ALL));
-//        tests.add(new PerfTest("Shallow Property", "data", ALL));
-        tests.add(new PerfTest("Deep Property", "foo.bar.name", ALL));
+
+        nt = new NativeTest() {
+
+            public Object run(Object baseClass, Map vars) {
+                return vars.get("data");
+            }
+        };
+
+//        tests.add(new PerfTest("Shallow Property", "data", ALL, nt));
+
+        nt = new NativeTest() {
+            public Object run(Object baseClass, Map vars) {
+                return ((Base) baseClass).getFoo().getBar().getName();
+            }
+        };
+
+        //       tests.add(new PerfTest("Deep Property", "foo.bar.name", ALL, nt));
 //        tests.add(new PerfTest("Static Field Access (MVEL)", "Integer.MAX_VALUE", RUN_MVEL));
 //        tests.add(new PerfTest("Static Field Access (OGNL)", "@java.lang.Integer@MAX_VALUE", RUN_OGNL));
 //        tests.add(new PerfTest("Inline Array Creation (MVEL)", "{'foo', 'bar'}", RUN_MVEL));
 //        tests.add(new PerfTest("Inline Array Creation (OGNL)", "new String[] {'foo', 'bar'}", RUN_OGNL));
-//        tests.add(new PerfTest("Collection Access + Method Call", "funMap['foo'].happy()", RUN_MVEL));
+
+
+        nt = new NativeTest() {
+            public Object run(Object baseClass, Map vars) {
+                return ((Foo) ((Base) baseClass).funMap.get("foo")).happy();
+            }
+        };
+
+        tests.add(new PerfTest("Collection Access + Method Call", "funMap['foo'].happy()", RUN_MVEL + RUN_OGNL + RUN_JAVA_NATIVE, nt));
 //        tests.add(new PerfTest("Boolean compare", "data == 'cat'", ALL));
 //        tests.add(new PerfTest("Object instantiation", "new String('Hello')", RUN_OGNL + RUN_MVEL));
 //        tests.add(new PerfTest("Method access", "readBack('this is a string')", RUN_OGNL + RUN_MVEL));
@@ -76,8 +107,6 @@ public class ELComparisons implements Runnable {
     }
 
     public static void main(String[] args) throws Exception {
-
-
         ELComparisons omc = new ELComparisons();
         boolean multithreaded = false;
         boolean compiled = true;
@@ -96,7 +125,7 @@ public class ELComparisons implements Runnable {
                         throw new RuntimeException("expected parameter for -threaded (number of threads)");
                     }
                     multithreaded = true;
-                    threadMax = Integer.parseInt(args[++i]);
+                    threadMax = parseInt(args[++i]);
 
                 }
                 else if (args[i].equals("-nocompiled")) compiled = false;
@@ -111,18 +140,33 @@ public class ELComparisons implements Runnable {
         long ognlTotals;
         long mvelTotals;
         long commonsElTotals;
+        long javaNativeTotals;
+
+        ELComparisons ognlTests = new ELComparisons();
+        ognlTests.setTestFlags(flags + RUN_OGNL);
+        ognlTests.setSilent(true);
+
+        ELComparisons mvelTests = new ELComparisons();
+        mvelTests.setTestFlags(flags + RUN_MVEL);
+        mvelTests.setSilent(silent);
+
+        ELComparisons commonsELTests = new ELComparisons();
+        commonsELTests.setTestFlags(flags + RUN_COMMONS_EL);
+        commonsELTests.setSilent(silent);
+
+        ELComparisons nativeJavaTests = new ELComparisons();
+        nativeJavaTests.setTestFlags(flags + RUN_JAVA_NATIVE);
+        nativeJavaTests.setSilent(silent);
+
 
         if (multithreaded) {
-            System.out.println("THREADS\tOGNL\tMVEL\tCommons-EL");
+            System.out.println("THREADS\tOGNL\tMVEL\tCommons-EL\tNative Java");
 
             for (int threadNumber = 1; threadNumber < 100; threadNumber += 5) {
+
                 totaltime = System.currentTimeMillis();
 
-                //       System.out.println("Running concurrency stress test: " + threadNumber);
-
-                ELComparisons ognlTests = new ELComparisons();
-                ognlTests.setTestFlags(flags + RUN_OGNL);
-                ognlTests.setSilent(silent);
+                ognlTests.reset();
 
                 Thread[] threads = new Thread[threadNumber];
                 for (int i = 0; i < threads.length; i++) {
@@ -139,9 +183,8 @@ public class ELComparisons implements Runnable {
 
                 ognlTotals = ognlTests.getOgnlTotal();
 
-                ELComparisons mvelTests = new ELComparisons();
-                mvelTests.setTestFlags(flags + RUN_MVEL);
-                mvelTests.setSilent(silent);
+
+                mvelTests.reset();
 
                 for (int i = 0; i < threads.length; i++) {
                     threads[i] = new Thread(mvelTests);
@@ -157,9 +200,8 @@ public class ELComparisons implements Runnable {
 
                 mvelTotals = mvelTests.getMvelTotal();
 
-                ELComparisons commonsELTests = new ELComparisons();
-                commonsELTests.setTestFlags(flags + RUN_COMMONS_EL);
-                commonsELTests.setSilent(silent);
+
+                commonsELTests.reset();
 
                 for (int i = 0; i < threads.length; i++) {
                     threads[i] = new Thread(commonsELTests);
@@ -175,9 +217,26 @@ public class ELComparisons implements Runnable {
 
                 commonsElTotals = commonsELTests.getCommonElTotal();
 
+
+                nativeJavaTests.reset();
+
+                for (int i = 0; i < threads.length; i++) {
+                    threads[i] = new Thread(nativeJavaTests);
+                }
+
+                for (Thread thread : threads) {
+                    thread.run();
+                }
+
+                for (Thread thread : threads) {
+                    thread.join();
+                }
+
+                javaNativeTotals = nativeJavaTests.getJavaNativeTotal();
+
                 totaltime = System.currentTimeMillis() - totaltime;
 
-                System.out.println(threadNumber + "\t" + ognlTotals + "\t" + mvelTotals + "\t" + commonsElTotals);
+                System.out.println(threadNumber + "\t" + ognlTotals + "\t" + mvelTotals + "\t" + commonsElTotals + "\t" + javaNativeTotals);
 
                 //         System.out.println("\nPerformance Comparison Done. OUTPUT TOTALS:");
 //                System.out.println("Total Number of Threads: " + threadMax);
@@ -198,6 +257,7 @@ public class ELComparisons implements Runnable {
 
     public void run() {
         try {
+
             for (PerfTest test : tests) {
                 runTest(test, TESTNUM);
             }
@@ -347,6 +407,44 @@ public class ELComparisons implements Runnable {
 
         if ((testFlags & COMPILED) != 0) {
             runTestCompiled(name, test.getOgnlCompiled(), test.getMvelCompiled(), test.getElCompiled(), count, exFlags);
+        }
+
+        total = 0;
+
+        if ((testFlags & RUN_JAVA_NATIVE) != 0 && ((exFlags & RUN_JAVA_NATIVE) != 0)) {
+            NativeTest nt = test.getJavaNative();
+
+            try {
+                for (int i = 0; i < count; i++) {
+                    nt.run(baseClass, variables);
+                }
+
+                System.gc();
+
+                time = currentTimeMillis();
+                mem = Runtime.getRuntime().freeMemory();
+                for (int reps = 0; reps < TESTITER; reps++) {
+                    for (int i = 0; i < count; i++) {
+                        nt.run(baseClass, variables);
+                    }
+
+                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
+                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
+                }
+
+                if (!silent)
+                    System.out.println("(JavaNative)         : " + new BigDecimal(((currentTimeMillis() - time))).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+                            + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
+
+            }
+            catch (Exception e) {
+                if (!silent)
+                    System.out.println("(JavaNative)         : <<COULD NOT EXECUTE>>");
+            }
+        }
+
+        synchronized (this) {
+            javaNativeTotal += total;
         }
 
 
@@ -518,11 +616,27 @@ public class ELComparisons implements Runnable {
         this.commonElTotal = commonElTotal;
     }
 
+
+    public long getJavaNativeTotal() {
+        return javaNativeTotal;
+    }
+
+    public void setJavaNativeTotal(long javaNativeTotal) {
+        this.javaNativeTotal = javaNativeTotal;
+    }
+
     public boolean isSilent() {
         return silent;
     }
 
     public void setSilent(boolean silent) {
         this.silent = silent;
+    }
+
+    public void reset() {
+        ognlTotal = 0;
+        mvelTotal = 0;
+        javaNativeTotal = 0;
+        commonElTotal = 0;
     }
 }

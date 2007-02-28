@@ -32,12 +32,10 @@ public class AcceleratedParser extends AbstractParser {
      * @return -
      */
     public Object execute(Object ctx, VariableResolverFactory variableFactory) {
-        try {
             Token tk;
             Integer operator;
 
             while ((tk = tokens.nextToken()) != null) {
-                //     assert debug("\nSTART_FRAME <<" + tk + ">> STK_SIZE=" + stk.size() + "; STK_PEEK=" + stk.peek() + "; TOKEN#=" + tokens.index());
                 if (stk.isEmpty()) {
                     stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
                 }
@@ -61,10 +59,7 @@ public class AcceleratedParser extends AbstractParser {
             }
 
             return stk.peek();
-        }
-        catch (EndWithValue end) {
-            return end.getValue();
-        }
+
     }
 
     /**
@@ -142,7 +137,7 @@ public class AcceleratedParser extends AbstractParser {
                 return FRAME_NEXT;
 
             case RETURN:
-                return FRAME_RETURN;
+                return FRAME_END;
 
         }
         return FRAME_CONTINUE;

@@ -17,6 +17,7 @@ public class PerfTest {
     private Object ognlCompiled;
     private Object mvelCompiled;
     private Expression elCompiled;
+    private NativeTest javaNative;
 
     public String getName() {
         return name;
@@ -59,6 +60,13 @@ public class PerfTest {
         this.mvelCompiled = mvelCompiled;
     }
 
+    public NativeTest getJavaNative() {
+        return javaNative;
+    }
+
+    public void setJavaNative(NativeTest javaNative) {
+        this.javaNative = javaNative;
+    }
 
     public Expression getElCompiled() {
         return elCompiled;
@@ -68,10 +76,11 @@ public class PerfTest {
         this.elCompiled = elCompiled;
     }
 
-    public PerfTest(String name, String expression, int runFlags) {
+    public PerfTest(String name, String expression, int runFlags, NativeTest javaNative) {
         this.name = name;
         this.expression = expression;
         this.runFlags = runFlags;
+        this.javaNative = javaNative;
 
         if ((runFlags & ELComparisons.RUN_MVEL) != 0)
             this.mvelCompiled = MVEL.compileExpression(expression);

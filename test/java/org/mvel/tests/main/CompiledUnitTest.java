@@ -535,8 +535,12 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(true, parseDirect("if (false) { return false; } else if (100 < 50) { return false; } else if (10 > 5) { return true; }"));
     }
 
-    public void testForeAch2() {
+    public void testForeEach2() {
         assertEquals(6, parseDirect("total = 0; a = {1,2,3}; foreach (item : a) { total = total + item }; total"));
+    }
+
+    public void testForEach3() {
+        assertEquals(true, parseDirect("a = {1,2,3}; foreach (i : a) { if (i == 1) { return true; } }"));
     }
 
     public void testVarInputs() {
