@@ -755,7 +755,8 @@ public class ParseTools {
             case Operator.GETHAN:
             case Operator.LTHAN:
             case Operator.LETHAN:
-                throw new CompileException("could not perform numeric operation on non-numeric types");
+                throw new CompileException("could not perform numeric operation on non-numeric types: left-type="
+                        + (val1 != null ? val1.getClass().getName() : "null") + "; right-type=" + (val2 != null ? val2.getClass().getName() : "null"));
         }
 
         throw new CompileException("unable to perform operation");
