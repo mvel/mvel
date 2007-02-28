@@ -57,7 +57,7 @@ public class ELComparisons implements Runnable {
             }
         };
 
-//        tests.add(new PerfTest("Simple String Pass-Through", "'Hello World'", ALL));
+        tests.add(new PerfTest("Simple String Pass-Through", "'Hello World'", ALL, nt));
 
         nt = new NativeTest() {
 
@@ -66,7 +66,7 @@ public class ELComparisons implements Runnable {
             }
         };
 
-//        tests.add(new PerfTest("Shallow Property", "data", ALL, nt));
+        tests.add(new PerfTest("Shallow Property", "data", ALL, nt));
 
         nt = new NativeTest() {
             public Object run(Object baseClass, Map vars) {
@@ -74,7 +74,7 @@ public class ELComparisons implements Runnable {
             }
         };
 
-        //       tests.add(new PerfTest("Deep Property", "foo.bar.name", ALL, nt));
+        tests.add(new PerfTest("Deep Property", "foo.bar.name", ALL, nt));
 //        tests.add(new PerfTest("Static Field Access (MVEL)", "Integer.MAX_VALUE", RUN_MVEL));
 //        tests.add(new PerfTest("Static Field Access (OGNL)", "@java.lang.Integer@MAX_VALUE", RUN_OGNL));
 //        tests.add(new PerfTest("Inline Array Creation (MVEL)", "{'foo', 'bar'}", RUN_MVEL));

@@ -953,4 +953,25 @@ public class ParseTools {
         return null;
 
     }
+
+    public static Object increment(Object o) {
+        if (o instanceof Integer) {
+            return (Integer) o + 1;
+        }
+        else if (o instanceof Double) {
+            return (Double) o + 1;
+        }
+        else if (o instanceof Float) {
+            return (Float) o + 1;
+        }
+        else if (o instanceof Short) {
+            return (Short) o + 1;
+        }
+        else if (o instanceof Character) {
+            return (Character) o + 1;
+        }
+        else {
+            throw new CompileException("unable to increment type: " + (o != null ? o.getClass().getName() : "null"));   
+        }
+    }
 }

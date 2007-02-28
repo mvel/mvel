@@ -29,6 +29,7 @@ import static org.mvel.util.PropertyTools.isEmpty;
 import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
+import org.mvel.util.ParseTools;
 
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
@@ -172,8 +173,7 @@ public class ExpressionParser extends AbstractParser {
                     stk.clear();
                 }
 
-                return FRAME_NEXT;
-
+                return FRAME_NEXT;              
             
         }
         return FRAME_CONTINUE;
