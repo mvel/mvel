@@ -147,6 +147,14 @@ public class AbstractParser {
         OPERATORS.put("while", WHILE);
         OPERATORS.put("if", IF);
         OPERATORS.put("else", ELSE);
+        OPERATORS.put("for", FOR);
+        OPERATORS.put("switch", SWITCH);
+        OPERATORS.put("do", DO);
+
+        OPERATORS.put("++", INC);
+        OPERATORS.put("--", DEC);
+        OPERATORS.put("+=", ASSIGN_ADD);
+        OPERATORS.put("-=", ASSIGN_SUB);
 
         OPERATORS.put("return", RETURN);
     }
@@ -350,19 +358,24 @@ public class AbstractParser {
                         }
 
 
+                    case'+':
+                        if (cursor < length && expr[cursor + 1] == '+') {
+                            cursor++;
+                        }
+                        return createToken(expr, start, cursor++ + 1, fields);
+
                     case'*':
                         if (cursor < length && expr[cursor + 1] == '*') {
                             cursor++;
-                            return createToken(expr, start, cursor++ + 1, fields);
                         }
+                        return createToken(expr, start, cursor++ + 1, fields);
+
                     case';':
                     case'#':
                     case'?':
                     case':':
                     case'^':
                     case'/':
-                    case'+':
-
                     case'%': {
                         return createToken(expr, start, cursor++ + 1, fields);
                     }
@@ -696,7 +709,7 @@ public class AbstractParser {
                     return node;
                 }
                 else {
-                    IfToken tk = (IfToken) createBlockToken(startCond, endCond, trimRight(blockStart ),
+                    IfToken tk = (IfToken) createBlockToken(startCond, endCond, trimRight(blockStart),
                             trimLeft(blockEnd));
 
                     ifNode.setElseIf(tk);
