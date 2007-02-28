@@ -635,18 +635,8 @@ public class AbstractParser {
                     skipToNextTokenJunction();
                     skipWhitespace();
 
-                    if (expr[cursor] != '{') {
-                        if (expr[cursor] == 'i' && expr[++cursor] == 'f'
-                                && (isWhitespace(expr[++cursor]) || expr[cursor] == '(')) {
-                            cond = true;
-                        }
-                        else {
-                            throw new CompileException("expected 'if'");
-                        }
-                    }
-                    else {
-                        cond = false;
-                    }
+                    cond = expr[cursor] != '{' && expr[cursor] == 'i' && expr[++cursor] == 'f'
+                            && (isWhitespace(expr[++cursor]) || expr[cursor] == '(');
                 }
 
                 if (((IfToken) (tk = _captureConditionalBlock(tk, expr, cond))).getElseBlock() != null) {
@@ -679,12 +669,13 @@ public class AbstractParser {
             endCond = balancedCapture('(');
         }
 
-        int blockStart = ++cursor;
+        int blockStart = cursor++;
         int blockEnd;
 
         skipWhitespace();
 
         if (expr[cursor] == '{') {
+            blockStart++;
             if ((blockEnd = balancedCapture('{')) == -1) {
                 throw new CompileException("unbalanced braces { }");
             }
@@ -739,7 +730,7 @@ public class AbstractParser {
     }
 
     protected void captureToEOLorOF() {
-        while (cursor < length && (expr[cursor] != '\n' || expr[cursor] != '\r')) {
+        while (cursor < length && (expr[cursor] != '\n' || expr[cursor] != '\r' || expr[cursor] != ';')) {
             cursor++;
         }
     }

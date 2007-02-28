@@ -532,7 +532,7 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testIfAndElseif() {
-        assertEquals(true, parseDirect("if (false) { return false; } else if(100 < 50) { return false; } else if (10 > 5) { return true; }"));
+        assertEquals(true, parseDirect("if (false) { return false; } else if(100 < 50) { return false; } else if (10 > 5) return true;"));
     }
 
     public void testForeEach2() {
