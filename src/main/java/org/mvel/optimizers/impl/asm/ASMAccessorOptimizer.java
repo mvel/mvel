@@ -394,14 +394,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    /**
-     * Handle accessing a property embedded in a collections, map, or array
-     *
-     * @param ctx  -
-     * @param prop -
-     * @return -
-     * @throws Exception -
-     */
+
     private Object getCollectionProperty(Object ctx, String prop)
             throws IllegalAccessException, InvocationTargetException {
         if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
@@ -493,7 +486,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             return ((CharSequence) ctx).charAt(index);
         }
-        else {
+        else {                                                                
             throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
         }
     }
