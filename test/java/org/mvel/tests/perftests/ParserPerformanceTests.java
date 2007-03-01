@@ -30,8 +30,6 @@ public class ParserPerformanceTests extends TestCase {
 
         map.put("pi", "3.14");
         map.put("hour", "60");
-
-        Interpreter.setCacheAggressively(true);
     }
 
     
