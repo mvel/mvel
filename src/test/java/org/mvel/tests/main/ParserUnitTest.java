@@ -345,6 +345,14 @@ public class ParserUnitTest extends TestCase {
         assertEquals("no", parse("@{ackbar ? 'yes' : 'no'}"));
     }
 
+    public void testTernary5() {
+        assertEquals("<<FooBar>>", parseDirect("ackbar ? 'Ack' : '<<FooBar>>'"));
+    }
+
+    public void testTernary6() {
+        assertEquals("<Ack>", parseDirect("!ackbar ? '<Ack>' : '<<FooBar>>'"));
+    }
+
     public void testStrAppend() {
         assertEquals("foobarcar", parse("@{'foo' + 'bar' + 'car'}"));
     }
@@ -446,6 +454,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals(true, parseDirect("doubleTen > 5"));
     }
 
+
+    public void testIncrementNumber() {
+        assertEquals(5, parseDirect("num = 4; num++"));
+    }
 
     public void testExpression10() {
         assertEquals(true, parseDirect("10 + 1 > 5 && 10 + 1 < 20"));
@@ -638,7 +650,6 @@ public class ParserUnitTest extends TestCase {
     public void testForeAch2() {
         assertEquals(6, parseDirect("total = 0; a = {1,2,3}; foreach (item : a) { total = total + item }; total"));
     }
-
 
     public void testForEach3() {
         assertEquals(true, parseDirect("a = {1,2,3}; foreach (i : a)\n{\nif (i == 1){\t return true; } \n}"));

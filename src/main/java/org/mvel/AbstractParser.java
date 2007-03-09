@@ -313,7 +313,7 @@ public class AbstractParser {
                                 break;
                             }
                         case'i': // handle "in" fold operator
-                            if (greedy && cursor < (length - 2) && expr[cursor + 1] == 'n' && isWhitespace(expr[cursor + 2])) {
+                            if (greedy && (cursor + 2) < length && expr[cursor + 1] == 'n' && isWhitespace(expr[cursor + 2])) {
                                 cursor += 2;
 
                                 fields |= Token.FOLD;
@@ -324,7 +324,13 @@ public class AbstractParser {
 
                                 continue;
                             }
-
+//                        case '+':
+//                            if ((cursor + 1) < length && expr[cursor + 1] == '+') {
+//                                fields |= Token.POST_INC;
+//                                cursor += 2;
+//
+//                                return createToken(expr, start, cursor - 2, fields);
+//                            }
                     }
 
                 }
@@ -359,7 +365,7 @@ public class AbstractParser {
 
 
                     case'+':
-                        if (cursor < length && expr[cursor + 1] == '+') {
+                        if (cursor + 1 < length && expr[cursor + 1] == '+') {
                             cursor++;
                         }
                         return createToken(expr, start, cursor++ + 1, fields);

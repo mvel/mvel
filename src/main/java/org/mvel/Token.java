@@ -62,7 +62,6 @@ public class Token implements Cloneable, Serializable {
 
     public static final int RETURN = 1 << 31;
 
-
     protected int firstUnion;
     protected int endOfName;
 
@@ -357,6 +356,7 @@ public class Token implements Cloneable, Serializable {
                 throw new CompileException("bitwise (~) operator can only be applied to integers");
             }
         }
+
 
         return value;
     }
