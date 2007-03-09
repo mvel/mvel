@@ -697,29 +697,6 @@ public class ParseTools {
         return MATH_PROCESSOR.doOperation(val1, operation, val2);
     }
 
-//    public static Object doOperations(Object val1, int operation, Object val2) {
-//        int type1 = val1 == null ? DataTypes.NULL : resolveType(val1.getClass());
-//        int type2 = val2 == null ? DataTypes.NULL : resolveType(val2.getClass());
-//
-//        if (type1 == DataTypes.BIG_DECIMAL) {
-//            if (type2 == DataTypes.BIG_DECIMAL) {
-//                return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2);
-//            }
-//            else if (type2 > 99) {
-//                return doBigDecimalArithmetic((BigDecimal) val1, operation, getBigDecimalFromType(val2, type2));
-//            }
-//            else {
-//                return _doOperations(type1, val1, operation, type2, val2);
-//            }
-//        }
-//        else if (type2 == DataTypes.BIG_DECIMAL && (type1 > 99 || (type1 == DataTypes.STRING && isNumber(val1)))) {
-//            return doBigDecimalArithmetic(getBigDecimalFromType(val1, type1), operation, (BigDecimal) val2);
-//        }
-//        else {
-//            return _doOperations(type1, val1, operation, type2, val2);
-//        }
-//    }
-
 
     public static Object increment(Object o) {
         if (o instanceof Integer) {
