@@ -9,6 +9,7 @@ import org.mvel.math.MathProcessor;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
+import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -24,12 +25,12 @@ public class ParseTools {
 
     static {
         try {
-            double version = Double.parseDouble(System.getProperty("java.version").substring(0, 3));
+            double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
-                MATH_PROCESSOR = (MathProcessor) Class.forName("org.mvel.math.JDK14CompatibilityMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.JDK14CompatibilityMath").newInstance();
             }
             else if (version > 1.4) {
-                MATH_PROCESSOR = (MathProcessor) Class.forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
             }
             else {
                 throw new RuntimeException("unsupported java version: " + version);
