@@ -454,11 +454,6 @@ public class ParserUnitTest extends TestCase {
         assertEquals(true, parseDirect("doubleTen > 5"));
     }
 
-
-    public void testIncrementNumber() {
-        assertEquals(5, parseDirect("num = 4; num++"));
-    }
-
     public void testExpression10() {
         assertEquals(true, parseDirect("10 + 1 > 5 && 10 + 1 < 20"));
     }
