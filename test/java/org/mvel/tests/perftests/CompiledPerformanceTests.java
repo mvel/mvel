@@ -1,5 +1,6 @@
 package org.mvel.tests.perftests;
 
+import static org.mvel.MVEL.executeExpression;
 import junit.framework.TestCase;
 import org.mvel.MVEL;
 import org.mvel.integration.impl.MapVariableResolverFactory;
@@ -42,7 +43,7 @@ public class CompiledPerformanceTests extends TestCase {
 
         Serializable compiled = MVEL.compileExpression(text);
         for (int i = 0; i < ITERATIONS; i++) {
-            MVEL.executeExpression(compiled, variableTable);
+            executeExpression(compiled, variableTable);
         }
 
         assertEquals(ITERATIONS, ((CompiledUnitTest.MiscTestClass) map.get("misc")).getExec());
