@@ -27,7 +27,8 @@ public class ParseTools {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
-                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.JDK14CompatibilityMath").newInstance();
+                                                                        
+                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
             }
             else if (version > 1.4) {
                 MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
@@ -616,30 +617,6 @@ public class ParseTools {
 
 
         return DataTypes.OBJECT;
-    }
-
-    public static BigDecimal getBigDecimalFromType(Object in, int type) {
-        if (in == null)
-            return new BigDecimal(0);
-        switch (type) {
-            case DataTypes.BIG_DECIMAL:
-                return (BigDecimal) in;
-            case DataTypes.W_INTEGER:
-                return new BigDecimal((Integer) in);
-            case DataTypes.W_LONG:
-                return new BigDecimal((Long) in);
-            case DataTypes.STRING:
-                return new BigDecimal((String) in);
-            case DataTypes.W_FLOAT:
-                return new BigDecimal((Float) in);
-            case DataTypes.W_DOUBLE:
-                return new BigDecimal((Double) in);
-            case DataTypes.W_SHORT:
-                return new BigDecimal((Short) in);
-
-        }
-
-        throw new ConversionException("cannot convert <" + in + "> to a numeric type");
     }
 
     public static Object valueOnly(Object o) {

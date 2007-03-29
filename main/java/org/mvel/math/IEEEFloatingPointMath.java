@@ -1,9 +1,9 @@
 package org.mvel.math;
 
 import org.mvel.CompileException;
+import org.mvel.ConversionException;
 import org.mvel.DataTypes;
 import org.mvel.Operator;
-import static org.mvel.util.ParseTools.getBigDecimalFromType;
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
 
@@ -301,6 +301,29 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 }
         }
         return null;
-
     }
+    
+    public static BigDecimal getBigDecimalFromType(Object in, int type) {
+        if (in == null)
+            return new BigDecimal(0);
+        switch (type) {
+            case DataTypes.BIG_DECIMAL:
+                return (BigDecimal) in;
+            case DataTypes.W_INTEGER:
+                return new BigDecimal((Integer) in);
+            case DataTypes.W_LONG:
+                return new BigDecimal((Long) in);
+            case DataTypes.STRING:
+                return new BigDecimal((String) in);
+            case DataTypes.W_FLOAT:
+                return new BigDecimal((Float) in);
+            case DataTypes.W_DOUBLE:
+                return new BigDecimal((Double) in);
+            case DataTypes.W_SHORT:
+                return new BigDecimal((Short) in);
+
+        }
+
+        throw new ConversionException("cannot convert <" + in + "> to a numeric type");
+    }    
 }
