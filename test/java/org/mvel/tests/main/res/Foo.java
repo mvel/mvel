@@ -23,4 +23,8 @@ public class Foo {
         register = s;
         return s.toUpperCase();
     }
+
+    public int getNumber() {
+        return 4;
+    }
 }
