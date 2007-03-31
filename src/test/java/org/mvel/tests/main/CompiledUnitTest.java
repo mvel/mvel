@@ -116,6 +116,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(188.4f, parseDirect("pi * hour"));
     }
 
+    public void testMath2() {
+        assertEquals(3, parseDirect("foo.number-1"));
+    }
+
     public void testComplexExpression() {
         assertEquals("bar", parseDirect("a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]"));
     }
