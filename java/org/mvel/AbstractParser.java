@@ -356,7 +356,7 @@ public class AbstractParser {
                     }
 
                     case'-':
-                        if (!isDigit(expr[cursor + 1])) {
+                        if ((cursor > 0 && !isWhitespace(expr[cursor - 1])) || !isDigit(expr[cursor + 1])) {
                             return createToken(expr, start, cursor++ + 1, fields);
                         }
                         else if ((cursor - 1) < 0 || (!isDigit(expr[cursor - 1])) && isDigit(expr[cursor + 1])) {
