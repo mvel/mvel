@@ -275,12 +275,21 @@ public class ParserUnitTest extends TestCase {
                      ));        
     }
     
-    public void testMultiCollectionWithSeperatorControlLoop() {
-        assertEquals("Happy,Happy,Happy!,Happy!,Joy,Joy,Joy!,Joy!",
+    public void testMultiCollectionWithSingleCharSeperatorControlLoop() {
+        assertEquals("HappyHappy,Happy!Happy!,JoyJoy,Joy!Joy!",
                      parse(
                              "@foreach{list, array as listItem, arrayItem}" +
                                      "@{listItem}@{arrayItem}" +
-                                     "@end{\",\"}"
+                                     "@end{\",\"  }"
+                     ));        
+    }  
+    
+    public void testMultiCollectionWithMultipleCharSeperatorControlLoop() {
+        assertEquals("HappyHappy,|Happy!Happy!,|JoyJoy,|Joy!Joy!",
+                     parse(
+                             "@foreach{list, array as listItem, arrayItem}" +
+                                     "@{listItem}@{arrayItem}" +
+                                     "@end{\",|\"  }"
                      ));        
     }    
 
@@ -303,12 +312,18 @@ public class ParserUnitTest extends TestCase {
     }       
 
     
-    public void testMultiCollectionWithSeperatorControlLoopMultiple() {
+    public void testMultiCollectionWithSingleCharSeperatorControlLoopMultiple() {
         for (int i = 0; i < 100; i++) {
-            testMultiCollectionWithSeperatorControlLoop();
+            testMultiCollectionWithSingleCharSeperatorControlLoop();
         }
     }  
     
+    public void testMultiCollectionWithMultipleCharSeperatorControlLoopMultiple() {
+        for (int i = 0; i < 100; i++) {
+            testMultiCollectionWithMultipleCharSeperatorControlLoop();
+        }
+    }  
+        
     
     public void testControlLoop2() {
         assertEquals("HappyHappy!JoyJoy!",
