@@ -1,7 +1,7 @@
 package org.mvel.block;
 
 import org.mvel.ExecutableStatement;
-import org.mvel.MVEL;
+import static org.mvel.MVEL.compileExpression;
 import org.mvel.Token;
 import org.mvel.integration.VariableResolverFactory;
 
@@ -19,8 +19,8 @@ public class IfToken extends Token {
     public IfToken(char[] condition, char[] block, int fields) {
         super(condition, fields);
 
-        this.condition = (ExecutableStatement) MVEL.compileExpression(this.name = condition);
-        this.compiledBlock = (ExecutableStatement) MVEL.compileExpression(this.block = block);
+        this.condition = (ExecutableStatement) compileExpression(this.name = condition);
+        this.compiledBlock = (ExecutableStatement) compileExpression(this.block = block);
     }
 
     public char[] getBlock() {
@@ -46,7 +46,7 @@ public class IfToken extends Token {
         else if (elseBlock != null)
             return elseBlock.getValue(ctx, thisValue, factory);
         else
-            return Void.class; 
+            return Void.class;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -87,6 +87,6 @@ public class IfToken extends Token {
     }
 
     public void setElseBlock(char[] block) {
-        elseBlock = (ExecutableStatement) MVEL.compileExpression(block);
+        elseBlock = (ExecutableStatement) compileExpression(block);
     }
 }
