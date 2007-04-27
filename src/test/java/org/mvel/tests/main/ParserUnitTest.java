@@ -248,7 +248,7 @@ public class ParserUnitTest extends TestCase {
         assertEquals(null, parse("@{null}"));
     }
 
-    public void testControlLoop() {
+    public void testControlLoopList() {
         assertEquals("HappyHappy!JoyJoy!",
                 parse(
                         "@foreach{list as fun}" +
@@ -256,12 +256,27 @@ public class ParserUnitTest extends TestCase {
                                 "@end{}"
                 ));
     }
+    
+    public void testControlLoopArray() {
+        assertEquals("HappyHappy!JoyJoy!",
+                parse(
+                        "@foreach{array as fun}" +
+                                "@{fun}" +
+                                "@end{}"
+                ));
+    }    
 
-    public void testControlLoopMultiple() {
+    public void testControlLoopListMultiple() {
         for (int i = 0; i < 100; i++) {
-            testControlLoop();
+            testControlLoopList();
         }
     }
+    
+    public void testControlLoopArrayMultiple() {
+        for (int i = 0; i < 100; i++) {
+            testControlLoopArray();
+        }
+    }    
 
     public void testControlLoop2() {
         assertEquals("HappyHappy!JoyJoy!",

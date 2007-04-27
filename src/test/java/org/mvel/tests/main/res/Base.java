@@ -9,6 +9,7 @@ public class Base {
     public String data = "cat";
     public String number = "101";
     public List<String> list;
+    public String[] array;
     public List<Thing> things;
     public Boolean fun =  false;
     public String sentence = "The quick brown fox jumps over the lazy dog!";
@@ -32,6 +33,8 @@ public class Base {
         list.add("Happy!");
         list.add("Joy");
         list.add("Joy!");
+        
+        this.array = (String[]) this.list.toArray( new String[ this.list.size() ] );
 
         things = new ArrayList<Thing>();
         things.add(new Thing("Bob"));
