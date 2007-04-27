@@ -12,6 +12,7 @@ import org.mvel.util.ThisLiteral;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Character.isWhitespace;
+import static java.lang.System.arraycopy;
 import static java.util.Collections.synchronizedMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -623,7 +624,7 @@ public class AbstractParser {
 
     private char[] subArray(final int start, final int end) {
         char[] newA = new char[end - start];
-        System.arraycopy(expr, start, newA, 0, newA.length);
+        arraycopy(expr, start, newA, 0, newA.length);
         return newA;
     }
 
@@ -648,7 +649,6 @@ public class AbstractParser {
         Token tk = null;
 
         if (isFlag(Token.BLOCK_IF)) {
-
             do {
                 if (tk != null) {
                     skipToNextTokenJunction();
@@ -817,7 +817,7 @@ public class AbstractParser {
                 while (isWhitespace(this.expr[length - 1])) length--;
 
                 char[] e = new char[length];
-                System.arraycopy(this.expr, 0, e, 0, length);
+                arraycopy(this.expr, 0, e, 0, length);
 
                 EX_PRECACHE.put(expression, e);
             }
