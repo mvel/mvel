@@ -23,8 +23,7 @@ import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
-import org.mvel.optimizers.OptimizerFactory;
-import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
+import static org.mvel.optimizers.OptimizerFactory.*;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.handleNumericConversion;
@@ -33,6 +32,7 @@ import org.mvel.util.ThisLiteral;
 
 import java.io.Serializable;
 import static java.lang.Class.forName;
+import static java.lang.System.arraycopy;
 
 public class Token implements Cloneable, Serializable {
     public static final int LITERAL = 1;
@@ -73,6 +73,7 @@ public class Token implements Cloneable, Serializable {
     protected Object literal;
 
     protected Accessor accessor;
+
     public Token nextToken;
 
     public Token(char[] expr, int start, int end, int fields) {
@@ -84,7 +85,7 @@ public class Token implements Cloneable, Serializable {
         }
 
         char[] name = new char[end - start];
-        System.arraycopy(expr, start, name, 0, end - start);
+        arraycopy(expr, start, name, 0, end - start);
         setName(name);
     }
 
@@ -165,41 +166,41 @@ public class Token implements Cloneable, Serializable {
             Object retVal = null;
 
             if ((fields & ASSIGN) != 0) {
-                optimizer = OptimizerFactory.getDefaultAccessorCompiler();
+                optimizer = getDefaultAccessorCompiler();
                 accessor = optimizer.optimizeAssignment(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & SUBEVAL) != 0) {
-                optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+                optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
                 accessor = (ExecutableStatement) MVEL.compileExpression(name);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & INLINE_COLLECTION) != 0) {
-                optimizer = OptimizerFactory.getDefaultAccessorCompiler();
+                optimizer = getDefaultAccessorCompiler();
                 accessor = optimizer.optimizeCollection(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & FOLD) != 0) {
-                optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+                optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
                 accessor = optimizer.optimizeFold(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & NEW) != 0) {
-                optimizer = OptimizerFactory.getDefaultAccessorCompiler();
+                optimizer = getDefaultAccessorCompiler();
                 accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & RETURN) != 0) {
-                optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+                optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
                 accessor = optimizer.optimizeReturn(name, ctx, thisValue, factory);
                 throw new EndWithValue(optimizer.getResultOptPass());
             }
             else {
                 try {
-                    accessor = (optimizer = OptimizerFactory.getDefaultAccessorCompiler()).optimize(name, ctx, thisValue, factory, true);
+                    accessor = (optimizer = getDefaultAccessorCompiler()).optimize(name, ctx, thisValue, factory, true);
                 }
                 catch (OptimizationNotSupported ne) {
-                    accessor = (optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)).optimize(name, ctx, thisValue, factory, true);
+                    accessor = (optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimize(name, ctx, thisValue, factory, true);
                 }
             }
 
@@ -225,7 +226,7 @@ public class Token implements Cloneable, Serializable {
         }
         else if ((fields & ASSIGN) != 0) {
             if (accessor == null) {
-                accessor = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)
+                accessor = getAccessorCompiler(SAFE_REFLECTIVE)
                         .optimizeAssignment(name, ctx, thisValue, factory);
             }
 
@@ -237,7 +238,7 @@ public class Token implements Cloneable, Serializable {
 
         else if ((fields & INLINE_COLLECTION) != 0) {
             if (accessor == null) {
-                accessor = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE)
+                accessor = getAccessorCompiler(SAFE_REFLECTIVE)
                         .optimizeCollection(name, ctx, thisValue, factory);
             }
 
@@ -245,7 +246,7 @@ public class Token implements Cloneable, Serializable {
         }
         else if ((fields & FOLD) != 0) {
             if (accessor == null) {
-                AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+                AccessorOptimizer optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
                 accessor = optimizer.optimizeFold(name, ctx, thisValue, factory);
 
                 return optimizer.getResultOptPass();
@@ -253,14 +254,14 @@ public class Token implements Cloneable, Serializable {
         }
         else if ((fields & NEW) != 0) {
             if (accessor == null) {
-                AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+                AccessorOptimizer optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
                 accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
 
                 return optimizer.getResultOptPass();
             }
         }
         else if ((fields & RETURN) != 0) {
-            AccessorOptimizer optimizer = OptimizerFactory.getAccessorCompiler(SAFE_REFLECTIVE);
+            AccessorOptimizer optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
             accessor = optimizer.optimizeReturn(name, ctx, thisValue, factory);
             throw new EndWithValue(optimizer.getResultOptPass());
         }

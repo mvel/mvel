@@ -19,6 +19,12 @@
 package org.mvel.optimizers.impl.asm;
 
 import org.mvel.*;
+import org.mvel.asm.ClassWriter;
+import org.mvel.asm.FieldVisitor;
+import org.mvel.asm.MethodVisitor;
+import org.mvel.asm.Opcodes;
+import static org.mvel.asm.Opcodes.*;
+import static org.mvel.asm.Type.*;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
@@ -30,12 +36,6 @@ import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
-import static org.objectweb.asm.Opcodes.*;
-import static org.objectweb.asm.Type.*;
 
 import java.lang.reflect.*;
 import java.util.*;
