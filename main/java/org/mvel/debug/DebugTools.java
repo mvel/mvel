@@ -152,6 +152,8 @@ public class DebugTools {
                 return "TERNARY_ELSE";
             case Operator.WHILE:
                 return "WHILE";
+            case Operator.CHOR:
+                return "CHAINED_OR";
         }
 
 
