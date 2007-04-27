@@ -37,9 +37,11 @@ public class DebugTools {
             else if (tk.isOperator()) {
                 sbuf.append("OPERATOR [").append(getOperatorName(tk.getOperator())).append("]: ")
                         .append(tk.getName());
+
+                if (tk.isOperator(Operator.END_OF_STMT)) sbuf.append("\n");
             }
             else if (tk.isIdentifier()) {
-                sbuf.append("PUSH VAR :: " + tk.getName());
+                sbuf.append("PUSH VAR :: ").append(tk.getName());
             }
 
             sbuf.append("\n");
