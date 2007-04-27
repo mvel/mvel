@@ -37,6 +37,14 @@ public class MVEL {
     public static final String CODENAME = "horizon";
 
     static boolean THREAD_SAFE = Boolean.getBoolean("mvel.threadsafety");
+    static boolean OPTIMIZER = true;
+
+    static {
+        if (System.getProperty("mvel.optimizer") != null) {
+            OPTIMIZER = Boolean.getBoolean("mvel.optimizer");
+        }
+
+    }
 
     /**
      * Force MVEL to use thread-safe caching.  This can also be specified enivromentally using the
@@ -99,7 +107,7 @@ public class MVEL {
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
-        if (tokens.size() == 1) {
+        if (OPTIMIZER && tokens.size() == 1) {
             Token tk = tokens.firstToken();
             if (tk.isIdentifier()) {
                 return new ExecutableAccessor(tk, false);
@@ -129,7 +137,7 @@ public class MVEL {
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
-        if (tokens.size() == 1) {
+        if (OPTIMIZER && tokens.size() == 1) {
             Token tk = tokens.firstToken();
             if (tk.isIdentifier()) {
                 return new ExecutableAccessor(tk, false);
