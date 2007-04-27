@@ -3,6 +3,7 @@ package org.mvel.tests.main;
 import junit.framework.TestCase;
 import org.mvel.ExpressionCompiler;
 import org.mvel.MVEL;
+import org.mvel.debug.DebugTools;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.DerivedClass;
@@ -577,6 +578,9 @@ public class CompiledUnitTest extends TestCase {
 
     public Object compiledExecute(String ex) {
         Serializable compiled = MVEL.compileExpression(ex);
+
+        System.out.println(DebugTools.decompile(compiled));
+
         Object first = MVEL.executeExpression(compiled, base, map);
         Object second = MVEL.executeExpression(compiled, base, map);
 

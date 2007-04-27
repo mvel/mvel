@@ -486,7 +486,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             return ((CharSequence) ctx).charAt(index);
         }
-        else {                                                                
+        else {
             throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
         }
     }
