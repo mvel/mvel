@@ -31,6 +31,8 @@ import static java.nio.ByteBuffer.allocateDirect;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Collection;
 import static java.util.Collections.synchronizedMap;
+
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -377,9 +379,11 @@ public class Interpreter {
                     case FOREACH: {
                         if (currNode.getRegister() == null) {
                             try {
-                                currNode.setRegister(
-                                        ((Collection) new ExpressionParser(getForEachSegment(currNode), ctx, tokens).parse()).iterator()
-                                );
+                                Object listObject = new ExpressionParser(getForEachSegment(currNode), ctx, tokens).parse();
+                                if ( listObject instanceof Object[]) {
+                                    listObject = Arrays.asList( (Object[]) listObject );
+                                }
+                                currNode.setRegister( ((Collection)listObject).iterator() );
                             }
                             catch (ClassCastException e) {
                                 throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)));
