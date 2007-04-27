@@ -92,10 +92,12 @@ public class TemplateCompiler {
                     }
                     else if ("end".equals(token)) {
                         depth--;
-                        if (exStr.length > 0)
-                            throw new CompileException("$end token cannot contain an expression (use $end{}) near: " + showCodeNearError());
+                        
+//                        if (exStr.length > 0)
+//                            throw new CompileException("$end token cannot contain an expression (use $end{}) near: " + showCodeNearError());
 
                         ex.setToken(END);
+                        ex.setRegister( exStr );
                     }
                     else {
                         throw new CompileException("unknown token: " + token);
@@ -210,6 +212,18 @@ public class TemplateCompiler {
                                     break;
                             }
                         }
+                    } else if (e.getToken() == FOREACH) {
+                        char[] props = ( char[] ) expressions[i].getRegister();
+                        if ( props != null && props.length > 0 ) {
+                            int j = 0;                                                                      
+                            // skip white space
+                            while (j < props.length && isWhitespace(props[j])) {i++;};                                    
+                            if ( props[j] != '\"' && props[i+2] !='\"') {
+                                throw new CompileException("seperator is not correctly specified \"" + props + "\"" );
+                            }                                    
+                            e.setRegister( Character.toString( props[j+1] ) );
+                            
+                        }             
                     }
 
                     break;
