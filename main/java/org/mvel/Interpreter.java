@@ -379,11 +379,16 @@ public class Interpreter {
                     case FOREACH: {
                         if (currNode.getRegister() == null) {
                             try {
-                                Object listObject = new ExpressionParser(getForEachSegment(currNode), ctx, tokens).parse();
-                                if ( listObject instanceof Object[]) {
-                                    listObject = Arrays.asList( (Object[]) listObject );
+                                String[] lists = getForEachSegment(currNode).split( "," );
+                                Iterator[] iters = new Iterator[lists.length];
+                                for( int i = 0; i < lists.length; i++ ) {
+                                    Object listObject = new ExpressionParser(lists[i], ctx, tokens).parse();
+                                    if ( listObject instanceof Object[]) {
+                                        listObject = Arrays.asList( (Object[]) listObject );
+                                    }    
+                                    iters[i] = ((Collection)listObject).iterator() ;
                                 }
-                                currNode.setRegister( ((Collection)listObject).iterator() );
+                                currNode.setRegister( iters );
                             }
                             catch (ClassCastException e) {
                                 throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)));
@@ -393,11 +398,18 @@ public class Interpreter {
                             }
                         }
 
-                        Iterator iter = (Iterator) currNode.getRegister();
-                        if (iter.hasNext()) {
+                        Iterator[] iters = (Iterator[]) currNode.getRegister();
+                        String[] alias = currNode.getAlias().split( "," );
+                        // must trim vars
+                        for ( int i = 0; i < alias.length; i++ ) {
+                            alias[i] = alias[i].trim();
+                        }
+                        if (iters[0].hasNext()) {
                             push();
                             //noinspection unchecked
-                            tokens.put(currNode.getAlias(), iter.next());
+                            for ( int i = 0; i < iters.length; i++ ) {
+                                tokens.put(alias[i], iters[i].next());
+                            }
                         }
                         else {
                             tokens.remove(currNode.getAlias());
