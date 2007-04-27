@@ -30,4 +30,5 @@ public interface NodeType {
     public static final int TERMINUS = 7;
     public static final int GOTO = 8;
     public static final int OPERATOR = 9;
+    public static final int SEPERATOR = 10;
 }
