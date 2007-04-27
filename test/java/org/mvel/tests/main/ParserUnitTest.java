@@ -274,6 +274,15 @@ public class ParserUnitTest extends TestCase {
                                      "@end{}"
                      ));        
     }
+    
+    public void testMultiCollectionWithSeperatorControlLoop() {
+        assertEquals("HappyHappyHappy!Happy!JoyJoyJoy!Joy!",
+                     parse(
+                             "@foreach{list, array as listItem, arrayItem}" +
+                                     "@{listItem}@{arrayItem}" +
+                                     "@end{\",\"}"
+                     ));        
+    }    
 
     public void testControlLoopListMultiple() {
         for (int i = 0; i < 100; i++) {
@@ -293,6 +302,14 @@ public class ParserUnitTest extends TestCase {
         }
     }       
 
+    
+    public void testMultiCollectionWithSeperatorControlLoopMultiple() {
+        for (int i = 0; i < 100; i++) {
+            testMultiCollectionWithSeperatorControlLoop();
+        }
+    }  
+    
+    
     public void testControlLoop2() {
         assertEquals("HappyHappy!JoyJoy!",
                 parse(

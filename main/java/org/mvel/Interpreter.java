@@ -24,6 +24,8 @@ import org.mvel.util.ExecutionStack;
 import org.mvel.util.StringAppender;
 
 import java.io.*;
+
+import static java.lang.Character.isWhitespace;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
 import java.nio.ByteBuffer;
@@ -377,8 +379,13 @@ public class Interpreter {
                     }
 
                     case FOREACH: {
-                        if (currNode.getRegister() == null) {
+                        String seperator = "";
+                        if (currNode.getRegister() == null || currNode.getRegister() instanceof String) {
                             try {
+                                String props = ( String) currNode.getRegister();
+                                if ( props != null && props.length() > 0 ) {
+                                    seperator = props;
+                                }
                                 String[] lists = getForEachSegment(currNode).split( "," );
                                 Iterator[] iters = new Iterator[lists.length];
                                 for( int i = 0; i < lists.length; i++ ) {
@@ -389,8 +396,7 @@ public class Interpreter {
                                     iters[i] = ((Collection)listObject).iterator() ;
                                 }
                                 currNode.setRegister( iters );
-                            }
-                            catch (ClassCastException e) {
+                            } catch (ClassCastException e) {
                                 throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)));
                             }
                             catch (NullPointerException e) {
@@ -403,16 +409,21 @@ public class Interpreter {
                         // must trim vars
                         for ( int i = 0; i < alias.length; i++ ) {
                             alias[i] = alias[i].trim();
-                        }
+                        }                         
+                        
                         if (iters[0].hasNext()) {
                             push();
+
                             //noinspection unchecked
                             for ( int i = 0; i < iters.length; i++ ) {
                                 tokens.put(alias[i], iters[i].next());
                             }
+                            sbuf.append( seperator );                                                       
                         }
                         else {
-                            tokens.remove(currNode.getAlias());
+                            for ( int i = 0; i < iters.length; i++ ) {
+                                tokens.remove(alias[i]);
+                            }                            
                             exitContext();
                         }
                         break;
