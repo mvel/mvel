@@ -276,7 +276,7 @@ public class ParserUnitTest extends TestCase {
     }
     
     public void testMultiCollectionWithSeperatorControlLoop() {
-        assertEquals("HappyHappyHappy!Happy!JoyJoyJoy!Joy!",
+        assertEquals("Happy,Happy,Happy!,Happy!,Joy,Joy,Joy!,Joy!",
                      parse(
                              "@foreach{list, array as listItem, arrayItem}" +
                                      "@{listItem}@{arrayItem}" +
