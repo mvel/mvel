@@ -223,13 +223,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     StaticReferenceAccessor accessor = new StaticReferenceAccessor();
                     accessor.setLiteral(tryStaticMethodRef);
                     addAccessorNode(accessor);
+                    return tryStaticMethodRef;
                 }
                 else {
                     StaticVarAccessor accessor = new StaticVarAccessor((Field) tryStaticMethodRef);
                     addAccessorNode(accessor);
+                    return ((Field) tryStaticMethodRef).get(null);
                 }
 
-                return tryStaticMethodRef;
             }
             else
                 throw new PropertyAccessException("could not access property ('" + property + "')");
@@ -528,10 +529,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
 
         Token expr = captureTokenToEOS();
-
-//        start = cursor;
-//        captureToEOS();
-//        Token expr = new Token(property, start, cursor, 0);
 
         if (expr.isLiteral()) {
             assert ParseTools.debug("ASSIGN_LITERAL '" + expr.getName() + "'");
