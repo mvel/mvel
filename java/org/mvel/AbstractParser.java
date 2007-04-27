@@ -54,8 +54,8 @@ public class AbstractParser {
 
         AbstractParser.LITERALS.put("null", null);
         AbstractParser.LITERALS.put("nil", null);
-//@FIXME
-//        AbstractParser.LITERALS.put("empty", BlankLiteral.INSTANCE);
+
+        AbstractParser.LITERALS.put("empty", BlankLiteral.INSTANCE);
 
         AbstractParser.LITERALS.put("this", ThisLiteral.class);
 
