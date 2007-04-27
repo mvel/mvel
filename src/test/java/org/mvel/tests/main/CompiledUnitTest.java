@@ -601,24 +601,6 @@ public class CompiledUnitTest extends TestCase {
         return second;
     }
 
-//
-//    public void testSimplePropertyAccess() {
-//        final String expr = "c";
-//        Serializable compiled = compileExpression(expr);
-//
-//        for (int i = 0; i < 100000; i++) {
-//            executeExpression(compiled, map);
-//        }
-//    }
-
-//    public void testMathPerformance() {
-//        final String expr = "10 + 1 + 3";
-//        Serializable compiled = compileExpression(expr);
-//
-//        for (int i = 0; i < 10000; i++) {
-//            executeExpression(compiled, map);
-//        }
-//    }
 
     public void testDifferentImplSameCompile() {
         Serializable compiled = MVEL.compileExpression("a.funMap.hello");

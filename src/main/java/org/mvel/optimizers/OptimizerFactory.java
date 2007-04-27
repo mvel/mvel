@@ -39,7 +39,7 @@ public class OptimizerFactory {
          * By default, activate the JIT if ASM is present in the classpath
          */
         try {
-            Class.forName("org.objectweb.asm.ClassWriter");
+            Class.forName("org.mvel.asm.ClassWriter");
 
             optimizers.put(defaultOptimizer = "ASM", new ASMOptimizer());
             accessorCompilers.put("ASM", new ASMAccessorOptimizer());
