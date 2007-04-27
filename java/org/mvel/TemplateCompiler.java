@@ -217,13 +217,21 @@ public class TemplateCompiler {
                         if ( props != null && props.length > 0 ) {
                             int j = 0;                                                                      
                             // skip white space
-                            while (j < props.length && isWhitespace(props[j])) {i++;};                                    
-                            if ( props[j] != '\"' && props[i+2] !='\"') {
+                            while (j < props.length && isWhitespace(props[j])) {j++;};                                    
+                            if ( props[j] != '"' ) { //&& props[i+2] !='\"') {
                                 throw new CompileException("seperator is not correctly specified \"" + props + "\"" );
-                            }                                    
-                            e.setRegister( Character.toString( props[j+1] ) );
+                            }                
+
+                            int k = props.length-1;      
+                            while (k < props.length && props[k] != '"') {k--;};                                    
+                            if ( props[k] != '"' ) { //&& props[i+2] !='\"') {
+                                throw new CompileException("seperator is not correctly specified \"" + props + "\"" );
+                            }
                             
-                        }             
+                            e.setRegister( new ForeachContext( new String( props, j+1, k-j-1 ) ) );                            
+                        } else {
+                            e.setRegister( new ForeachContext( "" ) );
+                        }
                     }
 
                     break;

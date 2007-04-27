@@ -379,13 +379,9 @@ public class Interpreter {
                     }
 
                     case FOREACH: {
-                        String seperator = "";
-                        if (currNode.getRegister() == null || currNode.getRegister() instanceof String) {
+                        ForeachContext foreachContext = ( ForeachContext ) currNode.getRegister();
+                        if ( foreachContext.getItererators() == null ) {
                             try {
-                                String props = ( String) currNode.getRegister();
-                                if ( props != null && props.length() > 0 ) {
-                                    seperator = props;
-                                }
                                 String[] lists = getForEachSegment(currNode).split( "," );
                                 Iterator[] iters = new Iterator[lists.length];
                                 for( int i = 0; i < lists.length; i++ ) {
@@ -395,7 +391,7 @@ public class Interpreter {
                                     }    
                                     iters[i] = ((Collection)listObject).iterator() ;
                                 }
-                                currNode.setRegister( iters );
+                                foreachContext.setIterators( iters );
                             } catch (ClassCastException e) {
                                 throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)));
                             }
@@ -404,7 +400,7 @@ public class Interpreter {
                             }
                         }
 
-                        Iterator[] iters = (Iterator[]) currNode.getRegister();
+                        Iterator[] iters = foreachContext.getItererators();
                         String[] alias = currNode.getAlias().split( "," );
                         // must trim vars
                         for ( int i = 0; i < alias.length; i++ ) {
@@ -418,12 +414,17 @@ public class Interpreter {
                             for ( int i = 0; i < iters.length; i++ ) {
                                 tokens.put(alias[i], iters[i].next());
                             }
-                            sbuf.append( seperator );                                                       
+                            if ( foreachContext.getCount() != 0 ) {
+                                sbuf.append( foreachContext.getSeperator() );
+                            }
+                            foreachContext.setCount( foreachContext.getCount( ) + 1 );
                         }
                         else {
                             for ( int i = 0; i < iters.length; i++ ) {
                                 tokens.remove(alias[i]);
-                            }                            
+                            }      
+                            foreachContext.setIterators( null );
+                            foreachContext.setCount( 0 );
                             exitContext();
                         }
                         break;
@@ -460,7 +461,7 @@ public class Interpreter {
             throw new CompileException("unhandled fatal exception (node:" + node + ")", e);
         }
     }
-
+    
     private void initStack() {
         stack = new ExecutionStack();
     }
