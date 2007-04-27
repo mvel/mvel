@@ -11,8 +11,8 @@ public class AbstractOptimizer extends AbstractParser {
     protected static final int COL = 2;
 
     protected int start = 0;
-  
-    protected Object tryStaticAccess() {    
+
+    protected Object tryStaticAccess() {
         try {
             /**
              * Try to resolve this *smartly* as a static class reference.
