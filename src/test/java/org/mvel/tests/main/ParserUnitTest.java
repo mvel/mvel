@@ -660,6 +660,11 @@ public class ParserUnitTest extends TestCase {
         assertEquals(true, parseDirect("this is 'org.mvel.tests.main.res.Base'"));
     }
 
+    public void testIncludeByRef() {
+        Interpreter.registryTemplate( "templateName", "@{var1}@{var2}" );
+        assertEquals("value1cat", parse("@includeByRef{templateName(var1 = \"value1\", var2 = c)}"));
+    }
+
 
     public void testStringEscaping() {
         assertEquals("\"Mike Brock\"", parse("@{\"\\\"Mike Brock\\\"\"}"));

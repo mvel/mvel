@@ -28,7 +28,9 @@ import static java.lang.Character.isWhitespace;
 import static java.lang.String.copyValueOf;
 import static java.lang.System.arraycopy;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TemplateCompiler {
     private static final boolean DEFAULT_DEBUG = getBoolean("mvflex.expression.debug");
@@ -98,6 +100,10 @@ public class TemplateCompiler {
 
                         ex.setToken(END);
                         ex.setRegister( exStr );
+                    }
+                    else if ("includeByRef".equals( token )) {
+                        ex.setToken( INCLUDE_BY_REF );
+                        ex.setRegister( buildIncludeRef(exStr) );
                     }
                     else {
                         throw new CompileException("unknown token: " + token);
@@ -185,6 +191,7 @@ public class TemplateCompiler {
                 case PROPERTY_EX:
                 case ELSE:
                 case ELSEIF:
+                case INCLUDE_BY_REF:
                     break;
 
                 case END:
@@ -274,7 +281,90 @@ public class TemplateCompiler {
 
         return expressions;
     }
+    
+    private IncludeRef buildIncludeRef(char[] text) {
+        int i = 0;
+                
+        // skip leading white spaces
+        while (isWhitespace(text[i++])) ;
+        int start = i;
+        
+        // scan to the first (
+        while(text[i++] != '(' ) ;
+        String name = new String( text, start-1, i - start );
+        
+        List params = new ArrayList();
+        
+        while ( true ) {
+            start = i;
+            while(i < text.length && text[i++] != ',' );
+            params.add( new IncludeRefParam( text, start, i - 1 ) );
+            if ( i == text.length) {
+                break;
+            }            
+        }
+        
+        return new IncludeRef( name, (IncludeRefParam[]) params.toArray( new IncludeRefParam[ params.size()] ) );
+        
+        
+    }
 
+    public static class IncludeRef {
+        private String name;
+        private IncludeRefParam[] params;
+        
+        public IncludeRef(String name,
+                          IncludeRefParam[] params) {
+            this.name = name;
+            this.params = params;
+        }
+        
+        public String getName() {
+            return name;
+        }
+        
+        public IncludeRefParam[] getParams() {
+            return params;
+        }                       
+    }
+
+    public static class IncludeRefParam {
+        private String identifier;
+        private String value;
+        
+        public IncludeRefParam(char[] text, int start, int end) {
+            int i = start;
+            
+            // skip leading white spaces
+            while (isWhitespace(text[i++])) ;            
+            int startName = i-1;
+            
+            // scan the identifier
+            while( text[i] != ' ' && text[i] != '=') {i++;};
+            this.identifier = new String(text, startName, i-startName);            
+            
+            // scan to find the start of the value
+            while( text[i] == ' ' ||  text[i] == '=') {i++;};
+            this.value = "@{" + new String(text, i-1, end-i+1) + "}";
+            
+                      
+        }
+        
+        public IncludeRefParam(String identifier,
+                               String value) {
+            this.identifier = identifier;
+            this.value = value;
+        }
+        
+        public String getIdentifier() {
+            return identifier;
+        }
+        
+        public String getValue() {
+            return value;
+        }                                
+    }
+    
     private static String indent(final int depth) {
         final StringAppender sb = new StringAppender();
         for (int i = depth; i >= 0; i--) {
