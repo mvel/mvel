@@ -20,6 +20,9 @@
 package org.mvel;
 
 import static org.mvel.NodeType.*;
+
+import org.mvel.TemplateCompiler.IncludeRef;
+import org.mvel.TemplateCompiler.IncludeRefParam;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.StringAppender;
 
@@ -35,6 +38,7 @@ import java.util.Collection;
 import static java.util.Collections.synchronizedMap;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -141,17 +145,21 @@ public class Interpreter {
     private static final Map<CharSequence, char[]> EX_PRECACHE;
     private static final Map<Object, Node[]> EX_NODE_CACHE;
     private static final Map<Object, Serializable> EX_PRECOMP_CACHE;
+    
+    private static final Map<String, String> EX_TEMPLATE_REGISTRY;
 
     static {
         if (MVEL.THREAD_SAFE) {
             EX_PRECACHE = synchronizedMap(new WeakHashMap<CharSequence, char[]>());
             EX_NODE_CACHE = synchronizedMap(new WeakHashMap<Object, Node[]>());
             EX_PRECOMP_CACHE = synchronizedMap(new WeakHashMap<Object, Serializable>());
+            EX_TEMPLATE_REGISTRY = synchronizedMap( new HashMap() );
         }
         else {
             EX_PRECACHE = (new WeakHashMap<CharSequence, char[]>());
             EX_NODE_CACHE = (new WeakHashMap<Object, Node[]>());
             EX_PRECOMP_CACHE = (new WeakHashMap<Object, Serializable>());
+            EX_TEMPLATE_REGISTRY = new HashMap();
         }
     }
 
@@ -206,7 +214,7 @@ public class Interpreter {
 
         }
         cloneAllNodes();
-    }
+    }    
 
     private void cloneAllNodes() {
         try {
@@ -222,6 +230,10 @@ public class Interpreter {
     public Interpreter(char[] expression) {
         this.expression = expression;
     }
+    
+    public static void registryTemplate(String name, String template) {
+        EX_TEMPLATE_REGISTRY.put( name, template );
+    }    
 
     public boolean isDebug() {
         return debug;
@@ -334,6 +346,18 @@ public class Interpreter {
                     }
                 case LITERAL:
                     return new String(expression);
+                case INCLUDE_BY_REF: {
+                    IncludeRef includeRef = (IncludeRef) nodes[0].getRegister();
+                    String template = EX_TEMPLATE_REGISTRY.get( includeRef.getName() );
+                    
+                    IncludeRefParam[] params = includeRef.getParams();
+                    Map vars = new HashMap( params.length );
+                    for ( int i = 0; i < params.length; i++ ) {
+                        vars.put( params[i].getIdentifier(), parse(params[i].getValue(), ctx, tokens));
+                    }
+                    
+                    return Interpreter.parse( template, ctx, vars );                    
+                }                    
             }
 
             return new String(expression);
@@ -377,7 +401,6 @@ public class Interpreter {
                         }
                         break;
                     }
-
                     case FOREACH: {
                         ForeachContext foreachContext = ( ForeachContext ) currNode.getRegister();
                         if ( foreachContext.getItererators() == null ) {
