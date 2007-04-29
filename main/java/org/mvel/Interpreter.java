@@ -20,28 +20,19 @@
 package org.mvel;
 
 import static org.mvel.NodeType.*;
-
 import org.mvel.TemplateCompiler.IncludeRef;
 import org.mvel.TemplateCompiler.IncludeRefParam;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.StringAppender;
 
 import java.io.*;
-
-import static java.lang.Character.isWhitespace;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
 import java.nio.ByteBuffer;
 import static java.nio.ByteBuffer.allocateDirect;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Collection;
+import java.util.*;
 import static java.util.Collections.synchronizedMap;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 /**
  * The MVEL Template Interpreter.  Naming this an "Interpreter" is not inaccurate.   All template expressions
@@ -145,7 +136,7 @@ public class Interpreter {
     private static final Map<CharSequence, char[]> EX_PRECACHE;
     private static final Map<Object, Node[]> EX_NODE_CACHE;
     private static final Map<Object, Serializable> EX_PRECOMP_CACHE;
-    
+
     private static final Map<String, String> EX_TEMPLATE_REGISTRY;
 
     static {
@@ -153,7 +144,7 @@ public class Interpreter {
             EX_PRECACHE = synchronizedMap(new WeakHashMap<CharSequence, char[]>());
             EX_NODE_CACHE = synchronizedMap(new WeakHashMap<Object, Node[]>());
             EX_PRECOMP_CACHE = synchronizedMap(new WeakHashMap<Object, Serializable>());
-            EX_TEMPLATE_REGISTRY = synchronizedMap( new HashMap() );
+            EX_TEMPLATE_REGISTRY = synchronizedMap(new HashMap());
         }
         else {
             EX_PRECACHE = (new WeakHashMap<CharSequence, char[]>());
@@ -214,7 +205,7 @@ public class Interpreter {
 
         }
         cloneAllNodes();
-    }    
+    }
 
     private void cloneAllNodes() {
         try {
@@ -230,10 +221,10 @@ public class Interpreter {
     public Interpreter(char[] expression) {
         this.expression = expression;
     }
-    
+
     public static void registryTemplate(String name, String template) {
-        EX_TEMPLATE_REGISTRY.put( name, template );
-    }    
+        EX_TEMPLATE_REGISTRY.put(name, template);
+    }
 
     public boolean isDebug() {
         return debug;
@@ -320,6 +311,9 @@ public class Interpreter {
             return new String(expression);
         }
         else if (nodes.length == 2) {
+            /**
+             * This is an optimization for property expressions.
+             */
             switch (nodes[0].getToken()) {
                 case PROPERTY_EX:
                     //noinspection unchecked
@@ -346,18 +340,7 @@ public class Interpreter {
                     }
                 case LITERAL:
                     return new String(expression);
-                case INCLUDE_BY_REF: {
-                    IncludeRef includeRef = (IncludeRef) nodes[0].getRegister();
-                    String template = EX_TEMPLATE_REGISTRY.get( includeRef.getName() );
-                    
-                    IncludeRefParam[] params = includeRef.getParams();
-                    Map vars = new HashMap( params.length );
-                    for ( int i = 0; i < params.length; i++ ) {
-                        vars.put( params[i].getIdentifier(), parse(params[i].getValue(), ctx, tokens));
-                    }
-                    
-                    return Interpreter.parse( template, ctx, vars );                    
-                }                    
+
             }
 
             return new String(expression);
@@ -402,20 +385,21 @@ public class Interpreter {
                         break;
                     }
                     case FOREACH: {
-                        ForeachContext foreachContext = ( ForeachContext ) currNode.getRegister();
-                        if ( foreachContext.getItererators() == null ) {
+                        ForeachContext foreachContext = (ForeachContext) currNode.getRegister();
+                        if (foreachContext.getItererators() == null) {
                             try {
-                                String[] lists = getForEachSegment(currNode).split( "," );
+                                String[] lists = getForEachSegment(currNode).split(",");
                                 Iterator[] iters = new Iterator[lists.length];
-                                for( int i = 0; i < lists.length; i++ ) {
+                                for (int i = 0; i < lists.length; i++) {
                                     Object listObject = new ExpressionParser(lists[i], ctx, tokens).parse();
-                                    if ( listObject instanceof Object[]) {
-                                        listObject = Arrays.asList( (Object[]) listObject );
-                                    }    
-                                    iters[i] = ((Collection)listObject).iterator() ;
+                                    if (listObject instanceof Object[]) {
+                                        listObject = Arrays.asList((Object[]) listObject);
+                                    }
+                                    iters[i] = ((Collection) listObject).iterator();
                                 }
-                                foreachContext.setIterators( iters );
-                            } catch (ClassCastException e) {
+                                foreachContext.setIterators(iters);
+                            }
+                            catch (ClassCastException e) {
                                 throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)));
                             }
                             catch (NullPointerException e) {
@@ -424,30 +408,30 @@ public class Interpreter {
                         }
 
                         Iterator[] iters = foreachContext.getItererators();
-                        String[] alias = currNode.getAlias().split( "," );
+                        String[] alias = currNode.getAlias().split(",");
                         // must trim vars
-                        for ( int i = 0; i < alias.length; i++ ) {
+                        for (int i = 0; i < alias.length; i++) {
                             alias[i] = alias[i].trim();
-                        }                         
-                        
+                        }
+
                         if (iters[0].hasNext()) {
                             push();
 
                             //noinspection unchecked
-                            for ( int i = 0; i < iters.length; i++ ) {
+                            for (int i = 0; i < iters.length; i++) {
                                 tokens.put(alias[i], iters[i].next());
                             }
-                            if ( foreachContext.getCount() != 0 ) {
-                                sbuf.append( foreachContext.getSeperator() );
+                            if (foreachContext.getCount() != 0) {
+                                sbuf.append(foreachContext.getSeperator());
                             }
-                            foreachContext.setCount( foreachContext.getCount( ) + 1 );
+                            foreachContext.setCount(foreachContext.getCount() + 1);
                         }
                         else {
-                            for ( int i = 0; i < iters.length; i++ ) {
+                            for (int i = 0; i < iters.length; i++) {
                                 tokens.remove(alias[i]);
-                            }      
-                            foreachContext.setIterators( null );
-                            foreachContext.setCount( 0 );
+                            }
+                            foreachContext.setIterators(null);
+                            foreachContext.setCount(0);
                             exitContext();
                         }
                         break;
@@ -467,6 +451,18 @@ public class Interpreter {
                             return sbuf.toString();
                         }
                     }
+                    case INCLUDE_BY_REF: {
+                        IncludeRef includeRef = (IncludeRef) nodes[node].getRegister();
+                        String template = EX_TEMPLATE_REGISTRY.get(includeRef.getName());
+
+                        IncludeRefParam[] params = includeRef.getParams();
+                        Map vars = new HashMap(params.length * 2);
+                        for (int i = 0; i < params.length; i++) {
+                            vars.put(params[i].getIdentifier(), MVEL.eval(params[i].getValue(), ctx, tokens));
+                        }
+
+                        sbuf.append(Interpreter.parse(template, ctx, vars));
+                    }
                 }
 
                 forwardAndPush();
@@ -484,7 +480,7 @@ public class Interpreter {
             throw new CompileException("unhandled fatal exception (node:" + node + ")", e);
         }
     }
-    
+
     private void initStack() {
         stack = new ExecutionStack();
     }

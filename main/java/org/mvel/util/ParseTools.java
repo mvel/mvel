@@ -27,7 +27,7 @@ public class ParseTools {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
-                                                                        
+
                 MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
             }
             else if (version > 1.4) {
@@ -696,4 +696,89 @@ public class ParseTools {
             throw new CompileException("unable to increment type: " + (o != null ? o.getClass().getName() : "null"));
         }
     }
+
+    public static void main(String[] args) {
+        parseParameters("test=poo, john=caca,bob=smith".toCharArray());
+    }
+
+    public static Map<String, String> parseParameters(char[] parms) {
+        Map<String, String> allParms = new HashMap<String, String>();
+
+        boolean capture = false;
+        int start = 0;
+
+        String parmName = null;
+        int i = 0;
+        for (; i < parms.length; i++) {
+            switch (parms[i]) {
+                case'=':
+                    i++;
+                    parmName = new String(parms, start, i - start - 1).trim();
+                    capture = true;
+                    start = i;
+                    break;
+
+                case',':
+                    if (capture) {
+                        allParms.put(parmName, new String(parms, start, i - start).trim());
+                        start = i;
+                        capture = false;
+                        break;
+                    }
+                default:
+                    if (!capture && isWhitespace(parms[i])) {
+                        start++;
+                    }
+            }
+        }
+
+        if (capture) {
+            allParms.put(parmName, new String(parms, start, i - start).trim());
+        }
+
+        for (String parm : allParms.keySet()) {
+            System.out.println("[" + parm + "]==[" + allParms.get(parm) + "]");
+        }
+
+        return allParms;
+    }
+
+
+    public static int balancedCapture(char[] chars, int start, char type) {
+        int depth = 1;
+        char term = type;
+        switch (type) {
+            case'[':
+                term = ']';
+                break;
+            case'{':
+                term = '}';
+                break;
+            case'(':
+                term = ')';
+                break;
+        }
+
+        if (type == term) {
+            for (start++; start < chars.length; start++) {
+                if (chars[start] == type) {
+                    return start;
+                }
+
+            }
+        }
+        else {
+            for (start++; start < chars.length; start++) {
+                if (chars[start] == type) {
+                    depth++;
+                }
+                else if (chars[start] == term && --depth == 0) {
+                    return start;
+                }
+            }
+        }
+
+        return -1;
+    }
+
 }
