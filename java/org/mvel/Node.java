@@ -23,7 +23,6 @@ public class Node implements Cloneable {
 
     private int startPos;
     private int length;
-//    private char[] expression;
 
     private int node;
     private int endNode;
@@ -52,10 +51,6 @@ public class Node implements Cloneable {
         this.endNode = endNode;
     }
 
-//    Node(int startPos, int length) {
-//        this.startPos = startPos;
-//        this.length = length;
-//    }
 
     Node(int node, int nodeType, int startPos, int length, int endNode) {
         this.nodeType = nodeType;
@@ -152,6 +147,6 @@ public class Node implements Cloneable {
 
 
     protected Node clone() throws CloneNotSupportedException {
-        return  (Node) super.clone();
+        return (Node) super.clone();
     }
 }
