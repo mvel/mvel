@@ -2,6 +2,9 @@ package org.mvel.tests.main;
 
 import junit.framework.TestCase;
 import org.mvel.MVEL;
+
+import org.mvel.MVELTemplateRegistry;
+import org.mvel.TemplateRegistry;
 import org.mvel.TemplateInterpreter;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
@@ -662,16 +665,18 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testIncludeByRef() {
-
-        TemplateInterpreter.registerTemplate("templateName", "@{var1}@{var2}");
-        assertEquals("xvalue1catx", parse("x@includeByRef{templateName(var1 = \"value1\", var2 = c)}x"));
+        TemplateRegistry registry = new MVELTemplateRegistry();        
+        registry.registerTemplate( "templateName", "@{var1}@{var2}" );
+        
+        assertEquals("xvalue1catx", parse("x@includeByRef{templateName(var1 = \"value1\", var2 = c)}x", registry));
     }
 
     public void testRegisterTemplateGroup() {
-        StringReader reader = new StringReader("myTemplate1() ::=<<@{var1}>>=::  myTemplate2() ::=<<@{var2}>>=::");
-        TemplateInterpreter.registerTemplate(reader);
+        StringReader reader = new StringReader( "myTemplate1() ::=<<@{var1}>>=::  myTemplate2() ::=<<@{var2}>>=::");        
+        TemplateRegistry registry = new MVELTemplateRegistry();
+        registry.registerTemplate( reader );
 
-        assertEquals("xvalue1catx", parse("x@includeByRef{myTemplate1(var1 = \"value1\")}@includeByRef{myTemplate2(var2 = c)}x"));
+        assertEquals("xvalue1catx", parse("x@includeByRef{myTemplate1(var1 = \"value1\")}@includeByRef{myTemplate2(var2 = c)}x", registry));
     }
 
 
@@ -731,6 +736,10 @@ public class ParserUnitTest extends TestCase {
         assertEquals(String.CASE_INSENSITIVE_ORDER, parseDirect("java.lang.String.CASE_INSENSITIVE_ORDER"));
     }
 
+    public Object parse(String ex, TemplateRegistry registry) {
+        return TemplateInterpreter.parse(ex, base, map, registry);
+    }
+    
     public Object parse(String ex) {
         return TemplateInterpreter.parse(ex, base, map);
     }
