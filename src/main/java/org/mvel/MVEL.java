@@ -24,7 +24,7 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
-import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.handleParserEgress;
 
 import java.io.Serializable;
 import static java.lang.String.valueOf;
@@ -33,7 +33,7 @@ import java.util.Map;
 public class MVEL {
     public static final String NAME = "MVEL (MVFLEX Expression Language)";
     public static final String VERSION = "1.2";
-    public static final String VERSION_SUB = "beta13";
+    public static final String VERSION_SUB = "beta15";
     public static final String CODENAME = "horizon";
 
     static boolean THREAD_SAFE = Boolean.getBoolean("mvel.threadsafety");
@@ -169,7 +169,7 @@ public class MVEL {
             return ((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars));
         }
         catch (EndWithValue end) {
-            return ParseTools.handleParserEgress(end.getValue(), false);
+            return handleParserEgress(end.getValue(), false);
         }
     }
 
@@ -178,7 +178,7 @@ public class MVEL {
             return ((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory);
         }
         catch (EndWithValue end) {
-            return ParseTools.handleParserEgress(end.getValue(), false);
+            return handleParserEgress(end.getValue(), false);
         }
     }
 
@@ -195,7 +195,7 @@ public class MVEL {
             return ((ExecutableStatement) compiledExpression).getValue(null, factory);
         }
         catch (EndWithValue end) {
-            return ParseTools.handleParserEgress(end.getValue(), false);
+            return handleParserEgress(end.getValue(), false);
         }
     }
 
@@ -212,7 +212,7 @@ public class MVEL {
             return ((ExecutableStatement) compiledExpression).getValue(ctx, null);
         }
         catch (EndWithValue end) {
-            return ParseTools.handleParserEgress(end.getValue(), false);
+            return handleParserEgress(end.getValue(), false);
         }
     }
 
@@ -230,7 +230,7 @@ public class MVEL {
             return ((ExecutableStatement) compiledExpression).getValue(null, new MapVariableResolverFactory(vars));
         }
         catch (EndWithValue end) {
-            return ParseTools.handleParserEgress(end.getValue(), false);
+            return handleParserEgress(end.getValue(), false);
         }
     }
 
@@ -249,7 +249,7 @@ public class MVEL {
             return convert(executeExpression(compiledExpression, ctx, vars), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -267,7 +267,7 @@ public class MVEL {
             return convert(executeExpression(compiledExpression, vars), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -284,7 +284,7 @@ public class MVEL {
             return convert(executeExpression(compiledExpression, ctx), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -304,7 +304,7 @@ public class MVEL {
             return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -314,7 +314,7 @@ public class MVEL {
             return convert(new ExpressionParser(expression, ctx).parse(), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -324,7 +324,7 @@ public class MVEL {
             return convert(new ExpressionParser(expression, ctx).parse(), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -334,7 +334,7 @@ public class MVEL {
             return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -344,7 +344,7 @@ public class MVEL {
             return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -354,7 +354,7 @@ public class MVEL {
             return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -365,7 +365,7 @@ public class MVEL {
             return convert(new ExpressionParser(expression, null, vars).parse(), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -375,7 +375,7 @@ public class MVEL {
             return convert(new ExpressionParser(expression, null, vars).parse(), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -386,7 +386,7 @@ public class MVEL {
             return convert(new ExpressionParser(expression, null, vars).parse(), toType);
         }
         catch (EndWithValue end) {
-            return convert(ParseTools.handleParserEgress(end.getValue(), false), toType);
+            return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
 
@@ -396,7 +396,7 @@ public class MVEL {
             return new ExpressionParser(expression, ctx, vars).parse();
         }
         catch (EndWithValue end) {
-            return ParseTools.handleParserEgress(end.getValue(), false);
+            return handleParserEgress(end.getValue(), false);
         }
     }
 
@@ -405,7 +405,7 @@ public class MVEL {
             return valueOf(eval(expression, ctx));
         }
         catch (EndWithValue end) {
-            return valueOf(ParseTools.handleParserEgress(end.getValue(), false));
+            return valueOf(handleParserEgress(end.getValue(), false));
         }
     }
 
@@ -420,7 +420,7 @@ public class MVEL {
             return valueOf(eval(expression, ctx, vars));
         }
         catch (EndWithValue end) {
-            return valueOf(ParseTools.handleParserEgress(end.getValue(), false));
+            return valueOf(handleParserEgress(end.getValue(), false));
         }
     }
 

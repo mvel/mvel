@@ -256,7 +256,7 @@ public class ParserUnitTest extends TestCase {
                                 "@end{}"
                 ));
     }
-    
+
     public void testControlLoopArray() {
         assertEquals("HappyHappy!JoyJoy!",
                 parse(
@@ -264,67 +264,67 @@ public class ParserUnitTest extends TestCase {
                                 "@{fun}" +
                                 "@end{}"
                 ));
-    }    
-    
+    }
+
     public void testMultiCollectionControlLoop() {
         assertEquals("HappyHappyHappy!Happy!JoyJoyJoy!Joy!",
-                     parse(
-                             "@foreach{list, array as listItem, arrayItem}" +
-                                     "@{listItem}@{arrayItem}" +
-                                     "@end{}"
-                     ));        
+                parse(
+                        "@foreach{list, array as listItem, arrayItem}" +
+                                "@{listItem}@{arrayItem}" +
+                                "@end{}"
+                ));
     }
-    
+
     public void testMultiCollectionWithSingleCharSeperatorControlLoop() {
         assertEquals("HappyHappy,Happy!Happy!,JoyJoy,Joy!Joy!",
-                     parse(
-                             "@foreach{list, array as listItem, arrayItem}" +
-                                     "@{listItem}@{arrayItem}" +
-                                     "@end{\",\"  }"
-                     ));        
-    }  
-    
+                parse(
+                        "@foreach{list, array as listItem, arrayItem}" +
+                                "@{listItem}@{arrayItem}" +
+                                "@end{\",\"  }"
+                ));
+    }
+
     public void testMultiCollectionWithMultipleCharSeperatorControlLoop() {
         assertEquals("HappyHappy,|Happy!Happy!,|JoyJoy,|Joy!Joy!",
-                     parse(
-                             "@foreach{list, array as listItem, arrayItem}" +
-                                     "@{listItem}@{arrayItem}" +
-                                     "@end{\",|\"  }"
-                     ));        
-    }    
+                parse(
+                        "@foreach{list, array as listItem, arrayItem}" +
+                                "@{listItem}@{arrayItem}" +
+                                "@end{\",|\"  }"
+                ));
+    }
 
     public void testControlLoopListMultiple() {
         for (int i = 0; i < 100; i++) {
             testControlLoopList();
         }
     }
-    
+
     public void testControlLoopArrayMultiple() {
         for (int i = 0; i < 100; i++) {
             testControlLoopArray();
         }
-    }    
-    
+    }
+
     public void testMultiCollectionControlLoopMultiple() {
         for (int i = 0; i < 100; i++) {
             testMultiCollectionControlLoop();
         }
-    }       
+    }
 
-    
+
     public void testMultiCollectionWithSingleCharSeperatorControlLoopMultiple() {
         for (int i = 0; i < 100; i++) {
             testMultiCollectionWithSingleCharSeperatorControlLoop();
         }
-    }  
-    
+    }
+
     public void testMultiCollectionWithMultipleCharSeperatorControlLoopMultiple() {
         for (int i = 0; i < 100; i++) {
             testMultiCollectionWithMultipleCharSeperatorControlLoop();
         }
-    }  
-        
-    
+    }
+
+
     public void testControlLoop2() {
         assertEquals("HappyHappy!JoyJoy!",
                 parse(
@@ -661,8 +661,8 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testIncludeByRef() {
-        Interpreter.registryTemplate( "templateName", "@{var1}@{var2}" );
-        assertEquals("value1cat", parse("@includeByRef{templateName(var1 = \"value1\", var2 = c)}"));
+        Interpreter.registryTemplate("templateName", "@{var1}@{var2}");
+        assertEquals("xvalue1catx", parse("x@includeByRef{templateName(var1 = \"value1\", var2 = c)}x"));
     }
 
 
