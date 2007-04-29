@@ -137,20 +137,16 @@ public class TemplateInterpreter {
     private static final Map<Object, Node[]> EX_NODE_CACHE;
     private static final Map<Object, Serializable> EX_PRECOMP_CACHE;
 
-    private static final Map<String, String> EX_TEMPLATE_REGISTRY;
-
     static {
         if (MVEL.THREAD_SAFE) {
             EX_PRECACHE = synchronizedMap(new WeakHashMap<CharSequence, char[]>());
             EX_NODE_CACHE = synchronizedMap(new WeakHashMap<Object, Node[]>());
             EX_PRECOMP_CACHE = synchronizedMap(new WeakHashMap<Object, Serializable>());
-            EX_TEMPLATE_REGISTRY = synchronizedMap(new HashMap());
         }
         else {
             EX_PRECACHE = (new WeakHashMap<CharSequence, char[]>());
             EX_NODE_CACHE = (new WeakHashMap<Object, Node[]>());
             EX_PRECOMP_CACHE = (new WeakHashMap<Object, Serializable>());
-            EX_TEMPLATE_REGISTRY = new HashMap();
         }
     }
 
@@ -222,61 +218,6 @@ public class TemplateInterpreter {
         this.expression = expression;
     }
 
-    public static void registerTemplate(String name, String template) {
-        EX_TEMPLATE_REGISTRY.put(name, template);
-    }
-
-    public static void registerTemplate(Reader reader) {
-        if (reader == null)
-            throw new CompileException("Reader cannot be null");
-        int nameStart = -1;
-        int nameEnd = -1;
-        int contentStart = -1;
-        int contentEnd = -1;
-        StringAppender sb = new StringAppender();
-        char ch;
-
-        try {
-            int c = 0;
-            while ((c = reader.read()) != -1) {
-                ch = (char) c;
-                if ('<' == (char) c && sb.charAt(sb.length() - 1) == '<' && sb.charAt(sb.length() - 2) == '='
-                        && sb.charAt(sb.length() - 3) == ':' && sb.charAt(sb.length() - 4) == ':') {
-                    // we have ::=<< so backtrack to get function name                
-                    contentStart = sb.length() + 1;
-
-                    // backtrack to ()
-                    int pos = sb.length() - 4;
-                    while (sb.charAt(pos) != ')' && sb.charAt(pos - 1) != '(') {
-                        pos--;
-                    }
-                    //pos is now at the end of the template name
-                    nameEnd = pos;
-
-                    // backtrack to new line or 
-                    while (pos != -1 && sb.charAt(pos) != '\n' && sb.charAt(pos) != '\r' && sb.charAt(pos) != ' ') {
-                        pos--;
-                    }
-                    nameStart = pos + 1;
-                }
-
-                if (':' == (char) c && sb.charAt(sb.length() - 1) == ':' && sb.charAt(sb.length() - 2) == '='
-                        && sb.charAt(sb.length() - 3) == '>' && sb.charAt(sb.length() - 4) == '>') {
-                    // we have ::=>>
-                    contentEnd = sb.length() - 4;
-                    registerTemplate(new String(sb.getChars(nameStart, nameEnd - nameStart - 1)), new String(sb.getChars(contentStart, contentEnd - contentStart)));
-                    nameStart = -1;
-                    nameEnd = -1;
-                    contentStart = -1;
-                    contentEnd = -1;
-                }
-                sb.append((char) c);
-            }
-        }
-        catch (IOException e) {
-        }
-    }
-
     public boolean isDebug() {
         return debug;
     }
@@ -309,6 +250,10 @@ public class TemplateInterpreter {
     }
 
     public static Object parse(File file, Object ctx, Map<String, Object> tokens) throws IOException {
+        return parse(file, ctx, tokens, null);
+    }
+    
+    public static Object parse(File file, Object ctx, Map<String, Object> tokens, TemplateRegistry registry) throws IOException {
         if (!file.exists())
             throw new CompileException("cannot find file: " + file.getName());
 
@@ -332,7 +277,7 @@ public class TemplateInterpreter {
                 }
             }
 
-            return parse(sb, ctx, tokens);
+            return parse(sb, ctx, tokens, registry);
 
         }
         catch (FileNotFoundException e) {
@@ -347,17 +292,28 @@ public class TemplateInterpreter {
     }
 
     public static Object parse(CharSequence expression, Object ctx, Map<String, Object> vars) {
+        return parse(expression, ctx, vars, null);
+    }
+    public static Object parse(CharSequence expression, Object ctx, Map<String, Object> vars, TemplateRegistry registry) {
         if (expression == null) return null;
         return new TemplateInterpreter(expression).execute(ctx, vars);
     }
 
     public static Object parse(String expression, Object ctx, Map<String, Object> vars) {
+        return parse(expression, ctx, vars, null);
+    }
+    
+    public static Object parse(String expression, Object ctx, Map<String, Object> vars, TemplateRegistry registry) {
         if (expression == null) return null;
 
-        return new TemplateInterpreter(expression).execute(ctx, vars);
+        return new TemplateInterpreter(expression).execute(ctx, vars, registry);
     }
 
     public Object execute(Object ctx, Map tokens) {
+        return execute(ctx, tokens, null);
+    }
+    
+    public Object execute(Object ctx, Map tokens, TemplateRegistry registry) {
         if (nodes == null) {
             return new String(expression);
         }
@@ -367,6 +323,9 @@ public class TemplateInterpreter {
              */
             switch (nodes[0].getToken()) {
                 case PROPERTY_EX:
+                    //noinspection unchecked
+                    //  return ExpressionParser.eval(getInternalSegment(nodes[0]), ctx, tokens);
+
                     if (!cacheAggressively) {
                         char[] seg = new char[expression.length - 3];
                         arraycopy(expression, 2, seg, 0, seg.length);
@@ -501,15 +460,23 @@ public class TemplateInterpreter {
                     }
                     case INCLUDE_BY_REF: {
                         IncludeRef includeRef = (IncludeRef) nodes[node].getRegister();
-                        String template = EX_TEMPLATE_REGISTRY.get(includeRef.getName());
-
+                        
                         IncludeRefParam[] params = includeRef.getParams();
                         Map vars = new HashMap(params.length * 2);
                         for (int i = 0; i < params.length; i++) {
                             vars.put(params[i].getIdentifier(), MVEL.eval(params[i].getValue(), ctx, tokens));
                         }
+                        
+                        if ( registry == null ) {
+                            throw new CompileException("No TemplateRegistry specified, cannot load template='" + includeRef.getName() + "'");
+                        }
+                        String template = registry.getTemplate( includeRef.getName() );
+                        
+                        if ( template == null ) {
+                            throw new CompileException("Template does not exist in the TemplateRegistry, cannot load template='" + includeRef.getName() + "'");
+                        }
 
-                        sbuf.append(parse(template, ctx, vars));
+                        sbuf.append(TemplateInterpreter.parse(template, ctx, vars, registry));
                     }
                 }
 
