@@ -261,28 +261,28 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testControlLoopArray() {
-        assertEquals("HappyHappy!JoyJoy!",
+        assertEquals("Happy0Happy!1Joy2Joy!3",
                 parse(
                         "@foreach{array as fun}" +
-                                "@{fun}" +
+                                "@{fun}@{i0}" +
                                 "@end{}"
                 ));
     }
 
     public void testMultiCollectionControlLoop() {
-        assertEquals("HappyHappyHappy!Happy!JoyJoyJoy!Joy!",
+        assertEquals("HappyHappy0Happy!Happy!1JoyJoy2Joy!Joy!3",
                 parse(
                         "@foreach{list, array as listItem, arrayItem}" +
-                                "@{listItem}@{arrayItem}" +
+                                "@{listItem}@{arrayItem}@{i0}" +
                                 "@end{}"
                 ));
     }
 
     public void testMultiCollectionWithSingleCharSeperatorControlLoop() {
-        assertEquals("HappyHappy,Happy!Happy!,JoyJoy,Joy!Joy!",
+        assertEquals("Happy0Happy,Happy!1Happy!,Joy2Joy,Joy!3Joy!",
                 parse(
                         "@foreach{list, array as listItem, arrayItem}" +
-                                "@{listItem}@{arrayItem}" +
+                                "@{listItem}@{i0}@{arrayItem}" +
                                 "@end{\",\"  }"
                 ));
     }
