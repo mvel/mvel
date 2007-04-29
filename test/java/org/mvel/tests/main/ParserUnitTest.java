@@ -1,8 +1,8 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-import org.mvel.Interpreter;
 import org.mvel.MVEL;
+import org.mvel.TemplateInterpreter;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
@@ -65,7 +65,7 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testPassThru2() {
-        assertEquals("foo@bar.com", Interpreter.eval("foo@bar.com", map));
+        assertEquals("foo@bar.com", TemplateInterpreter.eval("foo@bar.com", map));
     }
 
     public void testMethodOnValue() {
@@ -663,14 +663,14 @@ public class ParserUnitTest extends TestCase {
 
     public void testIncludeByRef() {
 
-        Interpreter.registerTemplate("templateName", "@{var1}@{var2}");
+        TemplateInterpreter.registerTemplate("templateName", "@{var1}@{var2}");
         assertEquals("xvalue1catx", parse("x@includeByRef{templateName(var1 = \"value1\", var2 = c)}x"));
     }
-    
+
     public void testRegisterTemplateGroup() {
-        StringReader reader = new StringReader( "myTemplate1() ::=<<@{var1}>>=::  myTemplate2() ::=<<@{var2}>>=::");
-        Interpreter.registerTemplate( reader );
-        
+        StringReader reader = new StringReader("myTemplate1() ::=<<@{var1}>>=::  myTemplate2() ::=<<@{var2}>>=::");
+        TemplateInterpreter.registerTemplate(reader);
+
         assertEquals("xvalue1catx", parse("x@includeByRef{myTemplate1(var1 = \"value1\")}@includeByRef{myTemplate2(var2 = c)}x"));
     }
 
@@ -732,7 +732,7 @@ public class ParserUnitTest extends TestCase {
     }
 
     public Object parse(String ex) {
-        return Interpreter.parse(ex, base, map);
+        return TemplateInterpreter.parse(ex, base, map);
     }
 
     public Object parseDirect(String ex) {

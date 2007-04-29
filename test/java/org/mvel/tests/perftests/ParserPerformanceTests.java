@@ -3,8 +3,8 @@ package org.mvel.tests.perftests;
 import junit.framework.TestCase;
 import ognl.Ognl;
 import ognl.OgnlException;
-import org.mvel.Interpreter;
 import org.mvel.MVEL;
+import org.mvel.TemplateInterpreter;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
@@ -32,7 +32,6 @@ public class ParserPerformanceTests extends TestCase {
         map.put("hour", "60");
     }
 
-    
 
     public void testSimplePropertyAccessPerf() {
         for (int i = 0; i < COUNT; i++) {
@@ -129,7 +128,7 @@ public class ParserPerformanceTests extends TestCase {
 
 
     public Object parse(String ex) {
-        return new Interpreter(ex).execute(base, map);
+        return new TemplateInterpreter(ex).execute(base, map);
     }
 
     public Object parseDirect(String ex) {

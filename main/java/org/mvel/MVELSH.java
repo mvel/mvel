@@ -100,7 +100,7 @@ public class MVELSH {
 
                 if (template) {
                     time = System.currentTimeMillis();
-                    out = Interpreter.parse(in, null, map);
+                    out = TemplateInterpreter.parse(in, null, map);
                     time = System.currentTimeMillis() - time;
                 }
                 else if (benchmarkMode) {
