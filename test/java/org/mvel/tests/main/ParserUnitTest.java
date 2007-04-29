@@ -679,6 +679,13 @@ public class ParserUnitTest extends TestCase {
         assertEquals("xvalue1catx", parse("x@includeByRef{myTemplate1(var1 = \"value1\")}@includeByRef{myTemplate2(var2 = c)}x", registry));
     }
 
+    public void testRecursiveRegisterTemplateGroup() {
+        StringReader reader = new StringReader( "myTemplate1() ::=<<@{var1}@includeByRef{myTemplate2(var2 = var2)}>>=::  myTemplate2() ::=<<@{var2}>>=::");        
+        TemplateRegistry registry = new MVELTemplateRegistry();
+        registry.registerTemplate( reader );
+
+        assertEquals("xvalue1catx", parse("x@includeByRef{myTemplate1(var1 = \"value1\", var2 = c)}x", registry));
+    }
 
     public void testStringEscaping() {
         assertEquals("\"Mike Brock\"", parse("@{\"\\\"Mike Brock\\\"\"}"));
