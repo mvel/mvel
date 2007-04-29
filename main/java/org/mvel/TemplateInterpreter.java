@@ -252,7 +252,7 @@ public class TemplateInterpreter {
     public static Object parse(File file, Object ctx, Map<String, Object> tokens) throws IOException {
         return parse(file, ctx, tokens, null);
     }
-    
+
     public static Object parse(File file, Object ctx, Map<String, Object> tokens, TemplateRegistry registry) throws IOException {
         if (!file.exists())
             throw new CompileException("cannot find file: " + file.getName());
@@ -294,6 +294,7 @@ public class TemplateInterpreter {
     public static Object parse(CharSequence expression, Object ctx, Map<String, Object> vars) {
         return parse(expression, ctx, vars, null);
     }
+
     public static Object parse(CharSequence expression, Object ctx, Map<String, Object> vars, TemplateRegistry registry) {
         if (expression == null) return null;
         return new TemplateInterpreter(expression).execute(ctx, vars);
@@ -302,7 +303,7 @@ public class TemplateInterpreter {
     public static Object parse(String expression, Object ctx, Map<String, Object> vars) {
         return parse(expression, ctx, vars, null);
     }
-    
+
     public static Object parse(String expression, Object ctx, Map<String, Object> vars, TemplateRegistry registry) {
         if (expression == null) return null;
 
@@ -312,7 +313,7 @@ public class TemplateInterpreter {
     public Object execute(Object ctx, Map tokens) {
         return execute(ctx, tokens, null);
     }
-    
+
     public Object execute(Object ctx, Map tokens, TemplateRegistry registry) {
         if (nodes == null) {
             return new String(expression);
@@ -460,19 +461,19 @@ public class TemplateInterpreter {
                     }
                     case INCLUDE_BY_REF: {
                         IncludeRef includeRef = (IncludeRef) nodes[node].getRegister();
-                        
+
                         IncludeRefParam[] params = includeRef.getParams();
                         Map vars = new HashMap(params.length * 2);
                         for (int i = 0; i < params.length; i++) {
                             vars.put(params[i].getIdentifier(), MVEL.eval(params[i].getValue(), ctx, tokens));
                         }
-                        
-                        if ( registry == null ) {
+
+                        if (registry == null) {
                             throw new CompileException("No TemplateRegistry specified, cannot load template='" + includeRef.getName() + "'");
                         }
-                        String template = registry.getTemplate( includeRef.getName() );
-                        
-                        if ( template == null ) {
+                        String template = registry.getTemplate(includeRef.getName());
+
+                        if (template == null) {
                             throw new CompileException("Template does not exist in the TemplateRegistry, cannot load template='" + includeRef.getName() + "'");
                         }
 
@@ -514,7 +515,7 @@ public class TemplateInterpreter {
     }
 
     private void exitContext() {
-        node = nodes[node].getEndNode();
+        node = nodes[node].getEndNode() - 1;
     }
 
     public void forwardAndPush() {

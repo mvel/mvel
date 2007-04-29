@@ -2,10 +2,9 @@ package org.mvel.tests.main;
 
 import junit.framework.TestCase;
 import org.mvel.MVEL;
-
 import org.mvel.MVELTemplateRegistry;
-import org.mvel.TemplateRegistry;
 import org.mvel.TemplateInterpreter;
+import org.mvel.TemplateRegistry;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
@@ -665,26 +664,30 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testIncludeByRef() {
-        TemplateRegistry registry = new MVELTemplateRegistry();        
-        registry.registerTemplate( "templateName", "@{var1}@{var2}" );
-        
+        TemplateRegistry registry = new MVELTemplateRegistry();
+        registry.registerTemplate("templateName", "@{var1}@{var2}");
+
         assertEquals("xvalue1catx", parse("x@includeByRef{templateName(var1 = \"value1\", var2 = c)}x", registry));
     }
 
     public void testRegisterTemplateGroup() {
-        StringReader reader = new StringReader( "myTemplate1() ::=<<@{var1}>>=::  myTemplate2() ::=<<@{var2}>>=::");        
+        StringReader reader = new StringReader("myTemplate1() ::=<<@{var1}>>=::  myTemplate2() ::=<<@{var2}>>=::");
         TemplateRegistry registry = new MVELTemplateRegistry();
-        registry.registerTemplate( reader );
+        registry.registerTemplate(reader);
 
         assertEquals("xvalue1catx", parse("x@includeByRef{myTemplate1(var1 = \"value1\")}@includeByRef{myTemplate2(var2 = c)}x", registry));
     }
 
     public void testRecursiveRegisterTemplateGroup() {
-        StringReader reader = new StringReader( "myTemplate1() ::=<<@{var1}@includeByRef{myTemplate2(var2 = var2)}>>=::  myTemplate2() ::=<<@{var2}>>=::");        
+        StringReader reader = new StringReader("myTemplate1() ::=<<@{var1}@includeByRef{myTemplate2(var2 = var2)}>>=::  myTemplate2() ::=<<@{var2}>>=::");
         TemplateRegistry registry = new MVELTemplateRegistry();
-        registry.registerTemplate( reader );
+        registry.registerTemplate(reader);
 
         assertEquals("xvalue1catx", parse("x@includeByRef{myTemplate1(var1 = \"value1\", var2 = c)}x", registry));
+    }
+
+    public void testIfLoopInTemplate() {
+        assertEquals("ONETWOTHREE", parse("@foreach{things}@if{item.name=='Bob'}ONE@elseif{item.name=='Smith'}TWO@elseif{item.name=='Cow'}THREE@end{}@end{}"));
     }
 
     public void testStringEscaping() {
@@ -746,7 +749,7 @@ public class ParserUnitTest extends TestCase {
     public Object parse(String ex, TemplateRegistry registry) {
         return TemplateInterpreter.parse(ex, base, map, registry);
     }
-    
+
     public Object parse(String ex) {
         return TemplateInterpreter.parse(ex, base, map);
     }

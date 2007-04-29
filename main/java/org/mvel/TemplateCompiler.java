@@ -265,8 +265,8 @@ public class TemplateCompiler {
                         depth--;
                 }
 
-                System.out.println(indent(depth) + " + Node (" + e.getNode() + ") [" + getNodeTypeName(e.getNodeType()) + "] " + e.getToken()
-                        + " {" + e.getStartPos() + "," + e.getEndPos() + "} --> " + e.getEndNode());
+                System.out.println(indent(depth) + " + Node (" + e.getNode() + ") [" + getNodeTypeName(e.getNodeType()) + "] "
+                        + " {" + e.getStartPos() + "," + e.getEndPos() + "} --> " + e.getEndNode() + " ['" + new String(expressionArray, e.getStartPos(), e.getEndPos() - e.getStartPos()) + "']");
 
                 switch (e.getToken()) {
                     case IF:
@@ -284,7 +284,7 @@ public class TemplateCompiler {
         return expressions;
     }
 
-    private static String getNodeTypeName(int node) {
+    public static String getNodeTypeName(int node) {
         switch (node) {
             case NodeType.ELSE:
                 return "ELSE";
