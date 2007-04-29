@@ -335,7 +335,6 @@ public class TemplateCompiler {
         }
 
         return new IncludeRef(name, params.toArray(new IncludeRefParam[params.size()]));
-
     }
 
     public static class IncludeRef {
