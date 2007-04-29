@@ -78,6 +78,13 @@ public class StringAppender implements CharSequence {
         System.arraycopy(str, 0, newArray, 0, size);
         str = newArray;
     }
+    
+    public char[] getChars(int start, int count) {
+        char[] chars = new char[count];
+        
+        System.arraycopy( str, start, chars, 0, count );
+        return chars;
+    }
 
     public String toString() {
         if (size == capacity) return new String(str);

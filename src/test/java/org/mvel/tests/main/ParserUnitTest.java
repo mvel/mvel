@@ -10,6 +10,7 @@ import org.mvel.tests.main.res.PDFFieldUtil;
 import org.mvel.util.FastList;
 
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -661,8 +662,16 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testIncludeByRef() {
-        Interpreter.registryTemplate("templateName", "@{var1}@{var2}");
+
+        Interpreter.registerTemplate("templateName", "@{var1}@{var2}");
         assertEquals("xvalue1catx", parse("x@includeByRef{templateName(var1 = \"value1\", var2 = c)}x"));
+    }
+    
+    public void testRegisterTemplateGroup() {
+        StringReader reader = new StringReader( "myTemplate1() ::=<<@{var1}>>=::  myTemplate2() ::=<<@{var2}>>=::");
+        Interpreter.registerTemplate( reader );
+        
+        assertEquals("xvalue1catx", parse("x@includeByRef{myTemplate1(var1 = \"value1\")}@includeByRef{myTemplate2(var2 = c)}x"));
     }
 
 

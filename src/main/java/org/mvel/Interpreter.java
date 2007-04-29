@@ -222,8 +222,54 @@ public class Interpreter {
         this.expression = expression;
     }
 
-    public static void registryTemplate(String name, String template) {
+    public static void registerTemplate(String name, String template) {
         EX_TEMPLATE_REGISTRY.put(name, template);
+    }
+    
+    public static void registerTemplate(Reader reader) {
+        if (reader == null)
+            throw new CompileException("Reader cannot be null");
+        int nameStart=-1;
+        int nameEnd=-1;
+        int contentStart=-1;
+        int contentEnd=-1;
+        StringAppender sb = new StringAppender();
+        char ch;
+        
+        try {                        
+            int c=0;
+            while ((c = reader.read()) != -1) {
+                ch = (char)c;
+                if ( '<' == (char) c  && sb.charAt( sb.length() - 1 ) == '<' && sb.charAt( sb.length() - 2 ) == '='
+                    && sb.charAt( sb.length() - 3 ) == ':' && sb.charAt( sb.length() - 4 ) == ':') {
+                    // we have ::=<< so backtrack to get function name                
+                    contentStart = sb.length()+1;
+                
+                    // backtrack to ()
+                    int pos = sb.length() - 4;
+                    while( sb.charAt( pos) != ')' && sb.charAt( pos - 1) != '(') {pos--;}
+                    //pos is now at the end of the template name
+                    nameEnd = pos;
+                    
+                    // backtrack to new line or 
+                    while (pos != -1 && sb.charAt( pos ) != '\n' &&  sb.charAt( pos ) != '\r' && sb.charAt( pos ) != ' ') {pos--;}
+                    nameStart = pos+1;
+                }
+                
+                if ( ':' == (char)c && sb.charAt( sb.length() - 1 ) == ':' && sb.charAt( sb.length() - 2 ) == '='
+                    && sb.charAt( sb.length() - 3 ) == '>' && sb.charAt( sb.length() - 4 ) == '>') {
+                    // we have ::=>>
+                    contentEnd = sb.length() - 4;
+                    registerTemplate( new String( sb.getChars( nameStart, nameEnd-nameStart-1 ) ), new String( sb.getChars( contentStart, contentEnd-contentStart ) ) );
+                    nameStart=-1;
+                    nameEnd=-1;
+                    contentStart=-1;
+                    contentEnd=-1;                    
+                }
+                sb.append( (char) c );
+            }            
+        } catch (IOException e) {            
+        }        
     }
 
     public boolean isDebug() {
