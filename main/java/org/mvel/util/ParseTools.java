@@ -736,9 +736,6 @@ public class ParseTools {
             allParms.put(parmName, new String(parms, start, i - start).trim());
         }
 
-        for (String parm : allParms.keySet()) {
-            System.out.println("[" + parm + "]==[" + allParms.get(parm) + "]");
-        }
 
         return allParms;
     }
