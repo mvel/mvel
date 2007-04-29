@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -21,6 +20,7 @@
 package org.mvel;
 
 import static org.mvel.NodeType.*;
+import static org.mvel.util.ParseTools.*;
 import org.mvel.util.StringAppender;
 
 import static java.lang.Boolean.getBoolean;
@@ -28,7 +28,6 @@ import static java.lang.Character.isWhitespace;
 import static java.lang.String.copyValueOf;
 import static java.lang.System.arraycopy;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,7 +71,6 @@ public class TemplateCompiler {
                     continue;
                 }
 
-
                 exStr = structuredCaptureArray(1);
 
                 if (token.length() != 0) {
@@ -94,16 +92,13 @@ public class TemplateCompiler {
                     }
                     else if ("end".equals(token)) {
                         depth--;
-                        
-//                        if (exStr.length > 0)
-//                            throw new CompileException("$end token cannot contain an expression (use $end{}) near: " + showCodeNearError());
-
                         ex.setToken(END);
-                        ex.setRegister( exStr );
+                        ex.setRegister(exStr);
                     }
-                    else if ("includeByRef".equals( token )) {
-                        ex.setToken( INCLUDE_BY_REF );
-                        ex.setRegister( buildIncludeRef(exStr) );
+                    else if ("includeByRef".equals(token)) {
+                        ex.setToken(INCLUDE_BY_REF);
+                        ex.setRegister(buildIncludeRef(exStr));
+                        System.out.println(ex.getRegister());
                     }
                     else {
                         throw new CompileException("unknown token: " + token);
@@ -118,7 +113,7 @@ public class TemplateCompiler {
                     for (int i = 0; i < exStr.length; i++) {
                         switch (exStr[i]) {
                             case' ':
-                                if (capture == -1 && ((i + 3) < exStr.length) 
+                                if (capture == -1 && ((i + 3) < exStr.length)
                                         && exStr[i + 1] == 'a' && exStr[i + 2] == 's'
                                         && exStr[i + 3] == ' ') {
 
@@ -219,25 +214,33 @@ public class TemplateCompiler {
                                     break;
                             }
                         }
-                    } else if (e.getToken() == FOREACH) {
-                        char[] props = ( char[] ) expressions[i].getRegister();
-                        if ( props != null && props.length > 0 ) {
-                            int j = 0;                                                                      
+                    }
+                    else if (e.getToken() == FOREACH) {
+                        char[] props = (char[]) expressions[i].getRegister();
+                        if (props != null && props.length > 0) {
+                            int j = 0;
                             // skip white space
-                            while (j < props.length && isWhitespace(props[j])) {j++;};                                    
-                            if ( props[j] != '"' ) { //&& props[i+2] !='\"') {
-                                throw new CompileException("seperator is not correctly specified \"" + props + "\"" );
-                            }                
-
-                            int k = props.length-1;      
-                            while (k < props.length && props[k] != '"') {k--;};                                    
-                            if ( props[k] != '"' ) { //&& props[i+2] !='\"') {
-                                throw new CompileException("seperator is not correctly specified \"" + props + "\"" );
+                            while (j < props.length && isWhitespace(props[j])) {
+                                j++;
                             }
-                            
-                            e.setRegister( new ForeachContext( new String( props, j+1, k-j-1 ) ) );                            
-                        } else {
-                            e.setRegister( new ForeachContext( "" ) );
+                            ;
+                            if (props[j] != '"') { //&& props[i+2] !='\"') {
+                                throw new CompileException("seperator is not correctly specified \"" + props + "\"");
+                            }
+
+                            int k = props.length - 1;
+                            while (k < props.length && props[k] != '"') {
+                                k--;
+                            }
+                            ;
+                            if (props[k] != '"') { //&& props[i+2] !='\"') {
+                                throw new CompileException("seperator is not correctly specified \"" + props + "\"");
+                            }
+
+                            e.setRegister(new ForeachContext(new String(props, j + 1, k - j - 1)));
+                        }
+                        else {
+                            e.setRegister(new ForeachContext(""));
                         }
                     }
 
@@ -263,7 +266,7 @@ public class TemplateCompiler {
                         depth--;
                 }
 
-                System.out.println(indent(depth) + " + Node [" + e.getNode() + "] " + e.getToken()
+                System.out.println(indent(depth) + " + Node (" + e.getNode() + ") [" + getNodeTypeName(e.getNodeType()) + "] " + e.getToken()
                         + " {" + e.getStartPos() + "," + e.getEndPos() + "} --> " + e.getEndNode());
 
                 switch (e.getToken()) {
@@ -281,90 +284,97 @@ public class TemplateCompiler {
 
         return expressions;
     }
-    
+
+    private static String getNodeTypeName(int node) {
+        switch (node) {
+            case NodeType.ELSE:
+                return "ELSE";
+            case NodeType.ELSEIF:
+                return "ELSE_IF";
+            case NodeType.END:
+                return "END";
+            case NodeType.FOREACH:
+                return "FOREACH";
+            case NodeType.GOTO:
+                return "GOTO";
+            case NodeType.IF:
+                return "IF";
+            case NodeType.INCLUDE_BY_REF:
+                return "INCLUDE_BY_REF";
+            case NodeType.LITERAL:
+                return "LITERAL";
+            case NodeType.OPERATOR:
+                return "OPERATOR";
+            case NodeType.PROPERTY_EX:
+                return "EXPRESSION";
+            case NodeType.TERMINUS:
+                return "TERMINUS";
+        }
+        return "UNKNOWN";
+    }
+
     private IncludeRef buildIncludeRef(char[] text) {
         int i = 0;
-                
+
         // skip leading white spaces
-        while (isWhitespace(text[i++])) ;
+        while (isWhitespace(text[i])) i++;
+
         int start = i;
-        
-        // scan to the first (
-        while(text[i++] != '(' ) ;
-        String name = new String( text, start-1, i - start );
-        
-        List params = new ArrayList();
-        
-        while ( true ) {
-            start = i;
-            while(i < text.length && text[i++] != ',' );
-            params.add( new IncludeRefParam( text, start, i - 1 ) );
-            if ( i == text.length) {
-                break;
-            }            
+
+        while (text[i] != '(') i++;
+
+        int end = i;
+
+        String name = new String(text, start, end - start);
+
+        Map<String, String> parmVars = parseParameters(subset(text, end, balancedCapture(text, i, ')') - end));
+        List<IncludeRefParam> params = new ArrayList<IncludeRefParam>();
+
+        for (String k : parmVars.keySet()) {
+            params.add(new IncludeRefParam(k, parmVars.get(k)));
         }
-        
-        return new IncludeRef( name, (IncludeRefParam[]) params.toArray( new IncludeRefParam[ params.size()] ) );
-        
-        
+
+        return new IncludeRef(name, params.toArray(new IncludeRefParam[params.size()]));
+
     }
 
     public static class IncludeRef {
         private String name;
         private IncludeRefParam[] params;
-        
+
         public IncludeRef(String name,
                           IncludeRefParam[] params) {
             this.name = name;
             this.params = params;
         }
-        
+
         public String getName() {
             return name;
         }
-        
+
         public IncludeRefParam[] getParams() {
             return params;
-        }                       
+        }
     }
 
     public static class IncludeRefParam {
         private String identifier;
         private String value;
-        
-        public IncludeRefParam(char[] text, int start, int end) {
-            int i = start;
-            
-            // skip leading white spaces
-            while (isWhitespace(text[i++])) ;            
-            int startName = i-1;
-            
-            // scan the identifier
-            while( text[i] != ' ' && text[i] != '=') {i++;};
-            this.identifier = new String(text, startName, i-startName);            
-            
-            // scan to find the start of the value
-            while( text[i] == ' ' ||  text[i] == '=') {i++;};
-            this.value = "@{" + new String(text, i-1, end-i+1) + "}";
-            
-                      
-        }
-        
-        public IncludeRefParam(String identifier,
-                               String value) {
+
+        public IncludeRefParam(String identifier, String value) {
             this.identifier = identifier;
             this.value = value;
         }
-        
+
         public String getIdentifier() {
             return identifier;
         }
-        
+
         public String getValue() {
             return value;
-        }                                
+        }
     }
-    
+
     private static String indent(final int depth) {
         final StringAppender sb = new StringAppender();
         for (int i = depth; i >= 0; i--) {
