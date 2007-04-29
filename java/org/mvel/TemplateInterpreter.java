@@ -432,6 +432,7 @@ public class TemplateInterpreter {
                             if (foreachContext.getCount() != 0) {
                                 sbuf.append(foreachContext.getSeperator());
                             }
+                            tokens.put("i0", foreachContext.getCount());
                             foreachContext.setCount(foreachContext.getCount() + 1);
                         }
                         else {
