@@ -43,7 +43,7 @@ import static java.util.Collections.synchronizedMap;
  *
  * @author Christopher Brock
  */
-public class Interpreter {
+public class TemplateInterpreter {
 
     public static boolean cacheAggressively = false;
 
@@ -93,7 +93,7 @@ public class Interpreter {
      */
     public static Object eval(String template, Object ctx) {
         if (template == null) return null;
-        return new Interpreter(template).execute(ctx, null);
+        return new TemplateInterpreter(template).execute(ctx, null);
     }
 
     /**
@@ -103,7 +103,7 @@ public class Interpreter {
      * @see #eval(String,Object,Map)
      */
     public static Object eval(String template, Map variables) {
-        return new Interpreter(template).execute(null, variables);
+        return new TemplateInterpreter(template).execute(null, variables);
     }
 
     /**
@@ -125,7 +125,7 @@ public class Interpreter {
     public static Object eval(String template, Object ctx, Map variables) {
         if (template == null) return null;
         //noinspection unchecked
-        return new Interpreter(template).execute(ctx, variables);
+        return new TemplateInterpreter(template).execute(ctx, variables);
     }
 
     private char[] expression;
@@ -164,7 +164,7 @@ public class Interpreter {
      *
      * @param template -
      */
-    public Interpreter(CharSequence template) {
+    public TemplateInterpreter(CharSequence template) {
         if (!EX_PRECACHE.containsKey(template)) {
             EX_PRECACHE.put(template, this.expression = template.toString().toCharArray());
             nodes = new TemplateCompiler(this).compileExpression();
@@ -186,7 +186,7 @@ public class Interpreter {
 
     }
 
-    public Interpreter(String expression) {
+    public TemplateInterpreter(String expression) {
         if (!EX_PRECACHE.containsKey(expression)) {
             EX_PRECACHE.put(expression, this.expression = expression.toCharArray());
             nodes = new TemplateCompiler(this).compileExpression();
@@ -218,7 +218,7 @@ public class Interpreter {
         }
     }
 
-    public Interpreter(char[] expression) {
+    public TemplateInterpreter(char[] expression) {
         this.expression = expression;
     }
 
@@ -348,13 +348,13 @@ public class Interpreter {
 
     public static Object parse(CharSequence expression, Object ctx, Map<String, Object> vars) {
         if (expression == null) return null;
-        return new Interpreter(expression).execute(ctx, vars);
+        return new TemplateInterpreter(expression).execute(ctx, vars);
     }
 
     public static Object parse(String expression, Object ctx, Map<String, Object> vars) {
         if (expression == null) return null;
 
-        return new Interpreter(expression).execute(ctx, vars);
+        return new TemplateInterpreter(expression).execute(ctx, vars);
     }
 
     public Object execute(Object ctx, Map tokens) {
@@ -509,7 +509,7 @@ public class Interpreter {
                             vars.put(params[i].getIdentifier(), MVEL.eval(params[i].getValue(), ctx, tokens));
                         }
 
-                        sbuf.append(Interpreter.parse(template, ctx, vars));
+                        sbuf.append(parse(template, ctx, vars));
                     }
                 }
 
@@ -572,7 +572,7 @@ public class Interpreter {
      * @deprecated
      */
     public static Object getValuePE(String expression, Object ctx, Map<String, Object> tokens) {
-        return new Interpreter(expression).execute(ctx, tokens);
+        return new TemplateInterpreter(expression).execute(ctx, tokens);
     }
 
 
@@ -637,6 +637,6 @@ public class Interpreter {
     }
 
     public static void setCacheAggressively(boolean cacheAggressively) {
-        Interpreter.cacheAggressively = cacheAggressively;
+        TemplateInterpreter.cacheAggressively = cacheAggressively;
     }
 }

@@ -40,8 +40,8 @@ public class TemplateCompiler {
     private boolean debug = DEFAULT_DEBUG;
     private int maxDepth = 10;
 
-    public TemplateCompiler(Interpreter interpreter) {
-        this.expressionArray = interpreter.getExpression();
+    public TemplateCompiler(TemplateInterpreter templateInterpreter) {
+        this.expressionArray = templateInterpreter.getExpression();
         this.length = expressionArray.length;
     }
 
@@ -404,7 +404,8 @@ public class TemplateCompiler {
     }
 
     /**
-     * @return array
+     * @param depth -
+     * @return array -
      */
     private char[] structuredCaptureArray(int depth) {
         int start = cursor++ + 1;
