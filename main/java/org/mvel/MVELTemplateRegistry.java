@@ -7,6 +7,7 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -82,4 +83,11 @@ public class MVELTemplateRegistry implements TemplateRegistry {
         }                
     }
 
+    public boolean isEmpty() {
+        return this.registry.isEmpty();
+    }
+    
+    public Iterator iterateTemplates() {
+        return this.registry.keySet().iterator();
+    }
 }
