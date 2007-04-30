@@ -95,9 +95,12 @@ public class TemplateCompiler {
                         ex.setToken(END);
                         ex.setRegister(exStr);
                     }
-                    else {
+                    else if ("includeByRef".equals(token)) {
                         ex.setToken(INCLUDE_BY_REF);
                         ex.setRegister(buildIncludeRef(exStr));
+                    }
+                    else {
+                        throw new CompileException("unknown token: " + token);
                     }
                 }
 
