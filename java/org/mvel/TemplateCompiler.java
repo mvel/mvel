@@ -120,19 +120,7 @@ public class TemplateCompiler {
 
                                     capture = i += 4;
 
-                                    /**
-                                     * Scan to skip any excess whitespace.
-                                     */
-                                    //noinspection StatementWithEmptyBody
-                                    while (i < exStr.length && !isWhitespace(exStr[i++])) ;
-
-                                    /**
-                                     * Scan a second time to capture the token.
-                                     */
-                                    //noinspection StatementWithEmptyBody
-                                    while (i < exStr.length && !isWhitespace(exStr[i++])) ;
-
-                                    ex.setAlias(copyValueOf(exStr, capture, i - capture));
+                                    ex.setAlias(copyValueOf(exStr, capture, exStr.length - capture));
 
                                     /**
                                      * Scan to skip any excess whitespace.
