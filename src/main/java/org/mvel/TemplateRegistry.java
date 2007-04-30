@@ -1,6 +1,7 @@
 package org.mvel;
 
 import java.io.Reader;
+import java.util.Iterator;
 
 /**
  * Interface to allow MVEL Templates to be registerd so they can be used inside other Templates.
@@ -18,5 +19,9 @@ public interface TemplateRegistry {
     void registerTemplate(Reader reader);    
     
     String getTemplate(String name);
-
+    
+    boolean isEmpty();
+    
+    Iterator iterateTemplates();
+        
 }
