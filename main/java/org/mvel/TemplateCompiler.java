@@ -305,14 +305,15 @@ public class TemplateCompiler {
 
         // skip leading white spaces
         while (isWhitespace(text[i])) i++;
-
         int start = i;
 
-        while (text[i] != '(') i++;
+        //noinspection StatementWithEmptyBody
+        while (i < text.length && text[i++] != '(') ;
+        if (i == text.length) throw new ParseException("expected '('");
 
         int end = i;
 
-        String name = new String(text, start, end - start);
+        String name = new String(text, start, end - start - 1);
 
         Map<String, String> parmVars = parseParameters(subset(text, end, balancedCapture(text, i, ')') - end));
         List<IncludeRefParam> params = new ArrayList<IncludeRefParam>();

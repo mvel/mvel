@@ -721,7 +721,7 @@ public class ParseTools {
                 case',':
                     if (capture) {
                         allParms.put(parmName, new String(parms, start, i - start).trim());
-                        start = i;
+                        start = ++i;
                         capture = false;
                         break;
                     }
@@ -735,7 +735,6 @@ public class ParseTools {
         if (capture) {
             allParms.put(parmName, new String(parms, start, i - start).trim());
         }
-
 
         return allParms;
     }
