@@ -725,10 +725,6 @@ public class ParseTools {
                         capture = false;
                         break;
                     }
-                default:
-                    if (!capture && isWhitespace(parms[i])) {
-                        start++;
-                    }
             }
         }
 

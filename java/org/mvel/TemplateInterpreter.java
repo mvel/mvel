@@ -19,6 +19,8 @@
 
 package org.mvel;
 
+import static org.mvel.MVEL.compileExpression;
+import static org.mvel.MVEL.executeExpression;
 import static org.mvel.NodeType.*;
 import org.mvel.TemplateCompiler.IncludeRef;
 import org.mvel.TemplateCompiler.IncludeRefParam;
@@ -325,8 +327,6 @@ public class TemplateInterpreter {
             switch (nodes[0].getToken()) {
                 case PROPERTY_EX:
                     //noinspection unchecked
-                    //  return ExpressionParser.eval(getInternalSegment(nodes[0]), ctx, tokens);
-
                     if (!cacheAggressively) {
                         char[] seg = new char[expression.length - 3];
                         arraycopy(expression, 2, seg, 0, seg.length);
@@ -337,12 +337,12 @@ public class TemplateInterpreter {
                         String s = new String(expression, 2, expression.length - 3);
                         if (!EX_PRECOMP_CACHE.containsKey(s)) {
                             synchronized (EX_PRECOMP_CACHE) {
-                                EX_PRECOMP_CACHE.put(s, MVEL.compileExpression(s));
-                                return MVEL.executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
+                                EX_PRECOMP_CACHE.put(s, compileExpression(s));
+                                return executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
                             }
                         }
                         else {
-                            return MVEL.executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
+                            return executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
                         }
 
                     }
