@@ -670,6 +670,13 @@ public class ParserUnitTest extends TestCase {
         assertEquals("xvalue1catx", parse("x@includeByRef{templateName(var1 = \"value1\", var2 = c)}x", registry));
     }
     
+    public void testIncludeByRefNoParams() {
+        TemplateRegistry registry = new MVELTemplateRegistry();
+        registry.registerTemplate("templateName", "hello");
+
+        assertEquals("xhellox", parse("x@includeByRef{templateName()}x", registry));
+    }    
+    
     public void testIncludeByRefNoSpaces() {
         TemplateRegistry registry = new MVELTemplateRegistry();
         registry.registerTemplate("templateName", "@{var1}@{var2}");

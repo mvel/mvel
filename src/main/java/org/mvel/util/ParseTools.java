@@ -551,7 +551,7 @@ public class ParseTools {
     }
 
     public static boolean debug(String str) {
-        System.out.println(str);
+        // System.out.println(str);
         return true;
     }
 
@@ -721,13 +721,9 @@ public class ParseTools {
                 case',':
                     if (capture) {
                         allParms.put(parmName, new String(parms, start, i - start).trim());
-                        start = i;
+                        start = ++i;
                         capture = false;
                         break;
-                    }
-                default:
-                    if (!capture && isWhitespace(parms[i])) {
-                        start++;
                     }
             }
         }
@@ -735,7 +731,6 @@ public class ParseTools {
         if (capture) {
             allParms.put(parmName, new String(parms, start, i - start).trim());
         }
-
 
         return allParms;
     }

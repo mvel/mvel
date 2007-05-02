@@ -19,6 +19,8 @@
 
 package org.mvel;
 
+import static org.mvel.MVEL.compileExpression;
+import static org.mvel.MVEL.executeExpression;
 import static org.mvel.NodeType.*;
 import org.mvel.TemplateCompiler.IncludeRef;
 import org.mvel.TemplateCompiler.IncludeRefParam;
@@ -68,7 +70,7 @@ public class TemplateInterpreter {
      * @param variables - a map of variables for use in the expression.
      * @return the resultant value represented in it's equivelant string value.
      */
-    public static String evalToString(String template, Map variables) {
+    public static String evalToString(String template, Map<String, Object> variables) {
         return valueOf(eval(template, variables));
     }
 
@@ -102,7 +104,7 @@ public class TemplateInterpreter {
      * @return see description.
      * @see #eval(String,Object,Map)
      */
-    public static Object eval(String template, Map variables) {
+    public static Object eval(String template, Map<String, Object> variables) {
         return new TemplateInterpreter(template).execute(null, variables);
     }
 
@@ -297,7 +299,7 @@ public class TemplateInterpreter {
 
     public static Object parse(CharSequence expression, Object ctx, Map<String, Object> vars, TemplateRegistry registry) {
         if (expression == null) return null;
-        return new TemplateInterpreter(expression).execute(ctx, vars);
+        return new TemplateInterpreter(expression).execute(ctx, vars, registry);
     }
 
     public static Object parse(String expression, Object ctx, Map<String, Object> vars) {
@@ -310,11 +312,11 @@ public class TemplateInterpreter {
         return new TemplateInterpreter(expression).execute(ctx, vars, registry);
     }
 
-    public Object execute(Object ctx, Map tokens) {
+    public Object execute(Object ctx, Map<String, Object> tokens) {
         return execute(ctx, tokens, null);
     }
 
-    public Object execute(Object ctx, Map tokens, TemplateRegistry registry) {
+    public Object execute(Object ctx, Map<String, Object> tokens, TemplateRegistry registry) {
         if (nodes == null) {
             return new String(expression);
         }
@@ -325,8 +327,6 @@ public class TemplateInterpreter {
             switch (nodes[0].getToken()) {
                 case PROPERTY_EX:
                     //noinspection unchecked
-                    //  return ExpressionParser.eval(getInternalSegment(nodes[0]), ctx, tokens);
-
                     if (!cacheAggressively) {
                         char[] seg = new char[expression.length - 3];
                         arraycopy(expression, 2, seg, 0, seg.length);
@@ -337,12 +337,12 @@ public class TemplateInterpreter {
                         String s = new String(expression, 2, expression.length - 3);
                         if (!EX_PRECOMP_CACHE.containsKey(s)) {
                             synchronized (EX_PRECOMP_CACHE) {
-                                EX_PRECOMP_CACHE.put(s, MVEL.compileExpression(s));
-                                return MVEL.executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
+                                EX_PRECOMP_CACHE.put(s, compileExpression(s));
+                                return executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
                             }
                         }
                         else {
-                            return MVEL.executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
+                            return executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
                         }
 
                     }
@@ -464,9 +464,9 @@ public class TemplateInterpreter {
                         IncludeRef includeRef = (IncludeRef) nodes[node].getRegister();
 
                         IncludeRefParam[] params = includeRef.getParams();
-                        Map vars = new HashMap(params.length * 2);
-                        for (int i = 0; i < params.length; i++) {
-                            vars.put(params[i].getIdentifier(), MVEL.eval(params[i].getValue(), ctx, tokens));
+                        Map<String, Object> vars = new HashMap<String, Object>(params.length * 2);
+                        for (IncludeRefParam param : params) {
+                            vars.put(param.getIdentifier(), MVEL.eval(param.getValue(), ctx, tokens));
                         }
 
                         if (registry == null) {
