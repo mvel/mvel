@@ -311,11 +311,11 @@ public class TemplateCompiler {
         while (i < text.length && text[i++] != '(') ;
         if (i == text.length) throw new ParseException("expected '('");
 
-        int end = i;
+        int end = i-1;
 
-        String name = new String(text, start, end - start - 1);
+        String name = new String(text, start, end - start);
 
-        Map<String, String> parmVars = parseParameters(subset(text, end, balancedCapture(text, i, ')') - end));
+        Map<String, String> parmVars = parseParameters(subset(text, end+1, balancedCapture(text, end, ')') - end));
         List<IncludeRefParam> params = new ArrayList<IncludeRefParam>();
 
         for (String k : parmVars.keySet()) {
