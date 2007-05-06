@@ -466,7 +466,7 @@ public class Token implements Cloneable, Serializable {
             return;
         }
         else if (isNumber(name)) {
-            fields |= NUMERIC | LITERAL;
+            fields |= NUMERIC | LITERAL | IDENTIFIER;
             literal = handleNumericConversion(name);
 
             if ((fields & INVERT) != 0) {
@@ -499,6 +499,7 @@ public class Token implements Cloneable, Serializable {
     }
 
     public boolean isSubeval() {
+
         return (fields & SUBEVAL) != 0;
     }
 
