@@ -24,6 +24,7 @@ public class ForEachToken extends Token {
 
     public ForEachToken(char[] condition, char[] block, int fields) {
         super(condition, fields);
+
         handleCond(condition);
         this.compiledBlock = (ExecutableStatement) compileExpression(this.block = block);
     }
