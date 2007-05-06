@@ -28,6 +28,8 @@ public class AbstractParser {
 
     protected boolean greedy = true;
 
+    protected boolean lastWasIdentifier = false;
+
     protected static final int FRAME_END = -1;
     protected static final int FRAME_CONTINUE = 0;
     protected static final int FRAME_NEXT = 1;
@@ -40,6 +42,7 @@ public class AbstractParser {
 
     public static final Map<String, Integer> OPERATORS =
             new HashMap<String, Integer>(25 * 2, 0.6f);
+
 
     static {
         configureFactory();
@@ -95,7 +98,6 @@ public class AbstractParser {
                 throw new RuntimeException("cannot resolve a built-in literal", e);
             }
         }
-
 
         OPERATORS.put("+", ADD);
         OPERATORS.put("-", SUB);
@@ -155,6 +157,8 @@ public class AbstractParser {
         OPERATORS.put("+=", ASSIGN_ADD);
         OPERATORS.put("-=", ASSIGN_SUB);
 
+        OPERATORS.put("var", TYPED_VAR);
+
         OPERATORS.put("return", RETURN);
     }
 
@@ -189,7 +193,8 @@ public class AbstractParser {
          * a capture only mode.
          */
 
-        fields = fields & (Token.CAPTURE_ONLY | Token.NOCOMPILE | Token.INLINE_COLLECTION | Token.PUSH);
+        fields = fields & (Token.CAPTURE_ONLY | Token.NOCOMPILE | Token.INLINE_COLLECTION | Token.PUSH
+                | Token.IDENTIFIER);
 
         boolean capture = false;
 
@@ -235,6 +240,12 @@ public class AbstractParser {
                         case FOREACH:
                             fields |= Token.BLOCK_FOREACH;
                             return captureConditionalBlock(expr);
+
+                        case TYPED_VAR:
+                            fields |= Token.TYPED;
+                            skipWhitespace();
+                            start = cursor;
+                            continue;
                     }
                 }
                 else if (isIdentifierPart(expr[cursor])) {
@@ -281,8 +292,6 @@ public class AbstractParser {
                  * a contiguous token.
                  */
                 if (cursor < length) {
-
-
                     switch (expr[cursor]) {
                         case']':
                             if ((fields & (Token.INLINE_COLLECTION)) != 0) {
@@ -409,6 +418,10 @@ public class AbstractParser {
                         }
 
                         return createToken(expr, start + 1, cursor - 1, fields |= Token.SUBEVAL);
+                    }
+
+                    case')': {
+                        throw new ParseException("unbalanced braces");
                     }
 
                     case'>': {
@@ -600,8 +613,20 @@ public class AbstractParser {
      * @return -
      */
     private Token createToken(final char[] expr, final int start, final int end, int fields) {
-//        assert debug("CAPTURE_TOKEN <<" + new String(expr, start, end - start) + ">>");
-        return new Token(expr, start, end, fields);
+        Token tk = new Token(expr, start, end, fields);
+
+        if (tk.isIdentifier()) {
+            if (lastWasIdentifier) {
+                throw new ParseException("not a statement");
+            }
+
+            lastWasIdentifier = true;
+        }
+        else {
+            lastWasIdentifier = false;
+        }
+
+        return tk;
     }
 
     private char[] subArray(final int start, final int end) {
@@ -612,6 +637,11 @@ public class AbstractParser {
 
     private Token createBlockToken(final int condStart,
                                    final int condEnd, final int blockStart, final int blockEnd) {
+
+        lastWasIdentifier = false;
+
+        cursor++;
+
         if (isFlag(Token.BLOCK_IF)) {
             return new IfToken(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
@@ -624,7 +654,6 @@ public class AbstractParser {
     }
 
     private Token captureConditionalBlock(final char[] expr) {
-
         boolean cond = true;
 
         Token first = null;

@@ -492,7 +492,7 @@ public class TemplateInterpreter {
         catch (Exception e) {
             if (currNode != null) {
                 throw new CompileException("problem encountered at node [" + currNode.getNode() + "] "
-                        + currNode.getToken() + "{" + currNode.getStartPos() + "," + currNode.getEndPos() + "}", e);
+                        + currNode.getToken() + "{" + currNode.getStartPos() + "," + currNode.getEndPos() + "}: " + e.getMessage(), e);
             }
             throw new CompileException("unhandled fatal exception (node:" + node + ")", e);
         }

@@ -60,6 +60,8 @@ public class Token implements Cloneable, Serializable {
     public static final int BLOCK_IF = 1 << 23;
     public static final int BLOCK_FOREACH = 1 << 24;
 
+    public static final int TYPED = 1 << 25;
+
     public static final int RETURN = 1 << 31;
 
     protected int firstUnion;
@@ -67,6 +69,7 @@ public class Token implements Cloneable, Serializable {
 
     protected int fields = 0;
 
+    protected Class egressType;
     protected char[] name;
     protected String nameCache;
 
@@ -107,6 +110,13 @@ public class Token implements Cloneable, Serializable {
         return null;
     }
 
+    public Class getEgressType() {
+        return egressType;
+    }
+
+    public void setEgressType(Class egressType) {
+        this.egressType = egressType;
+    }
 
     private String getAbsoluteRemainder() {
         return (fields & COLLECTION) != 0 ? new String(name, endOfName, name.length - endOfName)
@@ -447,7 +457,7 @@ public class Token implements Cloneable, Serializable {
             //    return;
         }
         else if (AbstractParser.LITERALS.containsKey(literal)) {
-            fields |= LITERAL;
+            fields |= LITERAL | IDENTIFIER;
             if ((literal = AbstractParser.LITERALS.get(literal)) == ThisLiteral.class) fields |= THISREF;
         }
         else if (AbstractParser.OPERATORS.containsKey(literal)) {
@@ -523,6 +533,7 @@ public class Token implements Cloneable, Serializable {
     public boolean isAssignment() {
         return ((fields & ASSIGN) != 0);
     }
+
 
 }
 
