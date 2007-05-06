@@ -345,6 +345,10 @@ public class Token implements Cloneable, Serializable {
                 }
             }
             else {
+                if (isOperator()) {
+                    throw new CompileException("incomplete statement");
+                }
+
                 throw new UnresolveablePropertyException(this);
             }
         }

@@ -782,7 +782,7 @@ public class AbstractParser {
     }
 
     protected void skipWhitespace() {
-        while (isWhitespace(expr[cursor])) cursor++;
+        while (cursor < length && isWhitespace(expr[cursor])) cursor++;
     }
 
     protected void skipWhitlespaceSafe() {

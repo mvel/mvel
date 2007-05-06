@@ -226,7 +226,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw new PropertyAccessException("array or collections index out of bounds (property: " + new String(expr) + ")", e);
         }
         catch (PropertyAccessException e) {
-            throw new PropertyAccessException("failed to access property: <<" + new String(expr) + ">> in: " + (ctx != null ? ctx.getClass() : null), e);
+            throw new PropertyAccessException("failed to access property: <<" + new String(expr) + ">> in: " + (ctx != null ? ctx.getClass() : "local scope"), e);
         }
         catch (CompileException e) {
             throw e;
