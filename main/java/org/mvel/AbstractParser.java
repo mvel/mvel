@@ -3,7 +3,6 @@ package org.mvel;
 import static org.mvel.Operator.*;
 import org.mvel.block.ForEachToken;
 import org.mvel.block.IfToken;
-import static org.mvel.util.ParseTools.debug;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
@@ -22,7 +21,6 @@ import java.util.WeakHashMap;
  * @author Christopher Brock
  */
 public class AbstractParser {
-
     protected char[] expr;
     protected int cursor;
     protected int length;
@@ -296,8 +294,6 @@ public class AbstractParser {
                             continue;
                         case'.':
                             cursor++;
-                            assert debug("GREEDY_CAPTURE_CONTINUE ['" + (cursor < length ? expr[cursor] : "EOF")
-                                    + "']");
                             continue;
                         case'=':
                             if (greedy && expr[cursor + 1] != '=') {
@@ -306,8 +302,6 @@ public class AbstractParser {
                                 fields |= Token.ASSIGN;
 
                                 skipWhitespace();
-
-                                assert debug("GREEDY_CAPTURE_CONTINUE_FOR_ASSIGNMENT");
 
                                 captureToEOS();
 
@@ -319,24 +313,13 @@ public class AbstractParser {
 
                                 fields |= Token.FOLD;
 
-                                assert debug("GREEDY_CAPTURE_CONTINUE_FOR_FOLD");
-
                                 capture = false;
 
                                 continue;
                             }
-//                        case '+':
-//                            if ((cursor + 1) < length && expr[cursor + 1] == '+') {
-//                                fields |= Token.POST_INC;
-//                                cursor += 2;
-//
-//                                return createToken(expr, start, cursor - 2, fields);
-//                            }
                     }
 
                 }
-
-                assert debug("EXIT IDENTIFIER @ '" + (cursor < length ? expr[cursor] : "EOF") + "'");
 
                 /**
                  * Produce the token.
@@ -426,7 +409,6 @@ public class AbstractParser {
                         }
 
                         return createToken(expr, start + 1, cursor - 1, fields |= Token.SUBEVAL);
-
                     }
 
                     case'>': {
@@ -618,7 +600,7 @@ public class AbstractParser {
      * @return -
      */
     private Token createToken(final char[] expr, final int start, final int end, int fields) {
-        assert debug("CAPTURE_TOKEN <<" + new String(expr, start, end - start) + ">>");
+//        assert debug("CAPTURE_TOKEN <<" + new String(expr, start, end - start) + ">>");
         return new Token(expr, start, end, fields);
     }
 

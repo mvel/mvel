@@ -27,23 +27,23 @@ import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 import static org.mvel.util.ParseTools.handleParserEgress;
 
 import java.io.Serializable;
+import static java.lang.Boolean.getBoolean;
 import static java.lang.String.valueOf;
 import java.util.Map;
 
 public class MVEL {
     public static final String NAME = "MVEL (MVFLEX Expression Language)";
     public static final String VERSION = "1.2";
-    public static final String VERSION_SUB = "beta15";
+    public static final String VERSION_SUB = "beta16";
     public static final String CODENAME = "horizon";
 
-    static boolean THREAD_SAFE = Boolean.getBoolean("mvel.threadsafety");
+    static boolean THREAD_SAFE = getBoolean("mvel.threadsafety");
     static boolean OPTIMIZER = true;
 
     static {
         if (System.getProperty("mvel.optimizer") != null) {
-            OPTIMIZER = Boolean.getBoolean("mvel.optimizer");
+            OPTIMIZER = getBoolean("mvel.optimizer");
         }
-
     }
 
     /**

@@ -37,6 +37,7 @@ public class ParserUnitTest extends TestCase {
         map.put("hour", "60");
         map.put("zero", 0);
 
+        //noinspection UnnecessaryBoxing
         map.put("doubleTen", new Double(10));
 
         map.put("variable_with_underscore", "HELLO");
@@ -669,21 +670,21 @@ public class ParserUnitTest extends TestCase {
 
         assertEquals("xvalue1catx", parse("x@includeByRef{templateName(var1 = \"value1\", var2 = c)}x", registry));
     }
-    
+
     public void testIncludeByRefNoParams() {
         TemplateRegistry registry = new MVELTemplateRegistry();
         registry.registerTemplate("templateName", "hello");
 
         assertEquals("xhellox", parse("x@includeByRef{templateName()}x", registry));
-    }    
-    
+    }
+
     public void testIncludeByRefNoSpaces() {
         TemplateRegistry registry = new MVELTemplateRegistry();
         registry.registerTemplate("templateName", "@{var1}@{var2}");
 
         assertEquals("xvalue1catx", parse("x@includeByRef{templateName(var1=\"value1\", var2=c)}x", registry));
     }
-    
+
 
     public void testRegisterTemplateGroup() {
         StringReader reader = new StringReader("myTemplate1() ::=<<@{var1}>>=::  myTemplate2() ::=<<@{var2}>>=::");
@@ -785,11 +786,17 @@ public class ParserUnitTest extends TestCase {
 
     public void calculateAge() {
         System.out.println("Calculating the Age");
+
         Calendar c1 = Calendar.getInstance();
         c1.set(1999, 0, 10); // 1999 jan 20
+
         Map objectMap = new HashMap(1);
         Map propertyMap = new HashMap(1);
+
+        //noinspection unchecked
         propertyMap.put("GEBDAT", c1.getTime());
+
+        //noinspection unchecked
         objectMap.put("EV_VI_ANT1", propertyMap);
         System.out.println(new PDFFieldUtil().calculateAge(c1.getTime()));
         System.out.println(MVEL.eval("new org.mvel.tests.main.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'X' : ''"
