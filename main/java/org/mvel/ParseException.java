@@ -19,20 +19,56 @@
 package org.mvel;
 
 public class ParseException extends RuntimeException {
+    private int cursorPosition;
+    private String message;
 
     public ParseException() {
         super();
     }
 
     public ParseException(String message) {
-        super(message);
+        this.message = message;
     }
 
+    public ParseException(String message, char[] expr, int cursorPosition) {
+        super();
+
+        this.cursorPosition = cursorPosition;
+        int start = cursorPosition - 15;
+        int end = cursorPosition + 15;
+
+        if (start < 0) {
+            end += (0 - start);
+            start = 0;
+        }
+
+        if (end > expr.length) {
+            end = expr.length;
+        }
+
+        String nearCode = new String(expr, start, end - start);
+
+
+        this.message = message + " (near code: << ... " + nearCode + " ...>>) (position: " + cursorPosition + ")";
+    }
+
+
     public ParseException(String message, Throwable cause) {
-        super(message, cause);
+        super(cause);
+        this.message = message;
     }
 
     public ParseException(Throwable cause) {
         super(cause);
+    }
+
+
+    public String getMessage() {
+        return message;
+    }
+
+
+    public int getCursorPosition() {
+        return cursorPosition;
     }
 }
