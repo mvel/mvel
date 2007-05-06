@@ -309,7 +309,7 @@ public class TemplateCompiler {
 
         //noinspection StatementWithEmptyBody
         while (i < text.length && text[i++] != '(') ;
-        if (i == text.length) throw new ParseException("expected ')'");
+        if (i == text.length) throw new ParseException("expected ')'", expressionArray, i);
 
         int end = i - 1;
 

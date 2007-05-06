@@ -77,9 +77,12 @@ public class Token implements Cloneable, Serializable {
 
     protected Accessor accessor;
 
+    protected int cursorPosition;
+
     public Token nextToken;
 
     public Token(char[] expr, int start, int end, int fields) {
+        this.cursorPosition = start;
         this.fields = fields;
 
         if ((fields & RETURN) != 0) {
@@ -536,6 +539,13 @@ public class Token implements Cloneable, Serializable {
     }
 
 
+    public int getCursorPosition() {
+        return cursorPosition;
+    }
+
+    public void setCursorPosition(int cursorPosition) {
+        this.cursorPosition = cursorPosition;
+    }
 }
 
 

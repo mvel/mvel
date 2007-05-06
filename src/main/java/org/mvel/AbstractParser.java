@@ -284,7 +284,7 @@ public class AbstractParser {
                      * optimize error now.
                      */
                     if (brace > 0)
-                        throw new CompileException("unbalanced braces in expression: (" + brace + "):" + new String(expr));
+                        throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
                 }
 
                 /**
@@ -398,7 +398,7 @@ public class AbstractParser {
                             }
                         }
                         if (brace > 0)
-                            throw new CompileException("unbalanced braces in expression: (" + brace + "):" + new String(expr));
+                            throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
 
                         if ((fields & Token.FOLD) != 0) {
                             if (cursor < length && expr[cursor] == '.') {
@@ -420,8 +420,10 @@ public class AbstractParser {
                         return createToken(expr, start + 1, cursor - 1, fields |= Token.SUBEVAL);
                     }
 
+                    case'}':
+                    case']':
                     case')': {
-                        throw new ParseException("unbalanced braces");
+                        throw new ParseException("unbalanced braces", expr, cursor);
                     }
 
                     case'>': {
@@ -458,7 +460,7 @@ public class AbstractParser {
                         }
 
                         if (cursor == length || expr[cursor] != '\'') {
-                            throw new CompileException("unterminated literal: " + new String(expr));
+                            throw new CompileException("unterminated literal", expr, cursor);
                         }
 
                         if ((fields & Token.ASSIGN) != 0) {
@@ -474,7 +476,7 @@ public class AbstractParser {
                             if (expr[cursor] == '\\') handleEscapeSequence(expr[++cursor]);
                         }
                         if (cursor == length || expr[cursor] != '"') {
-                            throw new CompileException("unterminated literal: " + new String(expr));
+                            throw new CompileException("unterminated literal", expr, cursor);
                         }
 
                         if ((fields & Token.ASSIGN) != 0) {
@@ -537,7 +539,7 @@ public class AbstractParser {
                     case'[':
                         if (capture) {
                             if (balancedCapture(expr[cursor]) == -1) {
-                                throw new CompileException("unbalanced '" + expr[cursor] + "'");
+                                throw new CompileException("unbalanced brace", expr, cursor);
                             }
                             cursor++;
                             continue;
@@ -545,7 +547,8 @@ public class AbstractParser {
 
                     case'{':
                         if (balancedCapture(expr[cursor]) == -1) {
-                            throw new CompileException("unbalanced '" + expr[cursor] + "': in inline map/list/array creation");
+                            if (cursor >= length) cursor--;
+                            throw new CompileException("unbalanced brace: in inline map/list/array creation", expr, cursor);
                         }
 
                         if (cursor < (length - 1) && expr[cursor + 1] == '.') {
@@ -617,7 +620,7 @@ public class AbstractParser {
 
         if (tk.isIdentifier()) {
             if (lastWasIdentifier) {
-                throw new ParseException("not a statement");
+                throw new ParseException("not a statement", expr, cursor);
             }
 
             lastWasIdentifier = true;
@@ -670,6 +673,7 @@ public class AbstractParser {
                 }
 
                 if (((IfToken) (tk = _captureConditionalBlock(tk, expr, cond))).getElseBlock() != null) {
+                    cursor++;
                     return first;
                 }
 
@@ -708,7 +712,7 @@ public class AbstractParser {
         if (expr[cursor] == '{') {
             blockStart = ++cursor;
             if ((blockEnd = balancedCapture('{')) == -1) {
-                throw new CompileException("unbalanced braces { }");
+                throw new CompileException("unbalanced braces { }", expr, cursor);
             }
         }
         else {
