@@ -309,13 +309,13 @@ public class TemplateCompiler {
 
         //noinspection StatementWithEmptyBody
         while (i < text.length && text[i++] != '(') ;
-        if (i == text.length) throw new ParseException("expected '('");
+        if (i == text.length) throw new ParseException("expected ')'");
 
-        int end = i-1;
+        int end = i - 1;
 
         String name = new String(text, start, end - start);
 
-        Map<String, String> parmVars = parseParameters(subset(text, end+1, balancedCapture(text, end, ')') - end));
+        Map<String, String> parmVars = parseParameters(subset(text, end + 1, balancedCapture(text, end, ')') - end - 1));
         List<IncludeRefParam> params = new ArrayList<IncludeRefParam>();
 
         for (String k : parmVars.keySet()) {

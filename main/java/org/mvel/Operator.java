@@ -73,7 +73,11 @@ public interface Operator {
     public static final int ASSIGN_SUB = 53;
     public static final int ASSIGN_STR_APPEND = 54;
 
+    public static final int TYPED_VAR = 98;
+
     public static final int RETURN = 99;
 
     public static final int FUNCTION = 100;
+
+
 }

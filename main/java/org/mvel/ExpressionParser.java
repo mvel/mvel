@@ -29,7 +29,6 @@ import static org.mvel.util.PropertyTools.isEmpty;
 import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
-import org.mvel.util.ParseTools;
 
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
@@ -69,12 +68,19 @@ public class ExpressionParser extends AbstractParser {
         Token tk;
         Integer operator;
 
+        lastWasIdentifier = false;
+
         while ((tk = nextToken()) != null) {
+            /**
+             * If we are at the beginning of a statement, then we immediately push the first token
+             * onto the stack.
+             */
             if (stk.size() == 0) {
                 stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
             }
 
             if (!tk.isOperator()) {
+
                 continue;
             }
 
@@ -173,8 +179,8 @@ public class ExpressionParser extends AbstractParser {
                     stk.clear();
                 }
 
-                return FRAME_NEXT;              
-            
+                return FRAME_NEXT;
+
         }
         return FRAME_CONTINUE;
     }
