@@ -70,7 +70,7 @@ public class TemplateInterpreter {
      * @param variables - a map of variables for use in the expression.
      * @return the resultant value represented in it's equivelant string value.
      */
-    public static String evalToString(String template, Map<String, Object> variables) {
+    public static String evalToString(String template, Map variables) {
         return valueOf(eval(template, variables));
     }
 
@@ -104,7 +104,8 @@ public class TemplateInterpreter {
      * @return see description.
      * @see #eval(String,Object,Map)
      */
-    public static Object eval(String template, Map<String, Object> variables) {
+    public static Object eval(String template, Map variables) {
+        //noinspection unchecked
         return new TemplateInterpreter(template).execute(null, variables);
     }
 
@@ -228,8 +229,10 @@ public class TemplateInterpreter {
         this.debug = debug;
     }
 
-    public static void parseToStream(File template, Object ctx, Map<String, Object> tokens, OutputStream out)
+    public static void parseToStream(File template, Object ctx, Map tokens, OutputStream out)
             throws IOException {
+
+        //noinspection unchecked
         Object result = parse(template, ctx, tokens);
         CharSequence cs;
 
@@ -251,11 +254,11 @@ public class TemplateInterpreter {
         writer.close();
     }
 
-    public static Object parse(File file, Object ctx, Map<String, Object> tokens) throws IOException {
+    public static Object parse(File file, Object ctx, Map tokens) throws IOException {
         return parse(file, ctx, tokens, null);
     }
 
-    public static Object parse(File file, Object ctx, Map<String, Object> tokens, TemplateRegistry registry) throws IOException {
+    public static Object parse(File file, Object ctx, Map tokens, TemplateRegistry registry) throws IOException {
         if (!file.exists())
             throw new CompileException("cannot find file: " + file.getName());
 
@@ -279,6 +282,7 @@ public class TemplateInterpreter {
                 }
             }
 
+            //noinspection unchecked
             return parse(sb, ctx, tokens, registry);
 
         }
@@ -293,30 +297,32 @@ public class TemplateInterpreter {
         return null;
     }
 
-    public static Object parse(CharSequence expression, Object ctx, Map<String, Object> vars) {
+    public static Object parse(CharSequence expression, Object ctx, Map vars) {
         return parse(expression, ctx, vars, null);
     }
 
-    public static Object parse(CharSequence expression, Object ctx, Map<String, Object> vars, TemplateRegistry registry) {
+    public static Object parse(CharSequence expression, Object ctx, Map vars, TemplateRegistry registry) {
         if (expression == null) return null;
+        //noinspection unchecked
         return new TemplateInterpreter(expression).execute(ctx, vars, registry);
     }
 
-    public static Object parse(String expression, Object ctx, Map<String, Object> vars) {
+    public static Object parse(String expression, Object ctx, Map vars) {
         return parse(expression, ctx, vars, null);
     }
 
-    public static Object parse(String expression, Object ctx, Map<String, Object> vars, TemplateRegistry registry) {
+    public static Object parse(String expression, Object ctx, Map vars, TemplateRegistry registry) {
         if (expression == null) return null;
 
+        //noinspection unchecked
         return new TemplateInterpreter(expression).execute(ctx, vars, registry);
     }
 
-    public Object execute(Object ctx, Map<String, Object> tokens) {
+    public Object execute(Object ctx, Map tokens) {
         return execute(ctx, tokens, null);
     }
 
-    public Object execute(Object ctx, Map<String, Object> tokens, TemplateRegistry registry) {
+    public Object execute(Object ctx, Map tokens, TemplateRegistry registry) {
         if (nodes == null) {
             return new String(expression);
         }
@@ -360,6 +366,7 @@ public class TemplateInterpreter {
         Node currNode = null;
 
         try {
+            //noinspection unchecked
             ExpressionParser oParser = new ExpressionParser(ctx, tokens);
 
             initStack();
@@ -399,6 +406,7 @@ public class TemplateInterpreter {
                                 String[] lists = getForEachSegment(currNode).split(",");
                                 Iterator[] iters = new Iterator[lists.length];
                                 for (int i = 0; i < lists.length; i++) {
+                                    //noinspection unchecked
                                     Object listObject = new ExpressionParser(lists[i], ctx, tokens).parse();
                                     if (listObject instanceof Object[]) {
                                         listObject = Arrays.asList((Object[]) listObject);
@@ -427,11 +435,13 @@ public class TemplateInterpreter {
 
                             //noinspection unchecked
                             for (int i = 0; i < iters.length; i++) {
+                                //noinspection unchecked
                                 tokens.put(alias[i], iters[i].next());
                             }
                             if (foreachContext.getCount() != 0) {
                                 sbuf.append(foreachContext.getSeperator());
                             }
+                            //noinspection unchecked
                             tokens.put("i0", foreachContext.getCount());
                             foreachContext.setCount(foreachContext.getCount() + 1);
                         }
@@ -540,7 +550,7 @@ public class TemplateInterpreter {
      * @return -
      * @deprecated
      */
-    public static Object getValuePE(String expression, Object ctx, Map<String, Object> tokens) {
+    public static Object getValuePE(String expression, Object ctx, Map tokens) {
         return new TemplateInterpreter(expression).execute(ctx, tokens);
     }
 
