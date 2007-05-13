@@ -726,8 +726,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     static {
         try {
-            classLoader = ASMAccessorOptimizer.class.getClassLoader();
-            defineClass = classLoader.getClass().getDeclaredMethod("defineClass",
+            classLoader = Thread.currentThread().getContextClassLoader();
+            defineClass = ClassLoader.class.getDeclaredMethod("defineClass",
                     new Class[]{String.class, byte[].class, int.class, int.class});
         }
         catch (Exception e) {
