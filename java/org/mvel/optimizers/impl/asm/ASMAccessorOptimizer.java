@@ -721,11 +721,13 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
+    private static final ClassLoader classLoader;
     private static final Method defineClass;
 
     static {
         try {
-            defineClass = ASMAccessorOptimizer.class.getClassLoader().getClass().getDeclaredMethod("defineClass",
+            classLoader = ASMAccessorOptimizer.class.getClassLoader();
+            defineClass = classLoader.getClass().getDeclaredMethod("defineClass",
                     new Class[]{String.class, byte[].class, int.class, int.class});
         }
         catch (Exception e) {
@@ -739,7 +741,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         defineClass.setAccessible(true);
         try {
             //noinspection RedundantArrayCreation
-            return (Class) defineClass.invoke(ASMAccessorOptimizer.class.getClassLoader(), new Object[]{className, b, 0, (b.length)});
+            return (Class) defineClass.invoke(classLoader, new Object[]{className, b, 0, (b.length)});
         }
         finally {
             defineClass.setAccessible(false);
