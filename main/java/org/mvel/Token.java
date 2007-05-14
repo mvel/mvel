@@ -59,9 +59,10 @@ public class Token implements Cloneable, Serializable {
     public static final int BLOCK = 1 << 22;
     public static final int BLOCK_IF = 1 << 23;
     public static final int BLOCK_FOREACH = 1 << 24;
+    public static final int BLOCK_WITH = 1 << 25;
 
-    public static final int TYPED = 1 << 25;
 
+    public static final int TYPED = 1 << 30;
     public static final int RETURN = 1 << 31;
 
     protected int firstUnion;
