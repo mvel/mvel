@@ -695,7 +695,6 @@ public class AbstractParser {
         else if (isFlag(Token.BLOCK_FOREACH) || isFlag(Token.BLOCK_WITH)) {
             skipToNextTokenJunction();
             skipWhitespace();
-
             return _captureBlock(null, expr, true);
         }
 
@@ -720,7 +719,7 @@ public class AbstractParser {
         skipWhitespace();
 
         if (expr[cursor] == '{') {
-            blockStart = ++cursor;
+            blockStart = cursor;
             if ((blockEnd = balancedCapture('{')) == -1) {
                 throw new CompileException("unbalanced braces { }", expr, cursor);
             }
@@ -736,11 +735,11 @@ public class AbstractParser {
 
             if (node != null) {
                 if (!cond) {
-                    ifNode.setElseBlock(subArray(trimRight(blockStart), trimLeft(blockEnd - 1)));
+                    ifNode.setElseBlock(subArray(trimRight(blockStart + 1), trimLeft(blockEnd - 1)));
                     return node;
                 }
                 else {
-                    IfToken tk = (IfToken) createBlockToken(startCond, endCond, trimRight(blockStart),
+                    IfToken tk = (IfToken) createBlockToken(startCond, endCond, trimRight(blockStart + 1),
                             trimLeft(blockEnd));
 
                     ifNode.setElseIf(tk);
