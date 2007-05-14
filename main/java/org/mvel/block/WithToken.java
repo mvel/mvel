@@ -24,6 +24,8 @@ public class WithToken extends BlockToken {
         super(expr, fields, block);
         name = new String(expr).trim();
 
+        System.out.println("<<" + new String(block) + ">>");
+
         compileWithExpressions();
     }
 
@@ -87,7 +89,6 @@ public class WithToken extends BlockToken {
         }
 
         if (parm != null && start != block.length) {
-
             parms.add(new ParmValuePair(
                     parm,
                     (ExecutableStatement) compileExpression(subset(block, start, block.length - start)))
@@ -105,6 +106,7 @@ public class WithToken extends BlockToken {
         }
 
         public ParmValuePair(String parameter, ExecutableStatement statement) {
+            System.out.println("adding parm [" + parameter + "]");
             this.parameter = parameter;
             this.statement = statement;
         }

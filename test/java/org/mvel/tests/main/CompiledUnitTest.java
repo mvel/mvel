@@ -560,7 +560,7 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testWith() {
-        assertEquals("OneTwo", parseDirect("with (foo) { aValue = 'One', bValue='Two' }; foo.aValue + foo.bValue;"));
+        assertEquals("OneTwo", parseDirect("with (foo) {aValue = 'One',bValue='Two'}; foo.aValue + foo.bValue;"));
     }
 
     public void testVarInputs() {
