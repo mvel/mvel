@@ -66,6 +66,7 @@ public interface Operator {
     public static final int FOR = 41;
     public static final int SWITCH = 42;
     public static final int DO = 43;
+    public static final int WITH = 44;
 
     public static final int INC = 50;
     public static final int DEC = 51;

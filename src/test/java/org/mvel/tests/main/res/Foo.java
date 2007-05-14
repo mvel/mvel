@@ -4,6 +4,9 @@ public class Foo {
     private Bar bar = new Bar();
     public String register;
 
+    public String aValue = "";
+    public String bValue = "";
+
     public void abc() {
     }
 
