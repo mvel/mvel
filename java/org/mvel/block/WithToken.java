@@ -2,8 +2,8 @@ package org.mvel.block;
 
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
-import org.mvel.MVEL;
 import static org.mvel.MVEL.compileExpression;
+import static org.mvel.MVEL.setProperty;
 import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.balancedCapture;
@@ -39,7 +39,7 @@ public class WithToken extends BlockToken {
         Object ctxObject = resolver.getValue();
 
         for (ParmValuePair pvp : withExpressions) {
-            MVEL.setProperty(ctxObject, pvp.getParameter(), pvp.getStatement().getValue(ctx, thisValue, factory));
+            setProperty(ctxObject, pvp.getParameter(), pvp.getStatement().getValue(ctx, thisValue, factory));
         }
 
         return Void.class;
