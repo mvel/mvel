@@ -1,6 +1,7 @@
 package org.mvel;
 
 import static org.mvel.Operator.*;
+import org.mvel.block.AssertToken;
 import org.mvel.block.ForEachToken;
 import org.mvel.block.IfToken;
 import org.mvel.block.WithToken;
@@ -154,6 +155,8 @@ public class AbstractParser {
         OPERATORS.put("do", DO);
         OPERATORS.put("with", WITH);
 
+        OPERATORS.put("assert", ASSERT);
+
         OPERATORS.put("++", INC);
         OPERATORS.put("--", DEC);
         OPERATORS.put("+=", ASSIGN_ADD);
@@ -228,6 +231,11 @@ public class AbstractParser {
                             start = cursor + 1;
                             capture = false;
                             continue;
+
+                        case ASSERT:
+                            start = cursor + 1;
+                            captureToEOS();
+                            return new AssertToken(subArray(start, cursor), fields);
 
                         case RETURN:
                             fields |= Token.RETURN;
