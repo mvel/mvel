@@ -61,7 +61,6 @@ public class Token implements Cloneable, Serializable {
     public static final int BLOCK_FOREACH = 1 << 24;
     public static final int BLOCK_WITH = 1 << 25;
 
-
     public static final int TYPED = 1 << 30;
     public static final int RETURN = 1 << 31;
 
