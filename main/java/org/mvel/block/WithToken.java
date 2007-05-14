@@ -47,7 +47,7 @@ public class WithToken extends BlockToken {
 
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return super.getReducedValue(ctx, thisValue, factory);
+        return getReducedValueAccelerated(ctx, thisValue, factory);
     }
 
     private void compileWithExpressions() {
