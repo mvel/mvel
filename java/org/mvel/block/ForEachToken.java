@@ -3,7 +3,6 @@ package org.mvel.block;
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.compileExpression;
-import org.mvel.Token;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.util.ParseTools;
@@ -14,10 +13,7 @@ import java.util.Map;
 /**
  * @author Christopher Brock
  */
-public class ForEachToken extends Token {
-
-    protected char[] block;
-
+public class ForEachToken extends BlockToken {
     protected String item;
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
