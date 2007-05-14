@@ -2,9 +2,9 @@ package org.mvel.block;
 
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
+import org.mvel.MVEL;
 import static org.mvel.MVEL.compileExpression;
 import static org.mvel.MVEL.setProperty;
-import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.balancedCapture;
 import static org.mvel.util.ParseTools.subset;
@@ -17,26 +17,20 @@ import java.util.List;
  */
 public class WithToken extends BlockToken {
 
-    private String name;
+    private ExecutableStatement context;
     private ParmValuePair[] withExpressions;
 
     public WithToken(char[] expr, char[] block, int fields) {
         super(expr, fields, block);
-        name = new String(expr).trim();
 
-        System.out.println("<<" + new String(block) + ">>");
+        context = (ExecutableStatement) MVEL.compileExpression(new String(expr).trim());
 
         compileWithExpressions();
     }
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolver resolver = factory.getVariableResolver(name);
-        if (resolver == null) {
-            throw new CompileException("no such variable for with block: " + name);
-        }
-
-        Object ctxObject = resolver.getValue();
+        Object ctxObject = context.getValue(ctx, thisValue, factory);
 
         for (ParmValuePair pvp : withExpressions) {
             setProperty(ctxObject, pvp.getParameter(), pvp.getStatement().getValue(ctx, thisValue, factory));
@@ -106,7 +100,6 @@ public class WithToken extends BlockToken {
         }
 
         public ParmValuePair(String parameter, ExecutableStatement statement) {
-            System.out.println("adding parm [" + parameter + "]");
             this.parameter = parameter;
             this.statement = statement;
         }
