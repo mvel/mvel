@@ -563,6 +563,24 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("OneTwo", parseDirect("with (foo) {aValue = 'One',bValue='Two'}; foo.aValue + foo.bValue;"));
     }
 
+    public void testAssertion() {
+        try {
+            parseDirect("assert false");
+            assertTrue(false);
+        }
+        catch (AssertionError error) {
+        }
+    }
+
+    public void testAssertion2() {
+        try {
+            parseDirect("assert true;");
+        }
+        catch (AssertionError error) {
+            assertTrue(false);
+        }
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile(true);
