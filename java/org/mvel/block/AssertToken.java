@@ -1,7 +1,7 @@
 package org.mvel.block;
 
 import org.mvel.ExecutableStatement;
-import org.mvel.MVEL;
+import static org.mvel.MVEL.compileExpression;
 import org.mvel.Token;
 import org.mvel.integration.VariableResolverFactory;
 
@@ -13,10 +13,8 @@ public class AssertToken extends Token {
 
     public AssertToken(char[] expr, int fields) {
         super(expr, fields);
-
-        assertion = (ExecutableStatement) MVEL.compileExpression(expr);
+        assertion = (ExecutableStatement) compileExpression(expr);
     }
-
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         Boolean bool = (Boolean) assertion.getValue(ctx, thisValue, factory);
