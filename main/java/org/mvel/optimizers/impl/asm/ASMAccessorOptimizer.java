@@ -592,6 +592,23 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 if (i < args.length - 1) errorBuild.append(", ");
             }
 
+            if ("size".equals(name) && args.length == 0 && cls.isArray()) {
+//                debug("ALOAD 1");
+//                mv.visitVarInsn(ALOAD, 1);
+
+                anyArrayCheck(cls);
+
+                debug("ARRAYLENGTH");
+                mv.visitInsn(ARRAYLENGTH);
+
+                debug("INVOKESTATIC Integer.valueOf(int) : Integer");
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
+
+                //      mv.visitInsn(IRETURN);
+
+                return Array.getLength(ctx);
+            }
+
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
@@ -841,7 +858,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("INVOKEVIRTUAL java/lang/Character.charValue");
             mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Character", "charValue", "()C");
         }
-
     }
 
 
@@ -871,6 +887,46 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else if (cls == char.class) {
             mv.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;");
+        }
+
+    }
+
+    private void anyArrayCheck(Class<? extends Object> cls) {
+        if (cls == boolean[].class) {
+            debug("CHECKCAST [Z");
+            mv.visitTypeInsn(CHECKCAST, "[Z");
+        }
+        else if (cls == int[].class) {
+            debug("CHECKCAST [I");
+            mv.visitTypeInsn(CHECKCAST, "[I");
+        }
+        else if (cls == float[].class) {
+            debug("CHECKCAST [F");
+            mv.visitTypeInsn(CHECKCAST, "[F");
+        }
+        else if (cls == double[].class) {
+            debug("CHECKCAST [D");
+            mv.visitTypeInsn(CHECKCAST, "[D");
+        }
+        else if (cls == short[].class) {
+            debug("CHECKCAST [S");
+            mv.visitTypeInsn(CHECKCAST, "[S");
+        }
+        else if (cls == long[].class) {
+            debug("CHECKCAST [J");
+            mv.visitTypeInsn(CHECKCAST, "[J");
+        }
+        else if (cls == byte[].class) {
+            debug("CHECKCAST [B");
+            mv.visitTypeInsn(CHECKCAST, "[B");
+        }
+        else if (cls == char[].class) {
+            debug("CHECKCAST [C");
+            mv.visitTypeInsn(CHECKCAST, "[C");
+        }
+        else {
+            debug("CHECKCAST [Ljava/lang/Object;");
+            mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
         }
     }
 

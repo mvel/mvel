@@ -10,7 +10,8 @@ public class AccessorBMModel implements Accessor {
 
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        return new String((String) p0.getValue(elCtx, variableFactory));
+
+        return ((int[]) elCtx).length;
     }
 
 

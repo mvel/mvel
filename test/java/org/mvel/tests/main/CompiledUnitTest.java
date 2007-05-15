@@ -590,6 +590,14 @@ public class CompiledUnitTest extends TestCase {
         }
     }
 
+    public void testMagicArraySize() {
+        assertEquals(5, parseDirect("stringArray.size()"));
+    }
+
+    public void testMagicArraySize2() {
+        assertEquals(5, parseDirect("intArray.size()"));
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile(true);

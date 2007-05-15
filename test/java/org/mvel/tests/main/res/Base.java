@@ -11,7 +11,7 @@ public class Base {
     public List<String> list;
     public String[] array;
     public List<Thing> things;
-    public Boolean fun =  false;
+    public Boolean fun = false;
     public String sentence = "The quick brown fox jumps over the lazy dog!";
     public Foo foo = new Foo();
 
@@ -25,7 +25,11 @@ public class Base {
 
     public int sarahl;
 
-    public Object[] testArray = new Object[] { new Foo(), new Bar() };
+    public Object[] testArray = new Object[]{new Foo(), new Bar()};
+
+    public String[] stringArray = new String[]{"hello", "there", "how", "are", "you"};
+    public int[] intArray = new int[]{5, 3, 2, 1, 0};
+
 
     public Base() {
         this.list = new ArrayList<String>();
@@ -33,8 +37,8 @@ public class Base {
         list.add("Happy!");
         list.add("Joy");
         list.add("Joy!");
-        
-        this.array = (String[]) this.list.toArray( new String[ this.list.size() ] );
+
+        this.array = (String[]) this.list.toArray(new String[this.list.size()]);
 
         things = new ArrayList<Thing>();
         things.add(new Thing("Bob"));
@@ -54,7 +58,7 @@ public class Base {
     public boolean equalityCheck(Object a, Object b) {
         return a.equals(b);
     }
-    
+
     public void populate() {
         barfoo = "sarah";
     }
