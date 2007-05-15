@@ -30,7 +30,7 @@
 package org.mvel.asm;
 
 /**
- * Information about the input and output stack map frames of a basic block.
+ * Information about the input and output stack map frames of a basic ast.
  *
  * @author Eric Bruneton
  */
@@ -38,12 +38,12 @@ final class Frame {
 
     /*
      * Frames are computed in a two steps process: during the visit of each
-     * instruction, the state of the frame at the end of current basic block is
+     * instruction, the state of the frame at the end of current basic ast is
      * updated by simulating the action of the instruction on the previous state
      * of this so called "output frame". In visitMaxs, a fix point algorithm is
-     * used to compute the "input frame" of each basic block, i.e. the stack map
-     * frame at the begining of the basic block, starting from the input frame
-     * of the first basic block (which is computed from the method descriptor),
+     * used to compute the "input frame" of each basic ast, i.e. the stack map
+     * frame at the begining of the basic ast, starting from the input frame
+     * of the first basic ast (which is computed from the method descriptor),
      * and by using the previously computed output frames to compute the input
      * state of the other blocks.
      * 
@@ -55,7 +55,7 @@ final class Frame {
      * comparisons.
      * 
      * Output stack map frames are computed relatively to the input frame of the
-     * basic block, which is not yet known when output frames are computed. It
+     * basic ast, which is not yet known when output frames are computed. It
      * is therefore necessary to be able to represent abstract types such as
      * "the type at position x in the input frame locals" or "the type at
      * position x from the top of the input frame stack" or even "the type at
@@ -452,7 +452,7 @@ final class Frame {
     }
 
     /**
-     * The label (i.e. basic block) to which these input and output stack map
+     * The label (i.e. basic ast) to which these input and output stack map
      * frames correspond.
      */
     Label owner;
@@ -490,20 +490,20 @@ final class Frame {
     private int outputStackTop;
 
     /**
-     * Number of types that are initialized in the basic block.
+     * Number of types that are initialized in the basic ast.
      *
      * @see #initializations
      */
     private int initializationCount;
 
     /**
-     * The types that are initialized in the basic block. A constructor
+     * The types that are initialized in the basic ast. A constructor
      * invocation on an UNINITIALIZED or UNINITIALIZED_THIS type must replace
      * <i>every occurence</i> of this type in the local variables and in the
      * operand stack. This cannot be done during the first phase of the
      * algorithm since, during this phase, the local variables and the operand
      * stack are not completely computed. It is therefore necessary to store the
-     * types on which constructors are invoked in the basic block, in order to
+     * types on which constructors are invoked in the basic ast, in order to
      * do this replacement during the second phase of the algorithm, where the
      * frames are fully computed. Note that this array can contain types that
      * are relative to input locals or to the input stack (see below for the
@@ -519,14 +519,14 @@ final class Frame {
      */
     private int get(final int local) {
         if (outputLocals == null || local >= outputLocals.length) {
-            // this local has never been assigned in this basic block,
+            // this local has never been assigned in this basic ast,
             // so it is still equal to its value in the input frame
             return LOCAL | local;
         }
         else {
             int type = outputLocals[local];
             if (type == 0) {
-                // this local has never been assigned in this basic block,
+                // this local has never been assigned in this basic ast,
                 // so it is still equal to its value in the input frame
                 type = outputLocals[local] = LOCAL | local;
             }
@@ -725,7 +725,7 @@ final class Frame {
 
     /**
      * Adds a new type to the list of types on which a constructor is invoked in
-     * the basic block.
+     * the basic ast.
      *
      * @param var a type on a which a constructor is invoked.
      */
@@ -746,12 +746,12 @@ final class Frame {
 
     /**
      * Replaces the given type with the appropriate type if it is one of the
-     * types on which a constructor is invoked in the basic block.
+     * types on which a constructor is invoked in the basic ast.
      *
      * @param cw the ClassWriter to which this label belongs.
      * @param t  a type
      * @return t or, if t is one of the types on which a constructor is invoked
-     *         in the basic block, the type corresponding to this constructor.
+     *         in the basic ast, the type corresponding to this constructor.
      */
     private int init(final ClassWriter cw, final int t) {
         int s;
@@ -783,7 +783,7 @@ final class Frame {
     }
 
     /**
-     * Initializes the input frame of the first basic block from the method
+     * Initializes the input frame of the first basic ast from the method
      * descriptor.
      *
      * @param cw        the ClassWriter to which this label belongs.
@@ -1241,12 +1241,12 @@ final class Frame {
     }
 
     /**
-     * Merges the input frame of the given basic block with the input and output
-     * frames of this basic block. Returns <tt>true</tt> if the input frame of
+     * Merges the input frame of the given basic ast with the input and output
+     * frames of this basic ast. Returns <tt>true</tt> if the input frame of
      * the given label has been changed by this operation.
      *
      * @param cw    the ClassWriter to which this label belongs.
-     * @param frame the basic block whose input frame must be updated.
+     * @param frame the basic ast whose input frame must be updated.
      * @param edge  the kind of the {@link Edge} between this label and 'label'.
      *              See {@link Edge#info}.
      * @return <tt>true</tt> if the input frame of the given label has been

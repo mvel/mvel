@@ -105,7 +105,7 @@ public interface MethodVisitor {
      * elements. This method must(*) be called <i>just before</i> any
      * instruction <b>i</b> that follows an unconditionnal branch instruction
      * such as GOTO or THROW, that is the target of a jump instruction, or that
-     * starts an exception handler block. The visited types must describe the
+     * starts an exception handler ast. The visited types must describe the
      * values of the local variables and of the operand stack elements <i>just
      * before</i> <b>i</b> is executed. <br> <br> (*) this is mandatory only
      * for classes whose version is greater than or equal to
@@ -298,19 +298,19 @@ public interface MethodVisitor {
      *
      * @param min    the minimum key value.
      * @param max    the maximum key value.
-     * @param dflt   beginning of the default handler block.
+     * @param dflt   beginning of the default handler ast.
      * @param labels beginnings of the handler blocks. <tt>labels[i]</tt> is
-     *               the beginning of the handler block for the <tt>min + i</tt> key.
+     *               the beginning of the handler ast for the <tt>min + i</tt> key.
      */
     void visitTableSwitchInsn(int min, int max, Label dflt, Label labels[]);
 
     /**
      * Visits a LOOKUPSWITCH instruction.
      *
-     * @param dflt   beginning of the default handler block.
+     * @param dflt   beginning of the default handler ast.
      * @param keys   the values of the keys.
      * @param labels beginnings of the handler blocks. <tt>labels[i]</tt> is
-     *               the beginning of the handler block for the <tt>keys[i]</tt> key.
+     *               the beginning of the handler ast for the <tt>keys[i]</tt> key.
      */
     void visitLookupSwitchInsn(Label dflt, int keys[], Label labels[]);
 
@@ -327,7 +327,7 @@ public interface MethodVisitor {
     // -------------------------------------------------------------------------
 
     /**
-     * Visits a try catch block.
+     * Visits a try catch ast.
      *
      * @param start   beginning of the exception handler's scope (inclusive).
      * @param end     end of the exception handler's scope (exclusive).
