@@ -2,7 +2,6 @@ package org.mvel.block;
 
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
-import org.mvel.MVEL;
 import static org.mvel.MVEL.compileExpression;
 import static org.mvel.MVEL.setProperty;
 import org.mvel.integration.VariableResolverFactory;
@@ -23,7 +22,7 @@ public class WithToken extends BlockToken {
     public WithToken(char[] expr, char[] block, int fields) {
         super(expr, fields, block);
 
-        context = (ExecutableStatement) MVEL.compileExpression(new String(expr).trim());
+        context = (ExecutableStatement) compileExpression(new String(expr).trim());
 
         compileWithExpressions();
     }
@@ -33,7 +32,10 @@ public class WithToken extends BlockToken {
         Object ctxObject = context.getValue(ctx, thisValue, factory);
 
         for (ParmValuePair pvp : withExpressions) {
-            setProperty(ctxObject, pvp.getParameter(), pvp.getStatement().getValue(ctx, thisValue, factory));
+            if (pvp.getParameter() != null)
+                setProperty(ctxObject, pvp.getParameter(), pvp.getStatement().getValue(ctx, thisValue, factory));
+            else
+                pvp.getStatement().getValue(ctxObject, ctxObject, factory);
         }
 
         return ctxObject;
@@ -67,16 +69,22 @@ public class WithToken extends BlockToken {
 
                 case',':
                     if (parm == null) {
-                        throw new CompileException("invalid syntax, expected =", block, i);
+                        parms.add(new ParmValuePair(
+                                null,
+                                (ExecutableStatement) compileExpression(subset(block, start, i - start))
+                        ));
+                        start = ++i;
                     }
+                    else {
 
-                    parms.add(new ParmValuePair(
-                            parm,
-                            (ExecutableStatement) compileExpression(subset(block, start, i - start)))
-                    );
+                        parms.add(new ParmValuePair(
+                                parm,
+                                (ExecutableStatement) compileExpression(subset(block, start, i - start)))
+                        );
 
-                    parm = null;
-                    start = ++i;
+                        parm = null;
+                        start = ++i;
+                    }
 
                     break;
             }
