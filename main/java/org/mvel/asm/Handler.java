@@ -30,7 +30,7 @@
 package org.mvel.asm;
 
 /**
- * Information about an exception handler block.
+ * Information about an exception handler ast.
  *
  * @author Eric Bruneton
  */
@@ -64,7 +64,7 @@ class Handler {
     int type;
 
     /**
-     * Next exception handler block info.
+     * Next exception handler ast info.
      */
     Handler next;
 }

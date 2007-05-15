@@ -39,7 +39,7 @@ public class Label {
 
     /**
      * Indicates if this label is only used for debug attributes. Such a label
-     * is not the start of a basic block, the target of a jump instruction, or
+     * is not the start of a basic ast, the target of a jump instruction, or
      * an exception handler. It can be safely ignored in control flow graph
      * analysis algorithms (for optimization purposes).
      */
@@ -56,7 +56,7 @@ public class Label {
     final static int RESIZED = 4;
 
     /**
-     * Indicates if this basic block has been pushed in the basic block stack.
+     * Indicates if this basic ast has been pushed in the basic ast stack.
      * See {@link MethodWriter#visitMaxs visitMaxs}.
      */
     final static int PUSHED = 8;
@@ -73,17 +73,17 @@ public class Label {
     final static int STORE = 32;
 
     /**
-     * Indicates if this label corresponds to a reachable basic block.
+     * Indicates if this label corresponds to a reachable basic ast.
      */
     final static int REACHABLE = 64;
 
     /**
-     * Indicates if this basic block ends with a JSR instruction.
+     * Indicates if this basic ast ends with a JSR instruction.
      */
     final static int JSR = 128;
 
     /**
-     * Indicates if this basic block ends with a RET instruction.
+     * Indicates if this basic ast ends with a RET instruction.
      */
     final static int RET = 256;
 
@@ -138,22 +138,22 @@ public class Label {
     /*
      * Fields for the control flow and data flow graph analysis algorithms (used
      * to compute the maximum stack size or the stack map frames). A control
-     * flow graph contains one node per "basic block", and one edge per "jump"
-     * from one basic block to another. Each node (i.e., each basic block) is
+     * flow graph contains one node per "basic ast", and one edge per "jump"
+     * from one basic ast to another. Each node (i.e., each basic ast) is
      * represented by the Label object that corresponds to the first instruction
-     * of this basic block. Each node also stores the list of its successors in
+     * of this basic ast. Each node also stores the list of its successors in
      * the graph, as a linked list of Edge objects.
      * 
      * The control flow analysis algorithms used to compute the maximum stack
      * size or the stack map frames are similar and use two steps. The first
      * step, during the visit of each instruction, builds information about the
      * state of the local variables and the operand stack at the end of each
-     * basic block, called the "output frame", <i>relatively</i> to the frame
-     * state at the beginning of the basic block, which is called the "input
+     * basic ast, called the "output frame", <i>relatively</i> to the frame
+     * state at the beginning of the basic ast, which is called the "input
      * frame", and which is <i>unknown</i> during this step. The second step,
      * in {@link MethodWriter#visitMaxs}, is a fix point algorithm that
-     * computes information about the input frame of each basic block, from the
-     * input state of the first basic block (known from the method signature),
+     * computes information about the input frame of each basic ast, from the
+     * input state of the first basic ast (known from the method signature),
      * and by the using the previously computed relative output frames.
      * 
      * The algorithm used to compute the maximum stack size only computes the
@@ -187,7 +187,7 @@ public class Label {
 
     /**
      * Information about the input and output stack map frames of this basic
-     * block. This field is only used when {@link ClassWriter#COMPUTE_FRAMES}
+     * ast. This field is only used when {@link ClassWriter#COMPUTE_FRAMES}
      * option is used.
      */
     Frame frame;
@@ -209,7 +209,7 @@ public class Label {
     Edge successors;
 
     /**
-     * The next basic block in the basic block stack. This stack is used in the
+     * The next basic ast in the basic ast stack. This stack is used in the
      * main loop of the fix point algorithm used in the second step of the
      * control flow analysis algorithms.
      *
