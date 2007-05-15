@@ -1,10 +1,8 @@
 package org.mvel;
 
 import static org.mvel.Operator.*;
-import org.mvel.ast.AssertASTNode;
-import org.mvel.ast.ForEachASTNode;
-import org.mvel.ast.IfASTNode;
-import org.mvel.ast.WithASTNode;
+import org.mvel.ast.*;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
@@ -227,10 +225,9 @@ public class AbstractParser {
                 if (OPERATORS.containsKey(t = new String(expr, start, cursor - start))) {
                     switch (OPERATORS.get(t)) {
                         case NEW:
-                            fields |= ASTNode.NEW;
                             start = cursor + 1;
-                            capture = false;
-                            continue;
+                            captureToEOT();
+                            return new NewObjectASTNode(subArray(start, cursor), fields);
 
                         case ASSERT:
                             start = cursor + 1;
@@ -786,6 +783,32 @@ public class AbstractParser {
     protected void captureToEOLorOF() {
         while (cursor < length && (expr[cursor] != '\n' && expr[cursor] != '\r' && expr[cursor] != ';')) {
             cursor++;
+        }
+    }
+
+    protected void captureToEOT() {
+        while (++cursor < length) {
+            switch (expr[cursor]) {
+                case'(':
+                case'[':
+                case'{':
+                    if ((cursor = ParseTools.balancedCapture(expr, cursor, expr[cursor])) == -1) {
+                        throw new CompileException("unbalanced braces", expr, cursor);
+                    }
+                    break;
+
+                default:
+                    if (isWhitespace(expr[cursor])) {
+                        skipWhitespace();
+
+                        if (expr[cursor] == '.') break;
+                        else {
+                            trimWhitespace();
+                            return;
+                        }
+                    }
+            }
+
         }
     }
 
