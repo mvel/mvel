@@ -59,6 +59,13 @@ public class ExpressionParser extends AbstractParser {
         catch (ArrayIndexOutOfBoundsException e) {
             throw new ParseException("unexpected end of statement", expr, length);
         }
+        catch (NullPointerException e) {
+            if (cursor >= length) {
+                throw new ParseException("unexpected end of statement", expr, length);
+            }
+            else
+                throw e;
+        }
         catch (EndWithValue end) {
             return handleParserEgress(end.getValue(), returnBigDecimal);
         }
