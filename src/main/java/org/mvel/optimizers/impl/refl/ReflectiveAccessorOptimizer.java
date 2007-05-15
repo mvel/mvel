@@ -410,6 +410,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 if (i < args.length - 1) errorBuild.append(", ");
             }
 
+            if ("size".equals(name) && args.length == 0 && cls.isArray()) {
+                addAccessorNode(new ArrayLength());
+                return Array.getLength(ctx);
+            }
+
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {

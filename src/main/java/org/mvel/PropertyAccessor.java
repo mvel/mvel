@@ -33,10 +33,7 @@ import java.io.Serializable;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isWhitespace;
 import static java.lang.Integer.parseInt;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.*;
 import static java.util.Collections.synchronizedMap;
 
@@ -393,6 +390,7 @@ public class PropertyAccessor {
         else if ("this".equals(property)) {
             return this.thisReference;
         }
+
         else {
             throw new PropertyAccessException("could not access property (" + property + ")");
         }
@@ -610,6 +608,10 @@ public class PropertyAccessor {
             for (int i = 0; i < args.length; i++) {
                 errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
                 if (i < args.length - 1) errorBuild.append(", ");
+            }
+
+            if ("size".equals(name) && args.length == 0 && cls.isArray()) {
+                return Array.getLength(ctx);
             }
 
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
