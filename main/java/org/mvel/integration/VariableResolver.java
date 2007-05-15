@@ -23,6 +23,8 @@ public interface VariableResolver {
 
     public Class getKnownType();
 
+    public void setStaticType(Class type);
+
     public int getFlags();
 
     public Object getValue();

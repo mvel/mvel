@@ -55,6 +55,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     private static final Map<String, Accessor> REFLECTIVE_ACCESSOR_CACHE =
             new WeakHashMap<String, Accessor>();
 
+    private Class returnType;
 
     public ReflectiveAccessorOptimizer() {
     }
@@ -113,9 +114,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
 
                 first = false;
+
+                if (curr != null) returnType = curr.getClass();
             }
 
             val = curr;
+
 
             return rootNode;
         }
@@ -689,5 +693,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         val = stmt.getValue(ctx, thisRef, factory);
 
         return ret;
+    }
+
+
+    public Class getEgressType() {
+        return returnType;
     }
 }

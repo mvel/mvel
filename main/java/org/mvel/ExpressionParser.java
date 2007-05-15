@@ -81,6 +81,10 @@ public class ExpressionParser extends AbstractParser {
         lastWasIdentifier = false;
 
         while ((tk = nextToken()) != null) {
+            if (lastWasIdentifier && lastNode.isDiscard()) {
+                stk.discard();
+            }
+
             /**
              * If we are at the beginning of a statement, then we immediately push the first token
              * onto the stack.
@@ -90,7 +94,6 @@ public class ExpressionParser extends AbstractParser {
             }
 
             if (!tk.isOperator()) {
-
                 continue;
             }
 

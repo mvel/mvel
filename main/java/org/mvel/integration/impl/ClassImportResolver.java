@@ -39,7 +39,7 @@ public class ClassImportResolver implements VariableResolver {
         this.name = name;
     }
 
-    public void setKnownType(Class knownType) {
+    public void setStaticType(Class knownType) {
         this.knownType = knownType;
     }
 
