@@ -534,9 +534,9 @@ public class ASTNode implements Cloneable, Serializable {
         return (fields & COLLECTION) != 0;
     }
 
-    public boolean isNewObject() {
-        return ((fields & NEW) != 0);
-    }
+//    public boolean isNewObject() {
+//        return ((fields & NEW) != 0);
+//    }
 
     public boolean isAssignment() {
         return ((fields & ASSIGN) != 0);
