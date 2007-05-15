@@ -13,10 +13,10 @@ public class ExpressionCompiler extends AbstractParser {
     private List<String> locals;
 
     public CompiledExpression compile(boolean verifying) {
-        Token tk;
-        Token tkOp;
-        Token tkLA;
-        Token tkLA2;
+        ASTNode tk;
+        ASTNode tkOp;
+        ASTNode tkLA;
+        ASTNode tkLA2;
         TokenSet tokenSet = new TokenSet();
 
         boolean firstLA;
@@ -72,14 +72,14 @@ public class ExpressionCompiler extends AbstractParser {
                                      * There are more tokens, but we can't reduce anymore.  So
                                      * we create a reduced token for what we've got.
                                      */
-                                    tokenSet.addTokenNode(new Token(Token.LITERAL, stk.pop()));
+                                    tokenSet.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
                                 }
                                 else {
                                     /**
                                      * We have reduced additional tokens, but we can't reduce
                                      * anymore.
                                      */
-                                    tokenSet.addTokenNode(new Token(Token.LITERAL, stk.pop()), tkOp);
+                                    tokenSet.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()), tkOp);
 
                                     if (tkLA2 != null) tokenSet.addTokenNode(tkLA2);
                                 }
@@ -93,7 +93,7 @@ public class ExpressionCompiler extends AbstractParser {
                          * now.
                          */
                         if (!stk.isEmpty())
-                            tokenSet.addTokenNode(new Token(Token.LITERAL, stk.pop()));
+                            tokenSet.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
 
                         continue;
                     }
@@ -261,16 +261,16 @@ public class ExpressionCompiler extends AbstractParser {
             }
         }
         catch (ClassCastException e) {
-            if ((fields & Token.LOOKAHEAD) == 0) {
+            if ((fields & ASTNode.LOOKAHEAD) == 0) {
                 /**
                  * This will allow for some developers who like messy expressions to compileAccessor
                  * away with some messy constructs like: a + b < c && e + f > g + q instead
                  * of using brackets like (a + b < c) && (e + f > g + q)
                  */
 
-                fields |= Token.LOOKAHEAD;
+                fields |= ASTNode.LOOKAHEAD;
 
-                Token tk = nextToken();
+                ASTNode tk = nextToken();
                 if (tk != null) {
                     stk.push(v1, nextToken(), tk.getOperator());
 
@@ -284,7 +284,7 @@ public class ExpressionCompiler extends AbstractParser {
 
         }
         catch (Exception e) {
-            throw new CompileException("failed to subEval expression: <<" + new String (expr) + ">>", e);
+            throw new CompileException("failed to subEval expression: <<" + new String(expr) + ">>", e);
         }
 
     }

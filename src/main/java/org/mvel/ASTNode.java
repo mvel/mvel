@@ -34,7 +34,7 @@ import java.io.Serializable;
 import static java.lang.Class.forName;
 import static java.lang.System.arraycopy;
 
-public class Token implements Cloneable, Serializable {
+public class ASTNode implements Cloneable, Serializable {
     public static final int LITERAL = 1;
     public static final int DEEP_PROPERTY = 1 << 1;
     public static final int OPERATOR = 1 << 2;
@@ -79,9 +79,9 @@ public class Token implements Cloneable, Serializable {
 
     protected int cursorPosition;
 
-    public Token nextToken;
+    public ASTNode nextASTNode;
 
-    public Token(char[] expr, int start, int end, int fields) {
+    public ASTNode(char[] expr, int start, int end, int fields) {
         this.cursorPosition = start;
         this.fields = fields;
 
@@ -95,12 +95,12 @@ public class Token implements Cloneable, Serializable {
         setName(name);
     }
 
-    public Token(char[] expr, int fields) {
+    public ASTNode(char[] expr, int fields) {
         this.fields = fields;
         this.name = expr;
     }
 
-    public Token(int fields, Object literalValue) {
+    public ASTNode(int fields, Object literalValue) {
         this.fields = fields;
         this.literal = literalValue;
     }
@@ -131,11 +131,11 @@ public class Token implements Cloneable, Serializable {
     }
 
     private int getAbsoluteFirstPart() {
-        if ((fields & Token.COLLECTION) != 0) {
+        if ((fields & COLLECTION) != 0) {
             if (firstUnion < 0 || endOfName < firstUnion) return endOfName;
             else return firstUnion;
         }
-        else if ((fields & Token.DEEP_PROPERTY) != 0) {
+        else if ((fields & DEEP_PROPERTY) != 0) {
             return firstUnion;
         }
         else {
@@ -279,7 +279,7 @@ public class Token implements Cloneable, Serializable {
             throw new EndWithValue(optimizer.getResultOptPass());
         }
 
-        if ((fields & Token.DEEP_PROPERTY) != 0) {
+        if ((fields & DEEP_PROPERTY) != 0) {
             /**
              * The token is a DEEP PROPERTY (meaning it contains unions) in which case we need to traverse an object
              * graph.

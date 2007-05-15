@@ -1164,7 +1164,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw new OptimizationFailure("expected assignment operator");
         //   greedy = true;
 
-        Token valTk = captureTokenToEOS();
+        ASTNode valTk = captureTokenToEOS();
 
         ExecutableStatement value;
         if (valTk.isLiteral()) {

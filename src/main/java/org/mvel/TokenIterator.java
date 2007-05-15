@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -22,19 +21,30 @@ package org.mvel;
 
 public interface TokenIterator {
     public void reset();
-    public Token nextToken();
+
+    public ASTNode nextToken();
+
     public void skipToken();
-    public Token peekNext();
-    public Token peekToken();
-    public Token peekLast();
-  //  public boolean peekNextTokenFlags(int flags);
+
+    public ASTNode peekNext();
+
+    public ASTNode peekToken();
+
+    public ASTNode peekLast();
+
+    //  public boolean peekNextTokenFlags(int flags);
     public void back();
-    public Token tokensBack(int offset);
+
+    public ASTNode tokensBack(int offset);
+
     public boolean hasMoreTokens();
+
     public String showTokenChain();
-    public Token firstToken();
+
+    public ASTNode firstToken();
 
     public int size();
+
     public int index();
 
 }

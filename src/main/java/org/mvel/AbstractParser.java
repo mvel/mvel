@@ -1,10 +1,10 @@
 package org.mvel;
 
 import static org.mvel.Operator.*;
-import org.mvel.ast.AssertToken;
-import org.mvel.ast.ForEachToken;
-import org.mvel.ast.IfToken;
-import org.mvel.ast.WithToken;
+import org.mvel.ast.AssertASTNode;
+import org.mvel.ast.ForEachASTNode;
+import org.mvel.ast.IfASTNode;
+import org.mvel.ast.WithASTNode;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
@@ -181,7 +181,7 @@ public class AbstractParser {
      *
      * @return -
      */
-    protected Token nextToken() {
+    protected ASTNode nextToken() {
         /**
          * If the cursor is at the end of the expression, we have nothing more to do:
          * return null.
@@ -198,8 +198,8 @@ public class AbstractParser {
          * a capture only mode.
          */
 
-        fields = fields & (Token.CAPTURE_ONLY | Token.NOCOMPILE | Token.INLINE_COLLECTION | Token.PUSH
-                | Token.IDENTIFIER);
+        fields = fields & (ASTNode.CAPTURE_ONLY | ASTNode.NOCOMPILE | ASTNode.INLINE_COLLECTION | ASTNode.PUSH
+                | ASTNode.IDENTIFIER);
 
         boolean capture = false;
 
@@ -227,7 +227,7 @@ public class AbstractParser {
                 if (OPERATORS.containsKey(t = new String(expr, start, cursor - start))) {
                     switch (OPERATORS.get(t)) {
                         case NEW:
-                            fields |= Token.NEW;
+                            fields |= ASTNode.NEW;
                             start = cursor + 1;
                             capture = false;
                             continue;
@@ -235,28 +235,28 @@ public class AbstractParser {
                         case ASSERT:
                             start = cursor + 1;
                             captureToEOS();
-                            return new AssertToken(subArray(start, cursor), fields);
+                            return new AssertASTNode(subArray(start, cursor), fields);
 
                         case RETURN:
-                            fields |= Token.RETURN;
+                            fields |= ASTNode.RETURN;
                             start = cursor + 1;
                             capture = false;
                             continue;
 
                         case IF:
-                            fields |= Token.BLOCK_IF;
+                            fields |= ASTNode.BLOCK_IF;
                             return captureCodeBlock(expr);
 
                         case FOREACH:
-                            fields |= Token.BLOCK_FOREACH;
+                            fields |= ASTNode.BLOCK_FOREACH;
                             return captureCodeBlock(expr);
 
                         case WITH:
-                            fields |= Token.BLOCK_WITH;
+                            fields |= ASTNode.BLOCK_WITH;
                             return captureCodeBlock(expr);
 
                         case TYPED_VAR:
-                            fields |= Token.TYPED;
+                            fields |= ASTNode.TYPED;
                             skipWhitespace();
                             start = cursor;
                             continue;
@@ -308,7 +308,7 @@ public class AbstractParser {
                 if (cursor < length) {
                     switch (expr[cursor]) {
                         case']':
-                            if ((fields & (Token.INLINE_COLLECTION)) != 0) {
+                            if ((fields & (ASTNode.INLINE_COLLECTION)) != 0) {
                                 break;
                             }
                         case'[':
@@ -322,7 +322,7 @@ public class AbstractParser {
                             if (greedy && expr[cursor + 1] != '=') {
                                 cursor++;
 
-                                fields |= Token.ASSIGN;
+                                fields |= ASTNode.ASSIGN;
 
                                 skipWhitespace();
 
@@ -334,7 +334,7 @@ public class AbstractParser {
                             if (greedy && (cursor + 2) < length && expr[cursor + 1] == 'n' && isWhitespace(expr[cursor + 2])) {
                                 cursor += 2;
 
-                                fields |= Token.FOLD;
+                                fields |= ASTNode.FOLD;
 
                                 capture = false;
 
@@ -354,7 +354,7 @@ public class AbstractParser {
                 switch (expr[cursor]) {
                     case'=': {
                         if (expr[cursor + 1] != '=') {
-                            return createToken(expr, start, ++cursor, fields |= Token.ASSIGN);
+                            return createToken(expr, start, ++cursor, fields |= ASTNode.ASSIGN);
                         }
                         else {
                             return createToken(expr, start, (cursor += 2), fields);
@@ -406,7 +406,7 @@ public class AbstractParser {
                                     break;
                                 case'i':
                                     if (cursor < length && expr[cursor] == 'n' && isWhitespace(expr[cursor + 1])) {
-                                        fields |= Token.FOLD;
+                                        fields |= ASTNode.FOLD;
                                     }
                                     break;
                             }
@@ -414,16 +414,16 @@ public class AbstractParser {
                         if (brace > 0)
                             throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
 
-                        if ((fields & Token.FOLD) != 0) {
+                        if ((fields & ASTNode.FOLD) != 0) {
                             if (cursor < length && expr[cursor] == '.') {
                                 cursor++;
                                 continue;
                             }
 
-                            return createToken(expr, start, cursor, Token.FOLD);
+                            return createToken(expr, start, cursor, ASTNode.FOLD);
                         }
-                        else if ((fields & Token.ASSIGN) != 0) {
-                            return createToken(expr, start, cursor, fields | Token.SUBEVAL);
+                        else if ((fields & ASTNode.ASSIGN) != 0) {
+                            return createToken(expr, start, cursor, fields | ASTNode.SUBEVAL);
                         }
                         else if (cursor < length && (expr[cursor] == '.')) {
 
@@ -431,7 +431,7 @@ public class AbstractParser {
                             continue;
                         }
 
-                        return createToken(expr, start + 1, cursor - 1, fields |= Token.SUBEVAL);
+                        return createToken(expr, start + 1, cursor - 1, fields |= ASTNode.SUBEVAL);
                     }
 
                     case'}':
@@ -477,11 +477,11 @@ public class AbstractParser {
                             throw new CompileException("unterminated literal", expr, cursor);
                         }
 
-                        if ((fields & Token.ASSIGN) != 0) {
-                            return createToken(expr, start, ++cursor, Token.ASSIGN);
+                        if ((fields & ASTNode.ASSIGN) != 0) {
+                            return createToken(expr, start, ++cursor, ASTNode.ASSIGN);
                         }
                         else {
-                            return createToken(expr, start + 1, ++cursor - 1, Token.STR_LITERAL | Token.LITERAL);
+                            return createToken(expr, start + 1, ++cursor - 1, ASTNode.STR_LITERAL | ASTNode.LITERAL);
                         }
 
 
@@ -493,11 +493,11 @@ public class AbstractParser {
                             throw new CompileException("unterminated literal", expr, cursor);
                         }
 
-                        if ((fields & Token.ASSIGN) != 0) {
-                            return createToken(expr, start, ++cursor, Token.ASSIGN);
+                        if ((fields & ASTNode.ASSIGN) != 0) {
+                            return createToken(expr, start, ++cursor, ASTNode.ASSIGN);
                         }
                         else {
-                            return createToken(expr, start + 1, ++cursor - 1, Token.STR_LITERAL | Token.LITERAL);
+                            return createToken(expr, start + 1, ++cursor - 1, ASTNode.STR_LITERAL | ASTNode.LITERAL);
                         }
 
                     case'&': {
@@ -522,13 +522,13 @@ public class AbstractParser {
                         if ((cursor - 1 < 0 || !isIdentifierPart(expr[cursor - 1]))
                                 && isDigit(expr[cursor + 1])) {
 
-                            fields |= Token.INVERT;
+                            fields |= ASTNode.INVERT;
                             start++;
                             cursor++;
                             break;
                         }
                         else if (expr[cursor + 1] == '(') {
-                            fields |= Token.INVERT;
+                            fields |= ASTNode.INVERT;
                             start = ++cursor;
                             continue;
                         }
@@ -540,7 +540,7 @@ public class AbstractParser {
                     case'!': {
                         if (isIdentifierPart(expr[++cursor]) || expr[cursor] == '(') {
                             start = cursor;
-                            fields |= Token.NEGATION;
+                            fields |= ASTNode.NEGATION;
                             continue;
                         }
                         else if (expr[cursor] != '=')
@@ -566,12 +566,12 @@ public class AbstractParser {
                         }
 
                         if (cursor < (length - 1) && expr[cursor + 1] == '.') {
-                            fields |= Token.INLINE_COLLECTION;
+                            fields |= ASTNode.INLINE_COLLECTION;
                             cursor++;
                             continue;
                         }
 
-                        return createToken(expr, start, ++cursor, fields | Token.INLINE_COLLECTION);
+                        return createToken(expr, start, ++cursor, fields | ASTNode.INLINE_COLLECTION);
 
                     default:
                         cursor++;
@@ -629,8 +629,8 @@ public class AbstractParser {
      * @param fields -
      * @return -
      */
-    private Token createToken(final char[] expr, final int start, final int end, int fields) {
-        Token tk = new Token(expr, start, end, fields);
+    private ASTNode createToken(final char[] expr, final int start, final int end, int fields) {
+        ASTNode tk = new ASTNode(expr, start, end, fields);
 
         if (tk.isIdentifier()) {
             if (lastWasIdentifier) {
@@ -652,34 +652,34 @@ public class AbstractParser {
         return newA;
     }
 
-    private Token createBlockToken(final int condStart,
-                                   final int condEnd, final int blockStart, final int blockEnd) {
+    private ASTNode createBlockToken(final int condStart,
+                                     final int condEnd, final int blockStart, final int blockEnd) {
 
         lastWasIdentifier = false;
 
         cursor++;
 
-        if (isFlag(Token.BLOCK_IF)) {
-            return new IfToken(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+        if (isFlag(ASTNode.BLOCK_IF)) {
+            return new IfASTNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
-        else if (isFlag(Token.BLOCK_FOREACH)) {
-            return new ForEachToken(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+        else if (isFlag(ASTNode.BLOCK_FOREACH)) {
+            return new ForEachASTNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
-        else if (isFlag(Token.BLOCK_WITH)) {
-            return new WithToken(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+        else if (isFlag(ASTNode.BLOCK_WITH)) {
+            return new WithASTNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
         else {
             return null;
         }
     }
 
-    private Token captureCodeBlock(final char[] expr) {
+    private ASTNode captureCodeBlock(final char[] expr) {
         boolean cond = true;
 
-        Token first = null;
-        Token tk = null;
+        ASTNode first = null;
+        ASTNode tk = null;
 
-        if (isFlag(Token.BLOCK_IF)) {
+        if (isFlag(ASTNode.BLOCK_IF)) {
             do {
                 if (tk != null) {
                     skipToNextTokenJunction();
@@ -689,7 +689,7 @@ public class AbstractParser {
                             && (isWhitespace(expr[++cursor]) || expr[cursor] == '(');
                 }
 
-                if (((IfToken) (tk = _captureBlock(tk, expr, cond))).getElseBlock() != null) {
+                if (((IfASTNode) (tk = _captureBlock(tk, expr, cond))).getElseBlock() != null) {
                     cursor++;
                     return first;
                 }
@@ -700,7 +700,7 @@ public class AbstractParser {
             }
             while (blockContinues());
         }
-        else if (isFlag(Token.BLOCK_FOREACH) || isFlag(Token.BLOCK_WITH)) {
+        else if (isFlag(ASTNode.BLOCK_FOREACH) || isFlag(ASTNode.BLOCK_WITH)) {
             skipToNextTokenJunction();
             skipWhitespace();
             return _captureBlock(null, expr, true);
@@ -710,7 +710,7 @@ public class AbstractParser {
         return first;
     }
 
-    private Token _captureBlock(Token node, final char[] expr, boolean cond) {
+    private ASTNode _captureBlock(ASTNode node, final char[] expr, boolean cond) {
         skipWhitespace();
         int startCond = 0;
         int endCond = 0;
@@ -738,8 +738,8 @@ public class AbstractParser {
             blockEnd = cursor + 1;
         }
 
-        if (isFlag(Token.BLOCK_IF)) {
-            IfToken ifNode = (IfToken) node;
+        if (isFlag(ASTNode.BLOCK_IF)) {
+            IfASTNode ifNode = (IfASTNode) node;
 
             if (node != null) {
                 if (!cond) {
@@ -747,7 +747,7 @@ public class AbstractParser {
                     return node;
                 }
                 else {
-                    IfToken tk = (IfToken) createBlockToken(startCond, endCond, trimRight(blockStart + 1),
+                    IfASTNode tk = (IfASTNode) createBlockToken(startCond, endCond, trimRight(blockStart + 1),
                             trimLeft(blockEnd));
 
                     ifNode.setElseIf(tk);
@@ -760,7 +760,7 @@ public class AbstractParser {
                         trimLeft(blockEnd));
             }
         }
-        else if (isFlag(Token.BLOCK_FOREACH) || isFlag(Token.BLOCK_WITH)) {
+        else if (isFlag(ASTNode.BLOCK_FOREACH) || isFlag(ASTNode.BLOCK_WITH)) {
             return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd));
         }
 
@@ -835,10 +835,10 @@ public class AbstractParser {
         }
     }
 
-    protected Token captureTokenToEOS() {
+    protected ASTNode captureTokenToEOS() {
         int start = cursor;
         captureToEOS();
-        return new Token(expr, start, cursor, 0);
+        return new ASTNode(expr, start, cursor, 0);
     }
 
     protected void setExpression(String expression) {

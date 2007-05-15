@@ -1,18 +1,18 @@
 package org.mvel.ast;
 
-import org.mvel.Token;
+import org.mvel.ASTNode;
 
 /**
  * @author Christopher Brock
  */
-public class BlockToken extends Token {
+public class BlockASTNode extends ASTNode {
     protected char[] block;
 
-    public BlockToken(char[] expr, int fields) {
+    public BlockASTNode(char[] expr, int fields) {
         super(expr, fields);
     }
 
-    public BlockToken(char[] expr, int fields, char[] block) {
+    public BlockASTNode(char[] expr, int fields, char[] block) {
         super(expr, fields);
         this.block = block;
     }

@@ -14,12 +14,12 @@ import java.util.List;
 /**
  * @author Christopher Brock
  */
-public class WithToken extends BlockToken {
+public class WithASTNode extends BlockASTNode {
 
     private ExecutableStatement context;
     private ParmValuePair[] withExpressions;
 
-    public WithToken(char[] expr, char[] block, int fields) {
+    public WithASTNode(char[] expr, char[] block, int fields) {
         super(expr, fields, block);
 
         context = (ExecutableStatement) compileExpression(new String(expr).trim());

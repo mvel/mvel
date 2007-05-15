@@ -1,18 +1,18 @@
 package org.mvel.ast;
 
+import org.mvel.ASTNode;
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.compileExpression;
-import org.mvel.Token;
 import org.mvel.integration.VariableResolverFactory;
 
 /**
  * @author Christopher Brock
  */
-public class AssertToken extends Token {
+public class AssertASTNode extends ASTNode {
     public ExecutableStatement assertion;
 
-    public AssertToken(char[] expr, int fields) {
+    public AssertASTNode(char[] expr, int fields) {
         super(expr, fields);
         assertion = (ExecutableStatement) compileExpression(expr);
     }
