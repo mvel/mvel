@@ -536,9 +536,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             val = lit.getValue(ctx, thisRef, factory);
             return new Assignment(var.getName(), lit);
         }
-        else if (expr.isNewObject()) {
-            return new Assignment(var.getName(), optimizeObjectCreation(expr.getNameAsArray(), ctx, thisRef, factory));
-        }
+//        else if (expr.isNewObject()) {
+//            return new Assignment(var.getName(), optimizeObjectCreation(expr.getNameAsArray(), ctx, thisRef, factory));
+//        }
         else {
             assert ParseTools.debug("ASSIGN_EXPR '" + expr.getName() + "'");
             ExprValueAccessor valAcc = new ExprValueAccessor(expr.getName());
