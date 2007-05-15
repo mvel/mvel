@@ -25,6 +25,7 @@ import org.mvel.asm.MethodVisitor;
 import org.mvel.asm.Opcodes;
 import static org.mvel.asm.Opcodes.*;
 import static org.mvel.asm.Type.*;
+import org.mvel.ast.NewObjectASTNode;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
@@ -1169,6 +1170,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         ExecutableStatement value;
         if (valTk.isLiteral()) {
             value = new ExecutableLiteral(valTk.getLiteralValue());
+        }
+        else if (valTk instanceof NewObjectASTNode) {
+            value = new ExecutableAccessor(valTk, false);
         }
 //        else if (valTk.isNewObject()) {
 //            value = new ExecutableAccessor(valTk, false);
