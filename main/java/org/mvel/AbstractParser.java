@@ -797,6 +797,9 @@ public class AbstractParser {
                     }
                     break;
 
+                case';':
+                    return;
+
                 default:
                     if (isWhitespace(expr[cursor])) {
                         skipWhitespace();
