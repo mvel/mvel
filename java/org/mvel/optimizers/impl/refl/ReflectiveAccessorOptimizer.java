@@ -522,13 +522,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.cursor = 0;
 
         greedy = false; // don't do a greedy capture.
-        Token var = nextToken();
+        ASTNode var = nextToken();
 
         if (!nextToken().isOperator(Operator.ASSIGN))
             throw new CompileException("expected assignment operator");
 
 
-        Token expr = captureTokenToEOS();
+        ASTNode expr = captureTokenToEOS();
 
         if (expr.isLiteral()) {
             assert ParseTools.debug("ASSIGN_LITERAL '" + expr.getName() + "'");
@@ -575,7 +575,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
 
-        Token var = nextToken();
+        ASTNode var = nextToken();
 
         if (!nextToken().isOperator(Operator.PROJECTION)) {
             throw new CompileException("expected fold operator");
