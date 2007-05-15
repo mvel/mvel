@@ -36,7 +36,7 @@ public class WithToken extends BlockToken {
             setProperty(ctxObject, pvp.getParameter(), pvp.getStatement().getValue(ctx, thisValue, factory));
         }
 
-        return Void.class;
+        return ctxObject;
     }
 
 
