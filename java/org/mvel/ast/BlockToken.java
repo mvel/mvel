@@ -1,4 +1,4 @@
-package org.mvel.block;
+package org.mvel.ast;
 
 import org.mvel.Token;
 

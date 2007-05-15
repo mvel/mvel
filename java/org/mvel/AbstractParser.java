@@ -1,10 +1,10 @@
 package org.mvel;
 
 import static org.mvel.Operator.*;
-import org.mvel.block.AssertToken;
-import org.mvel.block.ForEachToken;
-import org.mvel.block.IfToken;
-import org.mvel.block.WithToken;
+import org.mvel.ast.AssertToken;
+import org.mvel.ast.ForEachToken;
+import org.mvel.ast.IfToken;
+import org.mvel.ast.WithToken;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
