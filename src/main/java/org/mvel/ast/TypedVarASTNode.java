@@ -34,11 +34,11 @@ public class TypedVarASTNode extends ASTNode {
         if (statement != null) {
             Object o = statement.getValue(ctx, thisValue, factory);
             factory.createVariable(name, o, type);
-            return o;
+            return Void.class;
         }
         else {
             factory.createVariable(name, null, type);
-            return null;
+            return Void.class;
         }
 
     }
