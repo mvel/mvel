@@ -28,4 +28,9 @@ public class NewObjectASTNode extends ASTNode {
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return getReducedValueAccelerated(ctx, thisValue, factory);
     }
+
+
+    public Accessor getNewObjectOptimizer() {
+        return newObjectOptimizer;
+    }
 }
