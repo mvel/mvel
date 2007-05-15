@@ -1348,7 +1348,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
         }
         catch (Exception e) {
-            throw new OptimizationFailure("could not optimize construtor", e);
+            throw new OptimizationFailure("could not optimize construtor: " + new String(property), e);
         }
     }
 
