@@ -24,32 +24,32 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class FastTokenIterator implements TokenIterator, Serializable {
-    private final Token[] token;
+    private final ASTNode[] astNodes;
     private int length = 0;
     private int cursor = 0;
 
 
-    public FastTokenIterator(Token[] token) {
-        this.length = (this.token = token).length;
+    public FastTokenIterator(ASTNode[] astNodes) {
+        this.length = (this.astNodes = astNodes).length;
     }
 
     public FastTokenIterator(final FastTokenIterator fi) {
-        token = fi.token;
+        astNodes = fi.astNodes;
         length = fi.length;
     }
 
     public FastTokenIterator(TokenIterator map) {
         if (map instanceof FastTokenIterator) {
-            this.length = (this.token = ((FastTokenIterator) map).token).length;
+            this.length = (this.astNodes = ((FastTokenIterator) map).astNodes).length;
         }
         else {
-            ArrayList<Token> tokens = new ArrayList<Token>();
+            ArrayList<ASTNode> astNodes = new ArrayList<ASTNode>();
             map.reset();
             while (map.hasMoreTokens()) {
-                tokens.add(map.nextToken());
+                astNodes.add(map.nextToken());
             }
 
-            token = tokens.toArray(new Token[length = tokens.size()]);
+            this.astNodes = astNodes.toArray(new ASTNode[length = astNodes.size()]);
         }
     }
 
@@ -58,13 +58,13 @@ public class FastTokenIterator implements TokenIterator, Serializable {
     }
 
 
-    public Token firstToken() {
-        return token[0];
+    public ASTNode firstToken() {
+        return astNodes[0];
     }
 
-    public Token nextToken() {
+    public ASTNode nextToken() {
         if (cursor < length)
-            return token[cursor++];
+            return astNodes[cursor++];
         else
             return null;
     }
@@ -75,29 +75,28 @@ public class FastTokenIterator implements TokenIterator, Serializable {
     }
 
 
-    public Token peekNext() {
+    public ASTNode peekNext() {
         if (cursor < length)
-            return token[cursor + 1];
+            return astNodes[cursor + 1];
         else
             return null;
     }
 
-    public Token peekToken() {
+    public ASTNode peekToken() {
         if (cursor < length)
-            return token[cursor];
+            return astNodes[cursor];
         else
             return null;
     }
-
 
 //    public boolean peekNextTokenFlags(int flags) {
 //        return cursor < length && (token[cursor].getFlags() & flags) != 0;
 //    }
 
 
-    public Token peekLast() {
+    public ASTNode peekLast() {
         if (cursor > 0) {
-            return token[cursor - 1];
+            return astNodes[cursor - 1];
         }
         else {
             return null;
@@ -105,9 +104,9 @@ public class FastTokenIterator implements TokenIterator, Serializable {
     }
 
 
-    public Token tokensBack(int offset) {
+    public ASTNode tokensBack(int offset) {
         if (cursor - offset >= 0) {
-            return token[cursor - offset];
+            return astNodes[cursor - offset];
         }
         else {
             return null;
@@ -126,7 +125,7 @@ public class FastTokenIterator implements TokenIterator, Serializable {
     public String showTokenChain() {
         StringAppender sb = new StringAppender();
         for (int i = 0; i < length; i++) {
-            sb.append("(" + i + "): <<" + token[i].getName() + ">> = <<" + token[i].getLiteralValue() + ">> [" + (token[i].getLiteralValue() != null ? token[i].getLiteralValue().getClass() : "null") + "]").append("\n");
+            sb.append("(" + i + "): <<" + astNodes[i].getName() + ">> = <<" + astNodes[i].getLiteralValue() + ">> [" + (astNodes[i].getLiteralValue() != null ? astNodes[i].getLiteralValue().getClass() : "null") + "]").append("\n");
         }
 
         return sb.toString();

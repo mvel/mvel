@@ -32,33 +32,33 @@ public class AcceleratedParser extends AbstractParser {
      * @return -
      */
     public Object execute(Object ctx, VariableResolverFactory variableFactory) {
-            Token tk;
-            Integer operator;
+        ASTNode tk;
+        Integer operator;
 
-            while ((tk = tokens.nextToken()) != null) {
-                if (stk.isEmpty()) {
-                    stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
-                }
-
-                if (!tk.isOperator()) {
-                    continue;
-                }
-
-                switch (reduceBinary(operator = tk.getOperator())) {
-                    case FRAME_END:
-                        return stk.pop();
-                    case FRAME_CONTINUE:
-                        break;
-                    case FRAME_NEXT:
-                        continue;
-                }
-
-                stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
-
-                reduceTrinary();
+        while ((tk = tokens.nextToken()) != null) {
+            if (stk.isEmpty()) {
+                stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
             }
 
-            return stk.peek();
+            if (!tk.isOperator()) {
+                continue;
+            }
+
+            switch (reduceBinary(operator = tk.getOperator())) {
+                case FRAME_END:
+                    return stk.pop();
+                case FRAME_CONTINUE:
+                    break;
+                case FRAME_NEXT:
+                    continue;
+            }
+
+            stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
+
+            reduceTrinary();
+        }
+
+        return stk.peek();
 
     }
 
@@ -249,16 +249,16 @@ public class AcceleratedParser extends AbstractParser {
             }
         }
         catch (ClassCastException e) {
-            if ((fields & Token.LOOKAHEAD) == 0) {
+            if ((fields & ASTNode.LOOKAHEAD) == 0) {
                 /**
                  * This will allow for some developers who like messy expressions to compileAccessor
                  * away with some messy constructs like: a + b < c && e + f > g + q instead
                  * of using brackets like (a + b < c) && (e + f > g + q)
                  */
 
-                fields |= Token.LOOKAHEAD;
+                fields |= ASTNode.LOOKAHEAD;
 
-                Token tk = nextToken();
+                ASTNode tk = nextToken();
                 if (tk != null) {
                     stk.push(v1, nextToken(), tk.getOperator());
 

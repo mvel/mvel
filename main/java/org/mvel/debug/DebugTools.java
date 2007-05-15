@@ -21,7 +21,7 @@ public class DebugTools {
 
     public static String decompile(CompiledExpression cExp) {
         TokenIterator iter = cExp.getTokens();
-        Token tk;
+        ASTNode tk;
 
         int node = 0;
 

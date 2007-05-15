@@ -620,7 +620,7 @@ public class ParseTools {
     }
 
     public static Object valueOnly(Object o) {
-        return (o instanceof Token) ? ((Token) o).getLiteralValue() : o;
+        return (o instanceof ASTNode) ? ((ASTNode) o).getLiteralValue() : o;
     }
 
     public static boolean isNumericallyCoercible(Class target, Class parm) {

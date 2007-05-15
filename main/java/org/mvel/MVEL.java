@@ -108,7 +108,7 @@ public class MVEL {
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
         if (OPTIMIZER && tokens.size() == 1) {
-            Token tk = tokens.firstToken();
+            ASTNode tk = tokens.firstToken();
             if (tk.isIdentifier()) {
                 return new ExecutableAccessor(tk, false);
             }
@@ -138,7 +138,7 @@ public class MVEL {
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
         if (OPTIMIZER && tokens.size() == 1) {
-            Token tk = tokens.firstToken();
+            ASTNode tk = tokens.firstToken();
             if (tk.isIdentifier()) {
                 return new ExecutableAccessor(tk, false);
             }

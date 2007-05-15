@@ -68,7 +68,7 @@ public class ExpressionParser extends AbstractParser {
      * Main interpreter loop.
      */
     private void parseAndExecuteInterpreted() {
-        Token tk;
+        ASTNode tk;
         Integer operator;
 
         lastWasIdentifier = false;
@@ -149,7 +149,7 @@ public class ExpressionParser extends AbstractParser {
                 }
 
             case TERNARY:
-                Token tk;
+                ASTNode tk;
                 if ((Boolean) stk.pop()) {
                     return FRAME_NEXT;
                 }
@@ -301,16 +301,16 @@ public class ExpressionParser extends AbstractParser {
             }
         }
         catch (ClassCastException e) {
-            if ((fields & Token.LOOKAHEAD) == 0) {
+            if ((fields & ASTNode.LOOKAHEAD) == 0) {
                 /**
                  * This will allow for some developers who like messy expressions to compileAccessor
                  * away with some messy constructs like: a + b < c && e + f > g + q instead
                  * of using brackets like (a + b < c) && (e + f > g + q)
                  */
 
-                fields |= Token.LOOKAHEAD;
+                fields |= ASTNode.LOOKAHEAD;
 
-                Token tk = nextToken();
+                ASTNode tk = nextToken();
                 if (tk != null) {
                     stk.push(v1, nextToken(), tk.getOperator());
 
@@ -339,7 +339,7 @@ public class ExpressionParser extends AbstractParser {
      * @return -
      */
     private boolean unwindStatement() {
-        Token tk;
+        ASTNode tk;
         while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT)) {
             //nothing
         }

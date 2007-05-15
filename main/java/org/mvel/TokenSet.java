@@ -20,57 +20,57 @@
 package org.mvel;
 
 public class TokenSet implements TokenIterator {
-    private Token firstToken;
-    private Token current;
+    private ASTNode firstASTNode;
+    private ASTNode current;
     private int size;
 
 
     public TokenSet() {
     }
 
-    public TokenSet(Token firstToken) {
-        this.current = this.firstToken = firstToken;
+    public TokenSet(ASTNode firstASTNode) {
+        this.current = this.firstASTNode = firstASTNode;
     }
 
-    public void addTokenNode(Token token) {
-        if (this.firstToken == null) {
-            this.firstToken = this.current = token;
+    public void addTokenNode(ASTNode astNode) {
+        if (this.firstASTNode == null) {
+            this.firstASTNode = this.current = astNode;
         }
         else {
-            this.current = (this.current.nextToken = token);
+            this.current = (this.current.nextASTNode = astNode);
         }
         size++;
     }
 
-    public void addTokenNode(Token token, Token token2) {
-        if (this.firstToken == null) {
-            this.current = ((this.firstToken = token).nextToken = token2);
+    public void addTokenNode(ASTNode astNode, ASTNode token2) {
+        if (this.firstASTNode == null) {
+            this.current = ((this.firstASTNode = astNode).nextASTNode = token2);
         }
         else {
-            this.current = (this.current.nextToken = token).nextToken = token2;
+            this.current = (this.current.nextASTNode = astNode).nextASTNode = token2;
         }
     }
 
 
-    public Token firstToken() {
-        return firstToken;
+    public ASTNode firstToken() {
+        return firstASTNode;
     }
 
     public void reset() {
-        this.current = firstToken;
+        this.current = firstASTNode;
     }
 
     public boolean hasMoreTokens() {
         return this.current != null;
     }
 
-    public Token nextToken() {
+    public ASTNode nextToken() {
         if (current == null) return null;
         try {
             return current;
         }
         finally {
-            current = current.nextToken;
+            current = current.nextASTNode;
         }
 
         // Token tk = current.token;
@@ -81,13 +81,13 @@ public class TokenSet implements TokenIterator {
 
     public void skipToken() {
         if (current != null)
-            current = current.nextToken;
+            current = current.nextASTNode;
     }
 
 
-    public Token peekNext() {
-        if (current != null && current.nextToken != null)
-            return current.nextToken;
+    public ASTNode peekNext() {
+        if (current != null && current.nextASTNode != null)
+            return current.nextASTNode;
         else
             return null;
     }
@@ -96,22 +96,22 @@ public class TokenSet implements TokenIterator {
 //        return current != null && (flags & current.nextToken.getFlags()) != 0;
 //    }
 
-    public Token peekToken() {
+    public ASTNode peekToken() {
         if (current == null) return null;
-        return current.nextToken;
+        return current.nextASTNode;
     }
 
     public void removeToken() {
         if (current != null) {
-            current = current.nextToken;
+            current = current.nextASTNode;
         }
     }
 
-    public Token peekLast() {
+    public ASTNode peekLast() {
         throw new RuntimeException("unimplemented");
     }
 
-    public Token tokensBack(int offset) {
+    public ASTNode tokensBack(int offset) {
         throw new RuntimeException("unimplemented");
     }
 

@@ -1,22 +1,22 @@
 package org.mvel.ast;
 
+import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.compileExpression;
-import org.mvel.Token;
 import org.mvel.integration.VariableResolverFactory;
 
 /**
  * @author Christopher Brock
  */
-public class IfToken extends Token {
+public class IfASTNode extends ASTNode {
     protected char[] block;
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
 
-    protected IfToken elseIf;
+    protected IfASTNode elseIf;
     protected ExecutableStatement elseBlock;
 
-    public IfToken(char[] condition, char[] block, int fields) {
+    public IfASTNode(char[] condition, char[] block, int fields) {
         super(condition, fields);
 
         this.condition = (ExecutableStatement) compileExpression(this.name = condition);
@@ -70,11 +70,11 @@ public class IfToken extends Token {
         this.compiledBlock = compiledBlock;
     }
 
-    public IfToken getElseIf() {
+    public IfASTNode getElseIf() {
         return elseIf;
     }
 
-    public void setElseIf(IfToken elseIf) {
+    public void setElseIf(IfASTNode elseIf) {
         this.elseIf = elseIf;
     }
 
