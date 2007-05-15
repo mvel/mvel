@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -33,6 +32,10 @@ public class ClassImportResolverFactory extends BaseVariableResolver {
         return vr;
     }
 
+
+    public VariableResolver createVariable(String name, Object value, Class type) {
+        return null;
+    }
 
     public boolean isTarget(String name) {
         return importsTable.containsKey(name);
