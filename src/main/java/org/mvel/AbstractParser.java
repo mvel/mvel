@@ -27,8 +27,8 @@ public class AbstractParser {
     protected int fields;
 
     protected boolean greedy = true;
-
     protected boolean lastWasIdentifier = false;
+    protected ASTNode lastNode;
 
     protected static final int FRAME_END = -1;
     protected static final int FRAME_CONTINUE = 0;
@@ -66,13 +66,28 @@ public class AbstractParser {
         LITERALS.put("System", System.class);
 
         LITERALS.put("String", String.class);
+
         LITERALS.put("Integer", Integer.class);
+        LITERALS.put("int", Integer.class);
+
         LITERALS.put("Long", Long.class);
+        LITERALS.put("long", Long.class);
+
         LITERALS.put("Boolean", Boolean.class);
+        LITERALS.put("boolean", Boolean.class);
+
         LITERALS.put("Short", Short.class);
+        LITERALS.put("short", Short.class);
+
         LITERALS.put("Character", Character.class);
+        LITERALS.put("char", Character.class);
+
         LITERALS.put("Double", Double.class);
+        LITERALS.put("double", double.class);
+
         LITERALS.put("Float", Float.class);
+        LITERALS.put("float", float.class);
+
         LITERALS.put("Math", Math.class);
         LITERALS.put("Void", Void.class);
         LITERALS.put("Object", Object.class);
@@ -631,13 +646,26 @@ public class AbstractParser {
 
         if (tk.isIdentifier()) {
             if (lastWasIdentifier) {
+                /**
+                 * Check for typing information.
+                 */
+                if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
+                    lastNode.setDiscard(true);
+
+                    captureToEOS();
+                    return new TypedVarASTNode(subArray(start, cursor), fields, (Class)
+                            lastNode.getLiteralValue());
+                }
+
                 throw new ParseException("not a statement", expr, cursor);
             }
 
             lastWasIdentifier = true;
+            lastNode = tk;
         }
         else {
             lastWasIdentifier = false;
+            lastNode = null;
         }
 
         return tk;

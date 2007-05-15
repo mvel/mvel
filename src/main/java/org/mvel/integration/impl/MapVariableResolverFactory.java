@@ -18,6 +18,7 @@
  */
 package org.mvel.integration.impl;
 
+import org.mvel.CompileException;
 import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 
@@ -39,14 +40,28 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
     }
 
     public VariableResolver createVariable(String name, Object value) {
-        if (nextFactory != null && nextFactory.isResolveable(name)) {
-            VariableResolver vr = nextFactory.getVariableResolver(name);
+        VariableResolver vr = getVariableResolver(name);
+        if (vr != null) {
             vr.setValue(value);
             return vr;
         }
         else {
-            variables.put(name, value);
-            return new MapVariableResolver(variables, name);
+            addResolver(name, vr = new MapVariableResolver(variables, name));
+            vr.setValue(value);
+            return vr;
+        }
+    }
+
+
+    public VariableResolver createVariable(String name, Object value, Class<?> type) {
+        VariableResolver vr = getVariableResolver(name);
+        if (vr != null) {
+            throw new CompileException("variable already defined within scope: " + name);
+        }
+        else {
+            addResolver(name, vr = new MapVariableResolver(variables, name, type));
+            vr.setValue(value);
+            return vr;
         }
     }
 
@@ -67,14 +82,12 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
 
     }
 
-
     public boolean isResolveable(String name) {
         if (variableResolvers != null && variableResolvers.containsKey(name)) {
             return true;
         }
         else if (variables != null && variables.containsKey(name)) {
-            if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
-            variableResolvers.put(name, new MapVariableResolver(variables, name));
+            addResolver(name, new MapVariableResolver(variables, name));
             return true;
         }
         else if (nextFactory != null) {
@@ -92,6 +105,11 @@ public class MapVariableResolverFactory implements VariableResolverFactory {
         }
     }
 
+
+    private void addResolver(String name, VariableResolver vr) {
+        if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
+        variableResolvers.put(name, vr);
+    }
 
     public boolean isTarget(String name) {
         return variableResolvers.containsKey(name);

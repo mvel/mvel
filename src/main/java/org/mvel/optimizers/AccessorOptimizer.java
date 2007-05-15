@@ -35,4 +35,6 @@ public interface AccessorOptimizer {
     public Accessor optimizeReturn(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
 
     public Object getResultOptPass();
+
+    public Class getEgressType();
 }

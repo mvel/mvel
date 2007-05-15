@@ -86,7 +86,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private Class returnType;
 
-
     public ASMAccessorOptimizer() {
         //do this to confirm we're running the correct version
         //otherwise should create a verification error in VM
@@ -493,14 +492,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    /**
-     * Find an appropriate method, execute it, and return it's response.
-     *
-     * @param ctx  -
-     * @param name -
-     * @return -
-     * @throws Exception -
-     */
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name)
             throws IllegalAccessException, InvocationTargetException {
@@ -593,9 +584,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             if ("size".equals(name) && args.length == 0 && cls.isArray()) {
-//                debug("ALOAD 1");
-//                mv.visitVarInsn(ALOAD, 1);
-
                 anyArrayCheck(cls);
 
                 debug("ARRAYLENGTH");
@@ -603,8 +591,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 debug("INVOKESTATIC Integer.valueOf(int) : Integer");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
-
-                //      mv.visitInsn(IRETURN);
 
                 return Array.getLength(ctx);
             }
@@ -1230,9 +1216,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         else if (valTk instanceof NewObjectASTNode) {
             value = new ExecutableAccessor(valTk, false);
         }
-//        else if (valTk.isNewObject()) {
-//            value = new ExecutableAccessor(valTk, false);
-//        }
         else {
             value = (ExecutableStatement) MVEL.compileExpression(valTk.getNameAsArray());
         }
@@ -1420,5 +1403,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     public Accessor optimizeReturn(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         throw new OptimizationNotSupported("JIT does not yet support return");
+    }
+
+
+    public Class getEgressType() {
+        return returnType;
     }
 }

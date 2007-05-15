@@ -18,7 +18,9 @@ public class Assignment implements Accessor {
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         Object o;
-        finalLocalVariableFactory(variableFactory).createVariable(var,
+
+        variableFactory = finalLocalVariableFactory(variableFactory);
+        variableFactory.createVariable(var,
                 o = expr.getValue(ctx, elCtx, variableFactory));
         return o;
     }

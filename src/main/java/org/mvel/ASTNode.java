@@ -81,6 +81,8 @@ public class ASTNode implements Cloneable, Serializable {
 
     public ASTNode nextASTNode;
 
+    protected boolean discard;
+
     public ASTNode(char[] expr, int start, int end, int fields) {
         this.cursorPosition = start;
         this.fields = fields;
@@ -222,6 +224,10 @@ public class ASTNode implements Cloneable, Serializable {
 
             if (retVal == null) {
                 retVal = optimizer.getResultOptPass();
+            }
+
+            if (egressType == null) {
+                egressType = optimizer.getEgressType();
             }
 
             return valRet(retVal);
@@ -549,6 +555,15 @@ public class ASTNode implements Cloneable, Serializable {
 
     public void setCursorPosition(int cursorPosition) {
         this.cursorPosition = cursorPosition;
+    }
+
+
+    public boolean isDiscard() {
+        return discard;
+    }
+
+    public void setDiscard(boolean discard) {
+        this.discard = discard;
     }
 }
 

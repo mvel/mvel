@@ -18,13 +18,16 @@
  */
 package org.mvel.integration.impl;
 
+import org.mvel.CompileException;
+import static org.mvel.DataConversion.canConvert;
+import static org.mvel.DataConversion.convert;
 import org.mvel.integration.VariableResolver;
 
 import java.util.Map;
 
 public class MapVariableResolver implements VariableResolver {
     private String name;
-    private Class knownType;
+    private Class<?> knownType;
 
     private Map variableMap;
 
@@ -33,11 +36,18 @@ public class MapVariableResolver implements VariableResolver {
         this.name = name;
     }
 
+
+    public MapVariableResolver(Map variableMap, String name, Class knownType) {
+        this.name = name;
+        this.knownType = knownType;
+        this.variableMap = variableMap;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
 
-    public void setKnownType(Class knownType) {
+    public void setStaticType(Class knownType) {
         this.knownType = knownType;
     }
 
@@ -62,6 +72,20 @@ public class MapVariableResolver implements VariableResolver {
 
 
     public void setValue(Object value) {
+        if (knownType != null && value != null && value.getClass() != knownType) {
+            if (!canConvert(knownType, value.getClass())) {
+                throw new CompileException("cannot assign " + value.getClass().getName() + " to type: "
+                        + knownType.getName());
+            }
+            try {
+                value = convert(value, knownType);
+            }
+            catch (Exception e) {
+                throw new CompileException("cannot convert value of " + value.getClass().getName()
+                        + " to: " + knownType.getName());
+            }
+        }
+
         variableMap.put(name, value);
     }
 
