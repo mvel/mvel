@@ -72,10 +72,6 @@ public class TokenSet implements TokenIterator {
         finally {
             current = current.nextASTNode;
         }
-
-        // Token tk = current.token;
-        //  current = current.next;
-        //  return tk;
     }
 
 
@@ -92,9 +88,6 @@ public class TokenSet implements TokenIterator {
             return null;
     }
 
-//    public boolean peekNextTokenFlags(int flags) {
-//        return current != null && (flags & current.nextToken.getFlags()) != 0;
-//    }
 
     public ASTNode peekToken() {
         if (current == null) return null;
@@ -123,7 +116,6 @@ public class TokenSet implements TokenIterator {
     public String showTokenChain() {
         throw new RuntimeException("unimplemented");
     }
-
 
     public int size() {
         return size;

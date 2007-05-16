@@ -27,6 +27,8 @@ public class ExpressionCompiler extends AbstractParser {
         }
 
         while ((tk = nextToken()) != null) {
+
+
             if (tk.isSubeval()) {
                 ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
                 tk.setAccessor(subCompiler.compile(verifying));
@@ -104,10 +106,14 @@ public class ExpressionCompiler extends AbstractParser {
                     }
                 }
                 else {
-
+                    if (tk.isDiscard()) {
+                        tokenSet.addTokenNode(tkOp);
+                        continue;
+                    }
 
                     tokenSet.addTokenNode(tk);
                     if (tkOp != null) tokenSet.addTokenNode(tkOp);
+
                     continue;
                 }
             }
