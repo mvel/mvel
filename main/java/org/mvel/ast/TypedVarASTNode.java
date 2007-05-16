@@ -4,6 +4,7 @@ import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
+import static org.mvel.util.ParseTools.finalLocalVariableFactory;
 import static org.mvel.util.ParseTools.subset;
 import static org.mvel.util.PropertyTools.find;
 
@@ -33,7 +34,9 @@ public class TypedVarASTNode extends ASTNode {
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (statement != null) {
             Object o = statement.getValue(ctx, thisValue, factory);
-            factory.createVariable(name, o, type);
+
+            finalLocalVariableFactory(factory).createVariable(name, o, type);
+
             return Void.class;
         }
         else {

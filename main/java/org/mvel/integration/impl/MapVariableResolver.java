@@ -60,13 +60,6 @@ public class MapVariableResolver implements VariableResolver {
     }
 
     public Class getKnownType() {
-        if (knownType == null && variableMap.containsKey(name)) {
-            knownType = variableMap.get(name) != null ? variableMap.get(name).getClass() : Object.class;
-        }
-        else {
-            knownType = Object.class;
-        }
-
         return knownType;
     }
 

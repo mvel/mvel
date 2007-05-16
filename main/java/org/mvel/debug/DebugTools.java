@@ -44,6 +44,9 @@ public class DebugTools {
             else if (tk.isIdentifier()) {
                 sbuf.append("PUSH VAR :: ").append(tk.getName());
             }
+            else {
+                sbuf.append("ASTNODE [" + tk.getName() + "]");
+            }
 
             sbuf.append("\n");
 

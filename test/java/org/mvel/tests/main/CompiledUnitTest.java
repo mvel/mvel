@@ -598,6 +598,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(5, parseDirect("intArray.size()"));
     }
 
+    public void testStaticVarAssignment() {
+        assertEquals("1", parseDirect("String mikeBrock = 1; mikeBrock"));
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile(true);
