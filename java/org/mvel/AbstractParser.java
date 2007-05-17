@@ -661,14 +661,12 @@ public class AbstractParser {
             }
 
             lastWasIdentifier = true;
-            lastNode = tk;
         }
         else {
             lastWasIdentifier = false;
-            lastNode = null;
         }
 
-        return tk;
+        return lastNode = tk;
     }
 
     private char[] subArray(final int start, final int end) {
@@ -921,5 +919,9 @@ public class AbstractParser {
 
     private boolean isFlag(int bit) {
         return (fields & bit) != 0;
+    }
+
+    public static boolean isReservedWord(String name) {
+        return LITERALS.containsKey(name) || OPERATORS.containsKey(name);
     }
 }
