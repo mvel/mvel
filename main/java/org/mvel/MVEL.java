@@ -100,7 +100,7 @@ public class MVEL {
     public static Serializable compileExpression(String expression) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
 
-        CompiledExpression cExpr = parser.compile(false);
+        CompiledExpression cExpr = parser.compile();
 
         TokenIterator tokens = cExpr.getTokens();
 
@@ -131,7 +131,7 @@ public class MVEL {
     public static Serializable compileExpression(char[] expression) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
 
-        CompiledExpression cExpr = parser.compile(false);
+        CompiledExpression cExpr = parser.compile();
         TokenIterator tokens = cExpr.getTokens();
 
         /**

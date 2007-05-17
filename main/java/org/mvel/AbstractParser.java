@@ -211,8 +211,7 @@ public class AbstractParser {
          * a capture only mode.
          */
 
-        fields = fields & (ASTNode.CAPTURE_ONLY | ASTNode.NOCOMPILE | ASTNode.INLINE_COLLECTION | ASTNode.PUSH
-                | ASTNode.IDENTIFIER);
+        fields = fields & (ASTNode.CAPTURE_ONLY | ASTNode.NOCOMPILE | ASTNode.INLINE_COLLECTION | ASTNode.PUSH);
 
         boolean capture = false;
 
@@ -645,6 +644,7 @@ public class AbstractParser {
         ASTNode tk = new ASTNode(expr, start, end, fields);
 
         if (tk.isIdentifier()) {
+
             if (lastWasIdentifier) {
                 /**
                  * Check for typing information.

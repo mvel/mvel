@@ -602,9 +602,18 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("1", parseDirect("String mikeBrock = 1; mikeBrock"));
     }
 
+    public void testIntentionalFailure() {
+        try {
+            parseDirect("int = 0"); // should fail because int is a reserved word.
+            assertTrue(false);
+        }
+        catch (Exception e) {
+        }
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
-        compiler.compile(true);
+        compiler.compile();
 
         assertTrue(compiler.getInputs().contains("test"));
         assertTrue(compiler.getInputs().contains("foo"));
