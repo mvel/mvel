@@ -59,10 +59,7 @@ public class PropertyVerifier {
     }
 
     public void analyze() {
-
         while (cursor < length) {
-
-
             switch (nextToken()) {
                 case NORM:
                     getBeanProperty(capture());
@@ -140,6 +137,7 @@ public class PropertyVerifier {
 
 
     private void getCollectionProperty(String prop) {
+
         if (prop.length() > 0) getBeanProperty(prop);
 
         int start = ++cursor;
@@ -158,6 +156,7 @@ public class PropertyVerifier {
 
             if (!scanTo(']'))
                 throw new PropertyAccessException("unterminated '['");
+
             if ((end = containsStringLiteralTermination()) == -1)
                 throw new PropertyAccessException("unterminated string literal in collections accessor");
 
@@ -170,15 +169,16 @@ public class PropertyVerifier {
             item = new String(property, start, cursor - start);
         }
 
-        ExpressionCompiler compiler = new ExpressionCompiler(item);
-        compiler.compile(true);
 
+        ExpressionCompiler compiler = new ExpressionCompiler(item);
+        compiler.compile();
 
         ++cursor;
     }
 
 
     private void getMethod(String name) {
+
         int st = cursor;
 
         int depth = 1;
@@ -197,6 +197,7 @@ public class PropertyVerifier {
 
         String tk = (cursor - st) > 1 ? new String(property, st + 1, cursor - st - 1) : "";
 
+
         cursor++;
 
         ExpressionCompiler verifCompiler;
@@ -205,7 +206,7 @@ public class PropertyVerifier {
             String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
             for (String token : subtokens) {
                 verifCompiler = new ExpressionCompiler(token);
-                verifCompiler.compile(true);
+                verifCompiler.compile();
 
                 inputs.addAll(verifCompiler.getInputs());
             }
