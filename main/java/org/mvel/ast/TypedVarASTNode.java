@@ -1,6 +1,8 @@
 package org.mvel.ast;
 
 import org.mvel.ASTNode;
+import static org.mvel.AbstractParser.isReservedWord;
+import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
@@ -22,11 +24,17 @@ public class TypedVarASTNode extends ASTNode {
 
         int assignStart;
         if ((assignStart = find(expr, '=')) != -1) {
-            name = new String(expr, 0, assignStart).trim();
+            checkName(name = new String(expr, 0, assignStart).trim());
             statement = (ExecutableStatement) compileExpression(subset(expr, assignStart + 1));
         }
         else {
-            name = new String(expr);
+            checkName(name = new String(expr));
+        }
+    }
+
+    private static void checkName(String name) {
+        if (isReservedWord(name)) {
+            throw new CompileException("reserved word in assignment: " + name);
         }
     }
 
