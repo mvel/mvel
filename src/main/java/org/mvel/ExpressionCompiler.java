@@ -11,8 +11,11 @@ public class ExpressionCompiler extends AbstractParser {
     private final Stack stk = new ExecutionStack();
     private List<String> inputs;
     private List<String> locals;
+    private Class returnType;
 
-    public CompiledExpression compile(boolean verifying) {
+    private boolean verifying = true;
+
+    public CompiledExpression compile() {
         ASTNode tk;
         ASTNode tkOp;
         ASTNode tkLA;
@@ -27,11 +30,9 @@ public class ExpressionCompiler extends AbstractParser {
         }
 
         while ((tk = nextToken()) != null) {
-
-
             if (tk.isSubeval()) {
                 ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
-                tk.setAccessor(subCompiler.compile(verifying));
+                tk.setAccessor(subCompiler.compile());
 
                 if (verifying)
                     inputs.addAll(subCompiler.getInputs());
@@ -124,15 +125,20 @@ public class ExpressionCompiler extends AbstractParser {
                     int c = 0;
                     while (c < assign.length && assign[c] != '=') c++;
 
-                    locals.add(new String(assign, 0, c++).trim());
+                    String varName = new String(assign, 0, c++).trim();
+
+                    if (isReservedWord(varName)) {
+                        throw new CompileException("invalid assignment - variable name is a reserved keyword: " + varName);
+                    }
+
+                    locals.add(varName);
 
                     ExpressionCompiler subCompiler =
                             new ExpressionCompiler(new String(assign, c, assign.length - c).trim());
 
-                    subCompiler.compile(true);
+                    subCompiler.compile();
 
                     inputs.addAll(subCompiler.getInputs());
-
 
                 }
                 else if (tk.isIdentifier()) {
@@ -314,5 +320,21 @@ public class ExpressionCompiler extends AbstractParser {
 
     public ExpressionCompiler(char[] expression) {
         setExpression(expression);
+    }
+
+    public boolean isVerifying() {
+        return verifying;
+    }
+
+    public void setVerifying(boolean verifying) {
+        this.verifying = verifying;
+    }
+
+    public Class getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(Class returnType) {
+        this.returnType = returnType;
     }
 }

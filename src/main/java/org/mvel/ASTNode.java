@@ -492,6 +492,9 @@ public class ASTNode implements Cloneable, Serializable {
             }
             return;
         }
+        else if ((fields & INLINE_COLLECTION) != 0) {
+            return;
+        }
         else if ((firstUnion = findFirst('.', name)) > 0) {
             fields |= DEEP_PROPERTY | IDENTIFIER;
         }
