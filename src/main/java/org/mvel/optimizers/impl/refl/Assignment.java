@@ -1,6 +1,8 @@
 package org.mvel.optimizers.impl.refl;
 
+import static org.mvel.AbstractParser.isReservedWord;
 import org.mvel.Accessor;
+import org.mvel.CompileException;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.finalLocalVariableFactory;
 
@@ -12,7 +14,7 @@ public class Assignment implements Accessor {
     private Accessor expr;
 
     public Assignment(String var, Accessor expr) {
-        this.var = var;
+        checkName(this.var = var);
         this.expr = expr;
     }
 
@@ -23,6 +25,12 @@ public class Assignment implements Accessor {
         variableFactory.createVariable(var,
                 o = expr.getValue(ctx, elCtx, variableFactory));
         return o;
+    }
+
+    private static void checkName(String name) {
+        if (isReservedWord(name)) {
+            throw new CompileException("reserved word in assignment: " + name);
+        }
     }
 }
     
