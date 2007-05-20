@@ -605,7 +605,7 @@ public class ParseTools {
     }
 
     public static boolean debug(String str) {
-        System.out.println(str);
+        // System.out.println(str);
         return true;
     }
 
