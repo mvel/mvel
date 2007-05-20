@@ -4,6 +4,7 @@ public class Bar {
     private String name = "dog";
     private boolean woof = true;
     private int age = 14;
+    private String assignTest = "";
 
     public String getName() {
         return name;
@@ -32,5 +33,14 @@ public class Bar {
 
     public boolean isFoo(Object obj) {
         return obj instanceof Foo;
+    }
+
+
+    public String getAssignTest() {
+        return assignTest;
+    }
+
+    public void setAssignTest(String assignTest) {
+        this.assignTest = assignTest;
     }
 }

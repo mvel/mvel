@@ -168,6 +168,7 @@ public class MVEL {
         try {
             return ((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars));
         }
+
         catch (EndWithValue end) {
             return handleParserEgress(end.getValue(), false);
         }
