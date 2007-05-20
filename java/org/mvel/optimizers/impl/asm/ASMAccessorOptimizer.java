@@ -19,6 +19,7 @@
 package org.mvel.optimizers.impl.asm;
 
 import org.mvel.*;
+import static org.mvel.MVEL.compileExpression;
 import org.mvel.asm.ClassWriter;
 import org.mvel.asm.FieldVisitor;
 import org.mvel.asm.MethodVisitor;
@@ -498,6 +499,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throws IllegalAccessException, InvocationTargetException {
         debug("{method: " + name + "}");
 
+        if (first && variableFactory.isResolveable(name)) {
+            ctx = ((Method) variableFactory.getVariableResolver(name).getValue()).getDeclaringClass();
+            first = false;
+        }
 
         int st = cursor;
 
@@ -539,13 +544,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             preConvArgs = new Object[es.length];
 
             for (int i = 0; i < subtokens.length; i++) {
-                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) MVEL.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
             }
         }
 
         if (es != null) {
-            for (ExecutableStatement e : es)
+            for (ExecutableStatement e : es) {
                 compiledInputs.add(e);
+            }
         }
         /**
          * If the target object is an instance of java.lang.Class itself then do not
@@ -615,8 +621,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 /**
                  * Coerce any types if required.
                  */
-                for (int i = 0; i < args.length; i++)
+                for (int i = 0; i < args.length; i++) {
                     args[i] = DataConversion.convert(args[i], parameterTypes[i]);
+                }
             }
 
 
@@ -667,6 +674,20 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                             "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
 
                     if (parameterTypes[i].isPrimitive()) {
+                        if (preConvArgs[i] == null ||
+                                (parameterTypes[i] != String.class &&
+                                        !parameterTypes[i].isAssignableFrom(preConvArgs[i].getClass()))) {
+
+
+                            debug("LDC " + getWrapperClass(parameterTypes[i]));
+                            mv.visitLdcInsn(getType(getWrapperClass(parameterTypes[i])));
+
+                            debug("INVOKESTATIC DataConversion.convert");
+                            mv.visitMethodInsn(INVOKESTATIC, "org/mvel/DataConversion", "convert",
+                                    "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
+
+                        }
+
                         unwrapPrimitive(parameterTypes[i]);
                     }
                     else if (preConvArgs[i] == null ||
@@ -718,8 +739,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 stacksize++;
             }
-
-            //    debug(">>" + m + " :: " + ctx);
 
             return m.invoke(ctx, args);
         }
@@ -1075,7 +1094,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return ARRAY;
         }
         else {
-            compiledInputs.add((ExecutableStatement) MVEL.compileExpression((String) o));
+            compiledInputs.add((ExecutableStatement) compileExpression((String) o));
 
             switch (type) {
                 case ARRAY:
@@ -1218,7 +1237,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             value = new ExecutableAccessor(valTk, false);
         }
         else {
-            value = (ExecutableStatement) MVEL.compileExpression(valTk.getNameAsArray());
+            value = (ExecutableStatement) compileExpression(valTk.getNameAsArray());
         }
 
         inputs++;
@@ -1290,7 +1309,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         try {
             if (constructorParms != null) {
                 for (String constructorParm : constructorParms) {
-                    compiledInputs.add((ExecutableStatement) MVEL.compileExpression(constructorParm));
+                    compiledInputs.add((ExecutableStatement) compileExpression(constructorParm));
                 }
 
                 String s = new String(subset(property, 0, findFirst('(', property)));

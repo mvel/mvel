@@ -23,8 +23,6 @@ import org.mvel.integration.VariableResolver;
 import java.util.HashMap;
 
 public class ClassImportResolverFactory extends BaseVariableResolverFactory {
-
-
     public ClassImportResolverFactory() {
         super();
 
