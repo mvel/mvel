@@ -390,10 +390,17 @@ public class PropertyAccessor {
         else if ("this".equals(property)) {
             return this.thisReference;
         }
+        else if (ctx instanceof Class) {
+            Class c = (Class) ctx;
+            for (Method m : c.getMethods()) {
+                if (property.equals(m.getName())) {
+                    return m;
+                }
+            }
 
-        else {
-            throw new PropertyAccessException("could not access property (" + property + ")");
+
         }
+        throw new PropertyAccessException("could not access property (" + property + ")");
     }
 
     private void whiteSpaceSkip() {

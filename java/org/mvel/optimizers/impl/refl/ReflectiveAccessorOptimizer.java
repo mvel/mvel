@@ -180,6 +180,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return ((Field) member).get(ctx);
         }
         else if (member != null) {
+            System.out.println("member = " + member);
+
             Object o;
 
             try {

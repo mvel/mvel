@@ -26,7 +26,6 @@ import org.mvel.optimizers.OptimizationNotSupported;
 import static org.mvel.optimizers.OptimizerFactory.*;
 import org.mvel.util.ArrayTools;
 import static org.mvel.util.ArrayTools.findFirst;
-import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.handleNumericConversion;
 import static org.mvel.util.PropertyTools.isNumber;
@@ -361,10 +360,9 @@ public class ASTNode implements Cloneable, Serializable {
                 else {
                     int mBegin = ArrayTools.findFirst('(', name);
                     if (mBegin != -1) {
-                        VariableResolverFactory vrf = ParseTools.findStaticMethodImportResolverFactory(factory);
-                        if (vrf.isTarget(s = new String(name, 0, mBegin))) {
-                            Method m = (Method) vrf.getVariableResolver(s).getValue();
-                            return valRet(get(name, m.getDeclaringClass(), factory, thisValue));
+                        if (factory.isResolveable(s = new String(name, 0, mBegin))) {
+                            Method m = (Method) factory.getVariableResolver(s).getValue();
+                            return valRet(get(m.getName(), m.getDeclaringClass(), factory, thisValue));
                         }
                     }
                 }

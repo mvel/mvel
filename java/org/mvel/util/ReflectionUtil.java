@@ -1,12 +1,11 @@
 package org.mvel.util;
 
-import static java.util.regex.Pattern.compile;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
+import static java.util.regex.Pattern.compile;
 
 /**
  * Utilities for working with reflection.
@@ -28,8 +27,12 @@ public class ReflectionUtil {
         chars[1] = 'e';
         chars[2] = 't';
 
-        if (s.charAt(0) > 'Z')
+        if (s.charAt(0) > 'Z') {
             chars[3] = (char) (s.charAt(0) - ('z' - 'Z'));
+        }
+        else {
+            chars[3] = s.charAt(0);
+        }
 
         for (int i = s.length() - 1; i != 0; i--) {
             chars[i + 3] = s.charAt(i);
@@ -47,8 +50,12 @@ public class ReflectionUtil {
         chars[1] = 'e';
         chars[2] = 't';
 
-        if (s.charAt(0) > 'Z')
+        if (c[0] > 'Z') {
             chars[3] = (char) (c[0] - ('z' - 'Z'));
+        }
+        else {
+            chars[3] = (c[0]);
+        }
 
         System.arraycopy(c, 1, chars, 4, c.length - 1);
 
@@ -63,8 +70,12 @@ public class ReflectionUtil {
         chars[0] = 'i';
         chars[1] = 's';
 
-        if (s.charAt(0) > 'Z')
+        if (s.charAt(0) > 'Z') {
             chars[2] = (char) (s.charAt(0) - ('z' - 'Z'));
+        }
+        else {
+            chars[2] = c[0];
+        }
 
         System.arraycopy(c, 1, chars, 3, c.length - 1);
 
@@ -138,5 +149,5 @@ public class ReflectionUtil {
         for (Field fld : cls.getFields()) allFields.add(fld);
         return allFields;
     }
-    
+
 }

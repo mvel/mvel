@@ -20,10 +20,7 @@ package org.mvel.optimizers.impl.asm;
 
 import org.mvel.*;
 import static org.mvel.MVEL.compileExpression;
-import org.mvel.asm.ClassWriter;
-import org.mvel.asm.FieldVisitor;
-import org.mvel.asm.MethodVisitor;
-import org.mvel.asm.Opcodes;
+import org.mvel.asm.*;
 import static org.mvel.asm.Opcodes.*;
 import static org.mvel.asm.Type.*;
 import org.mvel.ast.NewObjectASTNode;
@@ -72,6 +69,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private static final Object[] EMPTYARG = new Object[0];
 
     private boolean first = true;
+    private boolean deferFinish = false;
 
     private String className;
     private ClassWriter cw;
@@ -140,24 +138,28 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private void _finishJIT() {
-        if (returnType != null && returnType.isPrimitive()) {
-            //noinspection unchecked
-            wrapPrimitive(returnType);
+        if (!deferFinish) {
+
+            if (returnType != null && returnType.isPrimitive()) {
+                //noinspection unchecked
+                wrapPrimitive(returnType);
+            }
+
+            if (returnType == void.class) {
+                debug("ACONST_NULL");
+                mv.visitInsn(ACONST_NULL);
+            }
+
+            debug("ARETURN");
+
+            mv.visitInsn(ARETURN);
         }
-
-        if (returnType == void.class) {
-            debug("ACONST_NULL");
-            mv.visitInsn(ACONST_NULL);
-        }
-
-        debug("ARETURN");
-
-        mv.visitInsn(ARETURN);
 
         debug("\n{METHOD STATS (maxstack=" + stacksize + ")}\n");
         mv.visitMaxs(stacksize, 1);
 
         mv.visitEnd();
+
 
         buildInputs();
 
@@ -251,7 +253,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
-
 
         if (first && variableFactory != null && variableFactory.isResolveable(property)) {
             try {
@@ -390,8 +391,57 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 }
 
             }
-            else
-                throw new PropertyAccessException("could not access property (" + property + ")");
+            else if (ctx instanceof Class) {
+                Class c = (Class) ctx;
+                for (Method m : c.getMethods()) {
+                    if (property.equals(m.getName())) {
+
+                        mv.visitLdcInsn(getType("Ljava/lang/Math;"));
+                        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getMethods", "()[Ljava/lang/reflect/Method;");
+                        mv.visitVarInsn(ASTORE, 7);
+                        mv.visitInsn(ICONST_0);
+                        mv.visitVarInsn(ISTORE, 5);
+                        mv.visitVarInsn(ALOAD, 7);
+                        mv.visitInsn(ARRAYLENGTH);
+                        mv.visitVarInsn(ISTORE, 6);
+                        Label l1 = new Label();
+                        mv.visitJumpInsn(GOTO, l1);
+                        Label l2 = new Label();
+                        mv.visitLabel(l2);
+                        mv.visitVarInsn(ALOAD, 7);
+                        mv.visitVarInsn(ILOAD, 5);
+                        mv.visitInsn(AALOAD);
+                        mv.visitVarInsn(ASTORE, 4);
+                        Label l3 = new Label();
+                        mv.visitLabel(l3);
+                        mv.visitLdcInsn(m.getName());
+                        mv.visitVarInsn(ALOAD, 4);
+                        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/reflect/Method", "getName", "()Ljava/lang/String;");
+                        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "equals", "(Ljava/lang/Object;)Z");
+                        Label l4 = new Label();
+                        mv.visitJumpInsn(IFEQ, l4);
+                        Label l5 = new Label();
+                        mv.visitLabel(l5);
+                        mv.visitVarInsn(ALOAD, 4);
+                        mv.visitInsn(ARETURN);
+                        mv.visitLabel(l4);
+                        mv.visitIincInsn(5, 1);
+                        mv.visitLabel(l1);
+                        mv.visitVarInsn(ILOAD, 5);
+                        mv.visitVarInsn(ILOAD, 6);
+                        mv.visitJumpInsn(IF_ICMPLT, l2);
+                        Label l6 = new Label();
+                        mv.visitLabel(l6);
+                        mv.visitInsn(ACONST_NULL);
+                        mv.visitInsn(ARETURN);
+
+                        return m;
+                    }
+                }
+            }
+
+
+            throw new PropertyAccessException("could not access property (" + property + ")");
         }
     }
 
