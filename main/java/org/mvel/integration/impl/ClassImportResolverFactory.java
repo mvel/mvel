@@ -38,6 +38,10 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
                 "importantly, not implemented.");
     }
 
+    public void addClass(Class clazz) {
+        importsTable.put(clazz.getSimpleName(), new ClassImportResolver(clazz.getSimpleName(), clazz));
+    }
+
     public boolean isTarget(String name) {
         return importsTable.containsKey(name);
     }

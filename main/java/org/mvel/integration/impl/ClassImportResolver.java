@@ -25,16 +25,22 @@ import static java.lang.Class.forName;
 
 public class ClassImportResolver implements VariableResolver {
     private String name;
-    private Class knownType;
+    private Class type;
 
     public ClassImportResolver(String fqcn, String name) {
         this.name = name;
         try {
-            this.knownType = forName(fqcn);
+            this.type = forName(fqcn);
         }
         catch (Exception e) {
             throw new CompileException("failed import", e);
         }
+    }
+
+
+    public ClassImportResolver(String name, Class type) {
+        this.name = name;
+        this.type = type;
     }
 
     public void setName(String name) {
@@ -42,20 +48,19 @@ public class ClassImportResolver implements VariableResolver {
     }
 
     public void setStaticType(Class knownType) {
-        this.knownType = knownType;
+        this.type = knownType;
     }
-
 
     public String getName() {
         return name;
     }
 
-    public Class getKnownType() {
+    public Class getType() {
         return Class.class;
     }
 
     public Object getValue() {
-        return knownType;
+        return type;
     }
 
     public int getFlags() {

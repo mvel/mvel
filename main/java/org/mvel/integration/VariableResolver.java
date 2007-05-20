@@ -21,7 +21,7 @@ package org.mvel.integration;
 public interface VariableResolver {
     public String getName();
 
-    public Class getKnownType();
+    public Class getType();
 
     public void setStaticType(Class type);
 
