@@ -1293,10 +1293,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     compiledInputs.add((ExecutableStatement) MVEL.compileExpression(constructorParm));
                 }
 
-                String s;
+                String s = new String(subset(property, 0, findFirst('(', property)));
 
-                Class cls = LITERALS.containsKey(s = new String(subset(property, 0, findFirst('(', property)))) ?
-                        ((Class) LITERALS.get(s)) : ParseTools.createClass(s);
+                Class cls = ParseTools.findClass(factory, s);
+
 
                 debug("NEW " + getDescriptor(cls));
                 mv.visitTypeInsn(NEW, getDescriptor(cls));

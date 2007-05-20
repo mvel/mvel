@@ -21,14 +21,19 @@ package org.mvel.integration.impl;
 import org.mvel.integration.VariableResolver;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class ClassImportResolverFactory extends BaseVariableResolverFactory {
-    private Map<String, VariableResolver> importsTable = new HashMap<String, VariableResolver>();
+
+
+    public ClassImportResolverFactory() {
+        super();
+
+        variableResolvers = new HashMap<String, VariableResolver>();
+    }
 
     public VariableResolver createVariable(String name, Object value) {
         VariableResolver vr = new ClassImportResolver(name.substring(name.lastIndexOf('.')), name);
-        importsTable.put(vr.getName(), vr);
+        variableResolvers.put(vr.getName(), vr);
         return vr;
     }
 
@@ -39,14 +44,15 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     }
 
     public void addClass(Class clazz) {
-        importsTable.put(clazz.getSimpleName(), new ClassImportResolver(clazz.getSimpleName(), clazz));
+        variableResolvers.put(clazz.getSimpleName(), new ClassImportResolver(clazz.getSimpleName(), clazz));
     }
 
     public boolean isTarget(String name) {
-        return importsTable.containsKey(name);
+        return variableResolvers.containsKey(name);
     }
 
     public boolean isResolveable(String name) {
-        return importsTable.containsKey(name) || nextFactory.isResolveable(name);
+        return variableResolvers.containsKey(name) || isNextResolveable(name);
     }
+
 }

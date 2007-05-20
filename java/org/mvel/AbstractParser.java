@@ -169,6 +169,7 @@ public class AbstractParser {
         OPERATORS.put("with", WITH);
 
         OPERATORS.put("assert", ASSERT);
+        OPERATORS.put("import", IMPORT);
 
         OPERATORS.put("++", INC);
         OPERATORS.put("--", DEC);
@@ -271,6 +272,11 @@ public class AbstractParser {
                             skipWhitespace();
                             start = cursor;
                             continue;
+
+                        case IMPORT:
+                            start = cursor + 1;
+                            captureToEOS();
+                            return new ImportASTNode(subArray(start, cursor), fields);
                     }
                 }
                 else if (isIdentifierPart(expr[cursor])) {
