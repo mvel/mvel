@@ -239,8 +239,21 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
 
             }
-            else
-                throw new PropertyAccessException("could not access property ('" + property + "')");
+            else if (ctx instanceof Class) {
+                Class c = (Class) ctx;
+                for (Method m : c.getMethods()) {
+                    if (property.equals(m.getName())) {
+                        StaticReferenceAccessor accessor = new StaticReferenceAccessor();
+                        accessor.setLiteral(m);
+                        addAccessorNode(accessor);
+
+                        return m;
+                    }
+                }
+
+            }
+
+            throw new PropertyAccessException("could not access property ('" + property + "')");
         }
     }
 

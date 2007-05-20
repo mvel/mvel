@@ -396,7 +396,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
 
-                        mv.visitLdcInsn(getType("Ljava/lang/Math;"));
+                        mv.visitLdcInsn(getType(c));
                         mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getMethods", "()[Ljava/lang/reflect/Method;");
                         mv.visitVarInsn(ASTORE, 7);
                         mv.visitInsn(ICONST_0);
@@ -434,6 +434,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         mv.visitLabel(l6);
                         mv.visitInsn(ACONST_NULL);
                         mv.visitInsn(ARETURN);
+
+                        deferFinish = true;
 
                         return m;
                     }
