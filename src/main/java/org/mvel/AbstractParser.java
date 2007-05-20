@@ -589,7 +589,9 @@ public class AbstractParser {
                 }
         }
 
-        return createToken(expr, start, cursor, fields);
+        return createPropertyToken(start, cursor);
+
+        //  return createToken(expr, start, cursor, fields);
     }
 
 
@@ -641,6 +643,7 @@ public class AbstractParser {
      * @return -
      */
     private ASTNode createToken(final char[] expr, final int start, final int end, int fields) {
+
         ASTNode tk = new ASTNode(expr, start, end, fields);
 
         if (tk.isIdentifier()) {
@@ -673,6 +676,10 @@ public class AbstractParser {
         char[] newA = new char[end - start];
         arraycopy(expr, start, newA, 0, newA.length);
         return newA;
+    }
+
+    private ASTNode createPropertyToken(int start, int end) {
+        return new PropertyASTNode(expr, start, end, fields);
     }
 
     private ASTNode createBlockToken(final int condStart,
