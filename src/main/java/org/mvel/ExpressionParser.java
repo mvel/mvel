@@ -60,6 +60,8 @@ public class ExpressionParser extends AbstractParser {
             throw new ParseException("unexpected end of statement", expr, length);
         }
         catch (NullPointerException e) {
+            e.printStackTrace();
+
             if (cursor >= length) {
                 throw new ParseException("unexpected end of statement", expr, length);
             }

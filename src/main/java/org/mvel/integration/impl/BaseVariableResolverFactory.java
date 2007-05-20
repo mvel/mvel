@@ -39,8 +39,19 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     }
 
     public VariableResolver getVariableResolver(String name) {
-        return isResolveable(name) ? variableResolvers.get(name) :
-                nextFactory != null ? nextFactory.getVariableResolver(name) : null;
+        if (isResolveable(name)) {
+            if (variableResolvers != null && variableResolvers.containsKey(name)) {
+                return variableResolvers.get(name);
+            }
+            else if (nextFactory != null) {
+                return nextFactory.getVariableResolver(name);
+            }
+        }
+        return null;
+    }
+
+    public boolean isNextResolveable(String name) {
+        return nextFactory != null && nextFactory.isResolveable(name);
     }
 
     public void appendFactory(VariableResolverFactory resolverFactory) {
