@@ -430,5 +430,13 @@ public class ExpressionParser extends AbstractParser {
         setExpression(expression);
         this.ctx = ctx;
     }
+
+    private void chainFactory(VariableResolverFactory factory) {
+        VariableResolverFactory vrf = variableFactory;
+        while (vrf.getNextFactory() != null) {
+            vrf = vrf.getNextFactory();
+        }
+        vrf.setNextFactory(factory);
+    }
 }
 

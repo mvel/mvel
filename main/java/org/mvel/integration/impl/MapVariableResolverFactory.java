@@ -25,7 +25,7 @@ import org.mvel.integration.VariableResolverFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapVariableResolverFactory implements VariableResolverFactory {
+public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     /**
      * Holds the instance of the variables.
      */

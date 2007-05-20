@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -27,7 +26,7 @@ import java.util.Map;
 /**
  * Use this class to extend you own VariableResolverFactories.
  */
-public abstract class BaseVariableResolver implements VariableResolverFactory {
+public abstract class BaseVariableResolverFactory implements VariableResolverFactory {
     protected Map<String, VariableResolver> variableResolvers;
     protected VariableResolverFactory nextFactory;
 
@@ -42,6 +41,29 @@ public abstract class BaseVariableResolver implements VariableResolverFactory {
     public VariableResolver getVariableResolver(String name) {
         return isResolveable(name) ? variableResolvers.get(name) :
                 nextFactory != null ? nextFactory.getVariableResolver(name) : null;
+    }
+
+    public void appendFactory(VariableResolverFactory resolverFactory) {
+        VariableResolverFactory vrf = nextFactory;
+        if (vrf == null) {
+            nextFactory = resolverFactory;
+        }
+        else {
+            while (vrf.getNextFactory() != null) {
+                vrf = vrf.getNextFactory();
+            }
+            vrf.setNextFactory(nextFactory);
+        }
+    }
+
+    public void insertFactory(VariableResolverFactory resolverFactory) {
+        if (nextFactory == null) {
+            nextFactory = resolverFactory;
+        }
+        else {
+            resolverFactory.setNextFactory(resolverFactory);
+            nextFactory = resolverFactory;
+        }
     }
 
 }
