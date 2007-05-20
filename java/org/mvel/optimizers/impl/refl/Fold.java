@@ -18,7 +18,7 @@ public class Fold implements Accessor {
         for (Object item : (Collection) collection.getValue(ctx, elCtx, variableFactory)) {
             if (propAccessor == null) {
                 ReflectiveAccessorOptimizer optimizer = new ReflectiveAccessorOptimizer();
-                propAccessor = optimizer.optimize(expr, item, item, variableFactory, false);
+                propAccessor = optimizer.optimizeAccessor(expr, item, item, variableFactory, false);
                 newCollection.add(optimizer.getResultOptPass());
             }
             else {

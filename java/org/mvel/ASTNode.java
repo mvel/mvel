@@ -214,10 +214,10 @@ public class ASTNode implements Cloneable, Serializable {
             }
             else {
                 try {
-                    accessor = (optimizer = getDefaultAccessorCompiler()).optimize(name, ctx, thisValue, factory, true);
+                    accessor = (optimizer = getDefaultAccessorCompiler()).optimizeAccessor(name, ctx, thisValue, factory, true);
                 }
                 catch (OptimizationNotSupported ne) {
-                    accessor = (optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimize(name, ctx, thisValue, factory, true);
+                    accessor = (optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeAccessor(name, ctx, thisValue, factory, true);
                 }
             }
 
@@ -559,6 +559,10 @@ public class ASTNode implements Cloneable, Serializable {
 
     public boolean isAssignment() {
         return ((fields & ASSIGN) != 0);
+    }
+
+    public boolean isDeepProperty() {
+        return ((fields & DEEP_PROPERTY) != 0);
     }
 
 

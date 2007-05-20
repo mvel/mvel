@@ -52,6 +52,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     private boolean first = true;
 
+    private boolean assignment = false;
+
     private static final Map<String, Accessor> REFLECTIVE_ACCESSOR_CACHE =
             new WeakHashMap<String, Accessor>();
 
@@ -74,14 +76,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return REFLECTIVE_ACCESSOR_CACHE.get(expression).getValue(ctx, null, null);
         }
         else {
-            Accessor accessor = new ReflectiveAccessorOptimizer().optimize(expression.toCharArray(), ctx, null, null, false);
+            Accessor accessor = new ReflectiveAccessorOptimizer().optimizeAccessor(expression.toCharArray(), ctx, null, null, false);
             REFLECTIVE_ACCESSOR_CACHE.put(expression, accessor);
             return accessor.getValue(ctx, null, null);
         }
     }
 
 
-    public Accessor optimize(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean root) {
+    public Accessor optimizeAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean root) {
         this.rootNode = this.currNode = null;
         this.start = this.cursor = 0;
         this.first = true;
@@ -180,8 +182,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return ((Field) member).get(ctx);
         }
         else if (member != null) {
-            System.out.println("member = " + member);
-
             Object o;
 
             try {
@@ -250,8 +250,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                         return m;
                     }
                 }
-
             }
+
 
             throw new PropertyAccessException("could not access property ('" + property + "')");
         }
@@ -565,16 +565,33 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             assert ParseTools.debug("ASSIGN_LITERAL '" + expr.getName() + "'");
             Literal lit = new Literal(expr.getReducedValueAccelerated(ctx, thisRef, factory));
             val = lit.getValue(ctx, thisRef, factory);
-            return new Assignment(var.getName(), lit);
+            String name = var.getName();
+            if (var.isDeepProperty()) {
+                return new DeepAssignment(name, lit);
+            }
+            else {
+                return new Assignment(var.getName(), lit);
+            }
         }
         else if (expr instanceof NewObjectASTNode) {
-            return new Assignment(var.getName(), ((NewObjectASTNode) expr).getNewObjectOptimizer());
+            if (var.isDeepProperty()) {
+                return new DeepAssignment(var.getName(), ((NewObjectASTNode) expr).getNewObjectOptimizer());
+            }
+            else {
+                return new Assignment(var.getName(), ((NewObjectASTNode) expr).getNewObjectOptimizer());
+            }
         }
         else {
             assert ParseTools.debug("ASSIGN_EXPR '" + expr.getName() + "'");
             ExprValueAccessor valAcc = new ExprValueAccessor(expr.getName());
             val = valAcc.getValue(ctx, thisRef, factory);
-            return new Assignment(var.getName(), valAcc);
+
+            if (var.isDeepProperty()) {
+                return new DeepAssignment(var.getName(), valAcc);
+            }
+            else {
+                return new Assignment(var.getName(), valAcc);
+            }
         }
 
 
@@ -705,7 +722,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
     }
 
-
     public Accessor optimizeReturn(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(property);
         Return ret = new Return(stmt);
@@ -714,8 +730,16 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         return ret;
     }
 
-
     public Class getEgressType() {
         return returnType;
+    }
+
+
+    public boolean isAssignment() {
+        return assignment;
+    }
+
+    public void setAssignment(boolean assignment) {
+        this.assignment = assignment;
     }
 }

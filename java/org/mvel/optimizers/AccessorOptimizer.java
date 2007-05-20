@@ -22,7 +22,7 @@ import org.mvel.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 
 public interface AccessorOptimizer {
-    public Accessor optimize(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef);
+    public Accessor optimizeAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef);
 
     public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
 
@@ -37,4 +37,6 @@ public interface AccessorOptimizer {
     public Object getResultOptPass();
 
     public Class getEgressType();
+
+    public void setAssignment(boolean assignment);
 }

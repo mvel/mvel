@@ -77,40 +77,52 @@ public class ExpressionParser extends AbstractParser {
      * Main interpreter loop.
      */
     private void parseAndExecuteInterpreted() {
-        ASTNode tk;
+        ASTNode tk = null;
         Integer operator;
 
         lastWasIdentifier = false;
 
-        while ((tk = nextToken()) != null) {
-            if (lastWasIdentifier && lastNode.isDiscard()) {
-                stk.discard();
-            }
+        try {
+            while ((tk = nextToken()) != null) {
+                if (lastWasIdentifier && lastNode.isDiscard()) {
+                    stk.discard();
+                }
 
-            /**
-             * If we are at the beginning of a statement, then we immediately push the first token
-             * onto the stack.
-             */
-            if (stk.size() == 0) {
-                stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
-            }
+                /**
+                 * If we are at the beginning of a statement, then we immediately push the first token
+                 * onto the stack.
+                 */
+                if (stk.size() == 0) {
+                    stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
+                }
 
-            if (!tk.isOperator()) {
-                continue;
-            }
-
-            switch (reduceBinary(operator = tk.getOperator())) {
-                case FRAME_END:
-                    return;
-                case FRAME_CONTINUE:
-                    break;
-                case FRAME_NEXT:
+                if (!tk.isOperator()) {
                     continue;
+                }
+
+
+                switch (reduceBinary(operator = tk.getOperator())) {
+                    case FRAME_END:
+                        return;
+                    case FRAME_CONTINUE:
+                        break;
+                    case FRAME_NEXT:
+                        continue;
+                }
+
+                stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
+
+                reduceTrinary();
             }
-
-            stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
-
-            reduceTrinary();
+        }
+        catch (NullPointerException e) {
+            if (tk != null && tk.isOperator() && cursor >= length) {
+                throw new CompileException("incomplete statement: "
+                        + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")");
+            }
+            else {
+                throw e;
+            }
         }
     }
 
