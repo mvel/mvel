@@ -34,7 +34,7 @@ public class ELComparisons implements Runnable {
     private static int ALL = RUN_MVEL + RUN_OGNL + RUN_COMMONS_EL + RUN_JAVA_NATIVE;
 
     private static final int TESTNUM = 10000;
-    private static final int TESTITER = 5;
+    private static final int TESTITER = 3;
 
     private long ognlTotal = 0;
     private long mvelTotal = 0;
@@ -50,14 +50,16 @@ public class ELComparisons implements Runnable {
     private final static Map<String, Object> variables = new HashMap<String, Object>();
 
     static {
-        NativeTest nt = new NativeTest() {
+        NativeTest nt;
 
-            public Object run(Object baseClass, Map vars) {
-                return "Hello World";
-            }
-        };
-
-        tests.add(new PerfTest("Simple String Pass-Through", "'Hello World'", ALL, nt));
+//        nt = new NativeTest() {
+//
+//            public Object run(Object baseClass, Map vars) {
+//                return "Hello World";
+//            }
+//        };
+//
+//        tests.add(new PerfTest("Simple String Pass-Through", "'Hello World'", ALL, nt));
 
         nt = new NativeTest() {
 
@@ -74,7 +76,7 @@ public class ELComparisons implements Runnable {
             }
         };
 
-        //     tests.add(new PerfTest("Deep Property", "foo.bar.name", ALL, nt));
+//          tests.add(new PerfTest("Deep Property", "foo.bar.name", ALL, nt));
 //        tests.add(new PerfTest("Static Field Access (MVEL)", "Integer.MAX_VALUE", RUN_MVEL));
 //        tests.add(new PerfTest("Static Field Access (OGNL)", "@java.lang.Integer@MAX_VALUE", RUN_OGNL));
 //        tests.add(new PerfTest("Inline Array Creation (MVEL)", "{'foo', 'bar'}", RUN_MVEL));
@@ -87,11 +89,18 @@ public class ELComparisons implements Runnable {
             }
         };
 
+        nt = new NativeTest() {
+
+            public Object run(Object baseClass, Map vars) {
+                return 10 + 1 - 1;
+            }
+        };
+
         //      tests.add(new PerfTest("Collection Access + Method Call", "funMap['foo'].happy()", RUN_MVEL + RUN_OGNL + RUN_JAVA_NATIVE, nt));
 //        tests.add(new PerfTest("Boolean compare", "data == 'cat'", ALL));
 //        tests.add(new PerfTest("Object instantiation", "new String('Hello')", RUN_OGNL + RUN_MVEL));
 //        tests.add(new PerfTest("Method access", "readBack('this is a string')", RUN_OGNL + RUN_MVEL));
-//        tests.add(new PerfTest("Arithmetic", "10 + 1 - 1", ALL));
+        tests.add(new PerfTest("Arithmetic", "10 + 1 - 1", ALL, nt));
     }
 
 
