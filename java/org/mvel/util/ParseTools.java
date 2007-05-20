@@ -3,7 +3,9 @@ package org.mvel.util;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
+import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.math.MathProcessor;
 
@@ -547,11 +549,30 @@ public class ParseTools {
         }
         else {
             return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
+
+            //    return ResolverTools.insertFactory(factory, new LocalVariableResolverFactory(new HashMap<String, Object>()));
+        }
+    }
+
+    public static ClassImportResolverFactory findClassImportResolverFactory(VariableResolverFactory factory) {
+        VariableResolverFactory v = factory;
+        while (v != null) {
+            if (v instanceof ClassImportResolverFactory) {
+                return (ClassImportResolverFactory) v;
+            }
+            v = v.getNextFactory();
+        }
+
+        if (factory == null) {
+            throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
+        }
+        else {
+            return ResolverTools.insertFactory(factory, new ClassImportResolverFactory());
         }
     }
 
     public static boolean debug(String str) {
-        System.out.println(str);
+        //  System.out.println(str);
         return true;
     }
 

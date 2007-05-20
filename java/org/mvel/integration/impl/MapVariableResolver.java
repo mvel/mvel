@@ -59,7 +59,7 @@ public class MapVariableResolver implements VariableResolver {
         return name;
     }
 
-    public Class getKnownType() {
+    public Class getType() {
         return knownType;
     }
 

@@ -401,7 +401,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         debug("{collections: " + prop + "}");
 
-
         int start = ++cursor;
 
         whiteSpaceSkip();
