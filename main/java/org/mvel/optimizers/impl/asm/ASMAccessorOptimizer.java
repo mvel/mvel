@@ -279,8 +279,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             Object o = ((Field) member).get(ctx);
 
             if (first) {
-                debug("ALOAD 2");
-                mv.visitVarInsn(ALOAD, 2);
+                debug("ALOAD 1 (A)");
+                mv.visitVarInsn(ALOAD, 1);
             }
 
             if (((member.getModifiers() & Modifier.STATIC) != 0)) {
@@ -307,8 +307,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             Object o;
 
             if (first) {
-                debug("ALOAD 2");
-                mv.visitVarInsn(ALOAD, 2);
+                debug("ALOAD 1 (B)");
+                mv.visitVarInsn(ALOAD, 1);
             }
 
             try {
@@ -399,7 +399,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throws IllegalAccessException, InvocationTargetException {
         if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
 
-        debug("{collections: " + prop + "} ctx=" + ctx);
+        debug("{collections: " + prop + "}");
+
 
         int start = ++cursor;
 
@@ -473,6 +474,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             intPush(index);
 
+            debug("AALOAD");
             mv.visitInsn(AALOAD);
 
             return ((Object[]) ctx)[index];
@@ -620,7 +622,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
 
             if (first) {
-                debug("ALOAD 1");
+                debug("ALOAD 1 (D) ");
                 mv.visitVarInsn(ALOAD, 1);
             }
 
