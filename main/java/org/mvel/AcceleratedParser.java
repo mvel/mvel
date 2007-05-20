@@ -32,34 +32,45 @@ public class AcceleratedParser extends AbstractParser {
      * @return -
      */
     public Object execute(Object ctx, VariableResolverFactory variableFactory) {
-        ASTNode tk;
+        ASTNode tk = null;
         Integer operator;
 
-        while ((tk = tokens.nextToken()) != null) {
-            if (stk.isEmpty()) {
-                stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
-            }
+        try {
+            while ((tk = tokens.nextToken()) != null) {
+                if (stk.isEmpty()) {
+                    stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
+                }
 
-            if (!tk.isOperator()) {
-                continue;
-            }
-
-            switch (reduceBinary(operator = tk.getOperator())) {
-                case FRAME_END:
-                    return stk.pop();
-                case FRAME_CONTINUE:
-                    break;
-                case FRAME_NEXT:
+                if (!tk.isOperator()) {
                     continue;
+                }
+
+                switch (reduceBinary(operator = tk.getOperator())) {
+                    case FRAME_END:
+                        return stk.pop();
+                    case FRAME_CONTINUE:
+                        break;
+                    case FRAME_NEXT:
+                        continue;
+                }
+
+                stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
+
+                reduceTrinary();
             }
 
-            stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
+            return stk.peek();
 
-            reduceTrinary();
         }
-
-        return stk.peek();
-
+        catch (NullPointerException e) {
+            if (tk != null && tk.isOperator() && !tokens.hasMoreTokens()) {
+                throw new CompileException("incomplete statement: "
+                        + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")");
+            }
+            else {
+                throw e;
+            }
+        }
     }
 
     /**

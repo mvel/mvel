@@ -24,7 +24,7 @@ public class LiteralDeepPropertyASTNode extends ASTNode {
         catch (NullPointerException e) {
             if (accessor == null) {
                 AccessorOptimizer aO = OptimizerFactory.getDefaultAccessorCompiler();
-                accessor = aO.optimize(name, literal, thisValue, factory, false);
+                accessor = aO.optimizeAccessor(name, literal, thisValue, factory, false);
 
                 return valRet(accessor.getValue(literal, thisValue, factory));
             }

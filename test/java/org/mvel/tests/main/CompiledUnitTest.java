@@ -69,6 +69,11 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("cat", parseDirect("derived.data"));
     }
 
+    public void testDeepAssignment() {
+        assertEquals("crap", parseDirect("foo.bar.assignTest = 'crap'"));
+        assertEquals("crap", parseDirect("foo.bar.assignTest"));
+    }
+
     public void testThroughInterface() {
         assertEquals("FOOBAR!", parseDirect("testImpl.name"));
     }

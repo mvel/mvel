@@ -34,7 +34,7 @@ public class StaticMethodASTNode extends ASTNode {
                 declaringClass = m.getDeclaringClass();
 
                 AccessorOptimizer aO = OptimizerFactory.getDefaultAccessorCompiler();
-                accessor = aO.optimize(name, declaringClass, thisValue, factory, false);
+                accessor = aO.optimizeAccessor(name, declaringClass, thisValue, factory, false);
                 return valRet(accessor.getValue(declaringClass, thisValue, factory));
             }
             else {

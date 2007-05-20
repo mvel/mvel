@@ -24,7 +24,7 @@ public class ContextDeepPropertyASTNode extends ASTNode {
         catch (NullPointerException e) {
             if (accessor == null) {
                 AccessorOptimizer aO = OptimizerFactory.getDefaultAccessorCompiler();
-                accessor = aO.optimize(name, ctx, thisValue, factory, false);
+                accessor = aO.optimizeAccessor(name, ctx, thisValue, factory, false);
                 return valRet(accessor.getValue(ctx, thisValue, factory));
             }
             else {

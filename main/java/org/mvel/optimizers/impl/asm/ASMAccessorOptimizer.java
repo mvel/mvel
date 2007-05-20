@@ -70,6 +70,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private boolean first = true;
     private boolean deferFinish = false;
+    private boolean assignment = false;
 
     private String className;
     private ClassWriter cw;
@@ -115,7 +116,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    public Accessor optimize(char[] property, Object staticContext, Object thisRef, VariableResolverFactory factory, boolean root) {
+    public Accessor optimizeAccessor(char[] property, Object staticContext, Object thisRef, VariableResolverFactory factory, boolean root) {
         time = System.currentTimeMillis();
 
         inputs = 0;
@@ -136,6 +137,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         return compileAccessor();
     }
+
 
     private void _finishJIT() {
         if (!deferFinish) {
@@ -1480,5 +1482,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     public Class getEgressType() {
         return returnType;
+    }
+
+
+    public boolean isAssignment() {
+        return assignment;
+    }
+
+    public void setAssignment(boolean assignment) {
+        this.assignment = assignment;
     }
 }
