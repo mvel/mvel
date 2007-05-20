@@ -362,7 +362,7 @@ public class ASTNode implements Cloneable, Serializable {
                     if (mBegin != -1) {
                         if (factory.isResolveable(s = new String(name, 0, mBegin))) {
                             Method m = (Method) factory.getVariableResolver(s).getValue();
-                            return valRet(get(m.getName(), m.getDeclaringClass(), factory, thisValue));
+                            return valRet(get(m.getName() + new String(name, mBegin, name.length - mBegin), m.getDeclaringClass(), factory, thisValue));
                         }
                     }
                 }
