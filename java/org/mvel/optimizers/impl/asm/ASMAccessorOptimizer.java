@@ -28,6 +28,7 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
+import org.mvel.optimizers.impl.refl.DeepAssignment;
 import org.mvel.optimizers.impl.refl.Union;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.CollectionParser;
@@ -1275,7 +1276,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         _initJIT();
 
         greedy = false;
-        String varName = nextToken().getName();
+
+        ASTNode var = nextToken();
+
+        String varName = var.getName();
+
 
         if (!nextToken().isOperator(Operator.ASSIGN))
             throw new OptimizationFailure("expected assignment operator");
@@ -1292,6 +1297,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else {
             value = (ExecutableStatement) compileExpression(valTk.getNameAsArray());
+        }
+
+        if (var.isDeepProperty()) {
+            /**
+             * We need a special hack for this.  We only partially use the JIT, and rely on a component
+             * of the reflective optimizer to bridge the remaining functionality.
+             */
+
+            return new DeepAssignment(varName, value);
         }
 
         inputs++;
