@@ -7,6 +7,7 @@ import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
+import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.math.MathProcessor;
 
 import static java.lang.Character.isWhitespace;
@@ -569,6 +570,23 @@ public class ParseTools {
         }
     }
 
+    public static StaticMethodImportResolverFactory findStaticMethodImportResolverFactory(VariableResolverFactory factory) {
+        VariableResolverFactory v = factory;
+        while (v != null) {
+            if (v instanceof StaticMethodImportResolverFactory) {
+                return (StaticMethodImportResolverFactory) v;
+            }
+            v = v.getNextFactory();
+        }
+
+        if (factory == null) {
+            throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
+        }
+        else {
+            return ResolverTools.insertFactory(factory, new StaticMethodImportResolverFactory());
+        }
+    }
+
     public static Class findClass(VariableResolverFactory factory, String name) {
         try {
             if (AbstractParser.LITERALS.containsKey(name)) {
@@ -587,7 +605,7 @@ public class ParseTools {
     }
 
     public static boolean debug(String str) {
-        //  System.out.println(str);
+        System.out.println(str);
         return true;
     }
 
