@@ -23,7 +23,7 @@ import org.mvel.integration.VariableResolver;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClassImportResolverFactory extends BaseVariableResolver {
+public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     private Map<String, VariableResolver> importsTable = new HashMap<String, VariableResolver>();
 
     public VariableResolver createVariable(String name, Object value) {
@@ -34,7 +34,8 @@ public class ClassImportResolverFactory extends BaseVariableResolver {
 
 
     public VariableResolver createVariable(String name, Object value, Class type) {
-        return null;
+        throw new RuntimeException("attempt to created a typed import type.  this is highly redundant and more " +
+                "importantly, not implemented.");
     }
 
     public boolean isTarget(String name) {
