@@ -108,7 +108,7 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
 
-    private String getAbsoluteRootElement() {
+    protected String getAbsoluteRootElement() {
         if ((fields & (DEEP_PROPERTY | COLLECTION)) != 0) {
             return new String(name, 0, getAbsoluteFirstPart());
         }
@@ -123,7 +123,7 @@ public class ASTNode implements Cloneable, Serializable {
         this.egressType = egressType;
     }
 
-    private String getAbsoluteRemainder() {
+    protected String getAbsoluteRemainder() {
         return (fields & COLLECTION) != 0 ? new String(name, endOfName, name.length - endOfName)
                 : ((fields & DEEP_PROPERTY) != 0 ? new String(name, firstUnion + 1, name.length - firstUnion - 1) : null);
     }
@@ -363,7 +363,7 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
 
-    private Object valRet(final Object value) {
+    protected Object valRet(final Object value) {
         if ((fields & NEGATION) != 0) {
             try {
                 return !((Boolean) value);
@@ -385,7 +385,7 @@ public class ASTNode implements Cloneable, Serializable {
         return value;
     }
 
-    private Object tryStaticAccess(Object thisRef, VariableResolverFactory factory) {
+    protected Object tryStaticAccess(Object thisRef, VariableResolverFactory factory) {
         try {
             /**
              * Try to resolve this *smartly* as a static class reference.
@@ -539,13 +539,10 @@ public class ASTNode implements Cloneable, Serializable {
         return (Integer) literal;
     }
 
-    private boolean isCollection() {
+    protected boolean isCollection() {
         return (fields & COLLECTION) != 0;
     }
 
-//    public boolean isNewObject() {
-//        return ((fields & NEW) != 0);
-//    }
 
     public boolean isAssignment() {
         return ((fields & ASSIGN) != 0);
