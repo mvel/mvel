@@ -170,6 +170,7 @@ public class AbstractParser {
 
         OPERATORS.put("assert", ASSERT);
         OPERATORS.put("import", IMPORT);
+        OPERATORS.put("import_static", IMPORT_STATIC);
 
         OPERATORS.put("++", INC);
         OPERATORS.put("--", DEC);
@@ -215,6 +216,7 @@ public class AbstractParser {
         fields = fields & (ASTNode.CAPTURE_ONLY | ASTNode.NOCOMPILE | ASTNode.INLINE_COLLECTION | ASTNode.PUSH);
 
         boolean capture = false;
+        boolean union = false;
 
         /**
          * Skip any whitespace currently under the starting point.
@@ -277,7 +279,13 @@ public class AbstractParser {
                             start = cursor + 1;
                             captureToEOS();
                             return new ImportASTNode(subArray(start, cursor), fields);
+
+                        case IMPORT_STATIC:
+                            start = cursor + 1;
+                            captureToEOS();
+                            return new StaticImportASTNode(subArray(start, cursor), fields);
                     }
+
                 }
                 else if (isIdentifierPart(expr[cursor])) {
                     capture = true;
@@ -292,6 +300,7 @@ public class AbstractParser {
                 skipWhitespace();
 
                 if (expr[cursor] == '(') {
+
                     /**
                      * If the current token is a method call or a constructor, we
                      * simply capture the entire parenthesized range and allow
@@ -333,6 +342,8 @@ public class AbstractParser {
                             cursor++;
                             continue;
                         case'.':
+                            union = true;
+
                             cursor++;
                             continue;
                         case'=':
@@ -365,7 +376,10 @@ public class AbstractParser {
                  * Produce the token.
                  */
                 trimWhitespace();
+
+
                 return createToken(expr, start, cursor, fields);
+
             }
             else
                 switch (expr[cursor]) {
@@ -596,8 +610,6 @@ public class AbstractParser {
         }
 
         return createPropertyToken(start, cursor);
-
-        //  return createToken(expr, start, cursor, fields);
     }
 
 
@@ -649,7 +661,6 @@ public class AbstractParser {
      * @return -
      */
     private ASTNode createToken(final char[] expr, final int start, final int end, int fields) {
-
         ASTNode tk = new ASTNode(expr, start, end, fields);
 
         if (tk.isIdentifier()) {

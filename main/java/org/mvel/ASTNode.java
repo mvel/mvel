@@ -24,7 +24,9 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import static org.mvel.optimizers.OptimizerFactory.*;
+import org.mvel.util.ArrayTools;
 import static org.mvel.util.ArrayTools.findFirst;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.handleNumericConversion;
 import static org.mvel.util.PropertyTools.isNumber;
@@ -33,6 +35,7 @@ import org.mvel.util.ThisLiteral;
 import java.io.Serializable;
 import static java.lang.Class.forName;
 import static java.lang.System.arraycopy;
+import java.lang.reflect.Method;
 
 public class ASTNode implements Cloneable, Serializable {
     public static final int LITERAL = 1;
@@ -44,6 +47,7 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int NEGATION = 1 << 6;
     public static final int INVERT = 1 << 8;
     public static final int FOLD = 1 << 9;
+    public static final int STATICMETHOD = 1 << 10;
 
     public static final int ASSIGN = 1 << 12;
     public static final int LOOKAHEAD = 1 << 13;
@@ -200,11 +204,11 @@ public class ASTNode implements Cloneable, Serializable {
                 accessor = optimizer.optimizeFold(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
-            else if ((fields & NEW) != 0) {
-                optimizer = getDefaultAccessorCompiler();
-                accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
-                retVal = accessor.getValue(ctx, thisValue, factory);
-            }
+//            else if ((fields & NEW) != 0) {
+//                optimizer = getDefaultAccessorCompiler();
+//                accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
+//                retVal = accessor.getValue(ctx, thisValue, factory);
+//            }
             else if ((fields & RETURN) != 0) {
                 optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
                 accessor = optimizer.optimizeReturn(name, ctx, thisValue, factory);
@@ -271,14 +275,14 @@ public class ASTNode implements Cloneable, Serializable {
                 return optimizer.getResultOptPass();
             }
         }
-        else if ((fields & NEW) != 0) {
-            if (accessor == null) {
-                AccessorOptimizer optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
-                accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
-
-                return optimizer.getResultOptPass();
-            }
-        }
+//        else if ((fields & NEW) != 0) {
+//            if (accessor == null) {
+//                AccessorOptimizer optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
+//                accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
+//
+//                return optimizer.getResultOptPass();
+//            }
+//        }
         else if ((fields & RETURN) != 0) {
             AccessorOptimizer optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
             accessor = optimizer.optimizeReturn(name, ctx, thisValue, factory);
@@ -353,6 +357,16 @@ public class ASTNode implements Cloneable, Serializable {
             else {
                 if (isOperator()) {
                     throw new CompileException("incomplete statement");
+                }
+                else {
+                    int mBegin = ArrayTools.findFirst('(', name);
+                    if (mBegin != -1) {
+                        VariableResolverFactory vrf = ParseTools.findStaticMethodImportResolverFactory(factory);
+                        if (vrf.isTarget(s = new String(name, 0, mBegin))) {
+                            Method m = (Method) vrf.getVariableResolver(s).getValue();
+                            return valRet(get(name, m.getDeclaringClass(), factory, thisValue));
+                        }
+                    }
                 }
 
                 throw new UnresolveablePropertyException(this);

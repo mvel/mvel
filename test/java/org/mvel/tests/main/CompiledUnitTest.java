@@ -611,6 +611,12 @@ public class CompiledUnitTest extends TestCase {
         }
     }
 
+    public void testStaticImport() {
+
+
+        assertEquals(2.0, parseDirect("import_static java.lang.Math.sqrt; sqrt(4)"));
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile();
