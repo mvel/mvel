@@ -1278,13 +1278,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         greedy = false;
 
         ASTNode var = nextToken();
-
         String varName = var.getName();
-
 
         if (!nextToken().isOperator(Operator.ASSIGN))
             throw new OptimizationFailure("expected assignment operator");
-        //   greedy = true;
 
         ASTNode valTk = captureTokenToEOS();
 
@@ -1303,8 +1300,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             /**
              * We need a special hack for this.  We only partially use the JIT, and rely on a component
              * of the reflective optimizer to bridge the remaining functionality.
+             *
+             * Internally, the sub-compiles in DeepAssignment produce bytecode.
              */
-
             return new DeepAssignment(varName, value);
         }
 
