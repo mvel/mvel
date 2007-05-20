@@ -80,4 +80,8 @@ public class Base {
     public String appendTwoStrings(String a, String b) {
         return a + b;
     }
+
+    public String getDATA() {
+        return data;
+    }
 }

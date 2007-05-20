@@ -61,6 +61,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("dog", parseDirect("foo.bar.name"));
     }
 
+    public void testSimpleProperty2() {
+        assertEquals("cat", parseDirect("DATA"));
+    }
+
     public void testPropertyViaDerivedClass() {
         assertEquals("cat", parseDirect("derived.data"));
     }
