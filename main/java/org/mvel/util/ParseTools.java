@@ -549,8 +549,6 @@ public class ParseTools {
         }
         else {
             return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
-
-            //    return ResolverTools.insertFactory(factory, new LocalVariableResolverFactory(new HashMap<String, Object>()));
         }
     }
 
@@ -568,6 +566,23 @@ public class ParseTools {
         }
         else {
             return ResolverTools.insertFactory(factory, new ClassImportResolverFactory());
+        }
+    }
+
+    public static Class findClass(VariableResolverFactory factory, String name) {
+        try {
+            if (AbstractParser.LITERALS.containsKey(name)) {
+                return (Class) AbstractParser.LITERALS.get(name);
+            }
+            else if (factory.isResolveable(name)) {
+                return (Class) factory.getVariableResolver(name).getValue();
+            }
+            else {
+                return createClass(name);
+            }
+        }
+        catch (Exception e) {
+            throw new CompileException("class not found: " + name);
         }
     }
 

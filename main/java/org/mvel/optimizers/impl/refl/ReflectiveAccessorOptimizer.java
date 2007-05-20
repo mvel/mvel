@@ -632,10 +632,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
         if (constructorParms != null) {
-            String s;
-
-            Class cls = LITERALS.containsKey(s = new String(subset(expression, 0, ArrayTools.findFirst('(', expression)))) ?
-                    ((Class) LITERALS.get(s)) : ParseTools.createClass(s);
+            String s = new String(subset(expression, 0, ArrayTools.findFirst('(', expression)));
+            Class cls = ParseTools.findClass(vars, s);
 
             ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
 
