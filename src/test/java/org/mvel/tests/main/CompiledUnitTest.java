@@ -612,8 +612,6 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testStaticImport() {
-
-
         assertEquals(2.0, parseDirect("import_static java.lang.Math.sqrt; sqrt(4)"));
     }
 
