@@ -333,6 +333,26 @@ public class AbstractParser {
                  */
                 if (cursor < length) {
                     switch (expr[cursor]) {
+                        case'+':
+                            if (isAt('+', 1)) {
+                                ASTNode n = new PostFixIncNode(subArray(start, cursor), fields);
+                                cursor += 2;
+                                return n;
+                            }
+                            else {
+                                break;
+                            }
+
+                        case'-':
+                            if (isAt('-', 1)) {
+                                ASTNode n = new PostFixDecNode(subArray(start, cursor), fields);
+                                cursor += 2;
+                                return n;
+                            }
+                            else {
+                                break;
+                            }
+
                         case']':
                             if ((fields & (ASTNode.INLINE_COLLECTION)) != 0) {
                                 break;
@@ -347,7 +367,7 @@ public class AbstractParser {
                             cursor++;
                             continue;
                         case'=':
-                            if (greedy && expr[cursor + 1] != '=') {
+                            if (greedy && !isAt('=', 1)) {
                                 cursor++;
 
                                 fields |= ASTNode.ASSIGN;
@@ -378,7 +398,7 @@ public class AbstractParser {
                                 }
                             }
                         case'i': // handle "in" fold operator
-                            if (greedy && (cursor + 2) < length && expr[cursor + 1] == 'n' && isWhitespace(expr[cursor + 2])) {
+                            if (greedy && isRemain(2) && lookAhead(1) == 'n' && isWhitespace(lookAhead(2))) {
                                 cursor += 2;
 
                                 fields |= ASTNode.FOLD;
@@ -402,7 +422,7 @@ public class AbstractParser {
             else
                 switch (expr[cursor]) {
                     case'=': {
-                        if (expr[cursor + 1] != '=') {
+                        if (!isAt('=', 1)) {
                             return createToken(expr, start, ++cursor, fields |= ASTNode.ASSIGN);
                         }
                         else {
@@ -411,26 +431,30 @@ public class AbstractParser {
                     }
 
                     case'-':
-                        if (cursor + 1 < length && expr[cursor + 1] == '-') {
-                            cursor++;
+                        if (isAt('-', 1)) {
+                            start = cursor += 2;
+                            captureToEOT();
+                            return new PreFixDecNode(subArray(start, cursor), fields);
                         }
-                        else if ((cursor > 0 && !isWhitespace(expr[cursor - 1])) || !isDigit(expr[cursor + 1])) {
+                        else if ((cursor > 0 && !isWhitespace(lookBehind(1))) || !isDigit(lookAhead(1))) {
                             return createToken(expr, start, cursor++ + 1, fields);
                         }
-                        else if ((cursor - 1) < 0 || (!isDigit(expr[cursor - 1])) && isDigit(expr[cursor + 1])) {
+                        else if ((cursor - 1) < 0 || (!isDigit(lookBehind(1))) && isDigit(lookAhead(1))) {
                             cursor++;
                             break;
                         }
 
 
                     case'+':
-                        if (cursor + 1 < length && expr[cursor + 1] == '+') {
-                            cursor++;
+                        if (isAt('+', 1)) {
+                            start = cursor += 2;
+                            captureToEOT();
+                            return new PreFixIncNode(subArray(start, cursor), fields);
                         }
                         return createToken(expr, start, cursor++ + 1, fields);
 
                     case'*':
-                        if (cursor < length && expr[cursor + 1] == '*') {
+                        if (isAt('*', 1)) {
                             cursor++;
                         }
                         return createToken(expr, start, cursor++ + 1, fields);
@@ -571,7 +595,7 @@ public class AbstractParser {
                     }
 
                     case'~':
-                        if ((cursor - 1 < 0 || !isIdentifierPart(expr[cursor - 1]))
+                        if ((cursor - 1 < 0 || !isIdentifierPart(lookBehind(1)))
                                 && isDigit(expr[cursor + 1])) {
 
                             fields |= ASTNode.INVERT;
@@ -952,5 +976,27 @@ public class AbstractParser {
 
     public static boolean isReservedWord(String name) {
         return LITERALS.containsKey(name) || OPERATORS.containsKey(name);
+    }
+
+    protected char lookBehind(int range) {
+        if ((cursor - range) <= 0) return 0;
+        else {
+            return expr[cursor - range];
+        }
+    }
+
+    protected char lookAhead(int range) {
+        if ((cursor + range) >= length) return 0;
+        else {
+            return expr[cursor + range];
+        }
+    }
+
+    protected boolean isRemain(int range) {
+        return (cursor + range) < length;
+    }
+
+    protected boolean isAt(char c, int range) {
+        return lookAhead(range) == c;
     }
 }
