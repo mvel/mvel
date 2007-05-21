@@ -38,10 +38,10 @@ public class AbstractParser {
     private static Map<String, char[]> EX_PRECACHE;
 
     public static final Map<String, Object> LITERALS =
-            new HashMap<String, Object>(35, 0.6f);
+            new HashMap<String, Object>(35, 0.4f);
 
     public static final Map<String, Integer> OPERATORS =
-            new HashMap<String, Integer>(25 * 2, 0.6f);
+            new HashMap<String, Integer>(25 * 2, 0.4f);
 
 
     static {
@@ -411,7 +411,10 @@ public class AbstractParser {
                     }
 
                     case'-':
-                        if ((cursor > 0 && !isWhitespace(expr[cursor - 1])) || !isDigit(expr[cursor + 1])) {
+                        if (cursor + 1 < length && expr[cursor + 1] == '-') {
+                            cursor++;
+                        }
+                        else if ((cursor > 0 && !isWhitespace(expr[cursor - 1])) || !isDigit(expr[cursor + 1])) {
                             return createToken(expr, start, cursor++ + 1, fields);
                         }
                         else if ((cursor - 1) < 0 || (!isDigit(expr[cursor - 1])) && isDigit(expr[cursor + 1])) {

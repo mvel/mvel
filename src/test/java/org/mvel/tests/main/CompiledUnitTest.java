@@ -636,6 +636,15 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("2.0", parseDirect("squareRoot = Math.sqrt; new String(String.valueOf(squareRoot(4)));"));
     }
 
+    public void testIncrementOperator() {
+        assertEquals(2, parseDirect("x = 1; x++;"));
+    }
+
+    public void testDecrementOperator() {
+        assertEquals(1, parseDirect("x = 2; x--;"));
+    }
+
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile();
