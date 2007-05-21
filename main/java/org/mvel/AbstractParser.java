@@ -397,7 +397,6 @@ public class AbstractParser {
 
 
                 return createToken(expr, start, cursor, fields);
-
             }
             else
                 switch (expr[cursor]) {
