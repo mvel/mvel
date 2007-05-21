@@ -12,12 +12,12 @@ import java.lang.reflect.Method;
 /**
  * @author Christopher Brock
  */
-public class StaticMethodASTNode extends ASTNode {
+public class StaticMethodNode extends ASTNode {
     private Accessor accessor;
     private String method;
     private Class declaringClass;
 
-    public StaticMethodASTNode(char[] expr, int fields) {
+    public StaticMethodNode(char[] expr, int fields) {
         super(expr, fields);
         method = new String(subset(expr, findFirst('(', expr)));
     }

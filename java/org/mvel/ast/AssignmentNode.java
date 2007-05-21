@@ -10,14 +10,12 @@ import static org.mvel.util.PropertyTools.find;
 /**
  * @author Christopher Brock
  */
-public class TypedVarASTNode extends ASTNode {
+public class AssignmentNode extends ASTNode {
     private String name;
-    private Class type;
     private ExecutableStatement statement;
 
-    public TypedVarASTNode(char[] expr, int fields, Class type) {
+    public AssignmentNode(char[] expr, int fields) {
         super(expr, fields);
-        this.type = type;
 
         int assignStart;
         if ((assignStart = find(expr, '=')) != -1) {
@@ -27,19 +25,20 @@ public class TypedVarASTNode extends ASTNode {
         else {
             checkNameSafety(name = new String(expr));
         }
-    }
 
+
+    }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (statement != null) {
             Object o = statement.getValue(ctx, thisValue, factory);
 
-            finalLocalVariableFactory(factory).createVariable(name, o, type);
+            finalLocalVariableFactory(factory).createVariable(name, o);
 
             return o;
         }
         else {
-            factory.createVariable(name, null, type);
+            factory.createVariable(name, null);
             return Void.class;
         }
 
@@ -48,4 +47,6 @@ public class TypedVarASTNode extends ASTNode {
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return getReducedValueAccelerated(ctx, thisValue, factory);
     }
+
+
 }

@@ -8,15 +8,15 @@ import org.mvel.integration.VariableResolverFactory;
 /**
  * @author Christopher Brock
  */
-public class IfASTNode extends ASTNode {
+public class IfNode extends ASTNode {
     protected char[] block;
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
 
-    protected IfASTNode elseIf;
+    protected IfNode elseIf;
     protected ExecutableStatement elseBlock;
 
-    public IfASTNode(char[] condition, char[] block, int fields) {
+    public IfNode(char[] condition, char[] block, int fields) {
         super(condition, fields);
 
         this.condition = (ExecutableStatement) compileExpression(this.name = condition);
@@ -70,11 +70,11 @@ public class IfASTNode extends ASTNode {
         this.compiledBlock = compiledBlock;
     }
 
-    public IfASTNode getElseIf() {
+    public IfNode getElseIf() {
         return elseIf;
     }
 
-    public void setElseIf(IfASTNode elseIf) {
+    public void setElseIf(IfNode elseIf) {
         this.elseIf = elseIf;
     }
 

@@ -35,16 +35,16 @@ public class PropertyASTNode extends ASTNode {
 
     private Object initializePropertyNode(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((fields & STR_LITERAL) != 0) {
-            wrappedNode = new LiteralASTNode(name, fields, new String(name));
+            wrappedNode = new LiteralNode(name, fields, new String(name));
             return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
         }
         else if ((fields & LITERAL) != 0) {
             if ((fields & THISREF) != 0) {
-                wrappedNode = new ThisValAST(name, fields);
+                wrappedNode = new ThisValNode(name, fields);
                 return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
             }
             else {
-                wrappedNode = new LiteralASTNode(name, fields, literal);
+                wrappedNode = new LiteralNode(name, fields, literal);
                 return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
             }
         }
@@ -61,11 +61,11 @@ public class PropertyASTNode extends ASTNode {
                  */
                 Object literal = AbstractParser.LITERALS.get(s);
                 if (literal == ThisLiteral.class) {
-                    wrappedNode = new ThisValDeepPropertyASTNode(name, fields);
+                    wrappedNode = new ThisValDeepPropertyNode(name, fields);
                     return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
                 }
                 else {
-                    wrappedNode = new LiteralDeepPropertyASTNode(name, fields, literal);
+                    wrappedNode = new LiteralDeepPropertyNode(name, fields, literal);
                     return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
                 }
             }
@@ -74,7 +74,7 @@ public class PropertyASTNode extends ASTNode {
                  * The root of the DEEP PROPERTY is a local or global var.
                  */
 
-                wrappedNode = new VariableDeepPropertyASTNode(name, fields);
+                wrappedNode = new VariableDeepPropertyNode(name, fields);
                 return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
             }
             else if (ctx != null) {
@@ -84,7 +84,7 @@ public class PropertyASTNode extends ASTNode {
                  */
 
                 try {
-                    wrappedNode = new ContextDeepPropertyASTNode(name, fields);
+                    wrappedNode = new ContextDeepPropertyNode(name, fields);
                     return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
 
                 }
@@ -95,7 +95,7 @@ public class PropertyASTNode extends ASTNode {
                     Object sa = tryStaticAccess(ctx, factory);
                     if (sa == null) throw e;
 
-                    wrappedNode = new LiteralASTNode(name, fields, sa);
+                    wrappedNode = new LiteralNode(name, fields, sa);
                     return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
                 }
             }
@@ -111,7 +111,7 @@ public class PropertyASTNode extends ASTNode {
                      * This is probably an indexed property.
                      */
 
-                    wrappedNode = new VariableDeepPropertyASTNode(name, fields);
+                    wrappedNode = new VariableDeepPropertyNode(name, fields);
 
                 }
                 else {
@@ -125,7 +125,7 @@ public class PropertyASTNode extends ASTNode {
                  * Check to see if the var exists in the VROOT.
                  */
 
-                wrappedNode = new ContextDeepPropertyASTNode(name, fields);
+                wrappedNode = new ContextDeepPropertyNode(name, fields);
 
                 try {
                     return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);

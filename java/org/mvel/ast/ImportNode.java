@@ -8,10 +8,10 @@ import org.mvel.util.ParseTools;
 /**
  * @author Christopher Brock
  */
-public class ImportASTNode extends ASTNode {
+public class ImportNode extends ASTNode {
     private Class importClass;
 
-    public ImportASTNode(char[] expr, int fields) {
+    public ImportNode(char[] expr, int fields) {
         super(expr, fields);
 
         try {

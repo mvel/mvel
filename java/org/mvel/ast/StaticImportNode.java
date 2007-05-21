@@ -14,12 +14,12 @@ import static java.lang.reflect.Modifier.isStatic;
 /**
  * @author Christopher Brock
  */
-public class StaticImportASTNode extends ASTNode {
+public class StaticImportNode extends ASTNode {
     private Class declaringClass;
     private String methodName;
     private Method method;
 
-    public StaticImportASTNode(char[] expr, int fields) {
+    public StaticImportNode(char[] expr, int fields) {
         super(expr, fields);
 
         try {

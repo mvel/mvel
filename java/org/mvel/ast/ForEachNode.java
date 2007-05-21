@@ -13,12 +13,12 @@ import java.util.Map;
 /**
  * @author Christopher Brock
  */
-public class ForEachASTNode extends BlockASTNode {
+public class ForEachNode extends BlockNode {
     protected String item;
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
 
-    public ForEachASTNode(char[] condition, char[] block, int fields) {
+    public ForEachNode(char[] condition, char[] block, int fields) {
         super(condition, fields);
 
         handleCond(condition);
