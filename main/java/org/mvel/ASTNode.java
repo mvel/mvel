@@ -484,6 +484,7 @@ public class ASTNode implements Cloneable, Serializable {
             else {
                 fields |= DEEP_PROPERTY | IDENTIFIER;
             }
+
         }
         else {
             fields |= IDENTIFIER;
