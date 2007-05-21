@@ -584,7 +584,7 @@ public class ParseTools {
         }
     }
 
-    public static Class findClass(VariableResolverFactory factory, String name) {
+    public static Class findClass(VariableResolverFactory factory, String name) throws ClassNotFoundException {
         try {
             if (AbstractParser.LITERALS.containsKey(name)) {
                 return (Class) AbstractParser.LITERALS.get(name);
@@ -595,6 +595,9 @@ public class ParseTools {
             else {
                 return createClass(name);
             }
+        }
+        catch (ClassNotFoundException e) {
+            throw e;
         }
         catch (Exception e) {
             throw new CompileException("class not found: " + name);

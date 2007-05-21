@@ -4,6 +4,7 @@ import org.mvel.ConversionException;
 import org.mvel.ConversionHandler;
 
 import static java.lang.String.valueOf;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,7 +28,7 @@ public class CharCH implements ConversionHandler {
         CNV.put(String.class,
                 new Converter() {
                     public Object convert(Object o) {
-                        if ((((String) o).length()) > 0)
+                        if ((((String) o).length()) > 1)
                             throw new ConversionException("cannot convert a string with a length greater than 1 to java.lang.Character");
 
                         return (((String) o)).charAt(0);
@@ -52,6 +53,21 @@ public class CharCH implements ConversionHandler {
                 }
         );
 
+        CNV.put(BigDecimal.class,
+                new Converter() {
+                    public Object convert(Object o) {
+                        return (char) ((BigDecimal) o).intValue();
+                    }
+                }
+        );
 
+        CNV.put(Integer.class,
+                new Converter() {
+
+                    public Object convert(Object o) {
+                        return (char) ((Integer) o).intValue();
+                    }
+                }
+        );
     }
 }
