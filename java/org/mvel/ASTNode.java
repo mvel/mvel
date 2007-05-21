@@ -46,6 +46,7 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int INVERT = 1 << 8;
     public static final int FOLD = 1 << 9;
     public static final int STATICMETHOD = 1 << 10;
+    public static final int METHOD = 1 << 11;
 
     public static final int ASSIGN = 1 << 12;
     public static final int LOOKAHEAD = 1 << 13;
@@ -410,7 +411,7 @@ public class ASTNode implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     private void setName(char[] name) {
-        if ((fields & RETURN) != 0) {
+        if ((fields & (RETURN)) != 0) {
             this.name = name;
             return;
         }
@@ -472,7 +473,17 @@ public class ASTNode implements Cloneable, Serializable {
             return;
         }
         else if ((firstUnion = findFirst('.', name)) > 0) {
-            fields |= DEEP_PROPERTY | IDENTIFIER;
+            if ((fields & METHOD) != 0) {
+                if (firstUnion < findFirst('(', name)) {
+                    fields |= DEEP_PROPERTY | IDENTIFIER;
+                }
+                else {
+                    fields |= IDENTIFIER;
+                }
+            }
+            else {
+                fields |= DEEP_PROPERTY | IDENTIFIER;
+            }
         }
         else {
             fields |= IDENTIFIER;
