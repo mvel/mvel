@@ -37,6 +37,7 @@ import static org.mvel.util.ParseTools.*;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
 
+import static java.lang.reflect.Array.getLength;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -395,8 +396,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             }
             else if (ctx instanceof Class) {
-                System.out.println("static method invokation: " + property);
-
                 Class c = (Class) ctx;
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
@@ -628,17 +627,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          * Try to find an instance method from the class target.
          */
 
-        if ((m = ParseTools.getBestCanadidate(args, name, cls.getMethods())) != null) {
+        if ((m = getBestCanadidate(args, name, cls.getMethods())) != null) {
             parameterTypes = m.getParameterTypes();
         }
 
         if (m == null) {
-            System.out.println("looking for static methods in: " + cls + ";prop=" + name);
-
             /**
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
-            if ((m = ParseTools.getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
+            if ((m = getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
                 parameterTypes = m.getParameterTypes();
             }
         }
@@ -663,7 +660,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKESTATIC Integer.valueOf(int) : Integer");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
 
-                return Array.getLength(ctx);
+                return getLength(ctx);
             }
 
 
@@ -1390,8 +1387,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 String s = new String(subset(property, 0, findFirst('(', property)));
 
-                Class cls = ParseTools.findClass(factory, s);
-
+                Class cls = findClass(factory, s);
 
                 debug("NEW " + getDescriptor(cls));
                 mv.visitTypeInsn(NEW, getDescriptor(cls));
@@ -1463,7 +1459,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return acc;
             }
             else {
-                Class cls = Class.forName(new String(property));
+                Class cls = findClass(factory, new String(property));
 
                 debug("NEW " + getDescriptor(cls));
                 mv.visitTypeInsn(NEW, getDescriptor(cls));
@@ -1485,6 +1481,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 return acc;
             }
+        }
+        catch (ClassNotFoundException e) {
+            throw new CompileException("class or class reference not found: " + new String(property));
         }
         catch (Exception e) {
             throw new OptimizationFailure("could not optimize construtor: " + new String(property), e);
