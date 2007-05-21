@@ -620,6 +620,10 @@ public class CompiledUnitTest extends TestCase {
         }
     }
 
+    public void testImport() {
+        assertEquals(HashMap.class, parseDirect("import java.util.HashMap; HashMap;"));
+    }
+
     public void testStaticImport() {
         assertEquals(2.0, parseDirect("import_static java.lang.Math.sqrt; sqrt(4)"));
     }
