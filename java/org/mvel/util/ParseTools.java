@@ -827,4 +827,9 @@ public class ParseTools {
         return -1;
     }
 
+    public static void checkNameSafety(String name) {
+        if (AbstractParser.isReservedWord(name)) {
+            throw new CompileException("reserved word in assignment: " + name);
+        }
+    }
 }
