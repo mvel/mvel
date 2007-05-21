@@ -54,6 +54,7 @@ public class AcceleratedParser extends AbstractParser {
                         continue;
                 }
 
+
                 stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
 
                 reduceTrinary();
@@ -129,6 +130,7 @@ public class AcceleratedParser extends AbstractParser {
 
             case TERNARY_ELSE:
                 return FRAME_END;
+
 
             case END_OF_STMT:
                 /**
