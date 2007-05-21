@@ -324,7 +324,7 @@ public class PropertyTools {
         if (val instanceof char[]) return isNumber((char[]) val);
         return val instanceof Integer || val instanceof BigDecimal
                 || val instanceof Float || val instanceof Double || val instanceof Long
-                || val instanceof Short;
+                || val instanceof Short || val instanceof Character;
     }
 
     public static boolean isNumber(final String val) {

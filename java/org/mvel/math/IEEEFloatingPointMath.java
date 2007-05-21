@@ -302,7 +302,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
         }
         return null;
     }
-    
+
     public static BigDecimal getBigDecimalFromType(Object in, int type) {
         if (in == null)
             return new BigDecimal(0);
@@ -321,9 +321,11 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 return new BigDecimal((Double) in);
             case DataTypes.W_SHORT:
                 return new BigDecimal((Short) in);
+            case DataTypes.W_CHAR:
+                return new BigDecimal((Character) in);
 
         }
 
         throw new ConversionException("cannot convert <" + in + "> to a numeric type");
-    }    
+    }
 }
