@@ -22,15 +22,12 @@ import java.util.*;
 
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
-//    public static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
-
     public static final MathProcessor MATH_PROCESSOR;
 
     static {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
-
                 MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
             }
             else if (version > 1.4) {
