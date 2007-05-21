@@ -1,36 +1,37 @@
 package org.mvel.ast;
 
 import org.mvel.ASTNode;
-import org.mvel.Accessor;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
 
 /**
  * @author Christopher Brock
  */
-public class InlineCollectionASTNode extends ASTNode {
-    private Accessor accessor;
+public class LiteralDeepPropertyNode extends ASTNode {
+    private Object literal;
 
 
-    public InlineCollectionASTNode(char[] expr, int fields) {
+    public LiteralDeepPropertyNode(char[] expr, int fields, Object literal) {
         super(expr, fields);
+        this.literal = literal;
     }
-
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
-            return accessor.getValue(ctx, thisValue, factory);
+            return valRet(accessor.getValue(literal, thisValue, factory));
         }
         catch (NullPointerException e) {
             if (accessor == null) {
-                accessor = OptimizerFactory.getDefaultAccessorCompiler().optimizeCollection(name, ctx, thisValue, factory);
-                return accessor.getValue(ctx, thisValue, factory);
+                AccessorOptimizer aO = OptimizerFactory.getDefaultAccessorCompiler();
+                accessor = aO.optimizeAccessor(name, literal, thisValue, factory, false);
+
+                return valRet(accessor.getValue(literal, thisValue, factory));
             }
             else {
                 throw e;
             }
         }
-
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {

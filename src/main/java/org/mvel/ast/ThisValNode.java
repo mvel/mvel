@@ -6,24 +6,17 @@ import org.mvel.integration.VariableResolverFactory;
 /**
  * @author Christopher Brock
  */
-public class LiteralASTNode extends ASTNode {
-    private Object literal;
+public class ThisValNode extends ASTNode {
 
-    public LiteralASTNode(char[] expr, int fields, Object literal) {
+    public ThisValNode(char[] expr, int fields) {
         super(expr, fields);
-        if (literal instanceof String) {
-            this.literal = ((String) literal).intern();
-        }
-        else {
-            this.literal = literal;
-        }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return literal;
+        return valRet(thisValue);
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return literal;
+        return valRet(thisValue);
     }
 }

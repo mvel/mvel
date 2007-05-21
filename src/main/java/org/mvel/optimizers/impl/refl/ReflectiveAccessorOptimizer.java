@@ -20,7 +20,7 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.*;
-import org.mvel.ast.NewObjectASTNode;
+import org.mvel.ast.NewObjectNode;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
@@ -575,12 +575,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 return new Assignment(var.getName(), lit);
             }
         }
-        else if (expr instanceof NewObjectASTNode) {
+        else if (expr instanceof NewObjectNode) {
             if (var.isDeepProperty()) {
-                return new DeepAssignment(var.getName(), ((NewObjectASTNode) expr).getNewObjectOptimizer());
+                return new DeepAssignment(var.getName(), ((NewObjectNode) expr).getNewObjectOptimizer());
             }
             else {
-                return new Assignment(var.getName(), ((NewObjectASTNode) expr).getNewObjectOptimizer());
+                return new Assignment(var.getName(), ((NewObjectNode) expr).getNewObjectOptimizer());
             }
         }
         else {

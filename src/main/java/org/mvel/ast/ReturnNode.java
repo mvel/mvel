@@ -9,11 +9,11 @@ import org.mvel.integration.VariableResolverFactory;
 /**
  * @author Christopher Brock
  */
-public class ReturnASTNode extends ASTNode {
+public class ReturnNode extends ASTNode {
 
     private Accessor accessor;
 
-    public ReturnASTNode(char[] expr, int fields) {
+    public ReturnNode(char[] expr, int fields) {
         super(expr, fields);
         accessor = (Accessor) MVEL.compileExpression(expr);
     }

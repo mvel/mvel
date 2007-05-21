@@ -23,7 +23,7 @@ import static org.mvel.MVEL.compileExpression;
 import org.mvel.asm.*;
 import static org.mvel.asm.Opcodes.*;
 import static org.mvel.asm.Type.*;
-import org.mvel.ast.NewObjectASTNode;
+import org.mvel.ast.NewObjectNode;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
@@ -1299,7 +1299,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (valTk.isLiteral()) {
             value = new ExecutableLiteral(valTk.getLiteralValue());
         }
-        else if (valTk instanceof NewObjectASTNode) {
+        else if (valTk instanceof NewObjectNode) {
             value = new ExecutableAccessor(valTk, false);
         }
         else {

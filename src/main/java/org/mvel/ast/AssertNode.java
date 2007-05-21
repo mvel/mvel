@@ -9,10 +9,10 @@ import org.mvel.integration.VariableResolverFactory;
 /**
  * @author Christopher Brock
  */
-public class AssertASTNode extends ASTNode {
+public class AssertNode extends ASTNode {
     public ExecutableStatement assertion;
 
-    public AssertASTNode(char[] expr, int fields) {
+    public AssertNode(char[] expr, int fields) {
         super(expr, fields);
         assertion = (ExecutableStatement) compileExpression(expr);
     }

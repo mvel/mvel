@@ -9,11 +9,11 @@ import org.mvel.optimizers.OptimizerFactory;
 /**
  * @author Christopher Brock
  */
-public class ContextDeepPropertyASTNode extends ASTNode {
+public class ContextDeepPropertyNode extends ASTNode {
 
     private Accessor accessor;
 
-    public ContextDeepPropertyASTNode(char[] expr, int fields) {
+    public ContextDeepPropertyNode(char[] expr, int fields) {
         super(expr, fields);
     }
 
