@@ -202,16 +202,6 @@ public class ASTNode implements Cloneable, Serializable {
                 accessor = optimizer.optimizeFold(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
-//            else if ((fields & NEW) != 0) {
-//                optimizer = getDefaultAccessorCompiler();
-//                accessor = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
-//                retVal = accessor.getValue(ctx, thisValue, factory);
-//            }
-            else if ((fields & RETURN) != 0) {
-                optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
-                accessor = optimizer.optimizeReturn(name, ctx, thisValue, factory);
-                throw new EndWithValue(optimizer.getResultOptPass());
-            }
             else {
                 try {
                     accessor = (optimizer = getDefaultAccessorCompiler()).optimizeAccessor(name, ctx, thisValue, factory, true);

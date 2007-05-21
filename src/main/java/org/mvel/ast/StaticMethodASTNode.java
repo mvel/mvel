@@ -3,8 +3,7 @@ package org.mvel.ast;
 import org.mvel.ASTNode;
 import org.mvel.Accessor;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.AccessorOptimizer;
-import org.mvel.optimizers.OptimizerFactory;
+import static org.mvel.optimizers.OptimizerFactory.getDefaultAccessorCompiler;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.subset;
 
@@ -32,9 +31,7 @@ public class StaticMethodASTNode extends ASTNode {
             if (accessor == null) {
                 Method m = (Method) factory.getVariableResolver(method).getValue();
                 declaringClass = m.getDeclaringClass();
-
-                AccessorOptimizer aO = OptimizerFactory.getDefaultAccessorCompiler();
-                accessor = aO.optimizeAccessor(name, declaringClass, thisValue, factory, false);
+                accessor = getDefaultAccessorCompiler().optimizeAccessor(name, declaringClass, thisValue, factory, false);
                 return valRet(accessor.getValue(declaringClass, thisValue, factory));
             }
             else {
