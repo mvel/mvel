@@ -244,18 +244,18 @@ public class AbstractParser {
                         case NEW:
                             start = cursor + 1;
                             captureToEOT();
-                            return new NewObjectASTNode(subArray(start, cursor), fields);
+                            return new NewObjectNode(subArray(start, cursor), fields);
 
                         case ASSERT:
                             start = cursor + 1;
                             captureToEOS();
-                            return new AssertASTNode(subArray(start, cursor), fields);
+                            return new AssertNode(subArray(start, cursor), fields);
 
                         case RETURN:
                             //     fields |= ASTNode.RETURN;
                             start = cursor + 1;
                             captureToEOS();
-                            return new ReturnASTNode(subArray(start, cursor), fields);
+                            return new ReturnNode(subArray(start, cursor), fields);
                         case IF:
                             fields |= ASTNode.BLOCK_IF;
                             return captureCodeBlock(expr);
@@ -277,12 +277,12 @@ public class AbstractParser {
                         case IMPORT:
                             start = cursor + 1;
                             captureToEOS();
-                            return new ImportASTNode(subArray(start, cursor), fields);
+                            return new ImportNode(subArray(start, cursor), fields);
 
                         case IMPORT_STATIC:
                             start = cursor + 1;
                             captureToEOS();
-                            return new StaticImportASTNode(subArray(start, cursor), fields);
+                            return new StaticImportNode(subArray(start, cursor), fields);
                     }
 
                 }
@@ -357,7 +357,7 @@ public class AbstractParser {
                                 captureToEOS();
 
                                 if (union) {
-                                    return new DeepAssignmentASTNode(subArray(start, cursor), fields);
+                                    return new DeepAssignmentNode(subArray(start, cursor), fields);
                                 }
                                 else if (lastWasIdentifier) {
                                     /**
@@ -367,14 +367,14 @@ public class AbstractParser {
                                         lastNode.setDiscard(true);
 
                                         captureToEOS();
-                                        return new TypedVarASTNode(subArray(start, cursor), fields, (Class)
+                                        return new TypedVarNode(subArray(start, cursor), fields, (Class)
                                                 lastNode.getLiteralValue());
                                     }
 
                                     throw new ParseException("not a statement", expr, cursor);
                                 }
                                 else {
-                                    return new AssignmentASTNode(subArray(start, cursor), fields);
+                                    return new AssignmentNode(subArray(start, cursor), fields);
                                 }
                             }
                         case'i': // handle "in" fold operator
@@ -712,13 +712,13 @@ public class AbstractParser {
         cursor++;
 
         if (isFlag(ASTNode.BLOCK_IF)) {
-            return new IfASTNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+            return new IfNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
         else if (isFlag(ASTNode.BLOCK_FOREACH)) {
-            return new ForEachASTNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+            return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
         else if (isFlag(ASTNode.BLOCK_WITH)) {
-            return new WithASTNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+            return new WithNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
         else {
             return null;
@@ -741,7 +741,7 @@ public class AbstractParser {
                             && (isWhitespace(expr[++cursor]) || expr[cursor] == '(');
                 }
 
-                if (((IfASTNode) (tk = _captureBlock(tk, expr, cond))).getElseBlock() != null) {
+                if (((IfNode) (tk = _captureBlock(tk, expr, cond))).getElseBlock() != null) {
                     cursor++;
                     return first;
                 }
@@ -791,7 +791,7 @@ public class AbstractParser {
         }
 
         if (isFlag(ASTNode.BLOCK_IF)) {
-            IfASTNode ifNode = (IfASTNode) node;
+            IfNode ifNode = (IfNode) node;
 
             if (node != null) {
                 if (!cond) {
@@ -799,7 +799,7 @@ public class AbstractParser {
                     return node;
                 }
                 else {
-                    IfASTNode tk = (IfASTNode) createBlockToken(startCond, endCond, trimRight(blockStart + 1),
+                    IfNode tk = (IfNode) createBlockToken(startCond, endCond, trimRight(blockStart + 1),
                             trimLeft(blockEnd));
 
                     ifNode.setElseIf(tk);

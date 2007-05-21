@@ -9,10 +9,10 @@ import org.mvel.optimizers.OptimizerFactory;
 /**
  * @author Christopher Brock
  */
-public class NewObjectASTNode extends ASTNode {
+public class NewObjectNode extends ASTNode {
     private Accessor newObjectOptimizer;
 
-    public NewObjectASTNode(char[] expr, int fields) {
+    public NewObjectNode(char[] expr, int fields) {
         super(expr, fields);
     }
 

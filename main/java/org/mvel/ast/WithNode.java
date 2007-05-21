@@ -14,12 +14,12 @@ import java.util.List;
 /**
  * @author Christopher Brock
  */
-public class WithASTNode extends BlockASTNode {
+public class WithNode extends BlockNode {
 
     private ExecutableStatement context;
     private ParmValuePair[] withExpressions;
 
-    public WithASTNode(char[] expr, char[] block, int fields) {
+    public WithNode(char[] expr, char[] block, int fields) {
         super(expr, fields, block);
 
         context = (ExecutableStatement) compileExpression(new String(expr).trim());

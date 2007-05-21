@@ -12,13 +12,13 @@ import static org.mvel.util.PropertyTools.find;
 /**
  * @author Christopher Brock
  */
-public class DeepAssignmentASTNode extends ASTNode {
+public class DeepAssignmentNode extends ASTNode {
     private String property;
 
     private Accessor baseAccessor;
     private Accessor statement;
 
-    public DeepAssignmentASTNode(char[] expr, int fields) {
+    public DeepAssignmentNode(char[] expr, int fields) {
         super(expr, fields);
 
         String name;
