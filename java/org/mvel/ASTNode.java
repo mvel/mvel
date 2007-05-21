@@ -222,7 +222,6 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        // assert debug("REDUCE <<" + new String(name) + ">> ctx=" + ctx + ";literal=" + (fields & LITERAL) + ";assign=" + (fields & ASSIGN));
         String s;
         if ((fields & (LITERAL)) != 0) {
             if ((fields & THISREF) != 0)
