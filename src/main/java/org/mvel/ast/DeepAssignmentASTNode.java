@@ -20,6 +20,7 @@ public class DeepAssignmentASTNode extends ASTNode {
 
     public DeepAssignmentASTNode(char[] expr, int fields) {
         super(expr, fields);
+
         String name;
 
         int mark;
@@ -36,11 +37,17 @@ public class DeepAssignmentASTNode extends ASTNode {
     }
 
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         Object val;
-        MVEL.setProperty(baseAccessor.getValue(ctx, elCtx, variableFactory), property,
-                val = statement.getValue(ctx, elCtx, variableFactory));
+        MVEL.setProperty(baseAccessor.getValue(ctx, thisValue, factory), property,
+                val = statement.getValue(ctx, thisValue, factory));
 
         return val;
     }
+
+    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        return getReducedValueAccelerated(ctx, thisValue, factory);
+    }
+
+
 }
