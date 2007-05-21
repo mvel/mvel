@@ -708,12 +708,7 @@ public class AbstractParser {
     private ASTNode createToken(final char[] expr, final int start, final int end, int fields) {
         ASTNode tk = new ASTNode(expr, start, end, fields);
 
-        if (tk.isIdentifier()) {
-            lastWasIdentifier = true;
-        }
-        else {
-            lastWasIdentifier = false;
-        }
+        lastWasIdentifier = tk.isIdentifier();
 
         return lastNode = tk;
     }
