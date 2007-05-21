@@ -299,6 +299,7 @@ public class AbstractParser {
                 skipWhitespace();
 
                 if (expr[cursor] == '(') {
+                    fields |= ASTNode.METHOD;
 
                     /**
                      * If the current token is a method call or a constructor, we
