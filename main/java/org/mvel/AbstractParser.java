@@ -252,11 +252,10 @@ public class AbstractParser {
                             return new AssertASTNode(subArray(start, cursor), fields);
 
                         case RETURN:
-                            fields |= ASTNode.RETURN;
+                            //     fields |= ASTNode.RETURN;
                             start = cursor + 1;
-                            capture = false;
-                            continue;
-
+                            captureToEOS();
+                            return new ReturnASTNode(subArray(start, cursor), fields);
                         case IF:
                             fields |= ASTNode.BLOCK_IF;
                             return captureCodeBlock(expr);
@@ -356,7 +355,26 @@ public class AbstractParser {
 
                                 captureToEOS();
 
-                                break;
+                                if (union) {
+                                    return new DeepAssignmentASTNode(subArray(start, cursor), fields);
+                                }
+                                else if (lastWasIdentifier) {
+                                    /**
+                                     * Check for typing information.
+                                     */
+                                    if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
+                                        lastNode.setDiscard(true);
+
+                                        captureToEOS();
+                                        return new TypedVarASTNode(subArray(start, cursor), fields, (Class)
+                                                lastNode.getLiteralValue());
+                                    }
+
+                                    throw new ParseException("not a statement", expr, cursor);
+                                }
+                                else {
+                                    return new AssignmentASTNode(subArray(start, cursor), fields);
+                                }
                             }
                         case'i': // handle "in" fold operator
                             if (greedy && (cursor + 2) < length && expr[cursor + 1] == 'n' && isWhitespace(expr[cursor + 2])) {
@@ -664,22 +682,6 @@ public class AbstractParser {
         ASTNode tk = new ASTNode(expr, start, end, fields);
 
         if (tk.isIdentifier()) {
-
-            if (lastWasIdentifier) {
-                /**
-                 * Check for typing information.
-                 */
-                if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
-                    lastNode.setDiscard(true);
-
-                    captureToEOS();
-                    return new TypedVarASTNode(subArray(start, cursor), fields, (Class)
-                            lastNode.getLiteralValue());
-                }
-
-                throw new ParseException("not a statement", expr, cursor);
-            }
-
             lastWasIdentifier = true;
         }
         else {

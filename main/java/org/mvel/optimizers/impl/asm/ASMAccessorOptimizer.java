@@ -395,6 +395,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             }
             else if (ctx instanceof Class) {
+                System.out.println("static method invokation: " + property);
+
                 Class c = (Class) ctx;
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
@@ -555,7 +557,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         debug("{method: " + name + "}");
 
         if (first && variableFactory.isResolveable(name)) {
-            ctx = ((Method) variableFactory.getVariableResolver(name).getValue()).getDeclaringClass();
+            Method m = (Method) variableFactory.getVariableResolver(name).getValue();
+            ctx = m.getDeclaringClass();
+            name = m.getName();
             first = false;
         }
 
@@ -629,6 +633,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
         if (m == null) {
+            System.out.println("looking for static methods in: " + cls + ";prop=" + name);
+
             /**
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
@@ -640,9 +646,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         if (m == null) {
             StringAppender errorBuild = new StringAppender();
-            for (int i = 0; i < args.length; i++) {
-                errorBuild.append(parameterTypes[i] != null ? parameterTypes[i].getClass().getName() : null);
-                if (i < args.length - 1) errorBuild.append(", ");
+
+            if (parameterTypes != null) {
+                for (int i = 0; i < args.length; i++) {
+                    errorBuild.append(parameterTypes[i] != null ? parameterTypes[i].getClass().getName() : null);
+                    if (i < args.length - 1) errorBuild.append(", ");
+                }
             }
 
             if ("size".equals(name) && args.length == 0 && cls.isArray()) {
@@ -656,6 +665,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 return Array.getLength(ctx);
             }
+
 
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
