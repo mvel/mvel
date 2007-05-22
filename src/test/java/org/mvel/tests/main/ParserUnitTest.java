@@ -647,12 +647,40 @@ public class ParserUnitTest extends TestCase {
         assertEquals( new BigInteger( "1" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a / b; return c; ") );
     }
 
+    public void testBigIntegerMathComparators() {
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigInteger( 10 ); return a == new java.math.BigInteger( 10 )") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigInteger( 10 ); return a > new java.math.BigInteger( 8 )") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigInteger( 10 ); return a < new java.math.BigInteger( 11 )") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigInteger( 10 ); return a >= new java.math.BigInteger( 8 )") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigInteger( 10 ); return a <= new java.math.BigInteger( 11 )") );        
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigInteger( 10 ); return a == 10") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigInteger( 10 ); return a == 10.0") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigInteger( 10 ); return a > 8") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigInteger( 10 ); return a < 11") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigInteger( 10 ); return a >= 8") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigInteger( 10 ); return a <= 11") );        
+    }
+    
     public void testBigDecimalMath() {
         // it's return a Float here, we what is the logic here that determines the return type?
         assertEquals( new BigDecimal( "20.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a + b; return c; ") );
         assertEquals( new BigDecimal( "0.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a - b; return c; ") );
         assertEquals( new BigDecimal( "100.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a * b; return c; ") );
         assertEquals( new BigDecimal( "1.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a / b; return c; ") );
+    }
+
+    public void testBigDecimalMathComparators() {
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigDecimal( 10.0 ); return a == new java.math.BigDecimal( 10.0 )") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigDecimal( 10.0 ); return a > new java.math.BigDecimal( 8.0 )") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigDecimal( 10.0 ); return a < new java.math.BigDecimal( 11.0 )") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigDecimal( 10.0 ); return a >= new java.math.BigDecimal( 8.0 )") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigDecimal( 10.0 ); return a <= new java.math.BigDecimal( 11.0 )") );        
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigDecimal( 10.0 ); return a == 10.0") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigDecimal( 10.0 ); return a == 10") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigDecimal( 10.0 ); return a > 8.0") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigDecimal( 10.0 ); return a < 11.0") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigDecimal( 10.0 ); return a >= 8.0") );
+        assertTrue( (Boolean) compiledExecute( "a = new java.math.BigDecimal( 10.0 ); return a <= 11.0") );
     }
     
     public void testQualifiedStaticTyping() {
