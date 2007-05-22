@@ -107,7 +107,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         m.visitVarInsn(Opcodes.ALOAD, 0);
         m.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object",
                 "<init>", "()V");
-        m.visitInsn(Opcodes.RETURN);
+        m.visitInsn(Opcodes.RETURN);                                                                                 
 
         m.visitMaxs(1, 1);
         m.visitEnd();
