@@ -13,6 +13,8 @@ import org.mvel.util.FastList;
 
 import java.io.Serializable;
 import java.io.StringReader;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -631,7 +633,36 @@ public class ParserUnitTest extends TestCase {
     public void testArrayCoercion() {
         assertEquals("gonk", parse("@{funMethod( {'gonk', 'foo'} )}"));
     }
+    
+    public void testReturnWithExpression() {
+        assertEquals( new Integer( 20 ), compiledExecute( "a = 10; b = 10; c = a + b; return c; ") );
+        assertEquals( new Integer( 20 ), compiledExecute( "a = 10; b = 10; return (a + b); ") );
+        assertEquals( new Integer( 20 ), compiledExecute( "a = 10; b = 10; return a + b; ") );
+    }
 
+    public void testBigIntegerMath() {
+        assertEquals( new BigInteger( "20" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a + b; return c; ") );
+        assertEquals( new BigInteger( "0" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a - b; return c; ") );
+        assertEquals( new BigInteger( "100" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a * b; return c; ") );
+        assertEquals( new BigInteger( "1" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a / b; return c; ") );
+    }
+
+    public void testBigDecimalMath() {
+        // it's return a Float here, we what is the logic here that determines the return type?
+        assertEquals( new BigDecimal( "20.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a + b; return c; ") );
+        assertEquals( new BigDecimal( "0.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a - b; return c; ") );
+        assertEquals( new BigDecimal( "100.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a * b; return c; ") );
+        assertEquals( new BigDecimal( "1.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a / b; return c; ") );
+    }
+    
+    public void testQualifiedStaticTyping() {
+        assertEquals( new BigDecimal( "20.0" ), compiledExecute( "java.math.BigDecimal a = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal b = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal c = a + b; return c; ") );
+    }
+    
+    public void testUnQualifiedStaticTyping() {
+        assertEquals( new BigDecimal( "20.0" ), compiledExecute( "BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ") );
+    }    
+    
     public void testArrayCoercion2() {
         assertEquals(10, parseDirect("sum({2,2,2,2,2})"));
     }
