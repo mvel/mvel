@@ -691,6 +691,12 @@ public class ParserUnitTest extends TestCase {
         assertEquals( new BigDecimal( "20.0" ), compiledExecute( "BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ") );
     }    
     
+    public void testEnum() {
+        compiledExecute( "System.out.println( MyEnum.FULL_DOCUMENTATION); " );
+        
+        assertTrue( (Boolean) compiledExecute("a = org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; System.out.println(org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION); return a == org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; ") );
+    }
+    
     public void testArrayCoercion2() {
         assertEquals(10, parseDirect("sum({2,2,2,2,2})"));
     }
