@@ -641,10 +641,10 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testBigIntegerMath() {
-        assertEquals( new BigInteger( "20" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a + b; return c; ") );
-        assertEquals( new BigInteger( "0" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a - b; return c; ") );
-        assertEquals( new BigInteger( "100" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a * b; return c; ") );
-        assertEquals( new BigInteger( "1" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a / b; return c; ") );
+        assertEquals( new Integer( "20" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a + b; return c; ") );
+        assertEquals( new Integer( "0" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a - b; return c; ") );
+        assertEquals( new Integer( "100" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a * b; return c; ") );
+        assertEquals( new Integer( "1" ), compiledExecute( "a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a / b; return c; ") );
     }
 
     public void testBigIntegerMathComparators() {
@@ -663,10 +663,10 @@ public class ParserUnitTest extends TestCase {
     
     public void testBigDecimalMath() {
         // it's return a Float here, we what is the logic here that determines the return type?
-        assertEquals( new BigDecimal( "20.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a + b; return c; ") );
-        assertEquals( new BigDecimal( "0.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a - b; return c; ") );
-        assertEquals( new BigDecimal( "100.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a * b; return c; ") );
-        assertEquals( new BigDecimal( "1.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a / b; return c; ") );
+        assertEquals( new Float( "20.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a + b; return c; ") );
+        assertEquals( new Float( "0.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a - b; return c; ") );
+        assertEquals( new Float( "100.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a * b; return c; ") );
+        assertEquals( new Float( "1.0" ), compiledExecute( "a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a / b; return c; ") );
     }
 
     public void testBigDecimalMathComparators() {
@@ -684,17 +684,18 @@ public class ParserUnitTest extends TestCase {
     }
     
     public void testQualifiedStaticTyping() {
-        assertEquals( new BigDecimal( "20.0" ), compiledExecute( "java.math.BigDecimal a = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal b = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal c = a + b; return c; ") );
+        assertEquals( new Float( "20.0" ), compiledExecute( "java.math.BigDecimal a = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal b = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal c = a + b; return c; ") );
     }
     
     public void testUnQualifiedStaticTyping() {
-        assertEquals( new BigDecimal( "20.0" ), compiledExecute( "BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ") );
+        assertEquals( new Float( "20.0" ), compiledExecute( "BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ") );
     }    
     
-    public void testEnum() {
-        compiledExecute( "System.out.println( MyEnum.FULL_DOCUMENTATION); " );
-        
+    public void testEnum() {     
         assertTrue( (Boolean) compiledExecute("a = org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; System.out.println(org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION); return a == org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; ") );
+        
+        Serializable compiled = MVEL.compileExpression( "a = org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; System.out.println(org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION); return a == org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; " );
+        assertTrue( (Boolean) MVEL.executeExpression(compiled, null, map) );        
     }
     
     public void testArrayCoercion2() {
