@@ -8,6 +8,7 @@ import org.mvel.TemplateRegistry;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
+import org.mvel.tests.main.res.MyEnum;
 import org.mvel.tests.main.res.PDFFieldUtil;
 import org.mvel.util.FastList;
 
@@ -692,10 +693,10 @@ public class ParserUnitTest extends TestCase {
     }    
     
     public void testEnum() {     
-        assertTrue( (Boolean) compiledExecute("a = org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; System.out.println(org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION); return a == org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; ") );
+        assertSame( MyEnum.FULL_DOCUMENTATION, compiledExecute("org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION") );
         
-        Serializable compiled = MVEL.compileExpression( "a = org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; System.out.println(org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION); return a == org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; " );
-        assertTrue( (Boolean) MVEL.executeExpression(compiled, null, map) );        
+        Serializable compiled = MVEL.compileExpression( "org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION" );
+        assertSame( MyEnum.FULL_DOCUMENTATION, MVEL.executeExpression(compiled, null, map) );        
     }
     
     public void testArrayCoercion2() {
