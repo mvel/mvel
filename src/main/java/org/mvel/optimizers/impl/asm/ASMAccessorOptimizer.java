@@ -107,7 +107,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         m.visitVarInsn(Opcodes.ALOAD, 0);
         m.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object",
                 "<init>", "()V");
-        m.visitInsn(Opcodes.RETURN);                                                                                 
+        m.visitInsn(Opcodes.RETURN);
 
         m.visitMaxs(1, 1);
         m.visitEnd();
@@ -309,7 +309,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return o;
         }
         else if (member != null) {
-
             Object o;
 
             if (first) {
@@ -368,9 +367,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             Object lit = LITERALS.get(property);
 
             if (lit instanceof Class) {
-                debug("LDC " + getDescriptor((Class) lit));
-                mv.visitLdcInsn(getType(getDescriptor((Class) lit)));
+//                debug("LDC " + getDescriptor((Class) lit));
+//                mv.visitLdcInsn(getType(getDescriptor((Class) lit)));
+
+                ldcClassConstant((Class) lit);
             }
+
 
             return LITERALS.get(property);
         }
@@ -379,8 +381,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             if (ts != null) {
                 if (ts instanceof Class) {
-                    debug("LDC " + getDescriptor((Class) ts));
-                    mv.visitLdcInsn(getType(getDescriptor((Class) ts)));
+//                    debug("LDC " + getDescriptor((Class) ts));
+//                    mv.visitLdcInsn(getType(getDescriptor((Class) ts)));
+
+                    ldcClassConstant((Class) ts);
+
                     return ts;
                 }
                 else {
@@ -400,7 +405,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
 
-                        mv.visitLdcInsn(getType(c));
+//                        mv.visitLdcInsn(getType(c));
+
+                        ldcClassConstant(c);
+
                         mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getMethods", "()[Ljava/lang/reflect/Method;");
                         mv.visitVarInsn(ASTORE, 7);
                         mv.visitInsn(ICONST_0);
@@ -740,9 +748,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                                 (parameterTypes[i] != String.class &&
                                         !parameterTypes[i].isAssignableFrom(preConvArgs[i].getClass()))) {
 
+//                            debug("LDC " + getWrapperClass(parameterTypes[i]));
+//                            mv.visitLdcInsn(getType(getWrapperClass(parameterTypes[i])));
 
-                            debug("LDC " + getWrapperClass(parameterTypes[i]));
-                            mv.visitLdcInsn(getType(getWrapperClass(parameterTypes[i])));
+                            ldcClassConstant(getWrapperClass(parameterTypes[i]));
 
                             debug("INVOKESTATIC DataConversion.convert");
                             mv.visitMethodInsn(INVOKESTATIC, "org/mvel/DataConversion", "convert",
@@ -756,8 +765,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                             (parameterTypes[i] != String.class &&
                                     !parameterTypes[i].isAssignableFrom(preConvArgs[i].getClass()))) {
 
-                        debug("LDC " + getType(parameterTypes[i]));
-                        mv.visitLdcInsn(getType(parameterTypes[i]));
+//                        debug("LDC " + getType(parameterTypes[i]));
+//                        mv.visitLdcInsn(getType(parameterTypes[i]));
+
+                        ldcClassConstant(parameterTypes[i]);
 
                         debug("INVOKESTATIC DataConversion.convert");
                         mv.visitMethodInsn(INVOKESTATIC, "org/mvel/DataConversion", "convert",
@@ -995,6 +1006,18 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         else {
             debug("CHECKCAST [Ljava/lang/Object;");
             mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
+        }
+    }
+
+
+    private void ldcClassConstant(Class cls) {
+        if (OPCODES_VERSION == Opcodes.V1_4) {
+            debug("LDC \"" + cls.getName() + "\"");
+            mv.visitLdcInsn(cls.getName());
+        }
+        else {
+            debug("LDC " + getType(cls));
+            mv.visitLdcInsn(getType(cls));
         }
     }
 
@@ -1425,8 +1448,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                             ? getWrapperClass(cns.getParameterTypes()[i]) : cns.getParameterTypes()[i];
 
                     if (!parms[i].getClass().isAssignableFrom(cns.getParameterTypes()[i])) {
-                        debug("LDC " + getType(tg));
-                        mv.visitLdcInsn(getType(tg));
+                        ldcClassConstant(tg);
+
                         debug("INVOKESTATIC org/mvel/DataConversion.convert");
                         mv.visitMethodInsn(INVOKESTATIC, "org/mvel/DataConversion", "convert", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
 
