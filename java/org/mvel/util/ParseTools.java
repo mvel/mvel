@@ -24,15 +24,18 @@ import java.util.*;
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
     public static final MathProcessor MATH_PROCESSOR;
+    public static final boolean JDK_14_COMPATIBILITY;
 
     static {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
                 MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
+                JDK_14_COMPATIBILITY = true;
             }
             else if (version > 1.4) {
                 MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
+                JDK_14_COMPATIBILITY = false;
             }
             else {
                 throw new RuntimeException("unsupported java version: " + version);
@@ -831,6 +834,22 @@ public class ParseTools {
 
         return -1;
     }
+
+    /**
+     * REMOVE THIS WITH JDK1.4 COMPATIBILITY!  COMPENSATES FOR LACK OF getSimpleName IN java.lang.Class -- DIE 1.4!
+     *
+     * @param cls -- class reference
+     * @return Simple name of class
+     */
+    public static String getSimpleClassName(Class cls) {
+        if (JDK_14_COMPATIBILITY) {
+            return cls.getName().substring(cls.getName().lastIndexOf('.'));
+        }
+        else {
+            return cls.getSimpleName();
+        }
+    }
+
 
     public static void checkNameSafety(String name) {
         if (AbstractParser.isReservedWord(name)) {
