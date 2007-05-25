@@ -3,6 +3,7 @@ package org.mvel.debug;
 import org.mvel.*;
 import static org.mvel.Operator.ADD;
 import static org.mvel.Operator.SUB;
+import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.io.Serializable;
 
@@ -45,7 +46,7 @@ public class DebugTools {
                 sbuf.append("PUSH VAR :: ").append(tk.getName());
             }
             else {
-                sbuf.append("ASTNODE [" + tk.getClass().getSimpleName() + "]: { " + tk.getName() + " }");
+                sbuf.append("ASTNODE [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }");
             }
 
             sbuf.append("\n");
