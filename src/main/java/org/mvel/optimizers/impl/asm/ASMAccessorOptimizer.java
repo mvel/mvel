@@ -665,9 +665,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("ARRAYLENGTH");
                 mv.visitInsn(ARRAYLENGTH);
 
-                debug("INVOKESTATIC Integer.valueOf(int) : Integer");
-                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
-
+                wrapPrimitive(int.class);
                 return getLength(ctx);
             }
 
@@ -764,9 +762,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     else if (preConvArgs[i] == null ||
                             (parameterTypes[i] != String.class &&
                                     !parameterTypes[i].isAssignableFrom(preConvArgs[i].getClass()))) {
-
-//                        debug("LDC " + getType(parameterTypes[i]));
-//                        mv.visitLdcInsn(getType(parameterTypes[i]));
 
                         ldcClassConstant(parameterTypes[i]);
 
@@ -1053,6 +1048,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else {
             if (cls == boolean.class) {
+                debug("INVOKESTATIC java/lang/Boolean.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;");
             }
             else if (cls == int.class) {
