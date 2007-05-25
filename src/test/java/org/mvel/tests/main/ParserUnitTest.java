@@ -13,6 +13,7 @@ import org.mvel.util.FastList;
 
 import java.io.Serializable;
 import java.io.StringReader;
+import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -639,10 +640,10 @@ public class ParserUnitTest extends TestCase {
     }
 
     public void testBigIntegerMath() {
-        assertEquals(new Integer("20"), compiledExecute("a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a + b; return c; "));
-        assertEquals(new Integer("0"), compiledExecute("a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a - b; return c; "));
-        assertEquals(new Integer("100"), compiledExecute("a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a * b; return c; "));
-        assertEquals(new Integer("1"), compiledExecute("a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a / b; return c; "));
+        assertEquals(new BigInteger("20"), compiledExecute("a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a + b; return c; "));
+        assertEquals(new BigInteger("0"), compiledExecute("a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a - b; return c; "));
+        assertEquals(new BigInteger("100"), compiledExecute("a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a * b; return c; "));
+        assertEquals(new BigInteger("1"), compiledExecute("a = new java.math.BigInteger( 10 ); b = new java.math.BigInteger( 10 ); c = a / b; return c; "));
     }
 
     public void testBigIntegerMathComparators() {
@@ -664,7 +665,7 @@ public class ParserUnitTest extends TestCase {
         assertEquals(new Float("20.0"), compiledExecute("a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a + b; return c; "));
         assertEquals(new Float("0.0"), compiledExecute("a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a - b; return c; "));
         assertEquals(new Float("100.0"), compiledExecute("a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a * b; return c; "));
-        assertEquals(new Float("1.0"), compiledExecute("a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a / b; return c; "));
+        assertEquals(new Integer(1), compiledExecute("a = new java.math.BigDecimal( 10.0 ); b = new java.math.BigDecimal( 10.0 ); c = a / b; return c; "));
     }
 
     public void testBigDecimalMathComparators() {
