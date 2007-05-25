@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.isPublic;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -322,7 +323,7 @@ public class PropertyTools {
         if (val == null) return false;
         if (val instanceof String) return isNumber((String) val);
         if (val instanceof char[]) return isNumber((char[]) val);
-        return val instanceof Integer || val instanceof BigDecimal
+        return val instanceof Integer || val instanceof BigDecimal || val instanceof BigInteger
                 || val instanceof Float || val instanceof Double || val instanceof Long
                 || val instanceof Short || val instanceof Character;
     }

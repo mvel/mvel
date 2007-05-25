@@ -1014,6 +1014,18 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (OPCODES_VERSION == Opcodes.V1_4) {
             debug("LDC \"" + cls.getName() + "\"");
             mv.visitLdcInsn(cls.getName());
+            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
+            Label l4 = new Label();
+            mv.visitJumpInsn(GOTO, l4);
+            //    mv.visitLabel(l2);
+            mv.visitTypeInsn(NEW, "java/lang/NoClassDefFoundError");
+            mv.visitInsn(DUP_X1);
+            mv.visitInsn(SWAP);
+            mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Throwable", "getMessage", "()Ljava/lang/String;");
+            mv.visitMethodInsn(INVOKESPECIAL, "java/lang/NoClassDefFoundError", "<init>", "(Ljava/lang/String;)V");
+            mv.visitInsn(ATHROW);
+            mv.visitLabel(l4);
+
         }
         else {
             debug("LDC " + getType(cls));
