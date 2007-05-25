@@ -9,6 +9,7 @@ import static org.mvel.util.PropertyTools.isNumber;
 
 import static java.lang.String.valueOf;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.MathContext;
 
 /**
@@ -289,6 +290,36 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((Float) val1).floatValue() != ((Float) val2).floatValue();
                 }
 
+            case DataTypes.BIG_INTEGER:
+                switch (operation) {
+                    case Operator.ADD:
+                        return ((BigInteger) val1).add(((BigInteger) val2));
+                    case Operator.SUB:
+                        return ((BigInteger) val1).subtract(((BigInteger) val2));
+                    case Operator.DIV:
+                        return ((BigInteger) val1).divide(((BigInteger) val2));
+                    case Operator.MULT:
+                        return ((BigInteger) val1).multiply(((BigInteger) val2));
+                    case Operator.POWER:
+                        return ((BigInteger) val1).pow(((BigInteger) val2).intValue());
+                    case Operator.MOD:
+                        return ((BigInteger) val1).remainder(((BigInteger) val2));
+
+                    case Operator.GTHAN:
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 1;
+                    case Operator.GETHAN:
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0;
+                    case Operator.LTHAN:
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == -1;
+                    case Operator.LETHAN:
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0;
+                    case Operator.EQUAL:
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0;
+                    case Operator.NEQUAL:
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0;
+
+                }
+
 
             default:
                 switch (operation) {
@@ -309,6 +340,8 @@ public class IEEEFloatingPointMath implements MathProcessor {
         switch (type) {
             case DataTypes.BIG_DECIMAL:
                 return (BigDecimal) in;
+            case DataTypes.BIG_INTEGER:
+                return new BigDecimal((BigInteger) in);
             case DataTypes.W_INTEGER:
                 return new BigDecimal((Integer) in);
             case DataTypes.W_LONG:
