@@ -18,6 +18,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 public class ParseTools {
@@ -631,6 +632,10 @@ public class ParseTools {
             return 0;
         if (BigDecimal.class == cls)
             return DataTypes.BIG_DECIMAL;
+
+        if (BigInteger.class == cls)
+            return DataTypes.BIG_INTEGER;
+
         if (String.class == cls)
             return DataTypes.STRING;
 

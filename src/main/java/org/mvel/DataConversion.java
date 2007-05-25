@@ -21,6 +21,7 @@ package org.mvel;
 import org.mvel.conversion.*;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,6 +74,7 @@ public class DataConversion {
         CONVERTERS.put(boolean[].class, new PrimArrayHandler(boolean[].class));
 
         CONVERTERS.put(BigDecimal.class, new BigDecimalCH());
+        CONVERTERS.put(BigInteger.class, new BigIntegerCH());
     }
 
     public static boolean canConvert(Class toType, Class convertFrom) {
