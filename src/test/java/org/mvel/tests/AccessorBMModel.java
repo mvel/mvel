@@ -13,7 +13,7 @@ public class AccessorBMModel implements Accessor {
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         // return Math.sqrt(DataConversion.convert(p0.getValue(ctx, variableFactory), Double.class).doubleValue());
 
-        return DataConversion.convert(p0.getValue(ctx, variableFactory), Integer.class);
+        return DataConversion.convert(1, Integer.class);
     }
 
 
