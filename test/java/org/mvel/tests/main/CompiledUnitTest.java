@@ -652,6 +652,14 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(1, parseDirect("x = 2; --x"));
     }
 
+    public void testQualifiedStaticTyping() {
+        assertEquals(20, parseDirect("java.math.BigDecimal a = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal b = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal c = a + b; return c; "));
+    }
+
+    public void testUnQualifiedStaticTyping() {
+        assertEquals(20, parseDirect("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; "));
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile();

@@ -107,11 +107,6 @@ public class ExpressionCompiler extends AbstractParser {
                     }
                 }
                 else {
-                    if (tk.isDiscard()) {
-                        tokenSet.addTokenNode(tkOp);
-                        continue;
-                    }
-
                     tokenSet.addTokenNode(tk);
                     if (tkOp != null) tokenSet.addTokenNode(tkOp);
 
