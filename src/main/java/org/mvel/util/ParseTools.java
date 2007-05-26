@@ -609,7 +609,7 @@ public class ParseTools {
     }
 
     public static boolean debug(String str) {
-        System.out.println(str);
+        //   System.out.println(str);
         return true;
     }
 
@@ -759,9 +759,6 @@ public class ParseTools {
         }
     }
 
-    public static void main(String[] args) {
-        parseParameters("test=poo, john=caca,bob=smith".toCharArray());
-    }
 
     public static Map<String, String> parseParameters(char[] parms) {
         Map<String, String> allParms = new HashMap<String, String>();
