@@ -20,6 +20,7 @@ package org.mvel.optimizers.impl.asm;
 
 import org.mvel.*;
 import static org.mvel.MVEL.compileExpression;
+import static org.mvel.MVEL.isAdvancedDebugging;
 import org.mvel.asm.*;
 import static org.mvel.asm.Opcodes.*;
 import static org.mvel.asm.Type.*;
@@ -32,7 +33,6 @@ import org.mvel.optimizers.impl.refl.DeepAssignment;
 import org.mvel.optimizers.impl.refl.Union;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.CollectionParser;
-import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
@@ -88,6 +88,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private Class returnType;
 
+    private StringBuffer buildLog;
+
     public ASMAccessorOptimizer() {
         //do this to confirm we're running the correct version
         //otherwise should create a verification error in VM
@@ -98,6 +100,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
      * Does all the boilerplate for initiating the JIT.
      */
     private void _initJIT() {
+        if (isAdvancedDebugging()) {
+            buildLog = new StringBuffer();
+        }
+
         cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
         cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_" + String.valueOf(cw.hashCode()).replaceAll("\\-", "_") + (System.currentTimeMillis() / 1000),
                 null, "java/lang/Object", new String[]{"org/mvel/Accessor"});
@@ -164,10 +170,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         mv.visitEnd();
 
-
         buildInputs();
 
         cw.visitEnd();
+
+        dumpAdvancedDebugging(); // dump advanced debugging if necessary
     }
 
     private Accessor _initializeAccessor() throws Exception {
@@ -189,6 +196,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
         if (!(o instanceof Accessor)) {
+            dumpAdvancedDebugging();
             throw new RuntimeException("Classloader problem detected. JIT Class is not subclass of org.mvel.Accessor.");
         }
 
@@ -196,7 +204,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private Accessor compileAccessor() {
-        debug("\n{Initiate Compile: " + new String(expr) + "}\n");
+        debug("<<INITIATE COMPILE>>");
 
         Object curr = ctx;
 
@@ -253,7 +261,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
-        debug("{bean: " + property + "}");
+        debug("ENTER -> {bean: " + property + "}");
 
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
@@ -455,7 +463,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throws IllegalAccessException, InvocationTargetException {
         if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
 
-        debug("{collections: " + prop + "}");
+        debug("ENTER -> {collections: " + prop + "}");
 
         int start = ++cursor;
 
@@ -816,13 +824,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     }
 
-    private static java.lang.Class loadClass(String className, byte[] b)
-            throws IllegalAccessException, InvocationTargetException {
+    private java.lang.Class loadClass(String className, byte[] b) throws Exception {
         synchronized (defineClass) {
             defineClass.setAccessible(true);
             try {
                 //noinspection RedundantArrayCreation
                 return (Class) defineClass.invoke(classLoader, new Object[]{className, b, 0, (b.length)});
+            }
+            catch (Exception t) {
+                dumpAdvancedDebugging();
+                throw t;
             }
             finally {
                 defineClass.setAccessible(false);
@@ -831,8 +842,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    private static void debug(String instruction) {
-        assert ParseTools.debug(instruction);
+    private void debug(String instruction) {
+        // assert ParseTools.debug(instruction);
+        if (buildLog != null) {
+            buildLog.append(instruction).append("\n");
+        }
     }
 
     @SuppressWarnings({"SameReturnValue"})
@@ -1645,4 +1659,13 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     public void setAssignment(boolean assignment) {
         this.assignment = assignment;
     }
+
+    private void dumpAdvancedDebugging() {
+        if (buildLog == null) return;
+
+        System.out.println("JIT Compiler Dump for: <<" + new String(expr) + ">>\n-------------------------------\n");
+        System.out.println(buildLog.toString());
+        System.out.println("\n<END OF DUMP>\n");
+    }
+
 }
