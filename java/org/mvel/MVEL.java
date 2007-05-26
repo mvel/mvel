@@ -37,6 +37,7 @@ public class MVEL {
     public static final String VERSION_SUB = "beta16";
     public static final String CODENAME = "horizon";
 
+    static boolean ADVANCED_DEBUG = getBoolean("mvel.advanced_debugging");
     static boolean THREAD_SAFE = getBoolean("mvel.threadsafety");
     static boolean OPTIMIZER = true;
 
@@ -61,6 +62,10 @@ public class MVEL {
 
     public static boolean isThreadSafe() {
         return THREAD_SAFE;
+    }
+
+    public static boolean isAdvancedDebugging() {
+        return ADVANCED_DEBUG;
     }
 
     public static Object eval(String expression, Object ctx) {
