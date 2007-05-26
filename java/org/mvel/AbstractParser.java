@@ -3,7 +3,7 @@ package org.mvel;
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
 import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.handleEscapeSequence;
+import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 import org.mvel.util.ThisLiteral;
@@ -42,6 +42,8 @@ public class AbstractParser {
 
     public static final Map<String, Integer> OPERATORS =
             new HashMap<String, Integer>(25 * 2, 0.4f);
+
+    protected Map<String, Class> imports;
 
 
     static {
@@ -249,13 +251,12 @@ public class AbstractParser {
                         case ASSERT:
                             start = cursor + 1;
                             captureToEOS();
-                            return new AssertNode(subArray(start, cursor), fields);
+                            return new AssertNode(subArray(start, cursor--), fields);
 
                         case RETURN:
-                            //     fields |= ASTNode.RETURN;
                             start = cursor + 1;
                             captureToEOS();
-                            return new ReturnNode(subArray(start, cursor), fields);
+                            return new ReturnNode(subArray(start, cursor--), fields);
                         case IF:
                             fields |= ASTNode.BLOCK_IF;
                             return captureCodeBlock(expr);
@@ -277,12 +278,15 @@ public class AbstractParser {
                         case IMPORT:
                             start = cursor + 1;
                             captureToEOS();
-                            return new ImportNode(subArray(start, cursor), fields);
+                            ImportNode importNode = new ImportNode(subArray(start, cursor--), fields);
+                            addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
+                            return importNode;
+
 
                         case IMPORT_STATIC:
                             start = cursor + 1;
                             captureToEOS();
-                            return new StaticImportNode(subArray(start, cursor), fields);
+                            return new StaticImportNode(subArray(start, cursor--), fields);
                     }
 
                 }
@@ -383,15 +387,41 @@ public class AbstractParser {
                                     /**
                                      * Check for typing information.
                                      */
-                                    if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
-                                        lastNode.setDiscard(true);
 
-                                        captureToEOS();
-                                        return new TypedVarNode(subArray(start, cursor), fields, (Class)
-                                                lastNode.getLiteralValue());
+                                    if (lastNode.getLiteralValue() instanceof String) {
+                                        if (hasImport((String) lastNode.getLiteralValue())) {
+                                            lastNode.setLiteralValue(getImport((String) lastNode.getLiteralValue()));
+                                            lastNode.setAsLiteral();
+                                        }
+                                        else {
+                                            try {
+                                                /**
+                                                 *  take a stab in the dark and try and load the class
+                                                 */
+                                                lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
+                                                lastNode.setAsLiteral();
+
+                                            }
+                                            catch (ClassNotFoundException e) {
+                                                /**
+                                                 * Just fail through.
+                                                 */
+                                            }
+                                        }
                                     }
 
-                                    throw new ParseException("not a statement", expr, cursor);
+
+                                    if (lastNode.isLiteral()) {
+                                        if (lastNode.getLiteralValue() instanceof Class) {
+                                            lastNode.setDiscard(true);
+
+                                            captureToEOS();
+                                            return new TypedVarNode(subArray(start, cursor), fields, (Class)
+                                                    lastNode.getLiteralValue());
+                                        }
+                                    }
+
+                                    throw new ParseException("unknown class: " + lastNode.getLiteralValue());
                                 }
                                 else {
                                     return new AssignmentNode(subArray(start, cursor), fields);
@@ -993,5 +1023,18 @@ public class AbstractParser {
 
     protected boolean isAt(char c, int range) {
         return lookAhead(range) == c;
+    }
+
+    protected void addImport(String name, Class cls) {
+        if (imports == null) imports = new HashMap<String, Class>();
+        imports.put(name, cls);
+    }
+
+    protected Class getImport(String name) {
+        return imports != null ? imports.get(name) : null;
+    }
+
+    protected boolean hasImport(String name) {
+        return imports != null && imports.containsKey(name);
     }
 }

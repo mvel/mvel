@@ -39,6 +39,8 @@ public class FastTokenIterator implements TokenIterator, Serializable {
     }
 
     public FastTokenIterator(TokenIterator map) {
+        map.finish();
+
         if (map instanceof FastTokenIterator) {
             this.length = (this.astNodes = ((FastTokenIterator) map).astNodes).length;
         }
@@ -139,5 +141,11 @@ public class FastTokenIterator implements TokenIterator, Serializable {
 
     public int index() {
         return cursor;
+    }
+
+
+    public void finish() {
+
+
     }
 }

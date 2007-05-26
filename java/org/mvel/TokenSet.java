@@ -74,12 +74,10 @@ public class TokenSet implements TokenIterator {
         }
     }
 
-
     public void skipToken() {
         if (current != null)
             current = current.nextASTNode;
     }
-
 
     public ASTNode peekNext() {
         if (current != null && current.nextASTNode != null)
@@ -87,7 +85,6 @@ public class TokenSet implements TokenIterator {
         else
             return null;
     }
-
 
     public ASTNode peekToken() {
         if (current == null) return null;
@@ -108,7 +105,6 @@ public class TokenSet implements TokenIterator {
         throw new RuntimeException("unimplemented");
     }
 
-
     public void back() {
         throw new RuntimeException("unimplemented");
     }
@@ -124,4 +120,36 @@ public class TokenSet implements TokenIterator {
     public int index() {
         return -1;
     }
+
+    public void finish() {
+        reset();
+
+        ASTNode last = null;
+        ASTNode curr;
+
+        while (hasMoreTokens()) {
+            curr = nextToken();
+
+            if (curr.isDiscard()) {
+                if (last == null) {
+                    firstASTNode = nextToken();
+                }
+                else {
+                    last.nextASTNode = nextToken();
+                }
+                continue;
+            }
+
+            if (!hasMoreTokens()) break;
+
+            if (nextToken().isDiscard()) {
+                curr.nextASTNode = nextToken();
+            }
+
+            last = curr;
+        }
+
+        reset();
+    }
+
 }
