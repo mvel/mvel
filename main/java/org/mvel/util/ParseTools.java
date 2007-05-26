@@ -14,6 +14,7 @@ import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
+import static java.lang.System.arraycopy;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -620,13 +621,13 @@ public class ParseTools {
 
     public static char[] subset(char[] array, int start, int length) {
         char[] newArray = new char[length];
-        System.arraycopy(array, start, newArray, 0, length);
+        arraycopy(array, start, newArray, 0, length);
         return newArray;
     }
 
     public static char[] subset(char[] array, int start) {
         char[] newArray = new char[array.length - start];
-        System.arraycopy(array, start, newArray, 0, newArray.length);
+        arraycopy(array, start, newArray, 0, newArray.length);
         return newArray;
     }
 

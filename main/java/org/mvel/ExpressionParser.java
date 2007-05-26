@@ -452,5 +452,23 @@ public class ExpressionParser extends AbstractParser {
         }
         vrf.setNextFactory(factory);
     }
+
+
+    protected boolean hasImport(String name) {
+        if (super.hasImport(name)) {
+            return true;
+        }
+        else {
+            VariableResolverFactory vrf = findClassImportResolverFactory(variableFactory);
+            return vrf != null && vrf.isResolveable(name);
+        }
+    }
+
+    protected Class getImport(String name) {
+        if (super.hasImport(name)) return super.getImport(name);
+
+        VariableResolverFactory vrf = findClassImportResolverFactory(variableFactory);
+        return (Class) vrf.getVariableResolver(name).getValue();
+    }
 }
 

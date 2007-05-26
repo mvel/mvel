@@ -400,7 +400,6 @@ public class AbstractParser {
                                                  */
                                                 lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
                                                 lastNode.setAsLiteral();
-
                                             }
                                             catch (ClassNotFoundException e) {
                                                 /**
