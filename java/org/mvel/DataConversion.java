@@ -78,7 +78,9 @@ public class DataConversion {
     }
 
     public static boolean canConvert(Class toType, Class convertFrom) {
-        return CONVERTERS.containsKey(toType) && CONVERTERS.get(toType).canConvertFrom(convertFrom);
+        return (CONVERTERS.containsKey(toType)
+                && CONVERTERS.get(toType).canConvertFrom(convertFrom))
+                || toType.isAssignableFrom(convertFrom);
     }
 
     public static <T> T convert(Object in, Class<T> toType) {
