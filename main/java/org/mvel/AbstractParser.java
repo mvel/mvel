@@ -256,7 +256,7 @@ public class AbstractParser {
                         case RETURN:
                             start = cursor + 1;
                             captureToEOS();
-                            return new ReturnNode(subArray(start, cursor--), fields);
+                            return new ReturnNode(subArray(start, cursor), fields);
                         case IF:
                             fields |= ASTNode.BLOCK_IF;
                             return captureCodeBlock(expr);
