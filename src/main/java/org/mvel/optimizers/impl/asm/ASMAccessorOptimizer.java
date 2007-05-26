@@ -367,9 +367,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             Object lit = LITERALS.get(property);
 
             if (lit instanceof Class) {
-//                debug("LDC " + getDescriptor((Class) lit));
-//                mv.visitLdcInsn(getType(getDescriptor((Class) lit)));
-
                 ldcClassConstant((Class) lit);
             }
 
@@ -381,11 +378,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             if (ts != null) {
                 if (ts instanceof Class) {
-//                    debug("LDC " + getDescriptor((Class) ts));
-//                    mv.visitLdcInsn(getType(getDescriptor((Class) ts)));
-
                     ldcClassConstant((Class) ts);
-
                     return ts;
                 }
                 else {
@@ -404,8 +397,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 Class c = (Class) ctx;
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
-
-//                        mv.visitLdcInsn(getType(c));
 
                         ldcClassConstant(c);
 
@@ -746,9 +737,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                                 (parameterTypes[i] != String.class &&
                                         !parameterTypes[i].isAssignableFrom(preConvArgs[i].getClass()))) {
 
-//                            debug("LDC " + getWrapperClass(parameterTypes[i]));
-//                            mv.visitLdcInsn(getType(getWrapperClass(parameterTypes[i])));
-
                             ldcClassConstant(getWrapperClass(parameterTypes[i]));
 
                             debug("INVOKESTATIC DataConversion.convert");
@@ -830,13 +818,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private static java.lang.Class loadClass(String className, byte[] b)
             throws IllegalAccessException, InvocationTargetException {
-        defineClass.setAccessible(true);
-        try {
-            //noinspection RedundantArrayCreation
-            return (Class) defineClass.invoke(classLoader, new Object[]{className, b, 0, (b.length)});
-        }
-        finally {
-            defineClass.setAccessible(false);
+        synchronized (defineClass) {
+            defineClass.setAccessible(true);
+            try {
+                //noinspection RedundantArrayCreation
+                return (Class) defineClass.invoke(classLoader, new Object[]{className, b, 0, (b.length)});
+            }
+            finally {
+                defineClass.setAccessible(false);
+            }
         }
     }
 
