@@ -660,6 +660,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(20, parseDirect("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; "));
     }
 
+    public void testObjectCreation() {
+        assertEquals(6, parseDirect("new Integer( 6 )"));
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile();
