@@ -682,13 +682,6 @@ public class ParserUnitTest extends TestCase {
         assertTrue((Boolean) compiledExecute("a = new java.math.BigDecimal( 10.0 ); return a <= 11.0"));
     }
 
-    public void testQualifiedStaticTyping() {
-        assertEquals(new Float("20.0"), compiledExecute("java.math.BigDecimal a = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal b = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal c = a + b; return c; "));
-    }
-
-    public void testUnQualifiedStaticTyping() {
-        assertEquals(new Float("20.0"), compiledExecute("BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; "));
-    }
 
     public void testEnum() {
         assertTrue((Boolean) compiledExecute("a = org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; System.out.println(org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION); return a == org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; "));

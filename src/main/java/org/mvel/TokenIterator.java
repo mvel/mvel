@@ -47,4 +47,6 @@ public interface TokenIterator {
 
     public int index();
 
+    public void finish();
+
 }

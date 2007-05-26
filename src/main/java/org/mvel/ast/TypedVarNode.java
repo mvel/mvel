@@ -22,11 +22,14 @@ public class TypedVarNode extends ASTNode {
         int assignStart;
         if ((assignStart = find(expr, '=')) != -1) {
             checkNameSafety(name = new String(expr, 0, assignStart).trim());
+            System.out.println("TYPED assignment " + type + " [" + name + "]= <<" + new String(subset(expr, assignStart + 1)) + ">>");
+
             statement = (ExecutableStatement) compileExpression(subset(expr, assignStart + 1));
         }
         else {
             checkNameSafety(name = new String(expr));
         }
+
     }
 
 
@@ -34,11 +37,15 @@ public class TypedVarNode extends ASTNode {
         if (statement != null) {
             Object o = statement.getValue(ctx, thisValue, factory);
 
+            System.out.println("RUN assigning [" + name + "] = <<" + o + ">>");
+
             finalLocalVariableFactory(factory).createVariable(name, o, type);
 
             return o;
         }
         else {
+
+            System.out.println("Null Assignment: " + name);
             factory.createVariable(name, null, type);
             return Void.class;
         }

@@ -168,6 +168,10 @@ public class ASTNode implements Cloneable, Serializable {
         return literal;
     }
 
+    public void setLiteralValue(Object literal) {
+        this.literal = literal;
+    }
+
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((fields & (LITERAL)) != 0) {
             if ((fields & THISREF) != 0)
@@ -540,6 +544,9 @@ public class ASTNode implements Cloneable, Serializable {
         return ((fields & DEEP_PROPERTY) != 0);
     }
 
+    public void setAsLiteral() {
+        fields |= LITERAL;
+    }
 
     public int getCursorPosition() {
         return cursorPosition;
@@ -549,7 +556,6 @@ public class ASTNode implements Cloneable, Serializable {
         this.cursorPosition = cursorPosition;
     }
 
-
     public boolean isDiscard() {
         return discard;
     }
@@ -557,6 +563,8 @@ public class ASTNode implements Cloneable, Serializable {
     public void setDiscard(boolean discard) {
         this.discard = discard;
     }
+
+
 }
 
 
