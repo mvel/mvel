@@ -4,6 +4,8 @@ import org.mvel.CompileException;
 import org.mvel.ConversionException;
 import org.mvel.DataTypes;
 import org.mvel.Operator;
+import org.mvel.util.ParseTools;
+
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
 
@@ -57,8 +59,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
             case Operator.POWER:
                 return Math.pow(val1.doubleValue(), val2.doubleValue());
             case Operator.MOD:
-                return val1.remainder(val2);
-
+                return val1.doubleValue() % val2.doubleValue();
             case Operator.GTHAN:
                 return val1.compareTo(val2) == 1;
             case Operator.GETHAN:
@@ -273,7 +274,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
                     case Operator.MULT:
                         return ((Float) val1) * ((Float) val2);
                     case Operator.POWER:
-                        return new BigDecimal((Float) val1).pow(new BigDecimal((Float) val2).intValue());
+                        Math.pow( (Float) val1, (Float) val2 );         
                     case Operator.MOD:
                         return ((Float) val1) % ((Float) val2);
 
