@@ -682,12 +682,12 @@ public class ParserUnitTest extends TestCase {
         assertTrue((Boolean) compiledExecute("a = new java.math.BigDecimal( 10.0 ); return a <= 11.0"));
     }
 
-//    public void testEnum() {
-//        assertTrue((Boolean) compiledExecute("a = org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; System.out.println(org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION); return a == org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; "));
-//
-//        Serializable compiled = MVEL.compileExpression("a = org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; System.out.println(org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION); return a == org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; ");
-//        assertTrue((Boolean) MVEL.executeExpression(compiled, null, map));
-//    }
+    public void testEnum() {
+        assertTrue((Boolean) compiledExecute("a = org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; System.out.println(org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION); return a == org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; "));
+
+        Serializable compiled = MVEL.compileExpression("a = org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; System.out.println(org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION); return a == org.mvel.tests.main.res.MyEnum.FULL_DOCUMENTATION; ");
+        assertTrue((Boolean) MVEL.executeExpression(compiled, null, map));
+    }
 
     public void testArrayCoercion2() {
         assertEquals(10, parseDirect("sum({2,2,2,2,2})"));
