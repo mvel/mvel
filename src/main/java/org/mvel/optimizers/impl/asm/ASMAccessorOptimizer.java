@@ -1670,16 +1670,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         System.out.println("JIT Compiler Dump for: <<" + new String(expr) + ">>\n-------------------------------\n");
         System.out.println(buildLog.toString());
         System.out.println("\n<END OF DUMP>\n");
-        if (MVEL.isFileDebugging()) {
-            try {
-                FileWriter writer = ParseTools.getDebugFileWriter();
-                writer.append(buildLog.toString());
-                writer.flush();
-                writer.close();
-            }
-            catch (IOException e) {
-            }
+        //  if (MVEL.isFileDebugging()) {
+        try {
+            FileWriter writer = ParseTools.getDebugFileWriter();
+            writer.append(buildLog.toString());
+            writer.flush();
+            writer.close();
         }
+        catch (IOException e) {
+        }
+        //   }
 
     }
 
