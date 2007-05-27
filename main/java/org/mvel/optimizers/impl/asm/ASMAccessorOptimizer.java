@@ -1673,7 +1673,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (MVEL.isFileDebugging()) {
             try {
                 FileWriter writer = ParseTools.getDebugFileWriter();
-                writer.append(buildLog.toString());
+                writer.write( buildLog.toString() );
                 writer.flush();
                 writer.close();
             }
