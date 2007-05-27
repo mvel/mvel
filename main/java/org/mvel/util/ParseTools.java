@@ -499,7 +499,8 @@ public class ParseTools {
         if (compareTo == null)
             return false;
         else if (compareTo instanceof String)
-            return ((String) compareTo).contains(valueOf(compareTest));
+            // @todo use String.contains once we move to jdk1.5
+            return ((String) compareTo).indexOf( valueOf(compareTest).toString() ) > -1;            
         else if (compareTo instanceof Collection)
             return ((Collection) compareTo).contains(compareTest);
         else if (compareTo instanceof Map)
