@@ -258,7 +258,8 @@ public class PropertyTools {
             case DataTypes.DOUBLE:
                 return Double.parseDouble(new String(val));
             case DataTypes.BIG_DECIMAL:
-                return new BigDecimal(val);
+                // @todo: new String() only needed for jdk1.4, remove when we move to jdk1.5
+                return new BigDecimal(new String( val ) );
             default:
                 return new String(val);
         }

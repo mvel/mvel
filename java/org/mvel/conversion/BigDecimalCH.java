@@ -129,7 +129,8 @@ public class BigDecimalCH implements ConversionHandler {
         CNV.put(char[].class,
                 new Converter() {
                     public BigDecimal convert(Object o) {
-                        return new BigDecimal((char[]) o);
+                        // @todo: new String() only needed for jdk1.4, remove when we move to jdk1.5
+                        return new BigDecimal(new String((char[]) o));
                     }
                 }
 

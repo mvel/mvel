@@ -709,12 +709,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return ca;
         }
         else {
-            Constructor cns = Class.forName(new String(expression)).getConstructor();
+            Constructor cns = Class.forName(new String(expression)).getConstructor( null );
             AccessorNode ca = new ConstructorAccessor(cns, null);
 
             if (cnsRes.length > 1) {
                 ReflectiveAccessorOptimizer compiledOptimizer
-                        = new ReflectiveAccessorOptimizer(cnsRes[1].toCharArray(), cns.newInstance(), ctx, vars);
+                        = new ReflectiveAccessorOptimizer(cnsRes[1].toCharArray(), cns.newInstance( null ), ctx, vars);
                 compiledOptimizer.setRootNode(ca);
                 compiledOptimizer.compileGetChain();
                 ca = compiledOptimizer.getRootNode();
