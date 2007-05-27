@@ -115,9 +115,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         MethodVisitor m = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         m.visitCode();
         m.visitVarInsn(Opcodes.ALOAD, 0);
-        m.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/lang/Object",
+        m.visitMethodInsn(INVOKESPECIAL, "java/lang/Object",
                 "<init>", "()V");
-        m.visitInsn(Opcodes.RETURN);
+        m.visitInsn(RETURN);
 
         m.visitMaxs(1, 1);
         m.visitEnd();
@@ -1673,7 +1673,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (MVEL.isFileDebugging()) {
             try {
                 FileWriter writer = ParseTools.getDebugFileWriter();
-                writer.write( buildLog.toString() );
+                writer.write(buildLog.toString());
                 writer.flush();
                 writer.close();
             }

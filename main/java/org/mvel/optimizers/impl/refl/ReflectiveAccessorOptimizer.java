@@ -49,6 +49,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     private static final int DONE = -1;
 
     private static final Object[] EMPTYARG = new Object[0];
+    private static final Class[] EMPTYCLS = new Class[0];
 
     private boolean first = true;
 
@@ -709,12 +710,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return ca;
         }
         else {
-            Constructor cns = Class.forName(new String(expression)).getConstructor( null );
+            Constructor cns = Class.forName(new String(expression)).getConstructor(EMPTYCLS);
             AccessorNode ca = new ConstructorAccessor(cns, null);
 
             if (cnsRes.length > 1) {
                 ReflectiveAccessorOptimizer compiledOptimizer
-                        = new ReflectiveAccessorOptimizer(cnsRes[1].toCharArray(), cns.newInstance( null ), ctx, vars);
+                        = new ReflectiveAccessorOptimizer(cnsRes[1].toCharArray(), cns.newInstance(null), ctx, vars);
                 compiledOptimizer.setRootNode(ca);
                 compiledOptimizer.compileGetChain();
                 ca = compiledOptimizer.getRootNode();
