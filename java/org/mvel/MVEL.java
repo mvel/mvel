@@ -37,6 +37,9 @@ public class MVEL {
     public static final String VERSION_SUB = "beta16";
     public static final String CODENAME = "horizon";
 
+    static String ADVANCED_DEBUGGING_FILE = System.getProperty("mvel.debugging.file") == null ? "mvel_debug.txt"
+            : System.getProperty("mvel.debugging.file");
+
     static boolean ADVANCED_DEBUG = getBoolean("mvel.advanced_debugging");
     static boolean THREAD_SAFE = getBoolean("mvel.threadsafety");
     static boolean OPTIMIZER = true;
