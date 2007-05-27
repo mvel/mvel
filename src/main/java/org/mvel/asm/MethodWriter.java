@@ -341,10 +341,6 @@ class MethodWriter implements MethodVisitor {
 
     /**
      * Indicates what must be automatically computed.
-     *
-     * @see FRAMES
-     * @see MAXS
-     * @see NOTHING
      */
     private int compute;
 
@@ -352,7 +348,7 @@ class MethodWriter implements MethodVisitor {
      * A list of labels. This list is the list of basic blocks in the method,
      * i.e. a list of Label objects linked to each other by their
      * {@link Label#successor} field, in the order they are visited by
-     * {@link visitLabel}, and starting with the first basic ast.
+     * and starting with the first basic ast.
      */
     private Label labels;
 
