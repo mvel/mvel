@@ -1539,8 +1539,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 Class cls = findClass(factory, s);
 
-                debug("NEW " + getDescriptor(cls));
-                mv.visitTypeInsn(NEW, getDescriptor(cls));
+                debug("NEW " + getInternalName(cls));
+                mv.visitTypeInsn(NEW, getInternalName(cls));
                 debug("DUP");
                 mv.visitInsn(DUP);
 
@@ -1596,8 +1596,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 }
 
-                debug("INVOKESPECIAL " + getDescriptor(cls) + ".<init> : " + getConstructorDescriptor(cns));
-                mv.visitMethodInsn(INVOKESPECIAL, getDescriptor(cls), "<init>", getConstructorDescriptor(cns));
+                debug("INVOKESPECIAL " + getInternalName(cls) + ".<init> : " + getConstructorDescriptor(cns));
+                mv.visitMethodInsn(INVOKESPECIAL, getInternalName(cls), "<init>", getConstructorDescriptor(cns));
 
                 _finishJIT();
                 Accessor acc = _initializeAccessor();
@@ -1611,8 +1611,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             else {
                 Class cls = findClass(factory, new String(property));
 
-                debug("NEW " + getDescriptor(cls));
-                mv.visitTypeInsn(NEW, getDescriptor(cls));
+                debug("NEW " + getInternalName(cls));
+                mv.visitTypeInsn(NEW, getInternalName(cls));
                 debug("DUP");
                 mv.visitInsn(DUP);
 
@@ -1620,7 +1620,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 debug("INVOKESPECIAL <init>");
 
-                mv.visitMethodInsn(INVOKESPECIAL, getDescriptor(cls), "<init>", getConstructorDescriptor(cns));
+                mv.visitMethodInsn(INVOKESPECIAL, getInternalName(cls), "<init>", getConstructorDescriptor(cns));
 
                 _finishJIT();
                 Accessor acc = _initializeAccessor();
