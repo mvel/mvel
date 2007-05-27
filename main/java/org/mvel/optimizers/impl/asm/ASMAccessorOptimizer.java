@@ -33,10 +33,13 @@ import org.mvel.optimizers.impl.refl.DeepAssignment;
 import org.mvel.optimizers.impl.refl.Union;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.CollectionParser;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import static java.lang.reflect.Array.getLength;
 import java.lang.reflect.*;
 import java.util.*;
@@ -69,6 +72,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private VariableResolverFactory variableFactory;
 
     private static final Object[] EMPTYARG = new Object[0];
+    private static final Class[] EMPTYCLS = new Class[0];
 
     private boolean first = true;
     private boolean deferFinish = false;
@@ -1612,7 +1616,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("DUP");
                 mv.visitInsn(DUP);
 
-                Constructor cns = cls.getConstructor();
+                Constructor cns = cls.getConstructor(EMPTYCLS);
 
                 debug("INVOKESPECIAL <init>");
 
@@ -1666,6 +1670,17 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         System.out.println("JIT Compiler Dump for: <<" + new String(expr) + ">>\n-------------------------------\n");
         System.out.println(buildLog.toString());
         System.out.println("\n<END OF DUMP>\n");
+        if (MVEL.isFileDebugging()) {
+            try {
+                FileWriter writer = ParseTools.getDebugFileWriter();
+                writer.append(buildLog.toString());
+                writer.flush();
+                writer.close();
+            }
+            catch (IOException e) {
+            }
+        }
+
     }
 
 }
