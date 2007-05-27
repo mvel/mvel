@@ -10,6 +10,9 @@ import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.math.MathProcessor;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
@@ -853,5 +856,9 @@ public class ParseTools {
         if (AbstractParser.isReservedWord(name)) {
             throw new CompileException("reserved word in assignment: " + name);
         }
+    }
+
+    public static FileWriter getDebugFileWriter() throws IOException {
+        return new FileWriter(new File(MVEL.getDebuggingOutputFileName()), true);
     }
 }
