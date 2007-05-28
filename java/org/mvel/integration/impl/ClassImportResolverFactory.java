@@ -31,9 +31,11 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver createVariable(String name, Object value) {
-        VariableResolver vr = new ClassImportResolver(name.substring(name.lastIndexOf('.')), name);
-        variableResolvers.put(vr.getName(), vr);
-        return vr;
+        throw new RuntimeException("unimplemented, please use addClass(Class)");
+
+//        VariableResolver vr = new ClassImportResolver(name.substring(name.lastIndexOf('.')), name);
+//        variableResolvers.put(vr.getName(), vr);
+//        return vr;
     }
 
 
