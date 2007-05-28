@@ -186,9 +186,6 @@ public class PropertyTools {
             if ((fld.getModifiers() & PUBLIC) != 0) return fld;
         }
         catch (Exception e) {
-//            if (clazz.getSuperclass() != Object.class) {
-//                return getFieldOrAccessor(clazz.getSuperclass(), property);
-//            }
             // do nothing.
         }
         return getGetter(clazz, property);
@@ -259,7 +256,7 @@ public class PropertyTools {
                 return Double.parseDouble(new String(val));
             case DataTypes.BIG_DECIMAL:
                 // @todo: new String() only needed for jdk1.4, remove when we move to jdk1.5
-                return new BigDecimal(new String( val ) );
+                return new BigDecimal(new String(val));
             default:
                 return new String(val);
         }
@@ -353,7 +350,7 @@ public class PropertyTools {
             return false;
         else if (toCompare instanceof String)
             // @todo use String.contains once we move to jdk1.5
-            return ((String) toCompare).indexOf( valueOf(testValue).toString() ) > -1;
+            return ((String) toCompare).indexOf(valueOf(testValue).toString()) > -1;
         else if (toCompare instanceof Collection)
             return ((Collection) toCompare).contains(testValue);
         else if (toCompare instanceof Map)
