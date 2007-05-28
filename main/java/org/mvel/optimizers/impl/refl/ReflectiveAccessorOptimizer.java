@@ -625,7 +625,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             cursor = 1;
         }
 
-
         ASTNode var = nextToken();
 
         if (!nextToken().isOperator(Operator.PROJECTION)) {
@@ -633,7 +632,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         greedy = true;
-
 
         Fold fold = new Fold(var.getNameAsArray(), new ExprValueAccessor(nextToken().getName()));
 
