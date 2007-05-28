@@ -40,6 +40,7 @@ import org.mvel.util.StringAppender;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import static java.lang.System.getProperty;
 import static java.lang.reflect.Array.getLength;
 import java.lang.reflect.*;
 import java.util.*;
@@ -55,7 +56,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private static final int OPCODES_VERSION;
 
     static {
-        String javaVersion = System.getProperty("java.version");
+        final String javaVersion = getProperty("java.version");
         if (javaVersion.startsWith("1.4"))
             OPCODES_VERSION = Opcodes.V1_4;
         else if (javaVersion.startsWith("1.5"))
@@ -456,7 +457,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     }
                 }
             }
-
 
             throw new PropertyAccessException("could not access property (" + property + ")");
         }

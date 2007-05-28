@@ -282,7 +282,6 @@ public class AbstractParser {
                             addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
                             return importNode;
 
-
                         case IMPORT_STATIC:
                             start = cursor + 1;
                             captureToEOS();
