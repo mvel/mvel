@@ -269,12 +269,6 @@ public class AbstractParser {
                             fields |= ASTNode.BLOCK_WITH;
                             return captureCodeBlock(expr);
 
-                        case TYPED_VAR:
-                            fields |= ASTNode.TYPED;
-                            skipWhitespace();
-                            start = cursor;
-                            continue;
-
                         case IMPORT:
                             start = cursor + 1;
                             captureToEOS();
@@ -288,10 +282,6 @@ public class AbstractParser {
                             return new StaticImportNode(subArray(start, cursor--), fields);
                     }
 
-                }
-                else if (isIdentifierPart(expr[cursor])) {
-                    capture = true;
-                    continue;
                 }
 
                 /**
@@ -357,9 +347,6 @@ public class AbstractParser {
                             }
 
                         case']':
-                            if ((fields & (ASTNode.INLINE_COLLECTION)) != 0) {
-                                break;
-                            }
                         case'[':
                             balancedCapture('[');
                             cursor++;
@@ -425,16 +412,7 @@ public class AbstractParser {
                                     return new AssignmentNode(subArray(start, cursor), fields);
                                 }
                             }
-                        case'i': // handle "in" fold operator
-                            if (greedy && isRemain(2) && lookAhead(1) == 'n' && isWhitespace(lookAhead(2))) {
-                                cursor += 2;
 
-                                fields |= ASTNode.FOLD;
-
-                                capture = false;
-
-                                continue;
-                            }
                     }
 
                 }
@@ -526,14 +504,6 @@ public class AbstractParser {
 
                             return createToken(expr, start, cursor, ASTNode.FOLD);
                         }
-                        else if ((fields & ASTNode.ASSIGN) != 0) {
-                            return createToken(expr, start, cursor, fields | ASTNode.SUBEVAL);
-                        }
-                        else if (cursor < length && (expr[cursor] == '.')) {
-
-                            cursor++;
-                            continue;
-                        }
 
                         return createToken(expr, start + 1, cursor - 1, fields |= ASTNode.SUBEVAL);
                     }
@@ -581,12 +551,7 @@ public class AbstractParser {
                             throw new CompileException("unterminated literal", expr, cursor);
                         }
 
-                        if ((fields & ASTNode.ASSIGN) != 0) {
-                            return createToken(expr, start, ++cursor, ASTNode.ASSIGN);
-                        }
-                        else {
-                            return createToken(expr, start + 1, ++cursor - 1, ASTNode.STR_LITERAL | ASTNode.LITERAL);
-                        }
+                        return createToken(expr, start + 1, ++cursor - 1, ASTNode.STR_LITERAL | ASTNode.LITERAL);
 
 
                     case'"':
@@ -701,24 +666,24 @@ public class AbstractParser {
                 break;
         }
 
-        if (type == term) {
-            for (cursor++; cursor < length; cursor++) {
-                if (expr[cursor] == type) {
-                    return cursor;
-                }
-
+//        if (type == term) {
+//            for (cursor++; cursor < length; cursor++) {
+//                if (expr[cursor] == type) {
+//                    return cursor;
+//                }
+//
+//            }
+//        }
+//        else {
+        for (cursor++; cursor < length; cursor++) {
+            if (expr[cursor] == type) {
+                depth++;
+            }
+            else if (expr[cursor] == term && --depth == 0) {
+                return cursor;
             }
         }
-        else {
-            for (cursor++; cursor < length; cursor++) {
-                if (expr[cursor] == type) {
-                    depth++;
-                }
-                else if (expr[cursor] == term && --depth == 0) {
-                    return cursor;
-                }
-            }
-        }
+//        }
 
         return -1;
     }
@@ -931,20 +896,20 @@ public class AbstractParser {
         while (isWhitespace(expr[cursor])) cursor++;
     }
 
-    protected void skipWhitlespaceSafe() {
-        while (cursor < length && isWhitespace(expr[cursor])) cursor++;
-    }
+//    protected void skipWhitlespaceSafe() {
+//        while (cursor < length && isWhitespace(expr[cursor])) cursor++;
+//    }
 
-    protected void skipToWhitespace() {
-        while (cursor < length && !isWhitespace(expr[cursor])) cursor++;
-    }
+//    protected void skipToWhitespace() {
+//        while (cursor < length && !isWhitespace(expr[cursor])) cursor++;
+//    }
 
     protected void skipToNextTokenJunction() {
         while (cursor < length) {
             switch (expr[cursor]) {
-                case'{':
-                    return;
                 case'(':
+                    return;
+                case'{':
                     return;
                 default:
                     if (isWhitespace(expr[cursor])) return;
@@ -957,11 +922,11 @@ public class AbstractParser {
         while (cursor > 0 && isWhitespace(expr[cursor - 1])) cursor--;
     }
 
-    protected void setFieldFalse(int flag) {
-        if (((fields & flag) != 0)) {
-            fields = fields ^ flag;
-        }
-    }
+//    protected void setFieldFalse(int flag) {
+//        if (((fields & flag) != 0)) {
+//            fields = fields ^ flag;
+//        }
+//    }
 
     protected ASTNode captureTokenToEOS() {
         int start = cursor;
