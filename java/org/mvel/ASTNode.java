@@ -90,11 +90,6 @@ public class ASTNode implements Cloneable, Serializable {
         this.cursorPosition = start;
         this.fields = fields;
 
-        if ((fields & RETURN) != 0) {
-            this.fields |= OPERATOR;
-            literal = Operator.RETURN;
-        }
-
         char[] name = new char[end - start];
         arraycopy(expr, start, name, 0, end - start);
         setName(name);
