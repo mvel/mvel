@@ -463,11 +463,11 @@ public class TemplateInterpreter {
                         pushNode(currNode.getEndNode());
                         continue;
                     case TERMINUS: {
-                        if (nodes.length == 2) {
-                            return register;
+                        if (nodes.length != 2) {
+                            return sbuf.toString();
                         }
                         else {
-                            return sbuf.toString();
+                            return register;
                         }
                     }
                     case INCLUDE_BY_REF: {
@@ -590,11 +590,11 @@ public class TemplateInterpreter {
         int end = start;
         while (depth > 0) {
             switch (expression[++end]) {
-                case'{':
-                    depth++;
-                    break;
                 case'}':
                     depth--;
+                    break;
+                case'{':
+                    depth++;
                     break;
             }
         }
