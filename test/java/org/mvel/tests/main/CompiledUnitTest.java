@@ -4,6 +4,9 @@ import junit.framework.TestCase;
 import org.mvel.ExpressionCompiler;
 import org.mvel.MVEL;
 import org.mvel.debug.DebugTools;
+import org.mvel.integration.ResolverTools;
+import org.mvel.integration.impl.ClassImportResolverFactory;
+import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.DerivedClass;
@@ -664,6 +667,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(6, parseDirect("new Integer( 6 )"));
     }
 
+    public void testTernary4() {
+        assertEquals("<test>", parseDirect("true ? '<test>' : '<poo>'"));
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile();
@@ -675,6 +682,19 @@ public class CompiledUnitTest extends TestCase {
 
         assertTrue(compiler.getLocals().contains("bleh"));
         assertTrue(compiler.getLocals().contains("twa"));
+    }
+
+    public void testClassImportViaFactory() {
+        MapVariableResolverFactory mvf = new MapVariableResolverFactory(map);
+        ClassImportResolverFactory classes = new ClassImportResolverFactory();
+        classes.addClass(HashMap.class);
+
+        ResolverTools.appendFactory(mvf, classes);
+
+        Serializable compiled = MVEL.compileExpression("HashMap");
+
+        assertEquals(HashMap.class, MVEL.executeExpression(compiled, mvf));
+
     }
 
     public Object parseDirect(String ex) {
