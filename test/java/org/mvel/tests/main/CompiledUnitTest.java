@@ -7,11 +7,7 @@ import org.mvel.debug.DebugTools;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.tests.main.res.Bar;
-import org.mvel.tests.main.res.Base;
-import org.mvel.tests.main.res.Cheese;
-import org.mvel.tests.main.res.DerivedClass;
-import org.mvel.tests.main.res.Foo;
+import org.mvel.tests.main.res.*;
 
 import java.io.Serializable;
 import java.util.*;
@@ -525,6 +521,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("101", parseDirect("new String(this.number)"));
     }
 
+    public void testConstructor() {
+        assertEquals("foo", parseDirect("a = 'foobar'; new String(a.toCharArray(), 0, 3)"));
+    }
+
     public void testStaticNamespaceClassWithField() {
         assertEquals(Integer.MAX_VALUE, parseDirect("java.lang.Integer.MAX_VALUE"));
     }
@@ -696,17 +696,17 @@ public class CompiledUnitTest extends TestCase {
 
         assertTrue(MVEL.executeExpression(compiled, mvf) instanceof HashMap);
     }
-    
+
     public void testCheeseConstructor() {
         MapVariableResolverFactory mvf = new MapVariableResolverFactory(map);
         ClassImportResolverFactory classes = new ClassImportResolverFactory();
-        classes.addClass(Cheese.class);  
+        classes.addClass(Cheese.class);
 
         ResolverTools.appendFactory(mvf, classes);
 
         Serializable compiled = MVEL.compileExpression("cheese = new Cheese(\"cheddar\", 15);", classes.getImportedClasses());
 
-        assertTrue(MVEL.executeExpression(compiled, mvf) instanceof HashMap);        
+        assertTrue(MVEL.executeExpression(compiled, mvf) instanceof Cheese);
     }
 
     public Object parseDirect(String ex) {

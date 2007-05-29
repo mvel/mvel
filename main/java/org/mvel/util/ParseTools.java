@@ -73,6 +73,10 @@ public class ParseTools {
         return null;
     }
 
+    public static void main(String[] args) {
+        //  System.out.println(parseParameterList("(s.toChararray(), 0 , 3)".toCharArray(), 0));
+    }
+
     public static String[] parseParameterList(char[] parm, int offset, int length) {
         List<String> list = new LinkedList<String>();
 
@@ -147,7 +151,7 @@ public class ParseTools {
             }
         }
 
-        if (start < length && i > start) {
+        if (start < (length + offset) && i > start) {
             String s = new String(parm, start, i - start).trim();
             if (s.length() > 0)
                 list.add(s);
@@ -500,7 +504,7 @@ public class ParseTools {
             return false;
         else if (compareTo instanceof String)
             // @todo use String.contains once we move to jdk1.5
-            return ((String) compareTo).indexOf( valueOf(compareTest).toString() ) > -1;            
+            return ((String) compareTo).indexOf(valueOf(compareTest).toString()) > -1;
         else if (compareTo instanceof Collection)
             return ((Collection) compareTo).contains(compareTest);
         else if (compareTo instanceof Map)
