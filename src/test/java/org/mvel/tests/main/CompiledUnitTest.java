@@ -672,6 +672,13 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("<test>", parseDirect("true ? '<test>' : '<poo>'"));
     }
 
+    public void testStringAsCollection() {
+        assertEquals('o', parseDirect("abc = 'foo'; abc[1]"));
+    }
+
+    public void testSubExpressionIndexer() {
+        assertEquals("bar", parseDirect("xx = new java.util.HashMap(); xx.put('foo', 'bar'); prop = 'foo'; xx[prop];"));
+    }
 
     /**
      * Start collections framework based compliance tests
@@ -703,6 +710,32 @@ public class CompiledUnitTest extends TestCase {
                 "l.add('crap');" +
                 "poo = new java.util.ArrayList(l);" +
                 "poo.size();"));
+    }
+
+    public void testMapOperations() {
+        assertEquals("poo5", parseDirect(
+                "l = new java.util.ArrayList();" +
+                        "l.add('plop');" +
+                        "l.add('poo');" +
+                        "m = new java.util.HashMap();" +
+                        "m.put('foo', l);" +
+                        "m.put('cah', 'mah');" +
+                        "m.put('bar', 'foo');" +
+                        "m.put('sarah', 'mike');" +
+                        "m.put('edgar', 'poe');" +
+                        "" +
+                        "if (m.edgar == 'poe') {" +
+                        "return m.foo[1] + m.size();" +
+                        "}"));
+    }
+
+    public void testStackOperations() {
+        assertEquals(10, parseDirect(
+                "stk = new java.util.Stack();" +
+                        "stk.push(5);" +
+                        "stk.push(5);" +
+                        "stk.pop() + stk.pop();"
+        ));
     }
 
 

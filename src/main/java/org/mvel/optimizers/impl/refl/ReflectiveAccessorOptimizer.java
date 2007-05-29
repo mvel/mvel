@@ -278,23 +278,38 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         String item;
 
-        if (expr[cursor] == '\'' || expr[cursor] == '"') {
-            start++;
+//        if (expr[cursor] == '\'' || expr[cursor] == '"') {
+//            start++;
+//
+//            int end;
+//
+//            if (!scanTo(']'))
+//                throw new PropertyAccessException("unterminated '['");
+//            if ((end = containsStringLiteralTermination()) == -1)
+//                throw new PropertyAccessException("unterminated string literal in collections accessor");
+//
+//            item = new String(expr, start, end - start);
+//        }
+//        else {
+        if (!scanTo(']'))
+            throw new PropertyAccessException("unterminated '['");
 
-            int end;
+        item = new String(expr, start, cursor - start);
+        //      }
 
-            if (!scanTo(']'))
-                throw new PropertyAccessException("unterminated '['");
-            if ((end = containsStringLiteralTermination()) == -1)
-                throw new PropertyAccessException("unterminated string literal in collections accessor");
+        boolean itemSubExpr = true;
 
-            item = new String(expr, start, end - start);
+        try {
+            parseInt(item);
+            itemSubExpr = false;
         }
-        else {
-            if (!scanTo(']'))
-                throw new PropertyAccessException("unterminated '['");
+        catch (Exception e) {
+            // not a number;
+        }
 
-            item = new String(expr, start, cursor - start);
+        ExecutableStatement itemStmt = null;
+        if (itemSubExpr) {
+            itemStmt = (ExecutableStatement) MVEL.compileExpression(item);
         }
 
         ++cursor;
