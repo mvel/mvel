@@ -19,6 +19,7 @@
 package org.mvel.optimizers.impl.asm;
 
 import org.mvel.*;
+import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.compileExpression;
 import static org.mvel.MVEL.isAdvancedDebugging;
 import org.mvel.asm.*;
@@ -40,10 +41,13 @@ import org.mvel.util.StringAppender;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import static java.lang.Integer.parseInt;
 import static java.lang.System.getProperty;
 import static java.lang.reflect.Array.getLength;
 import java.lang.reflect.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of the MVEL Just-in-Time (JIT) compiler for Property Accessors using the ASM bytecode
@@ -478,23 +482,40 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         String item;
 
-        if (expr[cursor] == '\'' || expr[cursor] == '"') {
-            start++;
+        boolean itemSubExpr = true;
+//        if (expr[cursor] == '\'' || expr[cursor] == '"') {
+//            start++;
+//
+//            int end;
+//
+//            if (!scanTo(']'))
+//                throw new PropertyAccessException("unterminated '['");
+//            if ((end = containsStringLiteralTermination()) == -1)
+//                throw new PropertyAccessException("unterminated string literal in collections accessor");
+//
+//
+//            item = new String(expr, start, end - start );
+//        }
+//        else {
+        if (!scanTo(']'))
+            throw new PropertyAccessException("unterminated '['");
 
-            int end;
+        item = new String(expr, start, cursor - start);
+//        }
 
-            if (!scanTo(']'))
-                throw new PropertyAccessException("unterminated '['");
-            if ((end = containsStringLiteralTermination()) == -1)
-                throw new PropertyAccessException("unterminated string literal in collections accessor");
-
-            item = new String(expr, start, end - start);
+        try {
+            parseInt(item);
+            itemSubExpr = false;
         }
-        else {
-            if (!scanTo(']'))
-                throw new PropertyAccessException("unterminated '['");
+        catch (Exception e) {
+            // not a number;
+        }
 
-            item = new String(expr, start, cursor - start);
+
+        ExecutableStatement itemStmt = null;
+        if (itemSubExpr) {
+            compiledInputs.add(itemStmt = (ExecutableStatement) compileExpression(item));
+            inputs++;
         }
 
         ++cursor;
@@ -503,57 +524,119 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("CHECKCAST java/util/Map");
             mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 
-            debug("LDC: \"" + item + "\"");
-            mv.visitLdcInsn(item);
+            if (!itemSubExpr) {
+                debug("LDC: \"" + item + "\"");
+                mv.visitLdcInsn(item);
 
-            debug("INVOKEINTERFACE: get");
-            mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
+                debug("INVOKEINTERFACE: get");
+                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 
-            return ((Map) ctx).get(item);
+                return ((Map) ctx).get(item);
+            }
+            else {
+                valueFromSubExpression();
+
+                debug("INVOKEINTERFACE: get");
+                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
+
+                return ((Map) ctx).get(itemStmt.getValue(ctx, variableFactory));
+            }
         }
         else if (ctx instanceof List) {
-            int index = Integer.parseInt(item);
-
             debug("CHECKCAST java/util/List");
             mv.visitTypeInsn(CHECKCAST, "java/util/List");
 
-            intPush(index);
 
-            debug("INVOKEINTERFACE: java/util/List.get");
-            mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
+            if (!itemSubExpr) {
+                int index = parseInt(item);
 
-            return ((List) ctx).get(index);
+                intPush(index);
+
+                debug("INVOKEINTERFACE: java/util/List.get");
+                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
+
+                return ((List) ctx).get(index);
+            }
+            else {
+                valueFromSubExpression();
+
+                debug("INVOKEINTERFACE: java/util/List.get");
+                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
+
+                dataConversion(Integer.class);
+                unwrapPrimitive(int.class);
+
+                return ((List) ctx).get(convert(itemStmt.getValue(ctx, variableFactory), Integer.class));
+
+            }
         }
-        else if (ctx instanceof Collection) {
-            int count = Integer.parseInt(item);
-            if (count > ((Collection) ctx).size())
-                throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
-
-            Iterator iter = ((Collection) ctx).iterator();
-            for (int i = 0; i < count; i++) iter.next();
-            return iter.next();
-        }
+//        else if (ctx instanceof Collection) {
+//            int count = Integer.parseInt(item);
+//            if (count > ((Collection) ctx).size())
+//                throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
+//
+//
+//            Iterator iter = ((Collection) ctx).iterator();
+//            for (int i = 0; i < count; i++) iter.next();
+//            return iter.next();
+//        }
         else if (ctx instanceof Object[]) {
-            int index = Integer.parseInt(item);
+            int index = parseInt(item);
 
             debug("CHECKCAST [Ljava/lang/Object;");
             mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
 
-            intPush(index);
 
-            debug("AALOAD");
-            mv.visitInsn(AALOAD);
+            if (!itemSubExpr) {
+                intPush(index);
 
-            return ((Object[]) ctx)[index];
+                debug("AALOAD");
+                mv.visitInsn(AALOAD);
+
+                return ((Object[]) ctx)[index];
+            }
+            else {
+                valueFromSubExpression();
+                dataConversion(Integer.class);
+                unwrapPrimitive(int.class);
+
+                debug("AALOAD");
+                mv.visitInsn(AALOAD);
+
+                return ((Object[]) ctx)[convert(itemStmt.getValue(ctx, variableFactory), Integer.class)];
+
+            }
         }
         else if (ctx instanceof CharSequence) {
-            int index = Integer.parseInt(item);
+            int index = parseInt(item);
 
-            intPush(index);
+            debug("CHECKCAST java/lang/CharSequence");
+            mv.visitTypeInsn(CHECKCAST, "java/lang/CharSequence");
 
-            mv.visitMethodInsn(INVOKEINTERFACE, "java/lang/CharSequence", "charAt", "(I)C");
 
-            return ((CharSequence) ctx).charAt(index);
+            if (!itemSubExpr) {
+                intPush(index);
+
+                debug("INVOKEINTERFACE java/lang/CharSequence.charAt");
+                mv.visitMethodInsn(INVOKEINTERFACE, "java/lang/CharSequence", "charAt", "(I)C");
+
+                wrapPrimitive(char.class);
+
+                return ((CharSequence) ctx).charAt(index);
+            }
+            else {
+                valueFromSubExpression();
+                dataConversion(Integer.class);
+                unwrapPrimitive(int.class);
+
+                debug("INVOKEINTERFACE java/lang/CharSequence.charAt");
+                mv.visitMethodInsn(INVOKEINTERFACE, "java/lang/CharSequence", "charAt", "(I)C");
+
+                wrapPrimitive(char.class);
+
+                return ((CharSequence) ctx).charAt(convert(itemStmt.getValue(ctx, variableFactory), Integer.class));
+
+            }
         }
         else {
             throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
@@ -684,7 +767,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         cExpr.computeTypeConversionRule();
                     }
                     if (!cExpr.isConvertableIngressEgress()) {
-                        args[i] = DataConversion.convert(args[i], parameterTypes[i]);
+                        args[i] = convert(args[i], parameterTypes[i]);
                     }
                 }
             }
@@ -693,7 +776,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                  * Coerce any types if required.
                  */
                 for (int i = 0; i < args.length; i++) {
-                    args[i] = DataConversion.convert(args[i], parameterTypes[i]);
+                    args[i] = convert(args[i], parameterTypes[i]);
                 }
             }
 
@@ -808,10 +891,29 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 stacksize++;
             }
 
-            System.out.println("invoking " + m + "::" + ctx.getClass());
             return m.invoke(ctx, args);
         }
     }
+
+    private void valueFromSubExpression() {
+        debug("ALOAD 0");
+        mv.visitVarInsn(ALOAD, 0);
+        debug("GETFIELD p" + (compiledInputs.size() - 1));
+        mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/ExecutableStatement;");
+        debug("ALOAD 1");
+        mv.visitVarInsn(ALOAD, 1);
+        debug("ALOAD 3");
+        mv.visitVarInsn(ALOAD, 3);
+        debug("INVOKEINTERFACE org/mvel/ExecutableStatement.getValue");
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/ExecutableStatement", "getValue", "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+    }
+
+    private void dataConversion(Class target) {
+        ldcClassConstant(target);
+        debug("INVOKESTATIC org/mvel/DataConversion.convert");
+        mv.visitMethodInsn(INVOKESTATIC, "org/mvel/DataConversion", "convert", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
+    }
+
 
     private static final ClassLoader classLoader;
     private static final Method defineClass;
@@ -1080,6 +1182,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;");
             }
             else if (cls == char.class) {
+                debug("INVOKESTATIC java/lang/Character.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;");
             }
         }
