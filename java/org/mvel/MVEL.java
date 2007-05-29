@@ -106,15 +106,10 @@ public class MVEL {
         return new ExpressionParser(expression, ctx, tokens).parse();
     }
 
-    /**
-     * Compiles an expression and returns a Serializable object containing the compiled
-     * expression.
-     *
-     * @param expression - the expression to be compiled
-     * @return -
-     */
-    public static Serializable compileExpression(String expression) {
+
+    public static Serializable compiledExpression(String expression, Map<String, Class> imports) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
+        parser.setImportedClasses(imports);
 
         CompiledExpression cExpr = parser.compile();
 
@@ -135,6 +130,18 @@ public class MVEL {
 
 
         return cExpr;
+    }
+
+
+    /**
+     * Compiles an expression and returns a Serializable object containing the compiled
+     * expression.
+     *
+     * @param expression - the expression to be compiled
+     * @return -
+     */
+    public static Serializable compileExpression(String expression) {
+        return compiledExpression(expression, null);
     }
 
     /**

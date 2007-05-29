@@ -5,6 +5,7 @@ import static org.mvel.util.ParseTools.doOperations;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
@@ -14,6 +15,10 @@ public class ExpressionCompiler extends AbstractParser {
     private Class returnType;
 
     private boolean verifying = true;
+
+    public void setImportedClasses(Map<String, Class> imports) {
+        this.imports = imports;
+    }
 
     public CompiledExpression compile() {
         ASTNode tk;
