@@ -695,13 +695,13 @@ public class CompiledUnitTest extends TestCase {
 
 
     public void testCreationOfList() {
-        assertEquals(5, parseDirect("list = new java.util.LinkedList();" +
-                "list.add('fun');" +
-                "list.add('happy');" +
-                "list.add('fun');" +
-                "list.add('slide');" +
-                "list.add('crap');" +
-                "poo = new java.util.ArrayList(list);" +
+        assertEquals(5, parseDirect("l = new java.util.LinkedList();" +
+                "l.add('fun');" +
+                "l.add('happy');" +
+                "l.add('fun');" +
+                "l.add('slide');" +
+                "l.add('crap');" +
+                "poo = new java.util.ArrayList(l);" +
                 "poo.size();"));
     }
 
