@@ -716,8 +716,6 @@ public class CompiledUnitTest extends TestCase {
     public Object compiledExecute(String ex) {
         Serializable compiled = MVEL.compileExpression(ex);
 
-        System.out.println("DEBUGGING: " + MVEL.isAdvancedDebugging());
-
         System.out.println(DebugTools.decompile(compiled));
 
         Object first = MVEL.executeExpression(compiled, base, map);
