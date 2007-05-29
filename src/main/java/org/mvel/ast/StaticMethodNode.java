@@ -22,7 +22,6 @@ public class StaticMethodNode extends ASTNode {
         method = new String(subset(expr, findFirst('(', expr)));
     }
 
-
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
             return valRet(accessor.getValue(declaringClass, thisValue, factory));
@@ -38,7 +37,6 @@ public class StaticMethodNode extends ASTNode {
                 throw e;
             }
         }
-
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
