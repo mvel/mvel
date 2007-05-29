@@ -691,9 +691,9 @@ public class CompiledUnitTest extends TestCase {
 
         ResolverTools.appendFactory(mvf, classes);
 
-        Serializable compiled = MVEL.compileExpression("HashMap map = new HashMap()");
+        Serializable compiled = MVEL.compileExpression("HashMap map = new HashMap()", classes.getImportedClasses());
 
-        assertEquals(HashMap.class, MVEL.executeExpression(compiled, mvf));
+        assertTrue(MVEL.executeExpression(compiled, mvf) instanceof HashMap);
 
     }
 
