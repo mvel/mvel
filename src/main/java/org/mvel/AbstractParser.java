@@ -997,7 +997,7 @@ public class AbstractParser {
         return lookAhead(range) == c;
     }
 
-    protected void addImport(String name, Class cls) {
+    public void addImport(String name, Class cls) {
         if (imports == null) imports = new HashMap<String, Class>();
         imports.put(name, cls);
     }

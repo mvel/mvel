@@ -22,6 +22,7 @@ import org.mvel.integration.VariableResolver;
 import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     public ClassImportResolverFactory() {
@@ -54,6 +55,15 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
 
     public boolean isResolveable(String name) {
         return variableResolvers.containsKey(name) || isNextResolveable(name);
+    }
+
+    public Map<String, Class> getImportedClasses() {
+        Map<String, Class> imports = new HashMap<String, Class>();
+        for (String var : variableResolvers.keySet()) {
+            imports.put(var, (Class) variableResolvers.get(var).getValue());
+        }
+
+        return imports;
     }
 
 }
