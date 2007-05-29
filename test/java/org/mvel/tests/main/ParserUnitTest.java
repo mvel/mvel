@@ -204,6 +204,10 @@ public class ParserUnitTest extends TestCase {
     public void testMethodAccess6() {
         assertEquals(false, parse("@{!foo.bar.isWoof()}"));
     }
+    
+    public void testPrimitiveClassMethodAccess() {               
+        assertEquals( "int", parseDirect( "Integer.TYPE.getName()" ) );
+    }
 
     public void testNegation() {
         assertEquals(true, parse("@{!fun && !fun}"));

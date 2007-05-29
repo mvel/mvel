@@ -167,7 +167,11 @@ public class ParseTools {
 
     private static Map<String, Map<Integer, Method>> RESOLVED_METH_CACHE = new WeakHashMap<String, Map<Integer, Method>>(10);
 
+    
     public static Method getBestCanadidate(Object[] arguments, String method, Method[] methods) {
+        if ( methods.length == 0) {
+            return null;
+        }
         Class[] parmTypes;
         Method bestCandidate = null;
         int bestScore = 0;
