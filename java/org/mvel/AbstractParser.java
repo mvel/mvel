@@ -427,6 +427,15 @@ public class AbstractParser {
             }
             else
                 switch (expr[cursor]) {
+                    case'@': {
+                        start++;
+                        captureToEOT();
+
+                        String interceptorName = new String(expr, start, cursor - start);
+
+                        continue;
+                    }
+
                     case'=': {
                         if (!isAt('=', 1)) {
                             return createToken(expr, start, ++cursor, fields |= ASTNode.ASSIGN);
