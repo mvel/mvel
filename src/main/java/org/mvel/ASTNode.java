@@ -410,10 +410,6 @@ public class ASTNode implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     private void setName(char[] name) {
-//        if ((fields & (RETURN)) != 0) {
-//            this.name = name;
-//            return;
-//        }
         if ((fields & STR_LITERAL) != 0) {
             fields |= LITERAL;
 

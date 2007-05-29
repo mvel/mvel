@@ -60,7 +60,7 @@ public class ForEachNode extends BlockNode {
         int cursor = 0;
         while (cursor < condition.length && condition[cursor] != ':') cursor++;
 
-        if (condition[cursor] != ':')
+        if (cursor == condition.length || condition[cursor] != ':')
             throw new CompileException("expected : in foreach");
 
         item = new String(condition, 0, cursor).trim();

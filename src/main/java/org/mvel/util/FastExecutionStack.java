@@ -17,6 +17,10 @@ public class FastExecutionStack implements Stack {
         stack[++size] = obj;
     }
 
+    public void add(Object obj) {
+        throw new RuntimeException("add operation not supported with FastExecutionStack");
+    }
+
     public Object pushAndPeek(Object obj) {
         return stack[++size] = obj;
     }

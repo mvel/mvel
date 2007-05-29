@@ -2,6 +2,7 @@ package org.mvel;
 
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
+import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isDigit;
@@ -44,6 +45,8 @@ public class AbstractParser {
             new HashMap<String, Integer>(25 * 2, 0.4f);
 
     protected Map<String, Class> imports;
+
+    protected ExecutionStack splitAccumulator = new ExecutionStack();
 
 
     static {
@@ -205,6 +208,11 @@ public class AbstractParser {
          */
         if (cursor >= length) {
             return null;
+        }
+        else if (!splitAccumulator.isEmpty()) {
+            System.out.println("returning from split: " + splitAccumulator.peek());
+
+            return lastNode = (ASTNode) splitAccumulator.pop();
         }
 
         int brace, start = cursor;
@@ -675,15 +683,6 @@ public class AbstractParser {
                 break;
         }
 
-//        if (type == term) {
-//            for (cursor++; cursor < length; cursor++) {
-//                if (expr[cursor] == type) {
-//                    return cursor;
-//                }
-//
-//            }
-//        }
-//        else {
         for (cursor++; cursor < length; cursor++) {
             if (expr[cursor] == type) {
                 depth++;
@@ -692,7 +691,6 @@ public class AbstractParser {
                 return cursor;
             }
         }
-//        }
 
         return -1;
     }
@@ -709,11 +707,28 @@ public class AbstractParser {
      */
     private ASTNode createToken(final char[] expr, final int start, final int end, int fields) {
         ASTNode tk = new ASTNode(expr, start, end, fields);
-
         lastWasIdentifier = tk.isIdentifier();
-
         return lastNode = tk;
     }
+
+//    private ASTNode handleSplit(ASTNode tk) {
+//        if (tk.nextASTNode != null) {
+//            ASTNode t = tk;
+//
+//            ExecutionStack tempAccumulator = new ExecutionStack();
+//            while ((t = t.nextASTNode) != null) {
+//                tempAccumulator.add(t);
+//            }
+//
+//            while (!tempAccumulator.isEmpty()) {
+//                t = (ASTNode) tempAccumulator.pop();
+//                t.nextASTNode = null;
+//                splitAccumulator.add(t);
+//            }
+//        }
+//
+//        return lastNode = tk;
+//    }
 
     private char[] subArray(final int start, final int end) {
         char[] newA = new char[end - start];
@@ -731,6 +746,10 @@ public class AbstractParser {
         lastWasIdentifier = false;
 
         cursor++;
+
+        if (!isStatementManuallyTerminated()) {
+            splitAccumulator.add(new EndOfStatement());
+        }
 
         if (isFlag(ASTNode.BLOCK_IF)) {
             return new IfNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
@@ -905,13 +924,6 @@ public class AbstractParser {
         while (isWhitespace(expr[cursor])) cursor++;
     }
 
-//    protected void skipWhitlespaceSafe() {
-//        while (cursor < length && isWhitespace(expr[cursor])) cursor++;
-//    }
-
-//    protected void skipToWhitespace() {
-//        while (cursor < length && !isWhitespace(expr[cursor])) cursor++;
-//    }
 
     protected void skipToNextTokenJunction() {
         while (cursor < length) {
@@ -930,12 +942,6 @@ public class AbstractParser {
     protected void trimWhitespace() {
         while (cursor > 0 && isWhitespace(expr[cursor - 1])) cursor--;
     }
-
-//    protected void setFieldFalse(int flag) {
-//        if (((fields & flag) != 0)) {
-//            fields = fields ^ flag;
-//        }
-//    }
 
     protected ASTNode captureTokenToEOS() {
         int start = cursor;
@@ -987,6 +993,12 @@ public class AbstractParser {
         else {
             return expr[cursor + range];
         }
+    }
+
+    protected boolean isStatementManuallyTerminated() {
+        int c = cursor;
+        while (c < length && isWhitespace(expr[c])) c++;
+        return (c < length && expr[c] == ';');
     }
 
     protected boolean isRemain(int range) {

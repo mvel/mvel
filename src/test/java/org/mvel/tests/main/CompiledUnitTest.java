@@ -672,6 +672,40 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("<test>", parseDirect("true ? '<test>' : '<poo>'"));
     }
 
+
+    /**
+     * Start collections framework based compliance tests
+     */
+    public void testCreationOfSet() {
+        assertEquals("foo bar foo bar",
+                parseDirect("set = new java.util.HashSet(); " +
+                        "set.add('foo');" +
+                        "set.add('bar');" +
+                        "output = '';" +
+                        "foreach (item : set) {" +
+                        "output = output + item + ' ';" +
+                        "} " +
+                        "foreach (item : set) {" +
+                        "output = output + item + ' ';" +
+                        "} " +
+                        "output = output.trim();" +
+                        "if (set.size() == 2) { return output; }"));
+
+    }
+
+
+    public void testCreationOfList() {
+        assertEquals(5, parseDirect("list = new java.util.LinkedList();" +
+                "list.add('fun');" +
+                "list.add('happy');" +
+                "list.add('fun');" +
+                "list.add('slide');" +
+                "list.add('crap');" +
+                "poo = new java.util.ArrayList(list);" +
+                "poo.size();"));
+    }
+
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile();
