@@ -179,7 +179,7 @@ public class ParseTools {
             targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
         }
 
-        Integer hash = createClassSignatureHash(targetParms);
+        Integer hash = createClassSignatureHash(methods[0].getDeclaringClass(), targetParms);
 
         if (RESOLVED_METH_CACHE.containsKey(method) && RESOLVED_METH_CACHE.get(method).containsKey(hash)) {
             return RESOLVED_METH_CACHE.get(method).get(hash);
@@ -261,7 +261,7 @@ public class ParseTools {
         for (int i = 0; i < arguments.length; i++)
             targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
 
-        Integer hash = createClassSignatureHash(targetParms);
+        Integer hash = createClassSignatureHash(cls, targetParms);
 
         if (RESOLVED_CONST_CACHE.containsKey(cls) && RESOLVED_CONST_CACHE.get(cls).containsKey(hash))
             return RESOLVED_CONST_CACHE.get(cls).get(hash);
@@ -520,13 +520,13 @@ public class ParseTools {
         return false;
     }
 
-    public static int createClassSignatureHash(Class[] sig) {
+    public static int createClassSignatureHash(Class declaring, Class[] sig) {
         int hash = 0;
         for (Class cls : sig) {
             if (cls != null)
                 hash += cls.hashCode();
         }
-        return hash + sig.length;
+        return hash + sig.length + declaring.hashCode();
     }
 
     public static char handleEscapeSequence(char escapedChar) {

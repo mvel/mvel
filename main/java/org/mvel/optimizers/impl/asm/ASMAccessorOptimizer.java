@@ -808,10 +808,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 stacksize++;
             }
 
+            System.out.println("invoking " + m + "::" + ctx.getClass());
             return m.invoke(ctx, args);
         }
     }
-
 
     private static final ClassLoader classLoader;
     private static final Method defineClass;
