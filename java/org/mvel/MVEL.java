@@ -107,7 +107,7 @@ public class MVEL {
     }
 
 
-    public static Serializable compiledExpression(String expression, Map<String, Class> imports) {
+    public static Serializable compileExpression(String expression, Map<String, Class> imports) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
         parser.setImportedClasses(imports);
 
@@ -141,8 +141,9 @@ public class MVEL {
      * @return -
      */
     public static Serializable compileExpression(String expression) {
-        return compiledExpression(expression, null);
+        return compileExpression(expression, null);
     }
+
 
     /**
      * Compiles an expression and returns a Serializable object containing the compiled
@@ -151,8 +152,9 @@ public class MVEL {
      * @param expression - the expression to be compiled
      * @return -
      */
-    public static Serializable compileExpression(char[] expression) {
+    public static Serializable compileExpression(char[] expression, Map<String, Class> imports) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
+        parser.setImportedClasses(imports);
 
         CompiledExpression cExpr = parser.compile();
         TokenIterator tokens = cExpr.getTokens();
@@ -171,6 +173,11 @@ public class MVEL {
         }
 
         return cExpr;
+    }
+
+
+    public static Serializable compileExpression(char[] expression) {
+        return compileExpression(expression, null);
     }
 
     public static Object executeExpression(Object compiledExpression) {
