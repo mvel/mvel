@@ -845,7 +845,7 @@ public class ParseTools {
      */
     public static String getSimpleClassName(Class cls) {
         if (JDK_14_COMPATIBILITY) {
-            return cls.getName().substring(cls.getName().lastIndexOf('.'));
+            return cls.getName().substring(cls.getName().lastIndexOf('.') + 1);
         }
         else {
             return cls.getSimpleName();
