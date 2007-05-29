@@ -8,6 +8,21 @@ public class ExecutionStack implements Stack {
         return element == null;
     }
 
+
+    public void add(Object o) {
+        size++;
+        StackElement el = element;
+        if (el != null) {
+            while (el.next != null) {
+                el = el.next;
+            }
+            el.next = new StackElement(null, o);
+        }
+        else {
+            element = new StackElement(null, o);
+        }
+    }
+
     public void push(Object o) {
         size++;
         element = new StackElement(element, o);
