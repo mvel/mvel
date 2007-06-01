@@ -359,7 +359,6 @@ public class AbstractParser {
                             continue;
                         case'.':
                             union = true;
-
                             cursor++;
                             continue;
                         case'=':
@@ -433,7 +432,6 @@ public class AbstractParser {
                     case'@': {
                         start++;
                         captureToEOT();
-
                         String interceptorName = new String(expr, start, cursor - start);
 
                         continue;

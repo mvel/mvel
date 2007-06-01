@@ -137,5 +137,4 @@ public class Soundex {
 
         return res.toString();
     }
-
 }
