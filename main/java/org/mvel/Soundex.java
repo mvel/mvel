@@ -138,12 +138,4 @@ public class Soundex {
         return res.toString();
     }
 
-    /**
-     * main
-     */
-    public static void main(String[] args) {
-
-
-        System.out.println(soundex("kirwin") + "=" + soundex("kurwyn"));
-    }
 }
