@@ -210,8 +210,6 @@ public class AbstractParser {
             return null;
         }
         else if (!splitAccumulator.isEmpty()) {
-            System.out.println("returning from split: " + splitAccumulator.peek());
-
             return lastNode = (ASTNode) splitAccumulator.pop();
         }
 
@@ -420,16 +418,13 @@ public class AbstractParser {
                                     return new AssignmentNode(subArray(start, cursor), fields);
                                 }
                             }
-
                     }
-
                 }
 
                 /**
                  * Produce the token.
                  */
                 trimWhitespace();
-
 
                 return createToken(expr, start, cursor, fields);
             }
@@ -710,25 +705,6 @@ public class AbstractParser {
         lastWasIdentifier = tk.isIdentifier();
         return lastNode = tk;
     }
-
-//    private ASTNode handleSplit(ASTNode tk) {
-//        if (tk.nextASTNode != null) {
-//            ASTNode t = tk;
-//
-//            ExecutionStack tempAccumulator = new ExecutionStack();
-//            while ((t = t.nextASTNode) != null) {
-//                tempAccumulator.add(t);
-//            }
-//
-//            while (!tempAccumulator.isEmpty()) {
-//                t = (ASTNode) tempAccumulator.pop();
-//                t.nextASTNode = null;
-//                splitAccumulator.add(t);
-//            }
-//        }
-//
-//        return lastNode = tk;
-//    }
 
     private char[] subArray(final int start, final int end) {
         char[] newA = new char[end - start];
