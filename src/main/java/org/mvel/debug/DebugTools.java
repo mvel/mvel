@@ -11,13 +11,14 @@ import java.io.Serializable;
  * @author Christopher Brock
  */
 public class DebugTools {
-
     public static String decompile(Serializable expr) {
         if (expr instanceof CompiledExpression) return decompile((CompiledExpression) expr);
         else if (expr instanceof ExecutableAccessor)
             return "CANNOT DECOMPILE OPTIMIZED STATEMENT (Run with -Dmvel.optimizer=false)";
-
-        else return "NOT A KNOWN PAYLOAD";
+        else if (expr instanceof ExecutableLiteral) {
+            return "LITERAL: " + ((ExecutableLiteral) expr).getValue(null, null);
+        }
+        else return "NOT A KNOWN PAYLOAD: " + expr.getClass().getName();
     }
 
     public static String decompile(CompiledExpression cExp) {

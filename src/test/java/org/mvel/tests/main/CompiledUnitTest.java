@@ -680,6 +680,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("bar", parseDirect("xx = new java.util.HashMap(); xx.put('foo', 'bar'); prop = 'foo'; xx[prop];"));
     }
 
+    public void testCompileTimeLiteralReduction() {
+        assertEquals(1000, parseDirect("10 * 100"));
+    }
+
     /**
      * Start collections framework based compliance tests
      */
@@ -787,7 +791,6 @@ public class CompiledUnitTest extends TestCase {
 
         Object first = MVEL.executeExpression(compiled, base, map);
         Object second = MVEL.executeExpression(compiled, base, map);
-
 
         if (first != null && !first.getClass().isArray())
             assertEquals(first, second);
