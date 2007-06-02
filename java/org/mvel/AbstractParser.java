@@ -202,6 +202,7 @@ public class AbstractParser {
      * @return -
      */
     protected ASTNode nextToken() {
+
         /**
          * If the cursor is at the end of the expression, we have nothing more to do:
          * return null.
@@ -399,7 +400,6 @@ public class AbstractParser {
                                             }
                                         }
                                     }
-
 
                                     if (lastNode.isLiteral()) {
                                         if (lastNode.getLiteralValue() instanceof Class) {
