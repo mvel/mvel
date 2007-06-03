@@ -28,10 +28,9 @@ public class FastTokenIterator implements TokenIterator, Serializable {
     private int length = 0;
     private int cursor = 0;
 
-
-    public FastTokenIterator(ASTNode[] astNodes) {
-        this.length = (this.astNodes = astNodes).length;
-    }
+//    public FastTokenIterator(ASTNode[] astNodes) {
+//        this.length = (this.astNodes = astNodes).length;
+//    }
 
     public FastTokenIterator(final FastTokenIterator fi) {
         astNodes = fi.astNodes;
