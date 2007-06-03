@@ -560,10 +560,6 @@ public class AbstractParser {
                         if (cursor == length || expr[cursor] != '"') {
                             throw new CompileException("unterminated literal", expr, cursor);
                         }
-
-                        if ((fields & ASTNode.ASSIGN) != 0) {
-                            return createToken(expr, start, ++cursor, ASTNode.ASSIGN);
-                        }
                         else {
                             return createToken(expr, start + 1, ++cursor - 1, ASTNode.STR_LITERAL | ASTNode.LITERAL);
                         }
@@ -712,13 +708,11 @@ public class AbstractParser {
         else if (isFlag(ASTNode.BLOCK_FOREACH)) {
             return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
+        // DONT'T REMOVE THIS COMMENT!
         //       else if (isFlag(ASTNode.BLOCK_WITH)) {
         else {
             return new WithNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
-//        else {
-//            return null;
-//        }
     }
 
     private ASTNode captureCodeBlock(final char[] expr) {
@@ -808,7 +802,8 @@ public class AbstractParser {
                         trimLeft(blockEnd));
             }
         }
-//        else if (isFlag(ASTNode.BLOCK_FOREACH) || isFlag(ASTNode.BLOCK_WITH)) {
+        // DON"T REMOVE THIS COMMENT!
+        // else if (isFlag(ASTNode.BLOCK_FOREACH) || isFlag(ASTNode.BLOCK_WITH)) {
         else {
             return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd));
         }
@@ -884,8 +879,8 @@ public class AbstractParser {
             switch (expr[cursor]) {
                 case'(':
                     return;
-                case'{':
-                    return;
+//                case'{':
+//                    return;
                 default:
                     if (isWhitespace(expr[cursor])) return;
                     cursor++;
