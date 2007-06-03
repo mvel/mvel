@@ -242,7 +242,6 @@ public class AbstractParser {
                  * If the current character under the cursor is a valid
                  * part of an identifier, we keep capturing.
                  */
-
                 capture = true;
                 cursor++;
             }
@@ -264,6 +263,7 @@ public class AbstractParser {
                             start = cursor + 1;
                             captureToEOS();
                             return new ReturnNode(subArray(start, cursor), fields);
+
                         case IF:
                             fields |= ASTNode.BLOCK_IF;
                             return captureCodeBlock(expr);
@@ -378,7 +378,6 @@ public class AbstractParser {
                                     /**
                                      * Check for typing information.
                                      */
-
                                     if (lastNode.getLiteralValue() instanceof String) {
                                         if (hasImport((String) lastNode.getLiteralValue())) {
                                             lastNode.setLiteralValue(getImport((String) lastNode.getLiteralValue()));
@@ -452,7 +451,6 @@ public class AbstractParser {
                             cursor++;
                             break;
                         }
-
 
                     case'+':
                         if (isAt('+', 1)) {
@@ -714,12 +712,13 @@ public class AbstractParser {
         else if (isFlag(ASTNode.BLOCK_FOREACH)) {
             return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
-        else if (isFlag(ASTNode.BLOCK_WITH)) {
+        //       else if (isFlag(ASTNode.BLOCK_WITH)) {
+        else {
             return new WithNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
-        else {
-            return null;
-        }
+//        else {
+//            return null;
+//        }
     }
 
     private ASTNode captureCodeBlock(final char[] expr) {
@@ -809,12 +808,10 @@ public class AbstractParser {
                         trimLeft(blockEnd));
             }
         }
-        else if (isFlag(ASTNode.BLOCK_FOREACH) || isFlag(ASTNode.BLOCK_WITH)) {
+//        else if (isFlag(ASTNode.BLOCK_FOREACH) || isFlag(ASTNode.BLOCK_WITH)) {
+        else {
             return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd));
         }
-
-
-        return null;
     }
 
     protected boolean blockContinues() {
