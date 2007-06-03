@@ -43,4 +43,8 @@ public class Bar {
     public void setAssignTest(String assignTest) {
         this.assignTest = assignTest;
     }
+
+    public String happy() {
+        return "happyBar";
+    }
 }

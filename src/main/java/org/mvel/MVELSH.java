@@ -28,8 +28,6 @@ import java.util.Map;
 
 public class MVELSH {
     public static void main(String[] args) {
-
-
         Map map = new HashMap();
 
         boolean output = true;
@@ -38,12 +36,9 @@ public class MVELSH {
         boolean benchmarkMode = false;
         boolean template = false;
 
-
         String in;
 
         LocalVariableResolverFactory lvrf = new LocalVariableResolverFactory(new HashMap<String, Object>());
-
-        //    ExpressionParser parser = new ExpressionParser();
 
         Object out = null;
 
