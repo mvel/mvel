@@ -369,7 +369,6 @@ public class AbstractParser {
                                 fields |= ASTNode.ASSIGN;
 
                                 skipWhitespace();
-
                                 captureToEOS();
 
                                 if (union) {
@@ -437,14 +436,8 @@ public class AbstractParser {
                         continue;
                     }
 
-                    case'=': {
-                        if (!isAt('=', 1)) {
-                            return createToken(expr, start, ++cursor, fields |= ASTNode.ASSIGN);
-                        }
-                        else {
-                            return createToken(expr, start, (cursor += 2), fields);
-                        }
-                    }
+                    case'=':
+                        return createToken(expr, start, (cursor += 2), fields);
 
                     case'-':
                         if (isAt('-', 1)) {
@@ -537,7 +530,6 @@ public class AbstractParser {
                         }
                     }
 
-
                     case'<': {
                         if (expr[++cursor] == '<') {
                             if (expr[++cursor] == '<') cursor++;
@@ -550,7 +542,6 @@ public class AbstractParser {
                             return createToken(expr, start, cursor, fields);
                         }
                     }
-
 
                     case'\'':
                         while (++cursor < length && expr[cursor] != '\'') {
@@ -630,14 +621,6 @@ public class AbstractParser {
                     }
 
                     case'[':
-                        if (capture) {
-                            if (balancedCapture(expr[cursor]) == -1) {
-                                throw new CompileException("unbalanced brace", expr, cursor);
-                            }
-                            cursor++;
-                            continue;
-                        }
-
                     case'{':
                         if (balancedCapture(expr[cursor]) == -1) {
                             if (cursor >= length) cursor--;
@@ -650,7 +633,7 @@ public class AbstractParser {
                             continue;
                         }
 
-                        return createToken(expr, start, ++cursor, fields | ASTNode.INLINE_COLLECTION);
+                        return createToken(expr, start, ++cursor, ASTNode.INLINE_COLLECTION);
 
                     default:
                         cursor++;
