@@ -12,7 +12,6 @@ import static java.lang.reflect.Modifier.isPublic;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 import static java.util.regex.Pattern.compile;
@@ -20,58 +19,6 @@ import static java.util.regex.Pattern.compile;
 public class PropertyTools {
     private static final Pattern truePattern = compile("(on|yes|true|1|hi|high|y)");
 
-    public static Object[] arrayWrap(Object o) {
-        if (o == null) return null;
-        if (o.getClass().isArray()) return (Object[]) o;
-        return new Object[]{o};
-    }
-
-    public static Object arrayUnwrap(Object o) {
-        if (o == null) return null;
-        if (o.getClass().isArray()) {
-            return ((Object[]) o)[0];
-        }
-        return o;
-    }
-
-    /**
-     * Converts a standard wildcard string to a compiled regular expression.
-     *
-     * @param wildcard - a wildcard expression.
-     * @return compiled expr.
-     */
-    public static Pattern wildcardToRegex(String wildcard) {
-        return compile(wildcard
-                .replaceAll("(\\*|%)", ".+")
-                .replaceAll("\\.", "\\.")
-                .replaceAll("\\?", "."));
-    }
-
-    /**
-     * Queries a map based on the specified wildcard and returns a Map containing
-     * only matching elements.
-     *
-     * @param wildcard a wildcard expression
-     * @param map      a map
-     * @return Map
-     */
-    public static <K, V> Map<K, V> mapQuery(String wildcard, Map<K, V> map) {
-        Pattern qPattern = wildcardToRegex(wildcard);
-
-        if (map == null) return null;
-        Map<K, V> newMap = new HashMap<K, V>(map.size() * 2);
-
-        for (K name : map.keySet()) {
-            if (qPattern.matcher(valueOf(name)).find())
-                newMap.put(name, map.get(name));
-        }
-
-        return newMap;
-    }
-
-    public static boolean isEmptyOrWhitespace(Object o) {
-        return (o == null || isEmpty(String.valueOf(o).trim()));
-    }
 
     public static boolean isEmpty(Object o) {
         if (o != null) {
@@ -89,23 +36,6 @@ public class PropertyTools {
         return true;
     }
 
-    public static boolean valueInArray(Object[] array, Object value) {
-        if (array.length == 0) return false;
-        for (Object aArray : array) {
-            if (aArray.equals(value)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static boolean safeEquals(Object one, Object two) {
-        return !((one == null) ^ (two == null)) && (one == null || one.equals(two));
-    }
-
-    public static boolean parseBoolean(Object value) {
-        return truePattern.matcher(valueOf(value).toLowerCase()).matches();
-    }
 
     public static Method getSetter(Class clazz, String property) {
         String setter = ReflectionUtil.getSetter(property);

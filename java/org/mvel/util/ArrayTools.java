@@ -37,13 +37,6 @@ public class ArrayTools {
         return b;
     }
 
-    public static boolean[] booleanTranspose(Object[] a) {
-        boolean[] b = new boolean[a.length];
-        for (int i = a.length - 1; i >= 0; i--) {
-            b[i] = PropertyTools.parseBoolean(String.valueOf(a[i]));
-        }
-        return b;
-    }
 
     public static short[] shortTranspose(Object[] a) {
         short[] b = new short[a.length];

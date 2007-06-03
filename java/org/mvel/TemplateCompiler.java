@@ -397,18 +397,15 @@ public class TemplateCompiler {
      */
     private char[] structuredCaptureArray(int depth) {
         int start = cursor++ + 1;
-        // int depth = 1;
-
-        //  cursor++;
         while (cursor < (length) && depth != 0) {
             switch (expressionArray[cursor++]) {
-                case'@':
-                case'$':
-                    if (expressionArray[cursor] == '{') {
-                        cursor++;
-                        depth++;
-                    }
-                    break;
+//                case'@':
+//                case'$':
+//                    if (expressionArray[cursor] == '{') {
+//                        cursor++;
+//                        depth++;
+//                    }
+//                    break;
                 case'}':
                     depth--;
                     break;
