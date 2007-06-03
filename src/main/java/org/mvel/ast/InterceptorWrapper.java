@@ -17,16 +17,16 @@ public class InterceptorWrapper extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        interceptor.doBefore(factory);
+        interceptor.doBefore(node, factory);
         Object val = node.getReducedValueAccelerated(ctx, thisValue, factory);
-        interceptor.doAfter(factory);
+        interceptor.doAfter(node, factory);
         return val;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        interceptor.doBefore(factory);
+        interceptor.doBefore(node, factory);
         Object val = node.getReducedValue(ctx, thisValue, factory);
-        interceptor.doAfter(factory);
+        interceptor.doAfter(node, factory);
         return val;
     }
 }

@@ -1,6 +1,7 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
+import org.mvel.ASTNode;
 import org.mvel.ExpressionCompiler;
 import org.mvel.MVEL;
 import org.mvel.debug.DebugTools;
@@ -787,13 +788,13 @@ public class CompiledUnitTest extends TestCase {
 
     public void testInterceptors() {
         Interceptor testInterceptor = new Interceptor() {
-            public int doBefore(VariableResolverFactory factory) {
-                System.out.println("BEFORE");
+            public int doBefore(ASTNode node, VariableResolverFactory factory) {
+                System.out.println("BEFORE Node: " + node.getName());
                 return 0;
             }
 
-            public int doAfter(VariableResolverFactory factory) {
-                System.out.println("AFTER");
+            public int doAfter(ASTNode node, VariableResolverFactory factory) {
+                System.out.println("AFTER Node: " + node.getName());
                 return 0;
             }
         };
