@@ -4,7 +4,9 @@ import junit.framework.TestCase;
 import org.mvel.ExpressionCompiler;
 import org.mvel.MVEL;
 import org.mvel.debug.DebugTools;
+import org.mvel.integration.Interceptor;
 import org.mvel.integration.ResolverTools;
+import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.main.res.*;
@@ -742,6 +744,10 @@ public class CompiledUnitTest extends TestCase {
         ));
     }
 
+    public void testReflectionCache() {
+        assertEquals("happyBar", parseDirect("foo.happy(); foo.bar.happy()"));
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile();
@@ -778,6 +784,28 @@ public class CompiledUnitTest extends TestCase {
 
         assertTrue(MVEL.executeExpression(compiled, mvf) instanceof Cheese);
     }
+
+    public void testInterceptors() {
+        Interceptor testInterceptor = new Interceptor() {
+            public int doBefore(VariableResolverFactory factory) {
+                System.out.println("BEFORE");
+                return 0;
+            }
+
+            public int doAfter(VariableResolverFactory factory) {
+                System.out.println("AFTER");
+                return 0;
+            }
+        };
+
+        Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
+        interceptors.put("test", testInterceptor);
+
+        Serializable compiled = MVEL.compileExpression("@test System.out.println('MIDDLE');", null, interceptors);
+
+        MVEL.executeExpression(compiled);
+    }
+
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);

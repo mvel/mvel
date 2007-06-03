@@ -2,6 +2,7 @@ package org.mvel;
 
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
+import org.mvel.integration.Interceptor;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
@@ -45,6 +46,7 @@ public class AbstractParser {
             new HashMap<String, Integer>(25 * 2, 0.4f);
 
     protected Map<String, Class> imports;
+    protected Map<String, Interceptor> interceptors;
 
     protected ExecutionStack splitAccumulator = new ExecutionStack();
 
@@ -432,7 +434,11 @@ public class AbstractParser {
                         captureToEOT();
                         String interceptorName = new String(expr, start, cursor - start);
 
-                        continue;
+                        if (!interceptors.containsKey(interceptorName)) {
+                            throw new CompileException("reference to undefined interceptor: " + interceptorName, expr, cursor);
+                        }
+
+                        return new InterceptorWrapper(interceptors.get(interceptorName), nextToken());
                     }
 
                     case'=':
@@ -969,5 +975,14 @@ public class AbstractParser {
 
     protected boolean hasImport(String name) {
         return imports != null && imports.containsKey(name);
+    }
+
+
+    public Map<String, Interceptor> getInterceptors() {
+        return interceptors;
+    }
+
+    public void setInterceptors(Map<String, Interceptor> interceptors) {
+        this.interceptors = interceptors;
     }
 }

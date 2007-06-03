@@ -20,6 +20,7 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.convert;
+import org.mvel.integration.Interceptor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
@@ -107,9 +108,11 @@ public class MVEL {
     }
 
 
-    public static Serializable compileExpression(String expression, Map<String, Class> imports) {
+    public static Serializable compileExpression(String expression, Map<String, Class> imports,
+                                                 Map<String, Interceptor> interceptors) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
         parser.setImportedClasses(imports);
+        parser.setInterceptors(interceptors);
 
         CompiledExpression cExpr = parser.compile();
 
@@ -141,7 +144,11 @@ public class MVEL {
      * @return -
      */
     public static Serializable compileExpression(String expression) {
-        return compileExpression(expression, null);
+        return compileExpression(expression, null, null);
+    }
+
+    public static Serializable compileExpression(String expression, Map<String, Class> imports) {
+        return compileExpression(expression, imports, null);
     }
 
 
@@ -152,9 +159,11 @@ public class MVEL {
      * @param expression - the expression to be compiled
      * @return -
      */
-    public static Serializable compileExpression(char[] expression, Map<String, Class> imports) {
+    public static Serializable compileExpression(char[] expression, Map<String, Class> imports,
+                                                 Map<String, Interceptor> interceptors) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
         parser.setImportedClasses(imports);
+        parser.setInterceptors(interceptors);
 
         CompiledExpression cExpr = parser.compile();
         TokenIterator tokens = cExpr.getTokens();
@@ -177,7 +186,11 @@ public class MVEL {
 
 
     public static Serializable compileExpression(char[] expression) {
-        return compileExpression(expression, null);
+        return compileExpression(expression, null, null);
+    }
+
+    public static Serializable compileExpression(char[] expression, Map<String, Class> imports) {
+        return compileExpression(expression, imports, null);
     }
 
     public static Object executeExpression(Object compiledExpression) {

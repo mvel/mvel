@@ -86,6 +86,10 @@ public class ASTNode implements Cloneable, Serializable {
 
     protected boolean discard;
 
+
+    public ASTNode() {
+    }
+
     public ASTNode(char[] expr, int start, int end, int fields) {
         this.cursorPosition = start;
         this.fields = fields;
