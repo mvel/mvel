@@ -27,19 +27,21 @@ public class ELComparisons implements Runnable {
     public static int RUN_OGNL = 1 << 1;
     public static int RUN_COMMONS_EL = 1 << 2;
     public static int RUN_JAVA_NATIVE = 1 << 3;
+    // public static int RUN_GROOVY = 1 << 4;
 
     private static int COMPILED = 1 << 30;
     private static int INTERPRETED = 1 << 31;
 
     private static int ALL = RUN_MVEL + RUN_OGNL + RUN_COMMONS_EL + RUN_JAVA_NATIVE;
 
-    private static final int TESTNUM = 10000;
-    private static final int TESTITER = 3;
+    private static final int TESTNUM = 100;
+    private static final int TESTITER = 2;
 
     private long ognlTotal = 0;
     private long mvelTotal = 0;
     private long commonElTotal = 0;
     private long javaNativeTotal = 0;
+    private long groovyTotal = 0;
 
     private int testFlags = 0;
 
@@ -76,7 +78,7 @@ public class ELComparisons implements Runnable {
             }
         };
 
-//          tests.add(new PerfTest("Deep Property", "foo.bar.name", ALL, nt));
+        tests.add(new PerfTest("Deep Property", "foo.bar.name", ALL, nt));
 //        tests.add(new PerfTest("Static Field Access (MVEL)", "Integer.MAX_VALUE", RUN_MVEL));
 //        tests.add(new PerfTest("Static Field Access (OGNL)", "@java.lang.Integer@MAX_VALUE", RUN_OGNL));
 //        tests.add(new PerfTest("Inline Array Creation (MVEL)", "{'foo', 'bar'}", RUN_MVEL));
@@ -100,7 +102,7 @@ public class ELComparisons implements Runnable {
 //        tests.add(new PerfTest("Boolean compare", "data == 'cat'", ALL));
 //        tests.add(new PerfTest("Object instantiation", "new String('Hello')", RUN_OGNL + RUN_MVEL));
 //        tests.add(new PerfTest("Method access", "readBack('this is a string')", RUN_OGNL + RUN_MVEL));
-        tests.add(new PerfTest("Arithmetic", "10 + 1 - 1", ALL, nt));
+        //    tests.add(new PerfTest("Arithmetic", "10 + 1 - 1", ALL, nt));
     }
 
 
@@ -150,6 +152,7 @@ public class ELComparisons implements Runnable {
         long mvelTotals;
         long commonsElTotals;
         long javaNativeTotals;
+        long groovyTotals;
 
         ELComparisons ognlTests = new ELComparisons();
         ognlTests.setTestFlags(flags + RUN_OGNL);
@@ -158,6 +161,11 @@ public class ELComparisons implements Runnable {
         ELComparisons mvelTests = new ELComparisons();
         mvelTests.setTestFlags(flags + RUN_MVEL);
         mvelTests.setSilent(silent);
+
+//        ELComparisons groovyTests = new ELComparisons();
+//        groovyTests.setTestFlags(flags + RUN_GROOVY);
+//        groovyTests.setSilent(silent);
+
 
         ELComparisons commonsELTests = new ELComparisons();
         commonsELTests.setTestFlags(flags + RUN_COMMONS_EL);
@@ -209,6 +217,21 @@ public class ELComparisons implements Runnable {
 
                 mvelTotals = mvelTests.getMvelTotal();
 
+//                groovyTests.reset();
+//
+//                for (int i = 0; i < threads.length; i++) {
+//                    threads[i] = new Thread(groovyTests);
+//                }
+//
+//                for (Thread thread : threads) {
+//                    thread.run();
+//                }
+//
+//                for (Thread thread : threads) {
+//                    thread.join();
+//                }
+//
+//                groovyTotals = groovyTests.getGroovyTotal();
 
                 commonsELTests.reset();
 
@@ -304,7 +327,7 @@ public class ELComparisons implements Runnable {
                         Ognl.getValue(expression, baseClass);
                     }
 
-                    System.gc();
+                    //           System.gc();
 
                     time = currentTimeMillis();
                     mem = Runtime.getRuntime().freeMemory();
@@ -343,7 +366,7 @@ public class ELComparisons implements Runnable {
                         MVEL.eval(expression, baseClass);
                     }
 
-                    System.gc();
+                    //       System.gc();
 
                     time = currentTimeMillis();
                     mem = Runtime.getRuntime().freeMemory();
@@ -373,6 +396,58 @@ public class ELComparisons implements Runnable {
                 mvelTotal += total;
             }
 
+//
+//            total = 0;
+//
+//            if ((testFlags & RUN_GROOVY) != 0 && ((exFlags & RUN_GROOVY) != 0)) {
+//                try {
+//                    for (int i = 0; i < count; i++) {
+//                        Binding binding = new Binding();
+//                        for (String var : variables.keySet()) {
+//                            binding.setProperty(var, variables.get(var));
+//                        }
+//
+//                        GroovyShell groovyShell = new GroovyShell(binding);
+//                        groovyShell.evaluate(expression);
+//                    }
+//
+//
+//                    time = currentTimeMillis();
+//                    mem = Runtime.getRuntime().freeMemory();
+//                    for (int reps = 0; reps < TESTITER; reps++) {
+//                        for (int i = 0; i < count; i++) {
+//                            Binding binding = new Binding();
+//                            for (String var : variables.keySet()) {
+//                                binding.setProperty(var, variables.get(var));
+//                            }
+//
+//                            GroovyShell groovyShell = new GroovyShell(binding);
+//                            groovyShell.evaluate(expression);
+//                        }
+//
+//                        if (reps == 0) res[0] = total += currentTimeMillis() - time;
+//                        else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
+//                    }
+//
+//                    if (!silent)
+//                        System.out.println("(Groovy)               : " + new BigDecimal(((currentTimeMillis() - time))).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+//                                + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
+//
+//                }
+//                catch (Exception e) {
+//                    e.printStackTrace();
+//
+//                    if (!silent)
+//                        System.out.println("(Groovy)               : <<COULD NOT EXECUTE>>");
+//                }
+//            }
+//
+//            synchronized (this) {
+//                groovyTotal += total;
+//            }
+//
+            total = 0;
+
 
             if ((testFlags & RUN_COMMONS_EL) != 0 && ((exFlags & RUN_COMMONS_EL) != 0)) {
                 VariableResolver vars = new JSPMapVariableResolver(variables);
@@ -384,7 +459,7 @@ public class ELComparisons implements Runnable {
                         new ExpressionEvaluatorImpl(true).parseExpression(commonsEx, Object.class, null).evaluate(vars);
                     }
 
-                    System.gc();
+                    //            System.gc();
 
                     time = currentTimeMillis();
                     mem = Runtime.getRuntime().freeMemory();
@@ -415,7 +490,7 @@ public class ELComparisons implements Runnable {
         }
 
         if ((testFlags & COMPILED) != 0) {
-            runTestCompiled(name, test.getOgnlCompiled(), test.getMvelCompiled(), test.getElCompiled(), count, exFlags);
+            runTestCompiled(name, test.getOgnlCompiled(), test.getMvelCompiled(), test.getGroovyCompiled(), test.getElCompiled(), count, exFlags);
         }
 
         total = 0;
@@ -428,7 +503,7 @@ public class ELComparisons implements Runnable {
                     nt.run(baseClass, variables);
                 }
 
-                System.gc();
+                //        System.gc();
 
                 time = currentTimeMillis();
                 mem = Runtime.getRuntime().freeMemory();
@@ -461,7 +536,7 @@ public class ELComparisons implements Runnable {
             System.out.println("------------------------------------------------");
     }
 
-    public void runTestCompiled(String name, Object compiledOgnl, Object compiledMvel, Expression compiledEl, int count, int exFlags) throws Exception {
+    public void runTestCompiled(String name, Object compiledOgnl, Object compiledMvel, Object compiledGroovy, Expression compiledEl, int count, int exFlags) throws Exception {
 
         long time;
         long mem;
@@ -475,12 +550,9 @@ public class ELComparisons implements Runnable {
 
         if ((testFlags & RUN_OGNL) != 0 && ((exFlags & RUN_OGNL) != 0)) {
             try {
-                //    compiled = Ognl.parseExpression(expression);
                 for (int i = 0; i < count; i++) {
                     Ognl.getValue(compiledOgnl, baseClass);
                 }
-
-                System.gc();
 
                 time = currentTimeMillis();
                 mem = Runtime.getRuntime().freeMemory();
@@ -518,8 +590,6 @@ public class ELComparisons implements Runnable {
                     MVEL.executeExpression(compiledMvel, baseClass);
                 }
 
-                System.gc();
-
                 time = currentTimeMillis();
                 mem = Runtime.getRuntime().freeMemory();
 
@@ -550,14 +620,66 @@ public class ELComparisons implements Runnable {
             total = 0;
         }
 
+//        total = 0;
+//
+//        if ((testFlags & RUN_GROOVY) != 0 && ((exFlags & RUN_GROOVY)) != 0) {
+//
+//            try {
+//                for (int i = 0; i < count; i++) {
+//                    Binding binding = new Binding();
+//                    for (String var : variables.keySet()) {
+//                        binding.setProperty(var, variables.get(var));
+//                    }
+//
+//                    Script script = (Script) compiledGroovy;
+//                    script.setBinding(binding);
+//                    script.run();
+//                }
+//
+//                time = currentTimeMillis();
+//                mem = Runtime.getRuntime().freeMemory();
+//
+//                for (int reps = 0; reps < TESTITER; reps++) {
+//                    for (int i = 0; i < count; i++) {
+//                        Binding binding = new Binding();
+//                        for (String var : variables.keySet()) {
+//                            binding.setProperty(var, variables.get(var));
+//                        }
+//
+//                        Script script = (Script) compiledGroovy;
+//                        script.setBinding(binding);
+//                        script.run();
+//                    }
+//
+//                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
+//                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
+//                }
+//
+//                if (!silent)
+//                    System.out.println("(Groovy Compiled)      : " + new BigDecimal(currentTimeMillis() - time).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+//                            + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
+//            }
+//            catch (Exception e) {
+//
+//                if (!silent)
+//                    System.out.println("(Groovy)               : <<COULD NOT EXECUTE>>");
+//            }
+//
+//
+//            synchronized (this) {
+//                groovyTotal += total;
+//            }
+//
+//            total = 0;
+//        }
+//
+
         if ((testFlags & RUN_COMMONS_EL) != 0 && ((exFlags & RUN_COMMONS_EL) != 0)) {
             VariableResolver vars = new JSPMapVariableResolver(variables);
             try {
                 for (int i = 0; i < count; i++) {
                     compiledEl.evaluate(vars);
                 }
-
-                System.gc();
 
                 time = currentTimeMillis();
                 mem = Runtime.getRuntime().freeMemory();
@@ -632,6 +754,15 @@ public class ELComparisons implements Runnable {
 
     public void setJavaNativeTotal(long javaNativeTotal) {
         this.javaNativeTotal = javaNativeTotal;
+    }
+
+
+    public long getGroovyTotal() {
+        return groovyTotal;
+    }
+
+    public void setGroovyTotal(long groovyTotal) {
+        this.groovyTotal = groovyTotal;
     }
 
     public boolean isSilent() {

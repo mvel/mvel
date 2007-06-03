@@ -1,8 +1,8 @@
 package org.mvel.tests.perftests;
 
 import ognl.Ognl;
-import org.mvel.MVEL;
 import org.apache.commons.el.ExpressionEvaluatorImpl;
+import org.mvel.MVEL;
 
 import javax.servlet.jsp.el.Expression;
 
@@ -16,8 +16,11 @@ public class PerfTest {
 
     private Object ognlCompiled;
     private Object mvelCompiled;
+    private Object groovyCompiled;
+
     private Expression elCompiled;
     private NativeTest javaNative;
+
 
     public String getName() {
         return name;
@@ -76,6 +79,15 @@ public class PerfTest {
         this.elCompiled = elCompiled;
     }
 
+
+    public Object getGroovyCompiled() {
+        return groovyCompiled;
+    }
+
+    public void setGroovyCompiled(Object groovyCompiled) {
+        this.groovyCompiled = groovyCompiled;
+    }
+
     public PerfTest(String name, String expression, int runFlags, NativeTest javaNative) {
         this.name = name;
         this.expression = expression;
@@ -88,6 +100,19 @@ public class PerfTest {
         try {
             if ((runFlags & ELComparisons.RUN_OGNL) != 0)
                 this.ognlCompiled = Ognl.parseExpression(expression);
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+//            if ((runFlags & ELComparisons.RUN_GROOVY) != 0) {
+//                Binding binding = new Binding();
+//                GroovyShell sh = new GroovyShell(binding);
+//                this.groovyCompiled = sh.parse(expression);
+//            }
+
+            this.ognlCompiled = Ognl.parseExpression(expression);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
