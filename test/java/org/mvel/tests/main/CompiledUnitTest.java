@@ -742,7 +742,6 @@ public class CompiledUnitTest extends TestCase {
         ));
     }
 
-
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile();

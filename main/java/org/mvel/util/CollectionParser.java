@@ -79,15 +79,7 @@ public class CollectionParser {
                     if (newType == -1) {
                         newType = ARRAY;
                     }
-                    if (type == -1) {
-                        type = ARRAY;
-                        list = new ArrayList<Object>();
-                    }
                 case'[':
-                    if (type == -1) {
-                        type = LIST;
-                        list = new ArrayList<Object>();
-                    }
                     if (newType == -1) {
                         newType = LIST;
                     }
@@ -98,22 +90,13 @@ public class CollectionParser {
                     Object o = new CollectionParser(newType).parseCollection(subset(property, start + 1, end));
 
                     if (type == MAP) {
-                        if (curr == null) {
-                            curr = o;
-                        }
-                        else {
-                            val = o;
-                            map.put(curr, val);
-                        }
+                        map.put(curr, val = o);
                     }
                     else {
                         list.add(curr = o);
                     }
 
-                    start = ++cursor;
-
-
-                    if (start < (length - 1) && property[start] == ',') {
+                    if ((start = ++cursor) < (length - 1) && property[start] == ',') {
                         start = ++cursor;
                     }
 
@@ -223,14 +206,5 @@ public class CollectionParser {
 
     public int getEnd() {
         return end;
-    }
-
-    public static void main(String[] args) {
-        Object o = new CollectionParser().parseCollection("[a,b,c]".toCharArray());
-        System.out.println(o);
-
-        o = new CollectionParser().parseCollection("[{a,b,c}, [foo:bar], abc]".toCharArray());
-
-        System.out.println(o);
     }
 }
