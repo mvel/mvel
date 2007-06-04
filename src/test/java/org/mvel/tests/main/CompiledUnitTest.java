@@ -21,9 +21,6 @@ public class CompiledUnitTest extends TestCase {
     protected Base base = new Base();
     protected DerivedClass derived = new DerivedClass();
 
-    protected Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
-    protected Map<String, Macro> macros = new HashMap<String, Macro>();
-
     public CompiledUnitTest() {
         foo.setBar(new Bar());
         map.put("foo", foo);
@@ -54,22 +51,6 @@ public class CompiledUnitTest extends TestCase {
         map.put("derived", derived);
 
 
-        interceptors.put("Modify", new Interceptor() {
-            public int doBefore(ASTNode node, VariableResolverFactory factory) {
-                factory.createVariable("mod", "FOOBAR!");
-                return 0;
-            }
-
-            public int doAfter(ASTNode node, VariableResolverFactory factory) {
-                return 0;
-            }
-        });
-
-        macros.put("modify", new Macro() {
-            public String doMacro() {
-                return "@Modify with";
-            }
-        });
     }
 
     public void testSingleProperty() {
@@ -833,7 +814,29 @@ public class CompiledUnitTest extends TestCase {
         Map<String, Object> vars = new HashMap<String, Object>();
         vars.put("foo", new Foo());
 
-        Serializable s = compileExpression(new MacroProcessor("modify (foo) { aValue = 'poo' }; mod").parse(macros), null, interceptors);
+        Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
+        Map<String, Macro> macros = new HashMap<String, Macro>();
+
+        interceptors.put("Modify", new Interceptor() {
+            public int doBefore(ASTNode node, VariableResolverFactory factory) {
+                factory.createVariable("mod", "FOOBAR!");
+                return 0;
+            }
+
+            public int doAfter(ASTNode node, VariableResolverFactory factory) {
+                return 0;
+            }
+        });
+
+        macros.put("modify", new Macro() {
+            public String doMacro() {
+                return "@Modify with";
+            }
+        });
+
+        Serializable s = compileExpression(new MacroProcessor("modify (foo) { aValue = 'poo' }; mod")
+                .parse(macros), null, interceptors);
+
         assertEquals("FOOBAR!", executeExpression(s, vars));
     }
 
