@@ -25,12 +25,10 @@ import static org.mvel.MVEL.isAdvancedDebugging;
 import org.mvel.asm.*;
 import static org.mvel.asm.Opcodes.*;
 import static org.mvel.asm.Type.*;
-import org.mvel.ast.NewObjectNode;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
-import org.mvel.optimizers.impl.refl.DeepAssignment;
 import org.mvel.optimizers.impl.refl.Union;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.CollectionParser;
@@ -81,7 +79,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private boolean first = true;
     private boolean deferFinish = false;
-    private boolean assignment = false;
 
     private String className;
     private ClassWriter cw;
@@ -1526,100 +1523,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    public Accessor optimizeAssignment(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        this.length = (this.expr = property).length;
-        this.ctx = ctx;
-        this.thisRef = thisRef;
-        this.variableFactory = factory;
-        compiledInputs = new ArrayList<ExecutableStatement>();
-
-        _initJIT();
-
-        greedy = false;
-
-        ASTNode var = nextToken();
-        String varName = var.getName();
-
-        if (!nextToken().isOperator(Operator.ASSIGN))
-            throw new OptimizationFailure("expected assignment operator");
-
-        ASTNode valTk = captureTokenToEOS();
-
-        ExecutableStatement value;
-        if (valTk.isLiteral()) {
-            value = new ExecutableLiteral(valTk.getLiteralValue());
-        }
-        else if (valTk instanceof NewObjectNode) {
-            value = new ExecutableAccessor(valTk, false);
-        }
-        else {
-            value = (ExecutableStatement) compileExpression(valTk.getNameAsArray());
-        }
-
-        if (var.isDeepProperty()) {
-            /**
-             * We need a special hack for this.  We only partially use the JIT, and rely on a component
-             * of the reflective optimizer to bridge the remaining functionality.
-             *
-             * Internally, the sub-compiles in DeepAssignment produce bytecode.
-             */
-            return new DeepAssignment(varName, value);
-        }
-
-        inputs++;
-        compiledInputs.add(value);
-
-
-        debug("ALOAD 3");
-        mv.visitVarInsn(ALOAD, 3);
-
-        debug("INVOKESTATIC org/mvel/util/ParseTools.findLocalVariableFactory");
-        mv.visitMethodInsn(INVOKESTATIC, "org/mvel/util/ParseTools", "finalLocalVariableFactory", "(Lorg/mvel/integration/VariableResolverFactory;)Lorg/mvel/integration/VariableResolverFactory;");
-
-        debug("LDC '" + varName + "'");
-        mv.visitLdcInsn(varName);
-
-        debug("ALOAD 0: this");
-        mv.visitVarInsn(ALOAD, 0);
-
-        debug("GETFIELD p0");
-        mv.visitFieldInsn(GETFIELD, className, "p0", "Lorg/mvel/ExecutableStatement;");
-
-        debug("ALOAD 2");
-        mv.visitVarInsn(ALOAD, 2);
-
-        debug("ALOAD 3");
-        mv.visitVarInsn(ALOAD, 3);
-
-        debug("INVOKEINTERFACE org/mvel/ExecutableStatement.getValue");
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/ExecutableStatement", "getValue", "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
-
-        debug("DUP");
-        mv.visitInsn(DUP);
-
-        debug("ASTORE 4");
-        mv.visitVarInsn(ASTORE, 4);
-
-        debug("INVOKEINTERFACE org/mvel/integration/VariableResolverFactory.createVariable");
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolverFactory", "createVariable", "(Ljava/lang/String;Ljava/lang/Object;)Lorg/mvel/integration/VariableResolver;");
-
-        debug("POP");
-        mv.visitInsn(POP);
-
-        debug("ALOAD 4");
-        mv.visitVarInsn(ALOAD, 4);
-
-        returnType = Object.class;
-
-        try {
-            _finishJIT();
-            return _initializeAccessor();
-        }
-        catch (Exception e) {
-            throw new OptimizationFailure("could not create assignment", e);
-        }
-    }
-
     public Accessor optimizeObjectCreation(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         _initJIT();
 
@@ -1759,14 +1662,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    public boolean isAssignment() {
-        return assignment;
-    }
-
-    public void setAssignment(boolean assignment) {
-        this.assignment = assignment;
-    }
-
     private void dumpAdvancedDebugging() {
         if (buildLog == null) return;
 
@@ -1781,6 +1676,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 writer.close();
             }
             catch (IOException e) {
+                // --
             }
         }
 

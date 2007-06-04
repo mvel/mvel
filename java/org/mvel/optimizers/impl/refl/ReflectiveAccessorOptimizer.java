@@ -20,7 +20,6 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.*;
-import org.mvel.ast.NewObjectNode;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
@@ -52,8 +51,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     private static final Class[] EMPTYCLS = new Class[0];
 
     private boolean first = true;
-
-    private boolean assignment = false;
 
     private static final Map<String, Accessor> REFLECTIVE_ACCESSOR_CACHE =
             new WeakHashMap<String, Accessor>();
@@ -566,54 +563,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
     }
 
-    public Accessor optimizeAssignment(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        this.length = (this.expr = property).length;
-        this.cursor = 0;
-
-        greedy = false; // don't do a greedy capture.
-        ASTNode var = nextToken();
-
-        if (!nextToken().isOperator(Operator.ASSIGN))
-            throw new CompileException("expected assignment operator");
-
-
-        ASTNode expr = captureTokenToEOS();
-
-        if (expr.isLiteral()) {
-            assert ParseTools.debug("ASSIGN_LITERAL '" + expr.getName() + "'");
-            Literal lit = new Literal(expr.getReducedValueAccelerated(ctx, thisRef, factory));
-            val = lit.getValue(ctx, thisRef, factory);
-            String name = var.getName();
-            if (var.isDeepProperty()) {
-                return new DeepAssignment(name, lit);
-            }
-            else {
-                return new Assignment(var.getName(), lit);
-            }
-        }
-        else if (expr instanceof NewObjectNode) {
-            if (var.isDeepProperty()) {
-                return new DeepAssignment(var.getName(), ((NewObjectNode) expr).getNewObjectOptimizer());
-            }
-            else {
-                return new Assignment(var.getName(), ((NewObjectNode) expr).getNewObjectOptimizer());
-            }
-        }
-        else {
-            assert ParseTools.debug("ASSIGN_EXPR '" + expr.getName() + "'");
-            ExprValueAccessor valAcc = new ExprValueAccessor(expr.getName());
-            val = valAcc.getValue(ctx, thisRef, factory);
-
-            if (var.isDeepProperty()) {
-                return new DeepAssignment(var.getName(), valAcc);
-            }
-            else {
-                return new Assignment(var.getName(), valAcc);
-            }
-        }
-
-
-    }
 
     public Accessor optimizeObjectCreation(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         this.length = (this.expr = property).length;
@@ -751,11 +700,4 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
 
-    public boolean isAssignment() {
-        return assignment;
-    }
-
-    public void setAssignment(boolean assignment) {
-        this.assignment = assignment;
-    }
 }
