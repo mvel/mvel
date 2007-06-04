@@ -21,6 +21,7 @@ public class TypedVarNode extends ASTNode {
 
         int assignStart;
         if ((assignStart = find(expr, '=')) != -1) {
+            fields |= ASSIGN;
             checkNameSafety(name = new String(expr, 0, assignStart).trim());
             statement = (ExecutableStatement) compileExpression(subset(expr, assignStart + 1));
         }

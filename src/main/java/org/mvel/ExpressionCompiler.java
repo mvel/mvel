@@ -106,52 +106,20 @@ public class ExpressionCompiler extends AbstractParser {
                         continue;
                     }
                     else {
-                        tokenSet.addTokenNode(tk, tkOp);
-                        if (tkLA != null) tokenSet.addTokenNode(tkLA);
+                        tokenSet.addTokenNode(verify(tk), verify(tkOp));
+                        if (tkLA != null) tokenSet.addTokenNode(verify(tkLA));
                         continue;
                     }
                 }
                 else {
-                    tokenSet.addTokenNode(tk);
-                    if (tkOp != null) tokenSet.addTokenNode(tkOp);
+                    tokenSet.addTokenNode(verify(tk));
+                    if (tkOp != null) tokenSet.addTokenNode(verify(tkOp));
 
                     continue;
                 }
             }
 
-            if (verifying) {
-                if (tk.isAssignment()) {
-                    char[] assign = tk.getNameAsArray();
-                    int c = 0;
-                    while (c < assign.length && assign[c] != '=') c++;
-
-                    String varName = new String(assign, 0, c++).trim();
-
-                    if (isReservedWord(varName)) {
-                        throw new CompileException("invalid assignment - variable name is a reserved keyword: " + varName);
-                    }
-
-                    locals.add(varName);
-
-                    ExpressionCompiler subCompiler =
-                            new ExpressionCompiler(new String(assign, c, assign.length - c).trim());
-
-                    subCompiler.compile();
-
-                    inputs.addAll(subCompiler.getInputs());
-
-                }
-                else if (tk.isIdentifier()) {
-                    inputs.add(tk.getAbsoluteName());
-
-                    PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray());
-                    propVerifier.analyze();
-
-                    inputs.addAll(propVerifier.getInputs());
-                }
-            }
-
-            tokenSet.addTokenNode(tk);
+            tokenSet.addTokenNode(verify(tk));
         }
 
         if (verifying) {
@@ -161,6 +129,42 @@ public class ExpressionCompiler extends AbstractParser {
         }
 
         return new CompiledExpression(new FastTokenIterator(tokenSet));
+    }
+
+    protected ASTNode verify(ASTNode tk) {
+        if (verifying) {
+            if (tk.isAssignment()) {
+                char[] assign = tk.getNameAsArray();
+                int c = 0;
+                while (c < assign.length && assign[c] != '=') c++;
+
+                String varName = new String(assign, 0, c++).trim();
+
+                if (isReservedWord(varName)) {
+                    throw new CompileException("invalid assignment - variable name is a reserved keyword: " + varName);
+                }
+
+                locals.add(varName);
+
+                ExpressionCompiler subCompiler =
+                        new ExpressionCompiler(new String(assign, c, assign.length - c).trim());
+
+                subCompiler.compile();
+
+                inputs.addAll(subCompiler.getInputs());
+
+            }
+            else if (tk.isIdentifier()) {
+                inputs.add(tk.getAbsoluteName());
+
+                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray());
+                propVerifier.analyze();
+
+                inputs.addAll(propVerifier.getInputs());
+            }
+        }
+
+        return tk;
     }
 
 
