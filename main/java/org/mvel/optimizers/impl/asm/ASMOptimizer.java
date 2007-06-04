@@ -18,15 +18,15 @@
  */
 package org.mvel.optimizers.impl.asm;
 
-import org.mvel.TokenIterator;
-import org.mvel.TokenSet;
+import org.mvel.ASTIterator;
+import org.mvel.ASTSet;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.Optimizer;
 
 public class ASMOptimizer implements Optimizer {
 
 
-    public TokenIterator optimize(TokenSet tokens, Object ctx, VariableResolverFactory variableFactory) {
+    public ASTIterator optimize(ASTSet tokens, Object ctx, VariableResolverFactory variableFactory) {
         return null;
     }
 

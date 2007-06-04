@@ -25,23 +25,23 @@ import static org.mvel.util.ParseTools.handleParserEgress;
 import java.io.Serializable;
 
 public class CompiledExpression implements Serializable, ExecutableStatement {
-    private FastTokenIterator tokens;
+    private FastASTIterator tokens;
 
     private Class knownEgressType;
     private Class knownIngressType;
 
     private boolean convertableIngressEgress;
 
-    public CompiledExpression(TokenIterator tokenMap) {
-        this.tokens = new FastTokenIterator(tokenMap);
+    public CompiledExpression(ASTIterator ASTMap) {
+        this.tokens = new FastASTIterator(ASTMap);
     }
 
-    public TokenIterator getTokens() {
+    public ASTIterator getTokens() {
         return tokens;
     }
 
-    public void setTokens(TokenIterator tokens) {
-        this.tokens = new FastTokenIterator(tokens);
+    public void setTokens(ASTIterator tokens) {
+        this.tokens = new FastASTIterator(tokens);
     }
 
 
@@ -85,5 +85,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         return handleParserEgress(new AcceleratedParser(tokens).execute(staticContext, factory), false);
     }
 
-
+    public ASTIterator getTokenIterator() {
+        return new FastASTIterator(tokens);
+    }
 }

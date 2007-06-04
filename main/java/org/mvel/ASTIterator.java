@@ -19,7 +19,7 @@
 
 package org.mvel;
 
-public interface TokenIterator {
+public interface ASTIterator {
     public void reset();
 
     public ASTNode nextToken();

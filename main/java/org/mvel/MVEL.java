@@ -116,7 +116,7 @@ public class MVEL {
 
         CompiledExpression cExpr = parser.compile();
 
-        TokenIterator tokens = cExpr.getTokens();
+        ASTIterator tokens = cExpr.getTokens();
 
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
@@ -166,7 +166,7 @@ public class MVEL {
         parser.setInterceptors(interceptors);
 
         CompiledExpression cExpr = parser.compile();
-        TokenIterator tokens = cExpr.getTokens();
+        ASTIterator tokens = cExpr.getTokens();
 
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
