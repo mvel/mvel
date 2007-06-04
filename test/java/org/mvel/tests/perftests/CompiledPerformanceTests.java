@@ -57,4 +57,5 @@ public class CompiledPerformanceTests extends TestCase {
     public void testToListBenchmark3() {
         testToListBenchmark();
     }
+
 }
