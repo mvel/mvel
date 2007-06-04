@@ -37,7 +37,6 @@ public class ClassImportResolver implements VariableResolver {
         }
     }
 
-
     public ClassImportResolver(String name, Class type) {
         this.name = name;
         this.type = type;
