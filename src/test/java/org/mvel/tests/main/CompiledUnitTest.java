@@ -757,10 +757,14 @@ public class CompiledUnitTest extends TestCase {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh");
         compiler.compile();
 
+        assertEquals(4, compiler.getInputs().size());
+
         assertTrue(compiler.getInputs().contains("test"));
         assertTrue(compiler.getInputs().contains("foo"));
         assertTrue(compiler.getInputs().contains("bo"));
         assertTrue(compiler.getInputs().contains("trouble"));
+
+        assertEquals(2, compiler.getLocals().size());
 
         assertTrue(compiler.getLocals().contains("bleh"));
         assertTrue(compiler.getLocals().contains("twa"));

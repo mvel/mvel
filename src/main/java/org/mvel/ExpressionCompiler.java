@@ -3,15 +3,15 @@ package org.mvel;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.doOperations;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
     private final Stack stk = new ExecutionStack();
-    private List<String> inputs;
-    private List<String> locals;
+    private Set<String> inputs;
+    private Set<String> locals;
     private Class returnType;
 
     private boolean verifying = true;
@@ -30,8 +30,8 @@ public class ExpressionCompiler extends AbstractParser {
         boolean firstLA;
 
         if (verifying) {
-            inputs = new LinkedList<String>();
-            locals = new LinkedList<String>();
+            inputs = new LinkedHashSet<String>();
+            locals = new LinkedHashSet<String>();
         }
 
         while ((tk = nextToken()) != null) {
@@ -133,6 +133,7 @@ public class ExpressionCompiler extends AbstractParser {
 
     protected ASTNode verify(ASTNode tk) {
         if (verifying) {
+            if (tk.isDiscard()) return tk;
             if (tk.isAssignment()) {
                 char[] assign = tk.getNameAsArray();
                 int c = 0;
@@ -310,11 +311,11 @@ public class ExpressionCompiler extends AbstractParser {
     }
 
 
-    public List<String> getInputs() {
+    public Set<String> getInputs() {
         return inputs;
     }
 
-    public List<String> getLocals() {
+    public Set<String> getLocals() {
         return locals;
     }
 
