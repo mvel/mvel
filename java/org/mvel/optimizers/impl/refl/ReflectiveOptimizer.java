@@ -1,8 +1,8 @@
 package org.mvel.optimizers.impl.refl;
 
+import org.mvel.ASTIterator;
 import org.mvel.ASTNode;
-import org.mvel.TokenIterator;
-import org.mvel.TokenSet;
+import org.mvel.ASTSet;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.Optimizer;
 
@@ -11,8 +11,8 @@ import org.mvel.optimizers.Optimizer;
  */
 public class ReflectiveOptimizer implements Optimizer {
 
-    public TokenIterator optimize(TokenSet tokens, Object ctx, VariableResolverFactory factory) {
-        TokenSet optimized = new TokenSet();
+    public ASTIterator optimize(ASTSet tokens, Object ctx, VariableResolverFactory factory) {
+        ASTSet optimized = new ASTSet();
         tokens.reset();
 
         ASTNode[] t = new ASTNode[3];

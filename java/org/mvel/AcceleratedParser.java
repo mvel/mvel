@@ -16,12 +16,12 @@ import static java.lang.String.valueOf;
 import static java.util.regex.Pattern.compile;
 
 public class AcceleratedParser extends AbstractParser {
-    private final TokenIterator tokens;
+    private final ASTIterator tokens;
     private final Stack stk = new ExecutionStack();
 
 
-    public AcceleratedParser(FastTokenIterator tokens) {
-        this.tokens = new FastTokenIterator(tokens);
+    public AcceleratedParser(FastASTIterator tokens) {
+        this.tokens = new FastASTIterator(tokens);
     }
 
     /**
