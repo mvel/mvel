@@ -1,9 +1,9 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-import org.mvel.ASTNode;
-import org.mvel.ExpressionCompiler;
-import org.mvel.MVEL;
+import org.mvel.*;
+import static org.mvel.MVEL.compileExpression;
+import static org.mvel.MVEL.executeExpression;
 import org.mvel.debug.DebugTools;
 import org.mvel.integration.Interceptor;
 import org.mvel.integration.ResolverTools;
@@ -20,6 +20,9 @@ public class CompiledUnitTest extends TestCase {
     protected Map<String, Object> map = new HashMap<String, Object>();
     protected Base base = new Base();
     protected DerivedClass derived = new DerivedClass();
+
+    protected Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
+    protected Map<String, Macro> macros = new HashMap<String, Macro>();
 
     public CompiledUnitTest() {
         foo.setBar(new Bar());
@@ -49,6 +52,24 @@ public class CompiledUnitTest extends TestCase {
                 });
 
         map.put("derived", derived);
+
+
+        interceptors.put("Modify", new Interceptor() {
+            public int doBefore(ASTNode node, VariableResolverFactory factory) {
+                factory.createVariable("mod", "FOOBAR!");
+                return 0;
+            }
+
+            public int doAfter(ASTNode node, VariableResolverFactory factory) {
+                return 0;
+            }
+        });
+
+        macros.put("modify", new Macro() {
+            public String doMacro() {
+                return "@Modify with";
+            }
+        });
     }
 
     public void testSingleProperty() {
@@ -495,8 +516,8 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testCompiledMapStructures() {
-        Serializable compiled = MVEL.compileExpression("['foo':'bar'] contains 'foo'");
-        MVEL.executeExpression(compiled, null, null, Boolean.class);
+        Serializable compiled = compileExpression("['foo':'bar'] contains 'foo'");
+        executeExpression(compiled, null, null, Boolean.class);
     }
 
     public void testSubListInMap() {
@@ -504,8 +525,8 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testCompiledMethodCall() {
-        Serializable compiled = MVEL.compileExpression("c.getClass()");
-        assertEquals(String.class, MVEL.executeExpression(compiled, base, map));
+        Serializable compiled = compileExpression("c.getClass()");
+        assertEquals(String.class, executeExpression(compiled, base, map));
     }
 
     public void testStaticNamespaceCall() {
@@ -749,6 +770,14 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("happyBar", parseDirect("foo.happy(); foo.bar.happy()"));
     }
 
+    public void testMacroSupport() {
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put("foo", new Foo());
+
+        Serializable s = compileExpression(new MacroProcessor("modify (foo) { aValue = 'poo' }; mod").parse(macros), null, interceptors);
+        assertEquals("FOOBAR!", executeExpression(s, vars));
+    }
+
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile();
@@ -769,9 +798,9 @@ public class CompiledUnitTest extends TestCase {
 
         ResolverTools.appendFactory(mvf, classes);
 
-        Serializable compiled = MVEL.compileExpression("HashMap map = new HashMap()", classes.getImportedClasses());
+        Serializable compiled = compileExpression("HashMap map = new HashMap()", classes.getImportedClasses());
 
-        assertTrue(MVEL.executeExpression(compiled, mvf) instanceof HashMap);
+        assertTrue(executeExpression(compiled, mvf) instanceof HashMap);
     }
 
     public void testCheeseConstructor() {
@@ -781,9 +810,9 @@ public class CompiledUnitTest extends TestCase {
 
         ResolverTools.appendFactory(mvf, classes);
 
-        Serializable compiled = MVEL.compileExpression("cheese = new Cheese(\"cheddar\", 15);", classes.getImportedClasses());
+        Serializable compiled = compileExpression("cheese = new Cheese(\"cheddar\", 15);", classes.getImportedClasses());
 
-        assertTrue(MVEL.executeExpression(compiled, mvf) instanceof Cheese);
+        assertTrue(executeExpression(compiled, mvf) instanceof Cheese);
     }
 
     public void testInterceptors() {
@@ -802,9 +831,9 @@ public class CompiledUnitTest extends TestCase {
         Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
         interceptors.put("test", testInterceptor);
 
-        Serializable compiled = MVEL.compileExpression("@test System.out.println('MIDDLE');", null, interceptors);
+        Serializable compiled = compileExpression("@test System.out.println('MIDDLE');", null, interceptors);
 
-        MVEL.executeExpression(compiled);
+        executeExpression(compiled);
     }
 
 
@@ -813,12 +842,12 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public Object compiledExecute(String ex) {
-        Serializable compiled = MVEL.compileExpression(ex);
+        Serializable compiled = compileExpression(ex);
 
         System.out.println(DebugTools.decompile(compiled));
 
-        Object first = MVEL.executeExpression(compiled, base, map);
-        Object second = MVEL.executeExpression(compiled, base, map);
+        Object first = executeExpression(compiled, base, map);
+        Object second = executeExpression(compiled, base, map);
 
         if (first != null && !first.getClass().isArray())
             assertEquals(first, second);
@@ -827,9 +856,9 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public Object compiledExecute(String ex, Object base, Map map) {
-        Serializable compiled = MVEL.compileExpression(ex);
-        Object first = MVEL.executeExpression(compiled, base, map);
-        Object second = MVEL.executeExpression(compiled, base, map);
+        Serializable compiled = compileExpression(ex);
+        Object first = executeExpression(compiled, base, map);
+        Object second = executeExpression(compiled, base, map);
 
         if (first != null && !first.getClass().isArray())
             assertSame(first, second);
@@ -838,7 +867,7 @@ public class CompiledUnitTest extends TestCase {
 
 
     public void testDifferentImplSameCompile() {
-        Serializable compiled = MVEL.compileExpression("a.funMap.hello");
+        Serializable compiled = compileExpression("a.funMap.hello");
 
         Map testMap = new HashMap();
 
@@ -848,13 +877,13 @@ public class CompiledUnitTest extends TestCase {
             testMap.put("a", b);
 
 
-            assertEquals("dog", MVEL.executeExpression(compiled, testMap));
+            assertEquals("dog", executeExpression(compiled, testMap));
 
             b = new Base();
             b.funMap.put("hello", "cat");
             testMap.put("a", b);
 
-            assertEquals("cat", MVEL.executeExpression(compiled, testMap));
+            assertEquals("cat", executeExpression(compiled, testMap));
         }
     }
 
