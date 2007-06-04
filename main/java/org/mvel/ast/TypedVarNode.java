@@ -50,4 +50,9 @@ public class TypedVarNode extends ASTNode {
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return getReducedValueAccelerated(ctx, thisValue, factory);
     }
+
+
+    public String getName() {
+        return name;
+    }
 }
