@@ -26,8 +26,6 @@ public interface AccessorOptimizer {
 
     public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
 
-    public Accessor optimizeAssignment(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
-
     public Accessor optimizeObjectCreation(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
 
     public Accessor optimizeFold(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
@@ -37,6 +35,4 @@ public interface AccessorOptimizer {
     public Object getResultOptPass();
 
     public Class getEgressType();
-
-    public void setAssignment(boolean assignment);
 }
