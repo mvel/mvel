@@ -40,6 +40,7 @@ public class PropertyVerifier {
 
     public PropertyVerifier(char[] property) {
         this.property = property;
+
         this.length = property.length;
     }
 
