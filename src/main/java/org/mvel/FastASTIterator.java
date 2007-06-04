@@ -23,7 +23,7 @@ import org.mvel.util.StringAppender;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class FastTokenIterator implements TokenIterator, Serializable {
+public class FastASTIterator implements ASTIterator, Serializable {
     private final ASTNode[] astNodes;
     private int length = 0;
     private int cursor = 0;
@@ -32,16 +32,16 @@ public class FastTokenIterator implements TokenIterator, Serializable {
 //        this.length = (this.astNodes = astNodes).length;
 //    }
 
-    public FastTokenIterator(final FastTokenIterator fi) {
+    public FastASTIterator(final FastASTIterator fi) {
         astNodes = fi.astNodes;
         length = fi.length;
     }
 
-    public FastTokenIterator(TokenIterator map) {
+    public FastASTIterator(ASTIterator map) {
         map.finish();
 
-        if (map instanceof FastTokenIterator) {
-            this.length = (this.astNodes = ((FastTokenIterator) map).astNodes).length;
+        if (map instanceof FastASTIterator) {
+            this.length = (this.astNodes = ((FastASTIterator) map).astNodes).length;
         }
         else {
             ArrayList<ASTNode> astNodes = new ArrayList<ASTNode>();

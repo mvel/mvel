@@ -22,7 +22,7 @@ public class DebugTools {
     }
 
     public static String decompile(CompiledExpression cExp) {
-        TokenIterator iter = cExp.getTokens();
+        ASTIterator iter = cExp.getTokens();
         ASTNode tk;
 
         int node = 0;
@@ -166,5 +166,19 @@ public class DebugTools {
 
 
         return "UNKNOWN_OPERATOR";
+    }
+
+    public static Class determineType(String name, CompiledExpression compiledExpression) {
+        ASTIterator iter = compiledExpression.getTokenIterator();
+        ASTNode node;
+        while (iter.hasMoreTokens()) {
+            node = iter.nextToken();
+
+            if (name.equals(node.getName()) && node.isAssignment()) {
+                return node.getEgressType();
+            }
+        }
+
+        return null;
     }
 }

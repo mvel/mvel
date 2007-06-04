@@ -25,7 +25,7 @@ public class ExpressionCompiler extends AbstractParser {
         ASTNode tkOp;
         ASTNode tkLA;
         ASTNode tkLA2;
-        TokenSet tokenSet = new TokenSet();
+        ASTSet tokenSet = new ASTSet();
 
         boolean firstLA;
 
@@ -128,7 +128,7 @@ public class ExpressionCompiler extends AbstractParser {
             }
         }
 
-        return new CompiledExpression(new FastTokenIterator(tokenSet));
+        return new CompiledExpression(new FastASTIterator(tokenSet));
     }
 
     protected ASTNode verify(ASTNode tk) {

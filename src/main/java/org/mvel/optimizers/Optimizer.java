@@ -19,12 +19,12 @@
 
 package org.mvel.optimizers;
 
-import org.mvel.TokenIterator;
-import org.mvel.TokenSet;
+import org.mvel.ASTIterator;
+import org.mvel.ASTSet;
 import org.mvel.integration.VariableResolverFactory;
 
 public interface Optimizer {
-    public TokenIterator optimize(TokenSet tokens, Object ctx, VariableResolverFactory variableFactory);
+    public ASTIterator optimize(ASTSet tokens, Object ctx, VariableResolverFactory variableFactory);
 
     public String getName();
 }

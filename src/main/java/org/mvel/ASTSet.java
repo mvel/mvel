@@ -19,16 +19,16 @@
 
 package org.mvel;
 
-public class TokenSet implements TokenIterator {
+public class ASTSet implements ASTIterator {
     private ASTNode firstASTNode;
     private ASTNode current;
     private int size;
 
 
-    public TokenSet() {
+    public ASTSet() {
     }
 
-    public TokenSet(ASTNode firstASTNode) {
+    public ASTSet(ASTNode firstASTNode) {
         this.current = this.firstASTNode = firstASTNode;
     }
 

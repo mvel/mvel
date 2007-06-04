@@ -12,12 +12,12 @@ import static org.mvel.util.PropertyTools.find;
  */
 public class TypedVarNode extends ASTNode {
     private String name;
-    private Class type;
+    //  private Class type;
     private ExecutableStatement statement;
 
     public TypedVarNode(char[] expr, int fields, Class type) {
         super(expr, fields);
-        this.type = type;
+        this.egressType = type;
 
         int assignStart;
         if ((assignStart = find(expr, '=')) != -1) {
@@ -36,12 +36,12 @@ public class TypedVarNode extends ASTNode {
         if (statement != null) {
             Object o = statement.getValue(ctx, thisValue, factory);
 
-            finalLocalVariableFactory(factory).createVariable(name, o, type);
+            finalLocalVariableFactory(factory).createVariable(name, o, egressType);
 
             return o;
         }
         else {
-            factory.createVariable(name, null, type);
+            factory.createVariable(name, null, egressType);
             return Void.class;
         }
 
