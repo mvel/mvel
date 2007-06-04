@@ -5,7 +5,7 @@ import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
-import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.subset;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,11 +20,9 @@ public class ForEachNode extends BlockNode {
 
     public ForEachNode(char[] condition, char[] block, int fields) {
         super(condition, fields);
-
         handleCond(condition);
         this.compiledBlock = (ExecutableStatement) compileExpression(this.block = block);
     }
-
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         Map<String, Object> locals = new HashMap<String, Object>();
@@ -51,7 +49,6 @@ public class ForEachNode extends BlockNode {
         return ret == null ? Void.class : ret;
     }
 
-
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return getReducedValueAccelerated(ctx, thisValue, factory);
     }
@@ -67,6 +64,6 @@ public class ForEachNode extends BlockNode {
 
         cursor++;
 
-        this.condition = (ExecutableStatement) compileExpression(ParseTools.subset(condition, cursor));
+        this.condition = (ExecutableStatement) compileExpression(subset(condition, cursor));
     }
 }
