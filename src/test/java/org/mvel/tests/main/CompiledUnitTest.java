@@ -1,9 +1,11 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-import org.mvel.*;
-import static org.mvel.MVEL.compileExpression;
-import static org.mvel.MVEL.executeExpression;
+import org.mvel.ASTNode;
+import org.mvel.ExpressionCompiler;
+import org.mvel.MVEL;
+import static org.mvel.MVEL.*;
+import org.mvel.Macro;
 import org.mvel.debug.DebugTools;
 import org.mvel.integration.Interceptor;
 import org.mvel.integration.ResolverTools;
@@ -834,8 +836,8 @@ public class CompiledUnitTest extends TestCase {
             }
         });
 
-        Serializable s = compileExpression(new MacroProcessor("modify (foo) { aValue = 'poo' }; mod")
-                .parse(macros), null, interceptors);
+        Serializable s = compileExpression(parseMacros("modify (foo) { aValue = 'poo' }; mod", macros)
+                , null, interceptors);
 
         assertEquals("FOOBAR!", executeExpression(s, vars));
     }
