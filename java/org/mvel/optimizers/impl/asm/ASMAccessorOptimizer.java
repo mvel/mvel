@@ -94,7 +94,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private Class returnType;
 
-    private StringBuffer buildLog;
+    @SuppressWarnings({"StringBufferField"}) private StringAppender buildLog;
 
     public ASMAccessorOptimizer() {
         //do this to confirm we're running the correct version
@@ -107,7 +107,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
      */
     private void _initJIT() {
         if (isAdvancedDebugging()) {
-            buildLog = new StringBuffer();
+            buildLog = new StringAppender();
         }
 
         cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
