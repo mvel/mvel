@@ -1,11 +1,8 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-import org.mvel.ASTNode;
-import org.mvel.ExpressionCompiler;
-import org.mvel.MVEL;
+import org.mvel.*;
 import static org.mvel.MVEL.*;
-import org.mvel.Macro;
 import org.mvel.debug.DebugTools;
 import org.mvel.integration.Interceptor;
 import org.mvel.integration.ResolverTools;
@@ -755,7 +752,7 @@ public class CompiledUnitTest extends TestCase {
 
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh");
-        compiler.compile();
+        CompiledExpression c = compiler.compile();
 
         assertEquals(4, compiler.getInputs().size());
 
@@ -768,6 +765,8 @@ public class CompiledUnitTest extends TestCase {
 
         assertTrue(compiler.getLocals().contains("bleh"));
         assertTrue(compiler.getLocals().contains("twa"));
+
+        assertEquals(String.class, DebugTools.determineType("bleh", c));
     }
 
     public void testClassImportViaFactory() {
