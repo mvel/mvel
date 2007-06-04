@@ -28,20 +28,34 @@ import java.util.Map;
 public class MapVariableResolver implements VariableResolver {
     private String name;
     private Class<?> knownType;
-
     private Map variableMap;
+
+    private boolean cache = false;
 
     public MapVariableResolver(Map variableMap, String name) {
         this.variableMap = variableMap;
         this.name = name;
     }
 
-
     public MapVariableResolver(Map variableMap, String name, Class knownType) {
         this.name = name;
         this.knownType = knownType;
         this.variableMap = variableMap;
     }
+
+    public MapVariableResolver(Map variableMap, String name, boolean cache) {
+        this.variableMap = variableMap;
+        this.name = name;
+        this.cache = cache;
+    }
+
+    public MapVariableResolver(Map variableMap, String name, Class knownType, boolean cache) {
+        this.name = name;
+        this.knownType = knownType;
+        this.variableMap = variableMap;
+        this.cache = cache;
+    }
+
 
     public void setName(String name) {
         this.name = name;
@@ -63,7 +77,6 @@ public class MapVariableResolver implements VariableResolver {
         return knownType;
     }
 
-
     public void setValue(Object value) {
         if (knownType != null && value != null && value.getClass() != knownType) {
             if (!canConvert(knownType, value.getClass())) {
@@ -79,6 +92,7 @@ public class MapVariableResolver implements VariableResolver {
             }
         }
 
+        //noinspection unchecked
         variableMap.put(name, value);
     }
 
@@ -88,5 +102,14 @@ public class MapVariableResolver implements VariableResolver {
 
     public int getFlags() {
         return 0;
+    }
+
+
+    public boolean isCache() {
+        return cache;
+    }
+
+    public void setCache(boolean cache) {
+        this.cache = cache;
     }
 }

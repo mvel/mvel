@@ -167,9 +167,9 @@ public class ParseTools {
 
     private static Map<String, Map<Integer, Method>> RESOLVED_METH_CACHE = new WeakHashMap<String, Map<Integer, Method>>(10);
 
-    
+
     public static Method getBestCanadidate(Object[] arguments, String method, Method[] methods) {
-        if ( methods.length == 0) {
+        if (methods.length == 0) {
             return null;
         }
         Class[] parmTypes;
@@ -553,8 +553,9 @@ public class ParseTools {
     public static VariableResolverFactory finalLocalVariableFactory(VariableResolverFactory factory) {
         VariableResolverFactory v = factory;
         while (v != null) {
-            if (v instanceof LocalVariableResolverFactory)
+            if (v instanceof LocalVariableResolverFactory) {
                 return v;
+            }
 
             v = v.getNextFactory();
         }
