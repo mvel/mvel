@@ -770,14 +770,6 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("happyBar", parseDirect("foo.happy(); foo.bar.happy()"));
     }
 
-    public void testMacroSupport() {
-        Map<String, Object> vars = new HashMap<String, Object>();
-        vars.put("foo", new Foo());
-
-        Serializable s = compileExpression(new MacroProcessor("modify (foo) { aValue = 'poo' }; mod").parse(macros), null, interceptors);
-        assertEquals("FOOBAR!", executeExpression(s, vars));
-    }
-
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); bleh = foo; twa = bleh");
         compiler.compile();
@@ -834,6 +826,15 @@ public class CompiledUnitTest extends TestCase {
         Serializable compiled = compileExpression("@test System.out.println('MIDDLE');", null, interceptors);
 
         executeExpression(compiled);
+    }
+
+
+    public void testMacroSupport() {
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put("foo", new Foo());
+
+        Serializable s = compileExpression(new MacroProcessor("modify (foo) { aValue = 'poo' }; mod").parse(macros), null, interceptors);
+        assertEquals("FOOBAR!", executeExpression(s, vars));
     }
 
 
