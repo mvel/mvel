@@ -526,6 +526,11 @@ public class MVEL {
         return evalToBoolean(expression, null, vars);
     }
 
+    public static String parseMacros(String input, Map<String, Macro> macros) {
+        return new MacroProcessor(input).parse(macros);
+    }
+
+
     public static Object getProperty(String property, Object ctx) {
         return ReflectiveAccessorOptimizer.get(property, ctx);
     }
