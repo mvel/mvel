@@ -20,29 +20,30 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
+import org.mvel.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 
-import java.util.Map;
+import java.util.List;
 
-public class MapAccessor implements AccessorNode {
+public class ListAccessorNest implements AccessorNode {
     private AccessorNode nextNode;
-    private Object property;
+    private ExecutableStatement index;
 
-    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {
-            return nextNode.getValue(((Map) ctx).get(property), elCtx, vrf);
+            return nextNode.getValue(((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars)), elCtx, vars);
         }
         else {
-            return ((Map) ctx).get(property);
+            return ((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars));
         }
     }
 
-    public Object getProperty() {
-        return property;
+    public ExecutableStatement getIndex() {
+        return index;
     }
 
-    public void setProperty(Object property) {
-        this.property = property;
+    public void setIndex(ExecutableStatement index) {
+        this.index = index;
     }
 
     public AccessorNode getNextNode() {
@@ -55,6 +56,6 @@ public class MapAccessor implements AccessorNode {
 
 
     public String toString() {
-        return "Map Accessor -> [" + property + "]";
+        return "Array Accessor -> [" + index + "]";
     }
 }
