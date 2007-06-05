@@ -100,6 +100,15 @@ public class WithNode extends BlockNode {
         parms.toArray(withExpressions = new ParmValuePair[parms.size()]);
     }
 
+
+    public ExecutableStatement getContext() {
+        return context;
+    }
+
+    public ParmValuePair[] getWithExpressions() {
+        return withExpressions;
+    }
+
     public static final class ParmValuePair {
         private String parameter;
         private ExecutableStatement statement;

@@ -172,9 +172,7 @@ public class DebugTools {
         ASTIterator iter = compiledExpression.getTokenIterator();
         ASTNode node;
         while (iter.hasMoreTokens()) {
-            node = iter.nextToken();
-
-            if (name.equals(node.getName()) && node.isAssignment()) {
+            if (name.equals((node = iter.nextToken()).getName()) && node.isAssignment()) {
                 return node.getEgressType();
             }
         }
