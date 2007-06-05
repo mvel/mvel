@@ -307,7 +307,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("GETSTATIC " + getDescriptor(member.getDeclaringClass()) + "."
                         + member.getName() + "::" + getDescriptor(((Field) member).getType()));
 
-                mv.visitFieldInsn(GETSTATIC, getDescriptor(member.getDeclaringClass()),
+                mv.visitFieldInsn(GETSTATIC, getInternalName(member.getDeclaringClass()),
                         member.getName(), getDescriptor(returnType = ((Field) member).getType()));
             }
             else {
