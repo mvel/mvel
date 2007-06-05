@@ -800,7 +800,7 @@ public class CompiledUnitTest extends TestCase {
                 return 0;
             }
 
-            public int doAfter(ASTNode node, VariableResolverFactory factory) {
+            public int doAfter(Object val, ASTNode node, VariableResolverFactory factory) {
                 System.out.println("AFTER Node: " + node.getName());
                 return 0;
             }
@@ -828,7 +828,7 @@ public class CompiledUnitTest extends TestCase {
                 return 0;
             }
 
-            public int doAfter(ASTNode node, VariableResolverFactory factory) {
+            public int doAfter(Object val, ASTNode node, VariableResolverFactory factory) {
                 return 0;
             }
         });
