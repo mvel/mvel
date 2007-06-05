@@ -298,8 +298,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         boolean itemSubExpr = true;
 
+        Object idx = null;
+
         try {
-            parseInt(item);
+            idx = parseInt(item);
             itemSubExpr = false;
         }
         catch (Exception e) {
@@ -307,13 +309,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         ExecutableStatement itemStmt = null;
-        Object idx;
         if (itemSubExpr) {
             itemStmt = (ExecutableStatement) MVEL.compileExpression(item);
             idx = itemStmt.getValue(ctx, thisRef, variableFactory);
-        }
-        else {
-            idx = item;
         }
 
         ++cursor;
