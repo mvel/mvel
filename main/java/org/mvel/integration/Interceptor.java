@@ -12,5 +12,5 @@ public interface Interceptor {
 
     public int doBefore(ASTNode node, VariableResolverFactory factory);
 
-    public int doAfter(ASTNode node, VariableResolverFactory factory);
+    public int doAfter(Object exitStackValue, ASTNode node, VariableResolverFactory factory);
 }
