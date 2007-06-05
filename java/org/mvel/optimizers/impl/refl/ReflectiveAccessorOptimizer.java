@@ -32,7 +32,9 @@ import static org.mvel.util.ParseTools.*;
 
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
 
@@ -305,52 +307,81 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         ExecutableStatement itemStmt = null;
+        Object idx;
         if (itemSubExpr) {
             itemStmt = (ExecutableStatement) MVEL.compileExpression(item);
+            idx = itemStmt.getValue(ctx, thisRef, variableFactory);
+        }
+        else {
+            idx = item;
         }
 
         ++cursor;
 
         if (ctx instanceof Map) {
-            MapAccessor accessor = new MapAccessor();
-            accessor.setProperty(item);
+            if (itemSubExpr) {
+                MapAccessorNest accessor = new MapAccessorNest();
+                accessor.setProperty(itemStmt);
+                addAccessorNode(accessor);
+            }
+            else {
+                MapAccessor accessor = new MapAccessor();
+                accessor.setProperty(item);
+                addAccessorNode(accessor);
+            }
 
-            addAccessorNode(accessor);
-
-            return ((Map) ctx).get(item);
+            return ((Map) ctx).get(idx);
         }
         else if (ctx instanceof List) {
-            ListAccessor accessor = new ListAccessor();
-            accessor.setIndex(parseInt(item));
+            if (itemSubExpr) {
+                ListAccessorNest accessor = new ListAccessorNest();
+                accessor.setIndex(itemStmt);
+                addAccessorNode(accessor);
+            }
+            else {
+                ListAccessor accessor = new ListAccessor();
+                accessor.setIndex(parseInt(item));
+                addAccessorNode(accessor);
+            }
 
-            addAccessorNode(accessor);
-
-            return ((List) ctx).get(accessor.getIndex());
+            return ((List) ctx).get((Integer) idx);
         }
-        else if (ctx instanceof Collection) {
-            int count = parseInt(item);
-            if (count > ((Collection) ctx).size())
-                throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
-
-            Iterator iter = ((Collection) ctx).iterator();
-            for (int i = 0; i < count; i++) iter.next();
-            return iter.next();
-        }
+//        else if (ctx instanceof Collection) {
+//            int count = parseInt(item);
+//            if (count > ((Collection) ctx).size())
+//                throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
+//
+//            Iterator iter = ((Collection) ctx).iterator();
+//            for (int i = 0; i < count; i++) iter.next();
+//            return iter.next();
+//        }
         else if (ctx instanceof Object[]) {
-            ArrayAccessor accessor = new ArrayAccessor();
-            accessor.setIndex(parseInt(item));
+            if (itemSubExpr) {
+                ArrayAccessorNest accessor = new ArrayAccessorNest();
+                accessor.setIndex(itemStmt);
+                addAccessorNode(accessor);
+            }
+            else {
+                ArrayAccessor accessor = new ArrayAccessor();
+                accessor.setIndex(parseInt(item));
+                addAccessorNode(accessor);
+            }
 
-            addAccessorNode(accessor);
-
-            return ((Object[]) ctx)[accessor.getIndex()];
+            return ((Object[]) ctx)[(Integer) idx];
         }
         else if (ctx instanceof CharSequence) {
-            IndexedCharSeqAccessor accessor = new IndexedCharSeqAccessor();
-            accessor.setIndex(parseInt(item));
+            if (itemSubExpr) {
+                IndexedCharSeqAccessorNest accessor = new IndexedCharSeqAccessorNest();
+                accessor.setIndex(itemStmt);
+                addAccessorNode(accessor);
+            }
+            else {
+                IndexedCharSeqAccessor accessor = new IndexedCharSeqAccessor();
+                accessor.setIndex(parseInt(item));
+                addAccessorNode(accessor);
+            }
 
-            addAccessorNode(accessor);
-
-            return ((CharSequence) ctx).charAt(accessor.getIndex());
+            return ((CharSequence) ctx).charAt((Integer) idx);
         }
         else {
             throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
