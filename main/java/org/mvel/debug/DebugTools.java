@@ -34,7 +34,10 @@ public class DebugTools {
 
             sbuf.append("(").append(node++).append(") ");
 
-            if (tk.isLiteral()) {
+            if (tk.isDebuggingSymbold()) {
+                sbuf.append("DEBUG_SYMBOL " + tk.toString());
+            }
+            else if (tk.isLiteral()) {
                 sbuf.append("PUSH LITERAL '").append(tk.getLiteralValue()).append("'");
             }
             else if (tk.isOperator()) {

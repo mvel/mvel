@@ -35,6 +35,11 @@ public class ExpressionCompiler extends AbstractParser {
         }
 
         while ((tk = nextToken()) != null) {
+            if (tk.fields == -1) {
+                tokenSet.addTokenNode(tk);
+                continue;
+            }
+
             if (tk.isSubeval()) {
                 ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
                 tk.setAccessor(subCompiler.compile());
@@ -334,6 +339,7 @@ public class ExpressionCompiler extends AbstractParser {
     public void setVerifying(boolean verifying) {
         this.verifying = verifying;
     }
+
 
     public Class getReturnType() {
         return returnType;

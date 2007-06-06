@@ -30,6 +30,11 @@ public class AbstractParser {
 
     protected boolean greedy = true;
     protected boolean lastWasIdentifier = false;
+    protected boolean lastWasLineLabel = false;
+
+    private boolean debugSymbols = false;
+    private int line = 1;
+
     protected ASTNode lastNode;
 
     protected static final int FRAME_END = -1;
@@ -228,6 +233,14 @@ public class AbstractParser {
 
         boolean capture = false;
         boolean union = false;
+
+        if (debugSymbols && !lastWasLineLabel && (expr[cursor] == '\n' || cursor == 0)) {
+            lastWasLineLabel = true;
+            return new LineLabel(line++);
+        }
+        else {
+            lastWasLineLabel = false;
+        }
 
         /**
          * Skip any whitespace currently under the starting point.
@@ -473,6 +486,10 @@ public class AbstractParser {
                         return createToken(expr, start, cursor++ + 1, fields);
 
                     case';':
+                        cursor++;
+                        lastWasIdentifier = false;
+                        return lastNode = new EndOfStatement();
+
                     case'#':
                     case'?':
                     case':':
@@ -634,6 +651,7 @@ public class AbstractParser {
                         }
 
                         return createToken(expr, start, ++cursor, ASTNode.INLINE_COLLECTION);
+
 
                     default:
                         cursor++;
@@ -879,7 +897,6 @@ public class AbstractParser {
         while (isWhitespace(expr[cursor])) cursor++;
     }
 
-
     protected void skipToNextTokenJunction() {
         while (cursor < length) {
             switch (expr[cursor]) {
@@ -984,5 +1001,13 @@ public class AbstractParser {
 
     public void setInterceptors(Map<String, Interceptor> interceptors) {
         this.interceptors = interceptors;
+    }
+
+    public boolean isDebugSymbols() {
+        return debugSymbols;
+    }
+
+    public void setDebugSymbols(boolean debugSymbols) {
+        this.debugSymbols = debugSymbols;
     }
 }

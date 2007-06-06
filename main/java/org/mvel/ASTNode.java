@@ -559,6 +559,9 @@ public class ASTNode implements Cloneable, Serializable {
         this.discard = discard;
     }
 
+    public boolean isDebuggingSymbold() {
+        return this.fields == -1;
+    }
 
 }
 
