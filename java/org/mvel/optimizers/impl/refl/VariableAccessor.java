@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -25,18 +24,17 @@ import org.mvel.integration.VariableResolverFactory;
 
 public class VariableAccessor implements AccessorNode {
     private AccessorNode nextNode;
-
     private String property;
 
 
     public VariableAccessor(String property, VariableResolverFactory vrf) {
         this.property = property;
-
     }
-    
+
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
-        if (vrf == null) 
-            throw new PropertyAccessException("cannot property in optimized accessor: " + property);
+        if (vrf == null)
+            throw new PropertyAccessException("cannot access property in optimized accessor: " + property);
+
         if (nextNode != null) {
             return nextNode.getValue(vrf.getVariableResolver(property).getValue(), elCtx, vrf);
         }
@@ -44,7 +42,6 @@ public class VariableAccessor implements AccessorNode {
             return vrf.getVariableResolver(property).getValue();
         }
     }
-
 
     public Object getProperty() {
         return property;
