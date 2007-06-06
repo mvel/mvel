@@ -27,11 +27,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class OptimizerFactory {
-    public static String SAFE_REFLECTIVE = "Reflective";
+    public static String SAFE_REFLECTIVE = "reflective";
 
     private static String defaultOptimizer;
     private static final Map<String, Optimizer> optimizers = new HashMap<String, Optimizer>();
     private static final Map<String, AccessorOptimizer> accessorCompilers = new HashMap<String, AccessorOptimizer>();
+
+    private static ThreadLocal<Class<? extends AccessorOptimizer>> threadOptimizer;
 
     static {
         accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveAccessorOptimizer());
@@ -83,5 +85,28 @@ public class OptimizerFactory {
         catch (Exception e) {
             throw new CompileException("unable to instantiate accessor compiler", e);
         }
+    }
+
+    public static AccessorOptimizer getThreadAccessorOptimizer() {
+        if (threadOptimizer == null) {
+            threadOptimizer = new ThreadLocal<Class<? extends AccessorOptimizer>>();
+        }
+        if (threadOptimizer.get() == null) {
+            threadOptimizer.set(getDefaultAccessorCompiler().getClass());
+        }
+
+        try {
+            return threadOptimizer.get().newInstance();
+        }
+        catch (Exception e) {
+            throw new CompileException("unable to instantiate accessor compiler", e);
+        }
+    }
+
+    public static void setThreadAccessorOptimizer(Class<? extends AccessorOptimizer> optimizer) {
+        if (threadOptimizer == null) {
+            threadOptimizer = new ThreadLocal<Class<? extends AccessorOptimizer>>();
+        }
+        threadOptimizer.set(optimizer);
     }
 }

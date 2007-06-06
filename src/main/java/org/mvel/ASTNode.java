@@ -192,7 +192,7 @@ public class ASTNode implements Cloneable, Serializable {
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & INLINE_COLLECTION) != 0) {
-                optimizer = getDefaultAccessorCompiler();
+                optimizer = getThreadAccessorOptimizer();
                 accessor = optimizer.optimizeCollection(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
@@ -203,7 +203,7 @@ public class ASTNode implements Cloneable, Serializable {
             }
             else {
                 try {
-                    accessor = (optimizer = getDefaultAccessorCompiler()).optimizeAccessor(name, ctx, thisValue, factory, true);
+                    accessor = (optimizer = getThreadAccessorOptimizer()).optimizeAccessor(name, ctx, thisValue, factory, true);
                 }
                 catch (OptimizationNotSupported ne) {
                     accessor = (optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeAccessor(name, ctx, thisValue, factory, true);
@@ -228,10 +228,12 @@ public class ASTNode implements Cloneable, Serializable {
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         String s;
         if ((fields & (LITERAL)) != 0) {
-            if ((fields & THISREF) != 0)
+            if ((fields & THISREF) != 0) {
                 return thisValue;
-            else
+            }
+            else {
                 return literal;
+            }
         }
         else if ((fields & SUBEVAL) != 0) {
             return valRet(MVEL.eval(name, ctx, factory));
