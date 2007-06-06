@@ -43,6 +43,9 @@ public class MVEL {
             : System.getProperty("mvel.debugging.file");
     static boolean ADVANCED_DEBUG = getBoolean("mvel.advanced_debugging");
     static boolean THREAD_SAFE = getBoolean("mvel.threadsafety");
+    static boolean WEAK_CACHE = getBoolean("mvel.weak_caching");
+    static boolean NO_JIT = getBoolean("mvel.disable.jit");
+
     static boolean OPTIMIZER = true;
 
     static {
