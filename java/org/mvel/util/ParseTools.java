@@ -541,6 +541,8 @@ public class ParseTools {
                 return '\t';
             case'r':
                 return '\r';
+            case'n':
+                return '\n';
             case'\'':
                 return '\'';
             case'"':
