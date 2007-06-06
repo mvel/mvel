@@ -20,6 +20,8 @@
 package org.mvel;
 
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.AccessorOptimizer;
+import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.util.ParseTools.handleParserEgress;
 
 import java.io.Serializable;
@@ -31,6 +33,9 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private Class knownIngressType;
 
     private boolean convertableIngressEgress;
+
+    private boolean optimized = false;
+    private Class<? extends AccessorOptimizer> accessorOptimizer;
 
     public CompiledExpression(ASTIterator ASTMap) {
         this.tokens = new FastASTIterator(ASTMap);
@@ -78,14 +83,39 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+        if (!optimized) setupOptimizers();
         return getValue(ctx, variableFactory);
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
+        if (!optimized) setupOptimizers();
         return handleParserEgress(new MVELRuntime(tokens).execute(staticContext, factory), false);
     }
 
+    private void setupOptimizers() {
+        OptimizerFactory.setThreadAccessorOptimizer(accessorOptimizer);
+        optimized = true;
+    }
+
+
     public ASTIterator getTokenIterator() {
         return new FastASTIterator(tokens);
+    }
+
+
+    public boolean isOptimized() {
+        return optimized;
+    }
+
+    public void setOptimized(boolean optimized) {
+        this.optimized = optimized;
+    }
+
+    public Class<? extends AccessorOptimizer> getAccessorOptimizer() {
+        return accessorOptimizer;
+    }
+
+    public void setAccessorOptimizer(Class<? extends AccessorOptimizer> accessorOptimizer) {
+        this.accessorOptimizer = accessorOptimizer;
     }
 }
