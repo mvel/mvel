@@ -23,7 +23,6 @@ public class FastList extends AbstractList {
         return size;
     }
 
-
     public boolean add(Object o) {
         elements[size++] = o;
         return true;

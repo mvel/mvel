@@ -1,26 +1,16 @@
 package org.mvel;
 
-import static org.mvel.DataConversion.canConvert;
-import static org.mvel.Operator.*;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.util.ExecutionStack;
-import static org.mvel.util.ParseTools.containsCheck;
-import static org.mvel.util.ParseTools.doOperations;
-import static org.mvel.util.PropertyTools.isEmpty;
-import static org.mvel.util.PropertyTools.similarity;
-import org.mvel.util.Stack;
-import org.mvel.util.StringAppender;
+import org.mvel.util.*;
 
-import static java.lang.Class.forName;
-import static java.lang.String.valueOf;
-import static java.util.regex.Pattern.compile;
+import java.util.regex.Pattern;
 
-public class AcceleratedParser extends AbstractParser {
+public class Debugger extends AbstractParser {
     private final ASTIterator tokens;
     private final Stack stk = new ExecutionStack();
 
 
-    public AcceleratedParser(FastASTIterator tokens) {
+    public Debugger(FastASTIterator tokens) {
         this.tokens = new FastASTIterator(tokens);
     }
 
@@ -37,10 +27,6 @@ public class AcceleratedParser extends AbstractParser {
 
         try {
             while ((tk = tokens.nextToken()) != null) {
-                if (tk.fields == -1) {
-                    continue;
-                }
-
                 if (stk.isEmpty()) {
                     stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
                 }
@@ -92,7 +78,7 @@ public class AcceleratedParser extends AbstractParser {
     private int reduceBinary(int o) {
         // assert debug("BINARY_OP " + o + " PEEK=<<" + stk.peek() + ">>");
         switch (o) {
-            case AND:
+            case Operator.AND:
                 if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
                     // assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
@@ -107,7 +93,7 @@ public class AcceleratedParser extends AbstractParser {
                     stk.discard();
                     return 1;
                 }
-            case OR:
+            case Operator.OR:
                 if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
                     // assert debug("STMT_UNWIND");
                     if (unwindStatement()) {
@@ -123,7 +109,7 @@ public class AcceleratedParser extends AbstractParser {
                     return FRAME_NEXT;
                 }
 
-            case TERNARY:
+            case Operator.TERNARY:
                 if (!(Boolean) stk.pop()) {
                     skipToOperator(Operator.TERNARY_ELSE);
                 }
@@ -131,11 +117,11 @@ public class AcceleratedParser extends AbstractParser {
                 return FRAME_NEXT;
 
 
-            case TERNARY_ELSE:
+            case Operator.TERNARY_ELSE:
                 return FRAME_END;
 
 
-            case END_OF_STMT:
+            case Operator.END_OF_STMT:
                 /**
                  * Assignments are a special scenario for dealing with the stack.  Assignments are basically like
                  * held-over failures that basically kickstart the parser when an assignment operator is is
@@ -173,93 +159,93 @@ public class AcceleratedParser extends AbstractParser {
 
                 // assert debug("DO_TRINARY <<OPCODE_" + operator + ">> register1=" + v1 + "; register2=" + v2);
                 switch (operator) {
-                    case ADD:
-                    case SUB:
-                    case DIV:
-                    case MULT:
-                    case MOD:
-                    case EQUAL:
-                    case NEQUAL:
-                    case GTHAN:
-                    case LTHAN:
-                    case GETHAN:
-                    case LETHAN:
-                    case POWER:
-                        stk.push(doOperations(v2, operator, v1));
+                    case Operator.ADD:
+                    case Operator.SUB:
+                    case Operator.DIV:
+                    case Operator.MULT:
+                    case Operator.MOD:
+                    case Operator.EQUAL:
+                    case Operator.NEQUAL:
+                    case Operator.GTHAN:
+                    case Operator.LTHAN:
+                    case Operator.GETHAN:
+                    case Operator.LETHAN:
+                    case Operator.POWER:
+                        stk.push(ParseTools.doOperations(v2, operator, v1));
                         break;
 
-                    case CHOR:
-                        if (!isEmpty(v2) || !isEmpty(v1)) {
+                    case Operator.CHOR:
+                        if (!PropertyTools.isEmpty(v2) || !PropertyTools.isEmpty(v1)) {
                             stk.clear();
-                            stk.push(!isEmpty(v2) ? v2 : v1);
+                            stk.push(!PropertyTools.isEmpty(v2) ? v2 : v1);
                             return;
                         }
                         else stk.push(null);
                         break;
 
-                    case REGEX:
-                        stk.push(compile(valueOf(v1)).matcher(valueOf(v2)).matches());
+                    case Operator.REGEX:
+                        stk.push(Pattern.compile(String.valueOf(v1)).matcher(String.valueOf(v2)).matches());
                         break;
 
-                    case INSTANCEOF:
+                    case Operator.INSTANCEOF:
                         if (v1 instanceof Class)
                             stk.push(((Class) v1).isInstance(v2));
                         else
-                            stk.push(forName(valueOf(v1)).isInstance(v2));
+                            stk.push(Class.forName(String.valueOf(v1)).isInstance(v2));
 
                         break;
 
-                    case CONVERTABLE_TO:
+                    case Operator.CONVERTABLE_TO:
                         if (v1 instanceof Class)
-                            stk.push(canConvert(v2.getClass(), (Class) v1));
+                            stk.push(DataConversion.canConvert(v2.getClass(), (Class) v1));
                         else
-                            stk.push(canConvert(v2.getClass(), forName(valueOf(v1))));
+                            stk.push(DataConversion.canConvert(v2.getClass(), Class.forName(String.valueOf(v1))));
                         break;
 
-                    case CONTAINS:
-                        stk.push(containsCheck(v2, v1));
+                    case Operator.CONTAINS:
+                        stk.push(ParseTools.containsCheck(v2, v1));
                         break;
 
-                    case BW_AND:
+                    case Operator.BW_AND:
                         stk.push(asInt(v2) & asInt(v1));
                         break;
 
-                    case BW_OR:
+                    case Operator.BW_OR:
                         stk.push(asInt(v2) | asInt(v1));
                         break;
 
-                    case BW_XOR:
+                    case Operator.BW_XOR:
                         stk.push(asInt(v2) ^ asInt(v1));
                         break;
 
-                    case BW_SHIFT_LEFT:
+                    case Operator.BW_SHIFT_LEFT:
                         stk.push(asInt(v2) << asInt(v1));
                         break;
 
-                    case BW_USHIFT_LEFT:
+                    case Operator.BW_USHIFT_LEFT:
                         int iv2 = asInt(v2);
                         if (iv2 < 0) iv2 *= -1;
                         stk.push(iv2 << asInt(v1));
                         break;
 
-                    case BW_SHIFT_RIGHT:
+                    case Operator.BW_SHIFT_RIGHT:
                         stk.push(asInt(v2) >> asInt(v1));
                         break;
 
-                    case BW_USHIFT_RIGHT:
+                    case Operator.BW_USHIFT_RIGHT:
                         stk.push(asInt(v2) >>> asInt(v1));
                         break;
 
-                    case STR_APPEND:
-                        stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
+                    case Operator.STR_APPEND:
+                        stk.push(new StringAppender(String.valueOf(v2)).append(String.valueOf(v1)).toString());
                         break;
 
-                    case SOUNDEX:
-                        stk.push(Soundex.soundex(valueOf(v1)).equals(Soundex.soundex(valueOf(v2))));
+                    case Operator.SOUNDEX:
+                        stk.push(Soundex.soundex(String.valueOf(v1)).equals(Soundex.soundex(String.valueOf(v2))));
                         break;
 
-                    case SIMILARITY:
-                        stk.push(similarity(valueOf(v1), valueOf(v2)));
+                    case Operator.SIMILARITY:
+                        stk.push(PropertyTools.similarity(String.valueOf(v1), String.valueOf(v2)));
                         break;
                 }
             }

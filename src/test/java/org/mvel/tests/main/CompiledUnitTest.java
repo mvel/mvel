@@ -746,6 +746,17 @@ public class CompiledUnitTest extends TestCase {
         ));
     }
 
+    public void testCompileMultiLine() {
+        ExpressionCompiler compiler = new ExpressionCompiler("a = 5;\nb = 5;\na + b");
+        compiler.setDebugSymbols(true);
+
+        CompiledExpression compiled = compiler.compile();
+
+        System.out.println(DebugTools.decompile(compiled));
+
+        assertEquals(10, executeExpression(compiled, map));
+    }
+
     public void testReflectionCache() {
         assertEquals("happyBar", parseDirect("foo.happy(); foo.bar.happy()"));
     }
