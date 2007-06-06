@@ -1,5 +1,6 @@
 package org.mvel;
 
+import static org.mvel.AbstractParser.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
 import org.mvel.integration.VariableResolverFactory;
@@ -15,12 +16,11 @@ import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
 import static java.util.regex.Pattern.compile;
 
-public class AcceleratedParser extends AbstractParser {
+public class MVELRuntime {
     private final ASTIterator tokens;
     private final Stack stk = new ExecutionStack();
 
-
-    public AcceleratedParser(FastASTIterator tokens) {
+    public MVELRuntime(FastASTIterator tokens) {
         this.tokens = new FastASTIterator(tokens);
     }
 
@@ -163,7 +163,7 @@ public class AcceleratedParser extends AbstractParser {
      * current state against 2 downrange structures (usually an op and a val).
      */
     private void reduceTrinary() {
-        Object v1 = null, v2;
+        Object v1, v2;
         Integer operator;
         try {
             while (stk.size() > 1) {
@@ -265,24 +265,7 @@ public class AcceleratedParser extends AbstractParser {
             }
         }
         catch (ClassCastException e) {
-            if ((fields & ASTNode.LOOKAHEAD) == 0) {
-                /**
-                 * This will allow for some developers who like messy expressions to compileAccessor
-                 * away with some messy constructs like: a + b < c && e + f > g + q instead
-                 * of using brackets like (a + b < c) && (e + f > g + q)
-                 */
-
-                fields |= ASTNode.LOOKAHEAD;
-
-                ASTNode tk = nextToken();
-                if (tk != null) {
-                    stk.push(v1, nextToken(), tk.getOperator());
-
-                    reduceTrinary();
-                    return;
-                }
-            }
-            throw new CompileException("syntax error or incomptable types", expr, cursor, e);
+            throw new CompileException("syntax error or incomptable types", e);
 
         }
         catch (Exception e) {
