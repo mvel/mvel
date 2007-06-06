@@ -23,6 +23,8 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
+import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
+import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isEmpty;
@@ -47,6 +49,8 @@ public class ExpressionParser extends AbstractParser {
 
 
     Object parse() {
+        setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);
+
         try {
             stk.clear();
 

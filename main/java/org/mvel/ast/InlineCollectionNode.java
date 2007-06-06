@@ -23,7 +23,7 @@ public class InlineCollectionNode extends ASTNode {
         }
         catch (NullPointerException e) {
             if (accessor == null) {
-                accessor = OptimizerFactory.getDefaultAccessorCompiler().optimizeCollection(name, ctx, thisValue, factory);
+                accessor = OptimizerFactory.getThreadAccessorOptimizer().optimizeCollection(name, ctx, thisValue, factory);
                 return accessor.getValue(ctx, thisValue, factory);
             }
             else {
