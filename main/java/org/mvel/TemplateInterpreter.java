@@ -146,10 +146,15 @@ public class TemplateInterpreter {
             EX_NODE_CACHE = synchronizedMap(new WeakHashMap<Object, Node[]>());
             EX_PRECOMP_CACHE = synchronizedMap(new WeakHashMap<Object, Serializable>());
         }
-        else {
+        else if (MVEL.WEAK_CACHE || MVEL.NO_JIT) {
             EX_PRECACHE = (new WeakHashMap<CharSequence, char[]>());
             EX_NODE_CACHE = (new WeakHashMap<Object, Node[]>());
             EX_PRECOMP_CACHE = (new WeakHashMap<Object, Serializable>());
+        }
+        else {
+            EX_PRECACHE = (new HashMap<CharSequence, char[]>());
+            EX_NODE_CACHE = (new HashMap<Object, Node[]>());
+            EX_PRECOMP_CACHE = (new HashMap<Object, Serializable>());
         }
     }
 
