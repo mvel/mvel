@@ -348,4 +348,8 @@ public class ExpressionCompiler extends AbstractParser {
     public void setReturnType(Class returnType) {
         this.returnType = returnType;
     }
+
+    public String getExpression() {
+        return new String(expr);
+    }
 }

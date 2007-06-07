@@ -8,10 +8,10 @@ import org.mvel.integration.VariableResolverFactory;
 /**
  * @author Christopher Brock
  */
-public class IfNode extends ASTNode {
+public class IfNode extends ASTNode implements NestedStatement {
     protected char[] block;
     protected ExecutableStatement condition;
-    protected ExecutableStatement compiledBlock;
+    protected ExecutableStatement nestedStatement;
 
     protected IfNode elseIf;
     protected ExecutableStatement elseBlock;
@@ -20,7 +20,7 @@ public class IfNode extends ASTNode {
         super(condition, fields);
 
         this.condition = (ExecutableStatement) compileExpression(this.name = condition);
-        this.compiledBlock = (ExecutableStatement) compileExpression(this.block = block);
+        this.nestedStatement = (ExecutableStatement) compileExpression(this.block = block);
     }
 
     public char[] getBlock() {
@@ -33,7 +33,7 @@ public class IfNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
-            Object o = compiledBlock.getValue(ctx, thisValue, factory);
+            Object o = nestedStatement.getValue(ctx, thisValue, factory);
             if (o == null) {
                 return Void.class;
             }
@@ -62,12 +62,12 @@ public class IfNode extends ASTNode {
         this.condition = condition;
     }
 
-    public ExecutableStatement getCompiledBlock() {
-        return compiledBlock;
+    public ExecutableStatement getNestedStatement() {
+        return nestedStatement;
     }
 
-    public void setCompiledBlock(ExecutableStatement compiledBlock) {
-        this.compiledBlock = compiledBlock;
+    public void setNestedStatement(ExecutableStatement nestedStatement) {
+        this.nestedStatement = nestedStatement;
     }
 
     public IfNode getElseIf() {

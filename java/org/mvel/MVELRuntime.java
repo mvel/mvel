@@ -3,6 +3,7 @@ package org.mvel;
 import static org.mvel.AbstractParser.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
+import org.mvel.ast.LineLabel;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
@@ -14,11 +15,19 @@ import org.mvel.util.StringAppender;
 
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
+import java.util.HashSet;
+import java.util.Set;
 import static java.util.regex.Pattern.compile;
 
 public class MVELRuntime {
     private final ASTIterator tokens;
     private final Stack stk = new ExecutionStack();
+    private Set<Integer> breakpoints;
+    private boolean debugger = false;
+
+    public MVELRuntime(CompiledExpression expression) {
+        this.tokens = new FastASTIterator(expression.getTokens());
+    }
 
     public MVELRuntime(FastASTIterator tokens) {
         this.tokens = new FastASTIterator(tokens);
@@ -38,6 +47,17 @@ public class MVELRuntime {
         try {
             while ((tk = tokens.nextToken()) != null) {
                 if (tk.fields == -1) {
+                    if (debugger && breakpoints != null
+                            && breakpoints.contains(((LineLabel) tk).getLineNumber())) {
+                        System.out.println("[Encountered Breakpoint!]");
+
+                        try {
+                            Thread.sleep(5000);
+                        }
+                        catch (InterruptedException e) {
+                        }
+                    }
+
                     continue;
                 }
 
@@ -293,4 +313,28 @@ public class MVELRuntime {
         while (tokens.hasMoreTokens() && !tokens.nextToken().isOperator(operator)) ;
     }
 
+    public void registerBreakpoint(int line) {
+        if (breakpoints == null) breakpoints = new HashSet<Integer>();
+        breakpoints.add(line);
+    }
+
+    public void removeBreakpoint(int line) {
+        if (breakpoints != null) {
+            breakpoints.remove(line);
+        }
+    }
+
+    public void clearAllBreakpoints() {
+        if (breakpoints != null) {
+            breakpoints.clear();
+        }
+    }
+
+    public boolean isDebugger() {
+        return debugger;
+    }
+
+    public void setDebugger(boolean debugger) {
+        this.debugger = debugger;
+    }
 }
