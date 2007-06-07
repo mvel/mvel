@@ -3,6 +3,7 @@ package org.mvel.debug;
 import org.mvel.*;
 import static org.mvel.Operator.ADD;
 import static org.mvel.Operator.SUB;
+import org.mvel.ast.NestedStatement;
 import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.io.Serializable;
@@ -22,19 +23,32 @@ public class DebugTools {
     }
 
     public static String decompile(CompiledExpression cExp) {
+        return decompile(cExp, false);
+    }
+
+    private static String decompile(CompiledExpression cExp, boolean nest) {
         ASTIterator iter = cExp.getTokens();
         ASTNode tk;
 
         int node = 0;
 
-        StringBuffer sbuf = new StringBuffer("Expression Decompile\n-------------\n");
+        StringBuffer sbuf = new StringBuffer();
+
+        if (!nest) {
+            sbuf.append("Expression Decompile\n-------------\n");
+        }
 
         while (iter.hasMoreTokens()) {
             tk = iter.nextToken();
 
             sbuf.append("(").append(node++).append(") ");
 
-            if (tk.isDebuggingSymbold()) {
+            if (tk instanceof NestedStatement
+                    && ((NestedStatement) tk).getNestedStatement() instanceof CompiledExpression) {
+                sbuf.append("ASTNODE [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }\n");
+                sbuf.append(decompile((CompiledExpression) ((NestedStatement) tk).getNestedStatement(), true));
+            }
+            else if (tk.isDebuggingSymbold()) {
                 sbuf.append("DEBUG_SYMBOL " + tk.toString());
             }
             else if (tk.isLiteral()) {

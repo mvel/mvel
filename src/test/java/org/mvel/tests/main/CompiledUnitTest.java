@@ -747,14 +747,20 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testCompileMultiLine() {
-        ExpressionCompiler compiler = new ExpressionCompiler("a = 5;\nb = 5;\na + b");
+        ExpressionCompiler compiler = new ExpressionCompiler("a = 5;\nb = 5;\n\nif (a == b) {\n\nSystem.out.println('Good');\nreturn a + b;\n}\n");
+        System.out.println("-------\n" + compiler.getExpression() + "\n-------\n");
+
         compiler.setDebugSymbols(true);
 
         CompiledExpression compiled = compiler.compile();
 
         System.out.println(DebugTools.decompile(compiled));
 
-        assertEquals(10, executeExpression(compiled, map));
+        MVELRuntime debug = new MVELRuntime(compiled);
+        debug.setDebugger(true);
+        debug.registerBreakpoint(2);
+
+        assertEquals(10, MVEL.executeDebugger(debug, null, new MapVariableResolverFactory(map)));
     }
 
     public void testReflectionCache() {
@@ -763,6 +769,7 @@ public class CompiledUnitTest extends TestCase {
 
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh");
+
         CompiledExpression c = compiler.compile();
 
         assertEquals(4, compiler.getInputs().size());
