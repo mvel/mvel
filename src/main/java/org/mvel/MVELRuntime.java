@@ -22,7 +22,7 @@ import static java.util.regex.Pattern.compile;
 public class MVELRuntime {
     private final ASTIterator tokens;
     private final Stack stk = new ExecutionStack();
-    private Set<Integer> breakpoints;
+    private static ThreadLocal<Set<Integer>> breakpoints;
     private boolean debugger = false;
 
     public MVELRuntime(CompiledExpression expression) {
@@ -47,12 +47,17 @@ public class MVELRuntime {
         try {
             while ((tk = tokens.nextToken()) != null) {
                 if (tk.fields == -1) {
+
+                    if (breakpoints != null && breakpoints.get() != null) {
+                        debugger = true;
+                    }
+
                     if (debugger && breakpoints != null
-                            && breakpoints.contains(((LineLabel) tk).getLineNumber())) {
-                        System.out.println("[Encountered Breakpoint!]");
+                            && breakpoints.get().contains(((LineLabel) tk).getLineNumber())) {
+                        System.out.println("[Encountered Breakpoint!]: " + ((LineLabel) tk).getLineNumber());
 
                         try {
-                            Thread.sleep(5000);
+                            Thread.sleep(10);
                         }
                         catch (InterruptedException e) {
                         }
@@ -314,19 +319,22 @@ public class MVELRuntime {
     }
 
     public void registerBreakpoint(int line) {
-        if (breakpoints == null) breakpoints = new HashSet<Integer>();
-        breakpoints.add(line);
+        if (breakpoints == null) {
+            breakpoints = new ThreadLocal<Set<Integer>>();
+            breakpoints.set(new HashSet<Integer>());
+        }
+        breakpoints.get().add(line);
     }
 
     public void removeBreakpoint(int line) {
-        if (breakpoints != null) {
-            breakpoints.remove(line);
+        if (breakpoints != null && breakpoints.get() != null) {
+            breakpoints.get().remove(line);
         }
     }
 
     public void clearAllBreakpoints() {
-        if (breakpoints != null) {
-            breakpoints.clear();
+        if (breakpoints != null && breakpoints.get() != null) {
+            breakpoints.get().clear();
         }
     }
 
