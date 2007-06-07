@@ -1,5 +1,6 @@
 package org.mvel;
 
+import org.mvel.ast.LiteralNode;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.doOperations;
 
@@ -23,6 +24,7 @@ public class ExpressionCompiler extends AbstractParser {
     public CompiledExpression compile() {
         ASTNode tk;
         ASTNode tkOp;
+        ASTNode tkOp2;
         ASTNode tkLA;
         ASTNode tkLA2;
         ASTSet tokenSet = new ASTSet();
@@ -73,9 +75,16 @@ public class ExpressionCompiler extends AbstractParser {
                         /**
                          * Now we need to check to see if this is actually a continuing reduction.
                          */
-                        while ((tkOp = nextToken()) != null) {
-                            if ((tkLA2 = nextToken()) != null && tkLA2.isLiteral()) {
-                                stk.push(tkLA2.getLiteralValue(), tkOp.getLiteralValue());
+                        while ((tkOp2 = nextToken()) != null) {
+                            if (!tkOp2.isOperator(tkOp.getOperator())) {
+                                tokenSet.addTokenNode(new LiteralNode(stk.pop()));
+                                tokenSet.addTokenNode(tkOp2);
+                                break;
+                            }
+                            else if ((tkLA2 = nextToken()) != null
+                                    && tkLA2.isLiteral()) {
+
+                                stk.push(tkLA2.getLiteralValue(), tkOp2.getLiteralValue());
                                 reduceTrinary();
                                 firstLA = false;
                             }

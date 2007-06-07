@@ -154,6 +154,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(true, parseDirect("true || true"));
     }
 
+    public void testOrOperator2() {
+        assertEquals(true, parseDirect("2 > 3 || 3 > 2"));
+    }
+
     public void testShortPathExpression3() {
         assertEquals(false, parseDirect("defnull != null  && defnull.length() > 0"));
     }

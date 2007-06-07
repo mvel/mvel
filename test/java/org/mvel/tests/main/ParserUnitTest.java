@@ -160,6 +160,7 @@ public class ParserUnitTest extends TestCase {
         assertEquals("dogDOGGIE133.5", parse("@{foo.bar.name}DOGGIE@{hour*2.225+1-1}"));
     }
 
+
     public void testComplexAnd() {
         assertEquals(true, parse("@{(pi * hour) > 0 && foo.happy() == 'happyBar'}"));
     }
@@ -204,9 +205,9 @@ public class ParserUnitTest extends TestCase {
     public void testMethodAccess6() {
         assertEquals(false, parse("@{!foo.bar.isWoof()}"));
     }
-    
-    public void testPrimitiveClassMethodAccess() {               
-        assertEquals( "int", parseDirect( "Integer.TYPE.getName()" ) );
+
+    public void testPrimitiveClassMethodAccess() {
+        assertEquals("int", parseDirect("Integer.TYPE.getName()"));
     }
 
     public void testNegation() {
