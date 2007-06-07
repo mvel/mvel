@@ -238,6 +238,7 @@ public class AbstractParser {
 
         if (!debugSymbols && linecounter != null && linecounter.get() != null) {
             debugSymbols = true;
+            if (expr[cursor] != '\n') lastWasLineLabel = true;
         }
 
         if (debugSymbols && !lastWasLineLabel && (expr[cursor] == '\n' || cursor == 0)) {
