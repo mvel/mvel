@@ -205,6 +205,14 @@ public class ExpressionCompiler extends AbstractParser {
                         stk.push(doOperations(v2, operator, v1));
                         break;
 
+                    case Operator.AND:
+                        stk.push(((Boolean) v2) && ((Boolean) v1));
+                        break;
+
+                    case Operator.OR:
+                        stk.push(((Boolean) v2) || ((Boolean) v1));
+                        break;
+
                     case Operator.CHOR:
                         if (!PropertyTools.isEmpty(v2) || !PropertyTools.isEmpty(v1)) {
                             stk.clear();
