@@ -9,8 +9,8 @@ import org.mvel.integration.VariableResolverFactory;
 public class LiteralNode extends ASTNode {
     private Object literal;
 
-    public LiteralNode(char[] expr, int fields, Object literal) {
-        super(expr, fields);
+    public LiteralNode(Object literal) {
+        super();
         if (literal instanceof String) {
             this.literal = ((String) literal).intern();
         }

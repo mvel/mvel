@@ -50,6 +50,7 @@ public class ExpressionParser extends AbstractParser {
 
     Object parse() {
         setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);
+        debugSymbols = false;
 
         try {
             stk.clear();
@@ -103,7 +104,6 @@ public class ExpressionParser extends AbstractParser {
                 if (!tk.isOperator()) {
                     continue;
                 }
-
 
                 switch (reduceBinary(operator = tk.getOperator())) {
                     case FRAME_END:

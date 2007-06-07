@@ -35,7 +35,7 @@ public class PropertyASTNode extends ASTNode {
 
     private Object initializePropertyNode(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((fields & STR_LITERAL) != 0) {
-            wrappedNode = new LiteralNode(name, fields, new String(name));
+            wrappedNode = new LiteralNode(new String(name));
             return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
         }
         else if ((fields & LITERAL) != 0) {
@@ -44,7 +44,7 @@ public class PropertyASTNode extends ASTNode {
                 return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
             }
             else {
-                wrappedNode = new LiteralNode(name, fields, literal);
+                wrappedNode = new LiteralNode(literal);
                 return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
             }
         }
@@ -95,7 +95,7 @@ public class PropertyASTNode extends ASTNode {
                     Object sa = tryStaticAccess(ctx, factory);
                     if (sa == null) throw e;
 
-                    wrappedNode = new LiteralNode(name, fields, sa);
+                    wrappedNode = new LiteralNode(sa);
                     return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
                 }
             }
