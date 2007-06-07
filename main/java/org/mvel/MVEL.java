@@ -345,6 +345,17 @@ public class MVEL {
         return o;
     }
 
+    public static Object executeDebugger(MVELRuntime runtime, Object ctx, VariableResolverFactory vars) {
+        try {
+            runtime.setDebugger(true);
+            return runtime.execute(ctx, vars);
+        }
+        catch (EndWithValue e) {
+            return handleParserEgress(e.getValue(), false);
+        }
+    }
+
+
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, Map vars, Class<T> toType) {
         try {

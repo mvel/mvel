@@ -55,6 +55,8 @@ public class AbstractParser {
 
     protected ExecutionStack splitAccumulator = new ExecutionStack();
 
+    protected static ThreadLocal<Integer> linecounter;
+
 
     static {
         configureFactory();
@@ -234,9 +236,31 @@ public class AbstractParser {
         boolean capture = false;
         boolean union = false;
 
+        if (!debugSymbols && linecounter != null && linecounter.get() != null) {
+            debugSymbols = true;
+        }
+
         if (debugSymbols && !lastWasLineLabel && (expr[cursor] == '\n' || cursor == 0)) {
+            if (linecounter == null) {
+                linecounter = new ThreadLocal<Integer>();
+                linecounter.set(0);
+            }
+            else {
+                line = linecounter.get();
+            }
+
             lastWasLineLabel = true;
-            return new LineLabel(line++);
+
+            int scan = cursor;
+
+            while (expr[scan] == '\n') {
+                scan++;
+                line++;
+            }
+
+            linecounter.set(line);
+
+            return new LineLabel(line);
         }
         else {
             lastWasLineLabel = false;
@@ -430,6 +454,7 @@ public class AbstractParser {
                                     return new AssignmentNode(subArray(start, cursor), fields);
                                 }
                             }
+
                     }
                 }
 
@@ -822,8 +847,8 @@ public class AbstractParser {
                 }
             }
             else {
-                return createBlockToken(startCond, endCond, trimRight(blockStart + 1),
-                        trimLeft(blockEnd));
+                return createBlockToken(startCond, endCond, blockStart + 1,
+                        blockEnd);
             }
         }
         // DON"T REMOVE THIS COMMENT!

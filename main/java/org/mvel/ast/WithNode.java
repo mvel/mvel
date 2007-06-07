@@ -14,22 +14,21 @@ import java.util.List;
 /**
  * @author Christopher Brock
  */
-public class WithNode extends BlockNode {
-
-    private ExecutableStatement context;
+public class WithNode extends BlockNode implements NestedStatement {
+    private ExecutableStatement nestedStatement;
     private ParmValuePair[] withExpressions;
 
     public WithNode(char[] expr, char[] block, int fields) {
         super(expr, fields, block);
 
-        context = (ExecutableStatement) compileExpression(new String(expr).trim());
+        nestedStatement = (ExecutableStatement) compileExpression(new String(expr).trim());
 
         compileWithExpressions();
     }
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        Object ctxObject = context.getValue(ctx, thisValue, factory);
+        Object ctxObject = nestedStatement.getValue(ctx, thisValue, factory);
 
         for (ParmValuePair pvp : withExpressions) {
             if (pvp.getParameter() != null)
@@ -101,8 +100,8 @@ public class WithNode extends BlockNode {
     }
 
 
-    public ExecutableStatement getContext() {
-        return context;
+    public ExecutableStatement getNestedStatement() {
+        return nestedStatement;
     }
 
     public ParmValuePair[] getWithExpressions() {
@@ -137,5 +136,6 @@ public class WithNode extends BlockNode {
             this.statement = statement;
         }
     }
+
 
 }
