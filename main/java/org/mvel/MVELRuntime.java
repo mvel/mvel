@@ -130,7 +130,7 @@ public class MVELRuntime {
                 }
                 else {
                     stk.discard();
-                    return 1;
+                    return FRAME_NEXT;
                 }
             case OR:
                 if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {

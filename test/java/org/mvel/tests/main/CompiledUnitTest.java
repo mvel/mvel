@@ -150,6 +150,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(true, parseDirect("4 > 3 || foo.toUC('test')"));
     }
 
+    public void testOrOperator() {
+        assertEquals(true, parseDirect("true || true"));
+    }
+
     public void testShortPathExpression3() {
         assertEquals(false, parseDirect("defnull != null  && defnull.length() > 0"));
     }
