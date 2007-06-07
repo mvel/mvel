@@ -32,7 +32,7 @@ public class AbstractParser {
     protected boolean lastWasIdentifier = false;
     protected boolean lastWasLineLabel = false;
 
-    private boolean debugSymbols = false;
+    protected boolean debugSymbols = false;
     private int line = 1;
 
     protected ASTNode lastNode;
