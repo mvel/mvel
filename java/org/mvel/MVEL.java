@@ -345,10 +345,9 @@ public class MVEL {
         return o;
     }
 
-    public static Object executeDebugger(MVELRuntime runtime, Object ctx, VariableResolverFactory vars) {
+    public static Object executeDebugger(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
         try {
-            runtime.setDebugger(true);
-            return runtime.execute(ctx, vars);
+            return MVELRuntime.execute(true, new FastASTIterator(expression.getTokens()), ctx, vars);
         }
         catch (EndWithValue e) {
             return handleParserEgress(e.getValue(), false);

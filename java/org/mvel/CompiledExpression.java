@@ -89,7 +89,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         if (!optimized) setupOptimizers();
-        return handleParserEgress(new MVELRuntime(tokens).execute(staticContext, factory), false);
+        return handleParserEgress(MVELRuntime.execute(false, new FastASTIterator(tokens), staticContext, factory), false);
     }
 
     private void setupOptimizers() {
