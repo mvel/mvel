@@ -77,6 +77,10 @@ public class ExpressionCompiler extends AbstractParser {
                          */
                         while ((tkOp2 = nextToken()) != null) {
                             if (!tkOp2.isOperator(tkOp.getOperator())) {
+                                /**
+                                 * We can't continue any further because we are dealing with
+                                 * different operators.
+                                 */
                                 tokenSet.addTokenNode(new LiteralNode(stk.pop()));
                                 tokenSet.addTokenNode(tkOp2);
                                 break;
