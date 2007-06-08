@@ -151,7 +151,7 @@ public class ExpressionCompiler extends AbstractParser {
 
     protected ASTNode verify(ASTNode tk) {
         if (verifying) {
-            if (tk.isDiscard()) return tk;
+            if (tk.isDiscard() || (tk.fields & (ASTNode.OPERATOR | ASTNode.LITERAL)) != 0) return tk;
             if (tk.isAssignment()) {
                 char[] assign = tk.getNameAsArray();
                 int c = 0;

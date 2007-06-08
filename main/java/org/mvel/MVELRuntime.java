@@ -107,15 +107,10 @@ public class MVELRuntime {
 
                     case END_OF_STMT:
                         /**
-                         * Assignments are a special scenario for dealing with the stack.  Assignments are basically like
-                         * held-over failures that basically kickstart the parser when an assignment operator is is
-                         * encountered.  The originating token is captured, and the the parser is told to march on.  The
-                         * resultant value on the stack is then used to populate the target variable.
-                         *
-                         * The other scenario in which we don't want to wipe the stack, is when we hit the end of the
-                         * statement, because that top stack value is the value we want back from the parser.
+                         * If the program doesn't end here then we wipe anything off the stack that remains.
+                         * Althought it may seem like intuitive stack optimizations could be leveraged by
+                         * leaving hanging values on the stack,  trust me it's not a good idea.
                          */
-
                         if (tokens.hasMoreTokens()) {
                             stk.clear();
                         }
