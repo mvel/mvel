@@ -774,7 +774,7 @@ public class CompiledUnitTest extends TestCase {
     }
 
     public void testVarInputs() {
-        ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh");
+        ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh;");
 
         CompiledExpression c = compiler.compile();
 
@@ -792,6 +792,19 @@ public class CompiledUnitTest extends TestCase {
 
         assertEquals(String.class, DebugTools.determineType("bleh", c));
     }
+
+    public void testAnalyzer() {
+        ExpressionCompiler compiler = new ExpressionCompiler("order.id == 10");
+        compiler.compile();
+
+        for (String input : compiler.getInputs()) {
+            System.out.println("input>" + input);
+        }
+
+        assertEquals(1, compiler.getInputs().size());
+        assertTrue(compiler.getInputs().contains("order"));
+    }
+
 
     public void testClassImportViaFactory() {
         MapVariableResolverFactory mvf = new MapVariableResolverFactory(map);
