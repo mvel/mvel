@@ -480,25 +480,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         String item;
 
         boolean itemSubExpr = true;
-//        if (expr[cursor] == '\'' || expr[cursor] == '"') {
-//            start++;
-//
-//            int end;
-//
-//            if (!scanTo(']'))
-//                throw new PropertyAccessException("unterminated '['");
-//            if ((end = containsStringLiteralTermination()) == -1)
-//                throw new PropertyAccessException("unterminated string literal in collections accessor");
-//
-//
-//            item = new String(expr, start, end - start );
-//        }
-//        else {
+
         if (!scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
         item = new String(expr, start, cursor - start);
-//        }
 
         try {
             parseInt(item);
@@ -567,16 +553,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             }
         }
-//        else if (ctx instanceof Collection) {
-//            int count = Integer.parseInt(item);
-//            if (count > ((Collection) ctx).size())
-//                throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
-//
-//
-//            Iterator iter = ((Collection) ctx).iterator();
-//            for (int i = 0; i < count; i++) iter.next();
-//            return iter.next();
-//        }
         else if (ctx instanceof Object[]) {
             int index = parseInt(item);
 
