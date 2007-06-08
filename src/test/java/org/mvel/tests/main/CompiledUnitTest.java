@@ -764,11 +764,7 @@ public class CompiledUnitTest extends TestCase {
 
         System.out.println(DebugTools.decompile(compiled));
 
-        MVELRuntime debug = new MVELRuntime(compiled);
-        debug.setDebugger(true);
-        debug.registerBreakpoint(7);
-
-        assertEquals(10, MVEL.executeDebugger(debug, null, new MapVariableResolverFactory(map)));
+        assertEquals(10, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
     }
 
     public void testReflectionCache() {
