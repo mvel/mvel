@@ -1,9 +1,15 @@
 package org.mvel;
 
+import static org.mvel.DataConversion.canConvert;
 import org.mvel.ast.LiteralNode;
-import org.mvel.util.*;
+import org.mvel.util.ExecutionStack;
+import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.ParseTools.doOperations;
+import org.mvel.util.PropertyTools;
+import org.mvel.util.Stack;
+import org.mvel.util.StringAppender;
 
+import static java.lang.Class.forName;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -243,19 +249,19 @@ public class ExpressionCompiler extends AbstractParser {
                         if (v1 instanceof Class)
                             stk.push(((Class) v1).isInstance(v2));
                         else
-                            stk.push(Class.forName(String.valueOf(v1)).isInstance(v2));
+                            stk.push(forName(String.valueOf(v1)).isInstance(v2));
 
                         break;
 
                     case Operator.CONVERTABLE_TO:
                         if (v1 instanceof Class)
-                            stk.push(DataConversion.canConvert(v2.getClass(), (Class) v1));
+                            stk.push(canConvert(v2.getClass(), (Class) v1));
                         else
-                            stk.push(DataConversion.canConvert(v2.getClass(), Class.forName(String.valueOf(v1))));
+                            stk.push(canConvert(v2.getClass(), forName(String.valueOf(v1))));
                         break;
 
                     case Operator.CONTAINS:
-                        stk.push(ParseTools.containsCheck(v2, v1));
+                        stk.push(containsCheck(v2, v1));
                         break;
 
                     case Operator.BW_AND:
