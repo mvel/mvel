@@ -39,7 +39,7 @@ public class CompiledPerformanceTests extends TestCase {
         String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
 
         MapVariableResolverFactory variableTable = new MapVariableResolverFactory(map);
-        variableTable.pack();
+        //   variableTable.pack();
 
         Serializable compiled = MVEL.compileExpression(text);
         for (int i = 0; i < ITERATIONS; i++) {
