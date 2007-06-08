@@ -30,6 +30,8 @@ public class MVELRuntime {
      */
     public static Object execute(boolean debugger, FastASTIterator tokens, Object ctx, VariableResolverFactory variableFactory) {
         Stack stk = new ExecutionStack();
+        Object v1, v2;
+
         ASTNode tk = null;
         Integer operator;
 
@@ -123,7 +125,6 @@ public class MVELRuntime {
 
                 stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
 
-                Object v1, v2;
                 try {
                     while (stk.size() > 1) {
                         operator = (Integer) stk.pop();
