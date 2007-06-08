@@ -30,11 +30,9 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
      * Holds the instance of the variables.
      */
     private Map<String, Object> variables;
-    //  private Map<String, VariableResolver> variableResolvers;
     private VariableResolverFactory nextFactory;
 
     private boolean cachingSafe = false;
-
 
     public MapVariableResolverFactory(Map<String, Object> variables) {
         this.variables = variables;
@@ -52,8 +50,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
             return vr;
         }
         else {
-            addResolver(name, vr = new MapVariableResolver(variables, name, cachingSafe));
-            vr.setValue(value);
+            (vr = new MapVariableResolver(variables, name, cachingSafe)).setValue(value);
             return vr;
         }
     }
@@ -81,11 +78,9 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
 
     public VariableResolver getVariableResolver(String name) {
         if (variables.containsKey(name)) {
-            return new MapVariableResolver(variables, name, cachingSafe);
+            return variableResolvers != null && variableResolvers.containsKey(name) ? variableResolvers.get(name) :
+                    new MapVariableResolver(variables, name, cachingSafe);
         }
-//        if (variableResolvers != null && variableResolvers.containsKey(name)) {
-//            return variableResolvers.get(name);
-//        }
         else if (nextFactory != null) {
             return nextFactory.getVariableResolver(name);
         }
@@ -97,7 +92,6 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
             return true;
         }
         else if (variables != null && variables.containsKey(name)) {
-            //     addResolver(name, new MapVariableResolver(variables, name, cachingSafe));
             return true;
         }
         else if (nextFactory != null) {
@@ -106,20 +100,11 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         return false;
     }
 
-//    public void pack() {
-//        if (variables != null) {
-//            if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
-//            for (String s : variables.keySet()) {
-//                variableResolvers.put(s, new MapVariableResolver(variables, s, cachingSafe));
-//            }
-//        }
-//    }
-
-
     private void addResolver(String name, VariableResolver vr) {
         if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
         variableResolvers.put(name, vr);
     }
+
 
     public boolean isTarget(String name) {
         return variableResolvers.containsKey(name);
