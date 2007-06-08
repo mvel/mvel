@@ -174,33 +174,33 @@ public class MVELRuntime {
                                 break;
 
                             case BW_AND:
-                                stk.push(asInt(v2) & asInt(v1));
+                                stk.push((Integer) v2 & (Integer) v1);
                                 break;
 
                             case BW_OR:
-                                stk.push(asInt(v2) | asInt(v1));
+                                stk.push((Integer) v2 | (Integer) v1);
                                 break;
 
                             case BW_XOR:
-                                stk.push(asInt(v2) ^ asInt(v1));
+                                stk.push((Integer) v2 ^ (Integer) v1);
                                 break;
 
                             case BW_SHIFT_LEFT:
-                                stk.push(asInt(v2) << asInt(v1));
+                                stk.push((Integer) v2 << (Integer) v1);
                                 break;
 
                             case BW_USHIFT_LEFT:
-                                int iv2 = asInt(v2);
+                                int iv2 = (Integer) v2;
                                 if (iv2 < 0) iv2 *= -1;
-                                stk.push(iv2 << asInt(v1));
+                                stk.push(iv2 << (Integer) v1);
                                 break;
 
                             case BW_SHIFT_RIGHT:
-                                stk.push(asInt(v2) >> asInt(v1));
+                                stk.push((Integer) v2 >> (Integer) v1);
                                 break;
 
                             case BW_USHIFT_RIGHT:
-                                stk.push(asInt(v2) >>> asInt(v1));
+                                stk.push((Integer) v2 >>> (Integer) v1);
                                 break;
 
                             case STR_APPEND:
@@ -236,10 +236,6 @@ public class MVELRuntime {
                 throw e;
             }
         }
-    }
-
-    private static int asInt(final Object o) {
-        return (Integer) o;
     }
 
     public static void registerBreakpoint(int line) {
