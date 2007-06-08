@@ -151,7 +151,6 @@ public class MVELRuntime {
                                 if (!isEmpty(v2) || !isEmpty(v1)) {
                                     stk.clear();
                                     stk.push(!isEmpty(v2) ? v2 : v1);
-                                    //    return;
                                 }
                                 else stk.push(null);
                                 break;
