@@ -48,6 +48,8 @@ public class PropertyAccessor {
     private Object ctx;
     private Object curr;
 
+    private boolean first = true;
+
     private VariableResolverFactory resolver;
 
     private static final int DONE = -1;
@@ -146,10 +148,6 @@ public class PropertyAccessor {
 
         try {
             while (cursor < length) {
-                if (curr == null) {
-                    throw new PropertyAccessException("null pointer exception in property: " + new String(property) + " (" + capture() + " is null)");
-                }
-
                 switch (nextToken()) {
                     case NORM:
                         curr = getBeanProperty(curr, capture());
@@ -163,6 +161,8 @@ public class PropertyAccessor {
                     case DONE:
                         break;
                 }
+
+                first = false;
             }
 
             return curr;
@@ -356,6 +356,12 @@ public class PropertyAccessor {
 
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
+
+
+        if (first && resolver != null && resolver.isResolveable(property)) {
+            return resolver.getVariableResolver(property).getValue();
+        }
+
 
         Class cls;
         Member member = checkReadCache(cls = (ctx instanceof Class ? ((Class) ctx) : ctx.getClass()), property.hashCode());

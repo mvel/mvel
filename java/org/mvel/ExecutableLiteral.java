@@ -8,10 +8,24 @@ import org.mvel.util.ParseTools;
  */
 public class ExecutableLiteral implements ExecutableStatement {
     private Object literal;
-
+    private int integer32;
+    private boolean intOptimized;
 
     public ExecutableLiteral(Object literal) {
         this.literal = ParseTools.handleParserEgress(literal, false);
+    }
+
+    public ExecutableLiteral(int literal) {
+        this.literal = this.integer32 = literal;
+        this.intOptimized = true;
+    }
+
+    public int getInteger32() {
+        return integer32;
+    }
+
+    public void setInteger32(int integer32) {
+        this.integer32 = integer32;
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
@@ -45,4 +59,14 @@ public class ExecutableLiteral implements ExecutableStatement {
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         return literal;
     }
+
+
+    public Object getLiteral() {
+        return literal;
+    }
+
+    public boolean intOptimized() {
+        return intOptimized;
+    }
+
 }

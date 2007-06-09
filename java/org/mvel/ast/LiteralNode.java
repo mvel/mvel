@@ -26,4 +26,9 @@ public class LiteralNode extends ASTNode {
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return literal;
     }
+
+
+    public Object getLiteralValue() {
+        return literal;
+    }
 }

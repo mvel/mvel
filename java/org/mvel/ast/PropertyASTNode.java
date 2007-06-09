@@ -148,4 +148,8 @@ public class PropertyASTNode extends ASTNode {
     }
 
 
+    public ASTNode getWrappedNode() {
+        return wrappedNode;
+    }
+
 }
