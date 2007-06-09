@@ -25,6 +25,8 @@ import static org.mvel.MVEL.isAdvancedDebugging;
 import org.mvel.asm.*;
 import static org.mvel.asm.Opcodes.*;
 import static org.mvel.asm.Type.*;
+import org.mvel.ast.LiteralNode;
+import org.mvel.ast.PropertyASTNode;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
@@ -674,7 +676,22 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
         if (es != null) {
-            for (ExecutableStatement e : es) {
+            for (int i = 0; i < es.length; i++) {
+                ExecutableStatement e = es[i];
+                if (e instanceof ExecutableLiteral) {
+                    ExecutableLiteral lit = (ExecutableLiteral) e;
+                    if (lit.intOptimized() || lit.getLiteral() instanceof String) {
+                        continue;
+                    }
+                }
+                else if (e instanceof ExecutableAccessor
+                        && ((ExecutableAccessor) e).getAccessor() instanceof PropertyASTNode
+                        && ((PropertyASTNode) ((ExecutableAccessor) e).getAccessor()).getWrappedNode() instanceof LiteralNode) {
+                    es[i] = new ExecutableLiteral(((PropertyASTNode) ((ExecutableAccessor) e).getAccessor())
+                            .getWrappedNode().getLiteralValue());
+                    continue;
+                }
+
                 compiledInputs.add(e);
             }
         }
@@ -784,6 +801,23 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 }
 
                 for (int i = 0; i < es.length; i++) {
+                    if (es[i] instanceof ExecutableLiteral) {
+                        ExecutableLiteral literal = (ExecutableLiteral) es[i];
+                        if (parameterTypes[i] == int.class && literal.intOptimized()) {
+                            intPush(literal.getInteger32());
+                            continue;
+                        }
+                        else if (parameterTypes[i] == int.class && preConvArgs[i] instanceof Integer) {
+                            intPush((Integer) preConvArgs[i]);
+                            continue;
+                        }
+                        else if (parameterTypes[i] == String.class && literal.getLiteral() instanceof String) {
+                            debug("LDC '" + literal.getLiteral() + "'");
+                            mv.visitLdcInsn(literal.getLiteral());
+                            continue;
+                        }
+                    }
+
                     debug("ALOAD 0");
                     mv.visitVarInsn(ALOAD, 0);
 
@@ -811,9 +845,22 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                             mv.visitMethodInsn(INVOKESTATIC, "org/mvel/DataConversion", "convert",
                                     "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
 
+                            unwrapPrimitive(parameterTypes[i]);
+
+
+                        }
+//                        else if (es[i] instanceof ExecutableLiteral) {
+//                            if (parameterTypes[i] == int.class && (es[i]).intOptimized()) {
+//                                intPush(((ExecutableLiteral) es[i]).getInteger32());
+//                            }
+//                            else {
+//                                unwrapPrimitive(parameterTypes[i]);
+//                            }
+//                        }
+                        else {
+                            unwrapPrimitive(parameterTypes[i]);
                         }
 
-                        unwrapPrimitive(parameterTypes[i]);
                     }
                     else if (preConvArgs[i] == null ||
                             (parameterTypes[i] != String.class &&

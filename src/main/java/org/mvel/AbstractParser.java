@@ -231,7 +231,7 @@ public class AbstractParser {
          * a capture only mode.
          */
 
-        fields = fields & (ASTNode.CAPTURE_ONLY | ASTNode.NOCOMPILE | ASTNode.INLINE_COLLECTION | ASTNode.PUSH);
+        fields = fields & (ASTNode.INLINE_COLLECTION);
 
         boolean capture = false;
         boolean union = false;

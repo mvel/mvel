@@ -45,27 +45,20 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int NEGATION = 1 << 6;
     public static final int INVERT = 1 << 8;
     public static final int FOLD = 1 << 9;
-    public static final int STATICMETHOD = 1 << 10;
-    public static final int METHOD = 1 << 11;
-
-    public static final int ASSIGN = 1 << 12;
-    public static final int LOOKAHEAD = 1 << 13;
-    public static final int COLLECTION = 1 << 14;
-    public static final int NEW = 1 << 15;
-    public static final int CAPTURE_ONLY = 1 << 16;
-    public static final int THISREF = 1 << 17;
-    public static final int INLINE_COLLECTION = 1 << 18;
-    public static final int NOCOMPILE = 1 << 19;
-    public static final int STR_LITERAL = 1 << 20;
-    public static final int PUSH = 1 << 21;
-
-    public static final int BLOCK = 1 << 22;
-    public static final int BLOCK_IF = 1 << 23;
-    public static final int BLOCK_FOREACH = 1 << 24;
-    public static final int BLOCK_WITH = 1 << 25;
-
-    public static final int TYPED = 1 << 30;
-    public static final int RETURN = 1 << 31;
+    public static final int METHOD = 1 << 10;
+    public static final int ASSIGN = 1 << 11;
+    public static final int LOOKAHEAD = 1 << 12;
+    public static final int COLLECTION = 1 << 13;
+    public static final int THISREF = 1 << 14;
+    public static final int INLINE_COLLECTION = 1 << 15;
+    public static final int STR_LITERAL = 1 << 16;
+    public static final int BLOCK = 1 << 17;
+    public static final int BLOCK_IF = 1 << 18;
+    public static final int BLOCK_FOREACH = 1 << 19;
+    public static final int BLOCK_WITH = 1 << 20;
+    public static final int TYPED = 1 << 21;
+    public static final int RETURN = 1 << 22;
+    public static final int INTEGER32 = 1 << 23;
 
     protected int firstUnion;
     protected int endOfName;
@@ -77,15 +70,13 @@ public class ASTNode implements Cloneable, Serializable {
     protected String nameCache;
 
     protected Object literal;
-
     protected Accessor accessor;
 
     protected int cursorPosition;
-
     public ASTNode nextASTNode;
-
     protected boolean discard;
 
+    private int intRegister;
 
     public ASTNode() {
     }
@@ -274,7 +265,7 @@ public class ASTNode implements Cloneable, Serializable {
                 /**
                  * The root of the DEEP PROPERTY is a local or global var.
                  */
-                return valRet(get(getAbsoluteRemainder(), factory.getVariableResolver(s).getValue(), factory, thisValue));
+                return valRet(get(name, ctx, factory, thisValue));
 
             }
             else if (ctx != null) {
@@ -460,6 +451,11 @@ public class ASTNode implements Cloneable, Serializable {
             fields |= NUMERIC | LITERAL | IDENTIFIER;
             literal = handleNumericConversion(name);
 
+            if (literal instanceof Integer) {
+                intRegister = (Integer) literal;
+                fields |= INTEGER32;
+            }
+
             if ((fields & INVERT) != 0) {
                 try {
                     literal = ~((Integer) literal);
@@ -565,6 +561,13 @@ public class ASTNode implements Cloneable, Serializable {
         return this.fields == -1;
     }
 
+    public int getIntRegister() {
+        return intRegister;
+    }
+
+    public void setIntRegister(int intRegister) {
+        this.intRegister = intRegister;
+    }
 }
 
 
