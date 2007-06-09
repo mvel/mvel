@@ -745,7 +745,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return getLength(ctx);
             }
 
-
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
@@ -769,7 +768,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     args[i] = convert(args[i], parameterTypes[i]);
                 }
             }
-
 
             if (first) {
                 debug("ALOAD 1 (D) ");
@@ -803,6 +801,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 for (int i = 0; i < es.length; i++) {
                     if (es[i] instanceof ExecutableLiteral) {
                         ExecutableLiteral literal = (ExecutableLiteral) es[i];
+
+                        //todo: support more than just ints and strings
                         if (parameterTypes[i] == int.class && literal.intOptimized()) {
                             intPush(literal.getInteger32());
                             continue;
@@ -846,17 +846,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                                     "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
 
                             unwrapPrimitive(parameterTypes[i]);
-
-
                         }
-//                        else if (es[i] instanceof ExecutableLiteral) {
-//                            if (parameterTypes[i] == int.class && (es[i]).intOptimized()) {
-//                                intPush(((ExecutableLiteral) es[i]).getInteger32());
-//                            }
-//                            else {
-//                                unwrapPrimitive(parameterTypes[i]);
-//                            }
-//                        }
+
                         else {
                             unwrapPrimitive(parameterTypes[i]);
                         }
