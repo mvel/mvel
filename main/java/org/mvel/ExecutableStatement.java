@@ -26,11 +26,16 @@ public interface ExecutableStatement extends Accessor, Serializable, Cloneable {
     public Object getValue(Object staticContext, VariableResolverFactory factory);
 
     public void setKnownIngressType(Class type);
+
     public void setKnownEgressType(Class type);
 
     public Class getKnownIngressType();
+
     public Class getKnownEgressType();
 
     public boolean isConvertableIngressEgress();
+
     public void computeTypeConversionRule();
+
+    public boolean intOptimized();
 }

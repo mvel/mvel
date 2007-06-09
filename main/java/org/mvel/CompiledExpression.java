@@ -118,4 +118,9 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     public void setAccessorOptimizer(Class<? extends AccessorOptimizer> accessorOptimizer) {
         this.accessorOptimizer = accessorOptimizer;
     }
+
+
+    public boolean intOptimized() {
+        return false;
+    }
 }

@@ -130,7 +130,12 @@ public class MVEL {
                 return new ExecutableAccessor(tk, false);
             }
             else if (tk.isLiteral() && !tk.isThisVal()) {
-                return new ExecutableLiteral(tokens.firstToken().getLiteralValue());
+                if ((tk.fields & ASTNode.INTEGER32) != 0) {
+                    return new ExecutableLiteral(tk.getIntRegister());
+                }
+                else {
+                    return new ExecutableLiteral(tk.getLiteralValue());
+                }
             }
         }
 
@@ -180,7 +185,12 @@ public class MVEL {
                 return new ExecutableAccessor(tk, false);
             }
             else if (tk.isLiteral() && !tk.isThisVal()) {
-                return new ExecutableLiteral(tokens.firstToken().getLiteralValue());
+                if ((tk.fields & ASTNode.INTEGER32) != 0) {
+                    return new ExecutableLiteral(tk.getIntRegister());
+                }
+                else {
+                    return new ExecutableLiteral(tk.getLiteralValue());
+                }
             }
         }
 

@@ -71,6 +71,15 @@ public class ExecutableAccessor implements ExecutableStatement {
             convertable = ingress.isAssignableFrom(egress);
         }
     }
+
+    public boolean intOptimized() {
+        return false;
+    }
+
+
+    public ASTNode getAccessor() {
+        return accessor;
+    }
 }
 
 
