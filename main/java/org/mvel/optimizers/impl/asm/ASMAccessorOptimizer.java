@@ -679,10 +679,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             for (int i = 0; i < es.length; i++) {
                 ExecutableStatement e = es[i];
                 if (e instanceof ExecutableLiteral) {
-                    ExecutableLiteral lit = (ExecutableLiteral) e;
-                    if (lit.intOptimized() || lit.getLiteral() instanceof String) {
-                        continue;
-                    }
+//                    ExecutableLiteral lit = (ExecutableLiteral) e;
+//                    if (lit.intOptimized() || lit.getLiteral() instanceof String) {
+//                        continue;
+//                    }
+                    continue;
                 }
                 else if (e instanceof ExecutableAccessor
                         && ((ExecutableAccessor) e).getAccessor() instanceof PropertyASTNode
@@ -811,11 +812,49 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                             intPush((Integer) preConvArgs[i]);
                             continue;
                         }
-                        else if (parameterTypes[i] == String.class && literal.getLiteral() instanceof String) {
-                            debug("LDC '" + literal.getLiteral() + "'");
-                            mv.visitLdcInsn(literal.getLiteral());
-                            continue;
+                        else if (parameterTypes[i] == boolean.class) {
+                            boolean bool = DataConversion.convert(literal.getLiteral(), Boolean.class);
+                            debug (bool ? "ICONST_1" : "ICONST_0");
+                            mv.visitInsn(bool ? ICONST_1 : ICONST_0);
                         }
+                        else {
+                            if (parameterTypes[i] == Object.class) {
+                                if (ParseTools.isPrimitiveWrapper(literal.getLiteral().getClass())) {
+                                    wrapPrimitive(literal.getLiteral().getClass());
+                                }
+
+                            }
+                        }
+
+//                        if (parameterTypes[i] == String.class) {
+//                            debug("LDC '" + literal.getLiteral() + "'");
+//                            mv.visitLdcInsn(String.valueOf(literal.getLiteral()));
+//                            continue;
+//                        }
+//                        else if (parameterTypes[i] == long.class) {
+//                            debug("LDC '" + literal.getLiteral() + "'");
+//                            mv.visitLdcInsn(DataConversion.convert(literal.getLiteral(), Long.class).longValue());
+//                        }
+//                        else if (parameterTypes[i] == double.class) {
+//                            debug("LDC '" + literal.getLiteral() + "'");
+//                            mv.visitLdcInsn(DataConversion.convert(literal.getLiteral(), Double.class).doubleValue());
+//                        }
+//                        else if (parameterTypes[i] == float.class) {
+//                            debug("LDC '" + literal.getLiteral() + "'");
+//                            mv.visitLdcInsn(DataConversion.convert(literal.getLiteral(), Float.class).floatValue());
+//                        }
+//
+//                        else if (parameterTypes[i] == char.class) {
+//                            debug("LDC '" + literal.getLiteral() + "'");
+//                            mv.visitLdcInsn(DataConversion.convert(literal.getLiteral(), Character.class).charValue());
+//                        }
+//                        else if (parameterTypes[i] == byte.class) {
+//                            debug("LDC '" + literal.getLiteral() + "'");
+//                            mv.visitLdcInsn(DataConversion.convert(literal.getLiteral(), Byte.class).byteValue());
+//                        }
+
+
+
                     }
 
                     debug("ALOAD 0");
@@ -1674,6 +1713,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     public Class getEgressType() {
         return returnType;
     }
+
+
 
 
     private void dumpAdvancedDebugging() {
