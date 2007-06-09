@@ -873,4 +873,9 @@ public class ParseTools {
     public static FileWriter getDebugFileWriter() throws IOException {
         return new FileWriter(new File(MVEL.getDebuggingOutputFileName()), true);
     }
+
+    public static boolean isPrimitiveWrapper(Class clazz) {
+        return clazz == Integer.class || clazz == Boolean.class || clazz == Long.class || clazz == Double.class
+                || clazz == Float.class || clazz == Short.class || clazz == Byte.class || clazz == Character.class;
+    }
 }
