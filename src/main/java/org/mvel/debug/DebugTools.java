@@ -12,6 +12,7 @@ import java.io.Serializable;
  * @author Christopher Brock
  */
 public class DebugTools {
+
     public static String decompile(Serializable expr) {
         if (expr instanceof CompiledExpression) return decompile((CompiledExpression) expr);
         else if (expr instanceof ExecutableAccessor)
@@ -45,10 +46,12 @@ public class DebugTools {
 
             if (tk instanceof NestedStatement
                     && ((NestedStatement) tk).getNestedStatement() instanceof CompiledExpression) {
+                //noinspection StringConcatenationInsideStringBufferAppend
                 sbuf.append("ASTNODE [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }\n");
                 sbuf.append(decompile((CompiledExpression) ((NestedStatement) tk).getNestedStatement(), true));
             }
             else if (tk.isDebuggingSymbold()) {
+                //noinspection StringConcatenationInsideStringBufferAppend
                 sbuf.append("DEBUG_SYMBOL " + tk.toString());
             }
             else if (tk.isLiteral()) {
@@ -64,6 +67,7 @@ public class DebugTools {
                 sbuf.append("PUSH VAR :: ").append(tk.getName());
             }
             else {
+                //noinspection StringConcatenationInsideStringBufferAppend
                 sbuf.append("ASTNODE [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }");
             }
 

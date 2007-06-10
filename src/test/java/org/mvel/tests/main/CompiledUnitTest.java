@@ -158,6 +158,11 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(true, parseDirect("2 > 3 || 3 > 2"));
     }
 
+    public void testOrOperator3() {
+        assertEquals(true, parseDirect("pi > 5 || pi > 6 || pi > 3"));
+    }
+
+
     public void testShortPathExpression3() {
         assertEquals(false, parseDirect("defnull != null  && defnull.length() > 0"));
     }
@@ -903,11 +908,13 @@ public class CompiledUnitTest extends TestCase {
 
     public Object compiledExecute(String ex, Object base, Map map) {
         Serializable compiled = compileExpression(ex);
+        
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);
 
         if (first != null && !first.getClass().isArray())
             assertSame(first, second);
+        
         return second;
     }
 
