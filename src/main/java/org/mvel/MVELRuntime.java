@@ -48,11 +48,6 @@ public class MVELRuntime {
                             && breakpoints.get().contains(((LineLabel) tk).getLineNumber())) {
                         System.out.println("[Encountered Breakpoint!]: " + ((LineLabel) tk).getLineNumber());
 
-                        try {
-                            Thread.sleep(10);
-                        }
-                        catch (InterruptedException e) {
-                        }
                     }
 
                     continue;
