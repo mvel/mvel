@@ -972,6 +972,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     static {
         try {
             classLoader = Thread.currentThread().getContextClassLoader();
+            //noinspection RedundantArrayCreation
             defineClass = ClassLoader.class.getDeclaredMethod("defineClass",
                     new Class[]{String.class, byte[].class, int.class, int.class});
         }
