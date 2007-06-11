@@ -18,9 +18,8 @@
  */
 package org.mvel.optimizers.impl.asm;
 
-import static org.mvel.util.ParseTools.isPrimitiveWrapper;
-import static org.mvel.DataConversion.canConvert;
 import org.mvel.*;
+import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.compileExpression;
 import static org.mvel.MVEL.isAdvancedDebugging;
@@ -519,9 +518,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 
             if (!itemSubExpr) {
-                debug("LDC: \"" + item + "\"");
-                mv.visitLdcInsn(item);
-
+                intPush(parseInt(item));
+                wrapPrimitive(int.class);
                 debug("INVOKEINTERFACE: get");
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 
@@ -1226,7 +1224,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;");
             }
             else if (cls == short.class || cls == Short.class) {
-                debug("INVOKESTATIC java/lang/Short.valueOf");                
+                debug("INVOKESTATIC java/lang/Short.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;");
             }
             else if (cls == long.class || cls == Long.class) {
