@@ -32,7 +32,6 @@ import org.mvel.util.StringAppender;
 import java.io.Serializable;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isWhitespace;
-import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
 import java.util.*;
 import static java.util.Collections.synchronizedMap;
@@ -452,26 +451,31 @@ public class PropertyAccessor {
         if (cursor == length)
             throw new PropertyAccessException("unterminated '['");
 
-        String item;
+        Object item;
 
-        if (property[cursor] == '\'' || property[cursor] == '"') {
-            start++;
+//        if (property[cursor] == '\'' || property[cursor] == '"') {
+//            start++;
+//
+//            int end;
+//
+//            if (!scanTo(']'))
+//                throw new PropertyAccessException("unterminated '['");
+//            if ((end = containsStringLiteralTermination()) == -1)
+//                throw new PropertyAccessException("unterminated string literal in collections accessor");
+//
+//            item = new String(property, start, end - start);
+//        }
+//        else {
 
-            int end;
+        //      = );
+//        }
 
-            if (!scanTo(']'))
-                throw new PropertyAccessException("unterminated '['");
-            if ((end = containsStringLiteralTermination()) == -1)
-                throw new PropertyAccessException("unterminated string literal in collections accessor");
+        if (!scanTo(']'))
+            throw new PropertyAccessException("unterminated '['");
 
-            item = new String(property, start, end - start);
-        }
-        else {
-            if (!scanTo(']'))
-                throw new PropertyAccessException("unterminated '['");
+        String ex = new String(property, start, cursor - start);
 
-            item = new String(property, start, cursor - start);
-        }
+        item = MVEL.eval(ex, ctx, resolver);
 
         ++cursor;
 
@@ -479,10 +483,10 @@ public class PropertyAccessor {
             return ((Map) ctx).get(item);
         }
         else if (ctx instanceof List) {
-            return ((List) ctx).get(parseInt(item));
+            return ((List) ctx).get((Integer) item);
         }
         else if (ctx instanceof Collection) {
-            int count = parseInt(item);
+            int count = (Integer) item;
             if (count > ((Collection) ctx).size())
                 throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
 
@@ -491,10 +495,10 @@ public class PropertyAccessor {
             return iter.next();
         }
         else if (ctx instanceof Object[]) {
-            return ((Object[]) ctx)[parseInt(item)];
+            return ((Object[]) ctx)[(Integer) item];
         }
         else if (ctx instanceof CharSequence) {
-            return ((CharSequence) ctx).charAt(parseInt(item));
+            return ((CharSequence) ctx).charAt((Integer) item);
         }
         else {
             throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
