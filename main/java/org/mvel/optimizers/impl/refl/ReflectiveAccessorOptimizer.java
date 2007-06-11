@@ -277,24 +277,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         String item;
 
-//        if (expr[cursor] == '\'' || expr[cursor] == '"') {
-//            start++;
-//
-//            int end;
-//
-//            if (!scanTo(']'))
-//                throw new PropertyAccessException("unterminated '['");
-//            if ((end = containsStringLiteralTermination()) == -1)
-//                throw new PropertyAccessException("unterminated string literal in collections accessor");
-//
-//            item = new String(expr, start, end - start);
-//        }
-//        else {
+
         if (!scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
         item = new String(expr, start, cursor - start);
-        //      }
 
         boolean itemSubExpr = true;
 
@@ -324,7 +311,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
             else {
                 MapAccessor accessor = new MapAccessor();
-                accessor.setProperty(item);
+                accessor.setProperty(parseInt(item));
                 addAccessorNode(accessor);
             }
 

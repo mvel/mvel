@@ -417,6 +417,10 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("sarah", parseDirect("map = ['mike' :'sarah'  ,'tom'  :'jacquelin'  ]; map['mike']"));
     }
 
+    public void testMapCreation3() {
+        assertEquals("foo", parseDirect("map = [1 : 'foo']; map[1]"));
+    }
+
     public void testProjectionSupport() {
         assertEquals(true, parseDirect("(name in things) contains 'Bob'"));
     }
@@ -908,13 +912,13 @@ public class CompiledUnitTest extends TestCase {
 
     public Object compiledExecute(String ex, Object base, Map map) {
         Serializable compiled = compileExpression(ex);
-        
+
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);
 
         if (first != null && !first.getClass().isArray())
             assertSame(first, second);
-        
+
         return second;
     }
 
