@@ -523,7 +523,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKEINTERFACE: get");
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 
-                return ((Map) ctx).get(item);
+                return ((Map) ctx).get(parseInt(item));
             }
             else {
                 valueFromSubExpression();
