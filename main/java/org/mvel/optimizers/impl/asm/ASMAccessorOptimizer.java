@@ -42,7 +42,6 @@ import org.mvel.util.StringAppender;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import static java.lang.Integer.parseInt;
 import static java.lang.System.getProperty;
 import static java.lang.reflect.Array.getLength;
 import java.lang.reflect.*;
@@ -91,7 +90,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private int stacksize = 1;
     private long time;
 
-    private int inputs;
+//    private int inputs;
 
     private ArrayList<ExecutableStatement> compiledInputs;
 
@@ -136,7 +135,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     public Accessor optimizeAccessor(char[] property, Object staticContext, Object thisRef, VariableResolverFactory factory, boolean root) {
         time = System.currentTimeMillis();
 
-        inputs = 0;
+        //inputs = 0;
         compiledInputs = new ArrayList<ExecutableStatement>();
 
         start = cursor = 0;
@@ -194,12 +193,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         Object o;
 
         try {
-            if (inputs == 0) {
+            if (compiledInputs.size() == 0) {
                 o = cls.newInstance();
             }
             else {
-                Class[] parms = new Class[inputs];
-                for (int i = 0; i < inputs; i++) {
+                Class[] parms = new Class[compiledInputs.size()];
+                for (int i = 0; i < compiledInputs.size(); i++) {
                     parms[i] = ExecutableStatement.class;
                 }
                 o = cls.getConstructor(parms).newInstance(compiledInputs.toArray(new ExecutableStatement[compiledInputs.size()]));
@@ -277,7 +276,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
-        debug("ENTER -> {bean: " + property + "}");
+        debug("\n  **  ENTER -> {bean: " + property + "}");
 
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
@@ -394,7 +393,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 ldcClassConstant((Class) lit);
             }
 
-
             return LITERALS.get(property);
         }
         else {
@@ -478,7 +476,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throws IllegalAccessException, InvocationTargetException {
         if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
 
-        debug("ENTER -> {collections: " + prop + "}");
+        debug("\n  **  ENTER -> {collections: " + prop + "}");
 
         int start = ++cursor;
 
@@ -487,28 +485,21 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (cursor == length)
             throw new PropertyAccessException("unterminated '['");
 
-        String item;
-
-        boolean itemSubExpr = true;
-
         if (!scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
-        item = new String(expr, start, cursor - start);
 
-        try {
-            parseInt(item);
-            itemSubExpr = false;
+        boolean literal = false;
+        ExecutableStatement compiled = (ExecutableStatement) compileExpression(new String(expr, start, cursor - start));
+        Object item;
+
+        if (compiled instanceof ExecutableLiteral) {
+            literal = true;
+            item = ((ExecutableLiteral) compiled).getLiteral();
         }
-        catch (Exception e) {
-            // not a number;
-        }
-
-
-        ExecutableStatement itemStmt = null;
-        if (itemSubExpr) {
-            compiledInputs.add(itemStmt = (ExecutableStatement) compileExpression(item));
-            inputs++;
+        else {
+            item = compiled.getValue(ctx, variableFactory);
+            compiledInputs.add(compiled);
         }
 
         ++cursor;
@@ -517,40 +508,48 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("CHECKCAST java/util/Map");
             mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 
-            if (!itemSubExpr) {
-                intPush(parseInt(item));
+            if (item instanceof Integer) {
+                intPush((Integer) item);
                 wrapPrimitive(int.class);
+
                 debug("INVOKEINTERFACE: get");
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 
-                return ((Map) ctx).get(parseInt(item));
+                return ((Map) ctx).get(item);
             }
             else {
-                valueFromSubExpression();
+                if (!literal) {
+                    valueFromSubExpression();
+                }
+                else {
+                    writeOutLiteralWrapped(item);
+                }
 
                 debug("INVOKEINTERFACE: get");
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 
-                return ((Map) ctx).get(itemStmt.getValue(ctx, variableFactory));
+                return ((Map) ctx).get(item);
             }
         }
         else if (ctx instanceof List) {
             debug("CHECKCAST java/util/List");
             mv.visitTypeInsn(CHECKCAST, "java/util/List");
 
-
-            if (!itemSubExpr) {
-                int index = parseInt(item);
-
-                intPush(index);
+            if (item instanceof Integer) {
+                intPush((Integer) item);
 
                 debug("INVOKEINTERFACE: java/util/List.get");
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
 
-                return ((List) ctx).get(index);
+                return ((List) ctx).get((Integer) item);
             }
             else {
-                valueFromSubExpression();
+                if (!literal) {
+                    valueFromSubExpression();
+                }
+                else {
+                    writeOutLiteralWrapped(item);
+                }
 
                 debug("INVOKEINTERFACE: java/util/List.get");
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
@@ -558,56 +557,60 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 dataConversion(Integer.class);
                 unwrapPrimitive(int.class);
 
-                return ((List) ctx).get(convert(itemStmt.getValue(ctx, variableFactory), Integer.class));
-
+                return ((List) ctx).get(convert(item, Integer.class));
             }
         }
         else if (ctx instanceof Object[]) {
-            int index = parseInt(item);
-
             debug("CHECKCAST [Ljava/lang/Object;");
             mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
-
-
-            if (!itemSubExpr) {
-                intPush(index);
+            if (item instanceof Integer) {
+                intPush((Integer) item);
 
                 debug("AALOAD");
                 mv.visitInsn(AALOAD);
 
-                return ((Object[]) ctx)[index];
+                return ((Object[]) ctx)[(Integer) item];
             }
             else {
-                valueFromSubExpression();
+                if (!literal) {
+                    valueFromSubExpression();
+                }
+                else {
+                    writeOutLiteralWrapped(item);
+                }
+
                 dataConversion(Integer.class);
                 unwrapPrimitive(int.class);
 
                 debug("AALOAD");
                 mv.visitInsn(AALOAD);
 
-                return ((Object[]) ctx)[convert(itemStmt.getValue(ctx, variableFactory), Integer.class)];
-
+                return ((Object[]) ctx)[convert(item, Integer.class)];
             }
         }
         else if (ctx instanceof CharSequence) {
-            int index = parseInt(item);
 
             debug("CHECKCAST java/lang/CharSequence");
             mv.visitTypeInsn(CHECKCAST, "java/lang/CharSequence");
 
-
-            if (!itemSubExpr) {
-                intPush(index);
+            if (item instanceof Integer) {
+                intPush((Integer) item);
 
                 debug("INVOKEINTERFACE java/lang/CharSequence.charAt");
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/lang/CharSequence", "charAt", "(I)C");
 
                 wrapPrimitive(char.class);
 
-                return ((CharSequence) ctx).charAt(index);
+                return ((CharSequence) ctx).charAt((Integer) item);
             }
             else {
-                valueFromSubExpression();
+                if (!literal) {
+                    valueFromSubExpression();
+                }
+                else {
+                    writeOutLiteralWrapped(item);
+                }
+
                 dataConversion(Integer.class);
                 unwrapPrimitive(int.class);
 
@@ -616,7 +619,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 wrapPrimitive(char.class);
 
-                return ((CharSequence) ctx).charAt(convert(itemStmt.getValue(ctx, variableFactory), Integer.class));
+                return ((CharSequence) ctx).charAt(convert(item, Integer.class));
 
             }
         }
@@ -629,7 +632,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name)
             throws IllegalAccessException, InvocationTargetException {
-        debug("{method: " + name + "}");
+        debug("\n  **  {method: " + name + "}");
 
         if (first && variableFactory.isResolveable(name)) {
             Method m = (Method) variableFactory.getVariableResolver(name).getValue();
@@ -681,6 +684,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
             }
         }
+
+
+        int inputsOffset = compiledInputs.size();
 
         if (es != null) {
             for (int i = 0; i < es.length; i++) {
@@ -859,8 +865,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     debug("ALOAD 0");
                     mv.visitVarInsn(ALOAD, 0);
 
-                    debug("GETFIELD p" + inputs++);
-                    mv.visitFieldInsn(GETFIELD, className, "p" + (inputs - 1), "Lorg/mvel/ExecutableStatement;");
+                    debug("GETFIELD p" + inputsOffset);
+                    mv.visitFieldInsn(GETFIELD, className, "p" + inputsOffset, "Lorg/mvel/ExecutableStatement;");
+
+                    inputsOffset++;
 
                     debug("ALOAD 2");
                     mv.visitVarInsn(ALOAD, 2);
@@ -1281,6 +1289,48 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
+    private void writeOutLiteralWrapped(Object lit) {
+        if (lit instanceof Integer) {
+            intPush((Integer) lit);
+            wrapPrimitive(int.class);
+            return;
+        }
+
+
+        debug("LDC " + lit);
+        if (lit instanceof String) {
+            mv.visitLdcInsn(lit);
+        }
+        else if (lit instanceof Long) {
+            mv.visitLdcInsn(lit);
+            wrapPrimitive(long.class);
+        }
+        else if (lit instanceof Float) {
+            mv.visitLdcInsn(lit);
+            wrapPrimitive(float.class);
+        }
+        else if (lit instanceof Double) {
+            mv.visitLdcInsn(lit);
+            wrapPrimitive(double.class);
+        }
+        else if (lit instanceof Short) {
+            mv.visitLdcInsn(lit);
+            wrapPrimitive(short.class);
+        }
+        else if (lit instanceof Character) {
+            mv.visitLdcInsn(lit);
+            wrapPrimitive(char.class);
+        }
+        else if (lit instanceof Boolean) {
+            mv.visitLdcInsn(lit);
+            wrapPrimitive(boolean.class);
+        }
+        else if (lit instanceof Byte) {
+            mv.visitLdcInsn(lit);
+            wrapPrimitive(byte.class);
+        }
+    }
+
 
     private void ldcClassConstant(Class cls) {
         if (OPCODES_VERSION == Opcodes.V1_4) {
@@ -1307,12 +1357,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
 
     private void buildInputs() {
-        if (inputs == 0) return;
+        if (compiledInputs.size() == 0) return;
 
         debug("\n{SETTING UP MEMBERS...}\n");
 
         StringAppender constSig = new StringAppender("(");
-        int size = inputs;
+        int size = compiledInputs.size();
 
         for (int i = 0; i < size; i++) {
             debug("ACC_PRIVATE p" + i);
@@ -1482,8 +1532,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("ALOAD 0");
             mv.visitVarInsn(ALOAD, 0);
 
-            debug("GETFIELD p" + inputs++);
-            mv.visitFieldInsn(GETFIELD, className, "p" + (inputs - 1), "Lorg/mvel/ExecutableStatement;");
+            debug("GETFIELD p" + (compiledInputs.size() - 1));
+            mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/ExecutableStatement;");
 
             debug("ALOAD 2");
             mv.visitVarInsn(ALOAD, 2);
@@ -1611,7 +1661,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("DUP");
                 mv.visitInsn(DUP);
 
-                inputs = constructorParms.length;
+                //inputs = constructorParms.length;
 
                 Object[] parms = new Object[constructorParms.length];
 
