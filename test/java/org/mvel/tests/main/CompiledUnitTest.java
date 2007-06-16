@@ -2,6 +2,7 @@ package org.mvel.tests.main;
 
 import junit.framework.TestCase;
 import org.mvel.*;
+
 import static org.mvel.MVEL.*;
 import org.mvel.debug.DebugTools;
 import org.mvel.integration.Interceptor;
@@ -943,6 +944,39 @@ public class CompiledUnitTest extends TestCase {
             assertEquals("cat", executeExpression(compiled, testMap));
         }
     }
+    
+    public void testInterfaceMethodCallWithSpace() {
+        Serializable compiled = compileExpression("drools.retract (cheese)");
+        Map map = new HashMap();
+        DefaultKnowledgeHelper helper = new DefaultKnowledgeHelper();
+        map.put( "drools",  helper);
+        Cheese cheese = new Cheese("stilton", 15) ;
+        map.put( "cheese", cheese);
+        
+        executeExpression(compiled, map);
+        assertSame(cheese, helper.retracted.get( 0 ));
+    }
+    
+    public void testInterfaceMethodCallWithMacro() {
+        Map macros = new HashMap(1);       
+        
+        macros.put( "retract",
+                    new Macro() {
+                        public String doMacro() {
+                            return "drools.retract";
+                        }
+                    } ); 
+                
+        Serializable compiled = compileExpression(new MacroProcessor( "retract(cheese)" ).parse(macros));
+        Map map = new HashMap();
+        DefaultKnowledgeHelper helper = new DefaultKnowledgeHelper();
+        map.put( "drools",  helper);
+        Cheese cheese = new Cheese("stilton", 15) ;
+        map.put( "cheese", cheese);
+        
+        executeExpression(compiled, map);
+        assertSame(cheese, helper.retracted.get( 0 ));
+    }    
 
 
     public void testToList() {
