@@ -7,12 +7,27 @@ import org.mvel.integration.VariableResolverFactory;
  * @author Christopher Brock
  */
 public class LineLabel extends ASTNode {
+    private String sourceFile;
     private int lineNumber;
 
     public LineLabel(int lineNumber) {
         super();
         this.lineNumber = lineNumber;
         this.fields = -1;
+    }
+
+   public LineLabel(String sourceFile, int lineNumber) {
+       super();
+       this.lineNumber = lineNumber;
+       this.sourceFile = sourceFile;
+   }
+
+    public String getSourceFile() {
+        return sourceFile;
+    }
+
+    public void setSourceFile(String sourceFile) {
+        this.sourceFile = sourceFile;
     }
 
     public int getLineNumber() {
