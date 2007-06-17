@@ -55,7 +55,35 @@ public class AbstractParser {
 
     protected ExecutionStack splitAccumulator = new ExecutionStack();
 
-    protected static ThreadLocal<Integer> linecounter;
+    protected static ThreadLocal<ParserContext> parserContext;
+
+    protected String sourceFile;
+
+    static class ParserContext {
+        private String sourceFile;
+        private int lineCount;
+
+        public ParserContext(String sourceFile, int lineCount) {
+            this.sourceFile = sourceFile;
+            this.lineCount = lineCount;
+        }
+
+        public String getSourceFile() {
+            return sourceFile;
+        }
+
+        public void setSourceFile(String sourceFile) {
+            this.sourceFile = sourceFile;
+        }
+
+        public int getLineCount() {
+            return lineCount;
+        }
+
+        public void setLineCount(int lineCount) {
+            this.lineCount = lineCount;
+        }
+    }
 
 
     static {
@@ -236,18 +264,18 @@ public class AbstractParser {
         boolean capture = false;
         boolean union = false;
 
-        if (!debugSymbols && linecounter != null && linecounter.get() != null) {
+        if (!debugSymbols && parserContext != null && parserContext.get() != null) {
             debugSymbols = true;
             if (expr[cursor] != '\n') lastWasLineLabel = true;
         }
 
         if (debugSymbols && !lastWasLineLabel && (expr[cursor] == '\n' || cursor == 0)) {
-            if (linecounter == null) {
-                linecounter = new ThreadLocal<Integer>();
-                linecounter.set(0);
+            if (parserContext == null) {
+                parserContext = new ThreadLocal<ParserContext>();
+                parserContext.set(new ParserContext(sourceFile, 0));
             }
             else {
-                line = linecounter.get();
+                line = parserContext.get().getLineCount();
             }
 
             lastWasLineLabel = true;
@@ -259,7 +287,7 @@ public class AbstractParser {
                 line++;
             }
 
-            linecounter.set(line);
+            parserContext.get().setLineCount(line);
 
             return new LineLabel(line);
         }
@@ -928,8 +956,6 @@ public class AbstractParser {
             switch (expr[cursor]) {
                 case'(':
                     return;
-//                case'{':
-//                    return;
                 default:
                     if (isWhitespace(expr[cursor])) return;
                     cursor++;
@@ -1027,6 +1053,15 @@ public class AbstractParser {
 
     public void setInterceptors(Map<String, Interceptor> interceptors) {
         this.interceptors = interceptors;
+    }
+
+
+    public String getSourceFile() {
+        return sourceFile;
+    }
+
+    public void setSourceFile(String sourceFile) {
+        this.sourceFile = sourceFile;
     }
 
     public boolean isDebugSymbols() {
