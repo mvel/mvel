@@ -1,6 +1,9 @@
 package org.mvel;
 
+import static java.lang.Character.isWhitespace;
+
 import org.mvel.util.StringAppender;
+import org.mvel.util.ParseTools;
 
 import java.util.Map;
 
@@ -17,8 +20,13 @@ public class MacroProcessor extends AbstractParser {
 
         for (; cursor < length; cursor++) {
             skipWhitespace();
+
             start = cursor;
-            captureToWhitespace();
+
+            while (cursor < length
+                    && (!isWhitespace(expr[cursor]) 
+                    && expr[cursor] != '('
+                    && expr[cursor] != ')')) cursor++;
 
             if (macros.containsKey(token = new String(expr, start, cursor - start))) {
                 appender.append(macros.get(token).doMacro());
@@ -27,7 +35,7 @@ public class MacroProcessor extends AbstractParser {
                 appender.append(token);
             }
 
-            if (cursor < length) appender.append(" ");
+            if (cursor < length) appender.append(expr[cursor]);
         }
 
         return appender.toString();
@@ -42,6 +50,6 @@ public class MacroProcessor extends AbstractParser {
     }
 
     public void captureToWhitespace() {
-        while (cursor < length && !Character.isWhitespace(expr[cursor])) cursor++;
+        while (cursor < length && !isWhitespace(expr[cursor])) cursor++;
     }
 }
