@@ -122,7 +122,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             val = curr;
 
-
             return rootNode;
         }
         catch (InvocationTargetException e) {
