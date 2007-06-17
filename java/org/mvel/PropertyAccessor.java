@@ -71,8 +71,7 @@ public class PropertyAccessor {
             READ_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
             WRITE_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
             METHOD_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Object[]>>(10));
-        }
-        else {
+        } else {
             READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
             WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
             METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Object[]>>(10));
@@ -220,11 +219,9 @@ public class PropertyAccessor {
                     }
 
                     fld.set(curr, convert(value, fld.getType()));
-                }
-                else
+                } else
                     fld.set(curr, value);
-            }
-            else if (member != null) {
+            } else if (member != null) {
                 Method meth = (Method) member;
 
                 if (value != null && !meth.getParameterTypes()[0].isAssignableFrom(value.getClass())) {
@@ -234,12 +231,10 @@ public class PropertyAccessor {
                     }
 
                     meth.invoke(curr, convert(value, meth.getParameterTypes()[0]));
-                }
-                else {
+                } else {
                     meth.invoke(curr, value);
                 }
-            }
-            else {
+            } else {
                 throw new PropertyAccessException("could not access property (" + property + ") in: " + ctx.getClass().getName());
             }
         }
@@ -271,6 +266,7 @@ public class PropertyAccessor {
 
 
         if (cursor < length) {
+            while (isWhitespace(property[cursor])) cursor++;
             switch (property[cursor]) {
                 case'[':
                     return COL;
@@ -284,7 +280,12 @@ public class PropertyAccessor {
     }
 
     private String capture() {
-        return new String(property, start, cursor - start);
+        return new String(property, start, trimLeft(cursor) - start);
+    }
+
+    protected int trimLeft(int pos) {
+        while (pos > 0 && isWhitespace(property[pos - 1])) pos--;
+        return pos;
     }
 
 
@@ -371,8 +372,7 @@ public class PropertyAccessor {
 
         if (member instanceof Field) {
             return ((Field) member).get(ctx);
-        }
-        else if (member != null) {
+        } else if (member != null) {
             try {
                 return ((Method) member).invoke(ctx, EMPTYARG);
             }
@@ -388,14 +388,11 @@ public class PropertyAccessor {
                 }
             }
 
-        }
-        else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
+        } else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
             return ((Map) ctx).get(property);
-        }
-        else if ("this".equals(property)) {
+        } else if ("this".equals(property)) {
             return this.thisReference;
-        }
-        else if (ctx instanceof Class) {
+        } else if (ctx instanceof Class) {
             Class c = (Class) ctx;
             for (Method m : c.getMethods()) {
                 if (property.equals(m.getName())) {
@@ -481,11 +478,9 @@ public class PropertyAccessor {
 
         if (ctx instanceof Map) {
             return ((Map) ctx).get(item);
-        }
-        else if (ctx instanceof List) {
+        } else if (ctx instanceof List) {
             return ((List) ctx).get((Integer) item);
-        }
-        else if (ctx instanceof Collection) {
+        } else if (ctx instanceof Collection) {
             int count = (Integer) item;
             if (count > ((Collection) ctx).size())
                 throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
@@ -493,14 +488,11 @@ public class PropertyAccessor {
             Iterator iter = ((Collection) ctx).iterator();
             for (int i = 0; i < count; i++) iter.next();
             return iter.next();
-        }
-        else if (ctx instanceof Object[]) {
+        } else if (ctx instanceof Object[]) {
             return ((Object[]) ctx)[(Integer) item];
-        }
-        else if (ctx instanceof CharSequence) {
+        } else if (ctx instanceof CharSequence) {
             return ((CharSequence) ctx).charAt((Integer) item);
-        }
-        else {
+        } else {
             throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
         }
     }
@@ -543,8 +535,7 @@ public class PropertyAccessor {
         if (tk.length() == 0) {
             args = ParseTools.EMPTY_OBJ_ARR;
             es = null;
-        }
-        else {
+        } else {
             if (SUBEXPRESSION_CACHE.containsKey(tk)) {
                 es = SUBEXPRESSION_CACHE.get(tk);
                 args = new Object[es.length];
@@ -552,8 +543,7 @@ public class PropertyAccessor {
                     args[i] = MVEL.executeExpression(es[i], thisReference, resolver);
                 }
 
-            }
-            else {
+            } else {
                 String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
 
                 es = new Serializable[subtokens.length];
@@ -590,8 +580,7 @@ public class PropertyAccessor {
         if (cache != null) {
             m = (Method) cache[0];
             parameterTypes = (Class[]) cache[1];
-        }
-        else {
+        } else {
             m = null;
             parameterTypes = null;
         }
@@ -632,8 +621,7 @@ public class PropertyAccessor {
             }
 
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
-        }
-        else {
+        } else {
             if (es != null) {
                 ExecutableStatement cExpr;
                 for (int i = 0; i < es.length; i++) {
@@ -646,8 +634,7 @@ public class PropertyAccessor {
                         args[i] = convert(args[i], parameterTypes[i]);
                     }
                 }
-            }
-            else {
+            } else {
                 /**
                  * Coerce any types if required.
                  */

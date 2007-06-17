@@ -69,13 +69,14 @@ public class AbstractOptimizer extends AbstractParser {
                 return COL;
             case'.':
                 cursor = ++start;
+
         }
 
         //noinspection StatementWithEmptyBody
         while (++cursor < length && Character.isJavaIdentifierPart(expr[cursor])) ;
 
-
         if (cursor < length) {
+            skipWhitespace();
             switch (expr[cursor]) {
                 case'[':
                     return COL;
@@ -89,7 +90,10 @@ public class AbstractOptimizer extends AbstractParser {
     }
 
     protected String capture() {
-        return new String(expr, start, cursor - start);
+        /**
+         * Trim off any whitespace.
+         */        
+        return new String(expr, start, trimLeft(cursor) - start);
     }
 
     protected void whiteSpaceSkip() {
