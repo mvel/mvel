@@ -24,6 +24,24 @@ public class KnowledgeHelperFixerTest extends TestCase {
 
     private static final KnowledgeHelperFixer fixer = new KnowledgeHelperFixer();
 
+    public void testSingleLineCommentSlash() {
+        String result = KnowledgeHelperFixerTest.fixer.fix( "        //System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );" );
+        assertEquals( "        //System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );",
+                      result );
+    }
+    
+    public void testSingleLineCommentHash() {
+        String result = KnowledgeHelperFixerTest.fixer.fix( "        #System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );" );
+        assertEquals( "        #System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );",
+                      result );
+    }   
+    
+    public void testMultiLineComment() {
+        String result = KnowledgeHelperFixerTest.fixer.fix( "        /*System.out.println( \"help\" );\r\n*/        System.out.println( \"help\" );  \r\n     list.add( $person );" );
+        assertEquals( "        /*System.out.println( \"help\" );\r\n*/       System.out.println( \"help\" );  \r\n     list.add( $person );",
+                      result );
+    }     
+
     public void testAdd__Handle__Simple() {
         String result = KnowledgeHelperFixerTest.fixer.fix( "update(myObject );" );
         assertEqualsIgnoreWhitespace( "drools.update(myObject );",
@@ -151,7 +169,8 @@ public class KnowledgeHelperFixerTest extends TestCase {
     private void assertEqualsIgnoreWhitespace(final String expected,
                                               final String actual) {
         if ( expected == null || actual == null ) {
-            assertEquals(expected, actual);
+            assertEquals( expected,
+                          actual );
             return;
         }
         final String cleanExpected = expected.replaceAll( "\\s+",
