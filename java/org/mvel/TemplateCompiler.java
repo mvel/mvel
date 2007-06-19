@@ -58,7 +58,7 @@ public class TemplateCompiler {
         Node ex;
         int node = 0;
         for (; cursor < length; cursor++) {
-            if ((expressionArray[cursor] == '$' || expressionArray[cursor] == '@')) {
+            if ( expressionArray[cursor] == '@') {
                 if (literalRange != 0) {
                     aList.add(new Node(node++, LITERAL, cursor - literalRange, literalRange, node));
                     literalRange = 0;

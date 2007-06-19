@@ -164,6 +164,8 @@ public class MVEL {
      *
      * @param expression - the expression to be compiled
      * @return -
+     * @param imports -
+     * @param interceptors -
      */
     public static Serializable compileExpression(char[] expression, Map<String, Class> imports,
                                                  Map<String, Interceptor> interceptors) {
@@ -180,7 +182,7 @@ public class MVEL {
         if (OPTIMIZER && tokens.size() == 1) {
             ASTNode tk = tokens.firstToken();
             if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);
+                return new ExecutableAccessor(tk, false);                                                                                                                                 
             } else if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.fields & ASTNode.INTEGER32) != 0) {
                     return new ExecutableLiteral(tk.getIntRegister());
