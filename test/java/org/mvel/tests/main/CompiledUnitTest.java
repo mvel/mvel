@@ -901,6 +901,12 @@ public class CompiledUnitTest extends TestCase {
         assertEquals(20, parseDirect("10 + 10; // This is a comment"));
     }
 
+    public void testComments3() {
+        assertEquals(30, parseDirect("/* This is a test of\n" +
+                "MVEL's support for\n" +
+                "multi-line comments\n" +
+                "*/\n 15 + 15"));
+    }
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
