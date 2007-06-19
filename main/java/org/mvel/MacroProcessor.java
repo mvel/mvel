@@ -1,32 +1,38 @@
 package org.mvel;
 
-import static java.lang.Character.isWhitespace;
-
 import org.mvel.util.StringAppender;
-import org.mvel.util.ParseTools;
 
+import static java.lang.Character.isWhitespace;
 import java.util.Map;
 
 /**
  * @author Christopher Brock
  */
-public class MacroProcessor extends AbstractParser {
+public class MacroProcessor extends AbstractParser implements PreProcessor {
+    private Map<String, Macro> macros;
 
-    public String parse(Map<String, Macro> macros) {
+    public char[] parse(char[] input) {
+        setExpression(input);
+
         StringAppender appender = new StringAppender();
 
         int start;
         String token;
 
         for (; cursor < length; cursor++) {
-            skipWhitespace();
-
+            while (cursor < length && isWhitespace(expr[cursor])) {
+                appender.append(expr[cursor++]);
+            }
+            
             start = cursor;
 
             while (cursor < length
                     && (!isWhitespace(expr[cursor]) 
                     && expr[cursor] != '('
-                    && expr[cursor] != ')')) cursor++;
+                    && expr[cursor] != ')')) {
+
+                cursor++;
+            }
 
             if (macros.containsKey(token = new String(expr, start, cursor - start))) {
                 appender.append(macros.get(token).doMacro());
@@ -35,18 +41,24 @@ public class MacroProcessor extends AbstractParser {
                 appender.append(token);
             }
 
-            if (cursor < length) appender.append(expr[cursor]);
+            if (cursor < length) {
+                appender.append(expr[cursor]);
+            }
         }
 
-        return appender.toString();
+        return appender.toChars();
     }
 
-    public MacroProcessor(char[] expr) {
-        setExpression(expr);
+    public String parse(String input) {
+        return new String(parse(input.toCharArray()));
     }
 
-    public MacroProcessor(String expr) {
-        setExpression(expr);
+    public Map<String, Macro> getMacros() {
+        return macros;
+    }
+
+    public void setMacros(Map<String, Macro> macros) {
+        this.macros = macros;
     }
 
     public void captureToWhitespace() {

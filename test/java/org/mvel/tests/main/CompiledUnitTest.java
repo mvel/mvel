@@ -1,5 +1,6 @@
 package org.mvel.tests.main;
 
+import static org.mvel.MVEL.parseMacros;
 import junit.framework.TestCase;
 import org.mvel.*;
 
@@ -892,6 +893,14 @@ public class CompiledUnitTest extends TestCase {
         assertEquals("FOOBAR!", executeExpression(s, vars));
     }
 
+    public void testComments() {
+        assertEquals(10, parseDirect("// This is a comment\n5 + 5"));
+    }
+
+    public void testComments2() {
+        assertEquals(20, parseDirect("10 + 10; // This is a comment"));
+    }
+
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
@@ -924,6 +933,7 @@ public class CompiledUnitTest extends TestCase {
     }
 
 
+    @SuppressWarnings({"unchecked"})
     public void testDifferentImplSameCompile() {
         Serializable compiled = compileExpression("a.funMap.hello");
 
@@ -945,6 +955,7 @@ public class CompiledUnitTest extends TestCase {
         }
     }
     
+    @SuppressWarnings({"unchecked"})
     public void testInterfaceMethodCallWithSpace() {
         Serializable compiled = compileExpression("drools.retract (cheese)");
         Map map = new HashMap();
@@ -957,6 +968,7 @@ public class CompiledUnitTest extends TestCase {
         assertSame(cheese, helper.retracted.get( 0 ));
     }
     
+    @SuppressWarnings({"unchecked"})
     public void testInterfaceMethodCallWithMacro() {
         Map macros = new HashMap(1);       
         
@@ -967,7 +979,7 @@ public class CompiledUnitTest extends TestCase {
                         }
                     } ); 
                 
-        Serializable compiled = compileExpression(new MacroProcessor( "retract(cheese)" ).parse(macros));
+        Serializable compiled = compileExpression(parseMacros("retract(cheese)", macros));
         Map map = new HashMap();
         DefaultKnowledgeHelper helper = new DefaultKnowledgeHelper();
         map.put( "drools",  helper);
@@ -979,6 +991,7 @@ public class CompiledUnitTest extends TestCase {
     }    
 
 
+    @SuppressWarnings({"UnnecessaryBoxing"})
     public void testToList() {
         String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
         List list = (List) parseDirect(text);
@@ -1008,6 +1021,7 @@ public class CompiledUnitTest extends TestCase {
     public static class MiscTestClass {
         int exec = 0;
 
+        @SuppressWarnings({"unchecked", "UnnecessaryBoxing"})
         public List toList(Object object1, String string, int integer, Map map, List list) {
             exec++;
             List l = new ArrayList();
@@ -1025,6 +1039,7 @@ public class CompiledUnitTest extends TestCase {
         }
     }
 
+    @SuppressWarnings({"unchecked"})
     public void testCalculateAge() {
         //    System.out.println("Calculating the Age");
         Calendar c1 = Calendar.getInstance();

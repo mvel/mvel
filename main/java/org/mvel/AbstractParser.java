@@ -545,10 +545,36 @@ public class AbstractParser {
                         return lastNode = new EndOfStatement();
 
                     case'#':
+                    case'/':
+                        if (isAt(expr[cursor], 1)) {
+                            /**
+                             * Handle single line comments.
+                             */
+                            while (cursor < length && expr[cursor] != '\n') cursor++;
+                            if ((start = ++cursor) >= length) return null;
+                            continue;
+                        }
+                        else if (expr[cursor] == '/' && isAt('*', 1)) {
+                            /**
+                             * Handle multi-line comments.
+                             */
+                            int len = length - 1;
+                            while (true) {
+                                cursor++;
+                                if (cursor == len) {
+                                    throw new CompileException("unterminated block comment", expr, cursor);
+                                }
+                                if (isAt('*', 1) && isAt('/', 2)) {
+                                    if ((start = ++cursor) >= length) return null;
+                                    break;
+                                }
+                            }
+                            continue;
+                        }
+
                     case'?':
                     case':':
                     case'^':
-                    case'/':
                     case'%': {
                         return createToken(expr, start, cursor++ + 1, fields);
                     }
