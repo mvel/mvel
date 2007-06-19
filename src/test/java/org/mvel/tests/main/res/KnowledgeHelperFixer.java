@@ -16,13 +16,11 @@ package org.mvel.tests.main.res;
  * limitations under the License.
  */
 
+import static org.mvel.MVEL.parseMacros;
+import org.mvel.Macro;
+
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.mvel.Macro;
-import org.mvel.MacroProcessor;
 
 public class KnowledgeHelperFixer {
 
@@ -74,7 +72,8 @@ public class KnowledgeHelperFixer {
                             return "drools.retract";
                         }
                     } );           
-        return new MacroProcessor( raw ).parse(macros);
-    }
 
+
+        return parseMacros(raw, macros);
+    }
 }

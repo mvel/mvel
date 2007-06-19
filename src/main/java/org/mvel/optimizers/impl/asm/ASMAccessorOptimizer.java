@@ -86,7 +86,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private ClassWriter cw;
     private MethodVisitor mv;
 
-    private Object val;
+    private Object val;                                                                 
     private int stacksize = 1;
     private long time;
 

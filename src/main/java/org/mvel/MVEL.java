@@ -128,12 +128,10 @@ public class MVEL {
             ASTNode tk = tokens.firstToken();
             if (tk.isIdentifier()) {
                 return new ExecutableAccessor(tk, false);
-            }
-            else if (tk.isLiteral() && !tk.isThisVal()) {
+            } else if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.fields & ASTNode.INTEGER32) != 0) {
                     return new ExecutableLiteral(tk.getIntRegister());
-                }
-                else {
+                } else {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
             }
@@ -183,12 +181,10 @@ public class MVEL {
             ASTNode tk = tokens.firstToken();
             if (tk.isIdentifier()) {
                 return new ExecutableAccessor(tk, false);
-            }
-            else if (tk.isLiteral() && !tk.isThisVal()) {
+            } else if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.fields & ASTNode.INTEGER32) != 0) {
                     return new ExecutableLiteral(tk.getIntRegister());
-                }
-                else {
+                } else {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
             }
@@ -550,7 +546,21 @@ public class MVEL {
     }
 
     public static String parseMacros(String input, Map<String, Macro> macros) {
-        return new MacroProcessor(input).parse(macros);
+        MacroProcessor macroProcessor = new MacroProcessor();
+        macroProcessor.setMacros(macros);
+        return macroProcessor.parse(input);
+    }
+
+    public static String preprocess(char[] input, PreProcessor[] preprocessors) {
+        char[] ex = input;
+        for (PreProcessor proc : preprocessors) {
+            ex = proc.parse(ex);
+        }
+        return new String(ex);
+    }
+
+    public static String preprocess(String input, PreProcessor[] preprocessors) {
+        return preprocess(input.toCharArray(), preprocessors);
     }
 
 

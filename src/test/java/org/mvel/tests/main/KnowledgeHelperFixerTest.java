@@ -37,9 +37,10 @@ public class KnowledgeHelperFixerTest extends TestCase {
     }   
     
     public void testMultiLineComment() {
-        String result = KnowledgeHelperFixerTest.fixer.fix( "        /*System.out.println( \"help\" );\r\n*/        System.out.println( \"help\" );  \r\n     list.add( $person );" );
+        String result = KnowledgeHelperFixerTest.fixer.fix("        /*System.out.println( \"help\" );\r\n*/       System.out.println( \"help\" );  \r\n     list.add( $person );" );
         assertEquals( "        /*System.out.println( \"help\" );\r\n*/       System.out.println( \"help\" );  \r\n     list.add( $person );",
                       result );
+       
     }     
 
     public void testAdd__Handle__Simple() {

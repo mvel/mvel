@@ -714,5 +714,4 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         return returnType;
     }
 
-
 }
