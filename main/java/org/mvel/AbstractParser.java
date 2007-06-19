@@ -239,7 +239,6 @@ public class AbstractParser {
      * @return -
      */
     protected ASTNode nextToken() {
-
         /**
          * If the cursor is at the end of the expression, we have nothing more to do:
          * return null.
@@ -258,7 +257,6 @@ public class AbstractParser {
          * certain field states.  We do not reset for assignments, boolean mode, list creation or
          * a capture only mode.
          */
-
         fields = fields & (ASTNode.INLINE_COLLECTION);
 
         boolean capture = false;
@@ -356,14 +354,12 @@ public class AbstractParser {
                             captureToEOS();
                             return new StaticImportNode(subArray(start, cursor--), fields);
                     }
-
                 }
 
                 /**
                  * If we *were* capturing a token, and we just hit a non-identifier
                  * character, we stop and figure out what to do.
                  */
-
                 skipWhitespace();
 
                 if (expr[cursor] == '(') {
@@ -483,7 +479,6 @@ public class AbstractParser {
                                     return new AssignmentNode(subArray(start, cursor), fields);
                                 }
                             }
-
                     }
                 }
 
