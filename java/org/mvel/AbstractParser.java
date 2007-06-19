@@ -561,11 +561,22 @@ public class AbstractParser {
                             int len = length - 1;
                             while (true) {
                                 cursor++;
+
+                                /**
+                                 * Since multi-line comments may cross lines, we must keep track of any line-break
+                                 * we encounter.
+                                 */
+                                if (debugSymbols && expr[cursor] == '\n') {
+                                    line++;
+                                }
+
                                 if (cursor == len) {
                                     throw new CompileException("unterminated block comment", expr, cursor);
                                 }
-                                if (isAt('*', 1) && isAt('/', 2)) {
-                                    if ((start = ++cursor) >= length) return null;
+                                if (expr[cursor] == '*' && isAt('/', 1)) {
+                                    if ((cursor += 2) >= length) return null;
+                                    skipWhitespace();
+                                    start = cursor;
                                     break;
                                 }
                             }
