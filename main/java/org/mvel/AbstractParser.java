@@ -269,6 +269,10 @@ public class AbstractParser {
 
         if (debugSymbols && !lastWasLineLabel && (expr[cursor] == '\n' || cursor == 0)) {
             if (parserContext == null) {
+                if (sourceFile == null) {
+                    throw new CompileException("unable to produce debugging symbols: source name must be provided.");
+                }
+                                
                 parserContext = new ThreadLocal<ParserContext>();
                 parserContext.set(new ParserContext(sourceFile, 0));
             }
@@ -285,9 +289,9 @@ public class AbstractParser {
                 line++;
             }
 
-            parserContext.get().setLineCount(line);
-
-            return new LineLabel(line);
+            ParserContext pCtx = parserContext.get();
+            pCtx.setLineCount(line);
+            return new LineLabel(pCtx.getSourceFile(), line);
         }
         else {
             lastWasLineLabel = false;
@@ -494,6 +498,7 @@ public class AbstractParser {
                     case'@': {
                         start++;
                         captureToEOT();
+
                         String interceptorName = new String(expr, start, cursor - start);
 
                         if (!interceptors.containsKey(interceptorName)) {
@@ -1102,5 +1107,12 @@ public class AbstractParser {
 
     public void setDebugSymbols(boolean debugSymbols) {
         this.debugSymbols = debugSymbols;
+    }
+
+    protected static String getCurrentSourceFileName() {
+        if (parserContext != null && parserContext.get() != null) {
+            return parserContext.get().getSourceFile();
+        }
+        return null;
     }
 }

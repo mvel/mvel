@@ -770,12 +770,13 @@ public class CompiledUnitTest extends TestCase {
         System.out.println("-------\n" + compiler.getExpression() + "\n-------\n");
 
         compiler.setDebugSymbols(true);
+        compiler.setSourceFile("test.mv");
 
         CompiledExpression compiled = compiler.compile();
 
         System.out.println(DebugTools.decompile(compiled));
 
-        MVELRuntime.registerBreakpoint(7);
+        MVELRuntime.registerBreakpoint("test.mv", 7);
 
         assertEquals(10, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
     }

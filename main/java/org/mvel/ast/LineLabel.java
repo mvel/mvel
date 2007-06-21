@@ -20,6 +20,7 @@ public class LineLabel extends ASTNode {
        super();
        this.lineNumber = lineNumber;
        this.sourceFile = sourceFile;
+       this.fields = -1;
    }
 
     public String getSourceFile() {
