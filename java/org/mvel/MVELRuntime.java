@@ -16,10 +16,12 @@ import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 import static java.util.regex.Pattern.compile;
 
 public class MVELRuntime {
-    private static ThreadLocal<Set<Integer>> breakpoints;
+    private static ThreadLocal<Map<String, Set<Integer>>> breakpoints;
 
     /**
      * Main interpreter loop.
@@ -44,9 +46,11 @@ public class MVELRuntime {
                         debugger = true;
                     }
 
+                    LineLabel label = (LineLabel) tk;
+
                     if (debugger && breakpoints != null
-                            && breakpoints.get().contains(((LineLabel) tk).getLineNumber())) {
-                        System.out.println("[Encountered Breakpoint!]: " + ((LineLabel) tk).getLineNumber());
+                            && breakpoints.get().get(label.getSourceFile()).contains(label.getLineNumber())) {
+                        System.out.println("[Encountered Breakpoint!]: " + label.getLineNumber());
 
                     }
 
@@ -235,17 +239,20 @@ public class MVELRuntime {
         }
     }
 
-    public static void registerBreakpoint(int line) {
+    public static void registerBreakpoint(String source, int line) {
         if (breakpoints == null) {
-            breakpoints = new ThreadLocal<Set<Integer>>();
-            breakpoints.set(new HashSet<Integer>());
+            breakpoints = new ThreadLocal<Map<String, Set<Integer>>>();
+            breakpoints.set(new HashMap<String, Set<Integer>>());
         }
-        breakpoints.get().add(line);
+        if (!breakpoints.get().containsKey(source)) {
+            breakpoints.get().put(source, new HashSet<Integer>());
+        }
+        breakpoints.get().get(source).add(line);
     }
 
-    public static void removeBreakpoint(int line) {
+    public static void removeBreakpoint(String source, int line) {
         if (breakpoints != null && breakpoints.get() != null) {
-            breakpoints.get().remove(line);
+            breakpoints.get().get(source).remove(line);
         }
     }
 
