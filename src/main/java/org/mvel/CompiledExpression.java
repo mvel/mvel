@@ -19,6 +19,7 @@
 
 package org.mvel;
 
+import static org.mvel.MVELRuntime.execute;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
@@ -37,8 +38,11 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private boolean optimized = false;
     private Class<? extends AccessorOptimizer> accessorOptimizer;
 
-    public CompiledExpression(ASTIterator ASTMap) {
+    private String sourceName;
+
+    public CompiledExpression(ASTIterator ASTMap, String sourceName) {
         this.tokens = new FastASTIterator(ASTMap);
+        this.sourceName = sourceName;
     }
 
     public ASTIterator getTokens() {
@@ -89,7 +93,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         if (!optimized) setupOptimizers();
-        return handleParserEgress(MVELRuntime.execute(false, new FastASTIterator(tokens), staticContext, factory), false);
+        return handleParserEgress(execute(false, new FastASTIterator(tokens), staticContext, factory), false);
     }
 
     private void setupOptimizers() {
@@ -97,11 +101,9 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         optimized = true;
     }
 
-
     public ASTIterator getTokenIterator() {
         return new FastASTIterator(tokens);
     }
-
 
     public boolean isOptimized() {
         return optimized;
@@ -119,6 +121,14 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         this.accessorOptimizer = accessorOptimizer;
     }
 
+
+    public String getSourceName() {
+        return sourceName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
+    }
 
     public boolean intOptimized() {
         return false;

@@ -112,10 +112,11 @@ public class MVEL {
 
 
     public static Serializable compileExpression(String expression, Map<String, Class> imports,
-                                                 Map<String, Interceptor> interceptors) {
+                                                 Map<String, Interceptor> interceptors, String sourceName) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
         parser.setImportedClasses(imports);
         parser.setInterceptors(interceptors);
+        parser.setSourceFile(sourceName);
 
         CompiledExpression cExpr = parser.compile();
 
@@ -128,10 +129,12 @@ public class MVEL {
             ASTNode tk = tokens.firstToken();
             if (tk.isIdentifier()) {
                 return new ExecutableAccessor(tk, false);
-            } else if (tk.isLiteral() && !tk.isThisVal()) {
+            }
+            else if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.fields & ASTNode.INTEGER32) != 0) {
                     return new ExecutableLiteral(tk.getIntRegister());
-                } else {
+                }
+                else {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
             }
@@ -150,11 +153,15 @@ public class MVEL {
      * @return -
      */
     public static Serializable compileExpression(String expression) {
-        return compileExpression(expression, null, null);
+        return compileExpression(expression, null, null, null);
     }
 
     public static Serializable compileExpression(String expression, Map<String, Class> imports) {
-        return compileExpression(expression, imports, null);
+        return compileExpression(expression, imports, null, null);
+    }
+
+    public static Serializable compileExpression(String expression, Map<String, Class> imports, Map<String, Interceptor> interceptors) {
+        return compileExpression(expression, imports, interceptors, null);
     }
 
 
@@ -162,16 +169,18 @@ public class MVEL {
      * Compiles an expression and returns a Serializable object containing the compiled
      * expression.
      *
-     * @param expression - the expression to be compiled
-     * @return -
-     * @param imports -
+     * @param expression   - the expression to be compiled
+     * @param imports      -
      * @param interceptors -
+     * @return -
      */
     public static Serializable compileExpression(char[] expression, Map<String, Class> imports,
-                                                 Map<String, Interceptor> interceptors) {
+                                                 Map<String, Interceptor> interceptors, String sourceName) {
+        
         ExpressionCompiler parser = new ExpressionCompiler(expression);
         parser.setImportedClasses(imports);
         parser.setInterceptors(interceptors);
+        parser.setSourceFile(sourceName);
 
         CompiledExpression cExpr = parser.compile();
         ASTIterator tokens = cExpr.getTokens();
@@ -182,11 +191,13 @@ public class MVEL {
         if (OPTIMIZER && tokens.size() == 1) {
             ASTNode tk = tokens.firstToken();
             if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);                                                                                                                                 
-            } else if (tk.isLiteral() && !tk.isThisVal()) {
+                return new ExecutableAccessor(tk, false);
+            }
+            else if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.fields & ASTNode.INTEGER32) != 0) {
                     return new ExecutableLiteral(tk.getIntRegister());
-                } else {
+                }
+                else {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
             }
@@ -197,12 +208,17 @@ public class MVEL {
 
 
     public static Serializable compileExpression(char[] expression) {
-        return compileExpression(expression, null, null);
+        return compileExpression(expression, null, null, null);
     }
 
     public static Serializable compileExpression(char[] expression, Map<String, Class> imports) {
-        return compileExpression(expression, imports, null);
+        return compileExpression(expression, imports, null, null);
     }
+
+    public static Serializable compileExpression(char[] expression, Map<String, Class> imports, Map<String, Interceptor> interceptors) {
+        return compileExpression(expression, imports, interceptors, null);
+    }
+
 
     public static Object executeExpression(Object compiledExpression) {
         return ((ExecutableStatement) compiledExpression).getValue(null, null);

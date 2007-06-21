@@ -152,7 +152,8 @@ public class ExpressionCompiler extends AbstractParser {
             }
         }
 
-        return new CompiledExpression(new FastASTIterator(tokenSet));
+        
+        return new CompiledExpression(new FastASTIterator(tokenSet), getCurrentSourceFileName());
     }
 
     protected ASTNode verify(ASTNode tk) {
