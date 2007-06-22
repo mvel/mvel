@@ -16,13 +16,13 @@ import org.mvel.tests.main.res.*;
 import java.io.Serializable;
 import java.util.*;
 
-public class CompiledUnitTest extends TestCase {
+public class CoreConfindenceTests extends TestCase {
     protected Foo foo = new Foo();
     protected Map<String, Object> map = new HashMap<String, Object>();
     protected Base base = new Base();
     protected DerivedClass derived = new DerivedClass();
 
-    public CompiledUnitTest() {
+    public CoreConfindenceTests() {
         foo.setBar(new Bar());
         map.put("foo", foo);
         map.put("a", null);
@@ -37,7 +37,7 @@ public class CompiledUnitTest extends TestCase {
         map.put("zero", 0);
 
         map.put("testImpl",
-                new ParserUnitTest.TestInterface() {
+                new TestInterface() {
 
                     public String getName() {
                         return "FOOBAR!";
@@ -930,9 +930,24 @@ public class CompiledUnitTest extends TestCase {
 
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);
+        Object third = MVEL.eval(ex, base,map);
 
-        if (first != null && !first.getClass().isArray())
+
+        if (first != null && !first.getClass().isArray()) {
             assertEquals(first, second);
+            if (!first.equals(second)) {
+                throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run) [first: "
+                        + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
+            }
+
+
+            if (!first.equals(third)) {
+                throw new AssertionError("Different result from test 1 and 3 (Compiled to Interpreted) [first: " +
+                String.valueOf(first) + "; third: " + String.valueOf(third) + "]");
+            }
+        }
+
+
 
         return second;
     }
