@@ -2,6 +2,7 @@ package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.ast.LiteralNode;
+import org.mvel.ast.Substatement;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.ParseTools.doOperations;
@@ -42,13 +43,15 @@ public class ExpressionCompiler extends AbstractParser {
             locals = new LinkedHashSet<String>();
         }
 
+        fields |= ASTNode.COMPILE_IMMEDIATE;
+
         while ((tk = nextToken()) != null) {
             if (tk.fields == -1) {
                 tokenSet.addTokenNode(tk);
                 continue;
             }
 
-            if (tk.isSubeval()) {
+            if (tk instanceof Substatement) {
                 ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
                 tk.setAccessor(subCompiler.compile());
 

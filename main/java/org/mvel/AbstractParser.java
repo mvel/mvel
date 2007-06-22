@@ -257,7 +257,7 @@ public class AbstractParser {
          * certain field states.  We do not reset for assignments, boolean mode, list creation or
          * a capture only mode.
          */
-        fields = fields & (ASTNode.INLINE_COLLECTION);
+        fields = fields & (ASTNode.INLINE_COLLECTION | ASTNode.COMPILE_IMMEDIATE);
 
         boolean capture = false;
         boolean union = false;
@@ -273,8 +273,8 @@ public class AbstractParser {
                     throw new CompileException("unable to produce debugging symbols: source name must be provided.");
                 }
                                 
-                parserContext = new ThreadLocal<ParserContext>();
-                parserContext.set(new ParserContext(sourceFile, 0));
+                (parserContext = new ThreadLocal<ParserContext>())
+                        .set(new ParserContext(sourceFile, 0));
             }
             else {
                 line = parserContext.get().getLineCount();
@@ -620,7 +620,7 @@ public class AbstractParser {
                             return createToken(expr, start, cursor, ASTNode.FOLD);
                         }
 
-                        return createToken(expr, start + 1, cursor - 1, fields |= ASTNode.SUBEVAL);
+                        return new Substatement(expr, start + 1, cursor - 1, fields);
                     }
 
                     case'}':

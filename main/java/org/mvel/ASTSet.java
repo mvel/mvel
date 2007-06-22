@@ -24,7 +24,6 @@ public class ASTSet implements ASTIterator {
     private ASTNode current;
     private int size;
 
-
     public ASTSet() {
     }
 
