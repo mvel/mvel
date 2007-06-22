@@ -109,7 +109,6 @@ public class ExpressionParser extends AbstractParser {
                     continue;
                 }
 
-
                 switch (operator = tk.getOperator()) {
                     case AND:
                         if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {

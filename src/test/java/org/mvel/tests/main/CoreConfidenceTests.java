@@ -16,13 +16,13 @@ import org.mvel.tests.main.res.*;
 import java.io.Serializable;
 import java.util.*;
 
-public class CoreConfindenceTests extends TestCase {
+public class CoreConfidenceTests extends TestCase {
     protected Foo foo = new Foo();
     protected Map<String, Object> map = new HashMap<String, Object>();
     protected Base base = new Base();
     protected DerivedClass derived = new DerivedClass();
 
-    public CoreConfindenceTests() {
+    public CoreConfidenceTests() {
         foo.setBar(new Bar());
         map.put("foo", foo);
         map.put("a", null);
