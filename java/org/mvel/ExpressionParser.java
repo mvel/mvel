@@ -47,8 +47,6 @@ public class ExpressionParser extends AbstractParser {
     private VariableResolverFactory variableFactory;
     private final Stack stk = new ExecutionStack();
 
-    private Object holdOverRegister;
-
 
     Object parse() {
         setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);
@@ -86,6 +84,8 @@ public class ExpressionParser extends AbstractParser {
     private void parseAndExecuteInterpreted() {
         ASTNode tk = null;
         Integer operator;
+        Object holdOverRegister = null;
+
 
         lastWasIdentifier = false;
 
@@ -109,14 +109,72 @@ public class ExpressionParser extends AbstractParser {
                     continue;
                 }
 
-                switch (reduceBinary(operator = tk.getOperator())) {
-                    case FRAME_END:
-                        return;
-                    case FRAME_CONTINUE:
-                        break;
-                    case FRAME_NEXT:
+
+                switch (operator = tk.getOperator()) {
+                    case AND:
+                        if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
+                            if (unwindStatement()) {
+                                return;
+                            }
+                            else {
+                                stk.clear();
+                                continue;
+                            }
+                        }
+                        else {
+                            stk.discard();
+                            continue;
+                        }
+                    case OR:
+                        if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
+                            if (unwindStatement()) {
+                                return;
+                            }
+                            else {
+                                stk.clear();
+                                continue;
+                            }
+                        }
+                        else {
+                            stk.discard();
+                            continue;
+                        }
+
+                    case TERNARY:
+                        if (!(Boolean) stk.pop()) {
+                            stk.clear();
+
+                            while ((tk = nextToken()) != null && !tk.isOperator(Operator.TERNARY_ELSE)) {
+                                //nothing
+                            }
+
+                            continue;
+                        }
+
+
+                    case TERNARY_ELSE:
                         continue;
+
+                    case END_OF_STMT:
+                        /**
+                         * Assignments are a special scenario for dealing with the stack.  Assignments are basically like
+                         * held-over failures that basically kickstart the parser when an assignment operator is is
+                         * encountered.  The originating token is captured, and the the parser is told to march on.  The
+                         * resultant value on the stack is then used to populate the target variable.
+                         *
+                         * The other scenario in which we don't want to wipe the stack, is when we hit the end of the
+                         * statement, because that top stack value is the value we want back from the parser.
+                         */
+
+                        if (!hasNoMore()) {
+                            holdOverRegister = stk.pop();
+                            stk.clear();
+                        }
+
+                        continue;
+
                 }
+
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 
@@ -136,93 +194,6 @@ public class ExpressionParser extends AbstractParser {
                 throw e;
             }
         }
-    }
-
-
-    /**
-     * This method is called to subEval a binary statement (or junction).  The difference between a binary and
-     * trinary statement, as far as the parser is concerned is that a binary statement has an entrant state,
-     * where-as a trinary statement does not.  Consider: (x && y): in this case, x will be reduced first, and
-     * therefore will have a value on the stack, so the parser will then process the next statement as a binary,
-     * which is (&& y).
-     * <p/>
-     * You can also think of a binary statement in terms of: ({stackvalue} op value)
-     *
-     * @param o - operator
-     * @return int - behaviour code
-     */
-    private int reduceBinary(int o) {
-        //   assert debug("BINARY_OP " + o + " PEEK=<<" + stk.peek() + ">>");
-        switch (o) {
-            case AND:
-                if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
-                    if (unwindStatement()) {
-                        return FRAME_END;
-                    }
-                    else {
-                        stk.clear();
-                        return FRAME_NEXT;
-                    }
-                }
-                else {
-                    stk.discard();
-                    return FRAME_NEXT;
-                }
-            case OR:
-                if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
-                    // assert debug("STMT_UNWIND");
-                    if (unwindStatement()) {
-                        return FRAME_END;
-                    }
-                    else {
-                        stk.clear();
-                        return FRAME_NEXT;
-                    }
-                }
-                else {
-                    stk.discard();
-                    return FRAME_NEXT;
-                }
-
-            case TERNARY:
-                ASTNode tk;
-                if ((Boolean) stk.pop()) {
-                    return FRAME_NEXT;
-                }
-                else {
-                    stk.clear();
-
-                    while ((tk = nextToken()) != null && !tk.isOperator(Operator.TERNARY_ELSE)) {
-                        //nothing
-                    }
-
-                    return FRAME_NEXT;
-                }
-
-
-            case TERNARY_ELSE:
-                return FRAME_END;
-
-            case END_OF_STMT:
-                /**
-                 * Assignments are a special scenario for dealing with the stack.  Assignments are basically like
-                 * held-over failures that basically kickstart the parser when an assignment operator is is
-                 * encountered.  The originating token is captured, and the the parser is told to march on.  The
-                 * resultant value on the stack is then used to populate the target variable.
-                 *
-                 * The other scenario in which we don't want to wipe the stack, is when we hit the end of the
-                 * statement, because that top stack value is the value we want back from the parser.
-                 */
-
-                if (!hasNoMore()) {
-                    holdOverRegister = stk.pop();
-                    stk.clear();
-                }
-
-                return FRAME_NEXT;
-
-        }
-        return FRAME_CONTINUE;
     }
 
     private boolean hasNoMore() {
