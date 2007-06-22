@@ -47,6 +47,8 @@ public class ExpressionParser extends AbstractParser {
     private VariableResolverFactory variableFactory;
     private final Stack stk = new ExecutionStack();
 
+    private Object holdOverRegister;
+
 
     Object parse() {
         setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);
@@ -89,6 +91,8 @@ public class ExpressionParser extends AbstractParser {
 
         try {
             while ((tk = nextToken()) != null) {
+                holdOverRegister = null;
+
                 if (lastWasIdentifier && lastNode.isDiscard()) {
                     stk.discard();
                 }
@@ -117,6 +121,10 @@ public class ExpressionParser extends AbstractParser {
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 
                 reduceTrinary();
+            }
+
+            if (holdOverRegister != null) {
+                stk.push(holdOverRegister);
             }
         }
         catch (NullPointerException e) {
@@ -207,6 +215,7 @@ public class ExpressionParser extends AbstractParser {
                  */
 
                 if (!hasNoMore()) {
+                    holdOverRegister = stk.pop();
                     stk.clear();
                 }
 

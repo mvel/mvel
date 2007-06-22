@@ -4,7 +4,7 @@ import junit.framework.TestCase;
 import org.mvel.MVEL;
 import static org.mvel.MVEL.executeExpression;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.tests.main.CompiledUnitTest;
+import org.mvel.tests.main.CoreConfindenceTests;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
@@ -28,7 +28,7 @@ public class CompiledPerformanceTests extends TestCase {
         map.put("c", "cat");
         map.put("BWAH", "");
 
-        map.put("misc", new CompiledUnitTest.MiscTestClass());
+        map.put("misc", new CoreConfindenceTests.MiscTestClass());
 
         map.put("pi", "3.14");
         map.put("hour", "60");
@@ -46,7 +46,7 @@ public class CompiledPerformanceTests extends TestCase {
             executeExpression(compiled, variableTable);
         }
 
-        assertEquals(ITERATIONS, ((CompiledUnitTest.MiscTestClass) map.get("misc")).getExec());
+        assertEquals(ITERATIONS, ((CoreConfindenceTests.MiscTestClass) map.get("misc")).getExec());
     }
 
 
