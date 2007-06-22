@@ -40,7 +40,7 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int DEEP_PROPERTY = 1 << 1;
     public static final int OPERATOR = 1 << 2;
     public static final int IDENTIFIER = 1 << 3;
-    public static final int SUBEVAL = 1 << 4;
+    public static final int COMPILE_IMMEDIATE = 1 << 4;
     public static final int NUMERIC = 1 << 5;
     public static final int NEGATION = 1 << 6;
     public static final int INVERT = 1 << 8;
@@ -178,12 +178,7 @@ public class ASTNode implements Cloneable, Serializable {
             AccessorOptimizer optimizer;
             Object retVal = null;
 
-            if ((fields & SUBEVAL) != 0) {
-                optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
-                accessor = (ExecutableStatement) MVEL.compileExpression(name);
-                retVal = accessor.getValue(ctx, thisValue, factory);
-            }
-            else if ((fields & INLINE_COLLECTION) != 0) {
+            if ((fields & INLINE_COLLECTION) != 0) {
                 optimizer = getThreadAccessorOptimizer();
                 accessor = optimizer.optimizeCollection(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
@@ -227,9 +222,7 @@ public class ASTNode implements Cloneable, Serializable {
                 return literal;
             }
         }
-        else if ((fields & SUBEVAL) != 0) {
-            return valRet(MVEL.eval(name, ctx, factory));
-        }
+//
 
         else if ((fields & INLINE_COLLECTION) != 0) {
             if (accessor == null) {
@@ -436,7 +429,7 @@ public class ASTNode implements Cloneable, Serializable {
             this.literal = new String(this.name = name);
         }
 
-        if ((fields & (SUBEVAL | LITERAL)) != 0) {
+        if ((fields & (LITERAL)) != 0) {
             //    return;
         }
         else if (AbstractParser.LITERALS.containsKey(literal)) {
@@ -500,10 +493,6 @@ public class ASTNode implements Cloneable, Serializable {
         return (fields & IDENTIFIER) != 0;
     }
 
-    public boolean isSubeval() {
-
-        return (fields & SUBEVAL) != 0;
-    }
 
     public boolean isLiteral() {
         return (fields & LITERAL) != 0;
