@@ -2,6 +2,13 @@ package org.mvel.debug;
 
 
 public interface Debugger {
-    public int onBreak();
+    
+
+    /**
+     * When a breakpoint is recached, 
+     * @param frame
+     * @return continuation command
+     */
+    public int onBreak(Frame frame);
     public boolean breakOn(int lineNumber);
 }

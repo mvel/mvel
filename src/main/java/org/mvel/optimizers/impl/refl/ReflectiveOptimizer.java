@@ -18,8 +18,8 @@ public class ReflectiveOptimizer implements Optimizer {
         ASTNode[] t = new ASTNode[3];
         int i = 0;
 
-        while (tokens.hasMoreTokens()) {
-            t[i++] = tokens.nextToken();
+        while (tokens.hasMoreNodes()) {
+            t[i++] = tokens.nextNode();
             if (i == 3) {
                 if (t[1].isOperator() && t[1].getOperator() < 12) {
                     //     Arithmetic a = new Arithmetic(t[1], t[0].get, t[2]);

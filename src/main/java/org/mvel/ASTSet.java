@@ -51,7 +51,7 @@ public class ASTSet implements ASTIterator {
     }
 
 
-    public ASTNode firstToken() {
+    public ASTNode firstNode() {
         return firstASTNode;
     }
 
@@ -59,11 +59,11 @@ public class ASTSet implements ASTIterator {
         this.current = firstASTNode;
     }
 
-    public boolean hasMoreTokens() {
+    public boolean hasMoreNodes() {
         return this.current != null;
     }
 
-    public ASTNode nextToken() {
+    public ASTNode nextNode() {
         if (current == null) return null;
         try {
             return current;
@@ -73,7 +73,7 @@ public class ASTSet implements ASTIterator {
         }
     }
 
-    public void skipToken() {
+    public void skipNode() {
         if (current != null)
             current = current.nextASTNode;
     }
@@ -85,7 +85,7 @@ public class ASTSet implements ASTIterator {
             return null;
     }
 
-    public ASTNode peekToken() {
+    public ASTNode peekNode() {
         if (current == null) return null;
         return current.nextASTNode;
     }
@@ -100,7 +100,7 @@ public class ASTSet implements ASTIterator {
         throw new RuntimeException("unimplemented");
     }
 
-    public ASTNode tokensBack(int offset) {
+    public ASTNode nodesBack(int offset) {
         throw new RuntimeException("unimplemented");
     }
 
@@ -108,7 +108,7 @@ public class ASTSet implements ASTIterator {
         throw new RuntimeException("unimplemented");
     }
 
-    public String showTokenChain() {
+    public String showNodeChain() {
         throw new RuntimeException("unimplemented");
     }
 
@@ -126,23 +126,23 @@ public class ASTSet implements ASTIterator {
         ASTNode last = null;
         ASTNode curr;
 
-        while (hasMoreTokens()) {
-            curr = nextToken();
+        while (hasMoreNodes()) {
+            curr = nextNode();
 
             if (curr.isDiscard()) {
                 if (last == null) {
-                    firstASTNode = nextToken();
+                    firstASTNode = nextNode();
                 }
                 else {
-                    last.nextASTNode = nextToken();
+                    last.nextASTNode = nextNode();
                 }
                 continue;
             }
 
-            if (!hasMoreTokens()) break;
+            if (!hasMoreNodes()) break;
 
-            if (nextToken().isDiscard()) {
-                curr.nextASTNode = nextToken();
+            if (nextNode().isDiscard()) {
+                curr.nextASTNode = nextNode();
             }
 
             last = curr;

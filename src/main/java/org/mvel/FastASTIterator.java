@@ -23,6 +23,9 @@ import org.mvel.util.StringAppender;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+/**
+ * A fast, array-based implementation of the ASTIterator.  Primarily used in compiled statements for fast execution.
+ */
 public class FastASTIterator implements ASTIterator, Serializable {
     private final ASTNode[] astNodes;
     private int length = 0;
@@ -43,8 +46,8 @@ public class FastASTIterator implements ASTIterator, Serializable {
         else {
             ArrayList<ASTNode> astNodes = new ArrayList<ASTNode>();
             map.reset();
-            while (map.hasMoreTokens()) {
-                astNodes.add(map.nextToken());
+            while (map.hasMoreNodes()) {
+                astNodes.add(map.nextNode());
             }
 
             this.astNodes = astNodes.toArray(new ASTNode[length = astNodes.size()]);
@@ -56,11 +59,11 @@ public class FastASTIterator implements ASTIterator, Serializable {
     }
 
 
-    public ASTNode firstToken() {
+    public ASTNode firstNode() {
         return astNodes[0];
     }
 
-    public ASTNode nextToken() {
+    public ASTNode nextNode() {
         if (cursor < length)
             return astNodes[cursor++];
         else
@@ -68,7 +71,7 @@ public class FastASTIterator implements ASTIterator, Serializable {
     }
 
 
-    public void skipToken() {
+    public void skipNode() {
         cursor++;
     }
 
@@ -80,7 +83,7 @@ public class FastASTIterator implements ASTIterator, Serializable {
             return null;
     }
 
-    public ASTNode peekToken() {
+    public ASTNode peekNode() {
         if (cursor < length)
             return astNodes[cursor];
         else
@@ -102,7 +105,7 @@ public class FastASTIterator implements ASTIterator, Serializable {
     }
 
 
-    public ASTNode tokensBack(int offset) {
+    public ASTNode nodesBack(int offset) {
         if (cursor - offset >= 0) {
             return astNodes[cursor - offset];
         }
@@ -115,12 +118,12 @@ public class FastASTIterator implements ASTIterator, Serializable {
         cursor--;
     }
 
-    public boolean hasMoreTokens() {
+    public boolean hasMoreNodes() {
         return cursor < length;
     }
 
 
-    public String showTokenChain() {
+    public String showNodeChain() {
         StringAppender sb = new StringAppender();
         for (int i = 0; i < length; i++) {
             sb.append("(" + i + "): <<" + astNodes[i].getName() + ">> = <<" + astNodes[i].getLiteralValue() + ">> [" + (astNodes[i].getLiteralValue() != null ? astNodes[i].getLiteralValue().getClass() : "null") + "]").append("\n");

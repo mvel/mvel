@@ -11,6 +11,7 @@ import static org.mvel.util.PropertyTools.isEmpty;
 import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
+import org.mvel.debug.Debugger;
 
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
@@ -21,7 +22,8 @@ import java.util.HashMap;
 import static java.util.regex.Pattern.compile;
 
 public class MVELRuntime {
-    private static ThreadLocal<Map<String, Set<Integer>>> breakpoints;
+    private static ThreadLocal<Map<String, Set<Integer>>> threadBreakpoints;
+    private static ThreadLocal<Debugger> threadDebugger;
 
     /**
      * Main interpreter loop.
@@ -30,8 +32,8 @@ public class MVELRuntime {
      * @param variableFactory -
      * @return -
      */
-    public static Object execute(boolean debugger, FastASTIterator tokens, Object ctx, VariableResolverFactory variableFactory) {
-     //   int i1, i2, i3, i4;  // 4 int registers
+    public static Object execute(boolean debugger, FastASTIterator node, Object ctx, VariableResolverFactory variableFactory) {
+        //   int i1, i2, i3, i4;  // 4 int registers
 
         Stack stk = new ExecutionStack();
         Object v1, v2;
@@ -40,20 +42,31 @@ public class MVELRuntime {
         Integer operator;
 
         try {
-            while ((tk = tokens.nextToken()) != null) {
+            while ((tk = node.nextNode()) != null) {
                 if (tk.fields == -1) {
-                    if (breakpoints != null && breakpoints.get() != null) {
+                    /**
+                     * This may seem silly and redundant, however, when an MVEL script recurses into a block
+                     * or substatement, a new runtime loop is entered.   Since the debugger state is not
+                     * passed through the AST, it is not possible to forward the state directly.  So when we
+                     * encounter a debugging symbol, we check the thread local to see if there is are registered
+                     * breakpoints.  If we find them, we assume that we are debugging.
+                     */
+                    if (!debugger && threadBreakpoints != null && threadBreakpoints.get() != null) {
                         debugger = true;
                     }
 
-                    LineLabel label = (LineLabel) tk;
+                    /**
+                     * If we're not debugging, we'll just skip over this.
+                     */
+                    if (debugger) {
+                        LineLabel label = (LineLabel) tk;
 
-                    if (debugger && breakpoints != null
-                            && breakpoints.get().get(label.getSourceFile()).contains(label.getLineNumber())) {
-                        System.out.println("[Encountered Breakpoint!]: " + label.getLineNumber());
+                        if (threadBreakpoints != null
+                                && threadBreakpoints.get().get(label.getSourceFile()).contains(label.getLineNumber())) {
+                            System.out.println("[Encountered Breakpoint!]: " + label.getLineNumber());
 
+                        }
                     }
-
                     continue;
                 }
 
@@ -68,8 +81,8 @@ public class MVELRuntime {
                 switch (operator = tk.getOperator()) {
                     case AND:
                         if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
-                            while (tokens.hasMoreTokens() && !tokens.nextToken().isOperator(Operator.END_OF_STMT)) ;
-                            if (!tokens.hasMoreTokens()) {
+                            while (node.hasMoreNodes() && !node.nextNode().isOperator(Operator.END_OF_STMT)) ;
+                            if (!node.hasMoreNodes()) {
                                 return stk.pop();
                             }
                             else {
@@ -83,8 +96,8 @@ public class MVELRuntime {
                         }
                     case OR:
                         if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
-                            while (tokens.hasMoreTokens() && !tokens.nextToken().isOperator(Operator.END_OF_STMT)) ;
-                            if (!tokens.hasMoreTokens()) {
+                            while (node.hasMoreNodes() && !node.nextNode().isOperator(Operator.END_OF_STMT)) ;
+                            if (!node.hasMoreNodes()) {
                                 return stk.pop();
                             }
                             else {
@@ -98,7 +111,7 @@ public class MVELRuntime {
                         }
                     case TERNARY:
                         if (!(Boolean) stk.pop()) {
-                            while (tokens.hasMoreTokens() && !tokens.nextToken().isOperator(Operator.TERNARY_ELSE)) ;
+                            while (node.hasMoreNodes() && !node.nextNode().isOperator(Operator.TERNARY_ELSE)) ;
                         }
                         stk.clear();
                         continue;
@@ -112,14 +125,14 @@ public class MVELRuntime {
                          * Althought it may seem like intuitive stack optimizations could be leveraged by
                          * leaving hanging values on the stack,  trust me it's not a good idea.
                          */
-                        if (tokens.hasMoreTokens()) {
+                        if (node.hasMoreNodes()) {
                             stk.clear();
                         }
 
                         continue;
                 }
 
-                stk.push(tokens.nextToken().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
+                stk.push(node.nextNode().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
 
                 try {
                     while (stk.size() > 1) {
@@ -229,7 +242,7 @@ public class MVELRuntime {
             return stk.peek();
         }
         catch (NullPointerException e) {
-            if (tk != null && tk.isOperator() && !tokens.hasMoreTokens()) {
+            if (tk != null && tk.isOperator() && !node.hasMoreNodes()) {
                 throw new CompileException("incomplete statement: "
                         + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")");
             }
@@ -240,25 +253,34 @@ public class MVELRuntime {
     }
 
     public static void registerBreakpoint(String source, int line) {
-        if (breakpoints == null) {
-            breakpoints = new ThreadLocal<Map<String, Set<Integer>>>();
-            breakpoints.set(new HashMap<String, Set<Integer>>());
+        if (threadBreakpoints == null) {
+            threadBreakpoints = new ThreadLocal<Map<String, Set<Integer>>>();
+            threadBreakpoints.set(new HashMap<String, Set<Integer>>());
         }
-        if (!breakpoints.get().containsKey(source)) {
-            breakpoints.get().put(source, new HashSet<Integer>());
+        if (!threadBreakpoints.get().containsKey(source)) {
+            threadBreakpoints.get().put(source, new HashSet<Integer>());
         }
-        breakpoints.get().get(source).add(line);
+        threadBreakpoints.get().get(source).add(line);
     }
 
     public static void removeBreakpoint(String source, int line) {
-        if (breakpoints != null && breakpoints.get() != null) {
-            breakpoints.get().get(source).remove(line);
+        if (threadBreakpoints != null && threadBreakpoints.get() != null) {
+            threadBreakpoints.get().get(source).remove(line);
         }
     }
 
     public static void clearAllBreakpoints() {
-        if (breakpoints != null && breakpoints.get() != null) {
-            breakpoints.get().clear();
+        if (threadBreakpoints != null && threadBreakpoints.get() != null) {
+            threadBreakpoints.get().clear();
+        }
+    }
+
+    public static void setThreadDebugger(Debugger debugger) {
+        if (threadDebugger == null) {
+            threadDebugger = new ThreadLocal<Debugger>();
+        }
+        if (threadDebugger.get() == null) {
+            threadDebugger.set(debugger);
         }
     }
 }
