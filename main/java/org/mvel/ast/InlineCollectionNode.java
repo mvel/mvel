@@ -11,11 +11,13 @@ import org.mvel.optimizers.OptimizerFactory;
 public class InlineCollectionNode extends ASTNode {
     private Accessor accessor;
 
+    public InlineCollectionNode(char[] expr, int start, int end, int fields) {
+        super(expr, start, end, fields | INLINE_COLLECTION);
+    }
 
     public InlineCollectionNode(char[] expr, int fields) {
         super(expr, fields);
     }
-
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {

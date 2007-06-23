@@ -19,29 +19,35 @@
 
 package org.mvel;
 
+/**
+ * The ASTIterator interface defines the functionality required by the enginer, for compiletime and runtime
+ * operations.  Unlike other script implementations, MVEL does not use a completely normalized AST tree for
+ * it's execution.  Instead, nodes are organized into a linear order and delivered via this iterator interface,
+ * much like bytecode instructions.
+ */
 public interface ASTIterator {
     public void reset();
 
-    public ASTNode nextToken();
+    public ASTNode nextNode();
 
-    public void skipToken();
+    public void skipNode();
 
     public ASTNode peekNext();
 
-    public ASTNode peekToken();
+    public ASTNode peekNode();
 
     public ASTNode peekLast();
 
     //  public boolean peekNextTokenFlags(int flags);
     public void back();
 
-    public ASTNode tokensBack(int offset);
+    public ASTNode nodesBack(int offset);
 
-    public boolean hasMoreTokens();
+    public boolean hasMoreNodes();
 
-    public String showTokenChain();
+    public String showNodeChain();
 
-    public ASTNode firstToken();
+    public ASTNode firstNode();
 
     public int size();
 

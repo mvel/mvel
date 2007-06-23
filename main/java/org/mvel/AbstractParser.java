@@ -741,7 +741,7 @@ public class AbstractParser {
                             continue;
                         }
 
-                        return createToken(expr, start, ++cursor, ASTNode.INLINE_COLLECTION);
+                        return new InlineCollectionNode(expr, start, ++cursor, fields);
 
 
                     default:
