@@ -39,8 +39,8 @@ public class DebugTools {
             sbuf.append("Expression Decompile\n-------------\n");
         }
 
-        while (iter.hasMoreTokens()) {
-            tk = iter.nextToken();
+        while (iter.hasMoreNodes()) {
+            tk = iter.nextNode();
 
             sbuf.append("(").append(node++).append(") ");
 
@@ -192,8 +192,8 @@ public class DebugTools {
     public static Class determineType(String name, CompiledExpression compiledExpression) {
         ASTIterator iter = compiledExpression.getTokenIterator();
         ASTNode node;
-        while (iter.hasMoreTokens()) {
-            if (name.equals((node = iter.nextToken()).getName()) && node.isAssignment()) {
+        while (iter.hasMoreNodes()) {
+            if (name.equals((node = iter.nextNode()).getName()) && node.isAssignment()) {
                 return node.getEgressType();
             }
         }
