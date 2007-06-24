@@ -12,6 +12,7 @@ import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 import org.mvel.debug.Debugger;
+import org.mvel.debug.Frame;
 
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
@@ -63,7 +64,14 @@ public class MVELRuntime {
 
                         if (threadBreakpoints != null
                                 && threadBreakpoints.get().get(label.getSourceFile()).contains(label.getLineNumber())) {
-                            System.out.println("[Encountered Breakpoint!]: " + label.getLineNumber());
+
+                              if (threadDebugger == null || threadDebugger.get() == null)  {
+                                  throw new RuntimeException("no debugger registered to handle breakpoint.");
+                              }
+
+                              Frame frame = new Frame(label.getSourceFile(), label.getLineNumber());
+
+                              threadDebugger.get().onBreak(frame);
 
                         }
                     }
