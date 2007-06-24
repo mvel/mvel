@@ -6,6 +6,8 @@ import org.mvel.*;
 
 import static org.mvel.MVEL.*;
 import org.mvel.debug.DebugTools;
+import org.mvel.debug.Debugger;
+import org.mvel.debug.Frame;
 import org.mvel.integration.Interceptor;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
@@ -778,6 +780,18 @@ public class CoreConfidenceTests extends TestCase {
 
         MVELRuntime.registerBreakpoint("test.mv", 7);
 
+        Debugger testDebugger = new Debugger() {
+
+            public int onBreak(Frame frame) {
+                System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+
+                return 0;
+            }
+
+       };
+
+        MVELRuntime.setThreadDebugger(testDebugger);
+
         assertEquals(10, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
     }
 
@@ -930,7 +944,7 @@ public class CoreConfidenceTests extends TestCase {
 
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);
-        Object third = MVEL.eval(ex, base,map);
+        Object third = MVEL.eval(ex, base, map);
 
 
         if (first != null && !first.getClass().isArray()) {
@@ -943,10 +957,9 @@ public class CoreConfidenceTests extends TestCase {
 
             if (!first.equals(third)) {
                 throw new AssertionError("Different result from test 1 and 3 (Compiled to Interpreted) [first: " +
-                String.valueOf(first) + "; third: " + String.valueOf(third) + "]");
+                        String.valueOf(first) + "; third: " + String.valueOf(third) + "]");
             }
         }
-
 
 
         return second;
@@ -986,41 +999,41 @@ public class CoreConfidenceTests extends TestCase {
             assertEquals("cat", executeExpression(compiled, testMap));
         }
     }
-    
+
     @SuppressWarnings({"unchecked"})
     public void testInterfaceMethodCallWithSpace() {
         Serializable compiled = compileExpression("drools.retract (cheese)");
         Map map = new HashMap();
         DefaultKnowledgeHelper helper = new DefaultKnowledgeHelper();
-        map.put( "drools",  helper);
-        Cheese cheese = new Cheese("stilton", 15) ;
-        map.put( "cheese", cheese);
-        
+        map.put("drools", helper);
+        Cheese cheese = new Cheese("stilton", 15);
+        map.put("cheese", cheese);
+
         executeExpression(compiled, map);
-        assertSame(cheese, helper.retracted.get( 0 ));
+        assertSame(cheese, helper.retracted.get(0));
     }
-    
+
     @SuppressWarnings({"unchecked"})
     public void testInterfaceMethodCallWithMacro() {
-        Map macros = new HashMap(1);       
-        
-        macros.put( "retract",
-                    new Macro() {
-                        public String doMacro() {
-                            return "drools.retract";
-                        }
-                    } ); 
-                
+        Map macros = new HashMap(1);
+
+        macros.put("retract",
+                new Macro() {
+                    public String doMacro() {
+                        return "drools.retract";
+                    }
+                });
+
         Serializable compiled = compileExpression(parseMacros("retract(cheese)", macros));
         Map map = new HashMap();
         DefaultKnowledgeHelper helper = new DefaultKnowledgeHelper();
-        map.put( "drools",  helper);
-        Cheese cheese = new Cheese("stilton", 15) ;
-        map.put( "cheese", cheese);
-        
+        map.put("drools", helper);
+        Cheese cheese = new Cheese("stilton", 15);
+        map.put("cheese", cheese);
+
         executeExpression(compiled, map);
-        assertSame(cheese, helper.retracted.get( 0 ));
-    }    
+        assertSame(cheese, helper.retracted.get(0));
+    }
 
 
     @SuppressWarnings({"UnnecessaryBoxing"})

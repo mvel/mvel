@@ -743,7 +743,6 @@ public class AbstractParser {
 
                         return new InlineCollectionNode(expr, start, ++cursor, fields);
 
-
                     default:
                         cursor++;
                 }
