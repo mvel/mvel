@@ -19,14 +19,14 @@
 package org.mvel.optimizers.impl.asm;
 
 import org.mvel.ASTIterator;
-import org.mvel.ASTSet;
+import org.mvel.ASTLinkedList;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.Optimizer;
 
 public class ASMOptimizer implements Optimizer {
 
 
-    public ASTIterator optimize(ASTSet tokens, Object ctx, VariableResolverFactory variableFactory) {
+    public ASTIterator optimize(ASTLinkedList tokens, Object ctx, VariableResolverFactory variableFactory) {
         return null;
     }
 

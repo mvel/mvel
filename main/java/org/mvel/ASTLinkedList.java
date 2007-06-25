@@ -19,15 +19,15 @@
 
 package org.mvel;
 
-public class ASTSet implements ASTIterator {
+public class ASTLinkedList implements ASTIterator {
     private ASTNode firstASTNode;
     private ASTNode current;
     private int size;
 
-    public ASTSet() {
+    public ASTLinkedList() {
     }
 
-    public ASTSet(ASTNode firstASTNode) {
+    public ASTLinkedList(ASTNode firstASTNode) {
         this.current = this.firstASTNode = firstASTNode;
     }
 
