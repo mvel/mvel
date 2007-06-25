@@ -561,6 +561,10 @@ public class CoreConfidenceTests extends TestCase {
     public void testStaticFieldAsMethodParm() {
         assertEquals(String.valueOf(Integer.MAX_VALUE), parseDirect("String.valueOf(Integer.MAX_VALUE)"));
     }
+    
+    public void testEmptyIf() {
+        assertEquals(5, parseDirect("a = 5; if (a == 5) { }; return a;"));
+    }
 
     public void testIf() {
         assertEquals(10, parseDirect("if (5 > 4) { return 10; } else { return 5; }"));
