@@ -156,7 +156,7 @@ public class AbstractParser {
             }
         }
 
-        _loadLanguageFeaturesByLevel(5);
+        _loadLanguageFeaturesByLevel(4);
     }
 
 
