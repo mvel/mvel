@@ -371,7 +371,7 @@ public class MVEL {
 
     public static Object executeDebugger(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
         try {
-            return MVELRuntime.execute(true, new FastASTIterator(expression.getTokens()), ctx, vars);
+            return MVELRuntime.execute(true, new ASTArrayList(expression.getTokens()), ctx, vars);
         }
         catch (EndWithValue e) {
             return handleParserEgress(e.getValue(), false);

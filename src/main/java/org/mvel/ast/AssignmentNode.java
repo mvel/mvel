@@ -31,10 +31,8 @@ public class AssignmentNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (statement != null) {
-            Object o = statement.getValue(ctx, thisValue, factory);
-
-            finalLocalVariableFactory(factory).createVariable(name, o);
-
+            Object o;
+            finalLocalVariableFactory(factory).createVariable(name, o = statement.getValue(ctx, thisValue, factory));
             return o;
         }
         else {

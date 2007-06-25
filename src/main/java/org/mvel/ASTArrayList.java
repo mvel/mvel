@@ -26,22 +26,21 @@ import java.util.ArrayList;
 /**
  * A fast, array-based implementation of the ASTIterator.  Primarily used in compiled statements for fast execution.
  */
-public class FastASTIterator implements ASTIterator, Serializable {
+public class ASTArrayList implements ASTIterator, Serializable {
     private final ASTNode[] astNodes;
     private int length = 0;
     private int cursor = 0;
 
-
-    public FastASTIterator(final FastASTIterator fi) {
+    public ASTArrayList(final ASTArrayList fi) {
         astNodes = fi.astNodes;
         length = fi.length;
     }
 
-    public FastASTIterator(ASTIterator map) {
+    public ASTArrayList(ASTIterator map) {
         map.finish();
 
-        if (map instanceof FastASTIterator) {
-            this.length = (this.astNodes = ((FastASTIterator) map).astNodes).length;
+        if (map instanceof ASTArrayList) {
+            this.length = (this.astNodes = ((ASTArrayList) map).astNodes).length;
         }
         else {
             ArrayList<ASTNode> astNodes = new ArrayList<ASTNode>();

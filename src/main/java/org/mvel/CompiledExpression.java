@@ -28,7 +28,7 @@ import static org.mvel.util.ParseTools.handleParserEgress;
 import java.io.Serializable;
 
 public class CompiledExpression implements Serializable, ExecutableStatement {
-    private FastASTIterator tokens;
+    private ASTIterator tokens;
 
     private Class knownEgressType;
     private Class knownIngressType;
@@ -40,8 +40,9 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     private String sourceName;
 
-    public CompiledExpression(ASTIterator ASTMap, String sourceName) {
-        this.tokens = new FastASTIterator(ASTMap);
+    public CompiledExpression(ASTIterator astMap, String sourceName) {
+     //   this.tokens = new ASTArrayList(ASTMap);
+        this.tokens = astMap;
         this.sourceName = sourceName;
     }
 
@@ -50,7 +51,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public void setTokens(ASTIterator tokens) {
-        this.tokens = new FastASTIterator(tokens);
+        this.tokens = new ASTArrayList(tokens);
     }
 
 
@@ -93,7 +94,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         if (!optimized) setupOptimizers();
-        return handleParserEgress(execute(false, new FastASTIterator(tokens), staticContext, factory), false);
+        return handleParserEgress(execute(false, new ASTArrayList(tokens), staticContext, factory), false);
     }
 
     private void setupOptimizers() {
@@ -102,7 +103,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public ASTIterator getTokenIterator() {
-        return new FastASTIterator(tokens);
+        return new ASTArrayList(tokens);
     }
 
     public boolean isOptimized() {
