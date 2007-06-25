@@ -156,7 +156,7 @@ public class AbstractParser {
             }
         }
 
-         _loadLanguageFeaturesByLevel(5);
+        _loadLanguageFeaturesByLevel(5);
     }
 
 
@@ -272,15 +272,15 @@ public class AbstractParser {
 
                         case IF:
                             fields |= ASTNode.BLOCK_IF;
-                            return captureCodeBlock(expr);
+                            return captureCodeBlock();
 
                         case FOREACH:
                             fields |= ASTNode.BLOCK_FOREACH;
-                            return captureCodeBlock(expr);
+                            return captureCodeBlock();
 
                         case WITH:
                             fields |= ASTNode.BLOCK_WITH;
-                            return captureCodeBlock(expr);
+                            return captureCodeBlock();
 
                         case IMPORT:
                             start = cursor + 1;
@@ -765,7 +765,7 @@ public class AbstractParser {
         }
     }
 
-    private ASTNode captureCodeBlock(final char[] expr) {
+    private ASTNode captureCodeBlock() {
         boolean cond = true;
 
         ASTNode first = null;
@@ -788,7 +788,9 @@ public class AbstractParser {
 
                 if (first == null) first = tk;
 
-                cursor++;
+                if (cursor < length && expr[cursor] != ';') {
+                    cursor++;
+                }
             }
             while (blockContinues());
         }
@@ -966,7 +968,7 @@ public class AbstractParser {
 
     protected void setExpression(char[] expression) {
         length = (this.expr = expression).length;
-        while (isWhitespace(this.expr[length - 1])) length--;
+        while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
     }
 
     private boolean isFlag(int bit) {

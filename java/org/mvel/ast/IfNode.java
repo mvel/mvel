@@ -33,13 +33,13 @@ public class IfNode extends ASTNode implements NestedStatement {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
-            Object o = nestedStatement.getValue(ctx, thisValue, factory);
-            if (o == null) {
-                return Void.class;
-            }
-            else {
-                return o;
-            }
+            return nestedStatement.getValue(ctx, thisValue, factory);
+//            if (o == null) {
+//                return Void.class;
+//            }
+//            else {
+//                return o;
+//            }
         }
         else if (elseIf != null)
             return elseIf.getReducedValueAccelerated(ctx, thisValue, factory);
