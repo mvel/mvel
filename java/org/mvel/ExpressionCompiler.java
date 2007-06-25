@@ -34,7 +34,7 @@ public class ExpressionCompiler extends AbstractParser {
         ASTNode tkOp2;
         ASTNode tkLA;
         ASTNode tkLA2;
-        ASTSet tokenSet = new ASTSet();
+        ASTLinkedList astLinkedList = new ASTLinkedList();
 
         boolean firstLA;
 
@@ -47,7 +47,7 @@ public class ExpressionCompiler extends AbstractParser {
 
         while ((tk = nextToken()) != null) {
             if (tk.fields == -1) {
-                tokenSet.addTokenNode(tk);
+                astLinkedList.addTokenNode(tk);
                 continue;
             }
 
@@ -90,8 +90,8 @@ public class ExpressionCompiler extends AbstractParser {
                                  * We can't continue any further because we are dealing with
                                  * different operators.
                                  */
-                                tokenSet.addTokenNode(new LiteralNode(stk.pop()));
-                                tokenSet.addTokenNode(tkOp2);
+                                astLinkedList.addTokenNode(new LiteralNode(stk.pop()));
+                                astLinkedList.addTokenNode(tkOp2);
                                 break;
                             }
                             else if ((tkLA2 = nextToken()) != null
@@ -107,16 +107,16 @@ public class ExpressionCompiler extends AbstractParser {
                                      * There are more tokens, but we can't reduce anymore.  So
                                      * we create a reduced token for what we've got.
                                      */
-                                    tokenSet.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
+                                    astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
                                 }
                                 else {
                                     /**
                                      * We have reduced additional tokens, but we can't reduce
                                      * anymore.
                                      */
-                                    tokenSet.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()), tkOp);
+                                    astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()), tkOp);
 
-                                    if (tkLA2 != null) tokenSet.addTokenNode(tkLA2);
+                                    if (tkLA2 != null) astLinkedList.addTokenNode(tkLA2);
                                 }
                                 break;
                             }
@@ -128,25 +128,25 @@ public class ExpressionCompiler extends AbstractParser {
                          * now.
                          */
                         if (!stk.isEmpty())
-                            tokenSet.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
+                            astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
 
                         continue;
                     }
                     else {
-                        tokenSet.addTokenNode(verify(tk), verify(tkOp));
-                        if (tkLA != null) tokenSet.addTokenNode(verify(tkLA));
+                        astLinkedList.addTokenNode(verify(tk), verify(tkOp));
+                        if (tkLA != null) astLinkedList.addTokenNode(verify(tkLA));
                         continue;
                     }
                 }
                 else {
-                    tokenSet.addTokenNode(verify(tk));
-                    if (tkOp != null) tokenSet.addTokenNode(verify(tkOp));
+                    astLinkedList.addTokenNode(verify(tk));
+                    if (tkOp != null) astLinkedList.addTokenNode(verify(tkOp));
 
                     continue;
                 }
             }
 
-            tokenSet.addTokenNode(verify(tk));
+            astLinkedList.addTokenNode(verify(tk));
         }
 
         if (verifying) {
@@ -156,7 +156,7 @@ public class ExpressionCompiler extends AbstractParser {
         }
 
         
-        return new CompiledExpression(new FastASTIterator(tokenSet), getCurrentSourceFileName());
+        return new CompiledExpression(new ASTArrayList(astLinkedList), getCurrentSourceFileName());
     }
 
     protected ASTNode verify(ASTNode tk) {

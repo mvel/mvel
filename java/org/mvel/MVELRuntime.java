@@ -33,7 +33,7 @@ public class MVELRuntime {
      * @param variableFactory -
      * @return -
      */
-    public static Object execute(boolean debugger, FastASTIterator node, Object ctx, VariableResolverFactory variableFactory) {
+    public static Object execute(boolean debugger, ASTArrayList node, Object ctx, VariableResolverFactory variableFactory) {
         //   int i1, i2, i3, i4;  // 4 int registers
 
         Stack stk = new ExecutionStack();

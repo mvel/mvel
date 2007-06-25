@@ -20,11 +20,11 @@
 package org.mvel.optimizers;
 
 import org.mvel.ASTIterator;
-import org.mvel.ASTSet;
+import org.mvel.ASTLinkedList;
 import org.mvel.integration.VariableResolverFactory;
 
 public interface Optimizer {
-    public ASTIterator optimize(ASTSet tokens, Object ctx, VariableResolverFactory variableFactory);
+    public ASTIterator optimize(ASTLinkedList tokens, Object ctx, VariableResolverFactory variableFactory);
 
     public String getName();
 }
