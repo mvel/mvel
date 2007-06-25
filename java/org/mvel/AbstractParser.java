@@ -156,73 +156,9 @@ public class AbstractParser {
             }
         }
 
-        OPERATORS.put("+", ADD);
-        OPERATORS.put("-", SUB);
-        OPERATORS.put("*", MULT);
-        OPERATORS.put("**", POWER);
-        OPERATORS.put("/", DIV);
-        OPERATORS.put("%", MOD);
-        OPERATORS.put("==", EQUAL);
-        OPERATORS.put("!=", NEQUAL);
-        OPERATORS.put(">", GTHAN);
-        OPERATORS.put(">=", GETHAN);
-        OPERATORS.put("<", LTHAN);
-        OPERATORS.put("<=", LETHAN);
-        OPERATORS.put("&&", AND);
-        OPERATORS.put("and", AND);
-        OPERATORS.put("||", OR);
-        OPERATORS.put("or", CHOR);
-        OPERATORS.put("~=", REGEX);
-        OPERATORS.put("instanceof", INSTANCEOF);
-        OPERATORS.put("is", INSTANCEOF);
-        OPERATORS.put("contains", CONTAINS);
-        OPERATORS.put("soundslike", SOUNDEX);
-        OPERATORS.put("strsim", SIMILARITY);
-        OPERATORS.put("convertable_to", CONVERTABLE_TO);
-
-        OPERATORS.put("#", STR_APPEND);
-
-        OPERATORS.put("&", BW_AND);
-        OPERATORS.put("|", BW_OR);
-        OPERATORS.put("^", BW_XOR);
-        OPERATORS.put("<<", BW_SHIFT_LEFT);
-        OPERATORS.put("<<<", BW_USHIFT_LEFT);
-        OPERATORS.put(">>", BW_SHIFT_RIGHT);
-        OPERATORS.put(">>>", BW_USHIFT_RIGHT);
-
-        OPERATORS.put("?", Operator.TERNARY);
-        OPERATORS.put(":", TERNARY_ELSE);
-
-        OPERATORS.put("=", Operator.ASSIGN);
-
-        OPERATORS.put(";", END_OF_STMT);
-
-        OPERATORS.put("new", Operator.NEW);
-
-        OPERATORS.put("in", PROJECTION);
-
-        OPERATORS.put("foreach", FOREACH);
-        OPERATORS.put("while", WHILE);
-        OPERATORS.put("if", IF);
-        OPERATORS.put("else", ELSE);
-        OPERATORS.put("for", FOR);
-        OPERATORS.put("switch", SWITCH);
-        OPERATORS.put("do", DO);
-        OPERATORS.put("with", WITH);
-
-        OPERATORS.put("assert", ASSERT);
-        OPERATORS.put("import", IMPORT);
-        OPERATORS.put("import_static", IMPORT_STATIC);
-
-        OPERATORS.put("++", INC);
-        OPERATORS.put("--", DEC);
-        OPERATORS.put("+=", ASSIGN_ADD);
-        OPERATORS.put("-=", ASSIGN_SUB);
-
-        OPERATORS.put("var", TYPED_VAR);
-
-        OPERATORS.put("return", RETURN);
+         _loadLanguageFeaturesByLevel(5);
     }
+
 
     static void configureFactory() {
         if (MVEL.THREAD_SAFE) {
@@ -272,7 +208,7 @@ public class AbstractParser {
                 if (sourceFile == null) {
                     throw new CompileException("unable to produce debugging symbols: source name must be provided.");
                 }
-                                
+
                 (parserContext = new ThreadLocal<ParserContext>())
                         .set(new ParserContext(sourceFile, 0));
             }
@@ -1114,4 +1050,100 @@ public class AbstractParser {
         }
         return null;
     }
+
+
+    public static final int LEVEL_5_CONTROL_FLOW = 5;
+    public static final int LEVEL_4_ASSIGNMENT = 4;
+    public static final int LEVEL_3_ITERATION = 3;
+    public static final int LEVEL_2_MULTI_STATEMENT = 2;
+    public static final int LEVEL_1_BASIC_LANG = 1;
+    public static final int LEVEL_0_PROPERTY_ONLY = 0;
+
+    public static void setLanguageLevel(int level) {
+        OPERATORS.clear();
+        _loadLanguageFeaturesByLevel(level);
+    }
+
+    private static void _loadLanguageFeaturesByLevel(int languageLevel) {
+        switch (languageLevel) {
+            case 5:  // control flow operations
+                OPERATORS.put("if", IF);
+                OPERATORS.put("else", ELSE);
+                OPERATORS.put("?", Operator.TERNARY);
+                OPERATORS.put("switch", SWITCH);
+
+            case 4: // assignment
+                OPERATORS.put("=", Operator.ASSIGN);
+                OPERATORS.put("var", TYPED_VAR);
+                OPERATORS.put("+=", ASSIGN_ADD);
+                OPERATORS.put("-=", ASSIGN_SUB);
+
+
+            case 3: // iteration
+                OPERATORS.put("foreach", FOREACH);
+                OPERATORS.put("while", WHILE);
+                OPERATORS.put("for", FOR);
+                OPERATORS.put("do", DO);
+
+
+            case 2: // multi-statement
+                OPERATORS.put("return", RETURN);
+                OPERATORS.put(";", END_OF_STMT);
+
+
+            case 1: // boolean, math ops, projection, assertion, objection creation, block setters, imports
+                OPERATORS.put("+", ADD);
+                OPERATORS.put("-", SUB);
+                OPERATORS.put("*", MULT);
+                OPERATORS.put("**", POWER);
+                OPERATORS.put("/", DIV);
+                OPERATORS.put("%", MOD);
+                OPERATORS.put("==", EQUAL);
+                OPERATORS.put("!=", NEQUAL);
+                OPERATORS.put(">", GTHAN);
+                OPERATORS.put(">=", GETHAN);
+                OPERATORS.put("<", LTHAN);
+                OPERATORS.put("<=", LETHAN);
+                OPERATORS.put("&&", AND);
+                OPERATORS.put("and", AND);
+                OPERATORS.put("||", OR);
+                OPERATORS.put("or", CHOR);
+                OPERATORS.put("~=", REGEX);
+                OPERATORS.put("instanceof", INSTANCEOF);
+                OPERATORS.put("is", INSTANCEOF);
+                OPERATORS.put("contains", CONTAINS);
+                OPERATORS.put("soundslike", SOUNDEX);
+                OPERATORS.put("strsim", SIMILARITY);
+                OPERATORS.put("convertable_to", CONVERTABLE_TO);
+
+                OPERATORS.put("#", STR_APPEND);
+
+                OPERATORS.put("&", BW_AND);
+                OPERATORS.put("|", BW_OR);
+                OPERATORS.put("^", BW_XOR);
+                OPERATORS.put("<<", BW_SHIFT_LEFT);
+                OPERATORS.put("<<<", BW_USHIFT_LEFT);
+                OPERATORS.put(">>", BW_SHIFT_RIGHT);
+                OPERATORS.put(">>>", BW_USHIFT_RIGHT);
+
+                OPERATORS.put("new", Operator.NEW);
+                OPERATORS.put("in", PROJECTION);
+
+
+                OPERATORS.put("with", WITH);
+
+                OPERATORS.put("assert", ASSERT);
+                OPERATORS.put("import", IMPORT);
+                OPERATORS.put("import_static", IMPORT_STATIC);
+
+                OPERATORS.put("++", INC);
+                OPERATORS.put("--", DEC);
+
+            case 0: // Property access and inline collections
+                OPERATORS.put(":", TERNARY_ELSE);
+        }
+
+    }
+
+
 }
