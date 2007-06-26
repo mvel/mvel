@@ -36,11 +36,11 @@ public class AbstractParser {
     private int line = 1;
 
     protected ASTNode lastNode;
-
-    protected static final int FRAME_END = -1;
-    protected static final int FRAME_CONTINUE = 0;
-    protected static final int FRAME_NEXT = 1;
-    protected static final int FRAME_RETURN = 2;
+//
+//    protected static final int FRAME_END = -1;
+//    protected static final int FRAME_CONTINUE = 0;
+//    protected static final int FRAME_NEXT = 1;
+//    protected static final int FRAME_RETURN = 2;
 
     private static Map<String, char[]> EX_PRECACHE;
 
