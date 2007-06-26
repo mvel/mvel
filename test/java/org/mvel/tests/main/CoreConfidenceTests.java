@@ -957,7 +957,7 @@ public class CoreConfidenceTests extends TestCase {
         if (first != null && !first.getClass().isArray()) {
             assertEquals(first, second);
             if (!first.equals(second)) {
-                throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run) [first: "
+                throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run / JIT) [first: "
                         + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
             }
 
@@ -978,7 +978,7 @@ public class CoreConfidenceTests extends TestCase {
         if (fourth != null && !fourth.getClass().isArray()) {
             assertEquals(fourth, fifth);
             if (!fourth.equals(fifth)) {
-                throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run) [first: "
+                throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
                         + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
             }
         }
