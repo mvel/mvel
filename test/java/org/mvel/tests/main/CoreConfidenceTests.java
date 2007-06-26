@@ -3,6 +3,7 @@ package org.mvel.tests.main;
 import static org.mvel.MVEL.parseMacros;
 import junit.framework.TestCase;
 import org.mvel.*;
+import org.mvel.optimizers.OptimizerFactory;
 
 import static org.mvel.MVEL.*;
 import org.mvel.debug.DebugTools;
@@ -561,7 +562,7 @@ public class CoreConfidenceTests extends TestCase {
     public void testStaticFieldAsMethodParm() {
         assertEquals(String.valueOf(Integer.MAX_VALUE), parseDirect("String.valueOf(Integer.MAX_VALUE)"));
     }
-    
+
     public void testEmptyIf() {
         assertEquals(5, parseDirect("a = 5; if (a == 5) { }; return a;"));
     }
@@ -792,7 +793,7 @@ public class CoreConfidenceTests extends TestCase {
                 return 0;
             }
 
-       };
+        };
 
         MVELRuntime.setThreadDebugger(testDebugger);
 
@@ -942,6 +943,8 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public Object compiledExecute(String ex) {
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        
         Serializable compiled = compileExpression(ex);
 
         System.out.println(DebugTools.decompile(compiled));
@@ -964,6 +967,22 @@ public class CoreConfidenceTests extends TestCase {
                         String.valueOf(first) + "; third: " + String.valueOf(third) + "]");
             }
         }
+
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        compiled = compileExpression(ex);
+
+        Object fourth = executeExpression(compiled, base, map);
+        Object fifth = executeExpression(compiled, base, map);
+
+        if (fourth != null && !fourth.getClass().isArray()) {
+            assertEquals(fourth, fifth);
+            if (!fourth.equals(fifth)) {
+                throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run) [first: "
+                        + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
+            }
+        }
+
 
 
         return second;

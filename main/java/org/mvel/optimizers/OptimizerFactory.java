@@ -109,4 +109,8 @@ public class OptimizerFactory {
         }
         threadOptimizer.set(optimizer);
     }
+
+    public static void setDefaultOptimizer(String name) {
+        defaultOptimizer = name;
+    }
 }
