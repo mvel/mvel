@@ -947,7 +947,7 @@ public class CoreConfidenceTests extends TestCase {
         
         Serializable compiled = compileExpression(ex);
 
-        System.out.println(DebugTools.decompile(compiled));
+ //       System.out.println(DebugTools.decompile(c«ompiled));
 
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);
@@ -968,8 +968,8 @@ public class CoreConfidenceTests extends TestCase {
             }
         }
 
-
         OptimizerFactory.setDefaultOptimizer("reflective");
+
         compiled = compileExpression(ex);
 
         Object fourth = executeExpression(compiled, base, map);
@@ -982,8 +982,6 @@ public class CoreConfidenceTests extends TestCase {
                         + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
             }
         }
-
-
 
         return second;
     }
