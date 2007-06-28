@@ -566,7 +566,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         CollectionParser parser = new CollectionParser();
         Object o = ((List) parser.parseCollection(property)).get(0);
 
-
         Accessor root = _getAccessor(o);
         int end = parser.getEnd() + 2;
 
