@@ -714,6 +714,19 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(1000, parseDirect("10 * 100"));
     }
 
+    public void testInterfaceResolution() {        
+        Serializable ex = MVEL.compileExpression("foo.collectionTest.size()");
+
+        foo.setCollectionTest(new HashSet());
+        Object result1 = MVEL.executeExpression(ex, map);
+
+        foo.setCollectionTest(new ArrayList());
+        Object result2 = MVEL.executeExpression(ex, map);
+
+        assertEquals(result1, result2);
+    }
+
+
     /**
      * Start collections framework based compliance tests
      */
