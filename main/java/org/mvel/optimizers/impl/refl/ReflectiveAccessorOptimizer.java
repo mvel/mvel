@@ -444,7 +444,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
          * Try to find an instance method from the class target.
          */
 
-        if ((m = ParseTools.getBestCanadidate(args, name, cls.getMethods())) != null) {
+        if ((m = ParseTools.getBestCandidate(args, name, cls.getMethods())) != null) {
             parameterTypes = m.getParameterTypes();
         }
 
@@ -452,7 +452,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             /**
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
-            if ((m = ParseTools.getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
+            if ((m = ParseTools.getBestCandidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
                 parameterTypes = m.getParameterTypes();
             }
         }
@@ -496,7 +496,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
 
             MethodAccessor access = new MethodAccessor();
-            access.setMethod(m);
+            access.setMethod(ParseTools.getWidenedTarget(m));
             access.setParms(es);
 
             addAccessorNode(access);
