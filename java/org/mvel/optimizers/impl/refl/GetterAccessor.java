@@ -49,7 +49,9 @@ public class GetterAccessor implements AccessorNode {
             return MVEL.getProperty(method.getName() + "()", ctx);
         }
         catch (Exception e) {
-            throw new CompileException("cannot invoke getter", e);
+            throw new CompileException("cannot invoke getter: " + method.getName()
+                    + " [declr.class: " + method.getDeclaringClass().getName() + "; act.class: "
+                    + (ctx != null ? ctx.getClass().getName() : "null") + "]", e);
         }
     }
 

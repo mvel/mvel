@@ -86,7 +86,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private ClassWriter cw;
     private MethodVisitor mv;
 
-    private Object val;                                                                 
+    private Object val;
     private int stacksize = 1;
     private long time;
 
@@ -721,7 +721,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          * Try to find an instance method from the class target.
          */
 
-        if ((m = getBestCanadidate(args, name, cls.getMethods())) != null) {
+        if ((m = getBestCandidate(args, name, cls.getMethods())) != null) {
             parameterTypes = m.getParameterTypes();
         }
 
@@ -729,7 +729,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             /**
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
-            if ((m = getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
+            if ((m = getBestCandidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
                 parameterTypes = m.getParameterTypes();
             }
         }
@@ -758,6 +758,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
+            m = ParseTools.getWidenedTarget(m);
+
             if (es != null) {
                 ExecutableStatement cExpr;
                 for (int i = 0; i < es.length; i++) {
@@ -793,9 +795,17 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     debug("CHECKCAST " + getInternalName(m.getDeclaringClass()));
                     mv.visitTypeInsn(CHECKCAST, getInternalName(m.getDeclaringClass()));
 
-                    debug("INVOKEVIRTUAL " + m.getName());
-                    mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(m.getDeclaringClass()), m.getName(),
-                            getMethodDescriptor(m));
+                    if (m.getDeclaringClass().isInterface()) {
+                        debug("INVOKEINTERFACE " + m.getName());
+                        mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(m.getDeclaringClass()), m.getName(),
+                                getMethodDescriptor(m));
+
+                    }
+                    else {
+                        debug("INVOKEVIRTUAL " + m.getName());
+                        mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(m.getDeclaringClass()), m.getName(),
+                                getMethodDescriptor(m));
+                    }
                 }
 
                 returnType = m.getReturnType();

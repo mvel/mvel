@@ -168,7 +168,16 @@ public class ParseTools {
     private static Map<String, Map<Integer, Method>> RESOLVED_METH_CACHE = new WeakHashMap<String, Map<Integer, Method>>(10);
 
 
-    public static Method getBestCanadidate(Object[] arguments, String method, Method[] methods) {
+    public static Method getBestCandidate(Object[] arguments, String method, Method[] methods) {
+        Class[] targetParms = new Class[arguments.length];
+        for (int i = 0; i < arguments.length; i++) {
+            targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
+        }
+        return getBestCandidate(targetParms, method, methods);
+    }
+
+
+    public static Method getBestCandidate(Class[] arguments, String method, Method[] methods) {
         if (methods.length == 0) {
             return null;
         }
@@ -177,13 +186,7 @@ public class ParseTools {
         int bestScore = 0;
         int score = 0;
 
-        Class[] targetParms = new Class[arguments.length];
-
-        for (int i = 0; i < arguments.length; i++) {
-            targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
-        }
-
-        Integer hash = createClassSignatureHash(methods[0].getDeclaringClass(), targetParms);
+        Integer hash = createClassSignatureHash(methods[0].getDeclaringClass(), arguments);
 
         if (RESOLVED_METH_CACHE.containsKey(method) && RESOLVED_METH_CACHE.get(method).containsKey(hash)) {
             return RESOLVED_METH_CACHE.get(method).get(hash);
@@ -193,26 +196,28 @@ public class ParseTools {
             if (method.equals(meth.getName())) {
                 if ((parmTypes = meth.getParameterTypes()).length != arguments.length)
                     continue;
-                else if (arguments.length == 0 && parmTypes.length == 0)
-                    return meth;
+                else if (arguments.length == 0 && parmTypes.length == 0) {
+                    bestCandidate = meth;
+                    break;
+                }
 
                 for (int i = 0; i < arguments.length; i++) {
-                    if (parmTypes[i] == targetParms[i]) {
+                    if (parmTypes[i] == arguments[i]) {
                         score += 5;
                     }
-                    else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
+                    else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
                         score += 4;
                     }
-                    else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
+                    else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
                         score += 4;
                     }
-                    else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
+                    else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
                         score += 3;
                     }
-                    else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
+                    else if (parmTypes[i].isAssignableFrom(arguments[i])) {
                         score += 2;
                     }
-                    else if (canConvert(parmTypes[i], targetParms[i])) {
+                    else if (canConvert(parmTypes[i], arguments[i])) {
                         score += 1;
                     }
                     else {
@@ -237,6 +242,25 @@ public class ParseTools {
         }
 
         return bestCandidate;
+    }
+
+    public static Method getWidenedTarget(Method method) {
+        Class cls = method.getDeclaringClass();
+        Method m = method;
+        Class[] args = method.getParameterTypes();
+        String name = method.getName();
+
+        do {
+            for (Class iface : cls.getInterfaces()) {
+                m = getBestCandidate(args, name, iface.getMethods());
+                if (m != null && m.getDeclaringClass().getSuperclass() != null) {
+                    cls = m.getDeclaringClass();
+                }
+            }
+        }
+        while ((cls = cls.getSuperclass()) != null);
+
+        return m != null ? m : method;
     }
 
     private static Map<Class, Map<Integer, Constructor>> RESOLVED_CONST_CACHE = new WeakHashMap<Class, Map<Integer, Constructor>>(10);

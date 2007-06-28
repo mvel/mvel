@@ -23,7 +23,6 @@ import static org.mvel.DataConversion.convert;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ArrayTools;
 import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.getBestCanadidate;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
@@ -616,7 +615,7 @@ public class PropertyAccessor {
              * Try to find an instance method from the class target.
              */
 
-            if ((m = getBestCanadidate(args, name, cls.getMethods())) != null) {
+            if ((m = ParseTools.getBestCandidate(args, name, cls.getMethods())) != null) {
                 addMethodCache(cls, createSignature(name, tk), m);
                 parameterTypes = m.getParameterTypes();
             }
@@ -625,7 +624,7 @@ public class PropertyAccessor {
                 /**
                  * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
                  */
-                if ((m = getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
+                if ((m = ParseTools.getBestCandidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
                     addMethodCache(cls, createSignature(name, tk), m);
                     parameterTypes = m.getParameterTypes();
                 }
