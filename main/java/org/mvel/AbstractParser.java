@@ -36,11 +36,6 @@ public class AbstractParser {
     private int line = 1;
 
     protected ASTNode lastNode;
-//
-//    protected static final int FRAME_END = -1;
-//    protected static final int FRAME_CONTINUE = 0;
-//    protected static final int FRAME_NEXT = 1;
-//    protected static final int FRAME_RETURN = 2;
 
     private static Map<String, char[]> EX_PRECACHE;
 
@@ -335,27 +330,60 @@ public class AbstractParser {
                  * If we encounter any of the following cases, we are still dealing with
                  * a contiguous token.
                  */
+                String name;
                 if (cursor < length) {
                     switch (expr[cursor]) {
                         case'+':
-                            if (isAt('+', 1)) {
-                                ASTNode n = new PostFixIncNode(subArray(start, cursor), fields);
-                                cursor += 2;
-                                return n;
-                            }
-                            else {
-                                break;
+                            switch (lookAhead(1)) {
+                                case'+':
+                                    ASTNode n = new PostFixIncNode(subArray(start, cursor), fields);
+                                    cursor += 2;
+                                    return n;
+
+                                case'=':
+                                    name = new String(expr, start, trimLeft(cursor));
+                                    start = cursor += 2;
+                                    captureToEOS();
+                                    return new AssignAdd(subArray(start, cursor), fields, name);
                             }
 
+                            break;
+
                         case'-':
-                            if (isAt('-', 1)) {
-                                ASTNode n = new PostFixDecNode(subArray(start, cursor), fields);
-                                cursor += 2;
-                                return n;
+                            switch (lookAhead(1)) {
+                                case'-':
+                                    ASTNode n = new PostFixDecNode(subArray(start, cursor), fields);
+                                    cursor += 2;
+                                    return n;
+
+                                case'=':
+                                    name = new String(expr, start, trimLeft(cursor));
+                                    start = cursor += 2;
+                                    captureToEOS();
+                                    return new AssignSub(subArray(start, cursor), fields, name);
+
+
                             }
-                            else {
-                                break;
+                            break;
+
+                        case'*':
+                            if (isAt('=', 1)) {
+                                name = new String(expr, start, trimLeft(cursor));
+                                start = cursor += 2;
+                                captureToEOS();
+                                return new AssignMult(subArray(start, cursor), fields, name);
+
                             }
+                            break;
+
+                        case'/':
+                            if (isAt('=', 1)) {
+                                name = new String(expr, start, trimLeft(cursor));
+                                start = cursor += 2;
+                                captureToEOS();
+                                return new AssignDiv(subArray(start, cursor), fields, name);
+                            }
+                            break;
 
                         case']':
                         case'[':
@@ -367,6 +395,13 @@ public class AbstractParser {
                             cursor++;
                             continue;
                         case'=':
+                            if (isAt('+', 1)) {
+                                name = new String(expr, start, trimLeft(cursor));
+                                start = cursor += 2;
+                                captureToEOS();
+                                return new AssignAdd(subArray(start, cursor), fields, name);
+                            }
+
                             if (greedy && !isAt('=', 1)) {
                                 cursor++;
 
@@ -467,6 +502,8 @@ public class AbstractParser {
                             captureToEOT();
                             return new PreFixIncNode(subArray(start, cursor), fields);
                         }
+
+
                         return createToken(expr, start, cursor++ + 1, fields);
 
                     case'*':
