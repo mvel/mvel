@@ -588,7 +588,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testForeEach2() {
-        assertEquals(6, parseDirect("total = 0; a = {1,2,3}; foreach(item : a) { total = total + item }; total"));
+        assertEquals(6, parseDirect("total = 0; a = {1,2,3}; foreach(item : a) { total += item }; total"));
     }
 
     public void testForEach3() {
