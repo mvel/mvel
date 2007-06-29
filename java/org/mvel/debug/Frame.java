@@ -1,12 +1,16 @@
 package org.mvel.debug;
 
+import org.mvel.integration.VariableResolverFactory;
+
 public class Frame {
     private String sourceName;
     private int lineNumber;
+    private VariableResolverFactory factory;
 
-    public Frame(String sourceName, int lineNumber) {
+    public Frame(String sourceName, int lineNumber, VariableResolverFactory factory) {
         this.sourceName = sourceName;
         this.lineNumber = lineNumber;
+        this.factory = factory;
     }
 
 
@@ -24,5 +28,14 @@ public class Frame {
 
     public void setLineNumber(int lineNumber) {
         this.lineNumber = lineNumber;
+    }
+
+
+    public VariableResolverFactory getFactory() {
+        return factory;
+    }
+
+    public void setFactory(VariableResolverFactory factory) {
+        this.factory = factory;
     }
 }
