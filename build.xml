@@ -43,11 +43,6 @@
 
     <target name="el-tests">
         <junit fork="yes" haltonfailure="yes">
-            <test name="org.mvel.tests.main.ParserUnitTest"/>
-            <formatter type="plain" usefile="false"/>
-            <classpath refid="classpath"/>
-        </junit>
-        <junit fork="yes" haltonfailure="yes">
             <test name="org.mvel.tests.main.CoreConfidenceTests"/>
             <formatter type="plain" usefile="false"/>
             <classpath refid="classpath"/>

@@ -69,7 +69,7 @@ public class MVELRuntime {
                                   throw new RuntimeException("no debugger registered to handle breakpoint.");
                               }
 
-                              Frame frame = new Frame(label.getSourceFile(), label.getLineNumber());
+                              Frame frame = new Frame(label.getSourceFile(), label.getLineNumber(), variableFactory);
 
                               threadDebugger.get().onBreak(frame);
 
