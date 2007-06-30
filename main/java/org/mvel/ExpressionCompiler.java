@@ -14,6 +14,7 @@ import static java.lang.Class.forName;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
@@ -25,7 +26,11 @@ public class ExpressionCompiler extends AbstractParser {
     private boolean verifying = true;
 
     public void setImportedClasses(Map<String, Class> imports) {
-        this.imports = imports;
+        if (this.imports == null) {
+            this.imports = new ThreadLocal<Map<String, Class>>();
+        }
+
+        this.imports.set(imports);
     }
 
     public CompiledExpression compile() {
@@ -155,7 +160,7 @@ public class ExpressionCompiler extends AbstractParser {
             }
         }
 
-        
+
         return new CompiledExpression(new ASTArrayList(astLinkedList), getCurrentSourceFileName());
     }
 
