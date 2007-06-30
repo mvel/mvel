@@ -45,8 +45,8 @@ public class AbstractParser {
     public static final Map<String, Integer> OPERATORS =
             new HashMap<String, Integer>(25 * 2, 0.4f);
 
-    protected Map<String, Class> imports;
-    protected Map<String, Interceptor> interceptors;
+    protected ThreadLocal<Map<String, Class>> imports;
+    protected ThreadLocal<Map<String, Interceptor>> interceptors;
 
     protected ExecutionStack splitAccumulator = new ExecutionStack();
 
@@ -472,11 +472,12 @@ public class AbstractParser {
 
                         String interceptorName = new String(expr, start, cursor - start);
 
-                        if (!interceptors.containsKey(interceptorName)) {
+                        if (interceptors == null || interceptors.get() == null || !interceptors.get().
+                                containsKey(interceptorName))  {
                             throw new CompileException("reference to undefined interceptor: " + interceptorName, expr, cursor);
                         }
 
-                        return new InterceptorWrapper(interceptors.get(interceptorName), nextToken());
+                        return new InterceptorWrapper(interceptors.get().get(interceptorName), nextToken());
                     }
 
                     case'=':
@@ -1045,26 +1046,33 @@ public class AbstractParser {
     }
 
     public void addImport(String name, Class cls) {
-        if (imports == null) imports = new HashMap<String, Class>();
-        imports.put(name, cls);
+        if (imports == null) {
+            imports = new ThreadLocal<Map<String,Class>>();
+        }
+        if (imports.get() == null) {
+            imports.set(new HashMap<String, Class>());            
+        }
+        imports.get().put(name, cls);
     }
 
     protected Class getImport(String name) {
-        return imports != null ? imports.get(name) : null;
+        return imports != null  ? imports.get().get(name) : null;
     }
 
     protected boolean hasImport(String name) {
-        return imports != null && imports.containsKey(name);
+        return imports != null && imports.get() != null && imports.get().containsKey(name);
     }
 
 
     public Map<String, Interceptor> getInterceptors() {
-        return interceptors;
+        return interceptors != null ? interceptors.get() : null;
     }
 
     public void setInterceptors(Map<String, Interceptor> interceptors) {
-        this.interceptors = interceptors;
+        if (this.interceptors == null) this.interceptors = new ThreadLocal<Map<String, Interceptor>>();
+        this.interceptors.set(interceptors);        
     }
+        
 
 
     public String getSourceFile() {
