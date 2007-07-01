@@ -13,15 +13,36 @@ public class ParserContext {
 
     protected Map<String, Class> imports;
     protected Map<String, Interceptor> interceptors;
+
     private Map<String, Class> variableTable;
     private Map<String, Class> inputTable;
+
     private List<ErrorDetail> errorList;
 
     private Object rootParser;
 
+    private boolean strictTypeEnforcement = false;
+
     public ParserContext(Object rootParser) {
         this.rootParser = rootParser;
     }
+
+    public boolean hasVarOrInput(String name) {
+        return (variableTable != null && variableTable.containsKey(name))
+                || (inputTable != null && inputTable.containsKey(name));
+    }
+
+    public Class getVarOrInputType(String name) {
+        if (variableTable != null && variableTable.containsKey(name))  {
+            return variableTable.get(name);
+        }
+        else if (inputTable != null && inputTable.containsKey(name))  {
+            return inputTable.get(name);
+        }
+        return Object.class;
+    }
+
+
 
     public Object getRootParser() {
         return rootParser;
@@ -112,5 +133,14 @@ public class ParserContext {
     public void addError(ErrorDetail errorDetail) {
         if (errorList == null) errorList = new ArrayList<ErrorDetail>();
         errorList.add(errorDetail);
+    }
+
+
+    public boolean isStrictTypeEnforcement() {
+        return strictTypeEnforcement;
+    }
+
+    public void setStrictTypeEnforcement(boolean strictTypeEnforcement) {
+        this.strictTypeEnforcement = strictTypeEnforcement;
     }
 }

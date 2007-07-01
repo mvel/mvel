@@ -1,5 +1,6 @@
 package org.mvel.util;
 
+import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
@@ -367,36 +368,6 @@ public class ParseTools {
         }
     }
 
-    public static Object constructObject(String expression, Object ctx, VariableResolverFactory vrf) throws InstantiationException, IllegalAccessException,
-            InvocationTargetException, ClassNotFoundException {
-
-        String[] constructorParms = parseMethodOrConstructor(expression.toCharArray());
-
-        if (constructorParms != null) {
-            Class cls = AbstractParser.LITERALS.containsKey(expression = expression.substring(0, expression.indexOf('('))) ? ((Class) AbstractParser.LITERALS.get(expression))
-                    : createClass(expression);
-
-            Object[] parms = new Object[constructorParms.length];
-            for (int i = 0; i < constructorParms.length; i++) {
-                parms[i] = (MVEL.eval(constructorParms[i], ctx, vrf));
-            }
-
-            Constructor cns = getBestConstructorCanadidate(parms, cls);
-
-            if (cns == null)
-                throw new CompileException("unable to find constructor for: " + cls.getName());
-
-            for (int i = 0; i < parms.length; i++) {
-                // noinspection unchecked
-                parms[i] = convert(parms[i], cns.getParameterTypes()[i]);
-            }
-
-            return cns.newInstance(parms);
-        }
-        else {
-            return forName(expression).newInstance();
-        }
-    }
 
     public static String[] captureContructorAndResidual(String token) {
         char[] cs = token.toCharArray();
@@ -636,6 +607,9 @@ public class ParseTools {
             else if (factory.isResolveable(name)) {
                 return (Class) factory.getVariableResolver(name).getValue();
             }
+            else if (getCurrentThreadParserContext() != null && getCurrentThreadParserContext().hasImport(name)) {
+                return getCurrentThreadParserContext().getImport(name);
+            }
             else {
                 return createClass(name);
             }
@@ -644,7 +618,7 @@ public class ParseTools {
             throw e;
         }
         catch (Exception e) {
-            throw new CompileException("class not found: " + name);
+            throw new CompileException("class not found: " + name, e);
         }
     }
 

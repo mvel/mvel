@@ -953,7 +953,7 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testStrictTypingCompilation() {
         ExpressionCompiler compiler = new ExpressionCompiler("a = 0; a + 5");
-        compiler.setStrictTyping(true);
+        compiler.setStrictTyping(false);
         compiler.compile();
 
     }
@@ -964,8 +964,9 @@ public class CoreConfidenceTests extends TestCase {
 
     public Object compiledExecute(String ex) {
         OptimizerFactory.setDefaultOptimizer("ASM");
-        
-        Serializable compiled = compileExpression(ex);
+
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        Serializable compiled = compiler.compile();
 
  //       System.out.println(DebugTools.decompile(c«ompiled));
 
