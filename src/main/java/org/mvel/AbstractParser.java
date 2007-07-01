@@ -1018,6 +1018,10 @@ public class AbstractParser {
         return parserContext.get();
     }
 
+    public static ParserContext getCurrentThreadParserContext() {
+        return parserContext.get();
+    }
+
     protected void newContext() {
         if (parserContext == null) parserContext = new ThreadLocal<ParserContext>();
 

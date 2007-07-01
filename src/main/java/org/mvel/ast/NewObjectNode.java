@@ -1,7 +1,8 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
-import org.mvel.Accessor;
+import org.mvel.*;
+import org.mvel.util.ArrayTools;
+import org.mvel.util.ParseTools;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
@@ -13,6 +14,34 @@ public class NewObjectNode extends ASTNode {
 
     public NewObjectNode(char[] expr, int fields) {
         super(expr, fields);
+
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            int endRange = ArrayTools.findFirst('(', expr);
+            String name;
+            if (endRange == -1) {
+                name = new String(expr);
+            }
+            else {
+                name = new String(expr, 0, ArrayTools.findFirst('(', expr));
+            }
+
+            ParserContext pCtx = AbstractParser.getCurrentThreadParserContext();
+            if (pCtx != null && pCtx.hasImport(name)) {
+                egressType = pCtx.getImport(name);
+            }
+            else if (AbstractParser.LITERALS.containsKey(name)) {
+                egressType = (Class) AbstractParser.LITERALS.get(name);
+            }
+            else {
+                try {
+                    egressType = Class.forName(name);
+                }
+                catch (ClassNotFoundException e) {
+                    throw new CompileException("class not found: " + name, e);
+                }
+            }
+        }
+
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
