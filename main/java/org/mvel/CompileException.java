@@ -90,4 +90,12 @@ public class CompileException extends RuntimeException {
     public int getCursor() {
         return cursor;
     }
+
+    public List<ErrorDetail> getErrors() {
+        return errors;
+    }
+
+    public void setErrors(List<ErrorDetail> errors) {
+        this.errors = errors;
+    }
 }

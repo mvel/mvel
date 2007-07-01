@@ -714,7 +714,7 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(1000, parseDirect("10 * 100"));
     }
 
-    public void testInterfaceResolution() {        
+    public void testInterfaceResolution() {
         Serializable ex = MVEL.compileExpression("foo.collectionTest.size()");
 
         foo.setCollectionTest(new HashSet());
@@ -953,9 +953,16 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testStrictTypingCompilation() {
         ExpressionCompiler compiler = new ExpressionCompiler("a = 0; a + 5");
-        compiler.setStrictTyping(false);
-        compiler.compile();
+        compiler.setStrictTyping(true);
 
+        try {
+            compiler.compile();
+        }
+        catch (CompileException e) {
+            assertEquals(1, e.getErrors().size());
+            return;
+        }
+        assertTrue(false);
     }
 
     public Object parseDirect(String ex) {
@@ -968,7 +975,7 @@ public class CoreConfidenceTests extends TestCase {
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
         Serializable compiled = compiler.compile();
 
- //       System.out.println(DebugTools.decompile(c«ompiled));
+        //       System.out.println(DebugTools.decompile(c«ompiled));
 
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);
