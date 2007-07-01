@@ -23,6 +23,9 @@ public class ParserContext {
 
     private boolean strictTypeEnforcement = false;
 
+    private boolean fatalError = false;
+
+
     public ParserContext(Object rootParser) {
         this.rootParser = rootParser;
     }
@@ -132,9 +135,17 @@ public class ParserContext {
 
     public void addError(ErrorDetail errorDetail) {
         if (errorList == null) errorList = new ArrayList<ErrorDetail>();
+        if (errorDetail.isCritical()) fatalError = true;
         errorList.add(errorDetail);
     }
 
+    public boolean isFatalError() {
+        return fatalError;
+    }
+
+    public void setFatalError(boolean fatalError) {
+        this.fatalError = fatalError;
+    }
 
     public boolean isStrictTypeEnforcement() {
         return strictTypeEnforcement;

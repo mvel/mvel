@@ -83,8 +83,7 @@ public class ExpressionCompiler extends AbstractParser {
                     && (pCtx.getInputTable() == null
                     || !pCtx.getInputTable().containsKey(tk.getName()))) {
 
-                pCtx.addError(new ErrorDetail("untyped var not permitted in strict-mode: " + tk.getName(), true));
-
+                addFatalError("untyped var not permitted in strict-mode: " + tk.getName());
             }
 
             if (tk instanceof Substatement) {
@@ -194,15 +193,16 @@ public class ExpressionCompiler extends AbstractParser {
             }
         }
 
-        if (compileFail) {
-            throw new CompileException("Failed to compile: " + getParserContext().getErrorList().size() + " compilation error(s)", getParserContext().getErrorList());
-        }
-
-        if (pCtx.getRootParser() == this) {
+        if (pCtx.isFatalError()) {
             parserContext.set(null);
+            throw new CompileException("Failed to compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
+        }
+        else if (pCtx.isFatalError()) {
+            throw new CompileException("Failed to compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
         }
 
         return new CompiledExpression(new ASTArrayList(astLinkedList), getCurrentSourceFileName());
+
     }
 
     protected ASTNode verify(ASTNode tk) {
@@ -216,7 +216,7 @@ public class ExpressionCompiler extends AbstractParser {
                 String varName = new String(assign, 0, c++).trim();
 
                 if (isReservedWord(varName)) {
-                    throw new CompileException("invalid assignment - variable name is a reserved keyword: " + varName);
+                    addFatalError("invalid assignment - variable name is a reserved keyword: " + varName);
                 }
 
                 locals.add(varName);

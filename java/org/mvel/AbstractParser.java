@@ -1061,6 +1061,14 @@ public class AbstractParser {
         return null;
     }
 
+    protected void addFatalError(String message) {
+        getParserContext().addError(new ErrorDetail(message, true));
+    }
+
+    protected void addWarning(String message) {
+        getParserContext().addError(new ErrorDetail(message, false));
+    }
+
 
     public static final int LEVEL_5_CONTROL_FLOW = 5;
     public static final int LEVEL_4_ASSIGNMENT = 4;
