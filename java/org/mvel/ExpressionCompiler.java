@@ -200,6 +200,13 @@ public class ExpressionCompiler extends AbstractParser {
         else if (pCtx.isFatalError()) {
             throw new CompileException("Failed to compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
         }
+        else if (pCtx.getRootParser() == this) {
+            /**
+             * If this is the root parser in this expression, then we remove the parse context from the thread
+             * local.
+             */
+            parserContext.remove();
+        }
 
         return new CompiledExpression(new ASTArrayList(astLinkedList), getCurrentSourceFileName());
 
