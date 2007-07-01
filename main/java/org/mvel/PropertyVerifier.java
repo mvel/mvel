@@ -24,6 +24,8 @@ import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isWhitespace;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PropertyVerifier {
     private int start = 0;
@@ -37,18 +39,19 @@ public class PropertyVerifier {
     private static final int METH = 1;
     private static final int COL = 2;
 
-
-    public PropertyVerifier(char[] property) {
-        this.property = property;
-
-        this.length = property.length;
-    }
-
-    public PropertyVerifier(String property) {
-        this.length = (this.property = property.toCharArray()).length;
-    }
-
+    private ParserContext parserContext;
     private List<String> inputs = new LinkedList<String>();
+    
+    public PropertyVerifier(char[] property, ParserContext parserContext) {
+        this.property = property;
+        this.length = property.length;
+        this.parserContext = parserContext;
+    }
+
+    public PropertyVerifier(String property, ParserContext parserContext) {
+        this.length = (this.property = property.toCharArray()).length;
+        this.parserContext = parserContext;
+    }
 
 
     public List<String> getInputs() {

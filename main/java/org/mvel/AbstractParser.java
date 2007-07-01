@@ -45,41 +45,10 @@ public class AbstractParser {
     public static final Map<String, Integer> OPERATORS =
             new HashMap<String, Integer>(25 * 2, 0.4f);
 
-    protected ThreadLocal<Map<String, Class>> imports;
-    protected ThreadLocal<Map<String, Interceptor>> interceptors;
 
     protected ExecutionStack splitAccumulator = new ExecutionStack();
 
     protected static ThreadLocal<ParserContext> parserContext;
-
-    protected String sourceFile;
-
-    static class ParserContext {
-        private String sourceFile;
-        private int lineCount;
-
-        public ParserContext(String sourceFile, int lineCount) {
-            this.sourceFile = sourceFile;
-            this.lineCount = lineCount;
-        }
-
-        public String getSourceFile() {
-            return sourceFile;
-        }
-
-        public void setSourceFile(String sourceFile) {
-            this.sourceFile = sourceFile;
-        }
-
-        public int getLineCount() {
-            return lineCount;
-        }
-
-        public void setLineCount(int lineCount) {
-            this.lineCount = lineCount;
-        }
-    }
-
 
     static {
         configureFactory();
@@ -199,17 +168,11 @@ public class AbstractParser {
         }
 
         if (debugSymbols && !lastWasLineLabel && (expr[cursor] == '\n' || cursor == 0)) {
-            if (parserContext == null) {
-                if (sourceFile == null) {
-                    throw new CompileException("unable to produce debugging symbols: source name must be provided.");
-                }
+            if (getParserContext().getSourceFile() == null) {
+                throw new CompileException("unable to produce debugging symbols: source name must be provided.");
+            }
 
-                (parserContext = new ThreadLocal<ParserContext>())
-                        .set(new ParserContext(sourceFile, 0));
-            }
-            else {
-                line = parserContext.get().getLineCount();
-            }
+            line = parserContext.get().getLineCount();
 
             lastWasLineLabel = true;
 
@@ -281,7 +244,7 @@ public class AbstractParser {
                             start = cursor + 1;
                             captureToEOS();
                             ImportNode importNode = new ImportNode(subArray(start, cursor--), fields);
-                            addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
+                            getParserContext().addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
                             return importNode;
 
                         case IMPORT_STATIC:
@@ -414,12 +377,14 @@ public class AbstractParser {
                                     return new DeepAssignmentNode(subArray(start, cursor), fields);
                                 }
                                 else if (lastWasIdentifier) {
+
+                                    ParserContext pc = getParserContext();
                                     /**
                                      * Check for typing information.
                                      */
                                     if (lastNode.getLiteralValue() instanceof String) {
-                                        if (hasImport((String) lastNode.getLiteralValue())) {
-                                            lastNode.setLiteralValue(getImport((String) lastNode.getLiteralValue()));
+                                        if (getParserContext().hasImport((String) lastNode.getLiteralValue())) {
+                                            lastNode.setLiteralValue(getParserContext().getImport((String) lastNode.getLiteralValue()));
                                             lastNode.setAsLiteral();
                                         }
                                         else {
@@ -472,12 +437,12 @@ public class AbstractParser {
 
                         String interceptorName = new String(expr, start, cursor - start);
 
-                        if (interceptors == null || interceptors.get() == null || !interceptors.get().
-                                containsKey(interceptorName))  {
+                        if (getParserContext().getInterceptors() == null || !getParserContext().getInterceptors().
+                                containsKey(interceptorName)) {
                             throw new CompileException("reference to undefined interceptor: " + interceptorName, expr, cursor);
                         }
 
-                        return new InterceptorWrapper(interceptors.get().get(interceptorName), nextToken());
+                        return new InterceptorWrapper(getParserContext().getInterceptors().get(interceptorName), nextToken());
                     }
 
                     case'=':
@@ -1045,42 +1010,36 @@ public class AbstractParser {
         return lookAhead(range) == c;
     }
 
-    public void addImport(String name, Class cls) {
-        if (imports == null) {
-            imports = new ThreadLocal<Map<String,Class>>();
+
+    protected ParserContext getParserContext() {
+        if (parserContext == null || parserContext.get() == null) {
+            newContext();
         }
-        if (imports.get() == null) {
-            imports.set(new HashMap<String, Class>());            
-        }
-        imports.get().put(name, cls);
+        return parserContext.get();
     }
 
-    protected Class getImport(String name) {
-        return imports != null  ? imports.get().get(name) : null;
-    }
+    protected void newContext() {
+        if (parserContext == null) parserContext = new ThreadLocal<ParserContext>();
 
-    protected boolean hasImport(String name) {
-        return imports != null && imports.get() != null && imports.get().containsKey(name);
-    }
+        ParserContext ctx = new ParserContext(this);
 
+        parserContext.set(ctx);
+    }
 
     public Map<String, Interceptor> getInterceptors() {
-        return interceptors != null ? interceptors.get() : null;
+        return getParserContext().getInterceptors();
     }
 
     public void setInterceptors(Map<String, Interceptor> interceptors) {
-        if (this.interceptors == null) this.interceptors = new ThreadLocal<Map<String, Interceptor>>();
-        this.interceptors.set(interceptors);        
+        getParserContext().setInterceptors(interceptors);
     }
-        
-
 
     public String getSourceFile() {
-        return sourceFile;
+        return getParserContext().getSourceFile();
     }
 
     public void setSourceFile(String sourceFile) {
-        this.sourceFile = sourceFile;
+        getParserContext().setSourceFile(sourceFile);
     }
 
     public boolean isDebugSymbols() {

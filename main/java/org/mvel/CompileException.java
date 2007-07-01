@@ -20,10 +20,12 @@
 package org.mvel;
 
 import static java.lang.String.copyValueOf;
+import java.util.List;
 
 public class CompileException extends RuntimeException {
     private char[] expr;
     private int cursor;
+    private List<ErrorDetail> errors;
 
     public CompileException() {
         super();
@@ -33,6 +35,17 @@ public class CompileException extends RuntimeException {
         super(message);
     }
 
+    public CompileException(String message, List<ErrorDetail> errors) {
+        super(message);
+
+        this.errors = errors;
+        for (ErrorDetail error : errors) {
+            System.err.println("* " + error.toString());
+        }
+        System.err.flush();
+    }
+
+
     public CompileException(String message, char[] expr, int cursor, Exception e) {
         super("Failed to compile:\n[Error: " + message + "]\n[Near: \"" + showCodeNearError(expr, cursor) + "\"]", e);
         this.expr = expr;
@@ -40,10 +53,10 @@ public class CompileException extends RuntimeException {
     }
 
     public CompileException(String message, char[] expr, int cursor) {
-         super("Failed to compile:\n[Error: " + message + "]\n[Near: \"" + showCodeNearError(expr, cursor) + "\"]");
+        super("Failed to compile:\n[Error: " + message + "]\n[Near: \"" + showCodeNearError(expr, cursor) + "\"]");
         this.expr = expr;
         this.cursor = cursor;
-     }
+    }
 
 
     public CompileException(String message, Throwable cause) {
