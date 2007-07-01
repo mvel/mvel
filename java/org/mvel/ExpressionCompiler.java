@@ -27,7 +27,7 @@ public class ExpressionCompiler extends AbstractParser {
     private boolean compileFail = false;
 
     private boolean verifying = true;
-    private boolean strictTyping = false;
+
 
     public void setImportedClasses(Map<String, Class> imports) {
         getParserContext().setImports(imports);
@@ -39,11 +39,11 @@ public class ExpressionCompiler extends AbstractParser {
 
 
     public boolean isStrictTyping() {
-        return strictTyping;
+        return getParserContext().isStrictTypeEnforcement();
     }
 
     public void setStrictTyping(boolean strictTyping) {
-        this.strictTyping = strictTyping;
+        getParserContext().setStrictTypeEnforcement(strictTyping);
     }
 
     public CompiledExpression compile() {
@@ -55,6 +55,8 @@ public class ExpressionCompiler extends AbstractParser {
         ASTLinkedList astLinkedList = new ASTLinkedList();
 
         boolean firstLA;
+
+        ParserContext pCtx = getParserContext();
 
         if (verifying) {
             inputs = new LinkedHashSet<String>();
@@ -71,21 +73,24 @@ public class ExpressionCompiler extends AbstractParser {
                 continue;
             }
 
+            returnType = tk.getEgressType();
+
             if (tk instanceof TypedVarNode) {
                 TypedVarNode tv = (TypedVarNode) tk;
-                getParserContext().getVariableTable().put(tv.getName(), tv.getEgressType());
+                pCtx.getVariableTable().put(tv.getName(), tv.getEgressType());
             }
-            else if (strictTyping && tk instanceof AssignmentNode
-                    && (getParserContext().getInputTable() == null
-                    || !getParserContext().getInputTable().containsKey(tk.getName()))) {
+            else if (pCtx.isStrictTypeEnforcement() && tk instanceof AssignmentNode
+                    && (pCtx.getInputTable() == null
+                    || !pCtx.getInputTable().containsKey(tk.getName()))) {
 
-                getParserContext().addError(new ErrorDetail("untyped var not permitted in strict-mode: " + tk.getName(), true));
+                pCtx.addError(new ErrorDetail("untyped var not permitted in strict-mode: " + tk.getName(), true));
 
             }
 
             if (tk instanceof Substatement) {
                 ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
                 tk.setAccessor(subCompiler.compile());
+
 
                 if (verifying)
                     inputs.addAll(subCompiler.getInputs());
@@ -193,8 +198,8 @@ public class ExpressionCompiler extends AbstractParser {
             throw new CompileException("Failed to compile: " + getParserContext().getErrorList().size() + " compilation error(s)", getParserContext().getErrorList());
         }
 
-        if (getParserContext().getRootParser() == this) {
-            parserContext.remove();
+        if (pCtx.getRootParser() == this) {
+            parserContext.set(null);
         }
 
         return new CompiledExpression(new ASTArrayList(astLinkedList), getCurrentSourceFileName());
@@ -228,7 +233,7 @@ public class ExpressionCompiler extends AbstractParser {
                 inputs.add(tk.getAbsoluteName());
 
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
-                propVerifier.analyze();
+                returnType = propVerifier.analyze();
 
                 inputs.addAll(propVerifier.getInputs());
             }
