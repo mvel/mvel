@@ -951,6 +951,13 @@ public class CoreConfidenceTests extends TestCase {
                 "return ((a + b) * 2) - 10;"));
     }
 
+    public void testStrictTypingCompilation() {
+        ExpressionCompiler compiler = new ExpressionCompiler("a = 0; a + 5");
+        compiler.setStrictTyping(true);
+        compiler.compile();
+
+    }
+
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
     }

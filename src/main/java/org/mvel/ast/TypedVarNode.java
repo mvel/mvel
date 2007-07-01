@@ -12,7 +12,6 @@ import static org.mvel.util.PropertyTools.find;
  */
 public class TypedVarNode extends ASTNode {
     private String name;
-    //  private Class type;
     private ExecutableStatement statement;
 
     public TypedVarNode(char[] expr, int fields, Class type) {
