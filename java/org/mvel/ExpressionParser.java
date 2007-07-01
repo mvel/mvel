@@ -438,7 +438,7 @@ public class ExpressionParser extends AbstractParser {
 
 
     protected boolean hasImport(String name) {
-        if (super.hasImport(name)) {
+        if (getParserContext().hasImport(name)) {
             return true;
         }
         else {
@@ -448,7 +448,7 @@ public class ExpressionParser extends AbstractParser {
     }
 
     protected Class getImport(String name) {
-        if (super.hasImport(name)) return super.getImport(name);
+        if (getParserContext().hasImport(name)) return getParserContext().getImport(name);
 
         VariableResolverFactory vrf = findClassImportResolverFactory(variableFactory);
         return (Class) vrf.getVariableResolver(name).getValue();

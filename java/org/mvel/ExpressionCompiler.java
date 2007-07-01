@@ -3,6 +3,8 @@ package org.mvel;
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
+import org.mvel.ast.TypedVarNode;
+import org.mvel.ast.AssignmentNode;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.ParseTools.doOperations;
@@ -11,26 +13,37 @@ import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
 import static java.lang.Class.forName;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashMap;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
     private final Stack stk = new ExecutionStack();
+
     private Set<String> inputs;
     private Set<String> locals;
+
     private Class returnType;
 
+    private boolean compileFail = false;
+
     private boolean verifying = true;
+    private boolean strictTyping = false;
 
     public void setImportedClasses(Map<String, Class> imports) {
-        if (this.imports == null) {
-            this.imports = new ThreadLocal<Map<String, Class>>();
-        }
+        getParserContext().setImports(imports);
+    }
 
-        this.imports.set(imports);
+    public void setInputs(Map<String, Class> inputs) {
+        getParserContext().setInputTable(inputs);
+    }
+
+
+    public boolean isStrictTyping() {
+        return strictTyping;
+    }
+
+    public void setStrictTyping(boolean strictTyping) {
+        this.strictTyping = strictTyping;
     }
 
     public CompiledExpression compile() {
@@ -46,6 +59,8 @@ public class ExpressionCompiler extends AbstractParser {
         if (verifying) {
             inputs = new LinkedHashSet<String>();
             locals = new LinkedHashSet<String>();
+
+            getParserContext().setVariableTable(new HashMap<String, Class>());
         }
 
         fields |= ASTNode.COMPILE_IMMEDIATE;
@@ -54,6 +69,18 @@ public class ExpressionCompiler extends AbstractParser {
             if (tk.fields == -1) {
                 astLinkedList.addTokenNode(tk);
                 continue;
+            }
+
+            if (tk instanceof TypedVarNode) {
+                TypedVarNode tv = (TypedVarNode) tk;
+                getParserContext().getVariableTable().put(tv.getName(), tv.getEgressType());
+            }
+            else if (strictTyping && tk instanceof AssignmentNode
+                    && (getParserContext().getInputTable() == null
+                    || !getParserContext().getInputTable().containsKey(tk.getName()))) {
+
+                getParserContext().addError(new ErrorDetail("untyped var not permitted in strict-mode: " + tk.getName(), true));
+
             }
 
             if (tk instanceof Substatement) {
@@ -69,6 +96,8 @@ public class ExpressionCompiler extends AbstractParser {
              * reducing for certain literals like, 'this', ternary and ternary else.
              */
             if (tk.isLiteral() && tk.getLiteralValue() != LITERALS.get("this")) {
+
+
                 if ((tkOp = nextToken()) != null && tkOp.isOperator()
                         && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
 
@@ -160,6 +189,13 @@ public class ExpressionCompiler extends AbstractParser {
             }
         }
 
+        if (compileFail) {
+            throw new CompileException("Failed to compile: " + getParserContext().getErrorList().size() + " compilation error(s)", getParserContext().getErrorList());
+        }
+
+        if (getParserContext().getRootParser() == this) {
+            parserContext.remove();
+        }
 
         return new CompiledExpression(new ASTArrayList(astLinkedList), getCurrentSourceFileName());
     }
@@ -191,7 +227,7 @@ public class ExpressionCompiler extends AbstractParser {
             else if (tk.isIdentifier()) {
                 inputs.add(tk.getAbsoluteName());
 
-                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray());
+                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
                 propVerifier.analyze();
 
                 inputs.addAll(propVerifier.getInputs());
@@ -388,4 +424,5 @@ public class ExpressionCompiler extends AbstractParser {
     public String getExpression() {
         return new String(expr);
     }
+
 }
