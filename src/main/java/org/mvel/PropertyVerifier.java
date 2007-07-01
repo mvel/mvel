@@ -18,24 +18,19 @@
  */
 package org.mvel;
 
-import static org.mvel.util.ParseTools.parseParameterList;
+import org.mvel.optimizers.AbstractOptimizer;
+import org.mvel.optimizers.impl.refl.FieldAccessor;
+import org.mvel.optimizers.impl.refl.MethodAccessor;
 import org.mvel.util.ParseTools;
-import org.mvel.util.ReflectionUtil;
+import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
-import org.mvel.optimizers.impl.refl.*;
-import org.mvel.optimizers.AbstractOptimizer;
 
-import static java.lang.Character.isJavaIdentifierPart;
-import static java.lang.Character.isWhitespace;
-import java.lang.reflect.Member;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.lang.reflect.Array;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
 
 public class PropertyVerifier extends AbstractOptimizer {
 
@@ -49,7 +44,6 @@ public class PropertyVerifier extends AbstractOptimizer {
     private List<String> inputs = new LinkedList<String>();
     private boolean first = true;
 
-    private static final Class[] EMPTYCLS = new Class[0];
 
     public PropertyVerifier(char[] property, ParserContext parserContext) {
         this.expr = property;
@@ -106,7 +100,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
             else {
                 if (parserContext.isStrictTypeEnforcement()) {
-                    throw new CompileException("unqualified type for '" + property + "' in strict-mode");
+                    addFatalError("unqualified type in strict mode for: " + property);
                 }
                 return Object.class;
             }
@@ -136,18 +130,16 @@ public class PropertyVerifier extends AbstractOptimizer {
                     return tryStaticMethodRef.getClass();
                 }
                 else {
-
                     try {
                         return ((Field) tryStaticMethodRef).get(null).getClass();
                     }
                     catch (Exception e) {
-
                         throw new CompileException("in verifier: ", e);
                     }
                 }
 
             }
-            else if (ctx.getClass() == Class.class) {
+            else if (ctx != null && ctx.getClass() == Class.class) {
                 for (Method m : ctx.getMethods()) {
                     if (property.equals(m.getName())) {
                         return m.getReturnType();
@@ -156,14 +148,10 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
 
             if (parserContext.isStrictTypeEnforcement()) {
-                throw new PropertyAccessException("unqualified type in strict-mode: ('" + property + "')");
+                addFatalError("unqualified type in strict mode for: " + property);
             }
-            else {
-                return Object.class;
-            }
+            return Object.class;
         }
-
-
     }
 
     private Class getCollectionProperty(Class ctx, String prop) {
@@ -181,17 +169,22 @@ public class PropertyVerifier extends AbstractOptimizer {
 
             int end;
 
-            if (!scanTo(']'))
-                throw new PropertyAccessException("unterminated '['");
+            if (!scanTo(']')) {
+                addFatalError("unterminated [ in token");
+                return Object.class;
+            }
 
-            if ((end = containsStringLiteralTermination()) == -1)
-                throw new PropertyAccessException("unterminated string literal in collections accessor");
+            if ((end = containsStringLiteralTermination()) == -1) {
+                addFatalError("unterminated string literal in indexed property");
+                return Object.class;
+            }
 
             item = new String(expr, start, end - start);
         }
         else {
-            if (!scanTo(']'))
-                throw new PropertyAccessException("unterminated '['");
+            if (!scanTo(']')) {
+                addFatalError("unterminated [ in token");
+            }
 
             item = new String(expr, start, cursor - start);
         }
@@ -310,47 +303,17 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
 
             if (parserContext.isStrictTypeEnforcement()) {
-                throw new PropertyAccessException("unable to resolve method: " + ctx.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
+                addFatalError("unable to resolve method using strict-mode: " + ctx.getName() + "." + name + "(...)");
             }
-            else {
-                return Object.class;
-            }
+            return Object.class;
         }
         else {
-            if (es != null) {
-                ExecutableStatement cExpr;
-                for (int i = 0; i < es.length; i++) {
-                    cExpr = es[i];
-                    if (cExpr.getKnownIngressType() == null) {
-                        cExpr.setKnownIngressType(parameterTypes[i]);
-                        cExpr.computeTypeConversionRule();
-                    }
-                    if (!cExpr.isConvertableIngressEgress()) {
-                        args[i] = DataConversion.convert(args[i], parameterTypes[i]);
-                    }
-                }
-            }
-            else {
-                /**
-                 * Coerce any types if required.
-                 */
-                for (int i = 0; i < args.length; i++)
-                    args[i] = DataConversion.convert(args[i], parameterTypes[i]);
-            }
-
-
-            MethodAccessor access = new MethodAccessor();
-            access.setMethod(ParseTools.getWidenedTarget(m));
-            access.setParms(es);
 
             /**
              * Invoke the target method and return the response.
              */
             return m.getReturnType();
         }
-
-        // HERE
-
 
     }
 }
