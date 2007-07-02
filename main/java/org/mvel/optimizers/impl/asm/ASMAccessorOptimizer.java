@@ -113,8 +113,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
         cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
-        cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_" + String.valueOf(cw.hashCode()).replaceAll("\\-", "_") + (System.currentTimeMillis() / 1000),
-                null, "java/lang/Object", new String[]{"org/mvel/Accessor"});
+
+
+        synchronized (Runtime.getRuntime()) {
+            int r = (int) Math.random() * 100;
+            cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_"
+                    + String.valueOf(cw.hashCode()).replaceAll("\\-", "_") + (System.currentTimeMillis() / 10) + r,
+                    null, "java/lang/Object", new String[]{"org/mvel/Accessor"});
+        }
 
         MethodVisitor m = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         m.visitCode();
