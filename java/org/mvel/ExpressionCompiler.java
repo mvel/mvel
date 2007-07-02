@@ -90,7 +90,6 @@ public class ExpressionCompiler extends AbstractParser {
                 ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
                 tk.setAccessor(subCompiler.compile());
 
-
                 if (verifying)
                     inputs.addAll(subCompiler.getInputs());
             }
