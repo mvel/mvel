@@ -2,9 +2,9 @@ package org.mvel.ast;
 
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
-import static org.mvel.MVEL.compileExpression;
 import static org.mvel.MVEL.setProperty;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.balancedCapture;
 import static org.mvel.util.ParseTools.subset;
 
@@ -21,7 +21,7 @@ public class WithNode extends BlockNode implements NestedStatement {
     public WithNode(char[] expr, char[] block, int fields) {
         super(expr, fields, block);
 
-        nestedStatement = (ExecutableStatement) compileExpression(new String(expr).trim());
+        nestedStatement = (ExecutableStatement) ParseTools.subCompileExpression(new String(expr).trim());
 
         compileWithExpressions();
     }
@@ -70,7 +70,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                     if (parm == null) {
                         parms.add(new ParmValuePair(
                                 null,
-                                (ExecutableStatement) compileExpression(subset(block, start, i - start))
+                                (ExecutableStatement) ParseTools.subCompileExpression(subset(block, start, i - start))
                         ));
                         start = ++i;
                     }
@@ -78,7 +78,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
                         parms.add(new ParmValuePair(
                                 parm,
-                                (ExecutableStatement) compileExpression(subset(block, start, i - start)))
+                                (ExecutableStatement) ParseTools.subCompileExpression(subset(block, start, i - start)))
                         );
 
                         parm = null;
@@ -92,7 +92,7 @@ public class WithNode extends BlockNode implements NestedStatement {
         if (parm != null && start != block.length) {
             parms.add(new ParmValuePair(
                     parm,
-                    (ExecutableStatement) compileExpression(subset(block, start, block.length - start)))
+                    (ExecutableStatement) ParseTools.subCompileExpression(subset(block, start, block.length - start)))
             );
         }
 

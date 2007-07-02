@@ -59,6 +59,11 @@ public class ExpressionParser extends AbstractParser {
 
             parseAndExecuteInterpreted();
 
+            if (parserContext != null
+                    && (parserContext.get() == null || parserContext.get().getRootParser() == this)) {
+                parserContext.remove();
+            }
+ 
             return handleParserEgress(stk.peek(), returnBigDecimal);
         }
         catch (ArrayIndexOutOfBoundsException e) {

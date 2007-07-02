@@ -570,7 +570,7 @@ public class PropertyAccessor {
                 es = new Serializable[subtokens.length];
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
-                    es[i] = MVEL.compileExpression(subtokens[i]);
+                    es[i] = ParseTools.subCompileExpression(subtokens[i]);
                     args[i] = MVEL.executeExpression(es[i], thisReference, resolver);
 
                     if (es[i] instanceof CompiledExpression)

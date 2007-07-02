@@ -3,8 +3,8 @@ package org.mvel.ast;
 import org.mvel.ASTNode;
 import org.mvel.Accessor;
 import org.mvel.EndWithValue;
-import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.ParseTools;
 
 /**
  * @author Christopher Brock
@@ -15,7 +15,7 @@ public class ReturnNode extends ASTNode {
 
     public ReturnNode(char[] expr, int fields) {
         super(expr, fields);
-        accessor = (Accessor) MVEL.compileExpression(expr);
+        accessor = (Accessor) ParseTools.subCompileExpression(expr);
     }
 
 
