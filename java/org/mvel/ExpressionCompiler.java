@@ -13,7 +13,6 @@ import org.mvel.util.StringAppender;
 
 import static java.lang.Class.forName;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -27,35 +26,7 @@ public class ExpressionCompiler extends AbstractParser {
 
     private boolean verifying = true;
 
-    /**
-     * Used to hold the ParserContext if retainParserState is true.
-     */
     private ParserContext pCtx;
-
-//    public void setImportedClasses(Map<String, Class> imports) {
-//        getParserContext().setImports(imports);
-//    }
-//
-//    public void setInputs(Map<String, Class> inputs) {
-//        getParserContext().setInputTable(inputs);
-//    }
-//
-//    public boolean isStrictTyping() {
-//        return getParserContext().isStrictTypeEnforcement();
-//    }
-//
-//    public void setStrictTyping(boolean strictTyping) {
-//        getParserContext().setStrictTypeEnforcement(strictTyping);
-//    }
-//
-//    public boolean isRetainParserState() {
-//        return getParserContext().isRetainParserState();
-//    }
-//
-//    public void setRetainParserState(boolean retainParserState) {
-//        getParserContext().setRetainParserState(retainParserState);
-//    }
-
 
     public CompiledExpression compile() {
         return compile(new ParserContext());
@@ -73,7 +44,7 @@ public class ExpressionCompiler extends AbstractParser {
     /**
      * Initiate an in-context compile.  This method should really only be called by the internal API.
      *
-     * @return
+     * @return compiled expression object
      */
     public CompiledExpression _compile() {
         ASTNode tk;
@@ -228,19 +199,7 @@ public class ExpressionCompiler extends AbstractParser {
                 parserContext.remove();
                 throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
             }
-//            if (pCtx.getRootParser() == this) {
-//                if (pCtx.isRetainParserState()) {
-//                    pCtx = pCtx;
-//                }
-//
-//                /**
-//                 * If this is the root parser in this expression, then we remove the parse context from the thread
-//                 * local.
-//                 */
-//
-//                parserContext.remove();
-//            }
-//
+
             return new CompiledExpression(new ASTArrayList(astLinkedList), getCurrentSourceFileName());
         }
         catch (Throwable e) {
