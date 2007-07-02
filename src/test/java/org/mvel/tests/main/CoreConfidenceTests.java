@@ -402,7 +402,7 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(2, parseDirect("Array.getLength({'foo', 'bar'})"));
     }
 
-    public void testEmptyList() {
+    public void testEmptyList() {                                                                            
         assertTrue(parseDirect("[]") instanceof List);
     }
 
@@ -500,9 +500,8 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testThisReference3() {
-        assertEquals(true, parseDirect("this is 'org.mvel.tests.main.res.Base'"));
+        assertEquals(true, parseDirect("this is org.mvel.tests.main.res.Base"));
     }
-
 
     public void testStringEscaping() {
         assertEquals("\"Mike Brock\"", parseDirect("\"\\\"Mike Brock\\\"\""));
