@@ -2,7 +2,7 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
-import static org.mvel.MVEL.compileExpression;
+import org.mvel.util.ParseTools;
 import org.mvel.integration.VariableResolverFactory;
 
 /**
@@ -19,8 +19,8 @@ public class IfNode extends ASTNode implements NestedStatement {
     public IfNode(char[] condition, char[] block, int fields) {
         super(condition, fields);
 
-        this.condition = (ExecutableStatement) compileExpression(this.name = condition);
-        this.nestedStatement = (ExecutableStatement) compileExpression(this.block = block);
+        this.condition = (ExecutableStatement) ParseTools.subCompileExpression(this.name = condition);
+        this.nestedStatement = (ExecutableStatement) ParseTools.subCompileExpression(this.block = block);
     }
 
     public char[] getBlock() {
@@ -87,6 +87,6 @@ public class IfNode extends ASTNode implements NestedStatement {
     }
 
     public void setElseBlock(char[] block) {
-        elseBlock = (ExecutableStatement) compileExpression(block);
+        elseBlock = (ExecutableStatement) ParseTools.subCompileExpression(block);
     }
 }

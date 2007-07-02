@@ -3,9 +3,9 @@ package org.mvel.util;
 import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
-import static org.mvel.DataConversion.convert;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.Interceptor;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
@@ -14,13 +14,13 @@ import org.mvel.math.MathProcessor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -876,4 +876,70 @@ public class ParseTools {
         return clazz == Integer.class || clazz == Boolean.class || clazz == Long.class || clazz == Double.class
                 || clazz == Float.class || clazz == Short.class || clazz == Byte.class || clazz == Character.class;
     }
+
+    public static Serializable subCompileExpression(String expression) {
+        ExpressionCompiler parser = new ExpressionCompiler(expression);
+
+
+        CompiledExpression cExpr = parser._compile();
+
+        ASTIterator tokens = cExpr.getTokens();
+
+        /**
+         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
+         */
+        if (MVEL.isOptimizationEnabled() && tokens.size() == 1) {
+            ASTNode tk = tokens.firstNode();
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, false);
+            }
+            else if (tk.isLiteral() && !tk.isThisVal()) {
+                if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
+                    return new ExecutableLiteral(tk.getIntRegister());
+                }
+                else {
+                    return new ExecutableLiteral(tk.getLiteralValue());
+                }
+            }
+        }
+
+
+        return cExpr;
+    }
+
+
+
+    public static Serializable subCompileExpression(char[] expression) {
+        ExpressionCompiler parser = new ExpressionCompiler(expression);
+//        parser.setImportedClasses(imports);
+//        parser.setInterceptors(interceptors);
+//        parser.setSourceFile(sourceName);
+
+        CompiledExpression cExpr = parser._compile();
+
+        ASTIterator tokens = cExpr.getTokens();
+
+        /**
+         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
+         */
+        if (MVEL.isOptimizationEnabled() && tokens.size() == 1) {
+            ASTNode tk = tokens.firstNode();
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, false);
+            }
+            else if (tk.isLiteral() && !tk.isThisVal()) {
+                if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
+                    return new ExecutableLiteral(tk.getIntRegister());
+                }
+                else {
+                    return new ExecutableLiteral(tk.getLiteralValue());
+                }
+            }
+        }
+
+
+        return cExpr;
+    }
+
+
 }

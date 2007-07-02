@@ -378,7 +378,6 @@ public class AbstractParser {
                                 }
                                 else if (lastWasIdentifier) {
 
-                                    ParserContext pc = getParserContext();
                                     /**
                                      * Check for typing information.
                                      */
@@ -1015,6 +1014,9 @@ public class AbstractParser {
         if (parserContext == null || parserContext.get() == null) {
             newContext();
         }
+        else {
+        }
+
         return parserContext.get();
     }
 
@@ -1032,21 +1034,7 @@ public class AbstractParser {
         parserContext.set(ctx);
     }
 
-    public Map<String, Interceptor> getInterceptors() {
-        return getParserContext().getInterceptors();
-    }
 
-    public void setInterceptors(Map<String, Interceptor> interceptors) {
-        getParserContext().setInterceptors(interceptors);
-    }
-
-    public String getSourceFile() {
-        return getParserContext().getSourceFile();
-    }
-
-    public void setSourceFile(String sourceFile) {
-        getParserContext().setSourceFile(sourceFile);
-    }
 
     public boolean isDebugSymbols() {
         return debugSymbols;
@@ -1163,6 +1151,10 @@ public class AbstractParser {
                 OPERATORS.put(":", TERNARY_ELSE);
         }
 
+    }
+
+    public static void resetParserContext() {
+        if (parserContext != null) parserContext.remove();
     }
 
 

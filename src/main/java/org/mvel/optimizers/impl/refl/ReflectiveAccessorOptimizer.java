@@ -296,7 +296,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         ExecutableStatement itemStmt = null;
         if (itemSubExpr) {
-            itemStmt = (ExecutableStatement) MVEL.compileExpression(item);
+            itemStmt = (ExecutableStatement) ParseTools.subCompileExpression(item);
             idx = itemStmt.getValue(ctx, thisRef, variableFactory);
         }
 
@@ -422,7 +422,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             es = new ExecutableStatement[subtokens.length];
             args = new Object[subtokens.length];
             for (int i = 0; i < subtokens.length; i++) {
-                args[i] = (es[i] = (ExecutableStatement) MVEL.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
             }
         }
 
@@ -655,7 +655,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
 
             for (int i = 0; i < constructorParms.length; i++) {
-                cStmts[i] = (ExecutableStatement) MVEL.compileExpression(constructorParms[i]);
+                cStmts[i] = (ExecutableStatement) ParseTools.subCompileExpression(constructorParms[i]);
             }
 
             Object[] parms = new Object[constructorParms.length];
@@ -702,7 +702,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     public Accessor optimizeReturn(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(property);
+        ExecutableStatement stmt = (ExecutableStatement) ParseTools.subCompileExpression(property);
         Return ret = new Return(stmt);
         val = stmt.getValue(ctx, thisRef, factory);
 

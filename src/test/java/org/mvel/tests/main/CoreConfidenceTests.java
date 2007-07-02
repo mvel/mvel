@@ -402,7 +402,7 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(2, parseDirect("Array.getLength({'foo', 'bar'})"));
     }
 
-    public void testEmptyList() {                                                                            
+    public void testEmptyList() {
         assertTrue(parseDirect("[]") instanceof List);
     }
 
@@ -793,9 +793,11 @@ public class CoreConfidenceTests extends TestCase {
         System.out.println("-------\n" + compiler.getExpression() + "\n-------\n");
 
         compiler.setDebugSymbols(true);
-        compiler.setSourceFile("test.mv");
 
-        CompiledExpression compiled = compiler.compile();
+        ParserContext ctx = new ParserContext();
+        ctx.setSourceFile("test.mv");
+
+        CompiledExpression compiled = compiler.compile(ctx);
 
         System.out.println(DebugTools.decompile(compiled));
 
@@ -838,6 +840,16 @@ public class CoreConfidenceTests extends TestCase {
         assertTrue(compiler.getLocals().contains("twa"));
 
         assertEquals(String.class, DebugTools.determineType("bleh", c));
+    }
+
+    public void testVarInputs2() {
+        ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh;");
+        ParserContext ctx = new ParserContext();
+        ctx.setRetainParserState(true);
+
+        CompiledExpression c = compiler.compile(ctx);
+
+        System.out.println(ctx.getVarOrInputType("bleh"));
     }
 
     public void testAnalyzer() {
@@ -956,10 +968,11 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testStrictTypingCompilation() {
         ExpressionCompiler compiler = new ExpressionCompiler("a = 0; a + 5");
-        compiler.setStrictTyping(true);
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement(true);
 
         try {
-            compiler.compile();
+            compiler.compile(ctx);
         }
         catch (CompileException e) {
             assertEquals(1, e.getErrors().size());
