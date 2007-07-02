@@ -434,6 +434,10 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(3, parseDirect("(name in things).size()"));
     }
 
+    public void testSizeOnInlineArray() {
+        assertEquals(3, parseDirect("{1,2,3}.size()"));
+    }
+
 
     public void testStaticMethodFromLiteral() {
         assertEquals(String.class.getName(), parseDirect("String.valueOf(Class.forName('java.lang.String').getName())"));
