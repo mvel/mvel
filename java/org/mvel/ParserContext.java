@@ -25,7 +25,6 @@ public class ParserContext {
 
     private boolean fatalError = false;
 
-
     public ParserContext(Object rootParser) {
         this.rootParser = rootParser;
     }
@@ -44,8 +43,6 @@ public class ParserContext {
         }
         return Object.class;
     }
-
-
 
     public Object getRootParser() {
         return rootParser;
