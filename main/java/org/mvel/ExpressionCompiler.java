@@ -1,10 +1,10 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
+import org.mvel.ast.AssignmentNode;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
 import org.mvel.ast.TypedVarNode;
-import org.mvel.ast.AssignmentNode;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.ParseTools.doOperations;
@@ -13,7 +13,10 @@ import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
 import static java.lang.Class.forName;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
@@ -24,10 +27,13 @@ public class ExpressionCompiler extends AbstractParser {
 
     private Class returnType;
 
-    private boolean compileFail = false;
-
     private boolean verifying = true;
+    private boolean retainParserState = false;
 
+    /**
+     * Used to hold the ParserContext if retainParserState is true.
+     */
+    private ParserContext parserContextHolder; 
 
     public void setImportedClasses(Map<String, Class> imports) {
         getParserContext().setImports(imports);
@@ -37,13 +43,20 @@ public class ExpressionCompiler extends AbstractParser {
         getParserContext().setInputTable(inputs);
     }
 
-
     public boolean isStrictTyping() {
         return getParserContext().isStrictTypeEnforcement();
     }
 
     public void setStrictTyping(boolean strictTyping) {
         getParserContext().setStrictTypeEnforcement(strictTyping);
+    }
+
+    public boolean isRetainParserState() {
+        return retainParserState;
+    }
+
+    public void setRetainParserState(boolean retainParserState) {
+        this.retainParserState = retainParserState;
     }
 
     public CompiledExpression compile() {
@@ -200,6 +213,10 @@ public class ExpressionCompiler extends AbstractParser {
             throw new CompileException("Failed to compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
         }
         else if (pCtx.getRootParser() == this) {
+            if (retainParserState) {
+                parserContextHolder = pCtx;
+            }
+
             /**
              * If this is the root parser in this expression, then we remove the parse context from the thread
              * local.
@@ -434,6 +451,10 @@ public class ExpressionCompiler extends AbstractParser {
 
     public String getExpression() {
         return new String(expr);
+    }
+
+    public ParserContext getParserContextState() {
+        return parserContextHolder;
     }
 
 }
