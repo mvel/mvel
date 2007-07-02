@@ -62,7 +62,11 @@ public class ExpressionCompiler extends AbstractParser {
     }
 
     public CompiledExpression compile(ParserContext ctx) {
+        if (parserContext == null) {
+            parserContext = new ThreadLocal<ParserContext>();
+        }
         parserContext.set(ctx);
+        
         return _compile();
     }
 
