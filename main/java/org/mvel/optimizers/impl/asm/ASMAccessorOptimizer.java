@@ -496,7 +496,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
 
         boolean literal = false;
-        ExecutableStatement compiled = (ExecutableStatement) compileExpression(new String(expr, start, cursor - start));
+        ExecutableStatement compiled = (ExecutableStatement) ParseTools.subCompileExpression(new String(expr, start, cursor - start));
         Object item;
 
         if (compiled instanceof ExecutableLiteral) {
@@ -687,7 +687,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             preConvArgs = new Object[es.length];
 
             for (int i = 0; i < subtokens.length; i++) {
-                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
             }
         }
 
@@ -1529,7 +1529,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return ARRAY;
         }
         else {
-            compiledInputs.add((ExecutableStatement) compileExpression((String) o));
+            compiledInputs.add((ExecutableStatement) ParseTools.subCompileExpression((String) o));
 
             switch (type) {
                 case ARRAY:
@@ -1665,7 +1665,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         try {
             if (constructorParms != null) {
                 for (String constructorParm : constructorParms) {
-                    compiledInputs.add((ExecutableStatement) compileExpression(constructorParm));
+                    compiledInputs.add((ExecutableStatement) ParseTools.subCompileExpression(constructorParm));
                 }
 
                 String s = new String(subset(property, 0, findFirst('(', property)));

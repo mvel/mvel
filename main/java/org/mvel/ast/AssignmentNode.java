@@ -2,15 +2,15 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
-import static org.mvel.MVEL.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
+import org.mvel.util.ParseTools;
 
 /**
  * @author Christopher Brock
  */
-public class AssignmentNode extends ASTNode {
+public class AssignmentNode extends ASTNode implements Assignment {
     private String name;
     private ExecutableStatement statement;
 
@@ -20,7 +20,9 @@ public class AssignmentNode extends ASTNode {
         int assignStart;
         if ((assignStart = find(expr, '=')) != -1) {
             checkNameSafety(name = new String(expr, 0, assignStart).trim());
-            statement = (ExecutableStatement) compileExpression(subset(expr, assignStart + 1));
+            statement = (ExecutableStatement) ParseTools.subCompileExpression(subset(expr, assignStart + 1));
+
+            this.egressType = statement.getKnownEgressType();
         }
         else {
             checkNameSafety(name = new String(expr));
@@ -47,4 +49,7 @@ public class AssignmentNode extends ASTNode {
     }
 
 
+    public String getAssignmentVar() {
+        return name;
+    }
 }

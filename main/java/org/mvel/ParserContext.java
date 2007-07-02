@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * The ParserContext is the main enviroment object used for sharing state throughout the entire
+ * parser/compile process.
+ *
+ */
 public class ParserContext {
     private String sourceFile;
     private int lineCount;
@@ -21,12 +26,23 @@ public class ParserContext {
 
     private Object rootParser;
 
+    private boolean compiled = false;
     private boolean strictTypeEnforcement = false;
-
     private boolean fatalError = false;
+    private boolean retainParserState = false;
+
+    public ParserContext() {
+    }
 
     public ParserContext(Object rootParser) {
         this.rootParser = rootParser;
+    }
+
+
+    public ParserContext(Map<String, Class> imports, Map<String, Interceptor> interceptors, String sourceFile) {
+        this.imports = imports;
+        this.interceptors = interceptors;
+        this.sourceFile = sourceFile;
     }
 
     public boolean hasVarOrInput(String name) {
@@ -35,10 +51,10 @@ public class ParserContext {
     }
 
     public Class getVarOrInputType(String name) {
-        if (variableTable != null && variableTable.containsKey(name))  {
+        if (variableTable != null && variableTable.containsKey(name)) {
             return variableTable.get(name);
         }
-        else if (inputTable != null && inputTable.containsKey(name))  {
+        else if (inputTable != null && inputTable.containsKey(name)) {
             return inputTable.get(name);
         }
         return Object.class;
@@ -114,6 +130,16 @@ public class ParserContext {
         this.variableTable = variableTable;
     }
 
+    public void initializeVariableTable() {
+        if (variableTable == null) variableTable = new HashMap<String, Class>();
+    }
+
+    public void addVariable(String name, Class type) {
+        if (variableTable.containsKey(name)) return;
+        if (type == null) type = Object.class;
+        variableTable.put(name, type);
+    }
+
     public Map<String, Class> getInputTable() {
         return inputTable;
     }
@@ -150,5 +176,22 @@ public class ParserContext {
 
     public void setStrictTypeEnforcement(boolean strictTypeEnforcement) {
         this.strictTypeEnforcement = strictTypeEnforcement;
+    }
+
+    public boolean isRetainParserState() {
+        return retainParserState;
+    }
+
+    public void setRetainParserState(boolean retainParserState) {
+        this.retainParserState = retainParserState;
+    }
+
+
+    public boolean isCompiled() {
+        return compiled;
+    }
+
+    public void setCompiled(boolean compiled) {
+        this.compiled = compiled;
     }
 }

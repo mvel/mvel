@@ -3,8 +3,8 @@ package org.mvel.ast;
 import org.mvel.ASTNode;
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
-import static org.mvel.MVEL.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.ParseTools;
 
 /**
  * @author Christopher Brock
@@ -14,7 +14,7 @@ public class AssertNode extends ASTNode {
 
     public AssertNode(char[] expr, int fields) {
         super(expr, fields);
-        assertion = (ExecutableStatement) compileExpression(expr);
+        assertion = (ExecutableStatement) ParseTools.subCompileExpression(expr);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

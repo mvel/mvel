@@ -2,10 +2,10 @@ package org.mvel.ast;
 
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
-import static org.mvel.MVEL.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import static org.mvel.util.ParseTools.subset;
+import org.mvel.util.ParseTools;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class ForEachNode extends BlockNode {
     public ForEachNode(char[] condition, char[] block, int fields) {
         super(condition, fields);
         handleCond(condition);
-        this.compiledBlock = (ExecutableStatement) compileExpression(this.block = block);
+        this.compiledBlock = (ExecutableStatement) ParseTools.subCompileExpression(this.block = block);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -64,6 +64,6 @@ public class ForEachNode extends BlockNode {
 
         cursor++;
 
-        this.condition = (ExecutableStatement) compileExpression(subset(condition, cursor));
+        this.condition = (ExecutableStatement) ParseTools.subCompileExpression(subset(condition, cursor));
     }
 }

@@ -558,6 +558,11 @@ public class ASTNode implements Cloneable, Serializable {
     public void setIntRegister(int intRegister) {
         this.intRegister = intRegister;
     }
+
+
+    public int getFields() {
+        return fields;
+    }
 }
 
 

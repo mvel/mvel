@@ -17,7 +17,7 @@ public class AssignSub extends ASTNode {
         this.varName = variableName;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            statement = (ExecutableStatement) MVEL.compileExpression(expr);
+            statement = (ExecutableStatement) ParseTools.subCompileExpression(expr);
         }
     }
 

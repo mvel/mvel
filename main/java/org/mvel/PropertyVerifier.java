@@ -20,7 +20,6 @@ package org.mvel;
 
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.impl.refl.FieldAccessor;
-import org.mvel.optimizers.impl.refl.MethodAccessor;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.util.PropertyTools;
@@ -191,7 +190,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
 
         ExpressionCompiler compiler = new ExpressionCompiler(item);
-        compiler.compile();
+        compiler._compile();
 
         ++cursor;
 
@@ -233,7 +232,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
             for (String token : subtokens) {
                 verifCompiler = new ExpressionCompiler(token);
-                verifCompiler.compile();
+                verifCompiler._compile();
 
                 inputs.addAll(verifCompiler.getInputs());
             }
@@ -253,7 +252,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             for (int i = 0; i < subtokens.length; i++) {
                 ExpressionCompiler compiler = new ExpressionCompiler(subtokens[i]);
                 compiler.setVerifying(true);
-                ExecutableStatement stmt = compiler.compile();
+                ExecutableStatement stmt = compiler._compile();
 
                 es[i] = stmt;
                 args[i] = compiler.getReturnType();

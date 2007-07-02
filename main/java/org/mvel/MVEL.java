@@ -83,6 +83,10 @@ public class MVEL {
         return DEBUG_FILE;
     }
 
+    public static boolean isOptimizationEnabled() {
+        return OPTIMIZER;
+    }
+
     public static Object eval(String expression, Object ctx) {
         return new ExpressionParser(expression, ctx).parse();
     }
@@ -114,12 +118,7 @@ public class MVEL {
     public static Serializable compileExpression(String expression, Map<String, Class> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
-        parser.setImportedClasses(imports);
-        parser.setInterceptors(interceptors);
-        parser.setSourceFile(sourceName);
-
-        CompiledExpression cExpr = parser.compile();
-
+        CompiledExpression cExpr = parser.compile(new ParserContext(imports, interceptors, sourceName));
         ASTIterator tokens = cExpr.getTokens();
 
         /**
@@ -156,6 +155,7 @@ public class MVEL {
         return compileExpression(expression, null, null, null);
     }
 
+
     public static Serializable compileExpression(String expression, Map<String, Class> imports) {
         return compileExpression(expression, imports, null, null);
     }
@@ -176,13 +176,10 @@ public class MVEL {
      */
     public static Serializable compileExpression(char[] expression, Map<String, Class> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
-        
-        ExpressionCompiler parser = new ExpressionCompiler(expression);
-        parser.setImportedClasses(imports);
-        parser.setInterceptors(interceptors);
-        parser.setSourceFile(sourceName);
 
-        CompiledExpression cExpr = parser.compile();
+        ExpressionCompiler parser = new ExpressionCompiler(expression);
+
+        CompiledExpression cExpr = parser.compile(new ParserContext(imports, interceptors, sourceName));
         ASTIterator tokens = cExpr.getTokens();
 
         /**
@@ -589,4 +586,6 @@ public class MVEL {
     public static void setProperty(Object ctx, String property, Object value) {
         PropertyAccessor.set(ctx, property, value);
     }
+
+
 }

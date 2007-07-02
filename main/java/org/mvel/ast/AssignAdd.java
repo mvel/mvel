@@ -1,6 +1,7 @@
 package org.mvel.ast;
 
 import static org.mvel.util.ParseTools.doOperations;
+import org.mvel.util.ParseTools;
 import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
 import org.mvel.MVEL;
@@ -17,7 +18,7 @@ public class AssignAdd extends ASTNode {
         this.varName = variableName;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            statement = (ExecutableStatement) MVEL.compileExpression(expr);
+            statement = (ExecutableStatement) ParseTools.subCompileExpression(expr);
         }
     }
 
