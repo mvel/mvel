@@ -890,10 +890,8 @@ public class ParseTools {
          */
         if (MVEL.isOptimizationEnabled() && tokens.size() == 1) {
             ASTNode tk = tokens.firstNode();
-            if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);
-            }
-            else if (tk.isLiteral() && !tk.isThisVal()) {
+
+            if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
                     return new ExecutableLiteral(tk.getIntRegister());
                 }
@@ -901,12 +899,14 @@ public class ParseTools {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
             }
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, false);
+            }
         }
 
 
         return cExpr;
     }
-
 
 
     public static Serializable subCompileExpression(char[] expression) {
@@ -924,10 +924,7 @@ public class ParseTools {
          */
         if (MVEL.isOptimizationEnabled() && tokens.size() == 1) {
             ASTNode tk = tokens.firstNode();
-            if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);
-            }
-            else if (tk.isLiteral() && !tk.isThisVal()) {
+            if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
                     return new ExecutableLiteral(tk.getIntRegister());
                 }
@@ -935,6 +932,11 @@ public class ParseTools {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
             }
+
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, false);
+            }
+
         }
 
 

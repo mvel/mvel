@@ -13,7 +13,9 @@ import java.util.HashMap;
  */
 public class ParserContext {
     private String sourceFile;
+
     private int lineCount;
+    private int lineOffset;
 
     protected Map<String, Class> imports;
     protected Map<String, Interceptor> interceptors;
@@ -65,6 +67,14 @@ public class ParserContext {
 
     public void setLineCount(int lineCount) {
         this.lineCount = lineCount;
+    }
+
+    public int getLineOffset() {
+        return lineOffset;
+    }
+
+    public void setLineOffset(int lineOffset) {
+        this.lineOffset = lineOffset;
     }
 
     public Class getImport(String name) {

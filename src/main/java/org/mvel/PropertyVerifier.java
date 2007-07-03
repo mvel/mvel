@@ -98,9 +98,9 @@ public class PropertyVerifier extends AbstractOptimizer {
                 return (Class) AbstractParser.LITERALS.get(property);
             }
             else {
-                if (parserContext.isStrictTypeEnforcement()) {
-                    addFatalError("unqualified type in strict mode for: " + property);
-                }
+//                if (cursor < length && parserContext.isStrictTypeEnforcement()) {
+//                    addFatalError("unqualified type in strict mode for: " + property);
+//                }
                 return Object.class;
             }
         }
@@ -199,14 +199,6 @@ public class PropertyVerifier extends AbstractOptimizer {
 
 
     private Class getMethod(Class ctx, String name) {
-//        if (first && variableFactory.isResolveable(name)) {
-//            Method m = (Method) variableFactory.getVariableResolver(name).getValue();
-//            ctx = m.getDeclaringClass();
-//            name = m.getName();
-//            first = false;
-//        }
-
-
         int st = cursor;
 
         int depth = 1;

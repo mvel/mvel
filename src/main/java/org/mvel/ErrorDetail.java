@@ -18,7 +18,6 @@ public class ErrorDetail {
         this.message = message;
     }
 
-
     public int getRow() {
         return row;
     }
@@ -54,10 +53,10 @@ public class ErrorDetail {
 
     public String toString() {
          if (critical) {
-             return "(" + col + "," + row + ") " + message;
+             return "(" + row + "," + col + ") " + message;
          }
          else {
-             return "(" + col + "," + row + ") WARNING: " + message;
+             return "(" + row + "," + col + ") WARNING: " + message;
          }
 
     }

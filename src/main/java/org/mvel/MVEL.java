@@ -126,16 +126,17 @@ public class MVEL {
          */
         if (OPTIMIZER && tokens.size() == 1) {
             ASTNode tk = tokens.firstNode();
-            if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);
-            }
-            else if (tk.isLiteral() && !tk.isThisVal()) {
+
+            if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.fields & ASTNode.INTEGER32) != 0) {
                     return new ExecutableLiteral(tk.getIntRegister());
                 }
                 else {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
+            }
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, false);
             }
         }
 
@@ -187,16 +188,17 @@ public class MVEL {
          */
         if (OPTIMIZER && tokens.size() == 1) {
             ASTNode tk = tokens.firstNode();
-            if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);
-            }
-            else if (tk.isLiteral() && !tk.isThisVal()) {
+
+            if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.fields & ASTNode.INTEGER32) != 0) {
                     return new ExecutableLiteral(tk.getIntRegister());
                 }
                 else {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
+            }
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, false);
             }
         }
 
