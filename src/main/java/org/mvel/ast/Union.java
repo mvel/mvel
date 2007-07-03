@@ -2,13 +2,10 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.Accessor;
-import org.mvel.MVEL;
 import org.mvel.PropertyAccessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
-import static org.mvel.util.ParseTools.subset;
-
 
 public class Union extends ASTNode {
     private ASTNode main;
@@ -18,7 +15,6 @@ public class Union extends ASTNode {
         super(expr, start, end, fields);
         this.main = main;
     }
-
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
