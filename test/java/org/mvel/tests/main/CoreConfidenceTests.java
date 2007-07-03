@@ -969,7 +969,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testStrictTypingCompilation() {
-        ExpressionCompiler compiler = new ExpressionCompiler("a = 0; a + 5");
+        ExpressionCompiler compiler = new ExpressionCompiler("a.foo; b.foo; x = 5");
         ParserContext ctx = new ParserContext();
         ctx.setStrictTypeEnforcement(true);
 
@@ -977,7 +977,7 @@ public class CoreConfidenceTests extends TestCase {
             compiler.compile(ctx);
         }
         catch (CompileException e) {
-            assertEquals(1, e.getErrors().size());
+            assertEquals(2, e.getErrors().size());
             return;
         }
         assertTrue(false);

@@ -2,7 +2,6 @@ package org.mvel;
 
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
-import org.mvel.integration.Interceptor;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
@@ -185,6 +184,8 @@ public class AbstractParser {
 
             ParserContext pCtx = parserContext.get();
             pCtx.setLineCount(line);
+            pCtx.setLineOffset(cursor);
+
             return new LineLabel(pCtx.getSourceFile(), line);
         }
         else {
@@ -1028,13 +1029,9 @@ public class AbstractParser {
 
     protected void newContext() {
         if (parserContext == null) parserContext = new ThreadLocal<ParserContext>();
-
         ParserContext ctx = new ParserContext(this);
-
         parserContext.set(ctx);
     }
-
-
 
     public boolean isDebugSymbols() {
         return debugSymbols;
@@ -1052,13 +1049,16 @@ public class AbstractParser {
     }
 
     protected void addFatalError(String message) {
-        getParserContext().addError(new ErrorDetail(message, true));
+        getParserContext().addError(new ErrorDetail(getParserContext().getLineCount(), cursor - getParserContext().getLineOffset(), true, message));
+    }
+
+    protected void addFatalError(String message, int row, int cols) {
+        getParserContext().addError(new ErrorDetail(row, cols, true, message));
     }
 
     protected void addWarning(String message) {
         getParserContext().addError(new ErrorDetail(message, false));
     }
-
 
     public static final int LEVEL_5_CONTROL_FLOW = 5;
     public static final int LEVEL_4_ASSIGNMENT = 4;
@@ -1150,12 +1150,9 @@ public class AbstractParser {
             case 0: // Property access and inline collections
                 OPERATORS.put(":", TERNARY_ELSE);
         }
-
     }
 
     public static void resetParserContext() {
         if (parserContext != null) parserContext.remove();
     }
-
-
 }
