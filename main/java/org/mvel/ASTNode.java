@@ -29,6 +29,7 @@ import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.handleNumericConversion;
 import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
+import org.mvel.util.ArrayTools;
 
 import java.io.Serializable;
 import static java.lang.Class.forName;
