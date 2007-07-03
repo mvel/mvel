@@ -1,0 +1,40 @@
+package org.mvel.ast;
+
+import org.mvel.ASTNode;
+import org.mvel.Accessor;
+import org.mvel.MVEL;
+import org.mvel.PropertyAccessor;
+import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.AccessorOptimizer;
+import org.mvel.optimizers.OptimizerFactory;
+import static org.mvel.util.ParseTools.subset;
+
+
+public class Union extends ASTNode {
+    private ASTNode main;
+    private Accessor accessor;
+
+    public Union(char[] expr, int start, int end, int fields, ASTNode main) {
+        super(expr, start, end, fields);
+        this.main = main;
+    }
+
+
+    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        try {
+            return accessor.getValue(main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory);
+        }
+        catch (NullPointerException e) {
+            if (accessor != null) throw e;
+            AccessorOptimizer o = OptimizerFactory.getDefaultAccessorCompiler();
+            accessor = o.optimizeAccessor(name, ctx, thisValue, factory, false);
+            return o.getResultOptPass();
+        }
+    }
+
+    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        return  PropertyAccessor.get(
+                name,
+                main.getReducedValue(ctx, thisValue, factory), factory, thisValue);
+    }
+}

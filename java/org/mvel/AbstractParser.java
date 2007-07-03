@@ -161,17 +161,18 @@ public class AbstractParser {
         boolean capture = false;
         boolean union = false;
 
-        if (!debugSymbols && parserContext != null && parserContext.get() != null) {
-            debugSymbols = true;
-            if (expr[cursor] != '\n') lastWasLineLabel = true;
-        }
+//        if (!debugSymbols && parserContext != null && getParserContext().isDebugSymbols()) {
+//            debugSymbols = true;
+//            if (expr[cursor] != '\n') lastWasLineLabel = true;
+//        }
 
         if (debugSymbols && !lastWasLineLabel && (expr[cursor] == '\n' || cursor == 0)) {
             if (getParserContext().getSourceFile() == null) {
                 throw new CompileException("unable to produce debugging symbols: source name must be provided.");
             }
 
-            line = parserContext.get().getLineCount();
+            ParserContext pCtx = getParserContext();
+            line = pCtx.getLineCount();
 
             lastWasLineLabel = true;
 
@@ -182,7 +183,6 @@ public class AbstractParser {
                 line++;
             }
 
-            ParserContext pCtx = parserContext.get();
             pCtx.setLineCount(line);
             pCtx.setLineOffset(cursor);
 
@@ -498,6 +498,16 @@ public class AbstractParser {
                              * Handle multi-line comments.
                              */
                             int len = length - 1;
+
+                            /**
+                             * This probably seems highly redundant, but sub-compilations within the same
+                             * source will spawn a new compiler, and we need to sync this with the
+                             * parser context;
+                             */
+                            if (debugSymbols) {
+                                line = getParserContext().getLineCount();
+                            }
+
                             while (true) {
                                 cursor++;
 
@@ -519,6 +529,11 @@ public class AbstractParser {
                                     break;
                                 }
                             }
+
+                            if (debugSymbols) {
+                                getParserContext().setLineCount(line);
+                            }
+
                             continue;
                         }
 
@@ -532,8 +547,12 @@ public class AbstractParser {
                     case'(': {
                         cursor++;
 
-                        for (brace = 1; cursor < length && brace > 0;) {
-                            switch (expr[cursor++]) {
+                        boolean singleToken = true;
+                        boolean lastWS = false;
+
+                        skipWhitespace();
+                        for (brace = 1; cursor < length && brace > 0; cursor++) {
+                            switch (expr[cursor]) {
                                 case'(':
                                     brace++;
                                     break;
@@ -541,25 +560,72 @@ public class AbstractParser {
                                     brace--;
                                     break;
                                 case'i':
-                                    if (cursor < length && expr[cursor] == 'n' && isWhitespace(expr[cursor + 1])) {
+                                    if (isAt('n', 1) && isWhitespace(lookAhead(2))) {
                                         fields |= ASTNode.FOLD;
                                     }
                                     break;
+                                default:
+                                    if (lastWS) {
+                                        singleToken = false;
+                                    }
+                                    else if (isWhitespace(expr[cursor])) {
+                                        lastWS = true;
+                                        skipWhitespace();
+                                        cursor--;
+                                    }
                             }
                         }
-                        if (brace > 0)
+
+                        if (brace > 0) {
                             throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
+                        }
+
+                        if (singleToken) {
+                            String tokenStr = new String(expr, trimRight(start + 1), trimLeft(cursor - 1) - (start + 1));
+
+                            if (getParserContext().hasImport(tokenStr)) {
+                                start = cursor;
+                                captureToEOS();
+                                return new TypeCast(expr, start, cursor, fields, getParserContext().getImport(tokenStr));
+                            }
+                            else if (LITERALS.containsKey(tokenStr)) {
+                                start = cursor;
+                                captureToEOS();
+                                return new TypeCast(expr, start, cursor, fields, (Class) LITERALS.get(tokenStr));
+                            }
+                            else {
+                                try {
+                                    /**
+                                     * 
+                                     *  take a stab in the dark and try and load the class
+                                     */
+                                    Class cls = createClass(tokenStr);
+
+                                    start = cursor;
+                                    captureToEOS();
+                                    return new TypeCast(expr, start, cursor, fields, cls);
+
+                                }
+                                catch (ClassNotFoundException e) {
+                                    /**
+                                     * Just fail through.
+                                     */
+                                }
+                            }
+
+                        }
+
 
                         if ((fields & ASTNode.FOLD) != 0) {
                             if (cursor < length && expr[cursor] == '.') {
-                                cursor++;
+                                cursor += 1;
                                 continue;
                             }
 
-                            return createToken(expr, start, cursor, ASTNode.FOLD);
+                            return createToken(expr, trimRight(start), cursor++, ASTNode.FOLD);
                         }
 
-                        return new Substatement(expr, start + 1, cursor - 1, fields);
+                        return handleUnion(new Substatement(expr, trimRight(start + 1), trimLeft(cursor - 1), fields));
                     }
 
                     case'}':
@@ -688,6 +754,18 @@ public class AbstractParser {
         }
 
         return createPropertyToken(start, cursor);
+    }
+
+    protected ASTNode handleUnion(ASTNode node) {
+        if (cursor < length) {
+            skipWhitespace();
+            if (expr[cursor] == '.') {
+                int union = cursor + 1;
+                captureToEOS();
+                return new Union(expr, union, cursor, fields, node);
+            }
+        }
+        return node;
     }
 
 
