@@ -14,7 +14,7 @@ import java.util.HashMap;
 public class ParserContext {
     private String sourceFile;
 
-    private int lineCount;
+    private int lineCount = 1;
     private int lineOffset;
 
     protected Map<String, Class> imports;
@@ -31,8 +31,13 @@ public class ParserContext {
     private boolean strictTypeEnforcement = false;
     private boolean fatalError = false;
     private boolean retainParserState = false;
+    private boolean debugSymbols = false;
 
     public ParserContext() {
+    }
+
+    public ParserContext(boolean debugSymbols) {
+        this.debugSymbols = debugSymbols;
     }
 
     public ParserContext(Object rootParser) {
@@ -218,5 +223,14 @@ public class ParserContext {
 
     public void setCompiled(boolean compiled) {
         this.compiled = compiled;
+    }
+
+
+    public boolean isDebugSymbols() {
+        return debugSymbols;
+    }
+
+    public void setDebugSymbols(boolean debugSymbols) {
+        this.debugSymbols = debugSymbols;
     }
 }

@@ -21,6 +21,7 @@ package org.mvel;
 
 import static java.lang.String.copyValueOf;
 import java.util.List;
+import java.util.ArrayList;
 
 public class CompileException extends RuntimeException {
     private char[] expr;
@@ -92,7 +93,7 @@ public class CompileException extends RuntimeException {
     }
 
     public List<ErrorDetail> getErrors() {
-        return errors;
+        return errors != null ? errors : new ArrayList(0);
     }
 
     public void setErrors(List<ErrorDetail> errors) {
