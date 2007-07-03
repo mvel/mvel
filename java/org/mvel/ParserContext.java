@@ -102,6 +102,7 @@ public class ParserContext {
     }
 
     public void addInput(String name, Class type) {
+        if (inputs == null) inputs = new HashMap<String, Class>();
         if (inputs.containsKey(name)) return;
         if (type == null) type = Object.class;
         inputs.put(name, type);
