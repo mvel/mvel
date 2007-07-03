@@ -827,17 +827,19 @@ public class CoreConfidenceTests extends TestCase {
 
         CompiledExpression c = compiler.compile();
 
-        assertEquals(4, compiler.getInputs().size());
+        ParserContext pCtx = compiler.getParserContextState();
 
-        assertTrue(compiler.getInputs().contains("test"));
-        assertTrue(compiler.getInputs().contains("foo"));
-        assertTrue(compiler.getInputs().contains("bo"));
-        assertTrue(compiler.getInputs().contains("trouble"));
+        assertEquals(4, pCtx.getInputs().size());
 
-        assertEquals(2, compiler.getLocals().size());
+        assertTrue(pCtx.getInputs().containsKey("test"));
+        assertTrue(pCtx.getInputs().containsKey("foo"));
+        assertTrue(pCtx.getInputs().containsKey("bo"));
+        assertTrue(pCtx.getInputs().containsKey("trouble"));
 
-        assertTrue(compiler.getLocals().contains("bleh"));
-        assertTrue(compiler.getLocals().contains("twa"));
+        assertEquals(2, pCtx.getVariables().size());
+
+        assertTrue(pCtx.getVariables().containsKey("bleh"));
+        assertTrue(pCtx.getVariables().containsKey("twa"));
 
         assertEquals(String.class, DebugTools.determineType("bleh", c));
     }
@@ -856,12 +858,12 @@ public class CoreConfidenceTests extends TestCase {
         ExpressionCompiler compiler = new ExpressionCompiler("order.id == 10");
         compiler.compile();
 
-        for (String input : compiler.getInputs()) {
+        for (String input : compiler.getParserContextState().getInputs().keySet()) {
             System.out.println("input>" + input);
         }
 
-        assertEquals(1, compiler.getInputs().size());
-        assertTrue(compiler.getInputs().contains("order"));
+        assertEquals(1, compiler.getParserContextState().getInputs().size());
+        assertTrue(compiler.getParserContextState().getInputs().containsKey("order"));
     }
 
 

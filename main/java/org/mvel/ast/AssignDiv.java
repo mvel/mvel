@@ -1,5 +1,7 @@
 package org.mvel.ast;
 
+import static org.mvel.MVEL.eval;
+import static org.mvel.util.ParseTools.doOperations;
 import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
 import org.mvel.MVEL;
@@ -21,19 +23,17 @@ public class AssignDiv extends ASTNode {
         }
     }
 
-
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver resolver = factory.getVariableResolver(varName);
-        Object val = ParseTools.doOperations(resolver.getValue(), Operator.DIV, statement.getValue(ctx, thisValue, factory));
+        Object val = doOperations(resolver.getValue(), Operator.DIV, statement.getValue(ctx, thisValue, factory));
         resolver.setValue(val);
         return val;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver resolver = factory.getVariableResolver(varName);
-        Object val = ParseTools.doOperations(resolver.getValue(), Operator.DIV, MVEL.eval(name, ctx, factory));
+        Object val = doOperations(resolver.getValue(), Operator.DIV, eval(name, ctx, factory));
         resolver.setValue(val);
         return val;
     }
-
 }
