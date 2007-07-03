@@ -31,7 +31,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private ASTIterator tokens;
 
     private Class knownEgressType;
-    private Class knownIngressType;
+    private Class knownIngressType;     
 
     private boolean convertableIngressEgress;
 

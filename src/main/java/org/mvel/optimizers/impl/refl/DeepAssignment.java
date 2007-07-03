@@ -2,6 +2,7 @@ package org.mvel.optimizers.impl.refl;
 
 import org.mvel.Accessor;
 import org.mvel.MVEL;
+import org.mvel.util.ParseTools;
 import static org.mvel.MVEL.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
 
@@ -17,7 +18,7 @@ public class DeepAssignment extends BaseAccessor {
 
     public DeepAssignment(String var, Accessor expr) {
         int mark;
-        baseAccessor = (Accessor) compileExpression(var.substring(0, mark = var.indexOf('.')));
+        baseAccessor = (Accessor) ParseTools.subCompileExpression(var.substring(0, mark = var.indexOf('.')));
         this.property = var.substring(mark + 1);
         this.expr = expr;
     }

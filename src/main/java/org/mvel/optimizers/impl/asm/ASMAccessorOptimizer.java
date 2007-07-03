@@ -86,7 +86,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private ClassWriter cw;
     private MethodVisitor mv;
 
-    private Object val;                                                                 
+    private Object val;
     private int stacksize = 1;
     private long time;
 
@@ -113,8 +113,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
         cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
-        cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_" + String.valueOf(cw.hashCode()).replaceAll("\\-", "_") + (System.currentTimeMillis() / 1000),
-                null, "java/lang/Object", new String[]{"org/mvel/Accessor"});
+
+
+        synchronized (Runtime.getRuntime()) {
+            int r = (int) Math.random() * 100;
+            cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_"
+                    + String.valueOf(cw.hashCode()).replaceAll("\\-", "_") + (System.currentTimeMillis() / 10) + r,
+                    null, "java/lang/Object", new String[]{"org/mvel/Accessor"});
+        }
 
         MethodVisitor m = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         m.visitCode();
@@ -490,7 +496,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
 
         boolean literal = false;
-        ExecutableStatement compiled = (ExecutableStatement) compileExpression(new String(expr, start, cursor - start));
+        ExecutableStatement compiled = (ExecutableStatement) ParseTools.subCompileExpression(new String(expr, start, cursor - start));
         Object item;
 
         if (compiled instanceof ExecutableLiteral) {
@@ -681,7 +687,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             preConvArgs = new Object[es.length];
 
             for (int i = 0; i < subtokens.length; i++) {
-                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
             }
         }
 
@@ -721,7 +727,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          * Try to find an instance method from the class target.
          */
 
-        if ((m = getBestCanadidate(args, name, cls.getMethods())) != null) {
+        if ((m = getBestCandidate(args, name, cls.getMethods())) != null) {
             parameterTypes = m.getParameterTypes();
         }
 
@@ -729,7 +735,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             /**
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
-            if ((m = getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
+            if ((m = getBestCandidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
                 parameterTypes = m.getParameterTypes();
             }
         }
@@ -758,6 +764,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
+            m = ParseTools.getWidenedTarget(m);
+
             if (es != null) {
                 ExecutableStatement cExpr;
                 for (int i = 0; i < es.length; i++) {
@@ -793,9 +801,17 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     debug("CHECKCAST " + getInternalName(m.getDeclaringClass()));
                     mv.visitTypeInsn(CHECKCAST, getInternalName(m.getDeclaringClass()));
 
-                    debug("INVOKEVIRTUAL " + m.getName());
-                    mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(m.getDeclaringClass()), m.getName(),
-                            getMethodDescriptor(m));
+                    if (m.getDeclaringClass().isInterface()) {
+                        debug("INVOKEINTERFACE " + m.getName());
+                        mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(m.getDeclaringClass()), m.getName(),
+                                getMethodDescriptor(m));
+
+                    }
+                    else {
+                        debug("INVOKEVIRTUAL " + m.getName());
+                        mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(m.getDeclaringClass()), m.getName(),
+                                getMethodDescriptor(m));
+                    }
                 }
 
                 returnType = m.getReturnType();
@@ -1513,7 +1529,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return ARRAY;
         }
         else {
-            compiledInputs.add((ExecutableStatement) compileExpression((String) o));
+            compiledInputs.add((ExecutableStatement) ParseTools.subCompileExpression((String) o));
 
             switch (type) {
                 case ARRAY:
@@ -1649,7 +1665,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         try {
             if (constructorParms != null) {
                 for (String constructorParm : constructorParms) {
-                    compiledInputs.add((ExecutableStatement) compileExpression(constructorParm));
+                    compiledInputs.add((ExecutableStatement) ParseTools.subCompileExpression(constructorParm));
                 }
 
                 String s = new String(subset(property, 0, findFirst('(', property)));

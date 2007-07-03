@@ -83,6 +83,10 @@ public class MVEL {
         return DEBUG_FILE;
     }
 
+    public static boolean isOptimizationEnabled() {
+        return OPTIMIZER;
+    }
+
     public static Object eval(String expression, Object ctx) {
         return new ExpressionParser(expression, ctx).parse();
     }
@@ -114,12 +118,7 @@ public class MVEL {
     public static Serializable compileExpression(String expression, Map<String, Class> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
         ExpressionCompiler parser = new ExpressionCompiler(expression);
-        parser.setImportedClasses(imports);
-        parser.setInterceptors(interceptors);
-        parser.setSourceFile(sourceName);
-
-        CompiledExpression cExpr = parser.compile();
-
+        CompiledExpression cExpr = parser.compile(new ParserContext(imports, interceptors, sourceName));
         ASTIterator tokens = cExpr.getTokens();
 
         /**
@@ -127,16 +126,17 @@ public class MVEL {
          */
         if (OPTIMIZER && tokens.size() == 1) {
             ASTNode tk = tokens.firstNode();
-            if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);
-            }
-            else if (tk.isLiteral() && !tk.isThisVal()) {
+
+            if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.fields & ASTNode.INTEGER32) != 0) {
                     return new ExecutableLiteral(tk.getIntRegister());
                 }
                 else {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
+            }
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, false);
             }
         }
 
@@ -155,6 +155,7 @@ public class MVEL {
     public static Serializable compileExpression(String expression) {
         return compileExpression(expression, null, null, null);
     }
+
 
     public static Serializable compileExpression(String expression, Map<String, Class> imports) {
         return compileExpression(expression, imports, null, null);
@@ -176,13 +177,10 @@ public class MVEL {
      */
     public static Serializable compileExpression(char[] expression, Map<String, Class> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
-        
-        ExpressionCompiler parser = new ExpressionCompiler(expression);
-        parser.setImportedClasses(imports);
-        parser.setInterceptors(interceptors);
-        parser.setSourceFile(sourceName);
 
-        CompiledExpression cExpr = parser.compile();
+        ExpressionCompiler parser = new ExpressionCompiler(expression);
+
+        CompiledExpression cExpr = parser.compile(new ParserContext(imports, interceptors, sourceName));
         ASTIterator tokens = cExpr.getTokens();
 
         /**
@@ -190,16 +188,17 @@ public class MVEL {
          */
         if (OPTIMIZER && tokens.size() == 1) {
             ASTNode tk = tokens.firstNode();
-            if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);
-            }
-            else if (tk.isLiteral() && !tk.isThisVal()) {
+
+            if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.fields & ASTNode.INTEGER32) != 0) {
                     return new ExecutableLiteral(tk.getIntRegister());
                 }
                 else {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
+            }
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, false);
             }
         }
 
@@ -589,4 +588,6 @@ public class MVEL {
     public static void setProperty(Object ctx, String property, Object value) {
         PropertyAccessor.set(ctx, property, value);
     }
+
+
 }

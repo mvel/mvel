@@ -1,6 +1,7 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
+import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
 import org.mvel.util.ExecutionStack;
@@ -11,24 +12,49 @@ import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
 import static java.lang.Class.forName;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
     private final Stack stk = new ExecutionStack();
-    private Set<String> inputs;
-    private Set<String> locals;
+
     private Class returnType;
 
     private boolean verifying = true;
 
-    public void setImportedClasses(Map<String, Class> imports) {
-        this.imports = imports;
-    }
+    private ParserContext pCtx;
 
     public CompiledExpression compile() {
+        return compile(new ParserContext());
+    }
+
+    public CompiledExpression compile(ParserContext ctx) {
+        ctx.setDebugSymbols(debugSymbols);
+
+        if (parserContext == null) {
+            parserContext = new ThreadLocal<ParserContext>();
+        }
+        parserContext.set(ctx);
+
+        CompiledExpression c = _compile();
+
+        if (pCtx.isFatalError()) {
+            parserContext.remove();
+            throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
+        }
+        else if (pCtx.isFatalError()) {
+            parserContext.remove();
+            throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
+        }
+
+        return c;
+    }
+
+    /**
+     * Initiate an in-context compile.  This method should really only be called by the internal API.
+     *
+     * @return compiled expression object
+     */
+    public CompiledExpression _compile() {
         ASTNode tk;
         ASTNode tkOp;
         ASTNode tkOp2;
@@ -38,130 +64,153 @@ public class ExpressionCompiler extends AbstractParser {
 
         boolean firstLA;
 
-        if (verifying) {
-            inputs = new LinkedHashSet<String>();
-            locals = new LinkedHashSet<String>();
-        }
+        pCtx = getParserContext();
+        debugSymbols = pCtx.isDebugSymbols();
 
-        fields |= ASTNode.COMPILE_IMMEDIATE;
-
-        while ((tk = nextToken()) != null) {
-            if (tk.fields == -1) {
-                astLinkedList.addTokenNode(tk);
-                continue;
+        try {
+            if (verifying) {
+                getParserContext().initializeTables();
             }
 
-            if (tk instanceof Substatement) {
-                ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
-                tk.setAccessor(subCompiler.compile());
+            fields |= ASTNode.COMPILE_IMMEDIATE;
 
-                if (verifying)
-                    inputs.addAll(subCompiler.getInputs());
-            }
-
-            /**
-             * This kludge of code is to handle compile-time literal reduction.  We need to avoid
-             * reducing for certain literals like, 'this', ternary and ternary else.
-             */
-            if (tk.isLiteral() && tk.getLiteralValue() != LITERALS.get("this")) {
-                if ((tkOp = nextToken()) != null && tkOp.isOperator()
-                        && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
-
-                    /**
-                     * If the next token is ALSO a literal, then we have a candidate for a compile-time
-                     * reduction.
-                     */
-                    if ((tkLA = nextToken()) != null && tkLA.isLiteral()) {
-                        stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), tkOp.getLiteralValue());
-
-                        /**
-                         * Reduce the token now.
-                         */
-                        reduceTrinary();
-
-                        firstLA = true;
-
-                        /**
-                         * Now we need to check to see if this is actually a continuing reduction.
-                         */
-                        while ((tkOp2 = nextToken()) != null) {
-                            if (!tkOp2.isOperator(tkOp.getOperator())) {
-                                /**
-                                 * We can't continue any further because we are dealing with
-                                 * different operators.
-                                 */
-                                astLinkedList.addTokenNode(new LiteralNode(stk.pop()));
-                                astLinkedList.addTokenNode(tkOp2);
-                                break;
-                            }
-                            else if ((tkLA2 = nextToken()) != null
-                                    && tkLA2.isLiteral()) {
-
-                                stk.push(tkLA2.getLiteralValue(), tkOp2.getLiteralValue());
-                                reduceTrinary();
-                                firstLA = false;
-                            }
-                            else {
-                                if (firstLA) {
-                                    /**
-                                     * There are more tokens, but we can't reduce anymore.  So
-                                     * we create a reduced token for what we've got.
-                                     */
-                                    astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
-                                }
-                                else {
-                                    /**
-                                     * We have reduced additional tokens, but we can't reduce
-                                     * anymore.
-                                     */
-                                    astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()), tkOp);
-
-                                    if (tkLA2 != null) astLinkedList.addTokenNode(tkLA2);
-                                }
-                                break;
-                            }
-                        }
-
-                        /**
-                         * If there are no more tokens left to parse, we check to see if
-                         * we've been doing any reducing, and if so we create the token
-                         * now.
-                         */
-                        if (!stk.isEmpty())
-                            astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
-
-                        continue;
-                    }
-                    else {
-                        astLinkedList.addTokenNode(verify(tk), verify(tkOp));
-                        if (tkLA != null) astLinkedList.addTokenNode(verify(tkLA));
-                        continue;
-                    }
-                }
-                else {
-                    astLinkedList.addTokenNode(verify(tk));
-                    if (tkOp != null) astLinkedList.addTokenNode(verify(tkOp));
-
+            while ((tk = nextToken()) != null) {
+                if (tk.fields == -1) {
+                    astLinkedList.addTokenNode(tk);
                     continue;
                 }
+
+                returnType = tk.getEgressType();
+
+                if (tk instanceof Substatement) {
+                    tk.setAccessor(new ExpressionCompiler(tk.getNameAsArray())._compile());
+                }
+
+                /**
+                 * This kludge of code is to handle _compile-time literal reduction.  We need to avoid
+                 * reducing for certain literals like, 'this', ternary and ternary else.
+                 */
+                if (tk.isLiteral() && tk.getLiteralValue() != LITERALS.get("this")) {
+                    if ((tkOp = nextToken()) != null && tkOp.isOperator()
+                            && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
+
+                        /**
+                         * If the next token is ALSO a literal, then we have a candidate for a _compile-time
+                         * reduction.
+                         */
+                        if ((tkLA = nextToken()) != null && tkLA.isLiteral()) {
+                            stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), tkOp.getLiteralValue());
+
+                            /**
+                             * Reduce the token now.
+                             */
+                            reduceTrinary();
+
+                            firstLA = true;
+
+                            /**
+                             * Now we need to check to see if this is actually a continuing reduction.
+                             */
+                            while ((tkOp2 = nextToken()) != null) {
+                                if (!tkOp2.isOperator(tkOp.getOperator())) {
+                                    /**
+                                     * We can't continue any further because we are dealing with
+                                     * different operators.
+                                     */
+                                    astLinkedList.addTokenNode(new LiteralNode(stk.pop()));
+                                    astLinkedList.addTokenNode(tkOp2);
+                                    break;
+                                }
+                                else if ((tkLA2 = nextToken()) != null
+                                        && tkLA2.isLiteral()) {
+
+                                    stk.push(tkLA2.getLiteralValue(), tkOp2.getLiteralValue());
+                                    reduceTrinary();
+                                    firstLA = false;
+                                }
+                                else {
+                                    if (firstLA) {
+                                        /**
+                                         * There are more tokens, but we can't reduce anymore.  So
+                                         * we create a reduced token for what we've got.
+                                         */
+                                        astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
+                                    }
+                                    else {
+                                        /**
+                                         * We have reduced additional tokens, but we can't reduce
+                                         * anymore.
+                                         */
+                                        astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()), tkOp);
+
+                                        if (tkLA2 != null) astLinkedList.addTokenNode(tkLA2);
+                                    }
+                                    break;
+                                }
+                            }
+
+                            /**
+                             * If there are no more tokens left to parse, we check to see if
+                             * we've been doing any reducing, and if so we create the token
+                             * now.
+                             */
+                            if (!stk.isEmpty())
+                                astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
+
+                            continue;
+                        }
+                        else {
+                            astLinkedList.addTokenNode(verify(pCtx, tk), verify(pCtx, tkOp));
+                            if (tkLA != null) astLinkedList.addTokenNode(verify(pCtx, tkLA));
+                            continue;
+                        }
+                    }
+                    else {
+                        astLinkedList.addTokenNode(verify(pCtx, tk));
+                        if (tkOp != null) astLinkedList.addTokenNode(verify(pCtx, tkOp));
+
+                        continue;
+                    }
+                }
+                astLinkedList.addTokenNode(verify(pCtx, tk));
             }
 
-            astLinkedList.addTokenNode(verify(tk));
-        }
+            if (verifying) {
+                pCtx.processTables();
+            }
 
-        if (verifying) {
-            for (String s : locals) {
-                inputs.remove(s);
+
+            return new CompiledExpression(new ASTArrayList(astLinkedList), getCurrentSourceFileName());
+        }
+        catch (Throwable e) {
+            parserContext.remove();
+            if (e instanceof RuntimeException) throw (RuntimeException) e;
+            else {
+                throw new CompileException(e.getMessage(), e);
             }
         }
 
-        
-        return new CompiledExpression(new ASTArrayList(astLinkedList), getCurrentSourceFileName());
     }
 
-    protected ASTNode verify(ASTNode tk) {
+    protected ASTNode verify(ParserContext pCtx, ASTNode tk) {
+        if (tk.isDiscard() || (tk.fields & (ASTNode.OPERATOR | ASTNode.LITERAL)) != 0) return tk;
+
         if (verifying) {
-            if (tk.isDiscard() || (tk.fields & (ASTNode.OPERATOR | ASTNode.LITERAL)) != 0) return tk;
+//            if (pCtx.isStrictTypeEnforcement() && tk instanceof Assignment) {
+//
+//            }
+
+
+//            if (pCtx.isStrictTypeEnforcement() && tk instanceof Assignment
+//                    && (pCtx.getInputs() == null
+//                    || !pCtx.getInputs().containsKey(((Assignment) tk).getAssignmentVar()))) {
+//
+//                System.out.println(tk.getEgressType());
+//
+//                addFatalError("untyped var not permitted in strict-mode: " + ((Assignment) tk).getAssignmentVar());
+//                return tk;
+//            }
+
             if (tk.isAssignment()) {
                 char[] assign = tk.getNameAsArray();
                 int c = 0;
@@ -170,29 +219,21 @@ public class ExpressionCompiler extends AbstractParser {
                 String varName = new String(assign, 0, c++).trim();
 
                 if (isReservedWord(varName)) {
-                    throw new CompileException("invalid assignment - variable name is a reserved keyword: " + varName);
+                    addFatalError("invalid assignment - variable name is a reserved keyword: " + varName);
                 }
-
-                locals.add(varName);
 
                 ExpressionCompiler subCompiler =
                         new ExpressionCompiler(new String(assign, c, assign.length - c).trim());
 
-                subCompiler.compile();
+                subCompiler._compile();
 
-                inputs.addAll(subCompiler.getInputs());
-
+                pCtx.addVariable(varName, returnType = tk.getEgressType());
             }
             else if (tk.isIdentifier()) {
-                inputs.add(tk.getAbsoluteName());
-
-                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray());
-                propVerifier.analyze();
-
-                inputs.addAll(propVerifier.getInputs());
+                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
+                pCtx.addInput(tk.getAbsoluteName(), returnType = propVerifier.analyze());
             }
         }
-
         return tk;
     }
 
@@ -309,7 +350,6 @@ public class ExpressionCompiler extends AbstractParser {
                     case Operator.SIMILARITY:
                         stk.push(PropertyTools.similarity(String.valueOf(v1), String.valueOf(v2)));
                         break;
-
                 }
             }
         }
@@ -320,7 +360,6 @@ public class ExpressionCompiler extends AbstractParser {
                  * away with some messy constructs like: a + b < c && e + f > g + q instead
                  * of using brackets like (a + b < c) && (e + f > g + q)
                  */
-
                 fields |= ASTNode.LOOKAHEAD;
 
                 ASTNode tk = nextToken();
@@ -346,15 +385,6 @@ public class ExpressionCompiler extends AbstractParser {
         return (Integer) o;
     }
 
-
-    public Set<String> getInputs() {
-        return inputs;
-    }
-
-    public Set<String> getLocals() {
-        return locals;
-    }
-
     public ExpressionCompiler(String expression) {
         setExpression(expression);
     }
@@ -371,7 +401,6 @@ public class ExpressionCompiler extends AbstractParser {
         this.verifying = verifying;
     }
 
-
     public Class getReturnType() {
         return returnType;
     }
@@ -382,5 +411,9 @@ public class ExpressionCompiler extends AbstractParser {
 
     public String getExpression() {
         return new String(expr);
+    }
+
+    public ParserContext getParserContextState() {
+        return pCtx;
     }
 }

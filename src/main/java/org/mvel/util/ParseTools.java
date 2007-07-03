@@ -1,10 +1,11 @@
 package org.mvel.util;
 
+import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
-import static org.mvel.DataConversion.convert;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.Interceptor;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
@@ -13,13 +14,13 @@ import org.mvel.math.MathProcessor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
 import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -168,7 +169,16 @@ public class ParseTools {
     private static Map<String, Map<Integer, Method>> RESOLVED_METH_CACHE = new WeakHashMap<String, Map<Integer, Method>>(10);
 
 
-    public static Method getBestCanadidate(Object[] arguments, String method, Method[] methods) {
+    public static Method getBestCandidate(Object[] arguments, String method, Method[] methods) {
+        Class[] targetParms = new Class[arguments.length];
+        for (int i = 0; i < arguments.length; i++) {
+            targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
+        }
+        return getBestCandidate(targetParms, method, methods);
+    }
+
+
+    public static Method getBestCandidate(Class[] arguments, String method, Method[] methods) {
         if (methods.length == 0) {
             return null;
         }
@@ -177,13 +187,7 @@ public class ParseTools {
         int bestScore = 0;
         int score = 0;
 
-        Class[] targetParms = new Class[arguments.length];
-
-        for (int i = 0; i < arguments.length; i++) {
-            targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
-        }
-
-        Integer hash = createClassSignatureHash(methods[0].getDeclaringClass(), targetParms);
+        Integer hash = createClassSignatureHash(methods[0].getDeclaringClass(), arguments);
 
         if (RESOLVED_METH_CACHE.containsKey(method) && RESOLVED_METH_CACHE.get(method).containsKey(hash)) {
             return RESOLVED_METH_CACHE.get(method).get(hash);
@@ -193,26 +197,28 @@ public class ParseTools {
             if (method.equals(meth.getName())) {
                 if ((parmTypes = meth.getParameterTypes()).length != arguments.length)
                     continue;
-                else if (arguments.length == 0 && parmTypes.length == 0)
-                    return meth;
+                else if (arguments.length == 0 && parmTypes.length == 0) {
+                    bestCandidate = meth;
+                    break;
+                }
 
                 for (int i = 0; i < arguments.length; i++) {
-                    if (parmTypes[i] == targetParms[i]) {
+                    if (parmTypes[i] == arguments[i]) {
                         score += 5;
                     }
-                    else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
+                    else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
                         score += 4;
                     }
-                    else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
+                    else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
                         score += 4;
                     }
-                    else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
+                    else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
                         score += 3;
                     }
-                    else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
+                    else if (parmTypes[i].isAssignableFrom(arguments[i])) {
                         score += 2;
                     }
-                    else if (canConvert(parmTypes[i], targetParms[i])) {
+                    else if (canConvert(parmTypes[i], arguments[i])) {
                         score += 1;
                     }
                     else {
@@ -237,6 +243,25 @@ public class ParseTools {
         }
 
         return bestCandidate;
+    }
+
+    public static Method getWidenedTarget(Method method) {
+        Class cls = method.getDeclaringClass();
+        Method m = method;
+        Class[] args = method.getParameterTypes();
+        String name = method.getName();
+
+        do {
+            for (Class iface : cls.getInterfaces()) {
+                m = getBestCandidate(args, name, iface.getMethods());
+                if (m != null && m.getDeclaringClass().getSuperclass() != null) {
+                    cls = m.getDeclaringClass();
+                }
+            }
+        }
+        while ((cls = cls.getSuperclass()) != null);
+
+        return m != null ? m : method;
     }
 
     private static Map<Class, Map<Integer, Constructor>> RESOLVED_CONST_CACHE = new WeakHashMap<Class, Map<Integer, Constructor>>(10);
@@ -343,36 +368,6 @@ public class ParseTools {
         }
     }
 
-    public static Object constructObject(String expression, Object ctx, VariableResolverFactory vrf) throws InstantiationException, IllegalAccessException,
-            InvocationTargetException, ClassNotFoundException {
-
-        String[] constructorParms = parseMethodOrConstructor(expression.toCharArray());
-
-        if (constructorParms != null) {
-            Class cls = AbstractParser.LITERALS.containsKey(expression = expression.substring(0, expression.indexOf('('))) ? ((Class) AbstractParser.LITERALS.get(expression))
-                    : createClass(expression);
-
-            Object[] parms = new Object[constructorParms.length];
-            for (int i = 0; i < constructorParms.length; i++) {
-                parms[i] = (MVEL.eval(constructorParms[i], ctx, vrf));
-            }
-
-            Constructor cns = getBestConstructorCanadidate(parms, cls);
-
-            if (cns == null)
-                throw new CompileException("unable to find constructor for: " + cls.getName());
-
-            for (int i = 0; i < parms.length; i++) {
-                // noinspection unchecked
-                parms[i] = convert(parms[i], cns.getParameterTypes()[i]);
-            }
-
-            return cns.newInstance(parms);
-        }
-        else {
-            return forName(expression).newInstance();
-        }
-    }
 
     public static String[] captureContructorAndResidual(String token) {
         char[] cs = token.toCharArray();
@@ -612,6 +607,9 @@ public class ParseTools {
             else if (factory.isResolveable(name)) {
                 return (Class) factory.getVariableResolver(name).getValue();
             }
+            else if (getCurrentThreadParserContext() != null && getCurrentThreadParserContext().hasImport(name)) {
+                return getCurrentThreadParserContext().getImport(name);
+            }
             else {
                 return createClass(name);
             }
@@ -620,7 +618,7 @@ public class ParseTools {
             throw e;
         }
         catch (Exception e) {
-            throw new CompileException("class not found: " + name);
+            throw new CompileException("class not found: " + name, e);
         }
     }
 
@@ -878,4 +876,72 @@ public class ParseTools {
         return clazz == Integer.class || clazz == Boolean.class || clazz == Long.class || clazz == Double.class
                 || clazz == Float.class || clazz == Short.class || clazz == Byte.class || clazz == Character.class;
     }
+
+    public static Serializable subCompileExpression(String expression) {
+        ExpressionCompiler parser = new ExpressionCompiler(expression);
+
+
+        CompiledExpression cExpr = parser._compile();
+
+        ASTIterator tokens = cExpr.getTokens();
+
+        /**
+         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
+         */
+        if (MVEL.isOptimizationEnabled() && tokens.size() == 1) {
+            ASTNode tk = tokens.firstNode();
+
+            if (tk.isLiteral() && !tk.isThisVal()) {
+                if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
+                    return new ExecutableLiteral(tk.getIntRegister());
+                }
+                else {
+                    return new ExecutableLiteral(tk.getLiteralValue());
+                }
+            }
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, false);
+            }
+        }
+
+
+        return cExpr;
+    }
+
+
+    public static Serializable subCompileExpression(char[] expression) {
+        ExpressionCompiler parser = new ExpressionCompiler(expression);
+//        parser.setImportedClasses(imports);
+//        parser.setInterceptors(interceptors);
+//        parser.setSourceFile(sourceName);
+
+        CompiledExpression cExpr = parser._compile();
+
+        ASTIterator tokens = cExpr.getTokens();
+
+        /**
+         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
+         */
+        if (MVEL.isOptimizationEnabled() && tokens.size() == 1) {
+            ASTNode tk = tokens.firstNode();
+            if (tk.isLiteral() && !tk.isThisVal()) {
+                if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
+                    return new ExecutableLiteral(tk.getIntRegister());
+                }
+                else {
+                    return new ExecutableLiteral(tk.getLiteralValue());
+                }
+            }
+
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, false);
+            }
+
+        }
+
+
+        return cExpr;
+    }
+
+
 }

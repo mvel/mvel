@@ -2,7 +2,6 @@ package org.mvel;
 
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
-import org.mvel.integration.Interceptor;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
@@ -36,11 +35,6 @@ public class AbstractParser {
     private int line = 1;
 
     protected ASTNode lastNode;
-//
-//    protected static final int FRAME_END = -1;
-//    protected static final int FRAME_CONTINUE = 0;
-//    protected static final int FRAME_NEXT = 1;
-//    protected static final int FRAME_RETURN = 2;
 
     private static Map<String, char[]> EX_PRECACHE;
 
@@ -50,41 +44,10 @@ public class AbstractParser {
     public static final Map<String, Integer> OPERATORS =
             new HashMap<String, Integer>(25 * 2, 0.4f);
 
-    protected Map<String, Class> imports;
-    protected Map<String, Interceptor> interceptors;
 
     protected ExecutionStack splitAccumulator = new ExecutionStack();
 
     protected static ThreadLocal<ParserContext> parserContext;
-
-    protected String sourceFile;
-
-    static class ParserContext {
-        private String sourceFile;
-        private int lineCount;
-
-        public ParserContext(String sourceFile, int lineCount) {
-            this.sourceFile = sourceFile;
-            this.lineCount = lineCount;
-        }
-
-        public String getSourceFile() {
-            return sourceFile;
-        }
-
-        public void setSourceFile(String sourceFile) {
-            this.sourceFile = sourceFile;
-        }
-
-        public int getLineCount() {
-            return lineCount;
-        }
-
-        public void setLineCount(int lineCount) {
-            this.lineCount = lineCount;
-        }
-    }
-
 
     static {
         configureFactory();
@@ -198,23 +161,18 @@ public class AbstractParser {
         boolean capture = false;
         boolean union = false;
 
-        if (!debugSymbols && parserContext != null && parserContext.get() != null) {
-            debugSymbols = true;
-            if (expr[cursor] != '\n') lastWasLineLabel = true;
-        }
+//        if (!debugSymbols && parserContext != null && getParserContext().isDebugSymbols()) {
+//            debugSymbols = true;
+//            if (expr[cursor] != '\n') lastWasLineLabel = true;
+//        }
 
         if (debugSymbols && !lastWasLineLabel && (expr[cursor] == '\n' || cursor == 0)) {
-            if (parserContext == null) {
-                if (sourceFile == null) {
-                    throw new CompileException("unable to produce debugging symbols: source name must be provided.");
-                }
+            if (getParserContext().getSourceFile() == null) {
+                throw new CompileException("unable to produce debugging symbols: source name must be provided.");
+            }
 
-                (parserContext = new ThreadLocal<ParserContext>())
-                        .set(new ParserContext(sourceFile, 0));
-            }
-            else {
-                line = parserContext.get().getLineCount();
-            }
+            ParserContext pCtx = getParserContext();
+            line = pCtx.getLineCount();
 
             lastWasLineLabel = true;
 
@@ -225,8 +183,9 @@ public class AbstractParser {
                 line++;
             }
 
-            ParserContext pCtx = parserContext.get();
             pCtx.setLineCount(line);
+            pCtx.setLineOffset(cursor);
+
             return new LineLabel(pCtx.getSourceFile(), line);
         }
         else {
@@ -286,7 +245,7 @@ public class AbstractParser {
                             start = cursor + 1;
                             captureToEOS();
                             ImportNode importNode = new ImportNode(subArray(start, cursor--), fields);
-                            addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
+                            getParserContext().addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
                             return importNode;
 
                         case IMPORT_STATIC:
@@ -335,27 +294,60 @@ public class AbstractParser {
                  * If we encounter any of the following cases, we are still dealing with
                  * a contiguous token.
                  */
+                String name;
                 if (cursor < length) {
                     switch (expr[cursor]) {
                         case'+':
-                            if (isAt('+', 1)) {
-                                ASTNode n = new PostFixIncNode(subArray(start, cursor), fields);
-                                cursor += 2;
-                                return n;
-                            }
-                            else {
-                                break;
+                            switch (lookAhead(1)) {
+                                case'+':
+                                    ASTNode n = new PostFixIncNode(subArray(start, cursor), fields);
+                                    cursor += 2;
+                                    return n;
+
+                                case'=':
+                                    name = new String(expr, start, trimLeft(cursor));
+                                    start = cursor += 2;
+                                    captureToEOS();
+                                    return new AssignAdd(subArray(start, cursor), fields, name);
                             }
 
+                            break;
+
                         case'-':
-                            if (isAt('-', 1)) {
-                                ASTNode n = new PostFixDecNode(subArray(start, cursor), fields);
-                                cursor += 2;
-                                return n;
+                            switch (lookAhead(1)) {
+                                case'-':
+                                    ASTNode n = new PostFixDecNode(subArray(start, cursor), fields);
+                                    cursor += 2;
+                                    return n;
+
+                                case'=':
+                                    name = new String(expr, start, trimLeft(cursor));
+                                    start = cursor += 2;
+                                    captureToEOS();
+                                    return new AssignSub(subArray(start, cursor), fields, name);
+
+
                             }
-                            else {
-                                break;
+                            break;
+
+                        case'*':
+                            if (isAt('=', 1)) {
+                                name = new String(expr, start, trimLeft(cursor));
+                                start = cursor += 2;
+                                captureToEOS();
+                                return new AssignMult(subArray(start, cursor), fields, name);
+
                             }
+                            break;
+
+                        case'/':
+                            if (isAt('=', 1)) {
+                                name = new String(expr, start, trimLeft(cursor));
+                                start = cursor += 2;
+                                captureToEOS();
+                                return new AssignDiv(subArray(start, cursor), fields, name);
+                            }
+                            break;
 
                         case']':
                         case'[':
@@ -367,6 +359,13 @@ public class AbstractParser {
                             cursor++;
                             continue;
                         case'=':
+                            if (isAt('+', 1)) {
+                                name = new String(expr, start, trimLeft(cursor));
+                                start = cursor += 2;
+                                captureToEOS();
+                                return new AssignAdd(subArray(start, cursor), fields, name);
+                            }
+
                             if (greedy && !isAt('=', 1)) {
                                 cursor++;
 
@@ -379,12 +378,13 @@ public class AbstractParser {
                                     return new DeepAssignmentNode(subArray(start, cursor), fields);
                                 }
                                 else if (lastWasIdentifier) {
+
                                     /**
                                      * Check for typing information.
                                      */
                                     if (lastNode.getLiteralValue() instanceof String) {
-                                        if (hasImport((String) lastNode.getLiteralValue())) {
-                                            lastNode.setLiteralValue(getImport((String) lastNode.getLiteralValue()));
+                                        if (getParserContext().hasImport((String) lastNode.getLiteralValue())) {
+                                            lastNode.setLiteralValue(getParserContext().getImport((String) lastNode.getLiteralValue()));
                                             lastNode.setAsLiteral();
                                         }
                                         else {
@@ -437,11 +437,12 @@ public class AbstractParser {
 
                         String interceptorName = new String(expr, start, cursor - start);
 
-                        if (!interceptors.containsKey(interceptorName)) {
+                        if (getParserContext().getInterceptors() == null || !getParserContext().getInterceptors().
+                                containsKey(interceptorName)) {
                             throw new CompileException("reference to undefined interceptor: " + interceptorName, expr, cursor);
                         }
 
-                        return new InterceptorWrapper(interceptors.get(interceptorName), nextToken());
+                        return new InterceptorWrapper(getParserContext().getInterceptors().get(interceptorName), nextToken());
                     }
 
                     case'=':
@@ -467,6 +468,8 @@ public class AbstractParser {
                             captureToEOT();
                             return new PreFixIncNode(subArray(start, cursor), fields);
                         }
+
+
                         return createToken(expr, start, cursor++ + 1, fields);
 
                     case'*':
@@ -495,6 +498,16 @@ public class AbstractParser {
                              * Handle multi-line comments.
                              */
                             int len = length - 1;
+
+                            /**
+                             * This probably seems highly redundant, but sub-compilations within the same
+                             * source will spawn a new compiler, and we need to sync this with the
+                             * parser context;
+                             */
+                            if (debugSymbols) {
+                                line = getParserContext().getLineCount();
+                            }
+
                             while (true) {
                                 cursor++;
 
@@ -516,6 +529,11 @@ public class AbstractParser {
                                     break;
                                 }
                             }
+
+                            if (debugSymbols) {
+                                getParserContext().setLineCount(line);
+                            }
+
                             continue;
                         }
 
@@ -529,8 +547,12 @@ public class AbstractParser {
                     case'(': {
                         cursor++;
 
-                        for (brace = 1; cursor < length && brace > 0;) {
-                            switch (expr[cursor++]) {
+                        boolean singleToken = true;
+                        boolean lastWS = false;
+
+                        skipWhitespace();
+                        for (brace = 1; cursor < length && brace > 0; cursor++) {
+                            switch (expr[cursor]) {
                                 case'(':
                                     brace++;
                                     break;
@@ -538,25 +560,72 @@ public class AbstractParser {
                                     brace--;
                                     break;
                                 case'i':
-                                    if (cursor < length && expr[cursor] == 'n' && isWhitespace(expr[cursor + 1])) {
+                                    if (isAt('n', 1) && isWhitespace(lookAhead(2))) {
                                         fields |= ASTNode.FOLD;
                                     }
                                     break;
+                                default:
+                                    if (lastWS) {
+                                        singleToken = false;
+                                    }
+                                    else if (isWhitespace(expr[cursor])) {
+                                        lastWS = true;
+                                        skipWhitespace();
+                                        cursor--;
+                                    }
                             }
                         }
-                        if (brace > 0)
+
+                        if (brace > 0) {
                             throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
+                        }
+
+                        if (singleToken) {
+                            String tokenStr = new String(expr, trimRight(start + 1), trimLeft(cursor - 1) - (start + 1));
+
+                            if (getParserContext().hasImport(tokenStr)) {
+                                start = cursor;
+                                captureToEOS();
+                                return new TypeCast(expr, start, cursor, fields, getParserContext().getImport(tokenStr));
+                            }
+                            else if (LITERALS.containsKey(tokenStr)) {
+                                start = cursor;
+                                captureToEOS();
+                                return new TypeCast(expr, start, cursor, fields, (Class) LITERALS.get(tokenStr));
+                            }
+                            else {
+                                try {
+                                    /**
+                                     * 
+                                     *  take a stab in the dark and try and load the class
+                                     */
+                                    Class cls = createClass(tokenStr);
+
+                                    start = cursor;
+                                    captureToEOS();
+                                    return new TypeCast(expr, start, cursor, fields, cls);
+
+                                }
+                                catch (ClassNotFoundException e) {
+                                    /**
+                                     * Just fail through.
+                                     */
+                                }
+                            }
+
+                        }
+
 
                         if ((fields & ASTNode.FOLD) != 0) {
                             if (cursor < length && expr[cursor] == '.') {
-                                cursor++;
+                                cursor += 1;
                                 continue;
                             }
 
-                            return createToken(expr, start, cursor, ASTNode.FOLD);
+                            return createToken(expr, trimRight(start), cursor++, ASTNode.FOLD);
                         }
 
-                        return new Substatement(expr, start + 1, cursor - 1, fields);
+                        return handleUnion(new Substatement(expr, trimRight(start + 1), trimLeft(cursor - 1), fields));
                     }
 
                     case'}':
@@ -685,6 +754,18 @@ public class AbstractParser {
         }
 
         return createPropertyToken(start, cursor);
+    }
+
+    protected ASTNode handleUnion(ASTNode node) {
+        if (cursor < length) {
+            skipWhitespace();
+            if (expr[cursor] == '.') {
+                int union = cursor + 1;
+                captureToEOS();
+                return new Union(expr, union, cursor, fields, node);
+            }
+        }
+        return node;
     }
 
 
@@ -1007,35 +1088,27 @@ public class AbstractParser {
         return lookAhead(range) == c;
     }
 
-    public void addImport(String name, Class cls) {
-        if (imports == null) imports = new HashMap<String, Class>();
-        imports.put(name, cls);
+
+    protected ParserContext getParserContext() {
+        if (parserContext == null || parserContext.get() == null) {
+            newContext();
+        }
+        else {
+        }
+
+        return parserContext.get();
     }
 
-    protected Class getImport(String name) {
-        return imports != null ? imports.get(name) : null;
+    public static ParserContext getCurrentThreadParserContext() {
+        if (parserContext == null) parserContext = new ThreadLocal<ParserContext>();
+        if (parserContext.get() == null) parserContext.set(new ParserContext(null));
+        return parserContext.get();
     }
 
-    protected boolean hasImport(String name) {
-        return imports != null && imports.containsKey(name);
-    }
-
-
-    public Map<String, Interceptor> getInterceptors() {
-        return interceptors;
-    }
-
-    public void setInterceptors(Map<String, Interceptor> interceptors) {
-        this.interceptors = interceptors;
-    }
-
-
-    public String getSourceFile() {
-        return sourceFile;
-    }
-
-    public void setSourceFile(String sourceFile) {
-        this.sourceFile = sourceFile;
+    protected void newContext() {
+        if (parserContext == null) parserContext = new ThreadLocal<ParserContext>();
+        ParserContext ctx = new ParserContext(this);
+        parserContext.set(ctx);
     }
 
     public boolean isDebugSymbols() {
@@ -1053,6 +1126,17 @@ public class AbstractParser {
         return null;
     }
 
+    protected void addFatalError(String message) {
+        getParserContext().addError(new ErrorDetail(getParserContext().getLineCount(), cursor - getParserContext().getLineOffset(), true, message));
+    }
+
+    protected void addFatalError(String message, int row, int cols) {
+        getParserContext().addError(new ErrorDetail(row, cols, true, message));
+    }
+
+    protected void addWarning(String message) {
+        getParserContext().addError(new ErrorDetail(message, false));
+    }
 
     public static final int LEVEL_5_CONTROL_FLOW = 5;
     public static final int LEVEL_4_ASSIGNMENT = 4;
@@ -1144,8 +1228,9 @@ public class AbstractParser {
             case 0: // Property access and inline collections
                 OPERATORS.put(":", TERNARY_ELSE);
         }
-
     }
 
-
+    public static void resetParserContext() {
+        if (parserContext != null) parserContext.remove();
+    }
 }

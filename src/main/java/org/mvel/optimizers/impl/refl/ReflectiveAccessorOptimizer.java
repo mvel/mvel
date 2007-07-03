@@ -296,7 +296,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         ExecutableStatement itemStmt = null;
         if (itemSubExpr) {
-            itemStmt = (ExecutableStatement) MVEL.compileExpression(item);
+            itemStmt = (ExecutableStatement) ParseTools.subCompileExpression(item);
             idx = itemStmt.getValue(ctx, thisRef, variableFactory);
         }
 
@@ -422,7 +422,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             es = new ExecutableStatement[subtokens.length];
             args = new Object[subtokens.length];
             for (int i = 0; i < subtokens.length; i++) {
-                args[i] = (es[i] = (ExecutableStatement) MVEL.compileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
             }
         }
 
@@ -444,7 +444,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
          * Try to find an instance method from the class target.
          */
 
-        if ((m = ParseTools.getBestCanadidate(args, name, cls.getMethods())) != null) {
+        if ((m = ParseTools.getBestCandidate(args, name, cls.getMethods())) != null) {
             parameterTypes = m.getParameterTypes();
         }
 
@@ -452,7 +452,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             /**
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
-            if ((m = ParseTools.getBestCanadidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
+            if ((m = ParseTools.getBestCandidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
                 parameterTypes = m.getParameterTypes();
             }
         }
@@ -496,7 +496,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
 
             MethodAccessor access = new MethodAccessor();
-            access.setMethod(m);
+            access.setMethod(ParseTools.getWidenedTarget(m));
             access.setParms(es);
 
             addAccessorNode(access);
@@ -565,7 +565,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         CollectionParser parser = new CollectionParser();
         Object o = ((List) parser.parseCollection(property)).get(0);
-
 
         Accessor root = _getAccessor(o);
         int end = parser.getEnd() + 2;
@@ -656,7 +655,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
 
             for (int i = 0; i < constructorParms.length; i++) {
-                cStmts[i] = (ExecutableStatement) MVEL.compileExpression(constructorParms[i]);
+                cStmts[i] = (ExecutableStatement) ParseTools.subCompileExpression(constructorParms[i]);
             }
 
             Object[] parms = new Object[constructorParms.length];
@@ -703,7 +702,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     public Accessor optimizeReturn(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(property);
+        ExecutableStatement stmt = (ExecutableStatement) ParseTools.subCompileExpression(property);
         Return ret = new Return(stmt);
         val = stmt.getValue(ctx, thisRef, factory);
 

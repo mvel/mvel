@@ -434,6 +434,10 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(3, parseDirect("(name in things).size()"));
     }
 
+    public void testSizeOnInlineArray() {
+        assertEquals(3, parseDirect("{1,2,3}.size()"));
+    }
+
 
     public void testStaticMethodFromLiteral() {
         assertEquals(String.class.getName(), parseDirect("String.valueOf(Class.forName('java.lang.String').getName())"));
@@ -500,9 +504,8 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testThisReference3() {
-        assertEquals(true, parseDirect("this is 'org.mvel.tests.main.res.Base'"));
+        assertEquals(true, parseDirect("this is org.mvel.tests.main.res.Base"));
     }
-
 
     public void testStringEscaping() {
         assertEquals("\"Mike Brock\"", parseDirect("\"\\\"Mike Brock\\\"\""));
@@ -588,7 +591,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testForeEach2() {
-        assertEquals(6, parseDirect("total = 0; a = {1,2,3}; foreach(item : a) { total = total + item }; total"));
+        assertEquals(6, parseDirect("total = 0; a = {1,2,3}; foreach(item : a) { total += item }; total"));
     }
 
     public void testForEach3() {
@@ -714,6 +717,19 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(1000, parseDirect("10 * 100"));
     }
 
+    public void testInterfaceResolution() {
+        Serializable ex = MVEL.compileExpression("foo.collectionTest.size()");
+
+        foo.setCollectionTest(new HashSet());
+        Object result1 = MVEL.executeExpression(ex, map);
+
+        foo.setCollectionTest(new ArrayList());
+        Object result2 = MVEL.executeExpression(ex, map);
+
+        assertEquals(result1, result2);
+    }
+
+
     /**
      * Start collections framework based compliance tests
      */
@@ -777,9 +793,11 @@ public class CoreConfidenceTests extends TestCase {
         System.out.println("-------\n" + compiler.getExpression() + "\n-------\n");
 
         compiler.setDebugSymbols(true);
-        compiler.setSourceFile("test.mv");
 
-        CompiledExpression compiled = compiler.compile();
+        ParserContext ctx = new ParserContext();
+        ctx.setSourceFile("test.mv");
+
+        CompiledExpression compiled = compiler.compile(ctx);
 
         System.out.println(DebugTools.decompile(compiled));
 
@@ -809,31 +827,44 @@ public class CoreConfidenceTests extends TestCase {
 
         CompiledExpression c = compiler.compile();
 
-        assertEquals(4, compiler.getInputs().size());
+        ParserContext pCtx = compiler.getParserContextState();
 
-        assertTrue(compiler.getInputs().contains("test"));
-        assertTrue(compiler.getInputs().contains("foo"));
-        assertTrue(compiler.getInputs().contains("bo"));
-        assertTrue(compiler.getInputs().contains("trouble"));
+        assertEquals(4, pCtx.getInputs().size());
 
-        assertEquals(2, compiler.getLocals().size());
+        assertTrue(pCtx.getInputs().containsKey("test"));
+        assertTrue(pCtx.getInputs().containsKey("foo"));
+        assertTrue(pCtx.getInputs().containsKey("bo"));
+        assertTrue(pCtx.getInputs().containsKey("trouble"));
 
-        assertTrue(compiler.getLocals().contains("bleh"));
-        assertTrue(compiler.getLocals().contains("twa"));
+        assertEquals(2, pCtx.getVariables().size());
+
+        assertTrue(pCtx.getVariables().containsKey("bleh"));
+        assertTrue(pCtx.getVariables().containsKey("twa"));
 
         assertEquals(String.class, DebugTools.determineType("bleh", c));
+    }
+
+    public void testVarInputs2() {
+        ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh;");
+
+        ParserContext ctx = new ParserContext();
+        ctx.setRetainParserState(true);
+
+        CompiledExpression c = compiler.compile(ctx);
+
+        System.out.println(ctx.getVarOrInputType("bleh"));
     }
 
     public void testAnalyzer() {
         ExpressionCompiler compiler = new ExpressionCompiler("order.id == 10");
         compiler.compile();
 
-        for (String input : compiler.getInputs()) {
+        for (String input : compiler.getParserContextState().getInputs().keySet()) {
             System.out.println("input>" + input);
         }
 
-        assertEquals(1, compiler.getInputs().size());
-        assertTrue(compiler.getInputs().contains("order"));
+        assertEquals(1, compiler.getParserContextState().getInputs().size());
+        assertTrue(compiler.getParserContextState().getInputs().containsKey("order"));
     }
 
 
@@ -938,16 +969,43 @@ public class CoreConfidenceTests extends TestCase {
                 "return ((a + b) * 2) - 10;"));
     }
 
+    public void testStrictTypingCompilation() {
+        ExpressionCompiler compiler = new ExpressionCompiler("a.foo;\nb.foo;\n x = 5");
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement(true);
+
+        try {
+            compiler.compile(ctx);
+        }
+        catch (CompileException e) {
+            e.printStackTrace();
+            assertEquals(2, e.getErrors().size());
+            return;
+        }
+        assertTrue(false);
+    }
+
+    public void testProvidedExternalTypes() {
+        ExpressionCompiler compiler = new ExpressionCompiler("foo.bar");
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement(true);
+        ctx.addInput("foo", Foo.class);
+
+        Serializable c = compiler.compile(ctx);
+
+    }
+
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
     }
 
     public Object compiledExecute(String ex) {
         OptimizerFactory.setDefaultOptimizer("ASM");
-        
-        Serializable compiled = compileExpression(ex);
 
- //       System.out.println(DebugTools.decompile(c«ompiled));
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        Serializable compiled = compiler.compile();
+
+        //       System.out.println(DebugTools.decompile(c«ompiled));
 
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);

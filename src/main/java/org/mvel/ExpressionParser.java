@@ -59,6 +59,11 @@ public class ExpressionParser extends AbstractParser {
 
             parseAndExecuteInterpreted();
 
+            if (parserContext != null
+                    && (parserContext.get() == null || parserContext.get().getRootParser() == this)) {
+                parserContext.remove();
+            }
+ 
             return handleParserEgress(stk.peek(), returnBigDecimal);
         }
         catch (ArrayIndexOutOfBoundsException e) {
@@ -438,7 +443,7 @@ public class ExpressionParser extends AbstractParser {
 
 
     protected boolean hasImport(String name) {
-        if (super.hasImport(name)) {
+        if (getParserContext().hasImport(name)) {
             return true;
         }
         else {
@@ -448,7 +453,7 @@ public class ExpressionParser extends AbstractParser {
     }
 
     protected Class getImport(String name) {
-        if (super.hasImport(name)) return super.getImport(name);
+        if (getParserContext().hasImport(name)) return getParserContext().getImport(name);
 
         VariableResolverFactory vrf = findClassImportResolverFactory(variableFactory);
         return (Class) vrf.getVariableResolver(name).getValue();

@@ -1,11 +1,15 @@
 package org.mvel.tests.main.res;
 
+import java.util.Collection;
+
 public class Foo {
     private Bar bar = new Bar();
     public String register;
 
     public String aValue = "";
     public String bValue = "";
+
+    private Collection collectionTest;
 
     public void abc() {
     }
@@ -29,5 +33,14 @@ public class Foo {
 
     public int getNumber() {
         return 4;
+    }
+
+
+    public Collection getCollectionTest() {
+        return collectionTest;
+    }
+
+    public void setCollectionTest(Collection collectionTest) {
+        this.collectionTest = collectionTest;
     }
 }

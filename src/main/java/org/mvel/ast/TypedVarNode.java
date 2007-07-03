@@ -2,17 +2,16 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
-import static org.mvel.MVEL.compileExpression;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
+import org.mvel.util.ParseTools;
 
 /**
  * @author Christopher Brock
  */
-public class TypedVarNode extends ASTNode {
+public class TypedVarNode extends ASTNode implements Assignment {
     private String name;
-    //  private Class type;
     private ExecutableStatement statement;
 
     public TypedVarNode(char[] expr, int fields, Class type) {
@@ -23,7 +22,7 @@ public class TypedVarNode extends ASTNode {
         if ((assignStart = find(expr, '=')) != -1) {
             fields |= ASSIGN;
             checkNameSafety(name = new String(expr, 0, assignStart).trim());
-            statement = (ExecutableStatement) compileExpression(subset(expr, assignStart + 1));
+            statement = (ExecutableStatement) ParseTools.subCompileExpression(subset(expr, assignStart + 1));
         }
         else {
             checkNameSafety(name = new String(expr));
@@ -53,6 +52,11 @@ public class TypedVarNode extends ASTNode {
 
 
     public String getName() {
+        return name;
+    }
+
+
+    public String getAssignmentVar() {
         return name;
     }
 }
