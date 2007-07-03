@@ -234,7 +234,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 verifCompiler = new ExpressionCompiler(token);
                 verifCompiler._compile();
 
-                inputs.addAll(verifCompiler.getInputs());
+         //       inputs.addAll(verifCompiler.getInputs());
             }
         }
 

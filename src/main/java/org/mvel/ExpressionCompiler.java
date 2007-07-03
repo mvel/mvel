@@ -12,15 +12,13 @@ import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
 import static java.lang.Class.forName;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
     private final Stack stk = new ExecutionStack();
 
-    private Set<String> inputs;
-    private Set<String> locals;
+ //   private Set<String> inputs;
+ //   private Set<String> locals;
 
     private Class returnType;
 
@@ -59,12 +57,11 @@ public class ExpressionCompiler extends AbstractParser {
         pCtx = getParserContext();
 
         try {
-
             if (verifying) {
-                inputs = new LinkedHashSet<String>();
-                locals = new LinkedHashSet<String>();
+//                inputs = new LinkedHashSet<String>();
+//                locals = new LinkedHashSet<String>();
 
-                getParserContext().initializeVariableTable();
+                getParserContext().initializeTables();
             }
 
             fields |= ASTNode.COMPILE_IMMEDIATE;
@@ -78,8 +75,8 @@ public class ExpressionCompiler extends AbstractParser {
                 returnType = tk.getEgressType();
 
                 if (pCtx.isStrictTypeEnforcement() && tk instanceof AssignmentNode
-                        && (pCtx.getInputTable() == null
-                        || !pCtx.getInputTable().containsKey(tk.getName()))) {
+                        && (pCtx.getInputs() == null
+                        || !pCtx.getInputs().containsKey(tk.getName()))) {
 
                     addFatalError("untyped var not permitted in strict-mode: " + tk.getName());
                 }
@@ -87,9 +84,10 @@ public class ExpressionCompiler extends AbstractParser {
                 if (tk instanceof Substatement) {
                     ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
                     tk.setAccessor(subCompiler._compile());
-
-                    if (verifying)
-                        inputs.addAll(subCompiler.getInputs());
+//
+//                    if (verifying) {
+//                        inputs.addAll(subCompiler.getInputs());
+//                    }
                 }
 
                 /**
@@ -97,8 +95,6 @@ public class ExpressionCompiler extends AbstractParser {
                  * reducing for certain literals like, 'this', ternary and ternary else.
                  */
                 if (tk.isLiteral() && tk.getLiteralValue() != LITERALS.get("this")) {
-
-
                     if ((tkOp = nextToken()) != null && tkOp.isOperator()
                             && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
 
@@ -180,16 +176,15 @@ public class ExpressionCompiler extends AbstractParser {
                         continue;
                     }
                 }
-
                 astLinkedList.addTokenNode(verify(pCtx, tk));
             }
 
             if (verifying) {
-                for (String s : locals) {
-                    inputs.remove(s);
-                }
+//                for (String s : locals) {
+//                    inputs.remove(s);
+//                }
+                pCtx.processTables();
             }
-
 
             if (pCtx.isFatalError()) {
                 parserContext.remove();
@@ -216,7 +211,6 @@ public class ExpressionCompiler extends AbstractParser {
         if (tk.isDiscard() || (tk.fields & (ASTNode.OPERATOR | ASTNode.LITERAL)) != 0) return tk;
 
         if (verifying) {
-
             if (tk.isAssignment()) {
                 char[] assign = tk.getNameAsArray();
                 int c = 0;
@@ -228,27 +222,19 @@ public class ExpressionCompiler extends AbstractParser {
                     addFatalError("invalid assignment - variable name is a reserved keyword: " + varName);
                 }
 
-                locals.add(varName);
-
                 ExpressionCompiler subCompiler =
                         new ExpressionCompiler(new String(assign, c, assign.length - c).trim());
 
                 subCompiler._compile();
 
-                inputs.addAll(subCompiler.getInputs());
-
-                pCtx.addVariable(varName, tk.getEgressType());
+                pCtx.addVariable(varName, returnType = tk.getEgressType());
             }
             else if (tk.isIdentifier()) {
-                inputs.add(tk.getAbsoluteName());
-
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
-                returnType = propVerifier.analyze();
+                pCtx.addInput(tk.getAbsoluteName(), returnType = propVerifier.analyze());
 
-                inputs.addAll(propVerifier.getInputs());
             }
         }
-
         return tk;
     }
 
@@ -365,7 +351,6 @@ public class ExpressionCompiler extends AbstractParser {
                     case Operator.SIMILARITY:
                         stk.push(PropertyTools.similarity(String.valueOf(v1), String.valueOf(v2)));
                         break;
-
                 }
             }
         }
@@ -376,7 +361,6 @@ public class ExpressionCompiler extends AbstractParser {
                  * away with some messy constructs like: a + b < c && e + f > g + q instead
                  * of using brackets like (a + b < c) && (e + f > g + q)
                  */
-
                 fields |= ASTNode.LOOKAHEAD;
 
                 ASTNode tk = nextToken();
@@ -403,13 +387,13 @@ public class ExpressionCompiler extends AbstractParser {
     }
 
 
-    public Set<String> getInputs() {
-        return inputs;
-    }
-
-    public Set<String> getLocals() {
-        return locals;
-    }
+//    public Set<String> getInputs() {
+//        return inputs;
+//    }
+//
+//    public Set<String> getLocals() {
+//        return locals;
+//    }
 
     public ExpressionCompiler(String expression) {
         setExpression(expression);
@@ -442,5 +426,4 @@ public class ExpressionCompiler extends AbstractParser {
     public ParserContext getParserContextState() {
         return pCtx;
     }
-
 }
