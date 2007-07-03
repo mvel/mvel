@@ -1,7 +1,7 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
-import org.mvel.ast.AssignmentNode;
+import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
 import org.mvel.util.ExecutionStack;
@@ -16,9 +16,6 @@ import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
     private final Stack stk = new ExecutionStack();
-
- //   private Set<String> inputs;
- //   private Set<String> locals;
 
     private Class returnType;
 
@@ -35,8 +32,19 @@ public class ExpressionCompiler extends AbstractParser {
             parserContext = new ThreadLocal<ParserContext>();
         }
         parserContext.set(ctx);
-        
-        return _compile();
+
+        CompiledExpression c = _compile();
+
+        if (pCtx.isFatalError()) {
+            parserContext.remove();
+            throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
+        }
+        else if (pCtx.isFatalError()) {
+            parserContext.remove();
+            throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
+        }
+
+        return c;
     }
 
     /**
@@ -58,9 +66,6 @@ public class ExpressionCompiler extends AbstractParser {
 
         try {
             if (verifying) {
-//                inputs = new LinkedHashSet<String>();
-//                locals = new LinkedHashSet<String>();
-
                 getParserContext().initializeTables();
             }
 
@@ -74,20 +79,8 @@ public class ExpressionCompiler extends AbstractParser {
 
                 returnType = tk.getEgressType();
 
-                if (pCtx.isStrictTypeEnforcement() && tk instanceof AssignmentNode
-                        && (pCtx.getInputs() == null
-                        || !pCtx.getInputs().containsKey(tk.getName()))) {
-
-                    addFatalError("untyped var not permitted in strict-mode: " + tk.getName());
-                }
-
                 if (tk instanceof Substatement) {
-                    ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
-                    tk.setAccessor(subCompiler._compile());
-//
-//                    if (verifying) {
-//                        inputs.addAll(subCompiler.getInputs());
-//                    }
+                    tk.setAccessor(new ExpressionCompiler(tk.getNameAsArray())._compile());
                 }
 
                 /**
@@ -180,20 +173,9 @@ public class ExpressionCompiler extends AbstractParser {
             }
 
             if (verifying) {
-//                for (String s : locals) {
-//                    inputs.remove(s);
-//                }
                 pCtx.processTables();
             }
 
-            if (pCtx.isFatalError()) {
-                parserContext.remove();
-                throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
-            }
-            else if (pCtx.isFatalError()) {
-                parserContext.remove();
-                throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
-            }
 
             return new CompiledExpression(new ASTArrayList(astLinkedList), getCurrentSourceFileName());
         }
@@ -211,6 +193,21 @@ public class ExpressionCompiler extends AbstractParser {
         if (tk.isDiscard() || (tk.fields & (ASTNode.OPERATOR | ASTNode.LITERAL)) != 0) return tk;
 
         if (verifying) {
+//            if (pCtx.isStrictTypeEnforcement() && tk instanceof Assignment) {
+//
+//            }
+
+
+//            if (pCtx.isStrictTypeEnforcement() && tk instanceof Assignment
+//                    && (pCtx.getInputs() == null
+//                    || !pCtx.getInputs().containsKey(((Assignment) tk).getAssignmentVar()))) {
+//
+//                System.out.println(tk.getEgressType());
+//
+//                addFatalError("untyped var not permitted in strict-mode: " + ((Assignment) tk).getAssignmentVar());
+//                return tk;
+//            }
+
             if (tk.isAssignment()) {
                 char[] assign = tk.getNameAsArray();
                 int c = 0;
@@ -232,7 +229,6 @@ public class ExpressionCompiler extends AbstractParser {
             else if (tk.isIdentifier()) {
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
                 pCtx.addInput(tk.getAbsoluteName(), returnType = propVerifier.analyze());
-
             }
         }
         return tk;
@@ -385,15 +381,6 @@ public class ExpressionCompiler extends AbstractParser {
     private static int asInt(final Object o) {
         return (Integer) o;
     }
-
-
-//    public Set<String> getInputs() {
-//        return inputs;
-//    }
-//
-//    public Set<String> getLocals() {
-//        return locals;
-//    }
 
     public ExpressionCompiler(String expression) {
         setExpression(expression);

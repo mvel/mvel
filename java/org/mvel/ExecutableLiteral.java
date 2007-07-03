@@ -45,7 +45,7 @@ public class ExecutableLiteral implements ExecutableStatement {
     }
 
     public Class getKnownEgressType() {
-        return null;
+        return this.literal.getClass();
     }
 
     public boolean isConvertableIngressEgress() {
