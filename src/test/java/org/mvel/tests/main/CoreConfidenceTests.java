@@ -846,6 +846,7 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testVarInputs2() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh;");
+
         ParserContext ctx = new ParserContext();
         ctx.setRetainParserState(true);
 
@@ -981,6 +982,16 @@ public class CoreConfidenceTests extends TestCase {
             return;
         }
         assertTrue(false);
+    }
+
+    public void testProvidedExternalTypes() {
+        ExpressionCompiler compiler = new ExpressionCompiler("foo.bar");
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement(true);
+        ctx.addInput("foo", Foo.class);
+
+        Serializable c = compiler.compile(ctx);
+
     }
 
     public Object parseDirect(String ex) {
