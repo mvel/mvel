@@ -10,7 +10,6 @@ import java.util.HashMap;
 /**
  * The ParserContext is the main enviroment object used for sharing state throughout the entire
  * parser/compile process.
- *
  */
 public class ParserContext {
     private String sourceFile;
@@ -19,8 +18,8 @@ public class ParserContext {
     protected Map<String, Class> imports;
     protected Map<String, Interceptor> interceptors;
 
-    private Map<String, Class> variableTable;
-    private Map<String, Class> inputTable;
+    private Map<String, Class> variables;
+    private Map<String, Class> inputs;
 
     private List<ErrorDetail> errorList;
 
@@ -38,7 +37,6 @@ public class ParserContext {
         this.rootParser = rootParser;
     }
 
-
     public ParserContext(Map<String, Class> imports, Map<String, Interceptor> interceptors, String sourceFile) {
         this.imports = imports;
         this.interceptors = interceptors;
@@ -46,36 +44,20 @@ public class ParserContext {
     }
 
     public boolean hasVarOrInput(String name) {
-        return (variableTable != null && variableTable.containsKey(name))
-                || (inputTable != null && inputTable.containsKey(name));
+        return (variables != null && variables.containsKey(name))
+                || (inputs != null && inputs.containsKey(name));
     }
 
     public Class getVarOrInputType(String name) {
-        if (variableTable != null && variableTable.containsKey(name)) {
-            return variableTable.get(name);
+        if (variables != null && variables.containsKey(name)) {
+            return variables.get(name);
         }
-        else if (inputTable != null && inputTable.containsKey(name)) {
-            return inputTable.get(name);
+        else if (inputs != null && inputs.containsKey(name)) {
+            return inputs.get(name);
         }
         return Object.class;
     }
 
-    public Object getRootParser() {
-        return rootParser;
-    }
-
-    public void setRootParser(Object rootParser) {
-        this.rootParser = rootParser;
-    }
-
-    public String getSourceFile() {
-        return sourceFile;
-    }
-
-    public void setSourceFile(String sourceFile) {
-        if (sourceFile != null)
-            this.sourceFile = sourceFile;
-    }
 
     public int getLineCount() {
         return lineCount;
@@ -93,59 +75,43 @@ public class ParserContext {
         return imports != null && imports.containsKey(name);
     }
 
-    public Map<String, Class> getImports() {
-        return imports;
-    }
-
-    public void setImports(Map<String, Class> imports) {
-        if (imports == null) return;
-
-        if (this.imports != null) {
-            this.imports.putAll(imports);
-        }
-        else {
-            this.imports = imports;
-        }
-    }
-
     public void addImport(String name, Class cls) {
         if (this.imports == null) this.imports = new HashMap<String, Class>();
         this.imports.put(name, cls);
     }
 
-    public Map<String, Interceptor> getInterceptors() {
-        return interceptors;
-    }
-
-    public void setInterceptors(Map<String, Interceptor> interceptors) {
-        this.interceptors = interceptors;
-    }
-
-
-    public Map<String, Class> getVariableTable() {
-        return variableTable;
-    }
-
-    public void setVariableTable(Map<String, Class> variableTable) {
-        this.variableTable = variableTable;
-    }
-
-    public void initializeVariableTable() {
-        if (variableTable == null) variableTable = new HashMap<String, Class>();
+    public void initializeTables() {
+        if (variables == null) variables = new HashMap<String, Class>();
+        if (inputs == null) inputs = new HashMap<String, Class>();
     }
 
     public void addVariable(String name, Class type) {
-        if (variableTable.containsKey(name)) return;
+        if (variables.containsKey(name)) return;
         if (type == null) type = Object.class;
-        variableTable.put(name, type);
+        variables.put(name, type);
     }
 
-    public Map<String, Class> getInputTable() {
-        return inputTable;
+    public void addInput(String name, Class type) {
+        if (inputs.containsKey(name)) return;
+        if (type == null) type = Object.class;
+        inputs.put(name, type);
     }
 
-    public void setInputTable(Map<String, Class> inputTable) {
-        this.inputTable = inputTable;
+    public void processTables() {
+        for (String name : variables.keySet()) {
+            inputs.remove(name);
+        }
+    }
+
+    // accessors -- start here
+
+
+    public Map<String, Class> getInputs() {
+        return inputs;
+    }
+
+    public void setInputs(Map<String, Class> inputs) {
+        this.inputs = inputs;
     }
 
     public List<ErrorDetail> getErrorList() {
@@ -186,6 +152,54 @@ public class ParserContext {
         this.retainParserState = retainParserState;
     }
 
+    public Object getRootParser() {
+        return rootParser;
+    }
+
+    public void setRootParser(Object rootParser) {
+        this.rootParser = rootParser;
+    }
+
+    public String getSourceFile() {
+        return sourceFile;
+    }
+
+    public void setSourceFile(String sourceFile) {
+        if (sourceFile != null)
+            this.sourceFile = sourceFile;
+    }
+
+    public Map<String, Interceptor> getInterceptors() {
+        return interceptors;
+    }
+
+    public void setInterceptors(Map<String, Interceptor> interceptors) {
+        this.interceptors = interceptors;
+    }
+
+
+    public Map<String, Class> getImports() {
+        return imports;
+    }
+
+    public void setImports(Map<String, Class> imports) {
+        if (imports == null) return;
+
+        if (this.imports != null) {
+            this.imports.putAll(imports);
+        }
+        else {
+            this.imports = imports;
+        }
+    }
+
+    public Map<String, Class> getVariables() {
+        return variables;
+    }
+
+    public void setVariables(Map<String, Class> variables) {
+        this.variables = variables;
+    }
 
     public boolean isCompiled() {
         return compiled;
