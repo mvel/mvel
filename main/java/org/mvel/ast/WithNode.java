@@ -17,7 +17,7 @@ import java.util.List;
 public class WithNode extends BlockNode implements NestedStatement {
     private ExecutableStatement nestedStatement;
     private ParmValuePair[] withExpressions;
-
+   
     public WithNode(char[] expr, char[] block, int fields) {
         super(expr, fields, block);
 

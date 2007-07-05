@@ -1,7 +1,6 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
-import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
 import org.mvel.util.ExecutionStack;
