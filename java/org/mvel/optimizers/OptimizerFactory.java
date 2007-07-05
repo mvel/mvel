@@ -28,7 +28,7 @@ import java.util.Map;
 public class OptimizerFactory {
     public static String SAFE_REFLECTIVE = "reflective";
 
-    private static String defaultOptimizer;
+    private static String defaultOptimizer = "ASM";
     private static final Map<String, AccessorOptimizer> accessorCompilers = new HashMap<String, AccessorOptimizer>();
 
     private static ThreadLocal<Class<? extends AccessorOptimizer>> threadOptimizer;
