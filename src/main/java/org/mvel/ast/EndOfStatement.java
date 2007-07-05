@@ -22,9 +22,4 @@ public class EndOfStatement extends ASTNode {
     public Integer getOperator() {
         return Operator.END_OF_STMT;
     }
-
-
-    public Object getLiteralValue() {
-        return Operator.END_OF_STMT;
-    }
 }
