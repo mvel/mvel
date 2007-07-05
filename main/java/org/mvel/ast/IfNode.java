@@ -23,13 +23,13 @@ public class IfNode extends ASTNode implements NestedStatement {
         this.nestedStatement = (ExecutableStatement) ParseTools.subCompileExpression(this.block = block);
     }
 
-    public char[] getBlock() {
-        return block;
-    }
-
-    public void setBlock(char[] block) {
-        this.block = block;
-    }
+//    public char[] getBlock() {
+//        return block;
+//    }
+//
+//    public void setBlock(char[] block) {
+//        this.block = block;
+//    }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
@@ -54,25 +54,25 @@ public class IfNode extends ASTNode implements NestedStatement {
     }
 
 
-    public ExecutableStatement getCondition() {
-        return condition;
-    }
-
-    public void setCondition(ExecutableStatement condition) {
-        this.condition = condition;
-    }
+//    public ExecutableStatement getCondition() {
+//        return condition;
+//    }
+//
+//    public void setCondition(ExecutableStatement condition) {
+//        this.condition = condition;
+//    }
 
     public ExecutableStatement getNestedStatement() {
         return nestedStatement;
     }
-
-    public void setNestedStatement(ExecutableStatement nestedStatement) {
-        this.nestedStatement = nestedStatement;
-    }
-
-    public IfNode getElseIf() {
-        return elseIf;
-    }
+//
+//    public void setNestedStatement(ExecutableStatement nestedStatement) {
+//        this.nestedStatement = nestedStatement;
+//    }
+//
+//    public IfNode getElseIf() {
+//        return elseIf;
+//    }
 
     public void setElseIf(IfNode elseIf) {
         this.elseIf = elseIf;
@@ -82,9 +82,9 @@ public class IfNode extends ASTNode implements NestedStatement {
         return elseBlock;
     }
 
-    public void setElseBlock(ExecutableStatement elseBlock) {
-        this.elseBlock = elseBlock;
-    }
+//    public void setElseBlock(ExecutableStatement elseBlock) {
+//        this.elseBlock = elseBlock;
+//    }
 
     public void setElseBlock(char[] block) {
         elseBlock = (ExecutableStatement) ParseTools.subCompileExpression(block);
