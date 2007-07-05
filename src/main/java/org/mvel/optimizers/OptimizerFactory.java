@@ -20,7 +20,6 @@ package org.mvel.optimizers;
 
 import org.mvel.CompileException;
 import org.mvel.optimizers.impl.asm.ASMAccessorOptimizer;
-import org.mvel.optimizers.impl.asm.ASMOptimizer;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 
 import java.util.HashMap;
@@ -30,7 +29,6 @@ public class OptimizerFactory {
     public static String SAFE_REFLECTIVE = "reflective";
 
     private static String defaultOptimizer;
-    private static final Map<String, Optimizer> optimizers = new HashMap<String, Optimizer>();
     private static final Map<String, AccessorOptimizer> accessorCompilers = new HashMap<String, AccessorOptimizer>();
 
     private static ThreadLocal<Class<? extends AccessorOptimizer>> threadOptimizer;
@@ -42,8 +40,6 @@ public class OptimizerFactory {
          */
         try {
             Class.forName("org.mvel.asm.ClassWriter");
-
-            optimizers.put(defaultOptimizer = "ASM", new ASMOptimizer());
             accessorCompilers.put("ASM", new ASMAccessorOptimizer());
         }
 
@@ -59,14 +55,6 @@ public class OptimizerFactory {
 
         if (Boolean.getBoolean("mvel.disable.jit"))
             defaultOptimizer = SAFE_REFLECTIVE;
-    }
-
-    public static void registerOptimizer(Optimizer optimizer) {
-        optimizers.put(optimizer.getName(), optimizer);
-    }
-
-    public static Optimizer getDefaultOptimizer() {
-        return optimizers.get(defaultOptimizer);
     }
 
     public static AccessorOptimizer getDefaultAccessorCompiler() {

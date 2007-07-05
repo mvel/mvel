@@ -969,6 +969,10 @@ public class CoreConfidenceTests extends TestCase {
                 "return ((a + b) * 2) - 10;"));
     }
 
+    public void testSubtractNoSpace1() {
+        assertEquals(59, parseDirect("hour-1"));
+    }
+
     public void testStrictTypingCompilation() {
         ExpressionCompiler compiler = new ExpressionCompiler("a.foo;\nb.foo;\n x = 5");
         ParserContext ctx = new ParserContext();
