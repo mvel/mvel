@@ -26,16 +26,19 @@ public class MVELRuntime {
     private static ThreadLocal<Map<String, Set<Integer>>> threadBreakpoints;
     private static ThreadLocal<Debugger> threadDebugger;
 
+
     /**
-     * Main interpreter loop.
+     * Main interpreter.
      *
-     * @param ctx             -
-     * @param variableFactory -
-     * @return -
+     * @see org.mvel.MVEL
+     *
+     * @param debugger
+     * @param node
+     * @param ctx
+     * @param variableFactory
+     * @return
      */
     public static Object execute(boolean debugger, ASTArrayList node, Object ctx, VariableResolverFactory variableFactory) {
-        //   int i1, i2, i3, i4;  // 4 int registers
-
         Stack stk = new ExecutionStack();
         Object v1, v2;
 
@@ -69,10 +72,7 @@ public class MVELRuntime {
                                   throw new RuntimeException("no debugger registered to handle breakpoint.");
                               }
 
-                              Frame frame = new Frame(label.getSourceFile(), label.getLineNumber(), variableFactory);
-
-                              threadDebugger.get().onBreak(frame);
-
+                              threadDebugger.get().onBreak(new Frame(label.getSourceFile(), label.getLineNumber(), variableFactory));
                         }
                     }
                     continue;
@@ -89,6 +89,7 @@ public class MVELRuntime {
                 switch (operator = tk.getOperator()) {
                     case AND:
                         if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
+                            //noinspection StatementWithEmptyBody
                             while (node.hasMoreNodes() && !node.nextNode().isOperator(Operator.END_OF_STMT)) ;
                             if (!node.hasMoreNodes()) {
                                 return stk.pop();
@@ -104,6 +105,7 @@ public class MVELRuntime {
                         }
                     case OR:
                         if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
+                            //noinspection StatementWithEmptyBody
                             while (node.hasMoreNodes() && !node.nextNode().isOperator(Operator.END_OF_STMT)) ;
                             if (!node.hasMoreNodes()) {
                                 return stk.pop();
@@ -119,6 +121,7 @@ public class MVELRuntime {
                         }
                     case TERNARY:
                         if (!(Boolean) stk.pop()) {
+                            //noinspection StatementWithEmptyBody
                             while (node.hasMoreNodes() && !node.nextNode().isOperator(Operator.TERNARY_ELSE)) ;
                         }
                         stk.clear();

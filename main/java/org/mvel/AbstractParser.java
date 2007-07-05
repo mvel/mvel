@@ -1,5 +1,8 @@
 package org.mvel;
 
+import static java.lang.System.getProperty;
+import static java.lang.Float.parseFloat;
+
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
 import org.mvel.util.ExecutionStack;
@@ -109,8 +112,7 @@ public class AbstractParser {
 
         LITERALS.put("Array", java.lang.reflect.Array.class);
 
-        float version = Float.parseFloat(System.getProperty("java.version").substring(0, 2));
-        if (version >= 1.5) {
+        if (parseFloat(getProperty("java.version").substring(0, 2)) >= 1.5) {
             try {
                 LITERALS.put("StringBuilder", Class.forName("java.lang.StringBuilder"));
             }
@@ -161,11 +163,6 @@ public class AbstractParser {
         boolean capture = false;
         boolean union = false;
 
-//        if (!debugSymbols && parserContext != null && getParserContext().isDebugSymbols()) {
-//            debugSymbols = true;
-//            if (expr[cursor] != '\n') lastWasLineLabel = true;
-//        }
-
         if (debugSymbols && !lastWasLineLabel && (expr[cursor] == '\n' || cursor == 0)) {
             if (getParserContext().getSourceFile() == null) {
                 throw new CompileException("unable to produce debugging symbols: source name must be provided.");
@@ -177,14 +174,13 @@ public class AbstractParser {
             lastWasLineLabel = true;
 
             int scan = cursor;
-
+            
             while (expr[scan] == '\n') {
                 scan++;
                 line++;
             }
 
-            pCtx.setLineCount(line);
-            pCtx.setLineOffset(cursor);
+            pCtx.setLineAndOffset(line, cursor);
 
             return new LineLabel(pCtx.getSourceFile(), line);
         }
@@ -325,8 +321,6 @@ public class AbstractParser {
                                     start = cursor += 2;
                                     captureToEOS();
                                     return new AssignSub(subArray(start, cursor), fields, name);
-
-
                             }
                             break;
 
@@ -336,7 +330,6 @@ public class AbstractParser {
                                 start = cursor += 2;
                                 captureToEOS();
                                 return new AssignMult(subArray(start, cursor), fields, name);
-
                             }
                             break;
 
@@ -403,14 +396,12 @@ public class AbstractParser {
                                         }
                                     }
 
-                                    if (lastNode.isLiteral()) {
-                                        if (lastNode.getLiteralValue() instanceof Class) {
-                                            lastNode.setDiscard(true);
+                                    if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
+                                        lastNode.setDiscard(true);
 
-                                            captureToEOS();
-                                            return new TypedVarNode(subArray(start, cursor), fields, (Class)
-                                                    lastNode.getLiteralValue());
-                                        }
+                                        captureToEOS();
+                                        return new TypedVarNode(subArray(start, cursor), fields, (Class)
+                                                lastNode.getLiteralValue());
                                     }
 
                                     throw new ParseException("unknown class: " + lastNode.getLiteralValue());
@@ -468,8 +459,6 @@ public class AbstractParser {
                             captureToEOT();
                             return new PreFixIncNode(subArray(start, cursor), fields);
                         }
-
-
                         return createToken(expr, start, cursor++ + 1, fields);
 
                     case'*':
@@ -510,7 +499,6 @@ public class AbstractParser {
 
                             while (true) {
                                 cursor++;
-
                                 /**
                                  * Since multi-line comments may cross lines, we must keep track of any line-break
                                  * we encounter.
@@ -596,14 +584,12 @@ public class AbstractParser {
                             else {
                                 try {
                                     /**
-                                     * 
+                                     *
                                      *  take a stab in the dark and try and load the class
                                      */
-                                    Class cls = createClass(tokenStr);
-
                                     start = cursor;
                                     captureToEOS();
-                                    return new TypeCast(expr, start, cursor, fields, cls);
+                                    return new TypeCast(expr, start, cursor, fields, createClass(tokenStr));
 
                                 }
                                 catch (ClassNotFoundException e) {
@@ -612,9 +598,7 @@ public class AbstractParser {
                                      */
                                 }
                             }
-
                         }
-
 
                         if ((fields & ASTNode.FOLD) != 0) {
                             if (cursor < length && expr[cursor] == '.') {
@@ -881,7 +865,6 @@ public class AbstractParser {
             return _captureBlock(null, expr, true);
         }
 
-
         return first;
     }
 
@@ -988,7 +971,6 @@ public class AbstractParser {
                         }
                     }
             }
-
         }
     }
 
@@ -1093,9 +1075,6 @@ public class AbstractParser {
         if (parserContext == null || parserContext.get() == null) {
             newContext();
         }
-        else {
-        }
-
         return parserContext.get();
     }
 
@@ -1164,18 +1143,15 @@ public class AbstractParser {
                 OPERATORS.put("+=", ASSIGN_ADD);
                 OPERATORS.put("-=", ASSIGN_SUB);
 
-
             case 3: // iteration
                 OPERATORS.put("foreach", FOREACH);
                 OPERATORS.put("while", WHILE);
                 OPERATORS.put("for", FOR);
                 OPERATORS.put("do", DO);
 
-
             case 2: // multi-statement
                 OPERATORS.put("return", RETURN);
                 OPERATORS.put(";", END_OF_STMT);
-
 
             case 1: // boolean, math ops, projection, assertion, objection creation, block setters, imports
                 OPERATORS.put("+", ADD);
@@ -1214,7 +1190,6 @@ public class AbstractParser {
 
                 OPERATORS.put("new", Operator.NEW);
                 OPERATORS.put("in", PROJECTION);
-
 
                 OPERATORS.put("with", WITH);
 

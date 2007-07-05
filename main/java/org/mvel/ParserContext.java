@@ -82,6 +82,11 @@ public class ParserContext {
         this.lineOffset = lineOffset;
     }
 
+    public void setLineAndOffset(int lineCount, int lineOffset) {
+        this.lineCount = lineCount;
+        this.lineOffset = lineOffset;
+    }
+
     public Class getImport(String name) {
         return imports != null ? imports.get(name) : null;
     }
