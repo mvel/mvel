@@ -41,7 +41,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private String sourceName;
 
     public CompiledExpression(ASTIterator astMap, String sourceName) {
-     //   this.tokens = new ASTArrayList(ASTMap);
         this.tokens = astMap;
         this.sourceName = sourceName;
     }
