@@ -34,8 +34,8 @@ public class ELComparisons implements Runnable {
 
     private static int ALL = RUN_MVEL + RUN_OGNL + RUN_COMMONS_EL + RUN_JAVA_NATIVE;
 
-    private static final int TESTNUM = 100;
-    private static final int TESTITER = 2;
+    private static final int TESTNUM = 100000;
+    private static final int TESTITER = 3;
 
     private long ognlTotal = 0;
     private long mvelTotal = 0;
@@ -79,10 +79,10 @@ public class ELComparisons implements Runnable {
         };
 
         tests.add(new PerfTest("Deep Property", "foo.bar.name", ALL, nt));
-//        tests.add(new PerfTest("Static Field Access (MVEL)", "Integer.MAX_VALUE", RUN_MVEL));
-//        tests.add(new PerfTest("Static Field Access (OGNL)", "@java.lang.Integer@MAX_VALUE", RUN_OGNL));
-//        tests.add(new PerfTest("Inline Array Creation (MVEL)", "{'foo', 'bar'}", RUN_MVEL));
-//        tests.add(new PerfTest("Inline Array Creation (OGNL)", "new String[] {'foo', 'bar'}", RUN_OGNL));
+        tests.add(new PerfTest("Static Field Access (MVEL)", "Integer.MAX_VALUE", RUN_MVEL, nt));
+        tests.add(new PerfTest("Static Field Access (OGNL)", "@java.lang.Integer@MAX_VALUE", RUN_OGNL, nt));
+        tests.add(new PerfTest("Inline Array Creation (MVEL)", "{'foo', 'bar'}", RUN_MVEL, nt));
+        tests.add(new PerfTest("Inline Array Creation (OGNL)", "new String[] {'foo', 'bar'}", RUN_OGNL, nt));
 
 
         nt = new NativeTest() {
