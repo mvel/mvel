@@ -3,6 +3,7 @@ package org.mvel.tests.perftests;
 import ognl.OgnlContext;
 import ognl.Node;
 import ognl.Ognl;
+import ognl.enhance.ExpressionAccessor;
 import org.mvel.ExecutableStatement;
 import org.mvel.MVEL;
 
@@ -47,13 +48,13 @@ public class MVELOGNLTest {
         String ex = "foo.bar.name";
 
         OgnlContext ctx = new OgnlContext();
-        Node node = Ognl.compileExpression(ctx, base, ex);
+        ExpressionAccessor accessor = Ognl.compileExpression(ctx, base, ex).getAccessor();
 
         long time = System.currentTimeMillis();
 
         for (int x = 0; x < 3; x++) {
             for (int i = 0; i < 1000000; i++) {
-                node.getAccessor().get(new OgnlContext(), base);
+                accessor.get(new OgnlContext(), base);
             }
             System.out.println("ognl: " + (System.currentTimeMillis() - time) + "ms");
 
