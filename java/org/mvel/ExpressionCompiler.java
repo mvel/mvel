@@ -1,6 +1,7 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
+import org.mvel.ast.BinaryOperation;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
 import org.mvel.util.ExecutionStack;
@@ -178,8 +179,45 @@ public class ExpressionCompiler extends AbstractParser {
                 pCtx.processTables();
             }
 
+            astLinkedList.reset();
 
-            return new CompiledExpression(new ASTArrayList(astLinkedList), getCurrentSourceFileName());
+            ASTLinkedList optimizedAst = new ASTLinkedList();
+
+            while (astLinkedList.hasMoreNodes()) {
+                if ((tk = astLinkedList.nextNode()).getFields() == -1) {
+                    optimizedAst.addTokenNode(tk);
+                }
+                else if (astLinkedList.hasMoreNodes()) {
+                    if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
+                        optimizedAst.addTokenNode(tk);
+                        optimizedAst.addTokenNode(tkOp);
+                    }
+                    else if (tkOp.isOperator() && tkOp.getOperator() < 12) {
+                        BinaryOperation bo = new BinaryOperation(tkOp.getOperator(), tk, astLinkedList.nextNode());
+                        tkOp2 = null;
+
+                        while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
+                                && tkOp2.getOperator() < 12) {
+                            bo = new BinaryOperation(((tkOp = tkOp2).getOperator()), bo, astLinkedList.nextNode());
+                        }
+                        optimizedAst.addTokenNode(bo);
+
+                        if (tkOp2 != null && tkOp2 != tkOp) {
+                             optimizedAst.addTokenNode(tkOp2);
+                        }
+
+                    }
+                    else {
+                        optimizedAst.addTokenNode(tk);
+                        optimizedAst.addTokenNode(tkOp);
+                    }
+                }
+                else {
+                    optimizedAst.addTokenNode(tk);
+                }
+            }
+
+            return new CompiledExpression(optimizedAst, getCurrentSourceFileName());
         }
         catch (Throwable e) {
             parserContext.remove();
@@ -195,21 +233,6 @@ public class ExpressionCompiler extends AbstractParser {
         if (tk.isDiscard() || (tk.fields & (ASTNode.OPERATOR | ASTNode.LITERAL)) != 0) return tk;
 
         if (verifying) {
-//            if (pCtx.isStrictTypeEnforcement() && tk instanceof Assignment) {
-//
-//            }
-
-
-//            if (pCtx.isStrictTypeEnforcement() && tk instanceof Assignment
-//                    && (pCtx.getInputs() == null
-//                    || !pCtx.getInputs().containsKey(((Assignment) tk).getAssignmentVar()))) {
-//
-//                System.out.println(tk.getEgressType());
-//
-//                addFatalError("untyped var not permitted in strict-mode: " + ((Assignment) tk).getAssignmentVar());
-//                return tk;
-//            }
-
             if (tk.isAssignment()) {
                 char[] assign = tk.getNameAsArray();
                 int c = 0;

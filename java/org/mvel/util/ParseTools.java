@@ -735,6 +735,9 @@ public class ParseTools {
     public static Method determineActualTargetMethod(Method method) {
         String name = method.getName();
 
+        /**
+         * Follow our way up the class heirarchy until we find the physical target method.
+         */
         for (Class cls : method.getDeclaringClass().getInterfaces()) {
             for (Method meth : cls.getMethods()) {
                 if (meth.getParameterTypes().length == 0 && name.equals(meth.getName())) {
@@ -877,34 +880,7 @@ public class ParseTools {
     }
 
     public static Serializable subCompileExpression(String expression) {
-        ExpressionCompiler parser = new ExpressionCompiler(expression);
-
-
-        CompiledExpression cExpr = parser._compile();
-
-        ASTIterator tokens = cExpr.getTokens();
-
-        /**
-         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
-         */
-        if (MVEL.isOptimizationEnabled() && tokens.size() == 1) {
-            ASTNode tk = tokens.firstNode();
-
-            if (tk.isLiteral() && !tk.isThisVal()) {
-                if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
-                    return new ExecutableLiteral(tk.getIntRegister());
-                }
-                else {
-                    return new ExecutableLiteral(tk.getLiteralValue());
-                }
-            }
-            if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);
-            }
-        }
-
-
-        return cExpr;
+        return optimizeTree(new ExpressionCompiler(expression)._compile());   
     }
 
 
@@ -912,7 +888,7 @@ public class ParseTools {
         return optimizeTree(new ExpressionCompiler(expression)._compile());
     }
 
-    public static Serializable optimizeTree(CompiledExpression compiled) {
+    public static Serializable optimizeTree(final CompiledExpression compiled) {
         ASTIterator nodes = compiled.getTokens();
 
         /**

@@ -3,23 +3,22 @@ package org.mvel;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
 import org.mvel.ast.LineLabel;
+import org.mvel.debug.Debugger;
+import org.mvel.debug.Frame;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
-import static org.mvel.util.ParseTools.doOperations;
 import static org.mvel.util.PropertyTools.isEmpty;
 import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
-import org.mvel.debug.Debugger;
-import org.mvel.debug.Frame;
 
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import static java.util.regex.Pattern.compile;
 
 public class MVELRuntime {
@@ -152,21 +151,6 @@ public class MVELRuntime {
                         v2 = stk.pop();
 
                         switch (operator) {
-                            case ADD:
-                            case SUB:
-                            case DIV:
-                            case MULT:
-                            case MOD:
-                            case EQUAL:
-                            case NEQUAL:
-                            case GTHAN:
-                            case LTHAN:
-                            case GETHAN:
-                            case LETHAN:
-                            case POWER:
-                                stk.push(doOperations(v2, operator, v1));
-                                break;
-
                             case CHOR:
                                 if (!isEmpty(v2) || !isEmpty(v1)) {
                                     stk.clear();

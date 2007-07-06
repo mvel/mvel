@@ -155,10 +155,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
     }
 
-
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
-
 
         if (first && variableFactory != null && variableFactory.isResolveable(property)) {
             VariableAccessor accessor = new VariableAccessor(property, variableFactory);
@@ -170,7 +168,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
-
 
         if (member instanceof Field) {
             FieldAccessor accessor = new FieldAccessor();
