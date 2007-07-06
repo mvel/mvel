@@ -76,7 +76,6 @@ public class ExecutableAccessor implements ExecutableStatement {
         return false;
     }
 
-
     public ASTNode getAccessor() {
         return accessor;
     }
