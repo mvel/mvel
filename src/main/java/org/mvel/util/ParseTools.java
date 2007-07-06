@@ -1,11 +1,10 @@
 package org.mvel.util;
 
-import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.*;
+import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.integration.Interceptor;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
@@ -910,38 +909,31 @@ public class ParseTools {
 
 
     public static Serializable subCompileExpression(char[] expression) {
-        ExpressionCompiler parser = new ExpressionCompiler(expression);
-//        parser.setImportedClasses(imports);
-//        parser.setInterceptors(interceptors);
-//        parser.setSourceFile(sourceName);
-
-        CompiledExpression cExpr = parser._compile();
-
-        ASTIterator tokens = cExpr.getTokens();
-
-        /**
-         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
-         */
-        if (MVEL.isOptimizationEnabled() && tokens.size() == 1) {
-            ASTNode tk = tokens.firstNode();
-            if (tk.isLiteral() && !tk.isThisVal()) {
-                if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
-                    return new ExecutableLiteral(tk.getIntRegister());
-                }
-                else {
-                    return new ExecutableLiteral(tk.getLiteralValue());
-                }
-            }
-
-            if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);
-            }
-
-        }
-
-
-        return cExpr;
+        return optimizeTree(new ExpressionCompiler(expression)._compile());
     }
 
+    public static Serializable optimizeTree(CompiledExpression compiled) {
+        ASTIterator nodes = compiled.getTokens();
 
+        /**
+          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
+          */
+         if (MVEL.isOptimizationEnabled() && nodes.size() == 1) {
+             ASTNode tk = nodes.firstNode();
+
+             if (tk.isLiteral() && !tk.isThisVal()) {
+                 if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
+                     return new ExecutableLiteral(tk.getIntRegister());
+                 }
+                 else {
+                     return new ExecutableLiteral(tk.getLiteralValue());
+                 }
+             }
+             if (tk.isIdentifier()) {
+                 return new ExecutableAccessor(tk, false);
+             }
+         }
+
+        return compiled;
+    }
 }

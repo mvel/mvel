@@ -26,6 +26,7 @@ import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 import static org.mvel.util.ParseTools.handleParserEgress;
+import org.mvel.util.ParseTools;
 
 import java.io.Serializable;
 import static java.lang.Boolean.getBoolean;
@@ -117,31 +118,9 @@ public class MVEL {
 
     public static Serializable compileExpression(String expression, Map<String, Class> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
-        ExpressionCompiler parser = new ExpressionCompiler(expression);
-        CompiledExpression cExpr = parser.compile(new ParserContext(imports, interceptors, sourceName));
-        ASTIterator tokens = cExpr.getTokens();
 
-        /**
-         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
-         */
-        if (OPTIMIZER && tokens.size() == 1) {
-            ASTNode tk = tokens.firstNode();
-
-            if (tk.isLiteral() && !tk.isThisVal()) {
-                if ((tk.fields & ASTNode.INTEGER32) != 0) {
-                    return new ExecutableLiteral(tk.getIntRegister());
-                }
-                else {
-                    return new ExecutableLiteral(tk.getLiteralValue());
-                }
-            }
-            if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);
-            }
-        }
-
-
-        return cExpr;
+        return ParseTools.optimizeTree(new ExpressionCompiler(expression)
+                .compile(new ParserContext(imports, interceptors, sourceName)));
     }
 
 
@@ -177,32 +156,7 @@ public class MVEL {
      */
     public static Serializable compileExpression(char[] expression, Map<String, Class> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
-
-        ExpressionCompiler parser = new ExpressionCompiler(expression);
-
-        CompiledExpression cExpr = parser.compile(new ParserContext(imports, interceptors, sourceName));
-        ASTIterator tokens = cExpr.getTokens();
-
-        /**
-         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
-         */
-        if (OPTIMIZER && tokens.size() == 1) {
-            ASTNode tk = tokens.firstNode();
-
-            if (tk.isLiteral() && !tk.isThisVal()) {
-                if ((tk.fields & ASTNode.INTEGER32) != 0) {
-                    return new ExecutableLiteral(tk.getIntRegister());
-                }
-                else {
-                    return new ExecutableLiteral(tk.getLiteralValue());
-                }
-            }
-            if (tk.isIdentifier()) {
-                return new ExecutableAccessor(tk, false);
-            }
-        }
-
-        return cExpr;
+        return ParseTools.optimizeTree(new ExpressionCompiler(expression).compile(new ParserContext(imports, interceptors, sourceName)));
     }
 
 
@@ -588,6 +542,4 @@ public class MVEL {
     public static void setProperty(Object ctx, String property, Object value) {
         PropertyAccessor.set(ctx, property, value);
     }
-
-
 }
