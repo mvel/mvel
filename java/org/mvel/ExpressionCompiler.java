@@ -117,7 +117,7 @@ public class ExpressionCompiler extends AbstractParser {
                                      * different operators.
                                      */
                                     astLinkedList.addTokenNode(new LiteralNode(stk.pop()));
-                                    astLinkedList.addTokenNode(tkOp2);
+                                    astLinkedList.addTokenNode(verify(pCtx, tkOp2));
                                     break;
                                 }
                                 else if ((tkLA2 = nextToken()) != null
@@ -244,12 +244,10 @@ public class ExpressionCompiler extends AbstractParser {
                         }
                         else if (tkOp.isOperator()
                                 && (tkOp.getOperator() == Operator.AND || tkOp.getOperator() == Operator.OR)) {
-                            // handle math and equals
 
                             tkOp2 = null;
-                            
-                            //   BinaryOperation bo = new BinaryOperation(tkOp.getOperator(), tk, astLinkedList.nextNode());
                             ASTNode bool = null;
+
                             switch (tkOp.getOperator()) {
                                 case Operator.AND:
                                     bool = new And(tk, astLinkedList.nextNode());
