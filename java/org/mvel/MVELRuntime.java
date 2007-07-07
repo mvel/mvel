@@ -1,5 +1,6 @@
 package org.mvel;
 
+import static org.mvel.Soundex.soundex;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
 import org.mvel.ast.LineLabel;
@@ -30,11 +31,11 @@ public class MVELRuntime {
      *
      * @see org.mvel.MVEL
      *
-     * @param debugger
-     * @param node
-     * @param ctx
-     * @param variableFactory
-     * @return
+     * @param debugger -
+     * @param node -
+     * @param ctx -
+     * @param variableFactory -
+     * @return -
      */
     public static Object execute(boolean debugger, ASTIterator node, Object ctx, VariableResolverFactory variableFactory) {
         Stack stk = new ExecutionStack();
@@ -184,7 +185,7 @@ public class MVELRuntime {
                                 break;
 
                             case SOUNDEX:
-                                stk.push(Soundex.soundex(valueOf(v1)).equals(Soundex.soundex(valueOf(v2))));
+                                stk.push(soundex(valueOf(v1)).equals(soundex(valueOf(v2))));
                                 break;
 
                             case SIMILARITY:
