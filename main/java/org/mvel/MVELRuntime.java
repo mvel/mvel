@@ -127,9 +127,9 @@ public class MVELRuntime {
                                 else stk.push(null);
                                 break;
 
-                            case REGEX:
-                                stk.push(compile(valueOf(v1)).matcher(valueOf(v2)).matches());
-                                break;
+//                            case REGEX:
+//                                stk.push(compile(valueOf(v1)).matcher(valueOf(v2)).matches());
+//                                break;
 
                             case INSTANCEOF:
                                 if (v1 instanceof Class)
