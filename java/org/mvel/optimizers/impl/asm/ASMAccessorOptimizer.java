@@ -89,8 +89,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private int stacksize = 1;
     private long time;
 
-//    private int inputs;
-
     private ArrayList<ExecutableStatement> compiledInputs;
 
     private Class returnType;
@@ -1810,7 +1808,5 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 // --
             }
         }
-
     }
-
 }
