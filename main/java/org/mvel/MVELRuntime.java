@@ -86,38 +86,6 @@ public class MVELRuntime {
                 }
 
                 switch (operator = tk.getOperator()) {
-                    case AND:
-                        if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
-                            //noinspection StatementWithEmptyBody
-                            while (node.hasMoreNodes() && !node.nextNode().isOperator(Operator.END_OF_STMT)) ;
-                            if (!node.hasMoreNodes()) {
-                                return stk.pop();
-                            }
-                            else {
-                                stk.clear();
-                                continue;
-                            }
-                        }
-                        else {
-                            stk.discard();
-                            continue;
-                        }
-                    case OR:
-                        if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
-                            //noinspection StatementWithEmptyBody
-                            while (node.hasMoreNodes() && !node.nextNode().isOperator(Operator.END_OF_STMT)) ;
-                            if (!node.hasMoreNodes()) {
-                                return stk.pop();
-                            }
-                            else {
-                                stk.clear();
-                                continue;
-                            }
-                        }
-                        else {
-                            stk.discard();
-                            continue;
-                        }
                     case TERNARY:
                         if (!(Boolean) stk.pop()) {
                             //noinspection StatementWithEmptyBody
