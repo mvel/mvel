@@ -841,7 +841,7 @@ public class CoreConfidenceTests extends TestCase {
         assertTrue(pCtx.getVariables().containsKey("bleh"));
         assertTrue(pCtx.getVariables().containsKey("twa"));
 
-        assertEquals(String.class, DebugTools.determineType("bleh", c));
+        assertEquals(String.class, pCtx.getVarOrInputType("bleh"));
     }
 
     public void testVarInputs2() {
