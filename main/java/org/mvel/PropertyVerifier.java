@@ -150,6 +150,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 addFatalError("unqualified type in strict mode for: " + property);
             }
             return Object.class;
+            
         }
     }
 
@@ -161,40 +162,16 @@ public class PropertyVerifier extends AbstractOptimizer {
         if (cursor == length)
             throw new PropertyAccessException("unterminated '['");
 
-        String item;
-
-        if (expr[cursor] == '\'' || expr[cursor] == '"') {
-            start++;
-
-            int end;
-
-            if (!scanTo(']')) {
-                addFatalError("unterminated [ in token");
-                return Object.class;
-            }
-
-            if ((end = containsStringLiteralTermination()) == -1) {
-                addFatalError("unterminated string literal in indexed property");
-                return Object.class;
-            }
-
-            item = new String(expr, start, end - start);
-        }
-        else {
-            if (!scanTo(']')) {
-                addFatalError("unterminated [ in token");
-            }
-
-            item = new String(expr, start, cursor - start);
+        if (!scanTo(']')) {
+            addFatalError("unterminated [ in token");
         }
 
-
-        ExpressionCompiler compiler = new ExpressionCompiler(item);
+        ExpressionCompiler compiler = new ExpressionCompiler(new String(expr, start, cursor - start));
         compiler._compile();
 
         ++cursor;
 
-        return compiler.getReturnType();
+        return compiler.getReturnType() == null ? Object.class : compiler.getReturnType();
     }
 
 
@@ -226,7 +203,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 verifCompiler = new ExpressionCompiler(token);
                 verifCompiler._compile();
 
-         //       inputs.addAll(verifCompiler.getInputs());
+                //       inputs.addAll(verifCompiler.getInputs());
             }
         }
 

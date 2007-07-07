@@ -19,7 +19,7 @@ import ognl.OgnlContext;
 import ognl.Node;
 
 public class CompiledPerformanceTests extends TestCase {
-    private static final int ITERATIONS = 100000;
+    private static final int ITERATIONS = 1000000;
 
     protected Foo foo = new Foo();
     protected Map<String, Object> map = new HashMap<String, Object>();
