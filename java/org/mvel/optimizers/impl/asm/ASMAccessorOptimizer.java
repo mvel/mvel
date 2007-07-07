@@ -21,7 +21,6 @@ package org.mvel.optimizers.impl.asm;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
-import static org.mvel.MVEL.compileExpression;
 import static org.mvel.MVEL.isAdvancedDebugging;
 import org.mvel.asm.*;
 import static org.mvel.asm.Opcodes.*;
