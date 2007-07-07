@@ -46,11 +46,11 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public ASTIterator getTokens() {
-        return tokens;
+        return new ASTLinkedList(tokens.firstNode());
     }
 
     public void setTokens(ASTIterator tokens) {
-        this.tokens = new ASTArrayList(tokens);
+        this.tokens = tokens;
     }
 
 
@@ -93,7 +93,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         if (!optimized) setupOptimizers();
-        return handleParserEgress(execute(false, new ASTArrayList(tokens), staticContext, factory), false);
+        return handleParserEgress(execute(false, new ASTLinkedList(tokens.firstNode()), staticContext, factory), false);
     }
 
     private void setupOptimizers() {
@@ -102,7 +102,8 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public ASTIterator getTokenIterator() {
-        return new ASTArrayList(tokens);
+        //return new ASTArrayList(tokens);
+        return tokens;
     }
 
     public boolean isOptimized() {
