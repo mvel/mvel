@@ -26,7 +26,7 @@ public class ASTLinkedList implements ASTIterator {
 
     public ASTLinkedList() {
     }
-
+    
     public ASTLinkedList(ASTNode firstASTNode) {
         this.current = this.firstASTNode = firstASTNode;
     }

@@ -173,7 +173,7 @@ public class AbstractParser {
             lastWasLineLabel = true;
 
             int scan = cursor;
-            
+
             while (expr[scan] == '\n') {
                 scan++;
                 line++;
@@ -350,6 +350,16 @@ public class AbstractParser {
                             union = true;
                             cursor++;
                             continue;
+
+                        case'~':
+                            if (isAt('=', 1)) {
+                                char[] stmt = subArray(start, trimLeft(cursor));
+                                start = cursor += 2;
+                                captureToEOT();
+                                return new RegExMatch(stmt, fields, subArray(start, cursor));
+                            }
+                            break;
+
                         case'=':
                             if (isAt('+', 1)) {
                                 name = new String(expr, start, trimLeft(cursor));

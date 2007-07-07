@@ -1,9 +1,7 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
-import org.mvel.ast.BinaryOperation;
-import org.mvel.ast.LiteralNode;
-import org.mvel.ast.Substatement;
+import org.mvel.ast.*;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.ParseTools.doOperations;
@@ -20,6 +18,7 @@ public class ExpressionCompiler extends AbstractParser {
     private Class returnType;
 
     private boolean verifying = true;
+    private boolean secondPassOptimization = false;
 
     private ParserContext pCtx;
 
@@ -179,10 +178,13 @@ public class ExpressionCompiler extends AbstractParser {
                 pCtx.processTables();
             }
 
-            astLinkedList.reset();
+            astLinkedList.finish();
 
             ASTLinkedList optimizedAst = new ASTLinkedList();
 
+            /**
+             * Re-process the AST and optimize it.
+             */
             while (astLinkedList.hasMoreNodes()) {
                 if ((tk = astLinkedList.nextNode()).getFields() == -1) {
                     optimizedAst.addTokenNode(tk);
@@ -191,11 +193,16 @@ public class ExpressionCompiler extends AbstractParser {
                     if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
                         optimizedAst.addTokenNode(tk);
                         optimizedAst.addTokenNode(tkOp);
-                    }
+                    }                    
                     else if (tkOp.isOperator() && tkOp.getOperator() < 12) {
+                        // handle math and equals
                         BinaryOperation bo = new BinaryOperation(tkOp.getOperator(), tk, astLinkedList.nextNode());
                         tkOp2 = null;
 
+                        /**
+                         * If we have a chain of math/comparitive operators then we fill them into the tree
+                         * right here.
+                         */
                         while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
                                 && tkOp2.getOperator() < 12) {
                             bo = new BinaryOperation(((tkOp = tkOp2).getOperator()), bo, astLinkedList.nextNode());
@@ -203,10 +210,10 @@ public class ExpressionCompiler extends AbstractParser {
                         optimizedAst.addTokenNode(bo);
 
                         if (tkOp2 != null && tkOp2 != tkOp) {
-                             optimizedAst.addTokenNode(tkOp2);
+                            optimizedAst.addTokenNode(tkOp2);
                         }
-
                     }
+
                     else {
                         optimizedAst.addTokenNode(tk);
                         optimizedAst.addTokenNode(tkOp);
@@ -214,6 +221,73 @@ public class ExpressionCompiler extends AbstractParser {
                 }
                 else {
                     optimizedAst.addTokenNode(tk);
+                }
+            }
+
+            if (secondPassOptimization) {
+                /**
+                 * Perform a second pass optimization for boolean conditions.
+                 */
+                astLinkedList = optimizedAst;
+                astLinkedList.reset();
+
+                optimizedAst = new ASTLinkedList();
+
+                while (astLinkedList.hasMoreNodes()) {
+                    if ((tk = astLinkedList.nextNode()).getFields() == -1) {
+                        optimizedAst.addTokenNode(tk);
+                    }
+                    else if (astLinkedList.hasMoreNodes()) {
+                        if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
+                            optimizedAst.addTokenNode(tk);
+                            optimizedAst.addTokenNode(tkOp);
+                        }
+                        else if (tkOp.isOperator()
+                                && (tkOp.getOperator() == Operator.AND || tkOp.getOperator() == Operator.OR)) {
+                            // handle math and equals
+
+                            tkOp2 = null;
+                            
+                            //   BinaryOperation bo = new BinaryOperation(tkOp.getOperator(), tk, astLinkedList.nextNode());
+                            ASTNode bool = null;
+                            switch (tkOp.getOperator()) {
+                                case Operator.AND:
+                                    bool = new And(tk, astLinkedList.nextNode());
+                                    break;
+                                case Operator.OR:
+                                    bool = new Or(tk, astLinkedList.nextNode());
+                            }
+
+                            /**
+                             * If we have a chain of math/comparitive operators then we fill them into the tree
+                             * right here.
+                             */
+                            while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
+                                    && (tkOp2.isOperator(Operator.AND) || tkOp2.isOperator(Operator.OR))) {
+
+                                switch ((tkOp = tkOp2).getOperator()) {
+                                    case Operator.AND:
+                                        bool = new And(bool, astLinkedList.nextNode());
+                                        break;
+                                    case Operator.OR:
+                                        bool = new Or(bool, astLinkedList.nextNode());
+                                }
+                            }
+
+                            optimizedAst.addTokenNode(bool);
+
+                            if (tkOp2 != null && tkOp2 != tkOp) {
+                                optimizedAst.addTokenNode(tkOp2);
+                            }
+                        }
+                        else {
+                            optimizedAst.addTokenNode(tk);
+                            optimizedAst.addTokenNode(tkOp);
+                        }
+                    }
+                    else {
+                        optimizedAst.addTokenNode(tk);
+                    }
                 }
             }
 
@@ -230,6 +304,12 @@ public class ExpressionCompiler extends AbstractParser {
     }
 
     protected ASTNode verify(ParserContext pCtx, ASTNode tk) {
+        if (tk.isOperator()) {
+            if (tk.isOperator(Operator.AND) || tk.isOperator(Operator.OR)) {
+                secondPassOptimization = true;
+            }
+        }
+
         if (tk.isDiscard() || (tk.fields & (ASTNode.OPERATOR | ASTNode.LITERAL)) != 0) return tk;
 
         if (verifying) {
