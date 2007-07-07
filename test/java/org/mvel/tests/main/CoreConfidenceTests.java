@@ -842,7 +842,7 @@ public class CoreConfidenceTests extends TestCase {
         assertTrue(pCtx.getVariables().containsKey("twa"));
 
         assertEquals(String.class, pCtx.getVarOrInputType("bleh"));
-    }
+    }    
 
     public void testVarInputs2() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh;");
@@ -853,6 +853,13 @@ public class CoreConfidenceTests extends TestCase {
         CompiledExpression c = compiler.compile(ctx);
 
         System.out.println(ctx.getVarOrInputType("bleh"));
+    }
+    
+    public void testVarInputs3() {
+        ExpressionCompiler compiler = new ExpressionCompiler("addresses['home'].street");
+        compiler.compile();
+        
+        assertFalse( compiler.getParserContextState().getInputs().keySet().contains( "home" ) );        
     }
 
     public void testAnalyzer() {
