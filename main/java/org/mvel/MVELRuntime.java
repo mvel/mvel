@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import static java.util.regex.Pattern.compile;
 
 public class MVELRuntime {
     private static ThreadLocal<Map<String, Set<Integer>>> threadBreakpoints;
