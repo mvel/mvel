@@ -302,6 +302,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKEINTERFACE org/mvel/integration/VariableResolver.getValue");
                 mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolver",
                         "getValue", "()Ljava/lang/Object;");
+
+                returnType = Object.class;
+
             }
             catch (Exception e) {
                 throw new OptimizationFailure("critical error in JIT", e);
@@ -330,7 +333,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
 
                 debug("GETFIELD " + property + ":" + getDescriptor(((Field) member).getType()));
-                mv.visitFieldInsn(GETFIELD, getInternalName(cls), property, getDescriptor(((Field) member).getType()));
+                mv.visitFieldInsn(GETFIELD, getInternalName(cls), property, getDescriptor(returnType = ((Field) member).getType()));
             }
 
             returnType = ((Field) member).getType();
@@ -348,8 +351,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             try {
                 o = ((Method) member).invoke(ctx, EMPTYARG);
 
-                debug("CHECKCAST " + getInternalName(member.getDeclaringClass()));
-                mv.visitTypeInsn(CHECKCAST, getInternalName(member.getDeclaringClass()));
+                if (returnType != member.getDeclaringClass()) {
+                    debug("CHECKCAST " + getInternalName(member.getDeclaringClass()));
+                    mv.visitTypeInsn(CHECKCAST, getInternalName(member.getDeclaringClass()));
+                }
 
                 returnType = ((Method) member).getReturnType();
 
