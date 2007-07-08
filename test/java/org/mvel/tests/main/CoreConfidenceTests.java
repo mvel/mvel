@@ -1005,6 +1005,11 @@ public class CoreConfidenceTests extends TestCase {
         Serializable c = compiler.compile(ctx);
 
     }
+    
+    public void testEqualityRegression() {
+        ExpressionCompiler compiler = new ExpressionCompiler("price == (new Integer( 5 ) + 5 ) ");
+        compiler.compile();
+    }
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
