@@ -19,13 +19,15 @@
 
 package org.mvel;
 
+import java.io.Serializable;
+
 /**
  * The ASTIterator interface defines the functionality required by the enginer, for compiletime and runtime
  * operations.  Unlike other script implementations, MVEL does not use a completely normalized AST tree for
  * it's execution.  Instead, nodes are organized into a linear order and delivered via this iterator interface,
  * much like bytecode instructions.
  */
-public interface ASTIterator {
+public interface ASTIterator extends Serializable {
     public void reset();
 
     public ASTNode nextNode();
