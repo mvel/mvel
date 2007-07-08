@@ -2,7 +2,6 @@ package org.mvel.tests.perftests;
 
 import junit.framework.TestCase;
 import org.mvel.MVEL;
-import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.executeExpression;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.main.CoreConfidenceTests;
@@ -13,10 +12,6 @@ import org.mvel.tests.main.res.Foo;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
-import ognl.Ognl;
-import ognl.OgnlContext;
-import ognl.Node;
 
 public class CompiledPerformanceTests extends TestCase {
     private static final int ITERATIONS = 1000000;
