@@ -1010,6 +1010,11 @@ public class CoreConfidenceTests extends TestCase {
         ExpressionCompiler compiler = new ExpressionCompiler("price == (new Integer( 5 ) + 5 ) ");
         compiler.compile();
     }
+    
+    public void testAssignmentRegression() {
+        ExpressionCompiler compiler = new ExpressionCompiler("total = total + $cheese.price");
+        compiler.compile();
+    }
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
