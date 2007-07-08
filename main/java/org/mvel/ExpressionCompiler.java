@@ -37,11 +37,11 @@ public class ExpressionCompiler extends AbstractParser {
         CompiledExpression c = _compile();
 
         if (pCtx.isFatalError()) {
-            parserContext.remove();
+            parserContext.set(null);
             throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
         }
         else if (pCtx.isFatalError()) {
-            parserContext.remove();
+            parserContext.set(null);
             throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
         }
 
@@ -292,7 +292,7 @@ public class ExpressionCompiler extends AbstractParser {
             return new CompiledExpression(optimizedAst, getCurrentSourceFileName());
         }
         catch (Throwable e) {
-            parserContext.remove();
+            parserContext.set(null);
             if (e instanceof RuntimeException) throw (RuntimeException) e;
             else {
                 throw new CompileException(e.getMessage(), e);
