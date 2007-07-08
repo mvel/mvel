@@ -90,6 +90,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
 
     private Class getBeanProperty(Class ctx, String property) {
+
         if (first) {
             if (parserContext.hasVarOrInput(property)) {
                 return parserContext.getVarOrInputType(property);

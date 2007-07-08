@@ -10,7 +10,9 @@ public class Substatement extends ASTNode {
     private ExecutableStatement statement;
 
     public Substatement(char[] expr, int start, int end, int fields) {
-        super(expr, start, end, fields);
+        this.name = ParseTools.subset(expr, start, end - start);
+        this.fields = fields;
+
         if ((fields & COMPILE_IMMEDIATE) != 0) this.statement = (ExecutableStatement) ParseTools.subCompileExpression(this.name);
     }
 
