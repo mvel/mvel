@@ -1011,6 +1011,14 @@ public class CoreConfidenceTests extends TestCase {
         compiler.compile();
     }
     
+    
+    
+    public void testEvaluationRegression() {
+        ExpressionCompiler compiler = new ExpressionCompiler("(p.age * 2)");
+        compiler.compile();
+        assertTrue( compiler.getParserContextState().getInputs().containsKey( "p" ) );
+    }
+    
     public void testAssignmentRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("total = total + $cheese.price");
         compiler.compile();
@@ -1139,7 +1147,9 @@ public class CoreConfidenceTests extends TestCase {
     @SuppressWarnings({"UnnecessaryBoxing"})
     public void testToList() {
         String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
-        List list = (List) parseDirect(text);
+        
+        List list = (List) parseDirect(text);        
+        
         assertSame("dog", list.get(0));
         assertEquals("hello", list.get(1));
         assertEquals(new Integer(42), list.get(2));
@@ -1156,6 +1166,38 @@ public class CoreConfidenceTests extends TestCase {
         map = (Map) nestedList.get(1);
         assertEquals("value1", map.get("cat"));
     }
+    
+    @SuppressWarnings({"UnnecessaryBoxing"})
+    public void testToListStrictMode() {
+        String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
+        
+        ParserContext ctx = new ParserContext();
+        ctx.addInput( "misc", MiscTestClass.class );
+        ctx.addInput( "foo", Foo.class );
+        ctx.addInput( "c", String.class );
+        
+        ctx.setStrictTypeEnforcement( true );
+        ExpressionCompiler compiler = new ExpressionCompiler( text );
+        Serializable expr = compiler.compile( ctx );
+        
+        List list = ( List ) MVEL.executeExpression( expr, map );                
+        
+        assertSame("dog", list.get(0));
+        assertEquals("hello", list.get(1));
+        assertEquals(new Integer(42), list.get(2));
+        Map map = (Map) list.get(3);
+        assertEquals("value1", map.get("key1"));
+
+        List nestedList = (List) map.get("cat");
+        assertEquals(14, nestedList.get(0));
+        assertEquals("car", nestedList.get(1));
+        assertEquals(42, nestedList.get(2));
+
+        nestedList = (List) list.get(4);
+        assertEquals(42, nestedList.get(0));
+        map = (Map) nestedList.get(1);
+        assertEquals("value1", map.get("cat"));
+    }    
 
     public void testToList2() {
         for (int i = 0; i < 10; i++) {

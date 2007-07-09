@@ -1215,6 +1215,6 @@ public class AbstractParser {
     }
 
     public static void resetParserContext() {
-        if (parserContext != null) parserContext.remove();
+        if (parserContext != null) parserContext.set( null );
     }
 }
