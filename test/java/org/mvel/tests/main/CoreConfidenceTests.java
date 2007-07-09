@@ -1010,9 +1010,7 @@ public class CoreConfidenceTests extends TestCase {
         ExpressionCompiler compiler = new ExpressionCompiler("price == (new Integer( 5 ) + 5 ) ");
         compiler.compile();
     }
-    
-    
-    
+            
     public void testEvaluationRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("(p.age * 2)");
         compiler.compile();
@@ -1023,6 +1021,15 @@ public class CoreConfidenceTests extends TestCase {
         ExpressionCompiler compiler = new ExpressionCompiler("total = total + $cheese.price");
         compiler.compile();
     }
+    
+    public void testTypeRegression() {
+        ExpressionCompiler compiler = new ExpressionCompiler("total = 0");
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement( true );
+        compiler.compile( ctx );
+        assertEquals( Integer.class,
+                      compiler.getParserContextState().getVarOrInputType( "total" ) );
+    }    
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
