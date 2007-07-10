@@ -151,11 +151,12 @@ public class PropertyVerifier extends AbstractOptimizer {
                 addFatalError("unqualified type in strict mode for: " + property);
             }
             return Object.class;
-            
+
         }
     }
 
     private Class getCollectionProperty(Class ctx, String prop) {
+
         int start = ++cursor;
 
         whiteSpaceSkip();
@@ -177,6 +178,14 @@ public class PropertyVerifier extends AbstractOptimizer {
 
 
     private Class getMethod(Class ctx, String name) {
+        if (first && parserContext.hasImport(name)) {
+            Method m = parserContext.getStaticImport(name);
+            ctx = m.getDeclaringClass();
+            name = m.getName();
+            first = false;
+        }
+
+
         int st = cursor;
 
         int depth = 1;
@@ -203,28 +212,23 @@ public class PropertyVerifier extends AbstractOptimizer {
             for (String token : subtokens) {
                 verifCompiler = new ExpressionCompiler(token);
                 verifCompiler._compile();
-
-                //       inputs.addAll(verifCompiler.getInputs());
+                
             }
         }
 
-        Object[] args;
+        Class[] args;
         ExecutableStatement[] es;
 
         if (tk.length() == 0) {
-            args = ParseTools.EMPTY_OBJ_ARR;
-            es = null;
+            args = new Class[0];
         }
         else {
             String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
-            es = new ExecutableStatement[subtokens.length];
-            args = new Object[subtokens.length];
+            args = new Class[subtokens.length];
             for (int i = 0; i < subtokens.length; i++) {
                 ExpressionCompiler compiler = new ExpressionCompiler(subtokens[i]);
                 compiler.setVerifying(true);
-                ExecutableStatement stmt = compiler._compile();
-
-                es[i] = stmt;
+                compiler._compile();
                 args[i] = compiler.getReturnType();
             }
         }
@@ -237,7 +241,6 @@ public class PropertyVerifier extends AbstractOptimizer {
         //    Integer signature = ;
 
         Method m;
-        Class[] parameterTypes = null;
 
         /**
          * If we have not cached the method then we need to go ahead and try to resolve it.
@@ -247,7 +250,7 @@ public class PropertyVerifier extends AbstractOptimizer {
          */
 
         if ((m = ParseTools.getBestCandidate(args, name, ctx.getMethods())) != null) {
-            parameterTypes = m.getParameterTypes();
+     //       parameterTypes = m.getParameterTypes();
         }
 
         if (m == null) {
@@ -255,7 +258,7 @@ public class PropertyVerifier extends AbstractOptimizer {
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
             if ((m = ParseTools.getBestCandidate(args, name, ctx.getDeclaredMethods())) != null) {
-                parameterTypes = m.getParameterTypes();
+  //              parameterTypes = m.getParameterTypes();
             }
         }
 

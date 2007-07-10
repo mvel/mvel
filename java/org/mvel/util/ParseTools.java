@@ -848,6 +848,29 @@ public class ParseTools {
         return -1;
     }
 
+    public static String handleStringEscapes(char[] input) {
+        int escapes = 0;
+        for (int i = 0; i < input.length; i++) {
+            if (input[i] == '\\') {
+                input[i++] = 0;
+                input[i] = handleEscapeSequence(input[i]);
+                escapes++;
+            }
+        }
+
+        char[] processedEscapeString = new char[input.length - escapes];
+        int cursor = 0;
+        for (char aName : input) {
+            if (aName == 0) {
+                continue;
+            }
+            processedEscapeString[cursor++] = aName;
+        }
+
+        return new String(processedEscapeString);
+    }
+
+
     /**
      * REMOVE THIS WITH JDK1.4 COMPATIBILITY!  COMPENSATES FOR LACK OF getSimpleName IN java.lang.Class -- DIE 1.4!
      *
@@ -880,7 +903,7 @@ public class ParseTools {
     }
 
     public static Serializable subCompileExpression(String expression) {
-        return optimizeTree(new ExpressionCompiler(expression)._compile());   
+        return optimizeTree(new ExpressionCompiler(expression)._compile());
     }
 
 
@@ -892,23 +915,23 @@ public class ParseTools {
         ASTIterator nodes = compiled.getTokens();
 
         /**
-          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
-          */
-         if (MVEL.isOptimizationEnabled() && nodes.size() == 1) {
-             ASTNode tk = nodes.firstNode();
+         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
+         */
+        if (MVEL.isOptimizationEnabled() && nodes.size() == 1) {
+            ASTNode tk = nodes.firstNode();
 
-             if (tk.isLiteral() && !tk.isThisVal()) {
-                 if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
-                     return new ExecutableLiteral(tk.getIntRegister());
-                 }
-                 else {
-                     return new ExecutableLiteral(tk.getLiteralValue());
-                 }
-             }
-             if (tk.isIdentifier()) {
-                 return new ExecutableAccessor(tk, false);
-             }
-         }
+            if (tk.isLiteral() && !tk.isThisVal()) {
+                if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
+                    return new ExecutableLiteral(tk.getIntRegister());
+                }
+                else {
+                    return new ExecutableLiteral(tk.getLiteralValue());
+                }
+            }
+            if (tk.isIdentifier()) {
+                return new ExecutableAccessor(tk, false);
+            }
+        }
 
         return compiled;
     }

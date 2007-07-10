@@ -1,5 +1,7 @@
 package org.mvel;
 
+import static org.mvel.util.ParseTools.handleStringEscapes;
+
 import static java.lang.System.getProperty;
 import static java.lang.Float.parseFloat;
 
@@ -662,7 +664,10 @@ public class AbstractParser {
                             throw new CompileException("unterminated literal", expr, cursor);
                         }
 
-                        return createToken(expr, start + 1, ++cursor - 1, ASTNode.STR_LITERAL | ASTNode.LITERAL);
+                        return new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start -1 )), String.class);
+
+
+                   //     return createToken(expr, start + 1, ++cursor - 1, ASTNode.STR_LITERAL | ASTNode.LITERAL);
 
 
                     case'"':
@@ -673,7 +678,7 @@ public class AbstractParser {
                             throw new CompileException("unterminated literal", expr, cursor);
                         }
                         else {
-                            return createToken(expr, start + 1, ++cursor - 1, ASTNode.STR_LITERAL | ASTNode.LITERAL);
+                            return new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start -1 )), String.class);
                         }
 
                     case'&': {

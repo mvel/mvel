@@ -63,8 +63,7 @@ public class ExpressionCompiler extends AbstractParser {
 
         boolean firstLA;
 
-        pCtx = getParserContext();
-        debugSymbols = pCtx.isDebugSymbols();
+        debugSymbols = (pCtx = getParserContext()).isDebugSymbols();
 
         try {
             if (verifying) {
@@ -82,7 +81,10 @@ public class ExpressionCompiler extends AbstractParser {
                 returnType = tk.getEgressType();
 
                 if (tk instanceof Substatement) {
-                    tk.setAccessor(new ExpressionCompiler(tk.getNameAsArray())._compile());
+                    ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
+                    tk.setAccessor(subCompiler._compile());
+
+                    returnType = subCompiler.getReturnType();
                 }
 
                 /**
@@ -289,7 +291,9 @@ public class ExpressionCompiler extends AbstractParser {
                 }
             }
 
-            return new CompiledExpression(optimizedAst, getCurrentSourceFileName());
+            CompiledExpression ce = new CompiledExpression(optimizedAst, getCurrentSourceFileName());
+            ce.setKnownEgressType(returnType);
+            return ce;
         }
         catch (Throwable e) {
             parserContext.set(null);
