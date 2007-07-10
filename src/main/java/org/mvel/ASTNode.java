@@ -34,7 +34,6 @@ import java.io.Serializable;
 import static java.lang.Class.forName;
 import static java.lang.System.arraycopy;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 
 public class ASTNode implements Cloneable, Serializable {
     public static final int LITERAL = 1;
