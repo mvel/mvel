@@ -116,7 +116,7 @@ public class MVEL {
     }
 
 
-    public static Serializable compileExpression(String expression, Map<String, Class> imports,
+    public static Serializable compileExpression(String expression, Map<String, Object> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
 
         return ParseTools.optimizeTree(new ExpressionCompiler(expression)
@@ -136,11 +136,11 @@ public class MVEL {
     }
 
 
-    public static Serializable compileExpression(String expression, Map<String, Class> imports) {
+    public static Serializable compileExpression(String expression, Map<String, Object> imports) {
         return compileExpression(expression, imports, null, null);
     }
 
-    public static Serializable compileExpression(String expression, Map<String, Class> imports, Map<String, Interceptor> interceptors) {
+    public static Serializable compileExpression(String expression, Map<String, Object> imports, Map<String, Interceptor> interceptors) {
         return compileExpression(expression, imports, interceptors, null);
     }
 
@@ -154,7 +154,7 @@ public class MVEL {
      * @param interceptors -
      * @return -
      */
-    public static Serializable compileExpression(char[] expression, Map<String, Class> imports,
+    public static Serializable compileExpression(char[] expression, Map<String, Object> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
         return ParseTools.optimizeTree(new ExpressionCompiler(expression).compile(new ParserContext(imports, interceptors, sourceName)));
     }
@@ -164,11 +164,11 @@ public class MVEL {
         return compileExpression(expression, null, null, null);
     }
 
-    public static Serializable compileExpression(char[] expression, Map<String, Class> imports) {
+    public static Serializable compileExpression(char[] expression, Map<String, Object> imports) {
         return compileExpression(expression, imports, null, null);
     }
 
-    public static Serializable compileExpression(char[] expression, Map<String, Class> imports, Map<String, Interceptor> interceptors) {
+    public static Serializable compileExpression(char[] expression, Map<String, Object> imports, Map<String, Interceptor> interceptors) {
         return compileExpression(expression, imports, interceptors, null);
     }
 
