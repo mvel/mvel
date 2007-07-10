@@ -68,8 +68,8 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
         }
     }
 
-    public Map<String, Class> getImportedClasses() {
-        Map<String, Class> imports = new HashMap<String, Class>();
+    public Map<String, Object> getImportedClasses() {
+        Map<String, Object> imports = new HashMap<String, Object>();
         for (String var : variableResolvers.keySet()) {
             imports.put(var, (Class) variableResolvers.get(var).getValue());
         }
