@@ -4,6 +4,7 @@ import org.mvel.ASTNode;
 import org.mvel.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
+import org.mvel.optimizers.AccessorOptimizer;
 
 /**
  * @author Christopher Brock
@@ -13,6 +14,12 @@ public class InlineCollectionNode extends ASTNode {
 
     public InlineCollectionNode(char[] expr, int start, int end, int fields) {
         super(expr, start, end, fields | INLINE_COLLECTION);
+
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            AccessorOptimizer ao = OptimizerFactory.getAccessorCompiler(OptimizerFactory.SAFE_REFLECTIVE);
+            accessor = ao.optimizeCollection(name, null, null, null);
+            egressType = ao.getEgressType();
+        }
     }
 
     public InlineCollectionNode(char[] expr, int fields) {

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.lang.reflect.Method;
 
 /**
  * The ParserContext is the main enviroment object used for sharing state throughout the entire
@@ -17,7 +18,7 @@ public class ParserContext {
     private int lineCount = 1;
     private int lineOffset;
 
-    protected Map<String, Class> imports;
+    protected Map<String, Object> imports;
     protected Map<String, Interceptor> interceptors;
 
     private Map<String, Class> variables;
@@ -44,7 +45,7 @@ public class ParserContext {
         this.rootParser = rootParser;
     }
 
-    public ParserContext(Map<String, Class> imports, Map<String, Interceptor> interceptors, String sourceFile) {
+    public ParserContext(Map<String, Object> imports, Map<String, Interceptor> interceptors, String sourceFile) {
         this.imports = imports;
         this.interceptors = interceptors;
         this.sourceFile = sourceFile;
@@ -88,7 +89,11 @@ public class ParserContext {
     }
 
     public Class getImport(String name) {
-        return imports != null ? imports.get(name) : null;
+        return imports != null ? (Class) imports.get(name) : null;
+    }
+
+    public Method getStaticImport(String name) {
+        return imports != null ? (Method) imports.get(name) : null;
     }
 
     public boolean hasImport(String name) {
@@ -96,8 +101,13 @@ public class ParserContext {
     }
 
     public void addImport(String name, Class cls) {
-        if (this.imports == null) this.imports = new HashMap<String, Class>();
+        if (this.imports == null) this.imports = new HashMap<String, Object>();
         this.imports.put(name, cls);
+    }
+
+    public void addImport(String name, Method method) {
+        if (this.imports == null) this.imports = new HashMap<String, Object>();
+        this.imports.put(name, method);
     }
 
     public void initializeTables() {
@@ -199,11 +209,11 @@ public class ParserContext {
     }
 
 
-    public Map<String, Class> getImports() {
+    public Map<String, Object> getImports() {
         return imports;
     }
 
-    public void setImports(Map<String, Class> imports) {
+    public void setImports(Map<String, Object> imports) {
         if (imports == null) return;
 
         if (this.imports != null) {

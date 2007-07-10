@@ -14,6 +14,7 @@ import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
+import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.tests.main.res.*;
 
 import java.io.Serializable;
@@ -842,7 +843,7 @@ public class CoreConfidenceTests extends TestCase {
         assertTrue(pCtx.getVariables().containsKey("twa"));
 
         assertEquals(String.class, pCtx.getVarOrInputType("bleh"));
-    }    
+    }
 
     public void testVarInputs2() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh;");
@@ -854,13 +855,14 @@ public class CoreConfidenceTests extends TestCase {
 
         System.out.println(ctx.getVarOrInputType("bleh"));
     }
-    
+
     public void testVarInputs3() {
         ExpressionCompiler compiler = new ExpressionCompiler("addresses['home'].street");
         compiler.compile();
-        
-        assertFalse( compiler.getParserContextState().getInputs().keySet().contains( "home" ) );        
+
+        assertFalse(compiler.getParserContextState().getInputs().keySet().contains("home"));
     }
+
 
     public void testAnalyzer() {
         ExpressionCompiler compiler = new ExpressionCompiler("order.id == 10");
@@ -996,6 +998,18 @@ public class CoreConfidenceTests extends TestCase {
         assertTrue(false);
     }
 
+    public void testStrictTypingCompilation2() throws NoSuchMethodException {
+        ParserContext ctx = new ParserContext();
+        ctx.addImport("getRuntime", Runtime.class.getMethod("getRuntime", new Class[]{}));
+
+        ctx.setStrictTypeEnforcement(true);
+
+        ExpressionCompiler compiler = new ExpressionCompiler("getRuntime()");
+        StaticMethodImportResolverFactory si = new StaticMethodImportResolverFactory(ctx);
+
+        assertTrue(executeExpression(compiler.compile(ctx), si) instanceof Runtime);
+    }
+
     public void testProvidedExternalTypes() {
         ExpressionCompiler compiler = new ExpressionCompiler("foo.bar");
         ParserContext ctx = new ParserContext();
@@ -1005,23 +1019,23 @@ public class CoreConfidenceTests extends TestCase {
         Serializable c = compiler.compile(ctx);
 
     }
-    
+
     public void testEqualityRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("price == (new Integer( 5 ) + 5 ) ");
         compiler.compile();
     }
-            
+
     public void testEvaluationRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("(p.age * 2)");
         compiler.compile();
         assertTrue( compiler.getParserContextState().getInputs().containsKey( "p" ) );
     }
-    
+
     public void testAssignmentRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("total = total + $cheese.price");
         compiler.compile();
     }
-    
+
     public void testTypeRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("total = 0");
         ParserContext ctx = new ParserContext();
@@ -1029,7 +1043,7 @@ public class CoreConfidenceTests extends TestCase {
         compiler.compile( ctx );
         assertEquals( Integer.class,
                       compiler.getParserContextState().getVarOrInputType( "total" ) );
-    }    
+    }
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
