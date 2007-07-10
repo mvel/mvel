@@ -44,4 +44,12 @@ public class StaticMethodImportResolverFactory extends BaseVariableResolverFacto
     public boolean isResolveable(String name) {
         return isTarget(name) || isNextResolveable(name);
     }
+
+    public Map<String, Method> getImportedMethods() {
+        Map<String, Method> im = new HashMap<String, Method>();
+        for (String name : this.variableResolvers.keySet()) {
+            im.put(name, (Method) (this.variableResolvers.get(name)).getValue());
+        }
+        return im;
+    }
 }
