@@ -29,12 +29,12 @@ import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.handleNumericConversion;
 import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
-import org.mvel.util.ArrayTools;
 
 import java.io.Serializable;
 import static java.lang.Class.forName;
 import static java.lang.System.arraycopy;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 
 public class ASTNode implements Cloneable, Serializable {
     public static final int LITERAL = 1;
@@ -86,7 +86,7 @@ public class ASTNode implements Cloneable, Serializable {
         this.cursorPosition = start;
         this.fields = fields;
 
-               
+
         char[] name = new char[end - start];
         arraycopy(expr, start, name, 0, end - start);
         setName(name);
@@ -182,6 +182,7 @@ public class ASTNode implements Cloneable, Serializable {
             if ((fields & INLINE_COLLECTION) != 0) {
                 optimizer = getThreadAccessorOptimizer();
                 accessor = optimizer.optimizeCollection(name, ctx, thisValue, factory);
+                egressType = optimizer.getEgressType();
                 retVal = accessor.getValue(ctx, thisValue, factory);
             }
             else if ((fields & FOLD) != 0) {
@@ -227,8 +228,9 @@ public class ASTNode implements Cloneable, Serializable {
 
         else if ((fields & INLINE_COLLECTION) != 0) {
             if (accessor == null) {
-                accessor = getAccessorCompiler(SAFE_REFLECTIVE)
-                        .optimizeCollection(name, ctx, thisValue, factory);
+                AccessorOptimizer optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
+                accessor = optimizer.optimizeCollection(name, ctx, thisValue, factory);
+                egressType = optimizer.getEgressType();
             }
 
             return accessor.getValue(ctx, thisValue, factory);
@@ -436,19 +438,23 @@ public class ASTNode implements Cloneable, Serializable {
         else if (AbstractParser.LITERALS.containsKey(literal)) {
             fields |= LITERAL | IDENTIFIER;
             if ((literal = AbstractParser.LITERALS.get(literal)) == ThisLiteral.class) fields |= THISREF;
+            if (literal != null) egressType = literal.getClass();
         }
         else if (AbstractParser.OPERATORS.containsKey(literal)) {
             fields |= OPERATOR;
             literal = AbstractParser.OPERATORS.get(literal);
+            egressType = literal.getClass();
             return;
         }
         else if (isNumber(name)) {
             fields |= NUMERIC | LITERAL | IDENTIFIER;
             literal = handleNumericConversion(name);
+            egressType = literal.getClass();
 
             if (literal instanceof Integer) {
                 intRegister = (Integer) literal;
                 fields |= INTEGER32;
+
             }
 
             if ((fields & INVERT) != 0) {
@@ -459,6 +465,7 @@ public class ASTNode implements Cloneable, Serializable {
                     throw new CompileException("bitwise (~) operator can only be applied to integers");
                 }
             }
+
             return;
         }
         else if ((fields & INLINE_COLLECTION) != 0) {
@@ -481,6 +488,8 @@ public class ASTNode implements Cloneable, Serializable {
         else {
             fields |= IDENTIFIER;
         }
+
+        //      if (literal != null)  egressType = literal.getClass();
 
         if ((endOfName = findFirst('[', name)) > 0) fields |= COLLECTION;
 

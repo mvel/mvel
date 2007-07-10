@@ -525,6 +525,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 a[i++] = _getAccessor(item);
             }
 
+            returnType = List.class;
+
             return new ListCreator(a);
         }
         else if (o instanceof Map) {
@@ -537,6 +539,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 v[i++] = _getAccessor(((Map) o).get(item)); // value
             }
 
+            returnType = Map.class;
+
             return new MapCreator(k, v);
         }
         else if (o instanceof Object[]) {
@@ -547,18 +551,23 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 a[i++] = _getAccessor(item); // item
             }
 
+            returnType = Object[].class;
+
             return new ArrayCreator(a);
         }
         else {
+
+            returnType = Object.class;
+
             return new ExprValueAccessor((String) o);
         }
 
     }
 
     public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        this.ctx = ctx;
-        this.thisRef = thisRef;
-        this.variableFactory = factory;
+//        this.ctx = ctx;
+//        this.thisRef = thisRef;
+//        this.variableFactory = factory;
 
         CollectionParser parser = new CollectionParser();
         Object o = ((List) parser.parseCollection(property)).get(0);

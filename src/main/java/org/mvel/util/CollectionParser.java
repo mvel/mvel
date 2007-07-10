@@ -24,7 +24,6 @@ public class CollectionParser {
 
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
-
     public CollectionParser() {
     }
 
@@ -68,7 +67,6 @@ public class CollectionParser {
         }
 
         Object curr = null;
-        Object val;
 
         int newType = -1;
 
@@ -90,7 +88,7 @@ public class CollectionParser {
                     Object o = new CollectionParser(newType).parseCollection(subset(property, start + 1, end));
 
                     if (type == MAP) {
-                        map.put(curr, val = o);
+                        map.put(curr, o);
                     }
                     else {
                         list.add(curr = o);
@@ -112,12 +110,10 @@ public class CollectionParser {
 
                 case',':
                     if (type != MAP) {
-                        curr = new String(subset(property, start, cursor));
-                        list.add(curr);
+                        list.add(new String(subset(property, start, cursor)));
                     }
                     else {
-                        val = new String(subset(property, start, cursor)).trim();
-                        map.put(curr, val);
+                        map.put(curr, new String(subset(property, start, cursor)).trim());
                     }
 
                     start = cursor + 1;
@@ -140,13 +136,11 @@ public class CollectionParser {
             if (cursor < (length - 1)) cursor++;
 
             if (type == MAP) {
-                val = new String(subset(property, start, cursor)).trim();
-                map.put(curr, val);
+                map.put(curr,  new String(subset(property, start, cursor)).trim());
             }
             else {
                 if (cursor < length) cursor++;
-                curr = new String(subset(property, start, cursor)).trim();
-                list.add(curr);
+                list.add(new String(subset(property, start, cursor)).trim());
             }
         }
 
@@ -207,4 +201,5 @@ public class CollectionParser {
     public int getEnd() {
         return end;
     }
+
 }

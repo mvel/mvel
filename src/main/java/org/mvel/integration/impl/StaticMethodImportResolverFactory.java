@@ -1,14 +1,28 @@
 package org.mvel.integration.impl;
 
+import org.mvel.ParserContext;
 import org.mvel.integration.VariableResolver;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Christopher Brock
  */
 public class StaticMethodImportResolverFactory extends BaseVariableResolverFactory {
+
+    public StaticMethodImportResolverFactory(ParserContext ctx) {
+        this();
+
+        Map<String, Object> imports = ctx.getImports();
+        for (String name : imports.keySet()) {
+            if (imports.get(name) instanceof Method) {
+                createVariable(name, imports.get(name));
+            }
+        }
+    }
+
     public StaticMethodImportResolverFactory() {
         this.variableResolvers = new HashMap<String, VariableResolver>();
     }

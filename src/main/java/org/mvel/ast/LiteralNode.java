@@ -9,6 +9,11 @@ import org.mvel.integration.VariableResolverFactory;
 public class LiteralNode extends ASTNode {
     private Object literal;
 
+    public LiteralNode(Object literal, Class type) {
+        this(literal);
+        this.egressType = type;
+    }
+
     public LiteralNode(Object literal) {
         super();
         if (literal instanceof String) {
@@ -26,7 +31,6 @@ public class LiteralNode extends ASTNode {
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return literal;
     }
-
 
     public Object getLiteralValue() {
         return literal;

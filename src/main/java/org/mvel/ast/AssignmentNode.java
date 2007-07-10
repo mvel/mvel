@@ -20,9 +20,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
         int assignStart;
         if ((assignStart = find(expr, '=')) != -1) {
             checkNameSafety(name = new String(expr, 0, assignStart).trim());
-            statement = (ExecutableStatement) ParseTools.subCompileExpression(subset(expr, assignStart + 1));
-
-            this.egressType = statement.getKnownEgressType();
+            this.egressType = (statement = (ExecutableStatement) ParseTools.subCompileExpression(subset(expr, assignStart + 1))).getKnownEgressType();
         }
         else {
             checkNameSafety(name = new String(expr));
