@@ -18,6 +18,7 @@
  */
 package org.mvel;
 
+import static org.mvel.util.ParseTools.getBestCandidate;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.impl.refl.FieldAccessor;
 import org.mvel.util.ParseTools;
@@ -32,8 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class PropertyVerifier extends AbstractOptimizer {
-
-
     private static final int DONE = -1;
     private static final int NORM = 0;
     private static final int METH = 1;
@@ -77,7 +76,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                     ctx = getMethod(ctx, capture());
                     break;
                 case COL:
-                    ctx = getCollectionProperty(ctx, capture());
+                    ctx = getCollectionProperty();
                     break;
                 case DONE:
                     break;
@@ -155,7 +154,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
     }
 
-    private Class getCollectionProperty(Class ctx, String prop) {
+    private Class getCollectionProperty() {
 
         int start = ++cursor;
 
@@ -185,7 +184,6 @@ public class PropertyVerifier extends AbstractOptimizer {
             first = false;
         }
 
-
         int st = cursor;
 
         int depth = 1;
@@ -212,12 +210,11 @@ public class PropertyVerifier extends AbstractOptimizer {
             for (String token : subtokens) {
                 verifCompiler = new ExpressionCompiler(token);
                 verifCompiler._compile();
-                
+
             }
         }
 
         Class[] args;
-        ExecutableStatement[] es;
 
         if (tk.length() == 0) {
             args = new Class[0];
@@ -238,8 +235,6 @@ public class PropertyVerifier extends AbstractOptimizer {
          * adjust the Class scope target.
          */
 
-        //    Integer signature = ;
-
         Method m;
 
         /**
@@ -249,43 +244,25 @@ public class PropertyVerifier extends AbstractOptimizer {
          * Try to find an instance method from the class target.
          */
 
-        if ((m = ParseTools.getBestCandidate(args, name, ctx.getMethods())) != null) {
-     //       parameterTypes = m.getParameterTypes();
-        }
+        if ((m = getBestCandidate(args, name, ctx.getMethods())) == null) {
+            if ((m = getBestCandidate(args, name, ctx.getDeclaredMethods())) == null) {
+                StringAppender errorBuild = new StringAppender();
+                for (int i = 0; i < args.length; i++) {
+                    errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
+                    if (i < args.length - 1) errorBuild.append(", ");
+                }
 
-        if (m == null) {
-            /**
-             * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
-             */
-            if ((m = ParseTools.getBestCandidate(args, name, ctx.getDeclaredMethods())) != null) {
-  //              parameterTypes = m.getParameterTypes();
+                if ("size".equals(name) && args.length == 0 && ctx.isArray()) {
+                    return Integer.class;
+                }
+
+                if (parserContext.isStrictTypeEnforcement()) {
+                    addFatalError("unable to resolve method using strict-mode: " + ctx.getName() + "." + name + "(...)");
+                }
+                return Object.class;
             }
         }
 
-
-        if (m == null) {
-            StringAppender errorBuild = new StringAppender();
-            for (int i = 0; i < args.length; i++) {
-                errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
-                if (i < args.length - 1) errorBuild.append(", ");
-            }
-
-            if ("size".equals(name) && args.length == 0 && ctx.isArray()) {
-                return Integer.class;
-            }
-
-            if (parserContext.isStrictTypeEnforcement()) {
-                addFatalError("unable to resolve method using strict-mode: " + ctx.getName() + "." + name + "(...)");
-            }
-            return Object.class;
-        }
-        else {
-
-            /**
-             * Invoke the target method and return the response.
-             */
-            return m.getReturnType();
-        }
-
+        return m.getReturnType();
     }
 }
