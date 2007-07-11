@@ -217,7 +217,7 @@ public class ParseTools {
                     else if (parmTypes[i].isAssignableFrom(arguments[i])) {
                         score += 2;
                     }
-                    else if (canConvert(parmTypes[i], arguments[i])) {
+                    else if (canConvert(parmTypes[i], arguments[i]) || arguments[i] == Object.class) {
                         score += 1;
                     }
                     else {
