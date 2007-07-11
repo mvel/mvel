@@ -18,10 +18,9 @@
  */
 package org.mvel;
 
-import static org.mvel.util.ParseTools.getBestCandidate;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.impl.refl.FieldAccessor;
-import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.getBestCandidate;
 import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
@@ -90,6 +89,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     private Class getBeanProperty(Class ctx, String property) {
 
+
         if (first) {
             if (parserContext.hasVarOrInput(property)) {
                 return parserContext.getVarOrInputType(property);
@@ -104,6 +104,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 return Object.class;
             }
         }
+
 
         start = cursor;
 

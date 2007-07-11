@@ -195,7 +195,7 @@ public class ExpressionCompiler extends AbstractParser {
                     if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
                         optimizedAst.addTokenNode(tk);
                         optimizedAst.addTokenNode(tkOp);
-                    }                    
+                    }
                     else if (tkOp.isOperator() && tkOp.getOperator() < 12) {
                         // handle math and equals
                         BinaryOperation bo = new BinaryOperation(tkOp.getOperator(), tk, astLinkedList.nextNode());
@@ -334,6 +334,8 @@ public class ExpressionCompiler extends AbstractParser {
                 pCtx.addVariable(varName, returnType = tk.getEgressType());
             }
             else if (tk.isIdentifier()) {
+                if (pCtx.hasImport(tk.getAbsoluteRootElement())) return tk;
+
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
                 pCtx.addInput(tk.getAbsoluteName(), returnType = propVerifier.analyze());
             }
