@@ -18,9 +18,14 @@
  */
 package org.mvel.integration.impl;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class LocalVariableResolverFactory extends MapVariableResolverFactory {
+    public LocalVariableResolverFactory() {
+        super(new HashMap<String, Object>());
+    }
+
     public LocalVariableResolverFactory(Map<String, Object> variables) {
         super(variables);
     }

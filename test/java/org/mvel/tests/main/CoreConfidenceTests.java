@@ -15,6 +15,7 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
+import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.tests.main.res.*;
 
 import java.io.Serializable;
@@ -1010,6 +1011,20 @@ public class CoreConfidenceTests extends TestCase {
         assertTrue(executeExpression(compiler.compile(ctx), si) instanceof Runtime);
     }
 
+    public void testStrictTypingCompilation3() throws NoSuchMethodException {
+        ParserContext ctx = new ParserContext();
+        //   ctx.addImport("getRuntime", Runtime.class.getMethod("getRuntime", new Class[]{}));
+
+        ctx.setStrictTypeEnforcement(true);
+
+        ExpressionCompiler compiler =
+                new ExpressionCompiler("message='Hello';b=7;\nSystem.out.println(message + ';' + b);\n" +
+                        "System.out.println(message + ';' + b); b");
+
+
+        assertEquals(7, executeExpression(compiler.compile(ctx), new LocalVariableResolverFactory()));
+    }
+
     public void testProvidedExternalTypes() {
         ExpressionCompiler compiler = new ExpressionCompiler("foo.bar");
         ParserContext ctx = new ParserContext();
@@ -1028,7 +1043,7 @@ public class CoreConfidenceTests extends TestCase {
     public void testEvaluationRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("(p.age * 2)");
         compiler.compile();
-        assertTrue( compiler.getParserContextState().getInputs().containsKey( "p" ) );
+        assertTrue(compiler.getParserContextState().getInputs().containsKey("p"));
     }
 
     public void testAssignmentRegression() {
@@ -1039,10 +1054,10 @@ public class CoreConfidenceTests extends TestCase {
     public void testTypeRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("total = 0");
         ParserContext ctx = new ParserContext();
-        ctx.setStrictTypeEnforcement( true );
-        compiler.compile( ctx );
-        assertEquals( Integer.class,
-                      compiler.getParserContextState().getVarOrInputType( "total" ) );
+        ctx.setStrictTypeEnforcement(true);
+        compiler.compile(ctx);
+        assertEquals(Integer.class,
+                compiler.getParserContextState().getVarOrInputType("total"));
     }
 
     public Object parseDirect(String ex) {
@@ -1168,9 +1183,9 @@ public class CoreConfidenceTests extends TestCase {
     @SuppressWarnings({"UnnecessaryBoxing"})
     public void testToList() {
         String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
-        
-        List list = (List) parseDirect(text);        
-        
+
+        List list = (List) parseDirect(text);
+
         assertSame("dog", list.get(0));
         assertEquals("hello", list.get(1));
         assertEquals(new Integer(42), list.get(2));
@@ -1187,22 +1202,22 @@ public class CoreConfidenceTests extends TestCase {
         map = (Map) nestedList.get(1);
         assertEquals("value1", map.get("cat"));
     }
-    
+
     @SuppressWarnings({"UnnecessaryBoxing"})
     public void testToListStrictMode() {
         String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
-        
+
         ParserContext ctx = new ParserContext();
-        ctx.addInput( "misc", MiscTestClass.class );
-        ctx.addInput( "foo", Foo.class );
-        ctx.addInput( "c", String.class );
-        
-        ctx.setStrictTypeEnforcement( true );
-        ExpressionCompiler compiler = new ExpressionCompiler( text );
-        Serializable expr = compiler.compile( ctx );
-        
-        List list = ( List ) MVEL.executeExpression( expr, map );                
-        
+        ctx.addInput("misc", MiscTestClass.class);
+        ctx.addInput("foo", Foo.class);
+        ctx.addInput("c", String.class);
+
+        ctx.setStrictTypeEnforcement(true);
+        ExpressionCompiler compiler = new ExpressionCompiler(text);
+        Serializable expr = compiler.compile(ctx);
+
+        List list = (List) MVEL.executeExpression(expr, map);
+
         assertSame("dog", list.get(0));
         assertEquals("hello", list.get(1));
         assertEquals(new Integer(42), list.get(2));
@@ -1218,7 +1233,7 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(42, nestedList.get(0));
         map = (Map) nestedList.get(1);
         assertEquals("value1", map.get("cat"));
-    }    
+    }
 
     public void testToList2() {
         for (int i = 0; i < 10; i++) {
