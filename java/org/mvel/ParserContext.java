@@ -97,7 +97,7 @@ public class ParserContext {
     }
 
     public boolean hasImport(String name) {
-        return imports != null && imports.containsKey(name);
+        return (imports != null && imports.containsKey(name)) || (AbstractParser.LITERALS.containsKey(name)) ;
     }
 
     public void addImport(String name, Class cls) {
