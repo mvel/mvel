@@ -20,6 +20,7 @@ import org.mvel.tests.main.res.*;
 
 import java.io.Serializable;
 import java.util.*;
+import java.text.SimpleDateFormat;
 
 public class CoreConfidenceTests extends TestCase {
     protected Foo foo = new Foo();
@@ -1262,6 +1263,11 @@ public class CoreConfidenceTests extends TestCase {
         }
     }
 
+
+    /**
+     * Community provided test cases
+     */
+
     @SuppressWarnings({"unchecked"})
     public void testCalculateAge() {
         //    System.out.println("Calculating the Age");
@@ -1273,6 +1279,70 @@ public class CoreConfidenceTests extends TestCase {
         objectMap.put("EV_VI_ANT1", propertyMap);
         assertEquals("N", compiledExecute("new org.mvel.tests.main.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'Y' : 'N'"
                 , null, objectMap));
+    }
+
+    /**
+     * Provided by: Alex Roytman
+     */
+
+    public void testMethodResolutionWithNullParameter() {
+        Context ctx = new Context();
+        ctx.setBean(new Bean());
+        Map<String, Object> vars = new HashMap<String, Object>();
+        System.out.println("bean.today: " + MVEL.eval("bean.today", ctx, vars));
+        System.out.println("formatDate(bean.today): " + MVEL.eval("formatDate(bean.today)", ctx, vars));
+        //calling method with string param with null parameter works
+        System.out.println("formatString(bean.nullString): " + MVEL.eval("formatString(bean.nullString)", ctx, vars));
+        System.out.println("bean.myDate = bean.nullDate: " + MVEL.eval("bean.myDate = bean.nullDate; return bean.nullDate;", ctx, vars));
+        //calling method with Date param with null parameter fails
+        System.out.println("formatDate(bean.myDate): " + MVEL.eval("formatDate(bean.myDate)", ctx, vars));
+        //same here
+        System.out.println(MVEL.eval("formatDate(bean.nullDate)", ctx, vars));
+    }
+
+    public static class Bean {
+        private Date myDate = new Date();
+
+        public Date getToday() {
+            return new Date();
+        }
+
+        public Date getNullDate() {
+            return null;
+        }
+
+        public String getNullString() {
+            return null;
+        }
+
+        public Date getMyDate() {
+            return myDate;
+        }
+
+        public void setMyDate(Date myDate) {
+            this.myDate = myDate;
+        }
+    }
+
+    public static class Context {
+        private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
+        private Bean bean;
+
+        public Bean getBean() {
+            return bean;
+        }
+
+        public void setBean(Bean bean) {
+            this.bean = bean;
+        }
+
+        public String formatDate(Date date) {
+            return date == null ? null : dateFormat.format(date);
+        }
+
+        public String formatString(String str) {
+            return str == null ? "<NULL>" : str;
+        }
     }
 
 }
