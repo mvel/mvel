@@ -1,10 +1,7 @@
 package org.mvel.tests.main;
 
-import static org.mvel.MVEL.parseMacros;
 import junit.framework.TestCase;
 import org.mvel.*;
-import org.mvel.optimizers.OptimizerFactory;
-
 import static org.mvel.MVEL.*;
 import org.mvel.debug.DebugTools;
 import org.mvel.debug.Debugger;
@@ -13,14 +10,15 @@ import org.mvel.integration.Interceptor;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
+import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
-import org.mvel.integration.impl.LocalVariableResolverFactory;
+import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 
 import java.io.Serializable;
-import java.util.*;
 import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class CoreConfidenceTests extends TestCase {
     protected Foo foo = new Foo();
@@ -1342,6 +1340,53 @@ public class CoreConfidenceTests extends TestCase {
 
         public String formatString(String str) {
             return str == null ? "<NULL>" : str;
+        }
+    }
+
+    /**
+     * Provided by: Phillipe Ombredanne
+     */
+    public void testCompileParserContextShouldNotLoopIndefinitelyOnValidJavaExpression() {
+        String expr = "		System.out.println( message );\n" + //
+                "m.setMessage( \"Goodbye cruel world\" );\n" + //
+                "System.out.println(m.getStatus());\n" + //
+                "m.setStatus( Message.GOODBYE );\n";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+        ParserContext context = new ParserContext();
+        context.setStrictTypeEnforcement(false);
+
+        context.addImport("Message", Message.class);
+
+        context.addInput("System", void.class);
+        context.addInput("message", Object.class);
+        context.addInput("m", Object.class);
+        compiler.compile(context);
+    }
+
+    public static class Message {
+        public static final int HELLO = 0;
+        public static final int GOODBYE = 1;
+
+        private String message;
+
+        private int status;
+
+        public String getMessage() {
+            return this.message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public int getStatus() {
+            return this.status;
+        }
+
+        public void setStatus(int status) {
+            this.status = status;
         }
     }
 
