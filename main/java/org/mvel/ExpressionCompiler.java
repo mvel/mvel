@@ -82,6 +82,7 @@ public class ExpressionCompiler extends AbstractParser {
 
                 if (tk instanceof Substatement) {
                     ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
+                    subCompiler.setParserContext(pCtx);
                     tk.setAccessor(subCompiler._compile());
 
                     returnType = subCompiler.getReturnType();
@@ -517,6 +518,10 @@ public class ExpressionCompiler extends AbstractParser {
 
     public String getExpression() {
         return new String(expr);
+    }
+
+    private void setParserContext(ParserContext pCtx) {
+        this.pCtx = pCtx;
     }
 
     public ParserContext getParserContextState() {
