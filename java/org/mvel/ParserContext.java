@@ -2,10 +2,7 @@ package org.mvel;
 
 import org.mvel.integration.Interceptor;
 
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.lang.reflect.Method;
 
 /**
@@ -25,6 +22,8 @@ public class ParserContext {
     private Map<String, Class> inputs;
 
     private List<ErrorDetail> errorList;
+
+    private Map<String, Set<Integer>> sourceMap;
 
     private Object rootParser;
 
@@ -247,5 +246,15 @@ public class ParserContext {
 
     public void setDebugSymbols(boolean debugSymbols) {
         this.debugSymbols = debugSymbols;
+    }
+
+    public boolean isKnownLine(String sourceName, int lineNumber) {
+        return sourceMap != null && sourceMap.containsKey(sourceName) && sourceMap.get(sourceName).contains(lineNumber);
+    }
+
+    public void addKnownLine(String sourceName, int lineNumber) {
+        if (sourceMap == null) sourceMap = new HashMap<String, Set<Integer>>();
+        if (!sourceMap.containsKey(sourceName)) sourceMap.put(sourceName, new HashSet<Integer>());
+        sourceMap.get(sourceName).add(lineNumber);
     }
 }

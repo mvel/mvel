@@ -50,7 +50,7 @@ public class DebugTools {
                 sbuf.append("ASTNODE [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }\n");
                 sbuf.append(decompile((CompiledExpression) ((NestedStatement) tk).getNestedStatement(), true));
             }
-            else if (tk.isDebuggingSymbold()) {
+            else if (tk.isDebuggingSymbol()) {
                 //noinspection StringConcatenationInsideStringBufferAppend
                 sbuf.append("DEBUG_SYMBOL " + tk.toString());
             }
