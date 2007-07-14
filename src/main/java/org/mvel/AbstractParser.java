@@ -172,18 +172,22 @@ public class AbstractParser {
             ParserContext pCtx = getParserContext();
             line = pCtx.getLineCount();
 
-            lastWasLineLabel = true;
+            if (!pCtx.isKnownLine(pCtx.getSourceFile(), line)) {
 
-            int scan = cursor;
+                lastWasLineLabel = true;
 
-            while (expr[scan] == '\n') {
-                scan++;
-                line++;
+                int scan = cursor;
+
+                while (expr[scan] == '\n') {
+                    scan++;
+                    line++;
+                }
+
+                pCtx.setLineAndOffset(line, cursor);
+
+                pCtx.addKnownLine(pCtx.getSourceFile(), line);
+                return new LineLabel(pCtx.getSourceFile(), line);
             }
-
-            pCtx.setLineAndOffset(line, cursor);
-
-            return new LineLabel(pCtx.getSourceFile(), line);
         }
         else {
             lastWasLineLabel = false;
@@ -664,10 +668,9 @@ public class AbstractParser {
                             throw new CompileException("unterminated literal", expr, cursor);
                         }
 
-                        return new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start -1 )), String.class);
+                        return new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
 
-
-                   //     return createToken(expr, start + 1, ++cursor - 1, ASTNode.STR_LITERAL | ASTNode.LITERAL);
+                        //     return createToken(expr, start + 1, ++cursor - 1, ASTNode.STR_LITERAL | ASTNode.LITERAL);
 
 
                     case'"':
@@ -678,7 +681,7 @@ public class AbstractParser {
                             throw new CompileException("unterminated literal", expr, cursor);
                         }
                         else {
-                            return new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start -1 )), String.class);
+                            return new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
                         }
 
                     case'&': {
@@ -1220,6 +1223,6 @@ public class AbstractParser {
     }
 
     public static void resetParserContext() {
-        if (parserContext != null) parserContext.set( null );
+        if (parserContext != null) parserContext.set(null);
     }
 }
