@@ -164,41 +164,41 @@ public class AbstractParser {
         boolean capture = false;
         boolean union = false;
 
-        if (debugSymbols && !lastWasLineLabel) {
-            if (getParserContext().getSourceFile() == null) {
-                throw new CompileException("unable to produce debugging symbols: source name must be provided.");
+        if (debugSymbols) {
+            if (!lastWasLineLabel) {
+                if (getParserContext().getSourceFile() == null) {
+                    throw new CompileException("unable to produce debugging symbols: source name must be provided.");
+                }
+
+                ParserContext pCtx = getParserContext();
+
+                line = pCtx.getLineCount();
+
+                int scan = cursor;
+
+                while (expr[scan] == '\n') {
+                    scan++;
+                    line++;
+                }
+
+                pCtx.setLineCount(line);
+
+                if (!pCtx.isKnownLine(pCtx.getSourceFile(), line)) {
+
+                    lastWasLineLabel = true;
+
+                    pCtx.setLineAndOffset(line, cursor);
+                    pCtx.addKnownLine(pCtx.getSourceFile(), line);
+
+                    LineLabel ll = new LineLabel(pCtx.getSourceFile(), line);
+                    if (pCtx.getFirstLineLabel() == null) pCtx.setFirstLineLabel(ll);
+
+                    return lastNode = ll;
+                }
             }
-
-            ParserContext pCtx = getParserContext();
-
-            line = pCtx.getLineCount();
-
-            int scan = cursor;
-
-            while (expr[scan] == '\n') {
-                scan++;
-                line++;
+            else {
+                lastWasLineLabel = (lastNode instanceof LineLabel);
             }
-
-            pCtx.setLineCount(line);
-
-            if (!pCtx.isKnownLine(pCtx.getSourceFile(), line)) {
-
-                lastWasLineLabel = true;
-
-                pCtx.setLineAndOffset(line, cursor);
-                pCtx.addKnownLine(pCtx.getSourceFile(), line);
-
-                LineLabel ll = new LineLabel(pCtx.getSourceFile(), line);
-                if (pCtx.getFirstLineLabel() == null) pCtx.setFirstLineLabel(ll);
-
-          //      System.out.println("produce symbol: " + line);
-
-                return lastNode = ll;
-            }
-        }
-        else {
-            lastWasLineLabel = false;
         }
 
         /**
@@ -520,7 +520,6 @@ public class AbstractParser {
                             }
 
                             if ((start = cursor) >= length) return null;
-                            //               if (lookBehind(1) == '\n') cursor--;
 
                             continue;
                         }
