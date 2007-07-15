@@ -102,14 +102,37 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case Operator.MULT:
             case Operator.MOD:
             case Operator.GTHAN:
+                if (val1 instanceof Comparable) {
+                    //noinspection unchecked
+                    return ((Comparable) val1).compareTo(val2) == 1;
+                }
+                break;
+
             case Operator.GETHAN:
+                if (val1 instanceof Comparable) {
+                    //noinspection unchecked
+                    return ((Comparable) val1).compareTo(val2) >= 0;
+                }
+                break;
+
             case Operator.LTHAN:
+                if (val1 instanceof Comparable) {
+                    //noinspection unchecked
+                    return ((Comparable) val1).compareTo(val2) == -1;
+                }
+                break;
+
             case Operator.LETHAN:
-                throw new CompileException("could not perform numeric operation on non-numeric types: left-type="
-                        + (val1 != null ? val1.getClass().getName() : "null") + "; right-type=" + (val2 != null ? val2.getClass().getName() : "null"));
+                if (val1 instanceof Comparable) {
+                    //noinspection unchecked
+                    return ((Comparable) val1).compareTo(val2) <= 0;
+                }
+                break;
         }
 
-        throw new CompileException("unable to perform operation");
+        throw new CompileException("could not perform numeric operation on non-numeric types: left-type="
+                + (val1 != null ? val1.getClass().getName() : "null") + "; right-type=" + (val2 != null ? val2.getClass().getName() : "null"));
+
     }
 
     private static Boolean safeEquals(Object val1, Object val2) {

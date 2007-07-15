@@ -860,12 +860,10 @@ public class CoreConfidenceTests extends TestCase {
         MVELRuntime.registerBreakpoint("test2.mv", 6);
 
         Debugger testDebugger = new Debugger() {
-
             public int onBreak(Frame frame) {
                 System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
                 return 0;
             }
-
         };
 
         MVELRuntime.setThreadDebugger(testDebugger);
