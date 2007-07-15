@@ -1,6 +1,7 @@
 package org.mvel;
 
 import org.mvel.integration.Interceptor;
+import org.mvel.ast.LineLabel;
 
 import java.util.*;
 import java.lang.reflect.Method;
@@ -24,6 +25,7 @@ public class ParserContext {
     private List<ErrorDetail> errorList;
 
     private Map<String, Set<Integer>> sourceMap;
+    private LineLabel firstLineLabel;
 
     private Object rootParser;
 
@@ -257,4 +259,14 @@ public class ParserContext {
         if (!sourceMap.containsKey(sourceName)) sourceMap.put(sourceName, new HashSet<Integer>());
         sourceMap.get(sourceName).add(lineNumber);
     }
+
+
+    public LineLabel getFirstLineLabel() {
+        return firstLineLabel;
+    }
+
+    public void setFirstLineLabel(LineLabel firstLineLabel) {
+        this.firstLineLabel = firstLineLabel;
+    }
+
 }
