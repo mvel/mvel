@@ -35,8 +35,8 @@ public class AbstractParser {
     protected boolean greedy = true;
     protected boolean lastWasIdentifier = false;
     protected boolean lastWasLineLabel = false;
-
     protected boolean debugSymbols = false;
+
     private int line = 1;
 
     protected ASTNode lastNode;
@@ -164,29 +164,37 @@ public class AbstractParser {
         boolean capture = false;
         boolean union = false;
 
-        if (debugSymbols && !lastWasLineLabel && (expr[cursor] == '\n' || cursor == 0)) {
+        if (debugSymbols && !lastWasLineLabel) {
             if (getParserContext().getSourceFile() == null) {
                 throw new CompileException("unable to produce debugging symbols: source name must be provided.");
             }
 
             ParserContext pCtx = getParserContext();
+
             line = pCtx.getLineCount();
+
+            int scan = cursor;
+
+            while (expr[scan] == '\n') {
+                scan++;
+                line++;
+            }
+
+            pCtx.setLineCount(line);
 
             if (!pCtx.isKnownLine(pCtx.getSourceFile(), line)) {
 
                 lastWasLineLabel = true;
 
-                int scan = cursor;
-
-                while (expr[scan] == '\n') {
-                    scan++;
-                    line++;
-                }
-
                 pCtx.setLineAndOffset(line, cursor);
-
                 pCtx.addKnownLine(pCtx.getSourceFile(), line);
-                return new LineLabel(pCtx.getSourceFile(), line);
+
+                LineLabel ll = new LineLabel(pCtx.getSourceFile(), line);
+                if (pCtx.getFirstLineLabel() == null) pCtx.setFirstLineLabel(ll);
+
+          //      System.out.println("produce symbol: " + line);
+
+                return lastNode = ll;
             }
         }
         else {
@@ -494,7 +502,26 @@ public class AbstractParser {
                              * Handle single line comments.
                              */
                             while (cursor < length && expr[cursor] != '\n') cursor++;
-                            if ((start = ++cursor) >= length) return null;
+
+                            if (debugSymbols) {
+                                line = getParserContext().getLineCount();
+
+                                skipWhitespaceWithLineAccounting();
+
+                                if (lastNode instanceof LineLabel) {
+                                    getParserContext().getFirstLineLabel().setLineNumber(line);
+                                }
+
+                                getParserContext().setLineCount(line);
+
+                            }
+                            else if (cursor < length) {
+                                skipWhitespace();
+                            }
+
+                            if ((start = cursor) >= length) return null;
+                            //               if (lookBehind(1) == '\n') cursor--;
+
                             continue;
                         }
                         else if (expr[cursor] == '/' && isAt('*', 1)) {
@@ -669,8 +696,6 @@ public class AbstractParser {
                         }
 
                         return new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
-
-                        //     return createToken(expr, start + 1, ++cursor - 1, ASTNode.STR_LITERAL | ASTNode.LITERAL);
 
 
                     case'"':
@@ -1005,6 +1030,13 @@ public class AbstractParser {
         while (isWhitespace(expr[cursor])) cursor++;
     }
 
+    protected void skipWhitespaceWithLineAccounting() {
+        while (isWhitespace(expr[cursor])) {
+            if (expr[cursor] == '\n') line++;
+            cursor++;
+        }
+    }
+
     protected void skipToNextTokenJunction() {
         while (cursor < length) {
             switch (expr[cursor]) {
@@ -1225,4 +1257,6 @@ public class AbstractParser {
     public static void resetParserContext() {
         if (parserContext != null) parserContext.set(null);
     }
+
+
 }

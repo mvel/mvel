@@ -54,8 +54,6 @@ public class CoreConfidenceTests extends TestCase {
                 });
 
         map.put("derived", derived);
-
-
     }
 
     public void testSingleProperty() {
@@ -845,9 +843,36 @@ public class CoreConfidenceTests extends TestCase {
         MVELRuntime.setThreadDebugger(testDebugger);
 
         assertEquals(1, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
-
-
     }
+
+
+    public void testBreakpointsAcrossComments2() {
+        ExpressionCompiler compiler = new ExpressionCompiler("// This is a comment\n//Second comment line\n//Third Comment Line\n\nSystem.out.println('4');\nSystem.out.println('5');\na = 0;\n b = 1;\n a + b");
+        compiler.setDebugSymbols(true);
+
+        ParserContext ctx = new ParserContext();
+        ctx.setSourceFile("test2.mv");
+
+        CompiledExpression compiled = compiler.compile(ctx);
+
+        System.out.println(DebugTools.decompile(compiled));
+
+        MVELRuntime.registerBreakpoint("test2.mv", 5);
+
+        Debugger testDebugger = new Debugger() {
+
+            public int onBreak(Frame frame) {
+                System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+                return 0;
+            }
+
+        };
+
+        MVELRuntime.setThreadDebugger(testDebugger);
+
+        assertEquals(1, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
+    }
+
 
     public void testReflectionCache() {
         assertEquals("happyBar", parseDirect("foo.happy(); foo.bar.happy()"));

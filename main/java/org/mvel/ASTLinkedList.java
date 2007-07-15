@@ -120,6 +120,10 @@ public class ASTLinkedList implements ASTIterator {
         return -1;
     }
 
+    public void setCurrentNode(ASTNode node) {
+        this.current = node;
+    }
+
     public void finish() {
         reset();
 
