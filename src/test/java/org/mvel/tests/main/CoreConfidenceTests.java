@@ -1,5 +1,7 @@
 package org.mvel.tests.main;
 
+import static java.lang.System.currentTimeMillis;
+
 import junit.framework.TestCase;
 import org.mvel.*;
 import static org.mvel.MVEL.*;
@@ -1113,8 +1115,8 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testDateComparison() {
-        map.put("dt1", new Date(System.currentTimeMillis() - 100000));
-        map.put("dt2", new Date(System.currentTimeMillis()));
+        map.put("dt1", new Date(currentTimeMillis() - 100000));
+        map.put("dt2", new Date(currentTimeMillis()));
 
         assertTrue((Boolean) parseDirect("dt1 < dt2"));
     }
