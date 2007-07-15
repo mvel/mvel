@@ -857,7 +857,7 @@ public class CoreConfidenceTests extends TestCase {
 
         System.out.println(DebugTools.decompile(compiled));
 
-        MVELRuntime.registerBreakpoint("test2.mv", 5);
+        MVELRuntime.registerBreakpoint("test2.mv", 6);
 
         Debugger testDebugger = new Debugger() {
 
@@ -881,7 +881,7 @@ public class CoreConfidenceTests extends TestCase {
     public void testVarInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh;");
 
-        CompiledExpression c = compiler.compile();
+        compiler.compile();
 
         ParserContext pCtx = compiler.getParserContextState();
 
@@ -906,7 +906,7 @@ public class CoreConfidenceTests extends TestCase {
         ParserContext ctx = new ParserContext();
         ctx.setRetainParserState(true);
 
-        CompiledExpression c = compiler.compile(ctx);
+        compiler.compile(ctx);
 
         System.out.println(ctx.getVarOrInputType("bleh"));
     }
@@ -1055,6 +1055,7 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testStrictTypingCompilation2() throws NoSuchMethodException {
         ParserContext ctx = new ParserContext();
+        //noinspection RedundantArrayCreation
         ctx.addImport("getRuntime", Runtime.class.getMethod("getRuntime", new Class[]{}));
 
         ctx.setStrictTypeEnforcement(true);
@@ -1085,8 +1086,7 @@ public class CoreConfidenceTests extends TestCase {
         ctx.setStrictTypeEnforcement(true);
         ctx.addInput("foo", Foo.class);
 
-        Serializable c = compiler.compile(ctx);
-
+        compiler.compile(ctx);
     }
 
     public void testEqualityRegression() {
