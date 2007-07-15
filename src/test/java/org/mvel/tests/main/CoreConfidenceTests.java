@@ -1112,6 +1112,14 @@ public class CoreConfidenceTests extends TestCase {
                 compiler.getParserContextState().getVarOrInputType("total"));
     }
 
+    public void testDateComparison() {
+        map.put("dt1", new Date(System.currentTimeMillis() - 100000));
+        map.put("dt2", new Date(System.currentTimeMillis()));
+
+        assertTrue((Boolean) parseDirect("dt1 < dt2"));
+    }
+
+
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
     }
