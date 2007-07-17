@@ -40,6 +40,8 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     private String sourceName;
 
+    private ParserContext parserContext;
+
     public CompiledExpression(ASTIterator astMap, String sourceName) {
         this.tokens = astMap;
         this.sourceName = sourceName;
@@ -93,7 +95,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         if (!optimized) setupOptimizers();
-        return handleParserEgress(execute(false, new ASTLinkedList(tokens.firstNode()), staticContext, factory), false);
+        return handleParserEgress(execute(false, this, staticContext, factory), false);
     }
 
     private void setupOptimizers() {
@@ -133,5 +135,14 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public boolean intOptimized() {
         return false;
+    }
+
+
+    public ParserContext getParserContext() {
+        return parserContext;
+    }
+
+    public void setParserContext(ParserContext parserContext) {
+        this.parserContext = parserContext;
     }
 }

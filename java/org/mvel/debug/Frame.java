@@ -1,18 +1,21 @@
 package org.mvel.debug;
 
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.ParserContext;
 
 public class Frame {
     private String sourceName;
     private int lineNumber;
-    private VariableResolverFactory factory;
 
-    public Frame(String sourceName, int lineNumber, VariableResolverFactory factory) {
+    private VariableResolverFactory factory;
+    private ParserContext parserContext;
+
+    public Frame(String sourceName, int lineNumber, VariableResolverFactory factory, ParserContext pCtx) {
         this.sourceName = sourceName;
         this.lineNumber = lineNumber;
         this.factory = factory;
+        this.parserContext = pCtx;
     }
-
 
     public String getSourceName() {
         return sourceName;
@@ -37,5 +40,13 @@ public class Frame {
 
     public void setFactory(VariableResolverFactory factory) {
         this.factory = factory;
+    }
+
+    public ParserContext getParserContext() {
+        return parserContext;
+    }
+
+    public void setParserContext(ParserContext parserContext) {
+        this.parserContext = parserContext;
     }
 }
