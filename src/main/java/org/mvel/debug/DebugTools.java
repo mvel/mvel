@@ -1,16 +1,16 @@
 package org.mvel.debug;
 
 import org.mvel.*;
-import org.mvel.integration.VariableResolver;
-import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.Operator.ADD;
 import static org.mvel.Operator.SUB;
 import org.mvel.ast.NestedStatement;
+import org.mvel.integration.VariableResolver;
+import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.io.Serializable;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Christopher Brock
@@ -205,13 +205,15 @@ public class DebugTools {
         return null;
     }
 
-    public static Set<VariableResolver> getAllVariableResolvers(VariableResolverFactory rootFactory) {
-        Set<VariableResolver> allVariableResolvers = new HashSet<VariableResolver>();
+    public static Map<String, VariableResolver> getAllVariableResolvers(VariableResolverFactory rootFactory) {
+
+        Map<String, VariableResolver> allVariableResolvers = new HashMap<String, VariableResolver>();
 
         VariableResolverFactory vrf = rootFactory;
         do {
            for (String var : vrf.getKnownVariables()) {
-                allVariableResolvers.add(vrf.getVariableResolver(var));
+                allVariableResolvers.put(var, vrf.getVariableResolver(var));
+
            }
         }
         while ((vrf = vrf.getNextFactory()) != null);
