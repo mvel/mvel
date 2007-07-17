@@ -34,7 +34,7 @@ public class DebuggerTests extends TestCase {
         ExpressionCompiler c = new ExpressionCompiler(src);
         c.setDebugSymbols( true );
         ParserContext ctx = new ParserContext();
-        ctx.setSourceFile ( "mysource" );
+        ctx.setSourceFile ( "mysource" );               
         CompiledExpression compexpr = c.compile(ctx);
 
         System.out.println(decompile(compexpr));
