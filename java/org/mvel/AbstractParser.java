@@ -1135,16 +1135,60 @@ public class AbstractParser {
     }
 
     public static ParserContext getCurrentThreadParserContext() {
-        if (parserContext == null) parserContext = new ThreadLocal<ParserContext>();
-        if (parserContext.get() == null) parserContext.set(new ParserContext(null));
-        return parserContext.get();
+        return contextControl(GET_OR_CREATE, null, null);
     }
 
     protected void newContext() {
-        if (parserContext == null) parserContext = new ThreadLocal<ParserContext>();
-        ParserContext ctx = new ParserContext(this);
-        parserContext.set(ctx);
+        contextControl(SET, new ParserContext(), this);
     }
+
+    protected void newContext(ParserContext pCtx) {
+        contextControl(SET, pCtx, this);
+    }
+
+    protected void removeContext() {
+        contextControl(REMOVE, null, this);
+    }
+
+    /**
+     * Ensure global thread-safe access to the parser context
+     *
+     * @param operation
+     * @param pCtx
+     * @return
+     */
+    private static ParserContext contextControl(int operation, ParserContext pCtx, AbstractParser parser) {
+        synchronized (Runtime.getRuntime()) {
+            if (parserContext == null) parserContext = new ThreadLocal<ParserContext>();
+
+            switch (operation) {
+                case SET:
+                    pCtx.setRootParser(parser);
+                    parserContext.set(pCtx);
+                    return null;
+
+                case REMOVE:
+                    parserContext.set(null);
+                    return null;
+
+
+                case GET_OR_CREATE:
+                    if (parserContext.get() == null) {
+                        parserContext.set(new ParserContext(parser));
+                    }
+
+                case GET:
+                    return parserContext.get();
+            }
+        }
+
+        return null;
+    }
+
+    private static final int SET = 0;
+    private static final int REMOVE = 1;
+    private static final int GET = 2;
+    private static final int GET_OR_CREATE = 3;
 
     public boolean isDebugSymbols() {
         return debugSymbols;
