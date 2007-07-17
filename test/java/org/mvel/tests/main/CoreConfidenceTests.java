@@ -849,7 +849,16 @@ public class CoreConfidenceTests extends TestCase {
 
 
     public void testBreakpointsAcrossComments2() {
-        ExpressionCompiler compiler = new ExpressionCompiler("// This is a comment\n//Second comment line\n//Third Comment Line\n\nSystem.out.println('4');\nSystem.out.println('5');\na = 0;\n b = 1;\n a + b");
+        ExpressionCompiler compiler = new ExpressionCompiler(
+                "// This is a comment\n" +
+                "//Second comment line\n" +
+                        "//Third Comment Line\n" +
+                        "\n" +
+                        "System.out.println('4');\n" +
+                        "System.out.println('5');\n" +
+                        "a = 0;\n" +
+                        "b = 1;\n" +
+                        " a + b");
         compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();

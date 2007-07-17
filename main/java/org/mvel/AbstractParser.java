@@ -35,6 +35,8 @@ public class AbstractParser {
     protected boolean greedy = true;
     protected boolean lastWasIdentifier = false;
     protected boolean lastWasLineLabel = false;
+    protected boolean lastWasComment = false;
+
     protected boolean debugSymbols = false;
 
     private int line = 1;
@@ -181,6 +183,11 @@ public class AbstractParser {
                     line++;
                 }
 
+                if (lastWasComment) {
+                    line++;
+                    lastWasComment = false;
+                }
+
                 pCtx.setLineCount(line);
 
                 if (!pCtx.isKnownLine(pCtx.getSourceFile(), line)) {
@@ -197,8 +204,7 @@ public class AbstractParser {
                 }
             }
             else {
-               // lastWasLineLabel = (lastNode instanceof LineLabel);
-                lastWasLineLabel = false;
+                lastWasComment = lastWasLineLabel = false;
             }
         }
 
@@ -513,8 +519,9 @@ public class AbstractParser {
                                     getParserContext().getFirstLineLabel().setLineNumber(line);
                                 }
 
-                                getParserContext().setLineCount(line);
+                                lastWasComment = true;
 
+                                getParserContext().setLineCount(line);
                             }
                             else if (cursor < length) {
                                 skipWhitespace();
