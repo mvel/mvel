@@ -61,7 +61,8 @@ public class ExpressionParser extends AbstractParser {
 
             if (parserContext != null
                     && (parserContext.get() == null || parserContext.get().getRootParser() == this)) {
-                parserContext.set( null );
+                
+                contextControl(REMOVE, null, null);
             }
  
             return handleParserEgress(stk.peek(), returnBigDecimal);
