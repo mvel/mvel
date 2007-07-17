@@ -1126,7 +1126,6 @@ public class AbstractParser {
         return lookAhead(range) == c;
     }
 
-
     protected ParserContext getParserContext() {
         if (parserContext == null || parserContext.get() == null) {
             newContext();
@@ -1150,7 +1149,7 @@ public class AbstractParser {
         contextControl(REMOVE, null, this);
     }
 
-    private static ParserContext contextControl(int operation, ParserContext pCtx, AbstractParser parser) {
+    protected static ParserContext contextControl(int operation, ParserContext pCtx, AbstractParser parser) {
         synchronized (Runtime.getRuntime()) {
             if (parserContext == null) parserContext = new ThreadLocal<ParserContext>();
 
@@ -1163,7 +1162,6 @@ public class AbstractParser {
                 case REMOVE:
                     parserContext.set(null);
                     return null;
-
 
                 case GET_OR_CREATE:
                     if (parserContext.get() == null) {
@@ -1178,10 +1176,10 @@ public class AbstractParser {
         return null;
     }
 
-    private static final int SET = 0;
-    private static final int REMOVE = 1;
-    private static final int GET = 2;
-    private static final int GET_OR_CREATE = 3;
+    protected static final int SET = 0;
+    protected static final int REMOVE = 1;
+    protected static final int GET = 2;
+    protected static final int GET_OR_CREATE = 3;
 
     public boolean isDebugSymbols() {
         return debugSymbols;
@@ -1299,7 +1297,7 @@ public class AbstractParser {
     }
 
     public static void resetParserContext() {
-        if (parserContext != null) parserContext.set(null);
+         contextControl(REMOVE, null, null);
     }
 
 
