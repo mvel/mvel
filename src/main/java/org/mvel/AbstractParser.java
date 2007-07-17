@@ -1150,13 +1150,6 @@ public class AbstractParser {
         contextControl(REMOVE, null, this);
     }
 
-    /**
-     * Ensure global thread-safe access to the parser context
-     *
-     * @param operation
-     * @param pCtx
-     * @return
-     */
     private static ParserContext contextControl(int operation, ParserContext pCtx, AbstractParser parser) {
         synchronized (Runtime.getRuntime()) {
             if (parserContext == null) parserContext = new ThreadLocal<ParserContext>();
