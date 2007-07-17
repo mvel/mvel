@@ -18,6 +18,8 @@
  */
 package org.mvel.integration;
 
+import java.util.Set;
+
 public interface VariableResolverFactory {
     /**
      * Creates a new variable.  This probably doesn't need to be implemented in most scenarios.  This is
@@ -80,4 +82,12 @@ public interface VariableResolverFactory {
      * @return - boolean
      */
     public boolean isResolveable(String name);
+
+
+    /**
+     * Return a list of known variables inside the factory.  This method should not recurse into other factories.
+     * But rather return only the variables living inside this factory.
+     * @return
+     */
+    public Set<String> getKnownVariables();
 }

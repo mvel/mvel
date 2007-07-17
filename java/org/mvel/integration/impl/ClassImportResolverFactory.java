@@ -23,6 +23,7 @@ import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     public ClassImportResolverFactory() {
@@ -76,5 +77,4 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
 
         return imports;
     }
-
 }
