@@ -24,6 +24,8 @@ import org.mvel.integration.VariableResolverFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     /**
@@ -109,4 +111,5 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     public boolean isTarget(String name) {
         return variableResolvers.containsKey(name);
     }
+
 }

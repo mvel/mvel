@@ -52,4 +52,5 @@ public class StaticMethodImportResolverFactory extends BaseVariableResolverFacto
         }
         return im;
     }
+
 }
