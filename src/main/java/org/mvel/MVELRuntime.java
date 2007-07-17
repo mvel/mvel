@@ -32,12 +32,14 @@ public class MVELRuntime {
      * @see org.mvel.MVEL
      *
      * @param debugger -
-     * @param node -
+     * @param expression -
      * @param ctx -
      * @param variableFactory -
      * @return -
      */
-    public static Object execute(boolean debugger, ASTIterator node, Object ctx, VariableResolverFactory variableFactory) {
+    public static Object execute(boolean debugger, CompiledExpression expression, Object ctx, VariableResolverFactory variableFactory) {
+        final ASTLinkedList node = new ASTLinkedList(expression.getTokens().firstNode());
+
         Stack stk = new ExecutionStack();
         Object v1, v2;
 
@@ -71,7 +73,8 @@ public class MVELRuntime {
                                   throw new RuntimeException("no debugger registered to handle breakpoint.");
                               }
 
-                              threadDebugger.get().onBreak(new Frame(label.getSourceFile(), label.getLineNumber(), variableFactory));
+                              threadDebugger.get()
+                                      .onBreak(new Frame(label.getSourceFile(), label.getLineNumber(), variableFactory, expression.getParserContext()));
                         }
                     }
                     continue;
