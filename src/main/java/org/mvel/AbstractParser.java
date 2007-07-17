@@ -197,7 +197,8 @@ public class AbstractParser {
                 }
             }
             else {
-                lastWasLineLabel = (lastNode instanceof LineLabel);
+               // lastWasLineLabel = (lastNode instanceof LineLabel);
+                lastWasLineLabel = false;
             }
         }
 
