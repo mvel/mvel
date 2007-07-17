@@ -34,11 +34,11 @@ public class ExpressionCompiler extends AbstractParser {
         CompiledExpression c = _compile();
 
         if (pCtx.isFatalError()) {
-            parserContext.set(null);
+            contextControl(REMOVE, null, null);
             throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
         }
         else if (pCtx.isFatalError()) {
-            parserContext.set(null);
+            contextControl(REMOVE, null, null);
             throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
         }
 
