@@ -22,6 +22,7 @@ import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Use this class to extend you own VariableResolverFactories.
@@ -77,4 +78,8 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
         }
     }
 
+
+    public Set<String> getKnownVariables() {
+        return variableResolvers.keySet();
+    }
 }
