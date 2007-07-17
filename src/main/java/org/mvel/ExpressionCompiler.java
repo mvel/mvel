@@ -29,10 +29,7 @@ public class ExpressionCompiler extends AbstractParser {
     public CompiledExpression compile(ParserContext ctx) {
         ctx.setDebugSymbols(debugSymbols);
 
-        if (parserContext == null) {
-            parserContext = new ThreadLocal<ParserContext>();
-        }
-        parserContext.set(ctx);
+        newContext(ctx);
 
         CompiledExpression c = _compile();
 
