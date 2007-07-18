@@ -132,6 +132,10 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(true, parseDirect("c != null && foo.bar.name == 'dog' && foo.bar.woof"));
     }
 
+    public void testAnd2() {
+        assertEquals(true, parseDirect("c!=null&&foo.bar.name=='dog'&&foo.bar.woof"));        
+    }
+
     public void testMath() {
         assertEquals(188.4f, parseDirect("pi * hour"));
     }
