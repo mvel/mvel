@@ -1,7 +1,9 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
-import org.mvel.ast.*;
+import org.mvel.ast.LiteralNode;
+import org.mvel.ast.Substatement;
+import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.ParseTools.doOperations;
@@ -180,136 +182,7 @@ public class ExpressionCompiler extends AbstractParser {
 
             astLinkedList.finish();
 
-            //     if (astLinkedList.size() != 1) {
-
-            ASTLinkedList optimizedAst = new ASTLinkedList();
-
-            /**
-             * Re-process the AST and optimize it.
-             */
-            while (astLinkedList.hasMoreNodes()) {
-                if ((tk = astLinkedList.nextNode()).getFields() == -1) {
-                    optimizedAst.addTokenNode(tk);
-                }
-                else if (astLinkedList.hasMoreNodes()) {
-                    if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
-                        optimizedAst.addTokenNode(tk);
-                        if (tk instanceof EndOfStatement) {
-                            astLinkedList.setCurrentNode(tkOp);
-                            continue;
-                        }
-
-                        optimizedAst.addTokenNode(tkOp);
-                    }
-                    else if (tkOp.isOperator() && tkOp.getOperator() < 12) {
-                        // handle math and equals
-                        BinaryOperation bo = new BinaryOperation(tkOp.getOperator(), tk, astLinkedList.nextNode());
-                        tkOp2 = null;
-
-                        /**
-                         * If we have a chain of math/comparitive operators then we fill them into the tree
-                         * right here.
-                         */
-                        while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                                && tkOp2.getOperator() < 12) {
-                            bo = new BinaryOperation(((tkOp = tkOp2).getOperator()), bo, astLinkedList.nextNode());
-                        }
-                        optimizedAst.addTokenNode(bo);
-
-                        if (tkOp2 != null && tkOp2 != tkOp) {
-                            optimizedAst.addTokenNode(tkOp2);
-                        }
-                    }
-
-                    else {
-                        optimizedAst.addTokenNode(tk);
-                        if (tk instanceof EndOfStatement) {
-                            astLinkedList.setCurrentNode(tkOp);
-                            continue;
-                        }
-
-                        optimizedAst.addTokenNode(tkOp);
-                    }
-                }
-                else {
-                    optimizedAst.addTokenNode(tk);
-                }
-            }
-
-            if (secondPassOptimization) {
-                /**
-                 * Perform a second pass optimization for boolean conditions.
-                 */
-                astLinkedList = optimizedAst;
-                astLinkedList.reset();
-
-                optimizedAst = new ASTLinkedList();
-
-                while (astLinkedList.hasMoreNodes()) {
-                    if ((tk = astLinkedList.nextNode()).getFields() == -1) {
-                        optimizedAst.addTokenNode(tk);
-                    }
-                    else if (astLinkedList.hasMoreNodes()) {
-                        if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
-                            optimizedAst.addTokenNode(tk);
-                            if (tk instanceof EndOfStatement) {
-                                astLinkedList.setCurrentNode(tkOp);
-                            }
-
-                            optimizedAst.addTokenNode(tkOp);
-                        }
-                        else if (tkOp.isOperator()
-                                && (tkOp.getOperator() == Operator.AND || tkOp.getOperator() == Operator.OR)) {
-
-                            tkOp2 = null;
-                            ASTNode bool = null;
-
-                            switch (tkOp.getOperator()) {
-                                case Operator.AND:
-                                    bool = new And(tk, astLinkedList.nextNode());
-                                    break;
-                                case Operator.OR:
-                                    bool = new Or(tk, astLinkedList.nextNode());
-                            }
-
-                            /**
-                             * If we have a chain of math/comparitive operators then we fill them into the tree
-                             * right here.
-                             */
-                            while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                                    && (tkOp2.isOperator(Operator.AND) || tkOp2.isOperator(Operator.OR))) {
-
-                                switch ((tkOp = tkOp2).getOperator()) {
-                                    case Operator.AND:
-                                        bool = new And(bool, astLinkedList.nextNode());
-                                        break;
-                                    case Operator.OR:
-                                        bool = new Or(bool, astLinkedList.nextNode());
-                                }
-                            }
-
-                            optimizedAst.addTokenNode(bool);
-
-                            if (tkOp2 != null && tkOp2 != tkOp) {
-                                optimizedAst.addTokenNode(tkOp2);
-                            }
-                        }
-                        else {
-                            optimizedAst.addTokenNode(tk);
-                            if (tk instanceof EndOfStatement) {
-                                astLinkedList.setCurrentNode(tkOp);
-                            }
-
-                            optimizedAst.addTokenNode(tkOp);
-                        }
-                    }
-                    else {
-                        optimizedAst.addTokenNode(tk);
-                    }
-                }
-            }
-
-            CompiledExpression ce = new CompiledExpression(optimizedAst, getCurrentSourceFileName());
+            CompiledExpression ce = new CompiledExpression(optimizeAST(astLinkedList, secondPassOptimization), getCurrentSourceFileName());
             ce.setKnownEgressType(returnType);
             if (debugSymbols) ce.setParserContext(pCtx);
             return ce;
