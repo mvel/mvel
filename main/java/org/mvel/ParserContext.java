@@ -4,13 +4,14 @@ import org.mvel.integration.Interceptor;
 import org.mvel.ast.LineLabel;
 
 import java.util.*;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 
 /**
  * The ParserContext is the main enviroment object used for sharing state throughout the entire
  * parser/compile process.
  */
-public class ParserContext {
+public class ParserContext implements Serializable {
     private String sourceFile;
 
     private int lineCount = 1;
