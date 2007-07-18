@@ -66,7 +66,7 @@ public class ExpressionCompiler extends AbstractParser {
 
         try {
             if (verifying) {
-                getParserContext().initializeTables();
+                pCtx.initializeTables();
             }
 
             fields |= ASTNode.COMPILE_IMMEDIATE;
@@ -88,7 +88,7 @@ public class ExpressionCompiler extends AbstractParser {
                 }
 
                 /**
-                 * This kludge of code is to handle _compile-time literal reduction.  We need to avoid
+                 * This kludge of code is to handle compile-time literal reduction.  We need to avoid
                  * reducing for certain literals like, 'this', ternary and ternary else.
                  */
                 if (tk.isLiteral() && tk.getLiteralValue() != LITERALS.get("this")) {
@@ -96,7 +96,7 @@ public class ExpressionCompiler extends AbstractParser {
                             && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
 
                         /**
-                         * If the next token is ALSO a literal, then we have a candidate for a _compile-time
+                         * If the next token is ALSO a literal, then we have a candidate for a compile-time literal
                          * reduction.
                          */
                         if ((tkLA = nextToken()) != null && tkLA.isLiteral()) {
