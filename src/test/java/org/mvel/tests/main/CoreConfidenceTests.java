@@ -133,7 +133,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testAnd2() {
-        assertEquals(true, parseDirect("c!=null&&foo.bar.name=='dog'&&foo.bar.woof"));        
+        assertEquals(true, parseDirect("c!=null&&foo.bar.name=='dog'&&foo.bar.woof"));
     }
 
     public void testMath() {
@@ -855,7 +855,7 @@ public class CoreConfidenceTests extends TestCase {
     public void testBreakpointsAcrossComments2() {
         ExpressionCompiler compiler = new ExpressionCompiler(
                 "// This is a comment\n" +
-                "//Second comment line\n" +
+                        "//Second comment line\n" +
                         "//Third Comment Line\n" +
                         "\n" +
                         "System.out.println('4');\n" +
@@ -1162,7 +1162,7 @@ public class CoreConfidenceTests extends TestCase {
 
             if (!first.equals(third)) {
                 throw new AssertionError("Different result from test 1 and 3 (Compiled to Interpreted) [first: " +
-                        String.valueOf(first) + "; third: " + String.valueOf(third) + "]");
+                        String.valueOf(first) + " (" + (first != null ? first.getClass().getName() : "null") + "); third: " + String.valueOf(third) + " (" + (second != null ? first.getClass().getName() : "null") + ")]");
             }
         }
 
