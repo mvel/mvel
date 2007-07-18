@@ -22,7 +22,7 @@ import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.handleParserEgress;
 
 public class ExecutableAccessor implements ExecutableStatement {
-    private ASTNode accessor;
+    private ASTNode node;
 
     private Class ingress;
     private Class egress;
@@ -30,19 +30,20 @@ public class ExecutableAccessor implements ExecutableStatement {
 
     private boolean returnBigDecimal;
 
-    public ExecutableAccessor(ASTNode accessor, boolean returnBigDecimal) {
-        this.accessor = accessor;
+    public ExecutableAccessor(ASTNode node, boolean returnBigDecimal) {
+        this.node = node;
         this.returnBigDecimal = returnBigDecimal;
     }
 
-
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        return getValue(elCtx, variableFactory);
+        return handleParserEgress(node.getReducedValueAccelerated(ctx, ctx, variableFactory),
+                returnBigDecimal);
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        return handleParserEgress(accessor.getReducedValueAccelerated(staticContext, staticContext, factory),
+        return handleParserEgress(node.getReducedValueAccelerated(staticContext, staticContext, factory),
                 returnBigDecimal);
+
     }
 
 
@@ -76,8 +77,8 @@ public class ExecutableAccessor implements ExecutableStatement {
         return false;
     }
 
-    public ASTNode getAccessor() {
-        return accessor;
+    public ASTNode getNode() {
+        return node;
     }
 }
 

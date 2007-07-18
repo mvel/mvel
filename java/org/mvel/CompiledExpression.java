@@ -34,8 +34,8 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private Class knownIngressType;     
 
     private boolean convertableIngressEgress;
-
     private boolean optimized = false;
+
     private Class<? extends AccessorOptimizer> accessorOptimizer;
 
     private String sourceName;
@@ -43,12 +43,12 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private ParserContext parserContext;
 
     public CompiledExpression(ASTIterator astMap, String sourceName) {
-        this.tokens = astMap;
+       this.tokens = astMap;
         this.sourceName = sourceName;
     }
 
     public ASTIterator getTokens() {
-        return new ASTLinkedList(tokens.firstNode());
+        return new ASTLinkedList(tokens.firstNode(), tokens.size());
     }
 
     public void setTokens(ASTIterator tokens) {
@@ -96,6 +96,10 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         if (!optimized) setupOptimizers();
         return handleParserEgress(execute(false, this, staticContext, factory), false);
+    }
+
+    public Object getDirectValue(Object staticContext, VariableResolverFactory factory) {    
+         return execute(false, this, staticContext, factory);
     }
 
     private void setupOptimizers() {
