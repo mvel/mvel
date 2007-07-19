@@ -22,11 +22,12 @@ import static java.util.Collections.synchronizedMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.io.Serializable;
 
 /**
  * @author Christopher Brock
  */
-public class AbstractParser {
+public class AbstractParser implements Serializable {
     protected char[] expr;
     protected int cursor;
     protected int length;
