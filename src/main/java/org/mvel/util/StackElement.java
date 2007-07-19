@@ -1,6 +1,8 @@
 package org.mvel.util;
 
-public class StackElement {
+import java.io.Serializable;
+
+public class StackElement implements Serializable {
     public StackElement(StackElement next, Object value) {
         this.next = next;
         this.value = value;

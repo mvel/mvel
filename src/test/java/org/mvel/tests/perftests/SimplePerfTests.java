@@ -1,10 +1,10 @@
 package org.mvel.tests.perftests;
 
-import org.mvel.*;
-import org.mvel.tests.main.res.Foo;
 import ognl.Ognl;
-import ognl.OgnlContext;
-import ognl.enhance.ExpressionAccessor;
+import org.mvel.MVEL;
+import org.mvel.optimizers.OptimizerFactory;
+
+import java.io.Serializable;
 
 /**
  * Created by IntelliJ IDEA.
@@ -15,43 +15,46 @@ import ognl.enhance.ExpressionAccessor;
  */
 public class SimplePerfTests {
 
-    public static void main(String[] args) {
-        String expression = "foo.bar.name";
-        int iterations = 10000;
+    public static void main(String[] args) throws Exception {
 
+        // Expression we'll test.
+        String expression = "foo.bar.name";
+
+        // Number of iterations
+        int iterations = 100000;
 
         Base base = new Base();
 
-        ExecutableAccessor c = (ExecutableAccessor) MVEL.compileExpression(expression);
-        c.getValue(base, null);
+        // Compile expression in MVEL
+        Serializable mvelCompiled = MVEL.compileExpression(expression);
 
-        Accessor a = c.getNode().getAccessor();
+        // Disable MVEL's JIT by making the default optimizer the Reflective optimizer.
+   //     OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
 
-        long tm = System.currentTimeMillis();
-        for (int i = 0; i < iterations; i++) {
-            assert "test".equals(a.getValue(base, null, null));
+        // Compile OGNL AST
+        Object ognlCompiled = Ognl.parseExpression(expression);
+
+
+        // We loop twice, once to warm up HotSpot.
+        for (int repeat = 0; repeat < 2; repeat++) {
+
+            long tm = System.currentTimeMillis();
+            for (int i = 0; i < iterations; i++) {
+                MVEL.executeExpression(mvelCompiled, base);
+            }
+
+            // Let's not report the results the first time around, HotSpot needs to warm up
+            if (repeat != 0) System.out.println("MVEL  : " + ((System.currentTimeMillis() - tm)) + "ms");
+
+
+            tm = System.currentTimeMillis();
+            for (int i = 0; i < iterations; i++) {
+                Ognl.getValue(ognlCompiled, base);
+            }
+
+            // See above.
+            if (repeat != 0) System.out.println("OGNL  : " + ((System.currentTimeMillis() - tm)) + "ms");
         }
-        System.out.println("MVEL  : " + ((System.currentTimeMillis() - tm)) + "ms");
-
-
-        ExpressionAccessor accessor = null;
-        OgnlContext oCtx = null;
-
-        try {
-            accessor = Ognl.compileExpression(oCtx = new OgnlContext(), base, expression).getAccessor();
-        }
-        catch (Exception e) {
-
-        }
-
-        tm = System.currentTimeMillis();
-        for (int i = 0; i < iterations; i++) {
-            oCtx.clear();
-            assert "test".equals(accessor.get(oCtx, base));
-        }
-        System.out.println("OGNL  : " + ((System.currentTimeMillis() - tm)) + "ms");
-
-
     }
 
 

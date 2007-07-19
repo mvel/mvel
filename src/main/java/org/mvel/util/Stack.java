@@ -1,6 +1,8 @@
 package org.mvel.util;
 
-public interface Stack {
+import java.io.Serializable;
+
+public interface Stack extends Serializable {
     public boolean isEmpty();
 
     public Object peek();
