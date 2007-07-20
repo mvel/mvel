@@ -1,8 +1,8 @@
 package org.mvel;
 
-import static org.mvel.Soundex.soundex;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
+import static org.mvel.Soundex.soundex;
 import org.mvel.ast.LineLabel;
 import org.mvel.debug.Debugger;
 import org.mvel.debug.Frame;
@@ -29,15 +29,14 @@ public class MVELRuntime {
     /**
      * Main interpreter.
      *
-     * @see org.mvel.MVEL
-     *
-     * @param debugger -
-     * @param expression -
-     * @param ctx -
+     * @param debugger        -
+     * @param expression      -
+     * @param ctx             -
      * @param variableFactory -
      * @return -
+     * @see org.mvel.MVEL
      */
-    public static Object execute(boolean debugger, CompiledExpression expression, Object ctx, VariableResolverFactory variableFactory) {        
+    public static Object execute(boolean debugger, CompiledExpression expression, Object ctx, VariableResolverFactory variableFactory) {
         final ASTLinkedList node = new ASTLinkedList(expression.getTokens().firstNode());
 
         Stack stk = new ExecutionStack();
@@ -66,15 +65,20 @@ public class MVELRuntime {
                     if (debugger) {
                         LineLabel label = (LineLabel) tk;
 
-                        if (threadBreakpoints != null
-                                && threadBreakpoints.get().get(label.getSourceFile()).contains(label.getLineNumber())) {
+                        try {
+                            if (threadBreakpoints != null
+                                    && threadBreakpoints.get().get(label.getSourceFile()).contains(label.getLineNumber())) {
 
-                              if (threadDebugger == null || threadDebugger.get() == null)  {
-                                  throw new RuntimeException("no debugger registered to handle breakpoint.");
-                              }
+                                if (threadDebugger == null || threadDebugger.get() == null) {
+                                    throw new RuntimeException("no debugger registered to handle breakpoint.");
+                                }
 
-                              threadDebugger.get()
-                                      .onBreak(new Frame(label.getSourceFile(), label.getLineNumber(), variableFactory, expression.getParserContext()));
+                                threadDebugger.get()
+                                        .onBreak(new Frame(label.getSourceFile(), label.getLineNumber(), variableFactory, expression.getParserContext()));
+                            }
+                        }
+                        catch (NullPointerException e) {
+                            // do nothing for now.  this isn't as calus as it seems.   
                         }
                     }
                     continue;
