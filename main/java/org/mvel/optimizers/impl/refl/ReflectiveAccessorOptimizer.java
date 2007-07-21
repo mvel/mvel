@@ -379,7 +379,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
      */
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name) throws Exception {
-        if (first && variableFactory.isResolveable(name)) {
+        if (first && variableFactory != null && variableFactory.isResolveable(name)) {
             Method m = (Method) variableFactory.getVariableResolver(name).getValue();
             ctx = m.getDeclaringClass();
             name = m.getName();

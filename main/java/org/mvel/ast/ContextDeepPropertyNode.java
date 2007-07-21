@@ -2,6 +2,7 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.Accessor;
+import org.mvel.PropertyAccessException;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
@@ -10,8 +11,7 @@ import org.mvel.optimizers.OptimizerFactory;
  * @author Christopher Brock
  */
 public class ContextDeepPropertyNode extends ASTNode {
-
-    private Accessor accessor;            
+    private Accessor accessor;
 
     public ContextDeepPropertyNode(char[] expr, int fields) {
         super(expr, fields);
@@ -31,7 +31,18 @@ public class ContextDeepPropertyNode extends ASTNode {
                 throw e;
             }
         }
+        catch (ClassCastException e) {
+            return handleDynamicDeoptimization(ctx, thisValue, factory);
+        }
     }
+
+    private Object handleDynamicDeoptimization(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        synchronized (this) {
+            accessor = null;
+            return getReducedValueAccelerated(ctx, thisValue, factory);
+        }
+    }
+
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return getReducedValueAccelerated(ctx, thisValue, factory);
