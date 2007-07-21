@@ -1,7 +1,5 @@
 package org.mvel.tests.main;
 
-import static java.lang.System.currentTimeMillis;
-
 import junit.framework.TestCase;
 import org.mvel.*;
 import static org.mvel.MVEL.*;
@@ -19,6 +17,7 @@ import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 
 import java.io.Serializable;
+import static java.lang.System.currentTimeMillis;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -1132,6 +1131,13 @@ public class CoreConfidenceTests extends TestCase {
         map.put("dt2", new Date(currentTimeMillis()));
 
         assertTrue((Boolean) parseDirect("dt1 < dt2"));
+    }
+
+    public void testDynamicDeop() {
+        Serializable s = MVEL.compileExpression("name");
+
+        assertEquals("dog", MVEL.executeExpression(s, foo));
+        assertEquals("dog", MVEL.executeExpression(s, foo.getBar()));
     }
 
 

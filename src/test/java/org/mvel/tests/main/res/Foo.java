@@ -9,6 +9,8 @@ public class Foo {
     public String aValue = "";
     public String bValue = "";
 
+    private String name = "dog";
+
     private Collection collectionTest;
 
     public void abc() {
@@ -35,6 +37,14 @@ public class Foo {
         return 4;
     }
 
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Collection getCollectionTest() {
         return collectionTest;
