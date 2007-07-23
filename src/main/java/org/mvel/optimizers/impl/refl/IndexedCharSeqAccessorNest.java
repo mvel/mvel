@@ -18,6 +18,10 @@ public class IndexedCharSeqAccessorNest implements AccessorNode {
     }
 
 
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        return null;
+    }
+
     public ExecutableStatement getIndex() {
         return index;
     }

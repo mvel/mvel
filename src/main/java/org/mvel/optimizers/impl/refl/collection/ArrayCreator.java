@@ -22,4 +22,9 @@ public class ArrayCreator implements Accessor {
     public ArrayCreator(Accessor[] template) {
         this.template = template;
     }
+
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        return null;
+    }
 }

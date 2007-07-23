@@ -20,6 +20,7 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
+import org.mvel.PropertyAccessException;
 import org.mvel.integration.VariableResolverFactory;
 
 public class ThisValueAccessor implements AccessorNode {
@@ -43,5 +44,10 @@ public class ThisValueAccessor implements AccessorNode {
 
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
+    }
+
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        throw new PropertyAccessException("assignment to reserved variable 'this' not permitted");
     }
 }

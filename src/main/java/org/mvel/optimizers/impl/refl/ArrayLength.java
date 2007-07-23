@@ -17,4 +17,9 @@ public class ArrayLength extends BaseAccessor {
             return Array.getLength(ctx);
         }
     }
+
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        return null;
+    }
 }

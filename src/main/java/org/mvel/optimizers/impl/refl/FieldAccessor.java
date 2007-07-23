@@ -45,6 +45,16 @@ public class FieldAccessor implements AccessorNode {
 
     }
 
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+       try {
+           field.set(ctx, value);
+       }
+       catch (Exception e) {
+           throw new CompileException("unable to access field", e);
+       }
+        return value;
+    }
+
     public Field getField() {
         return field;
     }
@@ -60,4 +70,6 @@ public class FieldAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
+
+
 }

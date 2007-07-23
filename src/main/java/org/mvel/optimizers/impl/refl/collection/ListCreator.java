@@ -23,4 +23,9 @@ public class ListCreator implements Accessor {
     public ListCreator(Accessor[] values) {
         this.values = values;
     }
+
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        return null;
+    }
 }

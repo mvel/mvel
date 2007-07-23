@@ -28,4 +28,9 @@ public class Union implements Accessor {
         this.accessor = accessor;
         this.nextExpr = nextAccessor;
     }
+
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        return null;
+    }
 }

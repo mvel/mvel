@@ -28,4 +28,10 @@ public class MapCreator implements Accessor {
         this.size = (this.keys = keys).length;
         this.vals = vals;
     }
+
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        // not implemented
+        return null;
+    }
 }

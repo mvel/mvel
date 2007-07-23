@@ -23,4 +23,5 @@ import org.mvel.integration.VariableResolverFactory;
 
 public interface Accessor {
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory);
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value);
 }
