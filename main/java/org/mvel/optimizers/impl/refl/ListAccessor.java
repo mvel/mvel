@@ -18,7 +18,6 @@ public class ListAccessor implements AccessorNode {
         }
     }
 
-
     public int getIndex() {
         return index;
     }
@@ -35,6 +34,12 @@ public class ListAccessor implements AccessorNode {
         return this.nextNode = nextNode;
     }
 
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        //noinspection unchecked
+        ((List) ctx).set(index, value);
+        return value;
+    }
 
     public String toString() {
         return "Array Accessor -> [" + index + "]";

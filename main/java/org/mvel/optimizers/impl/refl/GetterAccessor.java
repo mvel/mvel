@@ -75,4 +75,10 @@ public class GetterAccessor implements AccessorNode {
     public String toString() {
         return method.getDeclaringClass().getName() + "." + method.getName();
     }
+
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        // not implemented
+        return null;
+    }
 }

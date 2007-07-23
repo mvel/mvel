@@ -37,6 +37,13 @@ public class MapAccessor implements AccessorNode {
         }
     }
 
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        //noinspection unchecked
+        ((Map) ctx).put(property, value);
+        return value;
+    }
+
     public Object getProperty() {
         return property;
     }

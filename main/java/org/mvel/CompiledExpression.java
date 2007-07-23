@@ -141,12 +141,16 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         return false;
     }
 
-
     public ParserContext getParserContext() {
         return parserContext;
     }
 
     public void setParserContext(ParserContext parserContext) {
         this.parserContext = parserContext;
+    }
+
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        return null;
     }
 }

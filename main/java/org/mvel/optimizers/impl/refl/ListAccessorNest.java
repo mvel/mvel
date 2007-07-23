@@ -38,6 +38,13 @@ public class ListAccessorNest implements AccessorNode {
         }
     }
 
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        //noinspection unchecked
+        ((List) ctx).set((Integer) index.getValue(ctx, elCtx, variableFactory), value);
+        return value;
+    }
+
     public ExecutableStatement getIndex() {
         return index;
     }

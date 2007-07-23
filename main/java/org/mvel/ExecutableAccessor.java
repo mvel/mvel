@@ -80,6 +80,11 @@ public class ExecutableAccessor implements ExecutableStatement {
     public ASTNode getNode() {
         return node;
     }
+
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        return null;
+    }
 }
 
 

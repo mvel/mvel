@@ -59,4 +59,9 @@ public class VariableAccessor implements AccessorNode {
         return this.nextNode = nextNode;
     }
 
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        variableFactory.getVariableResolver(property).setValue(value);
+        return value;
+    }
 }

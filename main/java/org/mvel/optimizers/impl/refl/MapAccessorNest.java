@@ -22,6 +22,13 @@ public class MapAccessorNest implements AccessorNode {
         }
     }
 
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        //noinspection unchecked
+        ((Map) ctx).put(property.getValue(ctx, elCtx, variableFactory), value);
+        return value;
+    }
+
     public ExecutableStatement getProperty() {
         return property;
     }

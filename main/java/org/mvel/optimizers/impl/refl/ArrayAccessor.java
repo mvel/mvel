@@ -37,6 +37,10 @@ public class ArrayAccessor implements AccessorNode {
     }
 
 
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        return ((Object[]) ctx)[index] = value;
+    }
+
     public int getIndex() {
         return index;
     }
