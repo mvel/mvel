@@ -25,7 +25,6 @@ public class MVELRuntime {
     private static ThreadLocal<Map<String, Set<Integer>>> threadBreakpoints;
     private static ThreadLocal<Debugger> threadDebugger;
 
-
     /**
      * Main interpreter.
      *
@@ -133,10 +132,6 @@ public class MVELRuntime {
                                 }
                                 else stk.push(null);
                                 break;
-
-//                            case REGEX:
-//                                stk.push(compile(valueOf(v1)).matcher(valueOf(v2)).matches());
-//                                break;
 
                             case INSTANCEOF:
                                 if (v1 instanceof Class)
