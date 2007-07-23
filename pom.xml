@@ -33,6 +33,7 @@
         <excludes>
           <exclude>**/CompiledUnitTestEx.java</exclude>
           <exclude>**/PerfTest.java</exclude>
+          <exclude>**/DroolsTest.java</exclude>
         </excludes>
       </configuration>
     </plugin>      
