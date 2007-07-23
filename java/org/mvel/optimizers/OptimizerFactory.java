@@ -99,6 +99,13 @@ public class OptimizerFactory {
     }
 
     public static void setDefaultOptimizer(String name) {
-        defaultOptimizer = name;
+        try {
+            //noinspection unchecked
+            setThreadAccessorOptimizer(accessorCompilers.get(defaultOptimizer = name).getClass());
+        }
+        catch (Exception e) {
+            throw new CompileException("unable to instantiate accessor compiler", e);
+
+        }
     }
 }
