@@ -310,11 +310,11 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testInstanceCheck1() {
-        assertEquals(true, parseDirect("c is 'java.lang.String'"));
+        assertEquals(true, parseDirect("c is java.lang.String"));
     }
 
     public void testInstanceCheck2() {
-        assertEquals(false, parseDirect("pi is 'java.lang.Integer'"));
+        assertEquals(false, parseDirect("pi is java.lang.Integer"));
     }
 
     public void testBitwiseOr1() {
@@ -1148,6 +1148,10 @@ public class CoreConfidenceTests extends TestCase {
         vars.put("mp", testMap);
 
         assertEquals("bar", MVEL.executeExpression(compileExpression("mp.test = 'bar'; mp.test"), vars));
+    }
+
+    public void testClassLiteral() {
+        assertEquals(String.class, parseDirect("java.lang.String"));
     }
 
 
