@@ -69,4 +69,9 @@ public class ExecutableLiteral implements ExecutableStatement {
         return intOptimized;
     }
 
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        // not implemented
+        return null;
+    }
 }

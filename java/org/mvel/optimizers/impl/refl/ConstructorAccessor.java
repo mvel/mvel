@@ -91,4 +91,8 @@ public class ConstructorAccessor extends BaseAccessor {
         this.parms = parms;
     }
 
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        return null;
+    }
 }

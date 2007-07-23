@@ -37,6 +37,11 @@ public class IndexedCharSeqAccessor implements AccessorNode {
     }
 
 
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+         // not implemented
+        return null;
+    }
+
     public int getIndex() {
         return index;
     }

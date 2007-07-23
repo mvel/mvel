@@ -33,4 +33,10 @@ public class Fold implements Accessor {
         this.expr = expr;
         this.collection = collection;
     }
+
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        // not implemented
+        return null;
+    }
 }

@@ -18,6 +18,10 @@ public class ArrayAccessorNest implements AccessorNode {
     }
 
 
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+       return ((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, variableFactory)] = value; 
+    }
+
     public ExecutableStatement getIndex() {
         return index;
     }
