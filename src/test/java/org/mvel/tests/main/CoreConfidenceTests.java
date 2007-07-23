@@ -1140,6 +1140,16 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals("dog", MVEL.executeExpression(s, foo.getBar()));
     }
 
+    public void testVirtProperty() {
+        Map<String, Object> testMap = new HashMap<String, Object>();
+        testMap.put("test", "foo");
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put("mp", testMap);
+
+        assertEquals("bar", MVEL.executeExpression(compileExpression("mp.test = 'bar'; mp.test"), vars));
+    }
+
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
