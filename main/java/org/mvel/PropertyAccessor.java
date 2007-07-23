@@ -191,7 +191,6 @@ public class PropertyAccessor {
     private void set(Object value) {
         curr = ctx;
 
-
         try {
             int oLength = length;
             length = ArrayTools.findLast('.', property);
@@ -203,6 +202,7 @@ public class PropertyAccessor {
             length = oLength;
 
             String tk = captureNext();
+
 
             Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
             if (member == null) {
@@ -237,6 +237,10 @@ public class PropertyAccessor {
                 else {
                     meth.invoke(curr, value);
                 }
+            }
+            else if (curr instanceof Map) {
+                //noinspection unchecked
+                ((Map) curr).put(tk, value);
             }
             else {
                 throw new PropertyAccessException("could not access property (" + property + ") in: " + ctx.getClass().getName());

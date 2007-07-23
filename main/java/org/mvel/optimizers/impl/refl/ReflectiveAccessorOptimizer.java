@@ -385,8 +385,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             name = m.getName();
             first = false;
         }
-
-
+        
         int st = cursor;
 
         int depth = 1;
