@@ -317,6 +317,10 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(false, parseDirect("pi is java.lang.Integer"));
     }
 
+    public void testInstanceCheck3() {
+        assertEquals(true, parseDirect("foo is org.mvel.tests.main.res.Foo"));
+    }
+
     public void testBitwiseOr1() {
         assertEquals(6, parseDirect("2 | 4"));
     }
