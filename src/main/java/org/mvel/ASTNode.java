@@ -279,7 +279,11 @@ public class ASTNode implements Cloneable, Serializable {
                      */
                     Object sa = tryStaticAccess(ctx, factory);
                     if (sa == null) throw e;
-                    return valRet(sa);
+
+                    literal = valRet(sa);
+                    fields |= LITERAL;
+
+                    return literal;
                 }
             }
         }
