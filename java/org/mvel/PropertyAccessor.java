@@ -243,7 +243,7 @@ public class PropertyAccessor {
                 ((Map) curr).put(tk, value);
             }
             else {
-                throw new PropertyAccessException("could not access property (" + property + ") in: " + ctx.getClass().getName());
+                throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
             }
         }
         catch (InvocationTargetException e) {
