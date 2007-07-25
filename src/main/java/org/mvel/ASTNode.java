@@ -280,6 +280,10 @@ public class ASTNode implements Cloneable, Serializable {
                     Object sa = tryStaticAccess(ctx, factory);
                     if (sa == null) throw e;
 
+                    /**
+                     * Since this clearly is a class literal, we change the nature of theis node to
+                     * make it a literal to prevent re-evaluation.
+                     */
                     literal = valRet(sa);
                     fields |= LITERAL;
 
