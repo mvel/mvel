@@ -92,13 +92,26 @@ public class ParseTools {
         for (; i < end; i++) {
             switch (parm[i]) {
                 case'(':
+                    int depth = 1;
+                    while (i++ < length - 1 && depth != 0) {
+                        switch (parm[i]) {
+                            case'(':
+                                depth++;
+                                continue;
+                            case')':
+                                depth--;
+                        }
+                    }
+                    i--;
+                    continue;
+
+
                 case'[':
                 case'{':
                     if (adepth++ == 0)
                         start = i;
                     continue;
 
-                case')':
                 case']':
                 case'}':
                     if (--adepth == 0) {
