@@ -39,7 +39,7 @@ public class AbstractParser implements Serializable {
     protected boolean lastWasComment = false;
 
     protected boolean debugSymbols = false;
-
+                         
     private int line = 1;
 
     protected ASTNode lastNode;
@@ -637,9 +637,9 @@ public class AbstractParser implements Serializable {
                                      *
                                      *  take a stab in the dark and try and load the class
                                      */
-                                    start = cursor;
+                                    int _start = cursor;
                                     captureToEOS();
-                                    return new TypeCast(expr, start, cursor, fields, createClass(tokenStr));
+                                    return new TypeCast(expr, _start, cursor, fields, createClass(tokenStr));
 
                                 }
                                 catch (ClassNotFoundException e) {
