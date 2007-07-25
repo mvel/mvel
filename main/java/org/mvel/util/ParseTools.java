@@ -73,10 +73,6 @@ public class ParseTools {
         return null;
     }
 
-    public static void main(String[] args) {
-        //  System.out.println(parseParameterList("(s.toChararray(), 0 , 3)".toCharArray(), 0));
-    }
-
     public static String[] parseParameterList(char[] parm, int offset, int length) {
         List<String> list = new LinkedList<String>();
 
