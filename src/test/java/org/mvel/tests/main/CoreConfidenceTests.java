@@ -1465,6 +1465,39 @@ public class CoreConfidenceTests extends TestCase {
         compiler.compile(context);
     }
 
+
+    /**
+     * Provided by: Aadi Deshpande
+     */
+    public void testPropertyVerfierShoudldNotLoopIndefinately() {
+        String expr = "\t\tmodel.latestHeadlines = $list;\n" +
+                "model.latestHeadlines.add( 0, (model.latestHeadlines[2]) );";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+        compiler.setVerifying(true);
+
+        ParserContext pCtx = new ParserContext();
+        pCtx.addInput("$list", List.class);
+        pCtx.addInput("model", Model.class);
+
+        compiler.compile(pCtx);
+    }
+
+
+    public static class Model {
+        private List latestHeadlines;
+
+
+        public List getLatestHeadlines() {
+            return latestHeadlines;
+        }
+
+        public void setLatestHeadlines(List latestHeadlines) {
+            this.latestHeadlines = latestHeadlines;
+        }
+    }
+
+
     public static class Message {
         public static final int HELLO = 0;
         public static final int GOODBYE = 1;

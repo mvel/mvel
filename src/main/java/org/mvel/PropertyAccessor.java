@@ -231,7 +231,7 @@ public class PropertyAccessor {
                         throw new ConversionException("cannot convert type: "
                                 + value.getClass() + ": to " + meth.getParameterTypes()[0]);
                     }
-
+                      
                     meth.invoke(curr, convert(value, meth.getParameterTypes()[0]));
                 }
                 else {
