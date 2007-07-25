@@ -1162,6 +1162,9 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(String.class, parseDirect("java.lang.String"));
     }
 
+    public void testDeepMethod() {
+        assertEquals(false, parseDirect("foo.bar.testList.add(new String()); foo.bar.testList == empty"));
+    }
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);

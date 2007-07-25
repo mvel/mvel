@@ -140,7 +140,6 @@ public class PropertyAccessor {
         new PropertyAccessor(property, ctx).set(value);
     }
 
-
     private Object get() {
         curr = ctx;
 
@@ -157,7 +156,6 @@ public class PropertyAccessor {
                         curr = getCollectionProperty(curr, capture());
                         break;
                     case DONE:
-                        break;
                 }
 
                 first = false;
@@ -217,7 +215,7 @@ public class PropertyAccessor {
 
                 if (ctx instanceof Map) {
                     //noinspection unchecked
-                    ((Map) ctx).put(MVEL.eval(ex, this.ctx, this. resolver), value);
+                    ((Map) ctx).put(MVEL.eval(ex, this.ctx, this.resolver), value);
                 }
                 else {
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
@@ -245,8 +243,9 @@ public class PropertyAccessor {
 
                     fld.set(curr, convert(value, fld.getType()));
                 }
-                else
+                else {
                     fld.set(curr, value);
+                }
             }
             else if (member != null) {
                 Method meth = (Method) member;
@@ -256,7 +255,6 @@ public class PropertyAccessor {
                         throw new ConversionException("cannot convert type: "
                                 + value.getClass() + ": to " + meth.getParameterTypes()[0]);
                     }
-
                     meth.invoke(curr, convert(value, meth.getParameterTypes()[0]));
                 }
                 else {
@@ -281,10 +279,10 @@ public class PropertyAccessor {
     }
 
 
-    private String captureNext() {
-        nextToken();
-        return capture();
-    }
+//    private String captureNext() {
+//        nextToken();
+//        return capture();
+//    }
 
     private int nextToken() {
         switch (property[start = cursor]) {
@@ -457,14 +455,14 @@ public class PropertyAccessor {
         return false;
     }
 
-    private int containsStringLiteralTermination() {
-        int pos = cursor;
-        for (pos--; pos > 0; pos--) {
-            if (property[pos] == '\'' || property[pos] == '"') return pos;
-            else if (!isWhitespace(property[pos])) return pos;
-        }
-        return -1;
-    }
+//    private int containsStringLiteralTermination() {
+//        int pos = cursor;
+//        for (pos--; pos > 0; pos--) {
+//            if (property[pos] == '\'' || property[pos] == '"') return pos;
+//            else if (!isWhitespace(property[pos])) return pos;
+//        }
+//        return -1;
+//    }
 
 
     /**

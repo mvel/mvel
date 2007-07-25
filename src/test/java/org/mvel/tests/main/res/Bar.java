@@ -1,10 +1,15 @@
 package org.mvel.tests.main.res;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class Bar {
     private String name = "dog";
     private boolean woof = true;
     private int age = 14;
     private String assignTest = "";
+    private List testList = new ArrayList();
+
 
     public String getName() {
         return name;
@@ -42,6 +47,15 @@ public class Bar {
 
     public void setAssignTest(String assignTest) {
         this.assignTest = assignTest;
+    }
+
+
+    public List getTestList() {
+        return testList;
+    }
+
+    public void setTestList(List testList) {
+        this.testList = testList;
     }
 
     public String happy() {
