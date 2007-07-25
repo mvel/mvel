@@ -1154,6 +1154,10 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals("bar", MVEL.executeExpression(compileExpression("mp.test = 'bar'; mp.test"), vars));
     }
 
+    public void testMapPropertyCreateCondensed() {
+        assertEquals("foo", parseDirect("map = new java.util.HashMap(); map['test'] = 'foo'; map['test'];"));
+    }
+
     public void testClassLiteral() {
         assertEquals(String.class, parseDirect("java.lang.String"));
     }

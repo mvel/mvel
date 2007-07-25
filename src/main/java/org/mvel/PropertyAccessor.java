@@ -201,8 +201,33 @@ public class PropertyAccessor {
 
             length = oLength;
 
-            String tk = captureNext();
+            if (nextToken() == COL) {
 
+                int start = ++cursor;
+
+                whiteSpaceSkip();
+
+                if (cursor == length)
+                    throw new PropertyAccessException("unterminated '['");
+
+                if (!scanTo(']'))
+                    throw new PropertyAccessException("unterminated '['");
+
+                String ex = new String(property, start, cursor - start);
+
+                if (ctx instanceof Map) {
+                    //noinspection unchecked
+                    ((Map) ctx).put(MVEL.eval(ex, this.ctx, this. resolver), value);
+                }
+                else {
+                    throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
+                }
+
+
+                return;
+            }
+
+            String tk = capture();
 
             Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
             if (member == null) {
@@ -231,7 +256,7 @@ public class PropertyAccessor {
                         throw new ConversionException("cannot convert type: "
                                 + value.getClass() + ": to " + meth.getParameterTypes()[0]);
                     }
-                      
+
                     meth.invoke(curr, convert(value, meth.getParameterTypes()[0]));
                 }
                 else {
@@ -462,23 +487,6 @@ public class PropertyAccessor {
 
         Object item;
 
-//        if (property[cursor] == '\'' || property[cursor] == '"') {
-//            start++;
-//
-//            int end;
-//
-//            if (!scanTo(']'))
-//                throw new PropertyAccessException("unterminated '['");
-//            if ((end = containsStringLiteralTermination()) == -1)
-//                throw new PropertyAccessException("unterminated string literal in collections accessor");
-//
-//            item = new String(property, start, end - start);
-//        }
-//        else {
-
-        //      = );
-//        }
-
         if (!scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
@@ -526,7 +534,7 @@ public class PropertyAccessor {
      */
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name) throws Exception {
-        if (first && resolver!= null && resolver.isResolveable(name)) {
+        if (first && resolver != null && resolver.isResolveable(name)) {
             Method m = (Method) resolver.getVariableResolver(name).getValue();
             ctx = m.getDeclaringClass();
             name = m.getName();
