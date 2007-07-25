@@ -6,6 +6,7 @@ import org.mvel.ExecutableStatement;
 import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
+import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.subset;
 import static org.mvel.util.PropertyTools.find;
 
@@ -27,6 +28,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         if ((mark = find(expr, '=')) != -1) {
             name = new String(expr, 0, mark).trim();
             statement = (ExecutableStatement) ParseTools.subCompileExpression(subset(expr, mark + 1));
+                       
         }
         else {
             name = new String(expr);

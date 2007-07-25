@@ -101,7 +101,6 @@ public class ParseTools {
                     i--;
                     continue;
 
-
                 case'[':
                 case'{':
                     if (adepth++ == 0)
@@ -513,7 +512,7 @@ public class ParseTools {
             return false;
         else if (compareTo instanceof String)
             // @todo use String.contains once we move to jdk1.5
-            return ((String) compareTo).indexOf(valueOf(compareTest).toString()) > -1;
+            return ((String) compareTo).indexOf(valueOf(compareTest)) > -1;
         else if (compareTo instanceof Collection)
             return ((Collection) compareTo).contains(compareTest);
         else if (compareTo instanceof Map)
