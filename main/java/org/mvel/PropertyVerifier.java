@@ -88,8 +88,6 @@ public class PropertyVerifier extends AbstractOptimizer {
 
 
     private Class getBeanProperty(Class ctx, String property) {
-
-
         if (first) {
             if (parserContext.hasVarOrInput(property)) {
                 return parserContext.getVarOrInputType(property);
@@ -98,13 +96,9 @@ public class PropertyVerifier extends AbstractOptimizer {
                 return (Class) AbstractParser.LITERALS.get(property);
             }
             else {
-//                if (cursor < length && parserContext.isStrictTypeEnforcement()) {
-//                    addFatalError("unqualified type in strict mode for: " + property);
-//                }
                 return Object.class;
             }
         }
-
 
         start = cursor;
 
@@ -196,7 +190,6 @@ public class PropertyVerifier extends AbstractOptimizer {
                     continue;
                 case')':
                     depth--;
-
             }
         }
         cursor--;
@@ -211,7 +204,6 @@ public class PropertyVerifier extends AbstractOptimizer {
             for (String token : subtokens) {
                 verifCompiler = new ExpressionCompiler(token);
                 verifCompiler._compile();
-
             }
         }
 

@@ -91,12 +91,14 @@ public class ParseTools {
 
         for (; i < end; i++) {
             switch (parm[i]) {
+                case'(':
                 case'[':
                 case'{':
                     if (adepth++ == 0)
                         start = i;
                     continue;
 
+                case')':
                 case']':
                 case'}':
                     if (--adepth == 0) {
