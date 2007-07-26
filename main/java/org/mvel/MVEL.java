@@ -25,6 +25,8 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
+import org.mvel.optimizers.OptimizerFactory;
+import org.mvel.optimizers.AccessorOptimizer;
 import static org.mvel.util.ParseTools.handleParserEgress;
 import org.mvel.util.ParseTools;
 
@@ -171,6 +173,19 @@ public class MVEL {
     public static Serializable compileExpression(char[] expression, Map<String, Object> imports, Map<String, Interceptor> interceptors) {
         return compileExpression(expression, imports, interceptors, null);
     }
+
+    public static Serializable compileSetExpression(char[] expression) {
+        return new CompiledSetExpression(expression);
+    }
+
+    public static void executeSetExpression(Serializable compiledSet, Object ctx, Object value) {
+        ((CompiledSetExpression) compiledSet).setValue(ctx, null, value);
+    }
+
+    public static void executeSetExpression(Serializable compiledSet, Object ctx, VariableResolverFactory vrf, Object value) {
+        ((CompiledSetExpression) compiledSet).setValue(ctx, vrf, value);
+    }
+
 
 
     public static Object executeExpression(Object compiledExpression) {

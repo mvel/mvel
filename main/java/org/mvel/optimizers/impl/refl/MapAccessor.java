@@ -28,6 +28,14 @@ public class MapAccessor implements AccessorNode {
     private AccessorNode nextNode;
     private Object property;
 
+
+    public MapAccessor() {
+    }
+
+    public MapAccessor(Object property) {
+        this.property = property;
+    }
+
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
         if (nextNode != null) {
             return nextNode.getValue(((Map) ctx).get(property), elCtx, vrf);
