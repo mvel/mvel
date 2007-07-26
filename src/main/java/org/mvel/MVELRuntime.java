@@ -21,6 +21,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * This class contains the runtime for running compiled MVEL expressions.
+ */
 public class MVELRuntime {
     private static ThreadLocal<Map<String, Set<Integer>>> threadBreakpoints;
     private static ThreadLocal<Debugger> threadDebugger;
@@ -53,6 +56,9 @@ public class MVELRuntime {
                      * passed through the AST, it is not possible to forward the state directly.  So when we
                      * encounter a debugging symbol, we check the thread local to see if there is are registered
                      * breakpoints.  If we find them, we assume that we are debugging.
+                     *
+                     * The consequence of this of course, is that it's not ideal to compile expressions with
+                     * debugging symbols which you plan to use in a production enviroment.
                      */
                     if (!debugger && threadBreakpoints != null && threadBreakpoints.get() != null) {
                         debugger = true;
@@ -217,6 +223,12 @@ public class MVELRuntime {
         }
     }
 
+    /**
+     * Register a debugger breakpoint.
+     * 
+     * @param source - the source file the breakpoint is registered in
+     * @param line - the line number of the breakpoint
+     */
     public static void registerBreakpoint(String source, int line) {
         if (threadBreakpoints == null) {
             threadBreakpoints = new ThreadLocal<Map<String, Set<Integer>>>();
@@ -228,18 +240,33 @@ public class MVELRuntime {
         threadBreakpoints.get().get(source).add(line);
     }
 
+    /**
+     * Remove a specific breakpoint.
+     *
+     * @param source - the source file the breakpoint is registered in
+     * @param line - the line number of the breakpoint to be removed
+     */
     public static void removeBreakpoint(String source, int line) {
         if (threadBreakpoints != null && threadBreakpoints.get() != null) {
             threadBreakpoints.get().get(source).remove(line);
         }
     }
 
+    /**
+     * Reset all the currently registered breakpoints.
+     */
     public static void clearAllBreakpoints() {
         if (threadBreakpoints != null && threadBreakpoints.get() != null) {
             threadBreakpoints.get().clear();
         }
     }
 
+    /**
+     * Sets the Debugger instance to handle breakpoints.   A debugger may only be registered once per thread.
+     * Calling this method more than once will result in the second and subsequent calls to simply fail silently.
+     * To re-register the Debugger, you must call {@link #resetDebugger}
+     * @param debugger - debugger instance
+     */
     public static void setThreadDebugger(Debugger debugger) {
         if (threadDebugger == null) {
             threadDebugger = new ThreadLocal<Debugger>();
@@ -247,5 +274,18 @@ public class MVELRuntime {
         if (threadDebugger.get() == null) {
             threadDebugger.set(debugger);
         }
+    }
+
+    /**
+     * Reset all information registered in the debugger, including the actual attached Debugger and registered
+     * breakpoints.
+     */
+    public static void resetDebugger() {
+         if (threadDebugger != null && threadDebugger.get() != null) {
+             threadDebugger = null;
+         }
+         if (threadBreakpoints != null && threadBreakpoints.get() != null) {
+             threadBreakpoints = null;
+         }
     }
 }

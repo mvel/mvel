@@ -20,6 +20,7 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.*;
+import static org.mvel.DataConversion.canConvert;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
@@ -29,6 +30,7 @@ import org.mvel.optimizers.impl.refl.collection.ListCreator;
 import org.mvel.optimizers.impl.refl.collection.MapCreator;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
+import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
 
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
@@ -94,6 +96,133 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.variableFactory = factory;
 
         return compileGetChain();
+    }
+
+
+    public SetAccessor optimizeSetAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value) {
+        this.rootNode = this.currNode = null;
+        this.start = this.cursor = 0;
+        this.first = true;
+
+        this.length = (this.expr = property).length;
+        this.ctx = ctx;
+        this.thisRef = thisRef;
+        this.variableFactory = factory;
+
+        char[] root = null;
+        boolean col = false;
+
+        int split = -1;
+        for (int i = property.length - 1; i != 0; i--) {
+            switch (property[i]) {
+                case'[':
+                    split = i;
+                    col = true;
+                    break;
+                case'.':
+                    split = i;
+                    break;
+            }
+            if (split != -1) break;
+        }
+
+        if (split != -1) {
+            root = subset(property, 0, split++);
+            property = subset(property, split, property.length - split);
+        }
+
+        Accessor rootAccessor = null;
+
+        if (root != null) {
+            this.length = (this.expr = root).length;
+
+            rootAccessor = compileGetChain();
+            ctx = this.val;
+        }
+
+        try {
+            this.length = (this.expr = property).length;
+            this.cursor = this.start = 0;
+
+            whiteSpaceSkip();
+
+            if (col) {
+                int start = cursor;
+                whiteSpaceSkip();
+                
+                if (cursor == length)
+                    throw new PropertyAccessException("unterminated '['");
+
+                if (!scanTo(']'))
+                    throw new PropertyAccessException("unterminated '['");
+
+                String ex = new String(property, start, cursor - start);
+
+                if (ctx instanceof Map) {
+                    //noinspection unchecked
+                    ((Map) ctx).put(ex, value);
+                    return new SetAccessor(rootAccessor, new MapAccessorNest(ex));
+                }
+                else {
+                    throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
+                }
+            }
+
+            String tk = new String(property);
+
+            Member member = getFieldOrWriteAccessor(ctx.getClass(), tk);
+
+            if (member instanceof Field) {
+                Field fld = (Field) member;
+
+                if (value != null && !fld.getType().isAssignableFrom(value.getClass())) {
+                    if (!canConvert(fld.getType(), value.getClass())) {
+                        throw new ConversionException("cannot convert type: "
+                                + value.getClass() + ": to " + fld.getType());
+                    }
+
+                    fld.set(ctx, DataConversion.convert(value, fld.getType()));
+                    return new SetAccessor(rootAccessor, new DynamicFieldAccessor(fld));
+                }
+                else {
+                    fld.set(ctx, value);
+                    return new SetAccessor(rootAccessor, new FieldAccessor(fld));
+                }
+            }
+            else if (member != null) {
+                Method meth = (Method) member;
+
+                if (value != null && !meth.getParameterTypes()[0].isAssignableFrom(value.getClass())) {
+                    if (!canConvert(meth.getParameterTypes()[0], value.getClass())) {
+                        throw new ConversionException("cannot convert type: "
+                                + value.getClass() + ": to " + meth.getParameterTypes()[0]);
+                    }
+
+                    meth.invoke(ctx, DataConversion.convert(value, meth.getParameterTypes()[0]));
+                    return new SetAccessor(rootAccessor, new SetterAccessor(meth));
+                }
+                else {
+                    meth.invoke(ctx, value);
+                    return new SetAccessor(rootAccessor, new DynamicSetterAccessor(meth));
+                }
+            }
+            else if (ctx instanceof Map) {
+                //noinspection unchecked
+                ((Map) ctx).put(tk, value);
+                return new SetAccessor(rootAccessor, new MapAccessorNest(tk));
+
+            }
+            else {
+                throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
+            }
+        }
+        catch (InvocationTargetException e) {
+            throw new PropertyAccessException("could not access property", e);
+        }
+        catch (IllegalAccessException e) {
+            throw new PropertyAccessException("could not access property", e);
+        }
+
     }
 
     private Accessor compileGetChain() {
@@ -166,7 +295,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return variableFactory.getVariableResolver(property).getValue();
         }
 
-        Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
+        Class<? extends Object> cls = (ctx instanceof Class ? ((Class<? extends Object>) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
 
         if (member instanceof Field) {
@@ -385,7 +514,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             name = m.getName();
             first = false;
         }
-        
+
         int st = cursor;
 
         int depth = 1;
@@ -426,7 +555,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
          * If the target object is an instance of java.lang.Class itself then do not
          * adjust the Class scope target.
          */
-        Class cls = ctx instanceof Class ? (Class) ctx : ctx.getClass();
+        Class<? extends Object> cls = ctx instanceof Class ? (Class<? extends Object>) ctx : ctx.getClass();
 
         //    Integer signature = ;
 
@@ -691,7 +820,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return ca;
         }
         else {
-            Constructor cns = Class.forName(new String(expression)).getConstructor(EMPTYCLS);
+            Constructor<?> cns = Class.forName(new String(expression)).getConstructor(EMPTYCLS);
             AccessorNode ca = new ConstructorAccessor(cns, null);
 
             if (cnsRes.length > 1) {

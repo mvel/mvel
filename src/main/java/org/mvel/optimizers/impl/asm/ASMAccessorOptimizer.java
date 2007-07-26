@@ -158,6 +158,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
+    public SetAccessor optimizeSetAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value) {
+        throw new RuntimeException("not implemented");
+    }
+
     private void _finishJIT() {
         if (!deferFinish) {
 

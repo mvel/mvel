@@ -17,6 +17,7 @@ public class DebuggerTests extends TestCase {
     public void testDebuggerInvoke() {
         count = 0;
 
+        MVELRuntime.resetDebugger();
         MVELRuntime.setThreadDebugger(new Debugger() {
             public int onBreak(Frame frame) {
                 if (frame.getFactory().getVariableResolver("a1") != null) {
@@ -59,12 +60,15 @@ public class DebuggerTests extends TestCase {
     public void testDebuggerInvoke2() {
         count = 0;
 
+
+        MVELRuntime.resetDebugger();
         MVELRuntime.setThreadDebugger(new Debugger() {
             public int onBreak(Frame frame) {
                 count++;
                 return 0;
             }
         });
+
 
         String src = "a1=7;\na2=8;\nSystem.out.println(\"h\");\nac=23;\nde=23;\nge=23;\ngef=34;";
 
