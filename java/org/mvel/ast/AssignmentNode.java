@@ -3,6 +3,7 @@ package org.mvel.ast;
 import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
 import org.mvel.MVEL;
+import org.mvel.CompiledSetExpression;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ParseTools;
@@ -14,10 +15,11 @@ import static org.mvel.util.PropertyTools.find;
  */
 public class AssignmentNode extends ASTNode implements Assignment {
     private String name;
+    private CompiledSetExpression setExpr;
     private ExecutableStatement statement;
 
     private boolean col = false;
-    private String index;
+ //   private String index;
 
     public AssignmentNode(char[] expr, int fields) {
         super(expr, fields);
@@ -31,8 +33,13 @@ public class AssignmentNode extends ASTNode implements Assignment {
             char[] nm;
             if (col = ((endOfName = findFirst('[', nm = name.toCharArray())) > 0)) {
                 this.fields |= COLLECTION;
-                name = new String(nm, 0, endOfName);
-                index = new String(nm, endOfName, nm.length - endOfName);
+                setExpr = (CompiledSetExpression) MVEL.compileSetExpression(nm);
+
+
+//                name = new String(nm, 0, endOfName);
+//                index = new String(nm, endOfName, nm.length - endOfName);
+
+
             }
         }
         else {
@@ -46,7 +53,9 @@ public class AssignmentNode extends ASTNode implements Assignment {
         Object o;
 
         if (col)  {
-            MVEL.setProperty(factory.getVariableResolver(name).getValue(), index, o = statement.getValue(ctx, thisValue, factory));
+            setExpr.setValue(ctx, factory, o = statement.getValue(ctx, thisValue, factory));
+
+     //       MVEL.setProperty(factory.getVariableResolver(name).getValue(), index, o = statement.getValue(ctx, thisValue, factory));
         }
         else if (statement != null) {
             finalLocalVariableFactory(factory).createVariable(name, o = statement.getValue(ctx, thisValue, factory));

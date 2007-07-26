@@ -2,6 +2,7 @@ package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
 import org.mvel.ExecutableStatement;
+import org.mvel.util.ParseTools;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.util.Map;
@@ -12,6 +13,18 @@ import java.util.Map;
 public class MapAccessorNest implements AccessorNode {
     private AccessorNode nextNode;
     private ExecutableStatement property;
+
+    public MapAccessorNest() {
+    }
+
+    public MapAccessorNest(ExecutableStatement property) {
+        this.property = property;
+    }
+
+
+    public MapAccessorNest(String property) {
+        this.property = (ExecutableStatement) ParseTools.subCompileExpression(property);
+    }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
         if (nextNode != null) {
