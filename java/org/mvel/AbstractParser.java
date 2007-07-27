@@ -18,6 +18,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Character.isWhitespace;
 import static java.lang.System.arraycopy;
+import java.lang.reflect.Array;
 import static java.util.Collections.synchronizedMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -277,7 +278,7 @@ public class AbstractParser implements Serializable {
                  * character, we stop and figure out what to do.
                  */
                 skipWhitespace();
-
+                
                 if (expr[cursor] == '(') {
                     fields |= ASTNode.METHOD;
 

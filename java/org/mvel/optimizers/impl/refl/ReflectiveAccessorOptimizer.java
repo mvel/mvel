@@ -19,6 +19,7 @@
 
 package org.mvel.optimizers.impl.refl;
 
+import static org.mvel.MVEL.eval;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.integration.VariableResolverFactory;
@@ -160,8 +161,17 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
                 if (ctx instanceof Map) {
                     //noinspection unchecked
-                    ((Map) ctx).put(ex, value);
+                    ((Map) ctx).put(eval(ex, ctx, variableFactory), value);
                     return new SetAccessor(rootAccessor, new MapAccessorNest(ex));
+                }
+                else if (ctx instanceof List) {
+                    //noinspection unchecked
+                    ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), value);
+                    return new SetAccessor(rootAccessor, new ListAccessorNest(ex));
+                }
+                else if (ctx instanceof Object[]) {
+                    ((Object[]) ctx)[eval(ex, ctx, variableFactory, Integer.class)] = value;
+                    return new SetAccessor(rootAccessor, new ArrayAccessorNest(ex));
                 }
                 else {
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
