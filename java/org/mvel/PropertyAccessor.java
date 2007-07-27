@@ -18,6 +18,7 @@
  */
 package org.mvel;
 
+import static org.mvel.MVEL.eval;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import org.mvel.integration.VariableResolverFactory;
@@ -215,7 +216,7 @@ public class PropertyAccessor {
 
                 if (ctx instanceof Map) {
                     //noinspection unchecked
-                    ((Map) ctx).put(MVEL.eval(ex, this.ctx, this.resolver), value);
+                    ((Map) ctx).put(eval(ex, this.ctx, this.resolver), value);
                 }
                 else {
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
@@ -263,7 +264,7 @@ public class PropertyAccessor {
             }
             else if (curr instanceof Map) {
                 //noinspection unchecked
-                ((Map) curr).put(tk, value);
+                ((Map) curr).put(eval(tk, this.ctx, this.resolver), value);
             }
             else {
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
@@ -490,7 +491,7 @@ public class PropertyAccessor {
 
         String ex = new String(property, start, cursor - start);
 
-        item = MVEL.eval(ex, ctx, resolver);
+        item = eval(ex, ctx, resolver);
 
         ++cursor;
 
