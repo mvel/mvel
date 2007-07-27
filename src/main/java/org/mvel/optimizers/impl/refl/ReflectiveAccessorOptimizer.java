@@ -199,6 +199,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     }
 
                     meth.invoke(ctx, DataConversion.convert(value, meth.getParameterTypes()[0]));
+
                     return new SetAccessor(rootAccessor, new SetterAccessor(meth));
                 }
                 else {
