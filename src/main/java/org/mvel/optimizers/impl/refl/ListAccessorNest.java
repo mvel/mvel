@@ -21,6 +21,7 @@ package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
 import org.mvel.ExecutableStatement;
+import org.mvel.util.ParseTools;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.util.List;
@@ -28,6 +29,13 @@ import java.util.List;
 public class ListAccessorNest implements AccessorNode {
     private AccessorNode nextNode;
     private ExecutableStatement index;
+
+    public ListAccessorNest() {
+    }
+
+    public ListAccessorNest(String index) {
+        this.index = (ExecutableStatement) ParseTools.subCompileExpression(index);
+    }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {

@@ -218,10 +218,17 @@ public class PropertyAccessor {
                     //noinspection unchecked
                     ((Map) ctx).put(eval(ex, this.ctx, this.resolver), value);
                 }
+                else if (ctx instanceof List) {
+                    //noinspection unchecked
+                    ((List) ctx).set(eval(ex, this.ctx, this.resolver, Integer.class), value);
+                }
+                else if (ctx instanceof Object[]) {
+                    ((Object[]) ctx)[eval(ex, this.ctx, this.resolver, Integer.class)] = convert(value, ctx.getClass().getComponentType());
+                }
+
                 else {
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
                 }
-
 
                 return;
             }
