@@ -722,6 +722,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             val = contructor.getValue(property, thisRef, factory);
             return contructor;
         }
+        catch (CompileException e) {
+            throw e;
+        }
         catch (Exception e) {
             throw new CompileException("could not create constructor", e);
         }
