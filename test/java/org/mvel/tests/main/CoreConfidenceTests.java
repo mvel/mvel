@@ -1166,6 +1166,14 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(false, parseDirect("foo.bar.testList.add(new String()); foo.bar.testList == empty"));
     }
 
+    public void testArrayAccessorAssign() {
+        assertEquals("foo", parseDirect("a = {'f00', 'bar'}; a[0] = 'foo'; a[0]"));
+    }
+
+    public void testListAccessorAssign() {
+        assertEquals("bar", parseDirect("a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]"));
+    }
+
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
     }
