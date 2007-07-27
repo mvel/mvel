@@ -296,6 +296,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return variableFactory.getVariableResolver(property).getValue();
         }
 
+        //noinspection unchecked
         Class<? extends Object> cls = (ctx instanceof Class ? ((Class<? extends Object>) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
 
@@ -825,6 +826,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             AccessorNode ca = new ConstructorAccessor(cns, null);
 
             if (cnsRes.length > 1) {
+                //noinspection NullArgumentToVariableArgMethod
                 ReflectiveAccessorOptimizer compiledOptimizer
                         = new ReflectiveAccessorOptimizer(cnsRes[1].toCharArray(), cns.newInstance(null), ctx, vars);
                 compiledOptimizer.setRootNode(ca);
