@@ -26,7 +26,7 @@ public class WithNode extends BlockNode implements NestedStatement {
         compileWithExpressions();
     }
 
-
+    //todo: performance improvement
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         Object ctxObject = nestedStatement.getValue(ctx, thisValue, factory);
 
