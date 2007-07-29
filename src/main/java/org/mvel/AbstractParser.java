@@ -1,10 +1,5 @@
 package org.mvel;
 
-import static org.mvel.util.ParseTools.handleStringEscapes;
-
-import static java.lang.System.getProperty;
-import static java.lang.Float.parseFloat;
-
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
 import org.mvel.util.ExecutionStack;
@@ -14,16 +9,17 @@ import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 import org.mvel.util.ThisLiteral;
 
+import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Character.isWhitespace;
+import static java.lang.Float.parseFloat;
 import static java.lang.System.arraycopy;
-import java.lang.reflect.Array;
+import static java.lang.System.getProperty;
 import static java.util.Collections.synchronizedMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.io.Serializable;
 
 /**
  * @author Christopher Brock
@@ -40,7 +36,7 @@ public class AbstractParser implements Serializable {
     protected boolean lastWasComment = false;
 
     protected boolean debugSymbols = false;
-                         
+
     private int line = 1;
 
     protected ASTNode lastNode;
@@ -278,7 +274,7 @@ public class AbstractParser implements Serializable {
                  * character, we stop and figure out what to do.
                  */
                 skipWhitespace();
-                
+
                 if (expr[cursor] == '(') {
                     fields |= ASTNode.METHOD;
 
@@ -296,6 +292,26 @@ public class AbstractParser implements Serializable {
                             case')':
                                 brace--;
                                 break;
+                            case'\'':
+                                cursor = captureStringLiteral('\'', expr, cursor, length) + 1;
+                                break;
+
+//                                cursor++;
+//                                //noinspection StatementWithEmptyBody
+//                                while (cursor < length && expr[cursor] != '\'') cursor++;
+//                                if (cursor++ == length)
+//                                    throw new CompileException("unterminated string literal", expr, cursor);
+//                                break;
+
+                            case'"':
+                                cursor = captureStringLiteral('"', expr, cursor, length) + 1;
+//                                cursor++;
+//                                //noinspection StatementWithEmptyBody
+//                                while (cursor < length && expr[cursor] != '"') cursor++;
+//                                if (cursor++ == length)
+//                                    throw new CompileException("unterminated string literal", expr, cursor);
+                                break;
+
                         }
                     }
 
@@ -598,6 +614,13 @@ public class AbstractParser implements Serializable {
                                 case')':
                                     brace--;
                                     break;
+                                case'\'':
+                                    cursor = ParseTools.captureStringLiteral('\'', expr, cursor, length);
+                                    break;
+                                case'"':
+                                    cursor = ParseTools.captureStringLiteral('\'', expr, cursor, length);
+                                    break;
+
                                 case'i':
                                     if (isAt('n', 1) && isWhitespace(lookAhead(2))) {
                                         fields |= ASTNode.FOLD;
@@ -696,13 +719,15 @@ public class AbstractParser implements Serializable {
                     }
 
                     case'\'':
-                        while (++cursor < length && expr[cursor] != '\'') {
-                            if (expr[cursor] == '\\') handleEscapeSequence(expr[++cursor]);
-                        }
-
-                        if (cursor == length || expr[cursor] != '\'') {
-                            throw new CompileException("unterminated literal", expr, cursor);
-                        }
+                        cursor = ParseTools.captureStringLiteral('\'', expr, cursor, length);
+//                        
+//                        while (++cursor < length && expr[cursor] != '\'') {
+//                            if (expr[cursor] == '\\') handleEscapeSequence(expr[++cursor]);
+//                        }
+//
+//                        if (cursor == length || expr[cursor] != '\'') {
+//                            throw new CompileException("unterminated literal", expr, cursor);
+//                        }
 
                         return new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
 
@@ -996,6 +1021,7 @@ public class AbstractParser implements Serializable {
             cursor++;
         }
     }
+
 
     protected void captureToEOT() {
         while (++cursor < length) {
@@ -1299,7 +1325,7 @@ public class AbstractParser implements Serializable {
     }
 
     public static void resetParserContext() {
-         contextControl(REMOVE, null, null);
+        contextControl(REMOVE, null, null);
     }
 
 

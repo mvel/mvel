@@ -655,19 +655,21 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         int st = cursor;
 
-        int depth = 1;
+   //     int depth = 1;
 
-        while (cursor++ < length - 1 && depth != 0) {
-            switch (expr[cursor]) {
-                case'(':
-                    depth++;
-                    continue;
-                case')':
-                    depth--;
+        cursor = ParseTools.balancedCapture(expr, cursor, '(');
 
-            }
-        }
-        cursor--;
+//        while (cursor++ < length - 1 && depth != 0) {
+//            switch (expr[cursor]) {
+//                case'(':
+//                    depth++;
+//                    continue;
+//                case')':
+//                    depth--;
+//
+//            }
+//        }
+ //       cursor--;
 
         String tk = (cursor - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
 
