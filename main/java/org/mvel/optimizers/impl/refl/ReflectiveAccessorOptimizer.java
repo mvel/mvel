@@ -529,19 +529,22 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         int st = cursor;
 
-        int depth = 1;
+        cursor = ParseTools.balancedCapture(expr, cursor, '(');
+        
 
-        while (cursor++ < length - 1 && depth != 0) {
-            switch (expr[cursor]) {
-                case'(':
-                    depth++;
-                    continue;
-                case')':
-                    depth--;
-
-            }
-        }
-        cursor--;
+//        int depth = 1;
+//
+//        while (cursor++ < length - 1 && depth != 0) {
+//            switch (expr[cursor]) {
+//                case'(':
+//                    depth++;
+//                    continue;
+//                case')':
+//                    depth--;
+//
+//            }
+//        }
+//        cursor--;
 
         String tk = (cursor - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
 

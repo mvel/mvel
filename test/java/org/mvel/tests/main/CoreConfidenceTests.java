@@ -1174,6 +1174,10 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals("bar", parseDirect("a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]"));
     }
 
+    public void testBracketInString() {
+        parseDirect("System.out.println('1)your guess was:');");
+    }
+
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
     }
