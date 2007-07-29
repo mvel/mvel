@@ -63,11 +63,16 @@ public class ParseTools {
             }
         }
         if (start != -1) {
-            for (int i = parm.length - 1; i > 0; i--) {
-                if (parm[i] == ')') {
-                    return parseParameterList(parm, start, i - start);
-                }
-            }
+  //          int end = balancedCapture(parm, start, '(');
+            start--;
+            return parseParameterList(parm, start + 1, balancedCapture(parm, start, '(') - start - 1);
+
+//            for (int i = parm.length - 1; i > 0; i--) {
+//
+//                if (parm[i] == ')') {
+//                    return parseParameterList(parm, start, i - start);
+//                }
+//            }
         }
 
         return null;
@@ -96,6 +101,13 @@ public class ParseTools {
                                 continue;
                             case')':
                                 depth--;
+                                continue;
+                            case'\'':
+                                i = captureStringLiteral('\'', parm, i, parm.length);
+                                continue;
+                            case'"':
+                                i = captureStringLiteral('\'', parm, i, parm.length);
+
                         }
                     }
                     i--;
@@ -120,27 +132,23 @@ public class ParseTools {
                     continue;
 
                 case'\'':
-                    int rStart = i;
-                    while (++i < end && parm[i] != '\'') {
-                        if (parm[i] == '\\')
-                            handleEscapeSequence(parm[++i]);
-                    }
-
-                    if (i == end || parm[i] != '\'') {
-                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
-                    }
+//                    int rStart = i;
+                    i = captureStringLiteral('\'', parm, i, parm.length);
                     continue;
 
-                case'"':
-                    rStart = i;
-                    while (++i < end && parm[i] != '"') {
-                        if (parm[i] == '\\')
-                            handleEscapeSequence(parm[++i]);
-                    }
 
-                    if (i == end || parm[i] != '"') {
-                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
-                    }
+                case'"':
+//                    rStart = i;
+                    i = captureStringLiteral('"', parm, i, parm.length);
+
+//                    while (++i < end && parm[i] != '"') {
+//                        if (parm[i] == '\\')
+//                            handleEscapeSequence(parm[++i]);
+//                    }
+//
+//                    if (i == end || parm[i] != '"') {
+//                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
+//                    }
                     continue;
 
                 case',':
@@ -632,7 +640,6 @@ public class ParseTools {
     }
 
     public static boolean debug(String str) {
-        //   System.out.println(str);
         return true;
     }
 
@@ -834,19 +841,21 @@ public class ParseTools {
             case'(':
                 term = ')';
                 break;
-        }
+                        }
 
         if (type == term) {
             for (start++; start < chars.length; start++) {
                 if (chars[start] == type) {
                     return start;
                 }
-
             }
         }
         else {
             for (start++; start < chars.length; start++) {
-                if (chars[start] == type) {
+                if (chars[start] == '\'' || chars[start] == '"') {
+                    start = captureStringLiteral(chars[start], chars, start, chars.length);
+                }
+                else if (chars[start] == type) {
                     depth++;
                 }
                 else if (chars[start] == term && --depth == 0) {
@@ -878,6 +887,18 @@ public class ParseTools {
         }
 
         return new String(processedEscapeString);
+    }
+
+    public static int captureStringLiteral(final char type, final char[] expr, int cursor, int length) {
+        while (++cursor < length && expr[cursor] != type) {
+            if (expr[cursor] == '\\') handleEscapeSequence(expr[++cursor]);
+        }
+
+        if (cursor == length || expr[cursor] != type) {
+            throw new CompileException("unterminated literal", expr, cursor);
+        }
+
+        return cursor;
     }
 
 
