@@ -1,15 +1,15 @@
 package org.mvel.ast;
 
-import org.mvel.*;
+import org.mvel.ASTNode;
+import org.mvel.Accessor;
+import org.mvel.CompiledSetExpression;
+import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.compileSetExpression;
 import static org.mvel.MVEL.eval;
 import static org.mvel.PropertyAccessor.set;
 import org.mvel.integration.VariableResolverFactory;
-import static org.mvel.util.ParseTools.subCompileExpression;
-import static org.mvel.util.ParseTools.subset;
+import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
-
-import static java.lang.System.arraycopy;
 
 /**
  * @author Christopher Brock
@@ -28,27 +28,9 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         if (operation != -1) {
             this.property = name.trim();
 
-            char op = 0;
-            switch (operation) {
-                case Operator.ADD:
-                    op = '+';
-                    break;
-                case Operator.SUB:
-                    op = '-';
-                    break;
-                case Operator.MULT:
-                    op = '*';
-                    break;
-                case Operator.DIV:
-                    op = '/';
-                    break;
-            }
-
-            arraycopy(this.property.toCharArray(), 0, (stmt = new char[this.property.length() + expr.length + 1]), 0, this.property.length());
-            stmt[this.property.length()] = op;
-            arraycopy(expr, 0, stmt, this.property.length() + 1, expr.length);
-
-            this.egressType = ((ExecutableStatement)(statement = (ExecutableStatement) subCompileExpression(stmt))).getKnownEgressType();
+            this.egressType = ((ExecutableStatement)(statement =
+                    (ExecutableStatement) subCompileExpression(stmt =
+                            createShortFormOperativeAssignment(property, expr, operation)))).getKnownEgressType();
 
         }
         else if ((mark = find(expr, '=')) != -1) {
