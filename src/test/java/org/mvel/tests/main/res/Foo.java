@@ -11,6 +11,8 @@ public class Foo {
 
     private String name = "dog";
 
+    private int countTest = 0;
+
     private Collection collectionTest;
 
     public void abc() {
@@ -52,5 +54,14 @@ public class Foo {
 
     public void setCollectionTest(Collection collectionTest) {
         this.collectionTest = collectionTest;
+    }
+
+
+    public int getCountTest() {
+        return countTest;
+    }
+
+    public void setCountTest(int countTest) {
+        this.countTest = countTest;
     }
 }

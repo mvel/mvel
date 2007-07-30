@@ -1178,6 +1178,14 @@ public class CoreConfidenceTests extends TestCase {
         parseDirect("System.out.println('1)your guess was:');");
     }
 
+    public void testDeepPropertyAdd() {
+        assertEquals(10, parseDirect("foo.countTest+ 10"));
+    }
+
+    public void testDeepAssignmentIncrement() {
+        assertEquals(true, parseDirect("foo.countTest += 5; if (foo.countTest == 5) { foo.countTest = 0; return true; } else { foo.countTest = 0; return false; }"));
+    }
+
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
     }

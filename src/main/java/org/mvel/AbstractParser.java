@@ -1,5 +1,6 @@
 package org.mvel;
 
+import static org.mvel.util.ParseTools.captureStringLiteral;
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
 import org.mvel.util.ExecutionStack;
@@ -296,20 +297,8 @@ public class AbstractParser implements Serializable {
                                 cursor = captureStringLiteral('\'', expr, cursor, length) + 1;
                                 break;
 
-//                                cursor++;
-//                                //noinspection StatementWithEmptyBody
-//                                while (cursor < length && expr[cursor] != '\'') cursor++;
-//                                if (cursor++ == length)
-//                                    throw new CompileException("unterminated string literal", expr, cursor);
-//                                break;
-
                             case'"':
                                 cursor = captureStringLiteral('"', expr, cursor, length) + 1;
-//                                cursor++;
-//                                //noinspection StatementWithEmptyBody
-//                                while (cursor < length && expr[cursor] != '"') cursor++;
-//                                if (cursor++ == length)
-//                                    throw new CompileException("unterminated string literal", expr, cursor);
                                 break;
 
                         }
@@ -342,7 +331,13 @@ public class AbstractParser implements Serializable {
                                     name = new String(expr, start, trimLeft(cursor));
                                     start = cursor += 2;
                                     captureToEOS();
-                                    return new AssignAdd(subArray(start, cursor), fields, name);
+
+                                    if (union) {
+                                        return new DeepAssignmentNode(subArray(start, cursor), fields, Operator.ADD, t);
+                                    }
+                                    else {
+                                        return new AssignmentNode(subArray(start, cursor), fields, Operator.ADD, name);
+                                    }
                             }
 
                             break;
@@ -615,10 +610,10 @@ public class AbstractParser implements Serializable {
                                     brace--;
                                     break;
                                 case'\'':
-                                    cursor = ParseTools.captureStringLiteral('\'', expr, cursor, length);
+                                    cursor = captureStringLiteral('\'', expr, cursor, length);
                                     break;
                                 case'"':
-                                    cursor = ParseTools.captureStringLiteral('\'', expr, cursor, length);
+                                    cursor = captureStringLiteral('\'', expr, cursor, length);
                                     break;
 
                                 case'i':
@@ -719,29 +714,14 @@ public class AbstractParser implements Serializable {
                     }
 
                     case'\'':
-                        cursor = ParseTools.captureStringLiteral('\'', expr, cursor, length);
-//                        
-//                        while (++cursor < length && expr[cursor] != '\'') {
-//                            if (expr[cursor] == '\\') handleEscapeSequence(expr[++cursor]);
-//                        }
-//
-//                        if (cursor == length || expr[cursor] != '\'') {
-//                            throw new CompileException("unterminated literal", expr, cursor);
-//                        }
-
+                        cursor = captureStringLiteral('\'', expr, cursor, length);
                         return new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
 
 
                     case'"':
-                        while (++cursor < length && expr[cursor] != '"') {
-                            if (expr[cursor] == '\\') handleEscapeSequence(expr[++cursor]);
-                        }
-                        if (cursor == length || expr[cursor] != '"') {
-                            throw new CompileException("unterminated literal", expr, cursor);
-                        }
-                        else {
-                            return new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
-                        }
+                        cursor = captureStringLiteral('"', expr, cursor, length);
+                        return new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
+
 
                     case'&': {
                         if (expr[cursor++ + 1] == '&') {
