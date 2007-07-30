@@ -3,6 +3,8 @@ package org.mvel.tests.main;
 import junit.framework.TestCase;
 import org.mvel.*;
 import static org.mvel.MVEL.*;
+
+import org.mvel.ast.WithNode;
 import org.mvel.debug.DebugTools;
 import org.mvel.debug.Debugger;
 import org.mvel.debug.Frame;
@@ -1003,6 +1005,8 @@ public class CoreConfidenceTests extends TestCase {
 
         interceptors.put("Modify", new Interceptor() {
             public int doBefore(ASTNode node, VariableResolverFactory factory) {
+                Object object = ((WithNode) node).getNestedStatement().getValue( null,
+                                                                                 factory );
                 factory.createVariable("mod", "FOOBAR!");
                 return 0;
             }
@@ -1017,11 +1021,16 @@ public class CoreConfidenceTests extends TestCase {
                 return "@Modify with";
             }
         });
+        
+        ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("modify (foo) { aValue = 'poo' }; mod", macros) );
+        compiler.setDebugSymbols(true);
+        
+        ParserContext ctx = new ParserContext(null, interceptors, null);
+        ctx.setSourceFile( "test.mv" );
 
-        Serializable s = compileExpression(parseMacros("modify (foo) { aValue = 'poo' }; mod", macros)
-                , null, interceptors);
+        CompiledExpression compiled = compiler.compile(ctx);        
 
-        assertEquals("FOOBAR!", executeExpression(s, vars));
+        assertEquals("FOOBAR!", MVEL.executeExpression( compiled, null, vars ) );
     }
 
     public void testComments() {
