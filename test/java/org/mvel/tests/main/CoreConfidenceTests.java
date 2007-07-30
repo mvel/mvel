@@ -105,6 +105,22 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(false, parseDirect("foo.bar.woof == false"));
     }
 
+    public void testBooleanOperator3() {
+        assertEquals(true, parseDirect("foo.bar.woof== true"));
+    }
+
+    public void testBooleanOperator4() {
+        assertEquals(false, parseDirect("foo.bar.woof ==false"));
+    }
+
+    public void testBooleanOperator5() {
+        assertEquals(true, parseDirect("foo.bar.woof == true"));
+    }
+
+    public void testBooleanOperator6() {
+        assertEquals(false, parseDirect("foo.bar.woof==false"));
+    }
+
     public void testTextComparison() {
         assertEquals(true, parseDirect("foo.bar.name == 'dog'"));
     }
@@ -159,6 +175,10 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testShortPathExpression2() {
         assertEquals(true, parseDirect("4 > 3 || foo.toUC('test')"));
+    }
+
+    public void testShortPathExpression4() {
+        assertEquals(true, parseDirect("4>3||foo.toUC('test')"));
     }
 
     public void testOrOperator() {
@@ -580,12 +600,20 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(5, parseDirect("a = 5; if (a == 5) { }; return a;"));
     }
 
+    public void testEmptyIf2() {
+        assertEquals(5, parseDirect("a=5;if(a==5){};return a;"));
+    }
+
     public void testIf() {
         assertEquals(10, parseDirect("if (5 > 4) { return 10; } else { return 5; }"));
     }
 
     public void testIf2() {
         assertEquals(10, parseDirect("if (5 < 4) { return 5; } else { return 10; }"));
+    }
+
+    public void testIf3() {
+        assertEquals(10, parseDirect("if(5<4){return 5;}else{return 10;}"));
     }
 
     public void testIfAndElse() {
@@ -1005,8 +1033,8 @@ public class CoreConfidenceTests extends TestCase {
 
         interceptors.put("Modify", new Interceptor() {
             public int doBefore(ASTNode node, VariableResolverFactory factory) {
-                Object object = ((WithNode) node).getNestedStatement().getValue( null,
-                                                                                 factory );
+                Object object = ((WithNode) node).getNestedStatement().getValue(null,
+                        factory);
                 factory.createVariable("mod", "FOOBAR!");
                 return 0;
             }
@@ -1021,16 +1049,16 @@ public class CoreConfidenceTests extends TestCase {
                 return "@Modify with";
             }
         });
-        
-        ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("modify (foo) { aValue = 'poo' }; mod", macros) );
+
+        ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("modify (foo) { aValue = 'poo' }; mod", macros));
         compiler.setDebugSymbols(true);
-        
+
         ParserContext ctx = new ParserContext(null, interceptors, null);
-        ctx.setSourceFile( "test.mv" );
+        ctx.setSourceFile("test.mv");
 
-        CompiledExpression compiled = compiler.compile(ctx);        
+        CompiledExpression compiled = compiler.compile(ctx);
 
-        assertEquals("FOOBAR!", MVEL.executeExpression( compiled, null, vars ) );
+        assertEquals("FOOBAR!", MVEL.executeExpression(compiled, null, vars));
     }
 
     public void testComments() {
@@ -1055,7 +1083,8 @@ public class CoreConfidenceTests extends TestCase {
                 "* Here is a useful variable\r\n" +
                 "*/\r\n" +
                 "b = 20; // set b to '20'\r\n" +
-                "return ((a + b) * 2) - 10;"));
+                "return ((a + b) * 2) - 10;\r\n" +
+                "// last comment\n"));
     }
 
     public void testSubtractNoSpace1() {
@@ -1065,7 +1094,7 @@ public class CoreConfidenceTests extends TestCase {
     public void testStrictTypingCompilation() {
         ExpressionCompiler compiler = new ExpressionCompiler("a.foo;\nb.foo;\n x = 5");
         ParserContext ctx = new ParserContext();
-        ctx.setStrictTypeEnforcement(true);
+        ctx.setStrictTypeEnforcement(true);      
 
         try {
             compiler.compile(ctx);
