@@ -983,9 +983,10 @@ public class AbstractParser implements Serializable {
 
     protected boolean blockContinues() {
         if ((cursor + 4) < length) {
+            if (expr[cursor] != ';') cursor--;
             skipWhitespace();
             return expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
-                    && (isWhitespace(expr[cursor + 4]) || expr[cursor] == '{');
+                    && (isWhitespace(expr[cursor + 4]) || expr[cursor + 4] == '{');
         }
         return false;
     }
@@ -1055,6 +1056,7 @@ public class AbstractParser implements Serializable {
     protected void skipToNextTokenJunction() {
         while (cursor < length) {
             switch (expr[cursor]) {
+                case'{':
                 case'(':
                     return;
                 default:
