@@ -141,6 +141,10 @@ public class PropertyAccessor {
         new PropertyAccessor(property, ctx).set(value);
     }
 
+    public static void set(Object ctx, VariableResolverFactory resolver, String property, Object value) {
+        new PropertyAccessor(property.toCharArray(), ctx, resolver, null).set(value);
+    }
+
     private Object get() {
         curr = ctx;
 
