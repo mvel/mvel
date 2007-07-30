@@ -1,13 +1,14 @@
 package org.mvel.ast;
 
-import org.mvel.*;
+import org.mvel.ASTNode;
+import org.mvel.CompiledSetExpression;
+import org.mvel.ExecutableStatement;
+import org.mvel.MVEL;
 import static org.mvel.MVEL.compileSetExpression;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
-
-import static java.lang.System.arraycopy;
 
 /**
  * @author Christopher Brock
@@ -30,33 +31,11 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
         if (operation != -1) {
             checkNameSafety(this.name = name.trim());
-
-            char op = 0;
-            switch (operation) {
-                case Operator.ADD:
-                    op = '+';
-                    break;
-                case Operator.SUB:
-                    op = '-';
-                    break;
-                case Operator.MULT:
-                    op = '*';
-                    break;
-                case Operator.DIV:
-                    op = '/';
-                    break;
-            }
-
-            arraycopy(this.name.toCharArray(), 0, (stmt = new char[this.name.length() + expr.length + 1]), 0, this.name.length());
-            stmt[this.name.length()] = op;
-            arraycopy(expr, 0, stmt, this.name.length() + 1, expr.length);
-
-            this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt)).getKnownEgressType();
-
+            
+            this.egressType = (statement = (ExecutableStatement)
+                    subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation))).getKnownEgressType();
         }
         else if ((assignStart = find(expr, '=')) != -1) {
-
-
             this.name = new String(expr, 0, assignStart).trim();
             this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1))).getKnownEgressType();
 
