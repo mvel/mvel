@@ -63,7 +63,7 @@ public class ParseTools {
             }
         }
         if (start != -1) {
-  //          int end = balancedCapture(parm, start, '(');
+            //          int end = balancedCapture(parm, start, '(');
             start--;
             return parseParameterList(parm, start + 1, balancedCapture(parm, start, '(') - start - 1);
 
@@ -132,23 +132,12 @@ public class ParseTools {
                     continue;
 
                 case'\'':
-//                    int rStart = i;
                     i = captureStringLiteral('\'', parm, i, parm.length);
                     continue;
 
 
                 case'"':
-//                    rStart = i;
                     i = captureStringLiteral('"', parm, i, parm.length);
-
-//                    while (++i < end && parm[i] != '"') {
-//                        if (parm[i] == '\\')
-//                            handleEscapeSequence(parm[++i]);
-//                    }
-//
-//                    if (i == end || parm[i] != '"') {
-//                        throw new CompileException("unterminated literal starting at index " + rStart + ": " + new String(parm, offset, length));
-//                    }
                     continue;
 
                 case',':
@@ -564,6 +553,33 @@ public class ParseTools {
         }
     }
 
+    public static char[] createShortFormOperativeAssignment(String name, char[] statement, int operation) {
+        if (operation == -1) return statement;
+
+        char[] stmt;
+        char op = 0;
+        switch (operation) {
+            case Operator.ADD:
+                op = '+';
+                break;
+            case Operator.SUB:
+                op = '-';
+                break;
+            case Operator.MULT:
+                op = '*';
+                break;
+            case Operator.DIV:
+                op = '/';
+                break;
+        }
+
+        arraycopy(name.toCharArray(), 0, (stmt = new char[name.length() + statement.length + 1]), 0, name.length());
+        stmt[name.length()] = op;
+        arraycopy(statement, 0, stmt, name.length() + 1, statement.length);
+
+        return stmt;
+    }
+
     public static VariableResolverFactory finalLocalVariableFactory(VariableResolverFactory factory) {
         VariableResolverFactory v = factory;
         while (v != null) {
@@ -841,7 +857,7 @@ public class ParseTools {
             case'(':
                 term = ')';
                 break;
-                        }
+        }
 
         if (type == term) {
             for (start++; start < chars.length; start++) {

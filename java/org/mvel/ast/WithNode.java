@@ -3,6 +3,7 @@ package org.mvel.ast;
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.setProperty;
+import org.mvel.Operator;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 
@@ -13,13 +14,14 @@ import java.util.List;
  * @author Christopher Brock
  */
 public class WithNode extends BlockNode implements NestedStatement {
+    private String nestParm;
     private ExecutableStatement nestedStatement;
     private ParmValuePair[] withExpressions;
-   
+
     public WithNode(char[] expr, char[] block, int fields) {
         super(expr, fields, block);
 
-        nestedStatement = (ExecutableStatement) subCompileExpression(new String(expr).trim());
+        nestedStatement = (ExecutableStatement) subCompileExpression(nestParm = new String(expr).trim());
 
         compileWithExpressions();
     }
@@ -49,6 +51,7 @@ public class WithNode extends BlockNode implements NestedStatement {
         int start = 0;
         String parm = "";
 
+        int oper = -1;
         for (int i = 0; i < block.length; i++) {
             switch (block[i]) {
                 case'{':
@@ -59,8 +62,29 @@ public class WithNode extends BlockNode implements NestedStatement {
                     }
                     break;
 
+                case'*':
+                    if (i < block.length && block[i + 1] == '=') {
+                        oper = Operator.MULT;
+                        break;
+                    }
+                case'/':
+                    if (i < block.length && block[i + 1] == '=') {
+                        oper = Operator.DIV;
+                        break;
+                    }
+                case'-':
+                    if (i < block.length && block[i + 1] == '=') {
+                        oper = Operator.SUB;
+                        break;
+                    }
+                case'+':
+                    if (i < block.length && block[i + 1] == '=') {
+                        oper = Operator.ADD;
+                        break;
+                    }
+
                 case'=':
-                    parm = new String(block, start, i - start).trim();
+                    parm = new String(block, start, i - start - (oper != -1 ? 1 : 0)).trim();
                     start = ++i;
                     break;
 
@@ -68,18 +92,25 @@ public class WithNode extends BlockNode implements NestedStatement {
                     if (parm == null) {
                         parms.add(new ParmValuePair(
                                 null,
-                                (ExecutableStatement) subCompileExpression(subset(block, start, i - start))
+                                (ExecutableStatement) subCompileExpression(
+                                        createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, i - start), oper)
+                                )
                         ));
+
+                        oper = -1;
                         start = ++i;
                     }
                     else {
 
                         parms.add(new ParmValuePair(
                                 parm,
-                                (ExecutableStatement) subCompileExpression(subset(block, start, i - start)))
-                        );
+                                (ExecutableStatement) subCompileExpression(
+                                        createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, i - start), oper)
+                                )
+                        ));
 
                         parm = null;
+                        oper = -1;
                         start = ++i;
                     }
 
@@ -90,8 +121,11 @@ public class WithNode extends BlockNode implements NestedStatement {
         if (parm != null && start != block.length) {
             parms.add(new ParmValuePair(
                     parm,
-                    (ExecutableStatement) subCompileExpression(subset(block, start, block.length - start)))
-            );
+                    (ExecutableStatement) subCompileExpression(
+                            createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, block.length - start), oper)
+
+                    )
+            ));
         }
 
         parms.toArray(withExpressions = new ParmValuePair[parms.size()]);
