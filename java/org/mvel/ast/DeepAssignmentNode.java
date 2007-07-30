@@ -25,7 +25,6 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         super(expr, fields);
         int mark;
 
-
         if (operation != -1) {
             this.property = name.trim();
 
