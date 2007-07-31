@@ -622,7 +622,11 @@ public class AbstractParser implements Serializable {
                                     }
                                     break;
                                 default:
-                                    if (lastWS) {
+                                    /**
+                                     * Check to see if we should disqualify this current token as a potential
+                                     * type-cast candidate.
+                                     */
+                                    if (lastWS || isIdentifierPart(expr[cursor])) {
                                         singleToken = false;
                                     }
                                     else if (isWhitespace(expr[cursor])) {
@@ -637,8 +641,10 @@ public class AbstractParser implements Serializable {
                             throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
                         }
 
+                        char[] _subset = null;
                         if (singleToken) {
-                            String tokenStr = new String(expr, trimRight(start + 1), trimLeft(cursor - 1) - (start + 1));
+                            _subset = subset(expr, trimRight(start + 1), trimLeft(cursor - 1) - (start + 1));
+                            String tokenStr = new String(_subset);
 
                             if (getParserContext().hasImport(tokenStr)) {
                                 start = cursor;
@@ -678,7 +684,12 @@ public class AbstractParser implements Serializable {
                             return createToken(expr, trimRight(start), cursor, ASTNode.FOLD);
                         }
 
-                        return handleUnion(new Substatement(expr, trimRight(start + 1), trimLeft(cursor - 1), fields));
+                        if (_subset != null) {
+                            return handleUnion(new Substatement(_subset, fields));
+                        }
+                        else {
+                            return handleUnion(new Substatement(subset(expr, trimRight(start + 1), trimLeft(cursor - 1) - (start + 1)), fields));
+                        }
                     }
 
                     case'}':
