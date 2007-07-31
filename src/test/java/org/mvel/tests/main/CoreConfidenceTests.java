@@ -231,6 +231,10 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals("nulltest", parseDirect("appendTwoStrings(null, 'test')"));
     }
 
+    public void testMethodAccess6() {
+        assertEquals(true, parseDirect("   equalityCheck(   c  \n  ,   \n   'cat'      )   "));
+    }
+
     public void testNegation() {
         assertEquals(true, parseDirect("!fun && !fun"));
     }
@@ -295,6 +299,10 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(true, parseDirect("foo.bar.name ~= '[a-z].+' && foo.bar.name != null"));
     }
 
+    public void testRegEx3() {
+        assertEquals(true, parseDirect("foo.bar.name~='[a-z].+'&&foo.bar.name!=null"));
+    }
+
     public void testBlank() {
         assertEquals(true, parseDirect("'' == empty"));
     }
@@ -344,7 +352,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testBitwiseOr1() {
-        assertEquals(6, parseDirect("2 | 4"));
+        assertEquals(6, parseDirect("2|4"));
     }
 
     public void testBitwiseOr2() {
@@ -440,6 +448,10 @@ public class CoreConfidenceTests extends TestCase {
         assertTrue(((Object[]) parseDirect("{}")).length == 0);
     }
 
+    public void testEmptyArray2() {
+        assertTrue(((Object[]) parseDirect("{    }")).length == 0);
+    }
+
     public void testArrayCreation() {
         assertEquals(0, parseDirect("arrayTest = {{1, 2, 3}, {2, 1, 0}}; arrayTest[1][2]"));
     }
@@ -457,6 +469,10 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testProjectionSupport() {
+        assertEquals(true, parseDirect("(name in things)contains'Bob'"));
+    }
+
+    public void testProjectionSupport1() {
         assertEquals(true, parseDirect("(name in things) contains 'Bob'"));
     }
 
@@ -473,24 +489,24 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(String.class.getName(), parseDirect("String.valueOf(Class.forName('java.lang.String').getName())"));
     }
 
-    public void testMethodCallsEtc() {
-        parseDirect("title = 1; " +
-                "frame = new javax.swing.JFrame; " +
-                "label = new javax.swing.JLabel; " +
-                "title = title + 1;" +
-                "frame.setTitle(title);" +
-                "label.setText('MVEL UNIT TEST PACKAGE -- IF YOU SEE THIS, THAT IS GOOD');" +
-                "frame.getContentPane().add(label);" +
-                "frame.pack();" +
-                "frame.setVisible(true);");
-    }
+//    public void testMethodCallsEtc() {
+//        parseDirect("title = 1; " +
+//                "frame = new javax.swing.JFrame; " +
+//                "label = new javax.swing.JLabel; " +
+//                "title = title + 1;" +
+//                "frame.setTitle(title);" +
+//                "label.setText('MVEL UNIT TEST PACKAGE -- IF YOU SEE THIS, THAT IS GOOD');" +
+//                "frame.getContentPane().add(label);" +
+//                "frame.pack();" +
+//                "frame.setVisible(true);");
+//    }
 
     public void testObjectInstantiation() {
         parseDirect("new java.lang.String('foobie')");
     }
 
     public void testObjectInstantiationWithMethodCall() {
-        parseDirect("new String('foobie').toString()");
+        parseDirect("new String('foobie')  . toString()");
     }
 
     public void testObjectInstantiation2() {
@@ -1094,7 +1110,7 @@ public class CoreConfidenceTests extends TestCase {
     public void testStrictTypingCompilation() {
         ExpressionCompiler compiler = new ExpressionCompiler("a.foo;\nb.foo;\n x = 5");
         ParserContext ctx = new ParserContext();
-        ctx.setStrictTypeEnforcement(true);      
+        ctx.setStrictTypeEnforcement(true);
 
         try {
             compiler.compile(ctx);

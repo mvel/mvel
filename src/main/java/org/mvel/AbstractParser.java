@@ -675,7 +675,7 @@ public class AbstractParser implements Serializable {
                                 continue;
                             }
 
-                            return createToken(expr, trimRight(start), cursor++, ASTNode.FOLD);
+                            return createToken(expr, trimRight(start), cursor, ASTNode.FOLD);
                         }
 
                         return handleUnion(new Substatement(expr, trimRight(start + 1), trimLeft(cursor - 1), fields));
@@ -1015,14 +1015,24 @@ public class AbstractParser implements Serializable {
                     }
                     break;
 
+                case'&':
+                case'|':
                 case';':
                     return;
+
+                case'.':
+                    skipWhitespace();
+                    break;
 
                 default:
                     if (isWhitespace(expr[cursor])) {
                         skipWhitespace();
 
-                        if (expr[cursor] == '.') break;
+                        if (expr[cursor] == '.') {
+                            if (cursor < length) cursor++;
+                            skipWhitespace();
+                            break;
+                        }
                         else {
                             trimWhitespace();
                             return;
