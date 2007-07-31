@@ -654,8 +654,8 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testForEach4() {
         assertEquals("OneTwoThreeFour", parseDirect("a = {1,2,3,4}; builder = ''; foreach (i : a) {" +
-                " if (i == 1) { builder = builder + 'One' } else if (i == 2) { builder = builder + 'Two' } " +
-                "else if (i == 3) { builder = builder + 'Three' } else { builder = builder + 'Four' }" +
+                " if (i == 1) { builder += 'One' } else if (i == 2) { builder += 'Two' } " +
+                "else if (i == 3) { builder += 'Three' } else { builder += 'Four' }" +
                 "}; builder;"));
     }
 
