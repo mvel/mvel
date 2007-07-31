@@ -182,7 +182,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testOrOperator() {
-        assertEquals(true, parseDirect("true || true"));
+        assertEquals(true, parseDirect("true||true"));
     }
 
     public void testOrOperator2() {
@@ -360,7 +360,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testBitwiseOr3() {
-        assertEquals(true, parseDirect("(2 | 1) == 3"));
+        assertEquals(true, parseDirect("(2|1) == 3"));
     }
 
     public void testBitwiseAnd1() {
