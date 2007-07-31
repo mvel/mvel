@@ -38,7 +38,7 @@ public class CollectionParser {
 
 
         if (length > 0)
-            while (Character.isWhitespace(property[length - 1]))
+            while (length > 0 && Character.isWhitespace(property[length - 1]))
                 length--;
 
         return parseCollection();
@@ -62,7 +62,7 @@ public class CollectionParser {
                     break;
                 case MAP:
                     map = new HashMap<Object, Object>();
-                    break;
+                     break;
             }
         }
 

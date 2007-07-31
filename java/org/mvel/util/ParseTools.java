@@ -63,16 +63,8 @@ public class ParseTools {
             }
         }
         if (start != -1) {
-            //          int end = balancedCapture(parm, start, '(');
             start--;
             return parseParameterList(parm, start + 1, balancedCapture(parm, start, '(') - start - 1);
-
-//            for (int i = parm.length - 1; i > 0; i--) {
-//
-//                if (parm[i] == ')') {
-//                    return parseParameterList(parm, start, i - start);
-//                }
-//            }
         }
 
         return null;
@@ -558,7 +550,7 @@ public class ParseTools {
 
         char[] stmt;
         char op = 0;
-        switch (operation) {
+        switch (operation) {                                                                                         
             case Operator.ADD:
                 op = '+';
                 break;

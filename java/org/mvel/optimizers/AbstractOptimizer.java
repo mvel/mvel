@@ -64,10 +64,13 @@ public class AbstractOptimizer extends AbstractParser {
     }
 
     protected int nextSubToken() {
+        skipWhitespace();
+        
         switch (expr[start = cursor]) {
             case'[':
                 return COL;
             case'.':
+                skipWhitespace();
                 cursor = ++start;
 
         }
@@ -93,7 +96,7 @@ public class AbstractOptimizer extends AbstractParser {
         /**
          * Trim off any whitespace.
          */        
-        return new String(expr, start, trimLeft(cursor) - start);
+        return new String(expr, start = trimRight(start), trimLeft(cursor) - start);
     }
 
     protected void whiteSpaceSkip() {
