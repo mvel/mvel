@@ -643,8 +643,7 @@ public class AbstractParser implements Serializable {
 
                         char[] _subset = null;
                         if (singleToken) {
-                            _subset = subset(expr, trimRight(start + 1), trimLeft(cursor - 1) - (start + 1));
-                            String tokenStr = new String(_subset);
+                            String tokenStr = new String(_subset = subset(expr, trimRight(start + 1), trimLeft(cursor - 1) - (start + 1)));
 
                             if (getParserContext().hasImport(tokenStr)) {
                                 start = cursor;
