@@ -1254,7 +1254,7 @@ public class CoreConfidenceTests extends TestCase {
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
         Serializable compiled = compiler.compile();
 
-        //       System.out.println(DebugTools.decompile(cÇompiled));
+        //       System.out.println(DebugTools.decompile(cï¿½ompiled));
 
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);
@@ -1566,6 +1566,51 @@ public class CoreConfidenceTests extends TestCase {
         pCtx.addInput("model", Model.class);
 
         compiler.compile(pCtx);
+    }
+
+    public void FIXME_testCompileWithNewInsideMethodCall() {
+        String expr = "     p.name = \"goober\";\n"+
+                      "     System.out.println(p.name);\n"+ 
+                      "     drools.insert(new Address(\"Latona\"));\n";  
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+        ParserContext context = new ParserContext();
+        context.setStrictTypeEnforcement(false);
+
+        context.addImport("Person", Person.class);
+        context.addImport("Address", Address.class);
+
+        context.addInput("p", Person.class);
+        context.addInput("drools", Drools.class);
+        
+        compiler.compile(context);
+    }
+
+    public static class Person {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+        
+    }
+    
+    public static class Address {
+        private String street;
+
+        public Address(String street) {
+            super();
+            this.street = street;
+        }
+        
+    }
+    public static class Drools {
+        public void insert( Object obj ) {}
     }
 
 
