@@ -98,7 +98,7 @@ public class ParseTools {
                                 i = captureStringLiteral('\'', parm, i, parm.length);
                                 continue;
                             case'"':
-                                i = captureStringLiteral('\'', parm, i, parm.length);
+                                i = captureStringLiteral('"', parm, i, parm.length);
 
                         }
                     }

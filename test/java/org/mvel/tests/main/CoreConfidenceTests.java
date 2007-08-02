@@ -1584,7 +1584,7 @@ public class CoreConfidenceTests extends TestCase {
         compiler.compile(pCtx);
     }
 
-    public void FIXME_testCompileWithNewInsideMethodCall() {
+    public void testCompileWithNewInsideMethodCall() {
         String expr = "     p.name = \"goober\";\n"+
                       "     System.out.println(p.name);\n"+ 
                       "     drools.insert(new Address(\"Latona\"));\n";  
