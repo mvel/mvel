@@ -175,11 +175,10 @@ public class AbstractParser implements Serializable {
 
                 line = pCtx.getLineCount();
 
-                int scan = cursor;
+//                int scan = cursor;
 
-                while (expr[scan] == '\n') {
-                    scan++;
-                    line++;
+                if (expr[cursor] == '\n' || expr[cursor] == '\r') {
+                    skipWhitespaceWithLineAccounting();
                 }
 
                 if (lastWasComment) {
@@ -190,7 +189,6 @@ public class AbstractParser implements Serializable {
                 pCtx.setLineCount(line);
 
                 if (!pCtx.isKnownLine(pCtx.getSourceFile(), line)) {
-
                     lastWasLineLabel = true;
 
                     pCtx.setLineAndOffset(line, cursor);
@@ -206,7 +204,7 @@ public class AbstractParser implements Serializable {
                 lastWasComment = lastWasLineLabel = false;
             }
         }
-        
+
         /**
          * Skip any whitespace currently under the starting point.
          */
@@ -588,8 +586,12 @@ public class AbstractParser implements Serializable {
                                  * Since multi-line comments may cross lines, we must keep track of any line-break
                                  * we encounter.
                                  */
-                                if (debugSymbols && expr[cursor] == '\n') {
-                                    line++;
+//                                if (debugSymbols && expr[cursor] == '\n') {
+//                                    line++;
+//                                }
+
+                                if (debugSymbols && (expr[cursor] == '\n' || expr[cursor] == '\r')) {
+                                    skipWhitespaceWithLineAccounting();
                                 }
 
                                 if (cursor == len) {
@@ -605,6 +607,10 @@ public class AbstractParser implements Serializable {
 
                             if (debugSymbols) {
                                 getParserContext().setLineCount(line);
+                                if (lastNode instanceof LineLabel) {
+                                    getParserContext().getFirstLineLabel().setLineNumber(line);
+                                }
+                                lastWasComment = true;
                             }
 
                             continue;
@@ -888,6 +894,24 @@ public class AbstractParser implements Serializable {
         return -1;
     }
 
+    public int captureLineBreaks() {
+        int count = 0;
+
+        while (cursor < length) {
+            switch (expr[cursor]) {
+                case'\r':
+                    cursor++;
+                    continue;
+                case'\n':
+                    cursor++;
+                    count++;
+                    continue;
+                default:
+                    return count;
+            }
+        }
+        return count;
+    }
 
     /**
      * Most of this method should be self-explanatory.
@@ -1110,8 +1134,20 @@ public class AbstractParser implements Serializable {
     }
 
     protected void skipWhitespaceWithLineAccounting() {
-        while (isWhitespace(expr[cursor])) {
-            if (expr[cursor] == '\n') line++;
+        while (cursor < length && isWhitespace(expr[cursor])) {
+            //    if (expr[cursor] == '\n') line++;
+            //     line += captureLineBreaks();
+
+            switch (expr[cursor]) {
+                case'\r':
+                    cursor++;
+                    continue;
+                case'\n':
+                    cursor++;
+                    line++;
+                    continue;
+            }
+
             cursor++;
         }
     }

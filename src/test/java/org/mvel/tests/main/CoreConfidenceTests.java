@@ -892,7 +892,7 @@ public class CoreConfidenceTests extends TestCase {
                 "System.out.println( \"a4\" );\n";
 
         ExpressionCompiler compiler = new ExpressionCompiler(expr);
-        compiler.setDebugSymbols(true);
+  //      compiler.setDebugSymbols(true);
 
         ParserContext context = new ParserContext();
         context.addImport("System", System.class);
@@ -917,7 +917,15 @@ public class CoreConfidenceTests extends TestCase {
 
 
     public void testBreakpointsAcrossComments() {
-        ExpressionCompiler compiler = new ExpressionCompiler("/** This is a comment\nSecond comment line\nThird Comment Line\n*/\nSystem.out.println('4');\nSystem.out.println('5');\na = 0;\n b = 1;\n a + b");
+        ExpressionCompiler compiler = new ExpressionCompiler("/** This is a comment\n" +
+                "Second comment line\n" +
+                "Third Comment Line\n" +
+                "*/\n" +
+                "System.out.println('4');\n" +
+                "System.out.println('5');\n" +
+                "a = 0;\n" +
+                " b = 1;\n" +
+                " a + b");
         compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
@@ -995,7 +1003,9 @@ public class CoreConfidenceTests extends TestCase {
         Serializable compiledExpression = compiler.compile(ctx);           
         
         String s = org.mvel.debug.DebugTools.decompile( compiledExpression );
-        
+
+        System.out.println(s);
+
         int fromIndex=0;
         int count = 0;
         while ((fromIndex = s.indexOf( "DEBUG_SYMBOL", fromIndex+1 )) > -1) {
