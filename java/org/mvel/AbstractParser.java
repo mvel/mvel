@@ -894,25 +894,6 @@ public class AbstractParser implements Serializable {
         return -1;
     }
 
-    public int captureLineBreaks() {
-        int count = 0;
-
-        while (cursor < length) {
-            switch (expr[cursor]) {
-                case'\r':
-                    cursor++;
-                    continue;
-                case'\n':
-                    cursor++;
-                    count++;
-                    continue;
-                default:
-                    return count;
-            }
-        }
-        return count;
-    }
-
     /**
      * Most of this method should be self-explanatory.
      *
