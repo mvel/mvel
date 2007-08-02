@@ -884,6 +884,36 @@ public class CoreConfidenceTests extends TestCase {
         System.out.println(DebugTools.decompile(compiled));
     }
 
+    public void testBreakpoints3() {
+        String expr = "System.out.println( \"a1\" );\n" +
+                "System.out.println( \"a2\" );\n" +
+                "System.out.println( \"a3\" );\n" +
+                "System.out.println( \"a4\" );\n";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+        compiler.setDebugSymbols(true);
+
+        ParserContext context = new ParserContext();
+        context.addImport("System", System.class);
+        context.setStrictTypeEnforcement(true);
+        context.setDebugSymbols(true);
+        context.setSourceFile("mysource");
+
+        Serializable compiledExpression = compiler.compile(context);
+
+        String s = org.mvel.debug.DebugTools.decompile(compiledExpression);
+
+        System.out.println("output: " + s);
+
+        int fromIndex = 0;
+        int count = 0;
+        while ((fromIndex = s.indexOf("DEBUG_SYMBOL", fromIndex + 1)) > -1) {
+            count++;
+        }
+        assertEquals(4, count);
+
+    }
+
 
     public void testBreakpointsAcrossComments() {
         ExpressionCompiler compiler = new ExpressionCompiler("/** This is a comment\nSecond comment line\nThird Comment Line\n*/\nSystem.out.println('4');\nSystem.out.println('5');\na = 0;\n b = 1;\n a + b");
@@ -1270,7 +1300,7 @@ public class CoreConfidenceTests extends TestCase {
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
         Serializable compiled = compiler.compile();
 
-   //     System.out.println(DebugTools.decompile(compiled));
+        //     System.out.println(DebugTools.decompile(compiled));
 
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);
@@ -1378,7 +1408,6 @@ public class CoreConfidenceTests extends TestCase {
         executeExpression(compiled, map);
         assertSame(cheese, helper.retracted.get(0));
     }
-   
 
 
     @SuppressWarnings({"UnnecessaryBoxing"})
@@ -1535,7 +1564,7 @@ public class CoreConfidenceTests extends TestCase {
         public void setBean(Bean bean) {
             this.bean = bean;
         }
-        
+
         public String formatDate(Date date) {
             return date == null ? null : dateFormat.format(date);
         }
@@ -1566,24 +1595,24 @@ public class CoreConfidenceTests extends TestCase {
         context.addInput("m", Object.class);
         compiler.compile(context);
     }
-    
-    public void testStaticNested() {        
-        assertEquals(1, MVEL.eval( "org.mvel.tests.main.CoreConfidenceTests$Message.GOODBYE", new HashMap() ) );
-    }        
-    
+
+    public void testStaticNested() {
+        assertEquals(1, MVEL.eval("org.mvel.tests.main.CoreConfidenceTests$Message.GOODBYE", new HashMap()));
+    }
+
     public void testStaticNestedWithImport() {
         String expr = "Message.GOODBYE;\n";
 
         ExpressionCompiler compiler = new ExpressionCompiler(expr);
-    
+
         ParserContext context = new ParserContext();
         context.setStrictTypeEnforcement(false);
-    
+
         context.addImport("Message", Message.class);
         Serializable compiledExpression = compiler.compile(context);
-        
-        assertEquals(1, MVEL.executeExpression( compiledExpression ) );
-    }    
+
+        assertEquals(1, MVEL.executeExpression(compiledExpression));
+    }
 
 
     /**
@@ -1604,9 +1633,9 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testCompileWithNewInsideMethodCall() {
-        String expr = "     p.name = \"goober\";\n"+
-                      "     System.out.println(p.name);\n"+ 
-                      "     drools.insert(new Address(\"Latona\"));\n";  
+        String expr = "     p.name = \"goober\";\n" +
+                "     System.out.println(p.name);\n" +
+                "     drools.insert(new Address(\"Latona\"));\n";
 
         ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
@@ -1618,7 +1647,7 @@ public class CoreConfidenceTests extends TestCase {
 
         context.addInput("p", Person.class);
         context.addInput("drools", Drools.class);
-        
+
         compiler.compile(context);
     }
 
@@ -1632,9 +1661,9 @@ public class CoreConfidenceTests extends TestCase {
         public void setName(String name) {
             this.name = name;
         }
-        
+
     }
-    
+
     public static class Address {
         private String street;
 
@@ -1642,10 +1671,12 @@ public class CoreConfidenceTests extends TestCase {
             super();
             this.street = street;
         }
-        
+
     }
+
     public static class Drools {
-        public void insert( Object obj ) {}
+        public void insert(Object obj) {
+        }
     }
 
 
