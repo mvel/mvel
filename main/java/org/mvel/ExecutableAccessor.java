@@ -36,7 +36,7 @@ public class ExecutableAccessor implements ExecutableStatement {
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        return handleParserEgress(node.getReducedValueAccelerated(ctx, ctx, variableFactory),
+        return handleParserEgress(node.getReducedValueAccelerated(ctx, elCtx, variableFactory),
                 returnBigDecimal);
     }
 

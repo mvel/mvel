@@ -346,6 +346,15 @@ public class ParseTools {
 
     private static Map<Class, Constructor[]> CLASS_CONSTRUCTOR_CACHE = new WeakHashMap<Class, Constructor[]>(10);
 
+    public static Class createClassSafe(String className) {
+        try {
+            return createClass(className);
+        }
+        catch (ClassNotFoundException e) {
+            return null;
+        }
+    }
+
     public static Class createClass(String className) throws ClassNotFoundException {
         if (CLASS_RESOLVER_CACHE.containsKey(className))
             return CLASS_RESOLVER_CACHE.get(className);
@@ -550,7 +559,7 @@ public class ParseTools {
 
         char[] stmt;
         char op = 0;
-        switch (operation) {                                                                                         
+        switch (operation) {
             case Operator.ADD:
                 op = '+';
                 break;
