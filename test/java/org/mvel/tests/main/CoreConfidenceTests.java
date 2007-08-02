@@ -842,7 +842,7 @@ public class CoreConfidenceTests extends TestCase {
         ));
     }
 
-    public void testCompileMultiLine() {
+    public void testBreakpoints() {
         ExpressionCompiler compiler = new ExpressionCompiler("a = 5;\nb = 5;\n\nif (a == b) {\n\nSystem.out.println('Good');\nreturn a + b;\n}\n");
         System.out.println("-------\n" + compiler.getExpression() + "\n-------\n");
 
@@ -870,6 +870,18 @@ public class CoreConfidenceTests extends TestCase {
         MVELRuntime.setThreadDebugger(testDebugger);
 
         assertEquals(10, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
+    }
+
+    public void testBreakpoints2() {
+        ExpressionCompiler compiler = new ExpressionCompiler("System.out.println('test the debugger');\n a = 0;");
+        compiler.setDebugSymbols(true);
+
+        ParserContext ctx = new ParserContext();
+        ctx.setSourceFile("test.mv");
+
+        CompiledExpression compiled = compiler.compile(ctx);
+
+        System.out.println(DebugTools.decompile(compiled));
     }
 
 
@@ -1230,6 +1242,10 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testBracketInString() {
         parseDirect("System.out.println('1)your guess was:');");
+    }
+
+    public void testNesting() {
+        assertEquals("foo", parseDirect("new String(new String(new String(\"foo\")));"));
     }
 
     public void testDeepPropertyAdd() {
