@@ -1378,6 +1378,7 @@ public class CoreConfidenceTests extends TestCase {
         executeExpression(compiled, map);
         assertSame(cheese, helper.retracted.get(0));
     }
+   
 
 
     @SuppressWarnings({"UnnecessaryBoxing"})
@@ -1534,7 +1535,7 @@ public class CoreConfidenceTests extends TestCase {
         public void setBean(Bean bean) {
             this.bean = bean;
         }
-
+        
         public String formatDate(Date date) {
             return date == null ? null : dateFormat.format(date);
         }
@@ -1565,6 +1566,23 @@ public class CoreConfidenceTests extends TestCase {
         context.addInput("m", Object.class);
         compiler.compile(context);
     }
+    
+    public void testStaticNested() {        
+        assertEquals(1, MVEL.eval( "org.mvel.tests.main.Message.GOODBYE", new HashMap() ) );
+    }        
+    
+    public void testStaticNestedWithImport() {
+        String expr = "Message.GOODBYE;\n";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+    
+        ParserContext context = new ParserContext();
+        context.setStrictTypeEnforcement(false);
+    
+        context.addImport("Message", Message.class);
+        Serializable compiledExpression = compiler.compile(context);        
+        assertEquals(1, MVEL.executeExpression( compiledExpression ) );
+    }    
 
 
     /**
