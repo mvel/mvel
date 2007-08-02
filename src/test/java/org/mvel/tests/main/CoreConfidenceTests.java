@@ -1060,6 +1060,8 @@ public class CoreConfidenceTests extends TestCase {
         Serializable compiledExpression = compiler.compile(ctx);           
         
         String s = org.mvel.debug.DebugTools.decompile( compiledExpression );
+
+        System.out.println(s);
         
         int fromIndex=0;
         int count = 0;
