@@ -1270,7 +1270,7 @@ public class CoreConfidenceTests extends TestCase {
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
         Serializable compiled = compiler.compile();
 
-        //       System.out.println(DebugTools.decompile(c�ompiled));
+   //     System.out.println(DebugTools.decompile(compiled));
 
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);

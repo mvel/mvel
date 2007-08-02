@@ -2,7 +2,6 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.Accessor;
-import org.mvel.PropertyAccessException;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
@@ -25,7 +24,7 @@ public class ContextDeepPropertyNode extends ASTNode {
             if (accessor == null) {
                 AccessorOptimizer aO = OptimizerFactory.getThreadAccessorOptimizer();
                 accessor = aO.optimizeAccessor(name, ctx, thisValue, factory, false);
-                return valRet(accessor.getValue(ctx, thisValue, factory));
+                return valRet(aO.getResultOptPass());
             }
             else {
                 throw e;
