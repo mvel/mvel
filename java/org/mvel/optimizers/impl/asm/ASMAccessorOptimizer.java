@@ -681,7 +681,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             preConvArgs = new Object[es.length];
 
             for (int i = 0; i < subtokens.length; i++) {
-                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue( this.ctx, this.thisRef,  variableFactory);
+                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue(this.ctx, this.thisRef, variableFactory);
             }
         }
 
@@ -705,6 +705,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 compiledInputs.add((ExecutableStatement) e);
             }
         }
+
+        if (first) {
+            debug("ALOAD 1 (D) ");
+            mv.visitVarInsn(ALOAD, 1);
+        }
+
         /**
          * If the target object is an instance of java.lang.Class itself then do not
          * adjust the Class scope target.
@@ -720,6 +726,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         /**
          * Try to find an instance method from the class target.
          */
+
 
         if ((m = getBestCandidate(args, name, cls.getMethods())) != null) {
             parameterTypes = m.getParameterTypes();
@@ -781,10 +788,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 }
             }
 
-            if (first) {
-                debug("ALOAD 1 (D) ");
-                mv.visitVarInsn(ALOAD, 1);
-            }
 
             if (m.getParameterTypes().length == 0) {
                 if ((m.getModifiers() & Modifier.STATIC) != 0) {

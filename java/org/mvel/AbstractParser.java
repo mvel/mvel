@@ -2,7 +2,7 @@ package org.mvel;
 
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
-import org.mvel.util.ArrayTools;
+import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
@@ -162,8 +162,8 @@ public class AbstractParser implements Serializable {
          */
         fields = fields & (ASTNode.INLINE_COLLECTION | ASTNode.COMPILE_IMMEDIATE);
 
-        boolean capture = false;
-        boolean union = false;
+        boolean capture = false, union = false;
+
 
         if (debugSymbols) {
             if (!lastWasLineLabel) {
@@ -461,22 +461,16 @@ public class AbstractParser implements Serializable {
                  */
                 trimWhitespace();
 
-                if (parserContext != null) {
+                if (parserContext != null && parserContext.get() != null && parserContext.get().hasImports()) {
                     char[] _subset = subset(expr, start, cursor - start);
                     int offset;
 
-                    Class cls;
-                    if ((offset = ArrayTools.findFirst('.', _subset)) != -1) {
+                    if ((offset = findFirst('.', _subset)) != -1) {
                         String iStr;
                         if (getParserContext().hasImport(iStr = new String(_subset, 0, offset))) {
                             lastWasIdentifier = true;
-                            return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, getParserContext().getImport(iStr)); 
-// /                            return lastNode = new Union(_subset, offset + 1, _subset.length, fields, new LiteralNode(getParserContext().getImport(iStr)));
+                            return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, getParserContext().getImport(iStr));
                         }
-//                        else if ((cls = createClassSafe(iStr = new String(_subset, offset = ArrayTools.findLast('.', _subset), _subset.length - offset))) != null) {
-//
-//                        }
-
                     }
 
                     else {
@@ -486,7 +480,11 @@ public class AbstractParser implements Serializable {
                     }
                 }
 
-                return createToken(expr, start, cursor, fields);
+                //   return createPropertyToken(expr, start, cursor, fields);
+
+                lastWasIdentifier = true;
+                lastNode = createPropertyToken(start, cursor);
+                return lastNode;
             }
             else
                 switch (expr[cursor]) {
@@ -644,6 +642,33 @@ public class AbstractParser implements Serializable {
                                 case'i':
                                     if (isAt('n', 1) && isWhitespace(lookAhead(2))) {
                                         fields |= ASTNode.FOLD;
+                                        for (int level = brace; cursor < length; cursor++) {
+                                            switch (expr[cursor]) {
+                                                case'(':
+                                                    brace++;
+                                                    break;
+                                                case')':
+                                                    if (--brace < level) {
+                                                        if (lookAhead(1) == '.') {
+                                                            ASTNode node = createToken(expr, trimRight(start), (start = cursor++), ASTNode.FOLD);
+                                                            captureToEOT();
+                                                            return new Union(expr, trimRight(start + 2), cursor, fields, node);
+                                                        }
+                                                        else {
+                                                            return createToken(expr, trimRight(start), cursor++, ASTNode.FOLD);
+                                                        }
+                                                    }
+                                                    break;
+                                                case'\'':
+                                                    cursor = captureStringLiteral('\'', expr, cursor, length);
+                                                    break;
+                                                case'"':
+                                                    cursor = captureStringLiteral('\'', expr, cursor, length);
+                                                    break;
+                                            }
+                                        }
+
+
                                     }
                                     break;
                                 default:
@@ -697,15 +722,6 @@ public class AbstractParser implements Serializable {
                                      */
                                 }
                             }
-                        }
-
-                        if ((fields & ASTNode.FOLD) != 0) {
-                            if (cursor < length && expr[cursor] == '.') {
-                                cursor += 1;
-                                continue;
-                            }
-
-                            return createToken(expr, trimRight(start), cursor, ASTNode.FOLD);
                         }
 
                         if (_subset != null) {
@@ -815,13 +831,14 @@ public class AbstractParser implements Serializable {
                             throw new CompileException("unbalanced brace: in inline map/list/array creation", expr, cursor);
                         }
 
-                        if (cursor < (length - 1) && expr[cursor + 1] == '.') {
-                            fields |= ASTNode.INLINE_COLLECTION;
-                            cursor++;
-                            continue;
+                        if (lookAhead(1) == '.') {
+                            InlineCollectionNode n = new InlineCollectionNode(expr, start, start = ++cursor, fields);
+                            captureToEOT();
+                            return new Union(expr, start + 1, cursor, fields, n);
                         }
-
-                        return new InlineCollectionNode(expr, start, ++cursor, fields);
+                        else {
+                            return new InlineCollectionNode(expr, start, ++cursor, fields);
+                        }
 
                     default:
                         cursor++;
@@ -1040,6 +1057,7 @@ public class AbstractParser implements Serializable {
 
 
     protected void captureToEOT() {
+        skipWhitespace();
         while (++cursor < length) {
             switch (expr[cursor]) {
                 case'(':

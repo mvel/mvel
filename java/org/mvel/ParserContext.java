@@ -270,4 +270,7 @@ public class ParserContext implements Serializable {
         this.firstLineLabel = firstLineLabel;
     }
 
+    public boolean hasImports() {
+        return imports != null && imports.size() != 0;
+    }
 }
