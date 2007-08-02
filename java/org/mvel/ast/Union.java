@@ -23,7 +23,7 @@ public class Union extends ASTNode {
         catch (NullPointerException e) {
             if (accessor != null) throw e;
             AccessorOptimizer o = OptimizerFactory.getDefaultAccessorCompiler();
-            accessor = o.optimizeAccessor(name, ctx, thisValue, factory, false);
+            accessor = o.optimizeAccessor(name, main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false);
             return o.getResultOptPass();
         }
     }

@@ -655,21 +655,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         int st = cursor;
 
-   //     int depth = 1;
-
         cursor = ParseTools.balancedCapture(expr, cursor, '(');
-
-//        while (cursor++ < length - 1 && depth != 0) {
-//            switch (expr[cursor]) {
-//                case'(':
-//                    depth++;
-//                    continue;
-//                case')':
-//                    depth--;
-//
-//            }
-//        }
- //       cursor--;
 
         String tk = (cursor - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
 
@@ -677,7 +663,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         Object[] preConvArgs;
         Object[] args;
-        ExecutableStatement[] es;
+        Accessor[] es;
 
         if (tk.length() == 0) {
             //noinspection ZeroLengthArrayAllocation
@@ -695,7 +681,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             preConvArgs = new Object[es.length];
 
             for (int i = 0; i < subtokens.length; i++) {
-                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue( this.ctx, this.thisRef,  variableFactory);
             }
         }
 
@@ -704,7 +690,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         if (es != null) {
             for (int i = 0; i < es.length; i++) {
-                ExecutableStatement e = es[i];
+                Accessor e = es[i];
                 if (e instanceof ExecutableLiteral) {
                     continue;
                 }
@@ -716,7 +702,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     continue;
                 }
 
-                compiledInputs.add(e);
+                compiledInputs.add((ExecutableStatement) e);
             }
         }
         /**
@@ -777,7 +763,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             if (es != null) {
                 ExecutableStatement cExpr;
                 for (int i = 0; i < es.length; i++) {
-                    if ((cExpr = es[i]).getKnownIngressType() == null) {
+                    if ((cExpr = (ExecutableStatement) es[i]).getKnownIngressType() == null) {
                         cExpr.setKnownIngressType(parameterTypes[i]);
                         cExpr.computeTypeConversionRule();
                     }
