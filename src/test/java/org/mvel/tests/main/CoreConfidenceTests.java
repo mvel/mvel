@@ -1568,7 +1568,7 @@ public class CoreConfidenceTests extends TestCase {
     }
     
     public void testStaticNested() {        
-        assertEquals(1, MVEL.eval( "org.mvel.tests.main.Message.GOODBYE", new HashMap() ) );
+        assertEquals(1, MVEL.eval( "org.mvel.tests.main.CoreConfidenceTests$Message.GOODBYE", new HashMap() ) );
     }        
     
     public void testStaticNestedWithImport() {
@@ -1580,7 +1580,8 @@ public class CoreConfidenceTests extends TestCase {
         context.setStrictTypeEnforcement(false);
     
         context.addImport("Message", Message.class);
-        Serializable compiledExpression = compiler.compile(context);        
+        Serializable compiledExpression = compiler.compile(context);
+        
         assertEquals(1, MVEL.executeExpression( compiledExpression ) );
     }    
 

@@ -1,8 +1,8 @@
 package org.mvel;
 
-import static org.mvel.util.ParseTools.captureStringLiteral;
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
+import org.mvel.util.ArrayTools;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
@@ -461,6 +461,31 @@ public class AbstractParser implements Serializable {
                  */
                 trimWhitespace();
 
+                if (parserContext != null) {
+                    char[] _subset = subset(expr, start, cursor - start);
+                    int offset;
+
+                    Class cls;
+                    if ((offset = ArrayTools.findFirst('.', _subset)) != -1) {
+                        String iStr;
+                        if (getParserContext().hasImport(iStr = new String(_subset, 0, offset))) {
+                            lastWasIdentifier = true;
+                            return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, getParserContext().getImport(iStr)); 
+// /                            return lastNode = new Union(_subset, offset + 1, _subset.length, fields, new LiteralNode(getParserContext().getImport(iStr)));
+                        }
+//                        else if ((cls = createClassSafe(iStr = new String(_subset, offset = ArrayTools.findLast('.', _subset), _subset.length - offset))) != null) {
+//
+//                        }
+
+                    }
+
+                    else {
+                        ASTNode node = new ASTNode(_subset, 0, _subset.length, fields);
+                        lastWasIdentifier = node.isIdentifier();
+                        return lastNode = node;
+                    }
+                }
+
                 return createToken(expr, start, cursor, fields);
             }
             else
@@ -626,7 +651,7 @@ public class AbstractParser implements Serializable {
                                      * Check to see if we should disqualify this current token as a potential
                                      * type-cast candidate.
                                      */
-                                    if (lastWS || isIdentifierPart(expr[cursor])) {
+                                    if (lastWS || !isIdentifierPart(expr[cursor])) {
                                         singleToken = false;
                                     }
                                     else if (isWhitespace(expr[cursor])) {

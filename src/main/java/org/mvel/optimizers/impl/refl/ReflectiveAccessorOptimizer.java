@@ -468,15 +468,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             return ((List) ctx).get((Integer) idx);
         }
-//        else if (ctx instanceof Collection) {
-//            int count = parseInt(item);
-//            if (count > ((Collection) ctx).size())
-//                throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
-//
-//            Iterator iter = ((Collection) ctx).iterator();
-//            for (int i = 0; i < count; i++) iter.next();
-//            return iter.next();
-//        }
         else if (ctx instanceof Object[]) {
             if (itemSubExpr) {
                 ArrayAccessorNest accessor = new ArrayAccessorNest();
@@ -530,28 +521,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         int st = cursor;
 
         cursor = ParseTools.balancedCapture(expr, cursor, '(');
-        
 
-//        int depth = 1;
-//
-//        while (cursor++ < length - 1 && depth != 0) {
-//            switch (expr[cursor]) {
-//                case'(':
-//                    depth++;
-//                    continue;
-//                case')':
-//                    depth--;
-//
-//            }
-//        }
-//        cursor--;
 
         String tk = (cursor - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
 
         cursor++;
 
         Object[] args;
-        ExecutableStatement[] es;
+        Accessor[] es;
 
         if (tk.length() == 0) {
             args = ParseTools.EMPTY_OBJ_ARR;
@@ -562,7 +539,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             es = new ExecutableStatement[subtokens.length];
             args = new Object[subtokens.length];
             for (int i = 0; i < subtokens.length; i++) {
-                args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue(this.ctx, variableFactory);
+                args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue(this.ctx, thisRef, variableFactory);
             }
         }
 
@@ -616,7 +593,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             if (es != null) {
                 ExecutableStatement cExpr;
                 for (int i = 0; i < es.length; i++) {
-                    cExpr = es[i];
+                    cExpr = (ExecutableStatement) es[i];
                     if (cExpr.getKnownIngressType() == null) {
                         cExpr.setKnownIngressType(parameterTypes[i]);
                         cExpr.computeTypeConversionRule();
@@ -637,7 +614,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             MethodAccessor access = new MethodAccessor();
             access.setMethod(ParseTools.getWidenedTarget(m));
-            access.setParms(es);
+            access.setParms((ExecutableStatement[]) es);
 
             addAccessorNode(access);
 

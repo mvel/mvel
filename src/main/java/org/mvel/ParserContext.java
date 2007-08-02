@@ -91,7 +91,7 @@ public class ParserContext implements Serializable {
     }
 
     public Class getImport(String name) {
-        return imports != null ? (Class) imports.get(name) : null;
+        return (imports != null ? (Class) imports.get(name) : (Class) AbstractParser.LITERALS.get(name));
     }
 
     public Method getStaticImport(String name) {
