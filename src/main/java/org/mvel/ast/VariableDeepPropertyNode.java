@@ -25,7 +25,7 @@ public class VariableDeepPropertyNode extends ASTNode {
 
                 AccessorOptimizer aO = OptimizerFactory.getThreadAccessorOptimizer();
                 accessor = aO.optimizeAccessor(name, ctx, thisValue, factory, false);
-                return accessor.getValue(ctx, thisValue, factory);
+                return valRet(aO.getResultOptPass());
             }
             else {
                 throw e;

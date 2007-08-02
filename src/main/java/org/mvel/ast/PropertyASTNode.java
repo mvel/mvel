@@ -16,7 +16,7 @@ public class PropertyASTNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
-                return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
+            return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
         }
         catch (NullPointerException e) {
             if (wrappedNode == null) {
