@@ -1512,6 +1512,15 @@ public class CoreConfidenceTests extends TestCase {
             }
         }
 
+        Object seventh = executeExpression(compiledD, base, map);
+
+        if (seventh != null && !seventh.getClass().isArray()) {
+             if (!seventh.equals(sixth)) {
+                 throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
+                         + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
+             }
+         }
+
 
         return second;
     }
