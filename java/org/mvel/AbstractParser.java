@@ -464,13 +464,16 @@ public class AbstractParser implements Serializable {
                     int offset;
 
                     if ((offset = findFirst('.', _subset)) != -1) {
-                        String iStr;
-                        if (getParserContext().hasImport(iStr = new String(_subset, 0, offset))) {
+                        String iStr = new String(_subset, 0, offset);
+                        if ("this".equals(iStr)) {
+                            lastWasIdentifier = true;
+                            return lastNode = new ThisValDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields);
+                        }
+                        else if (getParserContext().hasImport(iStr)) {
                             lastWasIdentifier = true;
                             return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, getParserContext().getImport(iStr));
                         }
                     }
-
                     else {
                         ASTNode node = new ASTNode(_subset, 0, _subset.length, fields);
                         lastWasIdentifier = node.isIdentifier();
