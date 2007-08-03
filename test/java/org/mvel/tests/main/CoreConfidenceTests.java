@@ -570,6 +570,22 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals("101", parseDirect("new String(this.number)"));
     }
 
+    public void testThisReferenceMapVirtualObjects() {
+        // Create our root Map object
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("foo", "bar");
+
+        // Create an empty resolver factory.  Just for completeness.
+        VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+        factory.createVariable("this", map);
+
+        // I think we can all figure this one out.
+        Serializable compiled = MVEL.compileExpression("this.foo == 'bar'");
+
+        // Run test
+        assertEquals(true, MVEL.executeExpression(compiled, map, factory));
+    }
+
     public void testStringEscaping() {
         assertEquals("\"Mike Brock\"", parseDirect("\"\\\"Mike Brock\\\"\""));
     }
