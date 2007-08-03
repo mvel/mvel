@@ -26,7 +26,7 @@ public class LiteralDeepPropertyNode extends ASTNode {
                 AccessorOptimizer aO = OptimizerFactory.getThreadAccessorOptimizer();
                 accessor = aO.optimizeAccessor(name, literal, thisValue, factory, false);
 
-                return valRet(accessor.getValue(literal, thisValue, factory));
+                return valRet(aO.getResultOptPass());
             }
             else {
                 throw e;
