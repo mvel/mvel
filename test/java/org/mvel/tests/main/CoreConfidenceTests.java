@@ -554,6 +554,14 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(true, parseDirect("this is org.mvel.tests.main.res.Base"));
     }
 
+    public void testThisReference4() {
+        assertEquals(true, parseDirect("this.funMap instanceof java.util.Map"));
+    }
+
+    public void testThisReference5() {
+        assertEquals(true, parseDirect("this.data == 'cat'"));
+    }
+
     public void testStringEscaping() {
         assertEquals("\"Mike Brock\"", parseDirect("\"\\\"Mike Brock\\\"\""));
     }
