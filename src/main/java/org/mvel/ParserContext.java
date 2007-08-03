@@ -99,7 +99,7 @@ public class ParserContext implements Serializable {
     }
 
     public boolean hasImport(String name) {
-        return (imports != null && imports.containsKey(name)) || (AbstractParser.LITERALS.containsKey(name)) ;
+        return (imports != null && imports.containsKey(name)) || (!"this".equals(name) && AbstractParser.LITERALS.containsKey(name)) ;
     }
 
     public void addImport(String name, Class cls) {

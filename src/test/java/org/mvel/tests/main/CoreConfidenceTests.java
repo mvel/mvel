@@ -570,17 +570,48 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals("101", parseDirect("new String(this.number)"));
     }
 
+
+    // interpreted
     public void testThisReferenceMapVirtualObjects() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("foo", "bar");
+
+        VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+        factory.createVariable("this", map);
+
+        assertEquals(true, MVEL.eval("this.foo == 'bar'", map, factory));
+    }
+
+    // compiled - reflective
+    public void testThisReferenceMapVirtualObjects1() {
         // Create our root Map object
         Map<String, String> map = new HashMap<String, String>();
         map.put("foo", "bar");
 
-        // Create an empty resolver factory.  Just for completeness.
+        VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+        factory.createVariable("this", map);
+
+        Serializable compiled = MVEL.compileExpression("this.foo == 'bar'");
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+
+        // Run test
+        assertEquals(true, MVEL.executeExpression(compiled, map, factory));
+    }
+
+    // compiled - asm
+    public void testThisReferenceMapVirtualObjects2() {
+        // Create our root Map object
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("foo", "bar");
+
         VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
         factory.createVariable("this", map);
 
         // I think we can all figure this one out.
         Serializable compiled = MVEL.compileExpression("this.foo == 'bar'");
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
 
         // Run test
         assertEquals(true, MVEL.executeExpression(compiled, map, factory));
@@ -916,7 +947,7 @@ public class CoreConfidenceTests extends TestCase {
                 "System.out.println( \"a4\" );\n";
 
         ExpressionCompiler compiler = new ExpressionCompiler(expr);
-  //      compiler.setDebugSymbols(true);
+        //      compiler.setDebugSymbols(true);
 
         ParserContext context = new ParserContext();
         context.addImport("System", System.class);
@@ -1009,94 +1040,94 @@ public class CoreConfidenceTests extends TestCase {
 
         assertEquals(1, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
     }
-    
+
     public void testDebugSymbolsWithWindowsLinedEndings() throws Exception {
-        String expr = "   System.out.println( \"a1\" );\r\n" + 
-                      "   System.out.println( \"a2\" );\r\n" + 
-                      "   System.out.println( \"a3\" );\r\n" + 
-                      "   System.out.println( \"a4\" );\r\n";
-        
-        ExpressionCompiler compiler = new ExpressionCompiler( expr );
-        compiler.setDebugSymbols( true );
-        
+        String expr = "   System.out.println( \"a1\" );\r\n" +
+                "   System.out.println( \"a2\" );\r\n" +
+                "   System.out.println( \"a3\" );\r\n" +
+                "   System.out.println( \"a4\" );\r\n";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+        compiler.setDebugSymbols(true);
+
         ParserContext ctx = new ParserContext();
         ctx.setStrictTypeEnforcement(true);
-        ctx.setDebugSymbols( true );
-        ctx.setSourceFile( "mysource" );            
-    
-        Serializable compiledExpression = compiler.compile(ctx);           
-        
-        String s = org.mvel.debug.DebugTools.decompile( compiledExpression );
+        ctx.setDebugSymbols(true);
+        ctx.setSourceFile("mysource");
+
+        Serializable compiledExpression = compiler.compile(ctx);
+
+        String s = org.mvel.debug.DebugTools.decompile(compiledExpression);
 
         System.out.println(s);
 
-        int fromIndex=0;
+        int fromIndex = 0;
         int count = 0;
-        while ((fromIndex = s.indexOf( "DEBUG_SYMBOL", fromIndex+1 )) > -1) {
+        while ((fromIndex = s.indexOf("DEBUG_SYMBOL", fromIndex + 1)) > -1) {
             count++;
         }
-        assertEquals(4, count);      
-        
-      }    
+        assertEquals(4, count);
 
-    
+    }
+
+
     public void testDebugSymbolsWithUnixLinedEndings() throws Exception {
-        String expr = "   System.out.println( \"a1\" );\n" + 
-                      "   System.out.println( \"a2\" );\n" + 
-                      "   System.out.println( \"a3\" );\n" + 
-                      "   System.out.println( \"a4\" );\n";
-        
-        ExpressionCompiler compiler = new ExpressionCompiler( expr );
-        compiler.setDebugSymbols( true );
-        
+        String expr = "   System.out.println( \"a1\" );\n" +
+                "   System.out.println( \"a2\" );\n" +
+                "   System.out.println( \"a3\" );\n" +
+                "   System.out.println( \"a4\" );\n";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+        compiler.setDebugSymbols(true);
+
         ParserContext ctx = new ParserContext();
         ctx.setStrictTypeEnforcement(true);
-        ctx.setDebugSymbols( true );
-        ctx.setSourceFile( "mysource" );            
-    
-        Serializable compiledExpression = compiler.compile(ctx);           
-        
-        String s = org.mvel.debug.DebugTools.decompile( compiledExpression );
-        
-        int fromIndex=0;
+        ctx.setDebugSymbols(true);
+        ctx.setSourceFile("mysource");
+
+        Serializable compiledExpression = compiler.compile(ctx);
+
+        String s = org.mvel.debug.DebugTools.decompile(compiledExpression);
+
+        int fromIndex = 0;
         int count = 0;
-        while ((fromIndex = s.indexOf( "DEBUG_SYMBOL", fromIndex+1 )) > -1) {
+        while ((fromIndex = s.indexOf("DEBUG_SYMBOL", fromIndex + 1)) > -1) {
             count++;
         }
-        assertEquals(4, count);      
-        
-      }    
+        assertEquals(4, count);
+
+    }
 
     public void testDebugSymbolsWithMixedLinedEndings() throws Exception {
-        String expr = "   System.out.println( \"a1\" );\n" + 
-                      "   System.out.println( \"a2\" );\r\n" + 
-                      "   System.out.println( \"a3\" );\n" + 
-                      "   System.out.println( \"a4\" );\r\n";
-        
-        ExpressionCompiler compiler = new ExpressionCompiler( expr );
-        compiler.setDebugSymbols( true );
-        
+        String expr = "   System.out.println( \"a1\" );\n" +
+                "   System.out.println( \"a2\" );\r\n" +
+                "   System.out.println( \"a3\" );\n" +
+                "   System.out.println( \"a4\" );\r\n";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+        compiler.setDebugSymbols(true);
+
         ParserContext ctx = new ParserContext();
         ctx.setStrictTypeEnforcement(true);
-        ctx.setDebugSymbols( true );
-        ctx.setSourceFile( "mysource" );            
-    
-        Serializable compiledExpression = compiler.compile(ctx);           
-        
-        String s = org.mvel.debug.DebugTools.decompile( compiledExpression );
+        ctx.setDebugSymbols(true);
+        ctx.setSourceFile("mysource");
+
+        Serializable compiledExpression = compiler.compile(ctx);
+
+        String s = org.mvel.debug.DebugTools.decompile(compiledExpression);
 
         System.out.println(s);
-        
-        int fromIndex=0;
+
+        int fromIndex = 0;
         int count = 0;
-        while ((fromIndex = s.indexOf( "DEBUG_SYMBOL", fromIndex+1 )) > -1) {
+        while ((fromIndex = s.indexOf("DEBUG_SYMBOL", fromIndex + 1)) > -1) {
             count++;
         }
-        assertEquals(4, count);      
-        
-      }    
-    
-    
+        assertEquals(4, count);
+
+    }
+
+
     public void testReflectionCache() {
         assertEquals("happyBar", parseDirect("foo.happy(); foo.bar.happy()"));
     }
