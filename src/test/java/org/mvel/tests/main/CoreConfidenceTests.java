@@ -2,9 +2,7 @@ package org.mvel.tests.main;
 
 import junit.framework.TestCase;
 import org.mvel.*;
-
 import static org.mvel.MVEL.*;
-
 import org.mvel.ast.WithNode;
 import org.mvel.debug.DebugTools;
 import org.mvel.debug.Debugger;
@@ -1448,12 +1446,16 @@ public class CoreConfidenceTests extends TestCase {
         OptimizerFactory.setDefaultOptimizer("ASM");
 
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
+
+
         Serializable compiled = compiler.compile();
 
         //     System.out.println(DebugTools.decompile(compiled));
 
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);
+
+
         Object third = MVEL.eval(ex, base, map);
 
 
@@ -1485,6 +1487,31 @@ public class CoreConfidenceTests extends TestCase {
                         + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
             }
         }
+
+        ParserContext ctx = new ParserContext();
+        ctx.setSourceFile("unittest");
+        ExpressionCompiler debuggingCompiler = new ExpressionCompiler(ex);
+        debuggingCompiler.setDebugSymbols(true);
+
+        Serializable compiledD = debuggingCompiler.compile(ctx);
+
+        Object sixth = executeExpression(compiledD, base, map);
+        if (sixth != null && !sixth.getClass().isArray()) {
+      //      assertEquals(fifth, sixth);
+            if (!fifth.equals(sixth)) {
+                System.out.println("Payload 1 -- No Symbols: ");
+                System.out.println(DebugTools.decompile(compiled));
+                System.out.println();
+
+                System.out.println("Payload 2 -- With Symbols: ");
+                System.out.println(DebugTools.decompile(compiledD));
+                System.out.println();
+
+                throw new AssertionError("Different result from test 5 and 6 (Compiled to Compiled+DebuggingSymbols) [first: "
+                        + String.valueOf(fifth) + "; second: " + String.valueOf(sixth) + "]");
+            }
+        }
+
 
         return second;
     }

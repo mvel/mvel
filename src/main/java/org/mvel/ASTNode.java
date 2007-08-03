@@ -340,7 +340,7 @@ public class ASTNode implements Cloneable, Serializable {
         Object sa = tryStaticAccess(ctx, factory);
         if (sa == null) throw new UnresolveablePropertyException(this);
         return valRet(sa);
-         
+
     }
 
 
@@ -462,12 +462,6 @@ public class ASTNode implements Cloneable, Serializable {
             literal = handleNumericConversion(name);
             egressType = literal.getClass();
 
-            if (literal instanceof Integer) {
-                intRegister = (Integer) literal;
-                fields |= INTEGER32;
-
-            }
-
             if ((fields & INVERT) != 0) {
                 try {
                     literal = ~((Integer) literal);
@@ -475,6 +469,12 @@ public class ASTNode implements Cloneable, Serializable {
                 catch (ClassCastException e) {
                     throw new CompileException("bitwise (~) operator can only be applied to integers");
                 }
+            }
+
+            if (literal instanceof Integer) {
+                intRegister = (Integer) literal;
+                fields |= INTEGER32;
+
             }
 
             return;
