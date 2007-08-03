@@ -562,6 +562,14 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(true, parseDirect("this.data == 'cat'"));
     }
 
+    public void testThisReferenceInMethodCall() {
+        assertEquals(101, parseDirect("Integer.parseInt(this.number)"));
+    }
+
+    public void testThisReferenceInConstructor() {
+        assertEquals("101", parseDirect("new String(this.number)"));
+    }
+
     public void testStringEscaping() {
         assertEquals("\"Mike Brock\"", parseDirect("\"\\\"Mike Brock\\\"\""));
     }
@@ -595,14 +603,6 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testStaticNamespaceClassWithMethod() {
         assertEquals("FooBar", parseDirect("java.lang.String.valueOf('FooBar')"));
-    }
-
-    public void testThisReferenceInMethodCall() {
-        assertEquals(101, parseDirect("Integer.parseInt(this.number)"));
-    }
-
-    public void testThisReferenceInConstructor() {
-        assertEquals("101", parseDirect("new String(this.number)"));
     }
 
     public void testConstructor() {
