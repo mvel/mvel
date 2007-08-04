@@ -154,6 +154,7 @@ public class AbstractParser implements Serializable {
         }
 
         int brace, start = cursor;
+        
 
         /**
          * Because of parser recursion for sub-expression parsing, we sometimes need to remain
