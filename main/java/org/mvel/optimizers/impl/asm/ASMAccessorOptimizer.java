@@ -153,7 +153,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.variableFactory = factory;
 
         _initJIT();
-
+       
         return compileAccessor();
     }
 
