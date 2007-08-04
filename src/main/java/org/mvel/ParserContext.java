@@ -69,7 +69,7 @@ public class ParserContext implements Serializable {
     }
 
 
-    public int getLineCount() {
+    public int getLineCount() {            
         return lineCount;
     }
 
@@ -91,7 +91,7 @@ public class ParserContext implements Serializable {
     }
 
     public Class getImport(String name) {
-        return (imports != null ? (Class) imports.get(name) : (Class) AbstractParser.LITERALS.get(name));
+        return (imports != null && imports.containsKey(name) ? (Class) imports.get(name) : (Class) AbstractParser.LITERALS.get(name));
     }
 
     public Method getStaticImport(String name) {

@@ -896,6 +896,10 @@ public class CoreConfidenceTests extends TestCase {
         ));
     }
 
+    public void testSystemOutPrint() {
+         parseDirect("a = 0;\r\nSystem.out.println('This is a test');");
+    }
+
     public void testBreakpoints() {
         ExpressionCompiler compiler = new ExpressionCompiler("a = 5;\nb = 5;\n\nif (a == b) {\n\nSystem.out.println('Good');\nreturn a + b;\n}\n");
         System.out.println("-------\n" + compiler.getExpression() + "\n-------\n");
@@ -1447,20 +1451,14 @@ public class CoreConfidenceTests extends TestCase {
 
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
 
-
         Serializable compiled = compiler.compile();
-
-        //     System.out.println(DebugTools.decompile(compiled));
 
         Object first = executeExpression(compiled, base, map);
         Object second = executeExpression(compiled, base, map);
 
-
         Object third = MVEL.eval(ex, base, map);
 
-
         if (first != null && !first.getClass().isArray()) {
-            assertEquals(first, second);
             if (!first.equals(second)) {
                 throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run / JIT) [first: "
                         + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
@@ -1481,7 +1479,6 @@ public class CoreConfidenceTests extends TestCase {
         Object fifth = executeExpression(compiled, base, map);
 
         if (fourth != null && !fourth.getClass().isArray()) {
-            assertEquals(fourth, fifth);
             if (!fourth.equals(fifth)) {
                 throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
                         + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
@@ -1497,7 +1494,6 @@ public class CoreConfidenceTests extends TestCase {
 
         Object sixth = executeExpression(compiledD, base, map);
         if (sixth != null && !sixth.getClass().isArray()) {
-      //      assertEquals(fifth, sixth);
             if (!fifth.equals(sixth)) {
                 System.out.println("Payload 1 -- No Symbols: ");
                 System.out.println(DebugTools.decompile(compiled));
