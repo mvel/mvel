@@ -1,6 +1,8 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.Accessor;
+import org.mvel.optimizers.AccessorOptimizer;
+import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.integration.VariableResolverFactory;
 
 /**
@@ -16,8 +18,12 @@ public class Union implements Accessor {
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         if (nextAccessor == null) {
             Object o = accessor.getValue(ctx, elCtx, variableFactory);
-            nextAccessor = new ReflectiveAccessorOptimizer().optimizeAccessor(nextExpr, o, elCtx, variableFactory, false);
-            return nextAccessor.getValue(o, elCtx, variableFactory);
+
+            AccessorOptimizer ao = OptimizerFactory.getDefaultAccessorCompiler();
+            nextAccessor = ao.optimizeAccessor(nextExpr, o, elCtx, variableFactory, false);
+
+            return ao.getResultOptPass();
+         //   return nextAccessor.getValue(o, elCtx, variableFactory);
         }
         else {
             return nextAccessor.getValue(accessor.getValue(ctx, elCtx, variableFactory), elCtx, variableFactory);
