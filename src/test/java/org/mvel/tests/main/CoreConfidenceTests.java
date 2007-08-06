@@ -160,6 +160,10 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(3, parseDirect("foo.number-1"));
     }
 
+    public void testPowerOf() {
+        assertEquals(25, parseDirect("5 ** 2"));
+    }
+
     public void testComplexExpression() {
         assertEquals("bar", parseDirect("a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]"));
     }
@@ -1441,6 +1445,11 @@ public class CoreConfidenceTests extends TestCase {
     public void testDeepAssignmentWithBlock() {
         assertEquals(true, parseDirect("with (foo) { countTest += 5 }; if (foo.countTest == 5) { foo.countTest = 0; return true; } else { foo.countTest = 0; return false; }"));
     }
+
+    public void testTypeCast() {
+        assertEquals("10", parseDirect("(String) 10"));
+    }
+
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex);
