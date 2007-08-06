@@ -710,11 +710,11 @@ public class AbstractParser implements Serializable {
                                 captureToEOS();
                                 return new TypeCast(expr, start, cursor, fields, getParserContext().getImport(tokenStr));
                             }
-                            else if (LITERALS.containsKey(tokenStr)) {
-                                start = cursor;
-                                captureToEOS();
-                                return new TypeCast(expr, start, cursor, fields, (Class) LITERALS.get(tokenStr));
-                            }
+//                            else if (LITERALS.containsKey(tokenStr)) {
+//                                start = cursor;
+//                                captureToEOS();
+//                                return new TypeCast(expr, start, cursor, fields, (Class) LITERALS.get(tokenStr));
+//                            }
                             else {
                                 try {
                                     /**

@@ -178,13 +178,7 @@ public class ASTNode implements Cloneable, Serializable {
             AccessorOptimizer optimizer;
             Object retVal = null;
 
-            if ((fields & INLINE_COLLECTION) != 0) {
-                optimizer = getThreadAccessorOptimizer();
-                accessor = optimizer.optimizeCollection(name, ctx, thisValue, factory);
-                egressType = optimizer.getEgressType();
-                retVal = accessor.getValue(ctx, thisValue, factory);
-            }
-            else if ((fields & FOLD) != 0) {
+            if ((fields & FOLD) != 0) {
                 optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
                 accessor = optimizer.optimizeFold(name, ctx, thisValue, factory);
                 retVal = accessor.getValue(ctx, thisValue, factory);
@@ -222,17 +216,6 @@ public class ASTNode implements Cloneable, Serializable {
             else {
                 return literal;
             }
-        }
-//
-
-        else if ((fields & INLINE_COLLECTION) != 0) {
-            if (accessor == null) {
-                AccessorOptimizer optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
-                accessor = optimizer.optimizeCollection(name, ctx, thisValue, factory);
-                egressType = optimizer.getEgressType();
-            }
-
-            return accessor.getValue(ctx, thisValue, factory);
         }
         else if ((fields & FOLD) != 0) {
             if (accessor == null) {
