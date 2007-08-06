@@ -685,10 +685,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-//        this.ctx = ctx;
-//        this.thisRef = thisRef;
-//        this.variableFactory = factory;
-
         CollectionParser parser = new CollectionParser();
         Object o = ((List) parser.parseCollection(property)).get(0);
 
@@ -831,13 +827,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
     }
 
-    public Accessor optimizeReturn(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        ExecutableStatement stmt = (ExecutableStatement) ParseTools.subCompileExpression(property);
-        Return ret = new Return(stmt);
-        val = stmt.getValue(ctx, thisRef, factory);
-
-        return ret;
-    }
 
     public Class getEgressType() {
         return returnType;
