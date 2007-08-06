@@ -33,8 +33,6 @@ public interface AccessorOptimizer {
 
     public Accessor optimizeFold(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
 
-    public Accessor optimizeReturn(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
-
     public Object getResultOptPass();
 
     public Class getEgressType();
