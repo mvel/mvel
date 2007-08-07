@@ -1485,6 +1485,14 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals("bar", compiledExecute("innermap['test']", outermap, null));
     }
 
+    public void testSetSemantics() {
+        Bar bar = new Bar();
+        Foo foo = new Foo();
+
+        assertEquals("dog", MVEL.getProperty("name", bar));
+        assertEquals("dog", MVEL.getProperty("name", foo));
+    }
+
     public void testMapBindingSemantics2() {
         Map<String, Object> outermap = new HashMap<String, Object>();
         Map<String, Object> innermap = new HashMap<String, Object>();
