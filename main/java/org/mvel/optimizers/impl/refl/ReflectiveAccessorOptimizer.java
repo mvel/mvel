@@ -57,8 +57,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     private boolean first = true;
 
-    private static final Map<String, Accessor> REFLECTIVE_ACCESSOR_CACHE =
-            new WeakHashMap<String, Accessor>();
+    private static final Map<Integer, Accessor> REFLECTIVE_ACCESSOR_CACHE =
+            new WeakHashMap<Integer, Accessor>();
 
     private Class returnType;
 
@@ -74,17 +74,26 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
 
-    public static Object get(String expression, Object ctx) {
-        if (REFLECTIVE_ACCESSOR_CACHE.containsKey(expression)) {
-            return REFLECTIVE_ACCESSOR_CACHE.get(expression).getValue(ctx, null, null);
+    private static int createSignatureHash(String expr, Object ctx) {
+        if (ctx == null) {
+            return expr.hashCode();
         }
         else {
-            Accessor accessor = new ReflectiveAccessorOptimizer().optimizeAccessor(expression.toCharArray(), ctx, null, null, false);
-            REFLECTIVE_ACCESSOR_CACHE.put(expression, accessor);
-            return accessor.getValue(ctx, null, null);
+            return expr.hashCode() + ctx.getClass().hashCode();
         }
     }
 
+    public static Object get(String expression, Object ctx) {
+        int hash = createSignatureHash(expression, ctx);
+        if (REFLECTIVE_ACCESSOR_CACHE.containsKey(hash)) {
+            return REFLECTIVE_ACCESSOR_CACHE.get(hash).getValue(ctx, null, null);
+        }
+        else {
+            Accessor accessor = new ReflectiveAccessorOptimizer().optimizeAccessor(expression.toCharArray(), ctx, null, null, false);
+            REFLECTIVE_ACCESSOR_CACHE.put(hash, accessor);
+            return accessor.getValue(ctx, null, null);
+        }
+    }
 
     public Accessor optimizeAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean root) {
         this.rootNode = this.currNode = null;
