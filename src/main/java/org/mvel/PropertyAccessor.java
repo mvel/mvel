@@ -18,15 +18,13 @@
  */
 package org.mvel;
 
-import static org.mvel.MVEL.eval;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
+import static org.mvel.MVEL.eval;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.util.ArrayTools;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.parseParameterList;
-import static org.mvel.util.PropertyTools.getFieldOrAccessor;
-import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
+import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.StringAppender;
 
 import java.io.Serializable;
@@ -196,7 +194,7 @@ public class PropertyAccessor {
 
         try {
             int oLength = length;
-            length = ArrayTools.findLast('.', property);
+            length = findAbsoluteLast(property);
             curr = get();
 
             if (curr == null)
@@ -205,7 +203,6 @@ public class PropertyAccessor {
             length = oLength;
 
             if (nextToken() == COL) {
-
                 int start = ++cursor;
 
                 whiteSpaceSkip();
@@ -218,16 +215,16 @@ public class PropertyAccessor {
 
                 String ex = new String(property, start, cursor - start);
 
-                if (ctx instanceof Map) {
+                if (curr instanceof Map) {
                     //noinspection unchecked
-                    ((Map) ctx).put(eval(ex, this.ctx, this.resolver), value);
+                    ((Map) curr).put(eval(ex, this.ctx, this.resolver), value);
                 }
-                else if (ctx instanceof List) {
+                else if (curr instanceof List) {
                     //noinspection unchecked
-                    ((List) ctx).set(eval(ex, this.ctx, this.resolver, Integer.class), value);
+                    ((List) curr).set(eval(ex, this.ctx, this.resolver, Integer.class), value);
                 }
-                else if (ctx instanceof Object[]) {
-                    ((Object[]) ctx)[eval(ex, this.ctx, this.resolver, Integer.class)] = convert(value, ctx.getClass().getComponentType());
+                else if (curr instanceof Object[]) {
+                    ((Object[]) curr)[eval(ex, this.ctx, this.resolver, Integer.class)] = convert(value, ctx.getClass().getComponentType());
                 }
 
                 else {

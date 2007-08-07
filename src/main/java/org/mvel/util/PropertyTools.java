@@ -369,4 +369,11 @@ public class PropertyTools {
         return same / baselength;
     }
 
+    public static int findAbsoluteLast(char[] array) {
+        for (int i = array.length - 1; i >= 0; i--) {
+            if (array[i] == '.' || array[i] == '[') return i;
+        }
+        return -1;
+    }
+
 }
