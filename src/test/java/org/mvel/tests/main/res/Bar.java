@@ -61,4 +61,8 @@ public class Bar {
     public String happy() {
         return "happyBar";
     }
+
+    public static int staticMethod() {
+        return 1;
+    }
 }

@@ -1327,9 +1327,11 @@ public class CoreConfidenceTests extends TestCase {
         ctx.addImport( "Bar", Bar.class );
         ctx.setStrictTypeEnforcement(true);
 
-        compiler.compile(ctx);
-        
-        assertEquals(1, executeExpression(compiler.compile(ctx) ) );
+        Serializable s =  compiler.compile(ctx);
+
+        DebugTools.decompile(s);
+
+        assertEquals(1, executeExpression(s ) );
     }    
 
     public void testStrictTypingCompilation2() throws NoSuchMethodException {

@@ -646,7 +646,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throws IllegalAccessException, InvocationTargetException {
         debug("\n  **  {method: " + name + "}");
 
-        if (first && variableFactory.isResolveable(name)) {
+        if (first && variableFactory != null && variableFactory.isResolveable(name)) {
             Method m = (Method) variableFactory.getVariableResolver(name).getValue();
             ctx = m.getDeclaringClass();
             name = m.getName();
