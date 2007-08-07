@@ -1320,6 +1320,17 @@ public class CoreConfidenceTests extends TestCase {
         }
         assertTrue(false);
     }
+    
+    public void testStrictStaticMethodCall() {
+        ExpressionCompiler compiler = new ExpressionCompiler("Bar.staticMethod()");
+        ParserContext ctx = new ParserContext();
+        ctx.addImport( "Bar", Bar.class );
+        ctx.setStrictTypeEnforcement(true);
+
+        compiler.compile(ctx);
+        
+        assertEquals(1, executeExpression(compiler.compile(ctx) ) );
+    }    
 
     public void testStrictTypingCompilation2() throws NoSuchMethodException {
         ParserContext ctx = new ParserContext();
