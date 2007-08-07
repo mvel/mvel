@@ -176,8 +176,6 @@ public class AbstractParser implements Serializable {
 
                 line = pCtx.getLineCount();
 
-//                int scan = cursor;
-
                 if (expr[cursor] == '\n' || expr[cursor] == '\r') {
                     skipWhitespaceWithLineAccounting();
                 }
