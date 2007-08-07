@@ -901,7 +901,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testSystemOutPrint() {
-         parseDirect("a = 0;\r\nSystem.out.println('This is a test');");
+        parseDirect("a = 0;\r\nSystem.out.println('This is a test');");
     }
 
     public void testBreakpoints() {
@@ -1320,19 +1320,19 @@ public class CoreConfidenceTests extends TestCase {
         }
         assertTrue(false);
     }
-    
+
     public void testStrictStaticMethodCall() {
         ExpressionCompiler compiler = new ExpressionCompiler("Bar.staticMethod()");
         ParserContext ctx = new ParserContext();
-        ctx.addImport( "Bar", Bar.class );
+        ctx.addImport("Bar", Bar.class);
         ctx.setStrictTypeEnforcement(true);
 
-        Serializable s =  compiler.compile(ctx);
+        Serializable s = compiler.compile(ctx);
 
         DebugTools.decompile(s);
 
-        assertEquals(1, executeExpression(s ) );
-    }    
+        assertEquals(1, executeExpression(s));
+    }
 
     public void testStrictTypingCompilation2() throws NoSuchMethodException {
         ParserContext ctx = new ParserContext();
@@ -1473,6 +1473,33 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals("foo", compiledExecute("innermap['test']", outermap, null));
     }
 
+    public void testMapBindingSemantics() {
+        Map<String, Object> outermap = new HashMap<String, Object>();
+        Map<String, Object> innermap = new HashMap<String, Object>();
+
+        innermap.put("test", "foo");
+        outermap.put("innermap", innermap);
+
+        MVEL.setProperty(outermap, "innermap['test']", "bar");
+
+        assertEquals("bar", compiledExecute("innermap['test']", outermap, null));
+    }
+
+    public void testMapBindingSemantics2() {
+        Map<String, Object> outermap = new HashMap<String, Object>();
+        Map<String, Object> innermap = new HashMap<String, Object>();
+
+        innermap.put("test", "foo");
+        outermap.put("innermap", innermap);
+
+        Serializable s = MVEL.compileSetExpression("innermap['test']");
+
+        MVEL.executeSetExpression(s, outermap, "bar");
+
+        //  MVEL.setProperty(outermap, "innermap['test']", "bar");
+
+        assertEquals("bar", compiledExecute("innermap['test']", outermap, null));
+    }
 
     public Object parseDirect(String ex) {
         return compiledExecute(ex, this.base, this.map);
@@ -1543,11 +1570,11 @@ public class CoreConfidenceTests extends TestCase {
         Object seventh = executeExpression(compiledD, base, map);
 
         if (seventh != null && !seventh.getClass().isArray()) {
-             if (!seventh.equals(sixth)) {
-                 throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-                         + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
-             }
-         }
+            if (!seventh.equals(sixth)) {
+                throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
+                        + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
+            }
+        }
 
 
         return second;
