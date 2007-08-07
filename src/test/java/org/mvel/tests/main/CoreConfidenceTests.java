@@ -1463,12 +1463,22 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals("10", parseDirect("(String) 10"));
     }
 
+    public void testMapAccessSemantics() {
+        Map<String, Object> outermap = new HashMap<String, Object>();
+        Map<String, Object> innermap = new HashMap<String, Object>();
 
-    public Object parseDirect(String ex) {
-        return compiledExecute(ex);
+        innermap.put("test", "foo");
+        outermap.put("innermap", innermap);
+
+        assertEquals("foo", compiledExecute("innermap['test']", outermap, null));
     }
 
-    public Object compiledExecute(String ex) {
+
+    public Object parseDirect(String ex) {
+        return compiledExecute(ex, this.base, this.map);
+    }
+
+    public Object compiledExecute(String ex, Object base, Map map) {
         OptimizerFactory.setDefaultOptimizer("ASM");
 
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
@@ -1542,18 +1552,18 @@ public class CoreConfidenceTests extends TestCase {
 
         return second;
     }
-
-    public Object compiledExecute(String ex, Object base, Map map) {
-        Serializable compiled = compileExpression(ex);
-
-        Object first = executeExpression(compiled, base, map);
-        Object second = executeExpression(compiled, base, map);
-
-        if (first != null && !first.getClass().isArray())
-            assertSame(first, second);
-
-        return second;
-    }
+//
+//    public Object compiledExecute(String ex, Object base, Map map) {
+//        Serializable compiled = compileExpression(ex);
+//
+//        Object first = executeExpression(compiled, base, map);
+//        Object second = executeExpression(compiled, base, map);
+//
+//        if (first != null && !first.getClass().isArray())
+//            assertSame(first, second);
+//
+//        return second;
+//    }
 
 
     @SuppressWarnings({"unchecked"})
