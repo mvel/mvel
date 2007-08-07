@@ -35,4 +35,9 @@ public class LiteralNode extends ASTNode {
     public Object getLiteralValue() {
         return literal;
     }
+
+
+    public boolean isLiteral() {
+        return true;
+    }
 }

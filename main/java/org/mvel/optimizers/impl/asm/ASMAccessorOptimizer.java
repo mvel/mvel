@@ -283,38 +283,46 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
-        debug("\n  **  ENTER -> {bean: " + property + "}");
+        debug("\n  **  ENTER -> {bean: " + property + "; ctx=" + ctx + "}");
 
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
 
-        if (first && variableFactory != null && variableFactory.isResolveable(property)) {
-            try {
-                debug("ALOAD 3");
-                mv.visitVarInsn(ALOAD, 3);
+        if (first) {
+            if (variableFactory != null && variableFactory.isResolveable(property)) {
+                try {
+                    debug("ALOAD 3");
+                    mv.visitVarInsn(ALOAD, 3);
 
-                debug("LDC :" + property);
-                mv.visitLdcInsn(property);
+                    debug("LDC :" + property);
+                    mv.visitLdcInsn(property);
 
-                debug("INVOKEINTERFACE org/mvel/integration/VariableResolverFactory.getVariableResolver");
-                mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolverFactory",
-                        "getVariableResolver", "(Ljava/lang/String;)Lorg/mvel/integration/VariableResolver;");
+                    debug("INVOKEINTERFACE org/mvel/integration/VariableResolverFactory.getVariableResolver");
+                    mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolverFactory",
+                            "getVariableResolver", "(Ljava/lang/String;)Lorg/mvel/integration/VariableResolver;");
 
-                debug("INVOKEINTERFACE org/mvel/integration/VariableResolver.getValue");
-                mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolver",
-                        "getValue", "()Ljava/lang/Object;");
+                    debug("INVOKEINTERFACE org/mvel/integration/VariableResolver.getValue");
+                    mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolver",
+                            "getValue", "()Ljava/lang/Object;");
 
-                returnType = Object.class;
+                    returnType = Object.class;
 
+                }
+                catch (Exception e) {
+                    throw new OptimizationFailure("critical error in JIT", e);
+                }
+
+
+                return variableFactory.getVariableResolver(property).getValue();
             }
-            catch (Exception e) {
-                throw new OptimizationFailure("critical error in JIT", e);
+            else {
+                mv.visitVarInsn(ALOAD, 1);
             }
-
-
-            return variableFactory.getVariableResolver(property).getValue();
+                    
         }
-        else if (member instanceof Field) {
+
+
+         if (member instanceof Field) {
             Object o = ((Field) member).get(ctx);
 
             if (first) {
@@ -488,7 +496,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throws IllegalAccessException, InvocationTargetException {
         if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
 
-        debug("\n  **  ENTER -> {collections: " + prop + "}");
+        debug("\n  **  ENTER -> {collections: " + prop + "; ctx=" + ctx + "}");
 
         int start = ++cursor;
 
@@ -500,9 +508,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (!scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
+        String tk = new String(expr, start, cursor - start);
+
+        debug("{collection token:<<" + tk + ">>}");
 
         boolean literal = false;
-        ExecutableStatement compiled = (ExecutableStatement) ParseTools.subCompileExpression(new String(expr, start, cursor - start));
+        ExecutableStatement compiled = (ExecutableStatement) ParseTools.subCompileExpression(tk);
         Object item;
 
         if (compiled instanceof ExecutableLiteral) {
