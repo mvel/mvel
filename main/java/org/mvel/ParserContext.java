@@ -134,7 +134,8 @@ public class ParserContext implements Serializable {
 
 
     public boolean hasImport(String name) {
-        return (imports != null && imports.containsKey(name)) || (!"this".equals(name) && AbstractParser.LITERALS.containsKey(name)) || checkForDynamicImport(name);
+        return (imports != null && imports.containsKey(name)) || (!"this".equals(name) && AbstractParser.LITERALS.containsKey(name))
+                || checkForDynamicImport(name);
     }
 
     public void addImport(String name, Class cls) {
@@ -306,6 +307,6 @@ public class ParserContext implements Serializable {
     }
 
     public boolean hasImports() {
-        return imports != null && imports.size() != 0;
+        return (imports != null && imports.size() != 0) || (packageImports != null && packageImports.size() != 0);
     }
 }
