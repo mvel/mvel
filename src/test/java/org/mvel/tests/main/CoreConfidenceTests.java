@@ -1223,7 +1223,7 @@ public class CoreConfidenceTests extends TestCase {
 
         ResolverTools.appendFactory(mvf, classes);
 
-        Serializable compiled = compileExpression("p = new Person('tom'); p.age = 20; with( p ) { age = p.age + 1 }; return p.ag;e", classes.getImportedClasses());
+        Serializable compiled = compileExpression("p = new Person('tom'); p.age = 20; with( p ) { age = p.age + 1 }; return p.age;", classes.getImportedClasses());
 
         assertEquals(21, executeExpression(compiled, mvf) );
     }        
@@ -1271,7 +1271,7 @@ public class CoreConfidenceTests extends TestCase {
 
         interceptors.put("Modify", new Interceptor() {
             public int doBefore(ASTNode node, VariableResolverFactory factory) {
-                Object object = ((WithNode) node).getNestedStatement().getValue(null,
+                ((WithNode) node).getNestedStatement().getValue(null,
                         factory);
                 factory.createVariable("mod", "FOOBAR!");
                 return 0;
@@ -1555,10 +1555,9 @@ public class CoreConfidenceTests extends TestCase {
                         + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
             }
 
-
             if (!first.equals(third)) {
                 throw new AssertionError("Different result from test 1 and 3 (Compiled to Interpreted) [first: " +
-                        String.valueOf(first) + " (" + (first != null ? first.getClass().getName() : "null") + "); third: " + String.valueOf(third) + " (" + (second != null ? first.getClass().getName() : "null") + ")]");
+                        String.valueOf(first) + " (" + first.getClass().getName() + "); third: " + String.valueOf(third) + " (" + (second != null ? first.getClass().getName() : "null") + ")]");
             }
         }
 
@@ -1963,6 +1962,14 @@ public class CoreConfidenceTests extends TestCase {
             this.street = street;
         }
 
+
+        public String getStreet() {
+            return street;
+        }
+
+        public void setStreet(String street) {
+            this.street = street;
+        }
     }
 
     public static class Drools {
