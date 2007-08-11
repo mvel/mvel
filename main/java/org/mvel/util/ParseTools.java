@@ -532,6 +532,7 @@ public class ParseTools {
             if (cls != null)
                 hash += cls.hashCode();
         }
+
         return hash + sig.length + declaring.hashCode();
     }
 
@@ -573,6 +574,13 @@ public class ParseTools {
                 break;
             case Operator.DIV:
                 op = '/';
+                break;
+
+            case Operator.BW_AND:
+                op = '&';
+                break;
+            case Operator.BW_OR:
+                op = '|';
                 break;
         }
 
