@@ -2,11 +2,12 @@ package org.mvel.ast;
 
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
-import static org.mvel.MVEL.setProperty;
+import org.mvel.MVEL;
 import org.mvel.Operator;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,10 +32,12 @@ public class WithNode extends BlockNode implements NestedStatement {
         Object ctxObject = nestedStatement.getValue(ctx, thisValue, factory);
 
         for (ParmValuePair pvp : withExpressions) {
-            if (pvp.getParameter() != null)
-                setProperty(ctxObject, pvp.getParameter(), pvp.getStatement().getValue(ctx, thisValue, factory));
-            else
+            if (pvp.getSetExpression() != null) {
+                MVEL.executeSetExpression(pvp.getSetExpression(), ctxObject, factory, pvp.getStatement().getValue(ctx, thisValue, factory));
+            }
+            else {
                 pvp.getStatement().getValue(ctxObject, ctxObject, factory);
+            }
         }
 
         return ctxObject;
@@ -60,33 +63,36 @@ public class WithNode extends BlockNode implements NestedStatement {
                     if ((i = balancedCapture(block, i, block[i])) == -1) {
                         throw new CompileException("unbalanced braces", block, i);
                     }
-                    break;
+                    continue;
 
                 case'*':
                     if (i < block.length && block[i + 1] == '=') {
                         oper = Operator.MULT;
-                        break;
                     }
+                    continue;
+
                 case'/':
                     if (i < block.length && block[i + 1] == '=') {
                         oper = Operator.DIV;
-                        break;
                     }
+                    continue;
+
                 case'-':
                     if (i < block.length && block[i + 1] == '=') {
                         oper = Operator.SUB;
-                        break;
                     }
+                    continue;
+
                 case'+':
                     if (i < block.length && block[i + 1] == '=') {
                         oper = Operator.ADD;
-                        break;
                     }
+                    continue;
 
                 case'=':
                     parm = new String(block, start, i - start - (oper != -1 ? 1 : 0)).trim();
                     start = ++i;
-                    break;
+                    continue;
 
                 case',':
                     if (parm == null) {
@@ -141,23 +147,24 @@ public class WithNode extends BlockNode implements NestedStatement {
     }
 
     public static final class ParmValuePair {
-        private String parameter;
+        private Serializable setExpression;
         private ExecutableStatement statement;
 
         public ParmValuePair() {
         }
 
         public ParmValuePair(String parameter, ExecutableStatement statement) {
-            this.parameter = parameter;
+            this.setExpression = MVEL.compileSetExpression(parameter);
             this.statement = statement;
         }
 
-        public String getParameter() {
-            return parameter;
+
+        public Serializable getSetExpression() {
+            return setExpression;
         }
 
-        public void setParameter(String parameter) {
-            this.parameter = parameter;
+        public void setSetExpression(Serializable setExpression) {
+            this.setExpression = setExpression;
         }
 
         public ExecutableStatement getStatement() {

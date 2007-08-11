@@ -555,7 +555,9 @@ public class ParseTools {
     }
 
     public static char[] createShortFormOperativeAssignment(String name, char[] statement, int operation) {
-        if (operation == -1) return statement;
+        if (operation == -1) {
+            return statement;
+        }
 
         char[] stmt;
         char op = 0;
