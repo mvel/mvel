@@ -1203,6 +1203,18 @@ public class CoreConfidenceTests extends TestCase {
 
         assertTrue(executeExpression(compiled, mvf) instanceof HashMap);
     }
+    
+    public void testSataticClassImportViaFactory() {
+        MapVariableResolverFactory mvf = new MapVariableResolverFactory(map);
+        ClassImportResolverFactory classes = new ClassImportResolverFactory();
+        classes.addClass(Person.class);
+
+        ResolverTools.appendFactory(mvf, classes);
+
+        Serializable compiled = compileExpression("p = new Person('tom'); return p.name", classes.getImportedClasses());
+
+        assertEquals("tom", executeExpression(compiled, mvf) );
+    }    
 
     public void testCheeseConstructor() {
         MapVariableResolverFactory mvf = new MapVariableResolverFactory(map);
@@ -1902,6 +1914,14 @@ public class CoreConfidenceTests extends TestCase {
 
     public static class Person {
         private String name;
+        
+        public Person() {
+            
+        }
+        
+        public Person(String name) {
+            this.name = name;
+        }
 
         public String getName() {
             return name;
