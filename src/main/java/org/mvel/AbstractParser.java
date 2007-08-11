@@ -154,7 +154,6 @@ public class AbstractParser implements Serializable {
         }
 
         int brace, start = cursor;
-        
 
         /**
          * Because of parser recursion for sub-expression parsing, we sometimes need to remain
@@ -457,34 +456,7 @@ public class AbstractParser implements Serializable {
                  * Produce the token.
                  */
                 trimWhitespace();
-
-                if (parserContext != null && parserContext.get() != null && parserContext.get().hasImports()) {
-                    char[] _subset = subset(expr, start, cursor - start);
-                    int offset;
-
-                    if ((offset = findFirst('.', _subset)) != -1) {
-                        String iStr = new String(_subset, 0, offset);
-                        if ("this".equals(iStr)) {
-                            lastWasIdentifier = true;
-                            return lastNode = new ThisValDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields);
-                        }
-                        else if (getParserContext().hasImport(iStr)) {
-                            lastWasIdentifier = true;
-                            return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, getParserContext().getImport(iStr));
-                        }
-                    }
-                    else {
-                        ASTNode node = new ASTNode(_subset, 0, _subset.length, fields);
-                        lastWasIdentifier = node.isIdentifier();
-                        return lastNode = node;
-                    }
-                }
-
-                //   return createPropertyToken(expr, start, cursor, fields);
-
-                lastWasIdentifier = true;
-                lastNode = createPropertyToken(start, cursor);
-                return lastNode;
+                return createPropertyToken(start, cursor);
             }
             else
                 switch (expr[cursor]) {
@@ -708,11 +680,6 @@ public class AbstractParser implements Serializable {
                                 captureToEOS();
                                 return new TypeCast(expr, start, cursor, fields, getParserContext().getImport(tokenStr));
                             }
-//                            else if (LITERALS.containsKey(tokenStr)) {
-//                                start = cursor;
-//                                captureToEOS();
-//                                return new TypeCast(expr, start, cursor, fields, (Class) LITERALS.get(tokenStr));
-//                            }
                             else {
                                 try {
                                     /**
@@ -918,7 +885,39 @@ public class AbstractParser implements Serializable {
     }
 
     private ASTNode createPropertyToken(int start, int end) {
-        return new PropertyASTNode(expr, start, end, fields);
+        if (parserContext != null && parserContext.get() != null && parserContext.get().hasImports()) {
+            char[] _subset = subset(expr, start, cursor - start);
+            int offset;
+
+            if ((offset = findFirst('.', _subset)) != -1) {
+                String iStr = new String(_subset, 0, offset);
+                if ("this".equals(iStr)) {
+                    lastWasIdentifier = true;
+                    return lastNode = new ThisValDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields);
+                }
+                else if (getParserContext().hasImport(iStr)) {
+                    lastWasIdentifier = true;
+                    return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, getParserContext().getImport(iStr));
+                }
+            }
+            else {
+                String iStr = new String(_subset);
+                if (getParserContext().hasImport(iStr))  {
+                    lastWasIdentifier = true;
+                    return lastNode = new LiteralNode(getParserContext().getImport(iStr), Class.class);
+                }
+
+
+                ASTNode node = new ASTNode(_subset, 0, _subset.length, fields);
+                lastWasIdentifier = node.isIdentifier();
+                return lastNode = node;
+            }
+        }
+
+        lastWasIdentifier = true;
+
+
+        return lastNode = new PropertyASTNode(expr, start, end, fields);
     }
 
     private ASTNode createBlockToken(final int condStart,

@@ -1533,6 +1533,21 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals("bar", compiledExecute("innermap['test']", outermap, null));
     }
 
+    public void testDynamicImports() {
+        ParserContext ctx = new ParserContext();
+        ctx.addPackageImport("java.util");
+
+        ExpressionCompiler compiler = new ExpressionCompiler("HashMap");
+        Serializable s = compiler.compile(ctx);
+
+        assertEquals(HashMap.class, MVEL.executeExpression(s));
+
+        compiler = new ExpressionCompiler("map = new HashMap(); map.size()");
+        s = compiler.compile(ctx);
+
+        assertEquals(0, MVEL.executeExpression(s, new LocalVariableResolverFactory()));
+    }
+        
     public Object parseDirect(String ex) {
         return compiledExecute(ex, this.base, this.map);
     }

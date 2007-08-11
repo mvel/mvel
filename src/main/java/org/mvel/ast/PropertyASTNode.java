@@ -138,6 +138,7 @@ public class PropertyASTNode extends ASTNode {
                 if (isOperator()) {
                     throw new CompileException("incomplete statement");
                 }
+               
 
                 throw new UnresolveablePropertyException(this);
             }
