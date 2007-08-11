@@ -1211,10 +1211,22 @@ public class CoreConfidenceTests extends TestCase {
 
         ResolverTools.appendFactory(mvf, classes);
 
-        Serializable compiled = compileExpression("p = new Person('tom'); return p.name", classes.getImportedClasses());
+        Serializable compiled = compileExpression("p = new Person('tom'); return p.name;", classes.getImportedClasses());
 
         assertEquals("tom", executeExpression(compiled, mvf) );
     }    
+    
+    public void testSataticClassImportViaFactoryAndWithModification() {
+        MapVariableResolverFactory mvf = new MapVariableResolverFactory(map);
+        ClassImportResolverFactory classes = new ClassImportResolverFactory();
+        classes.addClass(Person.class);
+
+        ResolverTools.appendFactory(mvf, classes);
+
+        Serializable compiled = compileExpression("p = new Person('tom'); p.age = 20; with( p ) { age = p.age + 1 }; return p.ag;e", classes.getImportedClasses());
+
+        assertEquals(21, executeExpression(compiled, mvf) );
+    }        
 
     public void testCheeseConstructor() {
         MapVariableResolverFactory mvf = new MapVariableResolverFactory(map);
@@ -1915,6 +1927,8 @@ public class CoreConfidenceTests extends TestCase {
     public static class Person {
         private String name;
         
+        private int age;
+        
         public Person() {
             
         }
@@ -1931,6 +1945,14 @@ public class CoreConfidenceTests extends TestCase {
             this.name = name;
         }
 
+        public int getAge() {
+            return age;
+        }
+
+        public void setAge(int age) {
+            this.age = age;
+        }               
+        
     }
 
     public static class Address {
