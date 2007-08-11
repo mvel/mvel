@@ -18,6 +18,8 @@ public class ParserContext implements Serializable {
     private int lineOffset;
 
     protected Map<String, Object> imports;
+    protected Set<String> packageImports;
+
     protected Map<String, Interceptor> interceptors;
 
     private Map<String, Class> variables;
@@ -69,7 +71,7 @@ public class ParserContext implements Serializable {
     }
 
 
-    public int getLineCount() {            
+    public int getLineCount() {
         return lineCount;
     }
 
@@ -98,8 +100,41 @@ public class ParserContext implements Serializable {
         return imports != null ? (Method) imports.get(name) : null;
     }
 
+    public void addPackageImport(String packageName) {
+        if (packageImports == null) packageImports = new HashSet<String>();
+        packageImports.add(packageName);
+    }
+
+    private boolean checkForDynamicImport(String className) {
+        if (packageImports == null) return false;
+
+        int found = 0;
+        Class cls = null;
+        for (String pkg : packageImports) {
+            try {
+                cls = Class.forName(pkg + "." + className);
+                found++;
+            }
+            catch (ClassNotFoundException e) {
+                // do nothing.
+            }
+        }
+
+        if (found > 1) {
+            throw new CompileException("ambiguous class name: " + className);
+        }
+        else if (found == 1) {
+            addImport(className, cls);
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+
     public boolean hasImport(String name) {
-        return (imports != null && imports.containsKey(name)) || (!"this".equals(name) && AbstractParser.LITERALS.containsKey(name)) ;
+        return (imports != null && imports.containsKey(name)) || (!"this".equals(name) && AbstractParser.LITERALS.containsKey(name)) || checkForDynamicImport(name);
     }
 
     public void addImport(String name, Class cls) {
