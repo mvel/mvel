@@ -1536,7 +1536,7 @@ public class CoreConfidenceTests extends TestCase {
     public void testDynamicImports() {
         ParserContext ctx = new ParserContext();
         ctx.addPackageImport("java.util");
-
+               
         ExpressionCompiler compiler = new ExpressionCompiler("HashMap");
         Serializable s = compiler.compile(ctx);
 
@@ -1876,10 +1876,10 @@ public class CoreConfidenceTests extends TestCase {
         context.setStrictTypeEnforcement(false);
 
         context.addImport("Message", Message.class);
-
         context.addInput("System", void.class);
         context.addInput("message", Object.class);
         context.addInput("m", Object.class);
+
         compiler.compile(context);
     }
 
