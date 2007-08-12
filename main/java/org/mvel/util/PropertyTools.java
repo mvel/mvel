@@ -331,7 +331,6 @@ public class PropertyTools {
         float baselength;
 
         int cur1 = 0;
-        //      int cur2 = 0;
 
         if (c1.length > c2.length) {
             baselength = c1.length;
@@ -353,16 +352,22 @@ public class PropertyTools {
             cur1++;
         }
 
+
         if (c1.length != c2.length) {
             cur1--;
-            int offset = c2.length - c1.length;
+            int offset = comp.length - against.length;
 
-            while (cur1 > 0) {
-                if (comp[cur1] == against[cur1 - offset]) {
+            int cur2 = cur1 - offset;
+
+            while (cur1 > 0 && cur1 < comp.length && cur2 > -1 && cur2 < against.length) {
+                if (comp[cur1] == against[cur2]) {
                     same++;
+                    cur2++;
+                    cur1++;
                 }
-
-                cur1--;
+                else {
+                    cur2 = --cur1 - offset;
+                }
             }
         }
 
