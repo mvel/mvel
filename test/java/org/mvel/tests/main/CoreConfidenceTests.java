@@ -787,6 +787,10 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals("2.0", parseDirect("squareRoot = Math.sqrt; new String(String.valueOf(squareRoot(4)));"));
     }
 
+    public void testFunctionPointerInAssignment() {
+        assertEquals(5.0, parseDirect("squareRoot = Math.sqrt; i = squareRoot(25); return i;"));
+    }
+
     public void testIncrementOperator() {
         assertEquals(2, parseDirect("x = 1; x++; x"));
     }
