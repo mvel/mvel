@@ -21,6 +21,8 @@ import java.io.Serializable;
 import static java.lang.System.currentTimeMillis;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.math.BigInteger;
+import java.math.BigDecimal;
 
 public class CoreConfidenceTests extends TestCase {
     protected Foo foo = new Foo();
@@ -1203,7 +1205,7 @@ public class CoreConfidenceTests extends TestCase {
 
         assertTrue(executeExpression(compiled, mvf) instanceof HashMap);
     }
-    
+
     public void testSataticClassImportViaFactory() {
         MapVariableResolverFactory mvf = new MapVariableResolverFactory(map);
         ClassImportResolverFactory classes = new ClassImportResolverFactory();
@@ -1213,9 +1215,9 @@ public class CoreConfidenceTests extends TestCase {
 
         Serializable compiled = compileExpression("p = new Person('tom'); return p.name;", classes.getImportedClasses());
 
-        assertEquals("tom", executeExpression(compiled, mvf) );
-    }    
-    
+        assertEquals("tom", executeExpression(compiled, mvf));
+    }
+
     public void testSataticClassImportViaFactoryAndWithModification() {
         MapVariableResolverFactory mvf = new MapVariableResolverFactory(map);
         ClassImportResolverFactory classes = new ClassImportResolverFactory();
@@ -1225,8 +1227,8 @@ public class CoreConfidenceTests extends TestCase {
 
         Serializable compiled = compileExpression("p = new Person('tom'); p.age = 20; with( p ) { age = p.age + 1 }; return p.age;", classes.getImportedClasses());
 
-        assertEquals(21, executeExpression(compiled, mvf) );
-    }        
+        assertEquals(21, executeExpression(compiled, mvf));
+    }
 
     public void testCheeseConstructor() {
         MapVariableResolverFactory mvf = new MapVariableResolverFactory(map);
@@ -1535,7 +1537,7 @@ public class CoreConfidenceTests extends TestCase {
     public void testDynamicImports() {
         ParserContext ctx = new ParserContext();
         ctx.addPackageImport("java.util");
-               
+
         ExpressionCompiler compiler = new ExpressionCompiler("HashMap");
         Serializable s = compiler.compile(ctx);
 
@@ -1546,7 +1548,7 @@ public class CoreConfidenceTests extends TestCase {
 
         assertEquals(0, MVEL.executeExpression(s, new LocalVariableResolverFactory()));
     }
-        
+
     public Object parseDirect(String ex) {
         return compiledExecute(ex, this.base, this.map);
     }
@@ -1939,13 +1941,13 @@ public class CoreConfidenceTests extends TestCase {
 
     public static class Person {
         private String name;
-        
+
         private int age;
-        
+
         public Person() {
-            
+
         }
-        
+
         public Person(String name) {
             this.name = name;
         }
@@ -1964,8 +1966,8 @@ public class CoreConfidenceTests extends TestCase {
 
         public void setAge(int age) {
             this.age = age;
-        }               
-        
+        }
+
     }
 
     public static class Address {
@@ -2031,4 +2033,129 @@ public class CoreConfidenceTests extends TestCase {
         }
     }
 
+    /**
+     * Submitted by: cleverpig
+     */
+
+    public void testBug4() {
+        ClassA A = new ClassA();
+        ClassB B = new ClassB();
+        System.out.println(MVEL.getProperty("date", A));
+        System.out.println(MVEL.getProperty("date", B));
+    }
+
+
+    public class ClassA {
+        private Integer i;
+        private double d;
+        private String s;
+        public Date date;
+        private BigDecimal bigdec;
+        private BigInteger bigint;
+
+        public Integer getI() {
+            return i;
+        }
+
+        public void setI(Integer i) {
+            this.i = i;
+        }
+
+        public double getD() {
+            return d;
+        }
+
+        public void setD(double d) {
+            this.d = d;
+        }
+
+        public String getS() {
+            return s;
+        }
+
+        public void setS(String s) {
+            this.s = s;
+        }
+
+        public Date getDate() {
+            return date;
+        }
+
+        public void setDate(Date date) {
+            this.date = date;
+        }
+
+        public BigDecimal getBigdec() {
+            return bigdec;
+        }
+
+        public void setBigdec(BigDecimal bigdec) {
+            this.bigdec = bigdec;
+        }
+
+        public BigInteger getBigint() {
+            return bigint;
+        }
+
+        public void setBigint(BigInteger bigint) {
+            this.bigint = bigint;
+        }
+    }
+
+    public class ClassB {
+        private Integer i;
+        private double d;
+        private String s;
+        public String date;
+        private BigDecimal bigdec;
+        private BigInteger bigint;
+
+        public Integer getI() {
+            return i;
+        }
+
+        public void setI(Integer i) {
+            this.i = i;
+        }
+
+        public double getD() {
+            return d;
+        }
+
+        public void setD(double d) {
+            this.d = d;
+        }
+
+        public String getS() {
+            return s;
+        }
+
+        public void setS(String s) {
+            this.s = s;
+        }
+
+        public String getDate() {
+            return date;
+        }
+
+        public void setDate(String date) {
+            this.date = date;
+        }
+
+        public BigDecimal getBigdec() {
+            return bigdec;
+        }
+
+        public void setBigdec(BigDecimal bigdec) {
+            this.bigdec = bigdec;
+        }
+
+        public BigInteger getBigint() {
+            return bigint;
+        }
+
+        public void setBigint(BigInteger bigint) {
+            this.bigint = bigint;
+        }
+    }
 }
