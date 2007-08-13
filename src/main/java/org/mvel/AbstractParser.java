@@ -916,7 +916,6 @@ public class AbstractParser implements Serializable {
             return lastNode = new ASTNode(expr, start, end, fields);
         }
 
-
         return lastNode = new PropertyASTNode(expr, start, end, fields);
     }
 

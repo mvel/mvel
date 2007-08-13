@@ -261,6 +261,10 @@ public class MVELRuntime {
         }
     }
 
+    public static boolean hasBreakpoints() {
+        return threadBreakpoints != null && threadBreakpoints.get() != null && threadBreakpoints.get().size() != 0;
+    }
+
     /**
      * Sets the Debugger instance to handle breakpoints.   A debugger may only be registered once per thread.
      * Calling this method more than once will result in the second and subsequent calls to simply fail silently.
