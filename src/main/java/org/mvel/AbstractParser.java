@@ -456,6 +456,7 @@ public class AbstractParser implements Serializable {
                  * Produce the token.
                  */
                 trimWhitespace();
+
                 return createPropertyToken(start, cursor);
             }
             else
@@ -885,6 +886,7 @@ public class AbstractParser implements Serializable {
     }
 
     private ASTNode createPropertyToken(int start, int end) {
+        lastWasIdentifier = true;
         if (parserContext != null && parserContext.get() != null && parserContext.get().hasImports()) {
             char[] _subset = subset(expr, start, cursor - start);
             int offset;
@@ -892,18 +894,15 @@ public class AbstractParser implements Serializable {
             if ((offset = findFirst('.', _subset)) != -1) {
                 String iStr = new String(_subset, 0, offset);
                 if ("this".equals(iStr)) {
-                    lastWasIdentifier = true;
                     return lastNode = new ThisValDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields);
                 }
                 else if (getParserContext().hasImport(iStr)) {
-                    lastWasIdentifier = true;
                     return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, getParserContext().getImport(iStr));
                 }
             }
             else {
                 String iStr = new String(_subset);
-                if (getParserContext().hasImport(iStr))  {
-                    lastWasIdentifier = true;
+                if (getParserContext().hasImport(iStr)) {
                     return lastNode = new LiteralNode(getParserContext().getImport(iStr), Class.class);
                 }
 
@@ -913,8 +912,9 @@ public class AbstractParser implements Serializable {
                 return lastNode = node;
             }
         }
-
-        lastWasIdentifier = true;
+        else if ((fields & ASTNode.METHOD) != 0) {
+            return lastNode = new ASTNode(expr, start, end, fields);
+        }
 
 
         return lastNode = new PropertyASTNode(expr, start, end, fields);
