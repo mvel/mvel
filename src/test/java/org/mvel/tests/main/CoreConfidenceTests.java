@@ -1373,7 +1373,6 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testStrictTypingCompilation3() throws NoSuchMethodException {
         ParserContext ctx = new ParserContext();
-        //   ctx.addImport("getRuntime", Runtime.class.getMethod("getRuntime", new Class[]{}));
 
         ctx.setStrictTypeEnforcement(true);
 
