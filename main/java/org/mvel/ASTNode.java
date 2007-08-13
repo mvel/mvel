@@ -165,9 +165,6 @@ public class ASTNode implements Cloneable, Serializable {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((fields & (LITERAL)) != 0) {
-//            if ((fields & THISREF) != 0)
-//                return thisValue;
-//            else
                 return literal;
         }
         try {
@@ -207,6 +204,7 @@ public class ASTNode implements Cloneable, Serializable {
         }
     }
 
+    
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         String s;
         if ((fields & (LITERAL)) != 0) {
