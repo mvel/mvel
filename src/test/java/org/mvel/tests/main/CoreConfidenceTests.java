@@ -2,6 +2,7 @@ package org.mvel.tests.main;
 
 import junit.framework.TestCase;
 import org.mvel.*;
+
 import static org.mvel.MVEL.*;
 import org.mvel.ast.WithNode;
 import org.mvel.debug.DebugTools;
@@ -165,6 +166,26 @@ public class CoreConfidenceTests extends TestCase {
     public void testPowerOf() {
         assertEquals(25, parseDirect("5 ** 2"));
     }
+    
+    public void EmptyTestWhileUsingImports() {
+        Map imports = new HashMap();
+        imports.put( "List", java.util.List.class);
+        imports.put( "ArrayList", java.util.ArrayList.class);
+        
+        ParserContext context = new ParserContext(imports, null, "testfile");        
+        ExpressionCompiler compiler = new ExpressionCompiler( "List list = new ArrayList(); return (list == empty)" );                
+        assertTrue ( (Boolean) MVEL.executeExpression( compiler.compile(context) ) );        
+    }
+    
+    public void NullTestWhileUsingImports() {
+        Map imports = new HashMap();
+        imports.put( "List", java.util.List.class);
+        imports.put( "ArrayList", java.util.ArrayList.class);
+        
+        ParserContext context = new ParserContext(imports, null, "testfile");        
+        ExpressionCompiler compiler = new ExpressionCompiler( "List list = new ArrayList(); return (list == null)" );                
+        assertTrue ( (Boolean) MVEL.executeExpression( compiler.compile(context) ) );        
+    }    
 
     public void testComplexExpression() {
         assertEquals("bar", parseDirect("a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]"));
