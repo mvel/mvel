@@ -2,6 +2,7 @@ package org.mvel.debug;
 
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.ParserContext;
+import org.mvel.ast.LineLabel;
 
 public class Frame {
     private String sourceName;
@@ -9,6 +10,13 @@ public class Frame {
 
     private VariableResolverFactory factory;
     private ParserContext parserContext;
+
+    public Frame(LineLabel label, VariableResolverFactory factory, ParserContext pCtx) {
+        this.sourceName = label.getSourceFile();
+        this.lineNumber = label.getLineNumber();
+        this.factory = factory;
+        this.parserContext = pCtx;
+    }
 
     public Frame(String sourceName, int lineNumber, VariableResolverFactory factory, ParserContext pCtx) {
         this.sourceName = sourceName;

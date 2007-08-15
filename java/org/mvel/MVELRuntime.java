@@ -5,7 +5,7 @@ import static org.mvel.Operator.*;
 import static org.mvel.Soundex.soundex;
 import org.mvel.ast.LineLabel;
 import org.mvel.debug.Debugger;
-import org.mvel.debug.Frame;
+import org.mvel.debug.DebuggerContext;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
@@ -16,17 +16,15 @@ import org.mvel.util.StringAppender;
 
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * This class contains the runtime for running compiled MVEL expressions.
  */
 public class MVELRuntime {
-    private static ThreadLocal<Map<String, Set<Integer>>> threadBreakpoints;
-    private static ThreadLocal<Debugger> threadDebugger;
+//    private static ThreadLocal<Map<String, Set<Integer>>> threadBreakpoints;
+//    private static ThreadLocal<Debugger> threadDebugger;
+
+    private static ThreadLocal<DebuggerContext> debuggerContext;
 
     /**
      * Main interpreter.
@@ -60,7 +58,7 @@ public class MVELRuntime {
                      * The consequence of this of course, is that it's not ideal to compile expressions with
                      * debugging symbols which you plan to use in a production enviroment.
                      */
-                    if (!debugger && threadBreakpoints != null && threadBreakpoints.get() != null) {
+                    if (!debugger && hasDebuggerContext()) {
                         debugger = true;
                     }
 
@@ -69,17 +67,11 @@ public class MVELRuntime {
                      */
                     if (debugger) {
                         LineLabel label = (LineLabel) tk;
+                        DebuggerContext context = debuggerContext.get();
 
                         try {
-                            if (threadBreakpoints != null
-                                    && threadBreakpoints.get().get(label.getSourceFile()).contains(label.getLineNumber())) {
-
-                                if (threadDebugger == null || threadDebugger.get() == null) {
-                                    throw new RuntimeException("no debugger registered to handle breakpoint.");
-                                }
-
-                                threadDebugger.get()
-                                        .onBreak(new Frame(label.getSourceFile(), label.getLineNumber(), variableFactory, expression.getParserContext()));
+                            if (context.checkBreak(label, variableFactory, expression) == Debugger.STEP_OVER) {
+                                node.nextNode();   
                             }
                         }
                         catch (NullPointerException e) {
@@ -230,14 +222,8 @@ public class MVELRuntime {
      * @param line - the line number of the breakpoint
      */
     public static void registerBreakpoint(String source, int line) {
-        if (threadBreakpoints == null) {
-            threadBreakpoints = new ThreadLocal<Map<String, Set<Integer>>>();
-            threadBreakpoints.set(new HashMap<String, Set<Integer>>());
-        }
-        if (!threadBreakpoints.get().containsKey(source)) {
-            threadBreakpoints.get().put(source, new HashSet<Integer>());
-        }
-        threadBreakpoints.get().get(source).add(line);
+        ensureDebuggerContext();
+        debuggerContext.get().registerBreakpoint(source, line);
     }
 
     /**
@@ -247,22 +233,31 @@ public class MVELRuntime {
      * @param line - the line number of the breakpoint to be removed
      */
     public static void removeBreakpoint(String source, int line) {
-        if (threadBreakpoints != null && threadBreakpoints.get() != null) {
-            threadBreakpoints.get().get(source).remove(line);
+        if (hasDebuggerContext()) {
+            debuggerContext.get().removeBreakpoint(source, line);
         }
+    }
+
+    private static boolean hasDebuggerContext() {
+        return debuggerContext != null && debuggerContext.get() != null;
+    }
+
+    private static void ensureDebuggerContext() {
+        if (debuggerContext == null) debuggerContext = new ThreadLocal<DebuggerContext>();
+        if (debuggerContext.get() == null) debuggerContext.set(new DebuggerContext());
     }
 
     /**
      * Reset all the currently registered breakpoints.
      */
     public static void clearAllBreakpoints() {
-        if (threadBreakpoints != null && threadBreakpoints.get() != null) {
-            threadBreakpoints.get().clear();
+        if (hasDebuggerContext()) {
+            debuggerContext.get().clearAllBreakpoints();
         }
     }
 
     public static boolean hasBreakpoints() {
-        return threadBreakpoints != null && threadBreakpoints.get() != null && threadBreakpoints.get().size() != 0;
+        return hasDebuggerContext() && debuggerContext.get().hasBreakpoints();
     }
 
     /**
@@ -272,12 +267,8 @@ public class MVELRuntime {
      * @param debugger - debugger instance
      */
     public static void setThreadDebugger(Debugger debugger) {
-        if (threadDebugger == null) {
-            threadDebugger = new ThreadLocal<Debugger>();
-        }
-        if (threadDebugger.get() == null) {
-            threadDebugger.set(debugger);
-        }
+        ensureDebuggerContext();
+        debuggerContext.get().setDebugger(debugger);
     }
 
     /**
@@ -285,11 +276,6 @@ public class MVELRuntime {
      * breakpoints.
      */
     public static void resetDebugger() {
-         if (threadDebugger != null && threadDebugger.get() != null) {
-             threadDebugger = null;
-         }
-         if (threadBreakpoints != null && threadBreakpoints.get() != null) {
-             threadBreakpoints = null;
-         }
+        debuggerContext = null;
     }
 }

@@ -2,6 +2,11 @@ package org.mvel.debug;
 
 
 public interface Debugger {
+    public static int CONTINUE = 0;
+    public static int STEP = 1;
+    public static int STEP_OVER = 2;
+
+
     /**
      * When a breakpoint is recached, 
      * @param frame
