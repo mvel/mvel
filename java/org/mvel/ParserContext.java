@@ -139,6 +139,7 @@ public class ParserContext implements Serializable {
                 || checkForDynamicImport(name);
     }
 
+
     public void addImport(String name, Class cls) {
         if (this.imports == null) this.imports = new HashMap<String, Object>();
         this.imports.put(name, cls);
