@@ -132,7 +132,6 @@ public class ParserContext implements Serializable {
         }
     }
 
-
     public boolean hasImport(String name) {
         return (imports != null && imports.containsKey(name)) ||
                 (!"this".equals(name) && !"self".equals(name) && !"empty".equals(name) && !"null".equals(name) &&
