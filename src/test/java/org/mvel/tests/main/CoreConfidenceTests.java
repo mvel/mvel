@@ -62,279 +62,279 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testSingleProperty() {
-        assertEquals(false, parseDirect("fun"));
+        assertEquals(false, test("fun"));
     }
 
 
     public void testMethodOnValue() {
-        assertEquals("DOG", parseDirect("foo.bar.name.toUpperCase()"));
+        assertEquals("DOG", test("foo.bar.name.toUpperCase()"));
     }
 
     public void testSimpleProperty() {
-        assertEquals("dog", parseDirect("foo.bar.name"));
+        assertEquals("dog", test("foo.bar.name"));
     }
 
     public void testSimpleProperty2() {
-        assertEquals("cat", parseDirect("DATA"));
+        assertEquals("cat", test("DATA"));
     }
 
     public void testPropertyViaDerivedClass() {
-        assertEquals("cat", parseDirect("derived.data"));
+        assertEquals("cat", test("derived.data"));
     }
 
     public void testDeepAssignment() {
-        assertEquals("crap", parseDirect("foo.bar.assignTest = 'crap'"));
-        assertEquals("crap", parseDirect("foo.bar.assignTest"));
+        assertEquals("crap", test("foo.bar.assignTest = 'crap'"));
+        assertEquals("crap", test("foo.bar.assignTest"));
     }
 
     public void testThroughInterface() {
-        assertEquals("FOOBAR!", parseDirect("testImpl.name"));
+        assertEquals("FOOBAR!", test("testImpl.name"));
     }
 
     public void testThroughInterface2() {
-        assertEquals(true, parseDirect("testImpl.foo"));
+        assertEquals(true, test("testImpl.foo"));
     }
 
     public void testMapAccessWithMethodCall() {
-        assertEquals("happyBar", parseDirect("funMap['foo'].happy()"));
+        assertEquals("happyBar", test("funMap['foo'].happy()"));
     }
 
     public void testBooleanOperator() {
-        assertEquals(true, parseDirect("foo.bar.woof == true"));
+        assertEquals(true, test("foo.bar.woof == true"));
     }
 
     public void testBooleanOperator2() {
-        assertEquals(false, parseDirect("foo.bar.woof == false"));
+        assertEquals(false, test("foo.bar.woof == false"));
     }
 
     public void testBooleanOperator3() {
-        assertEquals(true, parseDirect("foo.bar.woof== true"));
+        assertEquals(true, test("foo.bar.woof== true"));
     }
 
     public void testBooleanOperator4() {
-        assertEquals(false, parseDirect("foo.bar.woof ==false"));
+        assertEquals(false, test("foo.bar.woof ==false"));
     }
 
     public void testBooleanOperator5() {
-        assertEquals(true, parseDirect("foo.bar.woof == true"));
+        assertEquals(true, test("foo.bar.woof == true"));
     }
 
     public void testBooleanOperator6() {
-        assertEquals(false, parseDirect("foo.bar.woof==false"));
+        assertEquals(false, test("foo.bar.woof==false"));
     }
 
     public void testTextComparison() {
-        assertEquals(true, parseDirect("foo.bar.name == 'dog'"));
+        assertEquals(true, test("foo.bar.name == 'dog'"));
     }
 
     public void testNETextComparison() {
-        assertEquals(true, parseDirect("foo.bar.name != 'foo'"));
+        assertEquals(true, test("foo.bar.name != 'foo'"));
     }
 
     public void testChor() {
-        assertEquals("cat", parseDirect("a or b or c"));
+        assertEquals("cat", test("a or b or c"));
     }
 
     public void testChorWithLiteral() {
-        assertEquals("fubar", parseDirect("a or 'fubar'"));
+        assertEquals("fubar", test("a or 'fubar'"));
     }
 
     public void testNullCompare() {
-        assertEquals(true, parseDirect("c != null"));
+        assertEquals(true, test("c != null"));
     }
 
     public void testUninitializedInt() {
-        assertEquals(0, parseDirect("sarahl"));
+        assertEquals(0, test("sarahl"));
     }
 
     public void testAnd() {
-        assertEquals(true, parseDirect("c != null && foo.bar.name == 'dog' && foo.bar.woof"));
+        assertEquals(true, test("c != null && foo.bar.name == 'dog' && foo.bar.woof"));
     }
 
     public void testAnd2() {
-        assertEquals(true, parseDirect("c!=null&&foo.bar.name=='dog'&&foo.bar.woof"));
+        assertEquals(true, test("c!=null&&foo.bar.name=='dog'&&foo.bar.woof"));
     }
 
     public void testMath() {
-        assertEquals(188.4f, parseDirect("pi * hour"));
+        assertEquals(188.4f, test("pi * hour"));
     }
 
     public void testMath2() {
-        assertEquals(3, parseDirect("foo.number-1"));
+        assertEquals(3, test("foo.number-1"));
     }
 
     public void testPowerOf() {
-        assertEquals(25, parseDirect("5 ** 2"));
+        assertEquals(25, test("5 ** 2"));
     }
-    
+
     public void EmptyTestWhileUsingImports() {
         Map imports = new HashMap();
-        imports.put( "List", java.util.List.class);
-        imports.put( "ArrayList", java.util.ArrayList.class);
-        
-        ParserContext context = new ParserContext(imports, null, "testfile");        
-        ExpressionCompiler compiler = new ExpressionCompiler( "List list = new ArrayList(); return (list == empty)" );                
-        assertTrue ( (Boolean) MVEL.executeExpression( compiler.compile(context) ) );        
+        imports.put("List", java.util.List.class);
+        imports.put("ArrayList", java.util.ArrayList.class);
+
+        ParserContext context = new ParserContext(imports, null, "testfile");
+        ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == empty)");
+        assertTrue((Boolean) MVEL.executeExpression(compiler.compile(context)));
     }
-    
+
     public void NullTestWhileUsingImports() {
         Map imports = new HashMap();
-        imports.put( "List", java.util.List.class);
-        imports.put( "ArrayList", java.util.ArrayList.class);
-        
-        ParserContext context = new ParserContext(imports, null, "testfile");        
-        ExpressionCompiler compiler = new ExpressionCompiler( "List list = new ArrayList(); return (list == null)" );                
-        assertTrue ( (Boolean) MVEL.executeExpression( compiler.compile(context) ) );        
-    }    
+        imports.put("List", java.util.List.class);
+        imports.put("ArrayList", java.util.ArrayList.class);
+
+        ParserContext context = new ParserContext(imports, null, "testfile");
+        ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == null)");
+        assertTrue((Boolean) MVEL.executeExpression(compiler.compile(context)));
+    }
 
     public void testComplexExpression() {
-        assertEquals("bar", parseDirect("a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]"));
+        assertEquals("bar", test("a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]"));
     }
 
     public void testComplexAnd() {
-        assertEquals(true, parseDirect("(pi * hour) > 0 && foo.happy() == 'happyBar'"));
+        assertEquals(true, test("(pi * hour) > 0 && foo.happy() == 'happyBar'"));
     }
 
     public void testShortPathExpression() {
-        assertEquals(null, parseDirect("3 > 4 && foo.toUC('test'); foo.register"));
+        assertEquals(null, test("3 > 4 && foo.toUC('test'); foo.register"));
     }
 
     public void testShortPathExpression2() {
-        assertEquals(true, parseDirect("4 > 3 || foo.toUC('test')"));
+        assertEquals(true, test("4 > 3 || foo.toUC('test')"));
     }
 
     public void testShortPathExpression4() {
-        assertEquals(true, parseDirect("4>3||foo.toUC('test')"));
+        assertEquals(true, test("4>3||foo.toUC('test')"));
     }
 
     public void testOrOperator() {
-        assertEquals(true, parseDirect("true||true"));
+        assertEquals(true, test("true||true"));
     }
 
     public void testOrOperator2() {
-        assertEquals(true, parseDirect("2 > 3 || 3 > 2"));
+        assertEquals(true, test("2 > 3 || 3 > 2"));
     }
 
     public void testOrOperator3() {
-        assertEquals(true, parseDirect("pi > 5 || pi > 6 || pi > 3"));
+        assertEquals(true, test("pi > 5 || pi > 6 || pi > 3"));
     }
 
 
     public void testShortPathExpression3() {
-        assertEquals(false, parseDirect("defnull != null  && defnull.length() > 0"));
+        assertEquals(false, test("defnull != null  && defnull.length() > 0"));
     }
 
     public void testModulus() {
         assertEquals(38392 % 2,
-                parseDirect("38392 % 2"));
+                test("38392 % 2"));
     }
 
 
     public void testLessThan() {
-        assertEquals(true, parseDirect("pi < 3.15"));
-        assertEquals(true, parseDirect("pi <= 3.14"));
-        assertEquals(false, parseDirect("pi > 3.14"));
-        assertEquals(true, parseDirect("pi >= 3.14"));
+        assertEquals(true, test("pi < 3.15"));
+        assertEquals(true, test("pi <= 3.14"));
+        assertEquals(false, test("pi > 3.14"));
+        assertEquals(true, test("pi >= 3.14"));
     }
 
     public void testMethodAccess() {
-        assertEquals("happyBar", parseDirect("foo.happy()"));
+        assertEquals("happyBar", test("foo.happy()"));
     }
 
     public void testMethodAccess2() {
-        assertEquals("FUBAR", parseDirect("foo.toUC('fubar')"));
+        assertEquals("FUBAR", test("foo.toUC('fubar')"));
     }
 
     public void testMethodAccess3() {
-        assertEquals(true, parseDirect("equalityCheck(c, 'cat')"));
+        assertEquals(true, test("equalityCheck(c, 'cat')"));
     }
 
     public void testMethodAccess4() {
-        assertEquals(null, parseDirect("readBack(null)"));
+        assertEquals(null, test("readBack(null)"));
     }
 
     public void testMethodAccess5() {
-        assertEquals("nulltest", parseDirect("appendTwoStrings(null, 'test')"));
+        assertEquals("nulltest", test("appendTwoStrings(null, 'test')"));
     }
 
     public void testMethodAccess6() {
-        assertEquals(true, parseDirect("   equalityCheck(   c  \n  ,   \n   'cat'      )   "));
+        assertEquals(true, test("   equalityCheck(   c  \n  ,   \n   'cat'      )   "));
     }
 
     public void testNegation() {
-        assertEquals(true, parseDirect("!fun && !fun"));
+        assertEquals(true, test("!fun && !fun"));
     }
 
     public void testNegation2() {
-        assertEquals(false, parseDirect("fun && !fun"));
+        assertEquals(false, test("fun && !fun"));
     }
 
     public void testNegation3() {
-        assertEquals(true, parseDirect("!(fun && fun)"));
+        assertEquals(true, test("!(fun && fun)"));
     }
 
     public void testNegation4() {
-        assertEquals(false, parseDirect("(fun && fun)"));
+        assertEquals(false, test("(fun && fun)"));
     }
 
     public void testMultiStatement() {
-        assertEquals(true, parseDirect("populate(); barfoo == 'sarah'"));
+        assertEquals(true, test("populate(); barfoo == 'sarah'"));
     }
 
     public void testAssignment() {
-        assertEquals(true, parseDirect("populate(); blahfoo = 'sarah'; blahfoo == 'sarah'"));
+        assertEquals(true, test("populate(); blahfoo = 'sarah'; blahfoo == 'sarah'"));
     }
 
     public void testAssignment2() {
-        assertEquals("sarah", parseDirect("populate(); blahfoo = barfoo"));
+        assertEquals("sarah", test("populate(); blahfoo = barfoo"));
     }
 
     public void testAssignment3() {
-        assertEquals(java.lang.Integer.class, parseDirect("blah = 5").getClass());
+        assertEquals(java.lang.Integer.class, test("blah = 5").getClass());
     }
 
     public void testAssignment4() {
-        assertEquals(102, parseDirect("a = 100 + 1 + 1"));
+        assertEquals(102, test("a = 100 + 1 + 1"));
     }
 
     public void testOr() {
-        assertEquals(true, parseDirect("fun || true"));
+        assertEquals(true, test("fun || true"));
     }
 
     public void testLiteralPassThrough() {
-        assertEquals(true, parseDirect("true"));
+        assertEquals(true, test("true"));
     }
 
     public void testLiteralPassThrough2() {
-        assertEquals(false, parseDirect("false"));
+        assertEquals(false, test("false"));
     }
 
     public void testLiteralPassThrough3() {
-        assertEquals(null, parseDirect("null"));
+        assertEquals(null, test("null"));
     }
 
     public void testRegEx() {
-        assertEquals(true, parseDirect("foo.bar.name ~= '[a-z].+'"));
+        assertEquals(true, test("foo.bar.name ~= '[a-z].+'"));
     }
 
     public void testRegExNegate() {
-        assertEquals(false, parseDirect("!(foo.bar.name ~= '[a-z].+')"));
+        assertEquals(false, test("!(foo.bar.name ~= '[a-z].+')"));
     }
 
     public void testRegEx2() {
-        assertEquals(true, parseDirect("foo.bar.name ~= '[a-z].+' && foo.bar.name != null"));
+        assertEquals(true, test("foo.bar.name ~= '[a-z].+' && foo.bar.name != null"));
     }
 
     public void testRegEx3() {
-        assertEquals(true, parseDirect("foo.bar.name~='[a-z].+'&&foo.bar.name!=null"));
+        assertEquals(true, test("foo.bar.name~='[a-z].+'&&foo.bar.name!=null"));
     }
 
     public void testBlank() {
-        assertEquals(true, parseDirect("'' == empty"));
+        assertEquals(true, test("'' == empty"));
     }
 
     public void testBlank2() {
-        assertEquals(true, parseDirect("BWAH == empty"));
+        assertEquals(true, test("BWAH == empty"));
     }
 
     public void testBooleanModeOnly2() {
@@ -346,112 +346,112 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testTernary() {
-        assertEquals("foobie", parseDirect("zero==0?'foobie':zero"));
+        assertEquals("foobie", test("zero==0?'foobie':zero"));
     }
 
     public void testTernary2() {
-        assertEquals("blimpie", parseDirect("zero==1?'foobie':'blimpie'"));
+        assertEquals("blimpie", test("zero==1?'foobie':'blimpie'"));
     }
 
     public void testTernary3() {
-        assertEquals("foobiebarbie", parseDirect("zero==1?'foobie':'foobie'+'barbie'"));
+        assertEquals("foobiebarbie", test("zero==1?'foobie':'foobie'+'barbie'"));
     }
 
     public void testStrAppend() {
-        assertEquals("foobarcar", parseDirect("'foo' + 'bar' + 'car'"));
+        assertEquals("foobarcar", test("'foo' + 'bar' + 'car'"));
     }
 
     public void testStrAppend2() {
-        assertEquals("foobarcar1", parseDirect("'foobar' + 'car' + 1"));
+        assertEquals("foobarcar1", test("'foobar' + 'car' + 1"));
     }
 
     public void testInstanceCheck1() {
-        assertEquals(true, parseDirect("c is java.lang.String"));
+        assertEquals(true, test("c is java.lang.String"));
     }
 
     public void testInstanceCheck2() {
-        assertEquals(false, parseDirect("pi is java.lang.Integer"));
+        assertEquals(false, test("pi is java.lang.Integer"));
     }
 
     public void testInstanceCheck3() {
-        assertEquals(true, parseDirect("foo is org.mvel.tests.main.res.Foo"));
+        assertEquals(true, test("foo is org.mvel.tests.main.res.Foo"));
     }
 
     public void testBitwiseOr1() {
-        assertEquals(6, parseDirect("2|4"));
+        assertEquals(6, test("2|4"));
     }
 
     public void testBitwiseOr2() {
-        assertEquals(true, parseDirect("(2 | 1) > 0"));
+        assertEquals(true, test("(2 | 1) > 0"));
     }
 
     public void testBitwiseOr3() {
-        assertEquals(true, parseDirect("(2|1) == 3"));
+        assertEquals(true, test("(2|1) == 3"));
     }
 
     public void testBitwiseAnd1() {
-        assertEquals(2, parseDirect("2 & 3"));
+        assertEquals(2, test("2 & 3"));
     }
 
     public void testShiftLeft() {
-        assertEquals(4, parseDirect("2 << 1"));
+        assertEquals(4, test("2 << 1"));
     }
 
     public void testUnsignedShiftLeft() {
-        assertEquals(2, parseDirect("-2 <<< 0"));
+        assertEquals(2, test("-2 <<< 0"));
     }
 
     public void testShiftRight() {
-        assertEquals(128, parseDirect("256 >> 1"));
+        assertEquals(128, test("256 >> 1"));
     }
 
     public void testXOR() {
-        assertEquals(3, parseDirect("1 ^ 2"));
+        assertEquals(3, test("1 ^ 2"));
     }
 
     public void testContains1() {
-        assertEquals(true, parseDirect("list contains 'Happy!'"));
+        assertEquals(true, test("list contains 'Happy!'"));
     }
 
     public void testContains2() {
-        assertEquals(false, parseDirect("list contains 'Foobie'"));
+        assertEquals(false, test("list contains 'Foobie'"));
     }
 
     public void testContains3() {
-        assertEquals(true, parseDirect("sentence contains 'fox'"));
+        assertEquals(true, test("sentence contains 'fox'"));
     }
 
     public void testContains4() {
-        assertEquals(false, parseDirect("sentence contains 'mike'"));
+        assertEquals(false, test("sentence contains 'mike'"));
     }
 
     public void testContains5() {
-        assertEquals(true, parseDirect("!(sentence contains 'mike')"));
+        assertEquals(true, test("!(sentence contains 'mike')"));
     }
 
     public void testInvert() {
-        assertEquals(~10, parseDirect("~10"));
+        assertEquals(~10, test("~10"));
     }
 
     public void testInvert2() {
-        assertEquals(~(10 + 1), parseDirect("~(10 + 1)"));
+        assertEquals(~(10 + 1), test("~(10 + 1)"));
     }
 
     public void testInvert3() {
-        assertEquals(~10 + (1 + ~50), parseDirect("~10 + (1 + ~50)"));
+        assertEquals(~10 + (1 + ~50), test("~10 + (1 + ~50)"));
     }
 
 
     public void testListCreation2() {
-        assertTrue(parseDirect("[\"test\"]") instanceof List);
+        assertTrue(test("[\"test\"]") instanceof List);
     }
 
     public void testListCreation3() {
-        assertTrue(parseDirect("[66]") instanceof List);
+        assertTrue(test("[66]") instanceof List);
     }
 
     public void testListCreation4() {
-        List ar = (List) parseDirect("[   66   , \"test\"   ]");
+        List ar = (List) test("[   66   , \"test\"   ]");
         assertEquals(2, ar.size());
         assertEquals(66, ar.get(0));
         assertEquals("test", ar.get(1));
@@ -459,64 +459,64 @@ public class CoreConfidenceTests extends TestCase {
 
 
     public void testListCreationWithCall() {
-        assertEquals(1, parseDirect("[\"apple\"].size()"));
+        assertEquals(1, test("[\"apple\"].size()"));
     }
 
     public void testArrayCreationWithLength() {
-        assertEquals(2, parseDirect("Array.getLength({'foo', 'bar'})"));
+        assertEquals(2, test("Array.getLength({'foo', 'bar'})"));
     }
 
     public void testEmptyList() {
-        assertTrue(parseDirect("[]") instanceof List);
+        assertTrue(test("[]") instanceof List);
     }
 
     public void testEmptyArray() {
-        assertTrue(((Object[]) parseDirect("{}")).length == 0);
+        assertTrue(((Object[]) test("{}")).length == 0);
     }
 
     public void testEmptyArray2() {
-        assertTrue(((Object[]) parseDirect("{    }")).length == 0);
+        assertTrue(((Object[]) test("{    }")).length == 0);
     }
 
     public void testArrayCreation() {
-        assertEquals(0, parseDirect("arrayTest = {{1, 2, 3}, {2, 1, 0}}; arrayTest[1][2]"));
+        assertEquals(0, test("arrayTest = {{1, 2, 3}, {2, 1, 0}}; arrayTest[1][2]"));
     }
 
     public void testMapCreation() {
-        assertEquals("sarah", parseDirect("map = ['mike':'sarah','tom':'jacquelin']; map['mike']"));
+        assertEquals("sarah", test("map = ['mike':'sarah','tom':'jacquelin']; map['mike']"));
     }
 
     public void testMapCreation2() {
-        assertEquals("sarah", parseDirect("map = ['mike' :'sarah'  ,'tom'  :'jacquelin'  ]; map['mike']"));
+        assertEquals("sarah", test("map = ['mike' :'sarah'  ,'tom'  :'jacquelin'  ]; map['mike']"));
     }
 
     public void testMapCreation3() {
-        assertEquals("foo", parseDirect("map = [1 : 'foo']; map[1]"));
+        assertEquals("foo", test("map = [1 : 'foo']; map[1]"));
     }
 
     public void testProjectionSupport() {
-        assertEquals(true, parseDirect("(name in things)contains'Bob'"));
+        assertEquals(true, test("(name in things)contains'Bob'"));
     }
 
     public void testProjectionSupport1() {
-        assertEquals(true, parseDirect("(name in things) contains 'Bob'"));
+        assertEquals(true, test("(name in things) contains 'Bob'"));
     }
 
     public void testProjectionSupport2() {
-        assertEquals(3, parseDirect("(name in things).size()"));
+        assertEquals(3, test("(name in things).size()"));
     }
 
     public void testSizeOnInlineArray() {
-        assertEquals(3, parseDirect("{1,2,3}.size()"));
+        assertEquals(3, test("{1,2,3}.size()"));
     }
 
 
     public void testStaticMethodFromLiteral() {
-        assertEquals(String.class.getName(), parseDirect("String.valueOf(Class.forName('java.lang.String').getName())"));
+        assertEquals(String.class.getName(), test("String.valueOf(Class.forName('java.lang.String').getName())"));
     }
 
 //    public void testMethodCallsEtc() {
-//        parseDirect("title = 1; " +
+//        test("title = 1; " +
 //                "frame = new javax.swing.JFrame; " +
 //                "label = new javax.swing.JLabel; " +
 //                "title = title + 1;" +
@@ -528,71 +528,71 @@ public class CoreConfidenceTests extends TestCase {
 //    }
 
     public void testObjectInstantiation() {
-        parseDirect("new java.lang.String('foobie')");
+        test("new java.lang.String('foobie')");
     }
 
     public void testObjectInstantiationWithMethodCall() {
-        parseDirect("new String('foobie')  . toString()");
+        test("new String('foobie')  . toString()");
     }
 
     public void testObjectInstantiation2() {
-        parseDirect("new String() is String");
+        test("new String() is String");
     }
 
     public void testObjectInstantiation3() {
-        parseDirect("new java.text.SimpleDateFormat('yyyy').format(new java.util.Date(System.currentTimeMillis()))");
+        test("new java.text.SimpleDateFormat('yyyy').format(new java.util.Date(System.currentTimeMillis()))");
     }
 
     public void testArrayCoercion() {
-        assertEquals("gonk", parseDirect("funMethod( {'gonk', 'foo'} )"));
+        assertEquals("gonk", test("funMethod( {'gonk', 'foo'} )"));
     }
 
     public void testArrayCoercion2() {
-        assertEquals(10, parseDirect("sum({2,2,2,2,2})"));
+        assertEquals(10, test("sum({2,2,2,2,2})"));
     }
 
     public void testMapAccess() {
-        assertEquals("dog", parseDirect("funMap['foo'].bar.name"));
+        assertEquals("dog", test("funMap['foo'].bar.name"));
     }
 
     public void testMapAccess2() {
-        assertEquals("dog", parseDirect("funMap.foo.bar.name"));
+        assertEquals("dog", test("funMap.foo.bar.name"));
     }
 
     public void testSoundex() {
-        assertTrue((Boolean) parseDirect("'foobar' soundslike 'fubar'"));
+        assertTrue((Boolean) test("'foobar' soundslike 'fubar'"));
     }
 
     public void testSoundex2() {
-        assertFalse((Boolean) parseDirect("'flexbar' soundslike 'fubar'"));
+        assertFalse((Boolean) test("'flexbar' soundslike 'fubar'"));
     }
 
     public void testThisReference() {
-        assertEquals(true, parseDirect("this") instanceof Base);
+        assertEquals(true, test("this") instanceof Base);
     }
 
     public void testThisReference2() {
-        assertEquals(true, parseDirect("this.funMap") instanceof Map);
+        assertEquals(true, test("this.funMap") instanceof Map);
     }
 
     public void testThisReference3() {
-        assertEquals(true, parseDirect("this is org.mvel.tests.main.res.Base"));
+        assertEquals(true, test("this is org.mvel.tests.main.res.Base"));
     }
 
     public void testThisReference4() {
-        assertEquals(true, parseDirect("this.funMap instanceof java.util.Map"));
+        assertEquals(true, test("this.funMap instanceof java.util.Map"));
     }
 
     public void testThisReference5() {
-        assertEquals(true, parseDirect("this.data == 'cat'"));
+        assertEquals(true, test("this.data == 'cat'"));
     }
 
     public void testThisReferenceInMethodCall() {
-        assertEquals(101, parseDirect("Integer.parseInt(this.number)"));
+        assertEquals(101, test("Integer.parseInt(this.number)"));
     }
 
     public void testThisReferenceInConstructor() {
-        assertEquals("101", parseDirect("new String(this.number)"));
+        assertEquals("101", test("new String(this.number)"));
     }
 
 
@@ -643,11 +643,11 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testStringEscaping() {
-        assertEquals("\"Mike Brock\"", parseDirect("\"\\\"Mike Brock\\\"\""));
+        assertEquals("\"Mike Brock\"", test("\"\\\"Mike Brock\\\"\""));
     }
 
     public void testStringEscaping2() {
-        assertEquals("MVEL's Parser is Fast", parseDirect("'MVEL\\'s Parser is Fast'"));
+        assertEquals("MVEL's Parser is Fast", test("'MVEL\\'s Parser is Fast'"));
     }
 
     public void testEvalToBoolean() {
@@ -661,7 +661,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testSubListInMap() {
-        assertEquals("pear", parseDirect("map = ['test' : 'poo', 'foo' : [c, 'pear']]; map['foo'][1]"));
+        assertEquals("pear", test("map = ['test' : 'poo', 'foo' : [c, 'pear']]; map['foo'][1]"));
     }
 
     public void testCompiledMethodCall() {
@@ -670,82 +670,82 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testStaticNamespaceCall() {
-        assertEquals(java.util.ArrayList.class, parseDirect("java.util.ArrayList"));
+        assertEquals(java.util.ArrayList.class, test("java.util.ArrayList"));
     }
 
     public void testStaticNamespaceClassWithMethod() {
-        assertEquals("FooBar", parseDirect("java.lang.String.valueOf('FooBar')"));
+        assertEquals("FooBar", test("java.lang.String.valueOf('FooBar')"));
     }
 
     public void testConstructor() {
-        assertEquals("foo", parseDirect("a = 'foobar'; new String(a.toCharArray(), 0, 3)"));
+        assertEquals("foo", test("a = 'foobar'; new String(a.toCharArray(), 0, 3)"));
     }
 
     public void testStaticNamespaceClassWithField() {
-        assertEquals(Integer.MAX_VALUE, parseDirect("java.lang.Integer.MAX_VALUE"));
+        assertEquals(Integer.MAX_VALUE, test("java.lang.Integer.MAX_VALUE"));
     }
 
     public void testStaticNamespaceClassWithField2() {
-        assertEquals(Integer.MAX_VALUE, parseDirect("Integer.MAX_VALUE"));
+        assertEquals(Integer.MAX_VALUE, test("Integer.MAX_VALUE"));
     }
 
     public void testStaticFieldAsMethodParm() {
-        assertEquals(String.valueOf(Integer.MAX_VALUE), parseDirect("String.valueOf(Integer.MAX_VALUE)"));
+        assertEquals(String.valueOf(Integer.MAX_VALUE), test("String.valueOf(Integer.MAX_VALUE)"));
     }
 
     public void testEmptyIf() {
-        assertEquals(5, parseDirect("a = 5; if (a == 5) { }; return a;"));
+        assertEquals(5, test("a = 5; if (a == 5) { }; return a;"));
     }
 
     public void testEmptyIf2() {
-        assertEquals(5, parseDirect("a=5;if(a==5){};return a;"));
+        assertEquals(5, test("a=5;if(a==5){};return a;"));
     }
 
     public void testIf() {
-        assertEquals(10, parseDirect("if (5 > 4) { return 10; } else { return 5; }"));
+        assertEquals(10, test("if (5 > 4) { return 10; } else { return 5; }"));
     }
 
     public void testIf2() {
-        assertEquals(10, parseDirect("if (5 < 4) { return 5; } else { return 10; }"));
+        assertEquals(10, test("if (5 < 4) { return 5; } else { return 10; }"));
     }
 
     public void testIf3() {
-        assertEquals(10, parseDirect("if(5<4){return 5;}else{return 10;}"));
+        assertEquals(10, test("if(5<4){return 5;}else{return 10;}"));
     }
 
     public void testIfAndElse() {
-        assertEquals(true, parseDirect("if (false) { return false; } else { return true; }"));
+        assertEquals(true, test("if (false) { return false; } else { return true; }"));
     }
 
     public void testIfAndElseif() {
-        assertEquals(true, parseDirect("if (false) { return false; } else if(100 < 50) { return false; } else if (10 > 5) return true;"));
+        assertEquals(true, test("if (false) { return false; } else if(100 < 50) { return false; } else if (10 > 5) return true;"));
     }
 
     public void testIfAndElseIfCondensedGrammar() {
-        assertEquals("Foo", parseDirect("if (false) return 'Bar'; else return 'Foo';"));
+        assertEquals("Foo", test("if (false) return 'Bar'; else return 'Foo';"));
     }
 
     public void testForeEach2() {
-        assertEquals(6, parseDirect("total = 0; a = {1,2,3}; foreach(item : a) { total += item }; total"));
+        assertEquals(6, test("total = 0; a = {1,2,3}; foreach(item : a) { total += item }; total"));
     }
 
     public void testForEach3() {
-        assertEquals(true, parseDirect("a = {1,2,3}; foreach (i : a) { if (i == 1) { return true; } }"));
+        assertEquals(true, test("a = {1,2,3}; foreach (i : a) { if (i == 1) { return true; } }"));
     }
 
     public void testForEach4() {
-        assertEquals("OneTwoThreeFour", parseDirect("a = {1,2,3,4}; builder = ''; foreach (i : a) {" +
+        assertEquals("OneTwoThreeFour", test("a = {1,2,3,4}; builder = ''; foreach (i : a) {" +
                 " if (i == 1) { builder += 'One' } else if (i == 2) { builder += 'Two' } " +
                 "else if (i == 3) { builder += 'Three' } else { builder += 'Four' }" +
                 "}; builder;"));
     }
 
     public void testWith() {
-        assertEquals("OneTwo", parseDirect("with (foo) {aValue = 'One',bValue='Two'}; foo.aValue + foo.bValue;"));
+        assertEquals("OneTwo", test("with (foo) {aValue = 'One',bValue='Two'}; foo.aValue + foo.bValue;"));
     }
 
     public void testWith2() {
-        assertEquals("OneTwo", parseDirect(
+        assertEquals("OneTwo", test(
                 "with (foo) { \n" +
                         "aValue = 'One', \n" +
                         "bValue='Two' \n" +
@@ -755,7 +755,7 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testAssertion() {
         try {
-            parseDirect("assert false");
+            test("assert false");
             assertTrue(false);
         }
         catch (AssertionError error) {
@@ -764,7 +764,7 @@ public class CoreConfidenceTests extends TestCase {
 
     public void testAssertion2() {
         try {
-            parseDirect("assert true;");
+            test("assert true;");
         }
         catch (AssertionError error) {
             assertTrue(false);
@@ -772,20 +772,20 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testMagicArraySize() {
-        assertEquals(5, parseDirect("stringArray.size()"));
+        assertEquals(5, test("stringArray.size()"));
     }
 
     public void testMagicArraySize2() {
-        assertEquals(5, parseDirect("intArray.size()"));
+        assertEquals(5, test("intArray.size()"));
     }
 
     public void testStaticVarAssignment() {
-        assertEquals("1", parseDirect("String mikeBrock = 1; mikeBrock"));
+        assertEquals("1", test("String mikeBrock = 1; mikeBrock"));
     }
 
     public void testIntentionalFailure() {
         try {
-            parseDirect("int = 0"); // should fail because int is a reserved word.
+            test("int = 0"); // should fail because int is a reserved word.
             assertTrue(false);
         }
         catch (Exception e) {
@@ -793,67 +793,67 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testImport() {
-        assertEquals(HashMap.class, parseDirect("import java.util.HashMap; HashMap;"));
+        assertEquals(HashMap.class, test("import java.util.HashMap; HashMap;"));
     }
 
     public void testStaticImport() {
-        assertEquals(2.0, parseDirect("import_static java.lang.Math.sqrt; sqrt(4)"));
+        assertEquals(2.0, test("import_static java.lang.Math.sqrt; sqrt(4)"));
     }
 
     public void testFunctionPointer() {
-        assertEquals(2.0, parseDirect("squareRoot = java.lang.Math.sqrt; squareRoot(4)"));
+        assertEquals(2.0, test("squareRoot = java.lang.Math.sqrt; squareRoot(4)"));
     }
 
     public void testFunctionPointerAsParam() {
-        assertEquals("2.0", parseDirect("squareRoot = Math.sqrt; new String(String.valueOf(squareRoot(4)));"));
+        assertEquals("2.0", test("squareRoot = Math.sqrt; new String(String.valueOf(squareRoot(4)));"));
     }
 
     public void testFunctionPointerInAssignment() {
-        assertEquals(5.0, parseDirect("squareRoot = Math.sqrt; i = squareRoot(25); return i;"));
+        assertEquals(5.0, test("squareRoot = Math.sqrt; i = squareRoot(25); return i;"));
     }
 
     public void testIncrementOperator() {
-        assertEquals(2, parseDirect("x = 1; x++; x"));
+        assertEquals(2, test("x = 1; x++; x"));
     }
 
     public void testPreIncrementOperator() {
-        assertEquals(2, parseDirect("x = 1; ++x"));
+        assertEquals(2, test("x = 1; ++x"));
     }
 
     public void testDecrementOperator() {
-        assertEquals(1, parseDirect("x = 2; x--; x"));
+        assertEquals(1, test("x = 2; x--; x"));
     }
 
     public void testPreDecrementOperator() {
-        assertEquals(1, parseDirect("x = 2; --x"));
+        assertEquals(1, test("x = 2; --x"));
     }
 
     public void testQualifiedStaticTyping() {
-        assertEquals(20, parseDirect("java.math.BigDecimal a = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal b = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal c = a + b; return c; "));
+        assertEquals(20, test("java.math.BigDecimal a = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal b = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal c = a + b; return c; "));
     }
 
     public void testUnQualifiedStaticTyping() {
-        assertEquals(20, parseDirect("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; "));
+        assertEquals(20, test("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; "));
     }
 
     public void testObjectCreation() {
-        assertEquals(6, parseDirect("new Integer( 6 )"));
+        assertEquals(6, test("new Integer( 6 )"));
     }
 
     public void testTernary4() {
-        assertEquals("<test>", parseDirect("true ? '<test>' : '<poo>'"));
+        assertEquals("<test>", test("true ? '<test>' : '<poo>'"));
     }
 
     public void testStringAsCollection() {
-        assertEquals('o', parseDirect("abc = 'foo'; abc[1]"));
+        assertEquals('o', test("abc = 'foo'; abc[1]"));
     }
 
     public void testSubExpressionIndexer() {
-        assertEquals("bar", parseDirect("xx = new java.util.HashMap(); xx.put('foo', 'bar'); prop = 'foo'; xx[prop];"));
+        assertEquals("bar", test("xx = new java.util.HashMap(); xx.put('foo', 'bar'); prop = 'foo'; xx[prop];"));
     }
 
     public void testCompileTimeLiteralReduction() {
-        assertEquals(1000, parseDirect("10 * 100"));
+        assertEquals(1000, test("10 * 100"));
     }
 
     public void testInterfaceResolution() {
@@ -874,7 +874,7 @@ public class CoreConfidenceTests extends TestCase {
      */
     public void testCreationOfSet() {
         assertEquals("foo bar foo bar",
-                parseDirect("set = new java.util.HashSet(); " +
+                test("set = new java.util.HashSet(); " +
                         "set.add('foo');" +
                         "set.add('bar');" +
                         "output = '';" +
@@ -891,7 +891,7 @@ public class CoreConfidenceTests extends TestCase {
 
 
     public void testCreationOfList() {
-        assertEquals(5, parseDirect("l = new java.util.LinkedList();" +
+        assertEquals(5, test("l = new java.util.LinkedList();" +
                 "l.add('fun');" +
                 "l.add('happy');" +
                 "l.add('fun');" +
@@ -902,7 +902,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testMapOperations() {
-        assertEquals("poo5", parseDirect(
+        assertEquals("poo5", test(
                 "l = new java.util.ArrayList();" +
                         "l.add('plop');" +
                         "l.add('poo');" +
@@ -919,7 +919,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testStackOperations() {
-        assertEquals(10, parseDirect(
+        assertEquals(10, test(
                 "stk = new java.util.Stack();" +
                         "stk.push(5);" +
                         "stk.push(5);" +
@@ -928,7 +928,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testSystemOutPrint() {
-        parseDirect("a = 0;\r\nSystem.out.println('This is a test');");
+        test("a = 0;\r\nSystem.out.println('This is a test');");
     }
 
     public void testBreakpoints() {
@@ -1162,7 +1162,7 @@ public class CoreConfidenceTests extends TestCase {
 
 
     public void testReflectionCache() {
-        assertEquals("happyBar", parseDirect("foo.happy(); foo.bar.happy()"));
+        assertEquals("happyBar", test("foo.happy(); foo.bar.happy()"));
     }
 
     public void testVarInputs() {
@@ -1327,22 +1327,22 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testComments() {
-        assertEquals(10, parseDirect("// This is a comment\n5 + 5"));
+        assertEquals(10, test("// This is a comment\n5 + 5"));
     }
 
     public void testComments2() {
-        assertEquals(20, parseDirect("10 + 10; // This is a comment"));
+        assertEquals(20, test("10 + 10; // This is a comment"));
     }
 
     public void testComments3() {
-        assertEquals(30, parseDirect("/* This is a test of\r\n" +
+        assertEquals(30, test("/* This is a test of\r\n" +
                 "MVEL's support for\r\n" +
                 "multi-line comments\r\n" +
                 "*/\r\n 15 + 15"));
     }
 
     public void testComments4() {
-        assertEquals(50, parseDirect("/** This is a fun test script **/\r\n" +
+        assertEquals(50, test("/** This is a fun test script **/\r\n" +
                 "a = 10;\r\n" +
                 "/**\r\n" +
                 "* Here is a useful variable\r\n" +
@@ -1353,7 +1353,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testSubtractNoSpace1() {
-        assertEquals(59, parseDirect("hour-1"));
+        assertEquals(59, test("hour-1"));
     }
 
     public void testStrictTypingCompilation() {
@@ -1449,7 +1449,7 @@ public class CoreConfidenceTests extends TestCase {
         map.put("dt1", new Date(currentTimeMillis() - 100000));
         map.put("dt2", new Date(currentTimeMillis()));
 
-        assertTrue((Boolean) parseDirect("dt1 < dt2"));
+        assertTrue((Boolean) test("dt1 < dt2"));
     }
 
     public void testDynamicDeop() {
@@ -1470,47 +1470,47 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testMapPropertyCreateCondensed() {
-        assertEquals("foo", parseDirect("map = new java.util.HashMap(); map['test'] = 'foo'; map['test'];"));
+        assertEquals("foo", test("map = new java.util.HashMap(); map['test'] = 'foo'; map['test'];"));
     }
 
     public void testClassLiteral() {
-        assertEquals(String.class, parseDirect("java.lang.String"));
+        assertEquals(String.class, test("java.lang.String"));
     }
 
     public void testDeepMethod() {
-        assertEquals(false, parseDirect("foo.bar.testList.add(new String()); foo.bar.testList == empty"));
+        assertEquals(false, test("foo.bar.testList.add(new String()); foo.bar.testList == empty"));
     }
 
     public void testArrayAccessorAssign() {
-        assertEquals("foo", parseDirect("a = {'f00', 'bar'}; a[0] = 'foo'; a[0]"));
+        assertEquals("foo", test("a = {'f00', 'bar'}; a[0] = 'foo'; a[0]"));
     }
 
     public void testListAccessorAssign() {
-        assertEquals("bar", parseDirect("a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]"));
+        assertEquals("bar", test("a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]"));
     }
 
     public void testBracketInString() {
-        parseDirect("System.out.println('1)your guess was:');");
+        test("System.out.println('1)your guess was:');");
     }
 
     public void testNesting() {
-        assertEquals("foo", parseDirect("new String(new String(new String(\"foo\")));"));
+        assertEquals("foo", test("new String(new String(new String(\"foo\")));"));
     }
 
     public void testDeepPropertyAdd() {
-        assertEquals(10, parseDirect("foo.countTest+ 10"));
+        assertEquals(10, test("foo.countTest+ 10"));
     }
 
     public void testDeepAssignmentIncrement() {
-        assertEquals(true, parseDirect("foo.countTest += 5; if (foo.countTest == 5) { foo.countTest = 0; return true; } else { foo.countTest = 0; return false; }"));
+        assertEquals(true, test("foo.countTest += 5; if (foo.countTest == 5) { foo.countTest = 0; return true; } else { foo.countTest = 0; return false; }"));
     }
 
     public void testDeepAssignmentWithBlock() {
-        assertEquals(true, parseDirect("with (foo) { countTest += 5 }; if (foo.countTest == 5) { foo.countTest = 0; return true; } else { foo.countTest = 0; return false; }"));
+        assertEquals(true, test("with (foo) { countTest += 5 }; if (foo.countTest == 5) { foo.countTest = 0; return true; } else { foo.countTest = 0; return false; }"));
     }
 
     public void testTypeCast() {
-        assertEquals("10", parseDirect("(String) 10"));
+        assertEquals("10", test("(String) 10"));
     }
 
     public void testMapAccessSemantics() {
@@ -1574,7 +1574,7 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(0, MVEL.executeExpression(s, new LocalVariableResolverFactory()));
     }
 
-    public Object parseDirect(String ex) {
+    public Object test(String ex) {
         return compiledExecute(ex, this.base, this.map);
     }
 
@@ -1727,7 +1727,7 @@ public class CoreConfidenceTests extends TestCase {
     public void testToList() {
         String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
 
-        List list = (List) parseDirect(text);
+        List list = (List) test(text);
 
         assertSame("dog", list.get(0));
         assertEquals("hello", list.get(1));
@@ -2182,5 +2182,14 @@ public class CoreConfidenceTests extends TestCase {
         public void setBigint(BigInteger bigint) {
             this.bigint = bigint;
         }
+    }
+
+    /**
+     * Submitted by: Michael Neale
+     */
+
+    public void testInlineCollectionParser1() {
+        assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4],'Person.rating' : 'q']")).get("Person.rating"));
+        assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4], 'Person.rating' : 'q']")).get("Person.rating"));
     }
 }
