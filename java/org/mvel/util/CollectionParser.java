@@ -1,5 +1,7 @@
 package org.mvel.util;
 
+import static org.mvel.util.ParseTools.balancedCapture;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +64,7 @@ public class CollectionParser {
                     break;
                 case MAP:
                     map = new HashMap<Object, Object>();
-                     break;
+                    break;
             }
         }
 
@@ -70,7 +72,7 @@ public class CollectionParser {
 
         int newType = -1;
 
-        int end;
+        //   int end;
         for (; cursor < length; cursor++) {
             switch (property[cursor]) {
                 case'{':
@@ -83,7 +85,8 @@ public class CollectionParser {
                     }
 
                     start = cursor;
-                    end = balancedCapture(property[cursor]);
+
+                    end = cursor = balancedCapture(property, start, property[start]);
 
                     Object o = new CollectionParser(newType).parseCollection(subset(property, start + 1, end));
 
@@ -94,7 +97,7 @@ public class CollectionParser {
                         list.add(curr = o);
                     }
 
-                    if ((start = ++cursor) < (length - 1) && property[start] == ',') {
+                    if ((start = ++cursor) < (length - 1) && property[start] != ',') {
                         start = ++cursor;
                     }
 
@@ -102,10 +105,13 @@ public class CollectionParser {
 
                 case'\"':
                 case'\'':
-                    end = balancedCapture(property[start = cursor]);
-                    if (end == -1)
-                        throw new RuntimeException("unterminated string literal");
+                    end = cursor = balancedCapture(property, start = cursor, property[start]);
 
+                    if (end == -1) {
+                        throw new RuntimeException("unterminated string literal starting at index " + start + " {" + property[start] + "}: " + new String(property));
+                    }
+
+                    
                     break;
 
                 case',':
@@ -136,7 +142,7 @@ public class CollectionParser {
             if (cursor < (length - 1)) cursor++;
 
             if (type == MAP) {
-                map.put(curr,  new String(subset(property, start, cursor)).trim());
+                map.put(curr, new String(subset(property, start, cursor)).trim());
             }
             else {
                 if (cursor < length) cursor++;
@@ -162,39 +168,6 @@ public class CollectionParser {
         char[] newA = new char[end - start];
         System.arraycopy(property, start, newA, 0, end - start);
         return newA;
-    }
-
-    private int balancedCapture(char type) {
-        int depth = 1;
-        char term = type;
-        switch (type) {
-            case'[':
-                term = ']';
-                break;
-            case'{':
-                term = '}';
-                break;
-        }
-
-        if (type == term) {
-            for (cursor++; cursor < length; cursor++) {
-                if (property[cursor] == type) {
-                    return end = cursor;
-                }
-            }
-        }
-        else {
-            for (cursor++; cursor < length; cursor++) {
-                if (property[cursor] == type) {
-                    depth++;
-                }
-                else if (property[cursor] == term && --depth == 0) {
-                    return end = cursor;
-                }
-            }
-        }
-
-        return -1;
     }
 
 
