@@ -68,6 +68,7 @@ public class ExpressionParser extends AbstractParser {
             return handleParserEgress(stk.peek(), returnBigDecimal);
         }
         catch (ArrayIndexOutOfBoundsException e) {
+            e.printStackTrace();
             throw new ParseException("unexpected end of statement", expr, length);
         }
         catch (NullPointerException e) {

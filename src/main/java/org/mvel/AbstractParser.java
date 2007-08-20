@@ -296,7 +296,6 @@ public class AbstractParser implements Serializable {
                             case'"':
                                 cursor = captureStringLiteral('"', expr, cursor, length) + 1;
                                 break;
-
                         }
                     }
 
@@ -605,6 +604,7 @@ public class AbstractParser implements Serializable {
                             switch (expr[cursor]) {
                                 case'(':
                                     brace++;
+                                    skipWhitespace();
                                     break;
                                 case')':
                                     brace--;
@@ -670,7 +670,8 @@ public class AbstractParser implements Serializable {
 
                         char[] _subset = null;
                         if (singleToken) {
-                            String tokenStr = new String(_subset = subset(expr, trimRight(start + 1), trimLeft(cursor - 1) - (start + 1)));
+                            int st;
+                            String tokenStr = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st));
 
                             if (getParserContext().hasImport(tokenStr)) {
                                 start = cursor;
@@ -700,7 +701,7 @@ public class AbstractParser implements Serializable {
                             return handleUnion(new Substatement(_subset, fields));
                         }
                         else {
-                            return handleUnion(new Substatement(subset(expr, trimRight(start + 1), trimLeft(cursor - 1) - (start + 1)), fields));
+                            return handleUnion(new Substatement(subset(expr, start = trimRight(start + 1), trimLeft(cursor - 1) - start), fields));
                         }
                     }
 
@@ -1107,7 +1108,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected void skipWhitespace() {
-        while (isWhitespace(expr[cursor])) cursor++;
+       while (cursor < length && isWhitespace(expr[cursor])) cursor++;
     }
 
     protected void skipWhitespaceWithLineAccounting() {
