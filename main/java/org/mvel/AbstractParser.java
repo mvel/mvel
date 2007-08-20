@@ -561,10 +561,6 @@ public class AbstractParser implements Serializable {
                                  * Since multi-line comments may cross lines, we must keep track of any line-break
                                  * we encounter.
                                  */
-//                                if (debugSymbols && expr[cursor] == '\n') {
-//                                    line++;
-//                                }
-
                                 if (debugSymbols && (expr[cursor] == '\n' || expr[cursor] == '\r')) {
                                     skipWhitespaceWithLineAccounting();
                                 }

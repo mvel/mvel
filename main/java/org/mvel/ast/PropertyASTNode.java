@@ -76,27 +76,26 @@ public class PropertyASTNode extends ASTNode {
                 wrappedNode = new VariableDeepPropertyNode(name, fields);
                 return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
             }
-            else if (ctx != null) {
-                /**
-                 * We didn't resolve the root, yet, so we assume that if we have a VROOT then the property must be
-                 * accessible as a field of the VROOT.
-                 */
+            else {
 
-                try {
-                    wrappedNode = new ContextDeepPropertyNode(name, fields);
-                    return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
+                if (ctx != null) {
+                    try {
+                        wrappedNode = new ContextDeepPropertyNode(name, fields);
+                        return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
 
+                    }
+                    catch (PropertyAccessException e) {
+                        /**
+                         * No luck. Make a last-ditch effort to resolve this as a static-class reference.
+                         */
+                    }
                 }
-                catch (PropertyAccessException e) {
-                    /**
-                     * No luck. Make a last-ditch effort to resolve this as a static-class reference.
-                     */
-                    Object sa = tryStaticAccess(ctx, factory);
-                    if (sa == null) throw e;
 
-                    wrappedNode = new LiteralNode(sa);
-                    return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
-                }
+                Object sa = tryStaticAccess(ctx, factory);
+                if (sa == null) throw new PropertyAccessException("unable to resolve token: " + new String(name));
+
+                wrappedNode = new LiteralNode(sa);
+                return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
             }
         }
         else {
@@ -138,13 +137,11 @@ public class PropertyASTNode extends ASTNode {
                 if (isOperator()) {
                     throw new CompileException("incomplete statement");
                 }
-               
+
 
                 throw new UnresolveablePropertyException(this);
             }
         }
-
-        return null;
     }
 
 

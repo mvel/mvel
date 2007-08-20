@@ -168,8 +168,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void EmptyTestWhileUsingImports() {
-        Map imports = new HashMap();
-        imports.put("List", java.util.List.class);
+        Map<String, Object> imports = new HashMap<String, Object>();
         imports.put("ArrayList", java.util.ArrayList.class);
 
         ParserContext context = new ParserContext(imports, null, "testfile");
@@ -178,7 +177,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void NullTestWhileUsingImports() {
-        Map imports = new HashMap();
+        Map<String, Object> imports = new HashMap<String, Object>();
         imports.put("List", java.util.List.class);
         imports.put("ArrayList", java.util.ArrayList.class);
 
@@ -1573,6 +1572,11 @@ public class CoreConfidenceTests extends TestCase {
 
         assertEquals(0, MVEL.executeExpression(s, new LocalVariableResolverFactory()));
     }
+
+    public void testFQCNwithStaticInList() {
+        assertEquals(Integer.MIN_VALUE, test("list = [java.lang.Integer.MIN_VALUE]; list[0]"));
+    }
+
 
     public Object test(String ex) {
         return compiledExecute(ex, this.base, this.map);
