@@ -1662,6 +1662,10 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testParsingStability1() {
+        assertEquals(true, test("( order.number == 1 || order.number == ( 1+1) || order.number == $id )"));
+    }
+
 
     /**
      * Community provided test cases
