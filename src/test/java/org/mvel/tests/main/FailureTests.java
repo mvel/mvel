@@ -1,7 +1,5 @@
 package org.mvel.tests.main;
 
-import sun.jvm.hotspot.utilities.AssertionFailure;
-
 /**
  * Tests to ensure MVEL fails when it should.
  */
@@ -25,7 +23,7 @@ public class FailureTests extends AbstractTest {
             return;
         }
 
-        throw new AssertionFailure();
+        throw new AssertionError();
 
     }
 }
