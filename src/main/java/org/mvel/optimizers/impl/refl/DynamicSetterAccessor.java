@@ -1,7 +1,7 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
-import org.mvel.PropertyAccessException;
+import org.mvel.CompileException;
 import org.mvel.DataConversion;
 import org.mvel.integration.VariableResolverFactory;
 
@@ -19,7 +19,7 @@ public class DynamicSetterAccessor implements AccessorNode {
             return method.invoke(ctx, DataConversion.convert(value, method.getParameterTypes()[0]));
         }
         catch (Exception e) {
-            throw new PropertyAccessException("error binding property", e);
+            throw new CompileException("error binding property", e);
         }
 
     }

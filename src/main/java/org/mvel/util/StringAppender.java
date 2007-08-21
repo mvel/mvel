@@ -35,6 +35,15 @@ public class StringAppender implements CharSequence {
         capacity = size = (str = s.toCharArray()).length;
     }
 
+    public StringAppender append(char[] chars) {
+        if (chars.length > (capacity - size)) grow(chars.length);
+        for (int i = 0; i < chars.length; size++) {
+            str[size] = chars[i++];
+        }
+        size += chars.length;
+        return this;
+    }
+
     public StringAppender append(Object o) {
         return append(String.valueOf(o));
     }

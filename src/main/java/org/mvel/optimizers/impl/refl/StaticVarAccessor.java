@@ -1,8 +1,8 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
+import org.mvel.CompileException;
 import org.mvel.OptimizationFailure;
-import org.mvel.PropertyAccessException;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Field;
@@ -45,7 +45,7 @@ public class StaticVarAccessor implements AccessorNode {
             field.set(null, value);
         }
         catch (Exception e) {
-            throw new PropertyAccessException("error accessing static variable", e);
+            throw new CompileException("error accessing static variable", e);
         }
         return value;
     }

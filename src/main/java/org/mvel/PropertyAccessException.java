@@ -25,14 +25,15 @@ public class PropertyAccessException extends RuntimeException {
     }
 
     public PropertyAccessException(String message) {
-        super(message);
+        super("unable to resolve property: " + message);
     }
 
     public PropertyAccessException(String message, Throwable cause) {
-        super(message, cause);
+        super("unable to resolve property: " + message, cause);
     }
 
     public PropertyAccessException(Throwable cause) {
         super(cause);
     }
+
 }
