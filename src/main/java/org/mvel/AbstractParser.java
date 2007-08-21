@@ -647,6 +647,7 @@ public class AbstractParser implements Serializable {
 
                                     }
                                     break;
+
                                 default:
                                     /**
                                      * Check to see if we should disqualify this current token as a potential
@@ -1112,9 +1113,6 @@ public class AbstractParser implements Serializable {
 
     protected void skipWhitespaceWithLineAccounting() {
         while (cursor < length && isWhitespace(expr[cursor])) {
-            //    if (expr[cursor] == '\n') line++;
-            //     line += captureLineBreaks();
-
             switch (expr[cursor]) {
                 case'\r':
                     cursor++;
@@ -1124,7 +1122,6 @@ public class AbstractParser implements Serializable {
                     line++;
                     continue;
             }
-
             cursor++;
         }
     }

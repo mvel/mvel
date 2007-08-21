@@ -101,7 +101,6 @@ public class ASTNode implements Cloneable, Serializable {
         this.literal = literalValue;
     }
 
-
     protected String getAbsoluteRootElement() {
         if ((fields & (DEEP_PROPERTY | COLLECTION)) != 0) {
             return new String(name, 0, getAbsoluteFirstPart());
@@ -175,10 +174,8 @@ public class ASTNode implements Cloneable, Serializable {
             AccessorOptimizer optimizer;
             Object retVal = null;
 
-            if ((fields & FOLD) != 0) {
-                optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
-                accessor = optimizer.optimizeFold(name, ctx, thisValue, factory);
-                retVal = accessor.getValue(ctx, thisValue, factory);
+            if ((fields & FOLD) != 0) {                
+                retVal = (accessor =  (optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeFold(name, ctx, thisValue, factory)).getValue(ctx, thisValue, factory);
             }
             else {
                 try {

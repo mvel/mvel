@@ -34,17 +34,14 @@ public class PropertyASTNode extends ASTNode {
 
     private Object initializePropertyNode(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((fields & STR_LITERAL) != 0) {
-            wrappedNode = new LiteralNode(new String(name));
-            return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
+            return (wrappedNode = new LiteralNode(new String(name))).getReducedValueAccelerated(ctx, thisValue, factory);
         }
         else if ((fields & LITERAL) != 0) {
             if ((fields & THISREF) != 0) {
-                wrappedNode = new ThisValNode(name, fields);
-                return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
+                return (wrappedNode = new ThisValNode(name, fields)).getReducedValueAccelerated(ctx, thisValue, factory);
             }
             else {
-                wrappedNode = new LiteralNode(literal);
-                return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
+                return (wrappedNode = new LiteralNode(literal)).getReducedValueAccelerated(ctx, thisValue, factory);
             }
         }
         else if ((fields & DEEP_PROPERTY) != 0) {
@@ -60,12 +57,10 @@ public class PropertyASTNode extends ASTNode {
                  */
                 Object literal = AbstractParser.LITERALS.get(s);
                 if (literal == ThisLiteral.class) {
-                    wrappedNode = new ThisValDeepPropertyNode(name, fields);
-                    return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
+                    return (wrappedNode = new ThisValDeepPropertyNode(name, fields)).getReducedValueAccelerated(ctx, thisValue, factory);
                 }
                 else {
-                    wrappedNode = new LiteralDeepPropertyNode(name, fields, literal);
-                    return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
+                    return (wrappedNode = new LiteralDeepPropertyNode(name, fields, literal)).getReducedValueAccelerated(ctx, thisValue, factory);
                 }
             }
             else if (factory != null && factory.isResolveable(s)) {
@@ -73,16 +68,13 @@ public class PropertyASTNode extends ASTNode {
                  * The root of the DEEP PROPERTY is a local or global var.
                  */
 
-                wrappedNode = new VariableDeepPropertyNode(name, fields);
-                return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
+                return (wrappedNode = new VariableDeepPropertyNode(name, fields)).getReducedValueAccelerated(ctx, thisValue, factory);
             }
             else {
 
                 if (ctx != null) {
                     try {
-                        wrappedNode = new ContextDeepPropertyNode(name, fields);
-                        return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
-
+                        return (wrappedNode = new ContextDeepPropertyNode(name, fields)).getReducedValueAccelerated(ctx, thisValue, factory);
                     }
                     catch (PropertyAccessException e) {
                         /**
@@ -94,8 +86,7 @@ public class PropertyASTNode extends ASTNode {
                 Object sa = tryStaticAccess(ctx, factory);
                 if (sa == null) throw new PropertyAccessException("unable to resolve token: " + new String(name));
 
-                wrappedNode = new LiteralNode(sa);
-                return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
+                return (wrappedNode = new LiteralNode(sa)).getReducedValueAccelerated(ctx, thisValue, factory);
             }
         }
         else {
@@ -123,10 +114,8 @@ public class PropertyASTNode extends ASTNode {
                  * Check to see if the var exists in the VROOT.
                  */
 
-                wrappedNode = new ContextDeepPropertyNode(name, fields);
-
                 try {
-                    return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
+                    return (wrappedNode = new ContextDeepPropertyNode(name, fields)).getReducedValueAccelerated(ctx, thisValue, factory);
                 }
                 catch (RuntimeException e) {
                     e.printStackTrace();
