@@ -38,6 +38,9 @@ public class AbstractTest extends TestCase {
         map.put("hour", "60");
         map.put("zero", 0);
 
+        map.put("order", new Order());
+        map.put("$id", 20);
+
         map.put("testImpl",
                 new TestInterface() {
 
@@ -490,6 +493,19 @@ public class AbstractTest extends TestCase {
 
         public void setBigint(BigInteger bigint) {
             this.bigint = bigint;
+        }
+    }
+
+    public static class Order {
+        private int number = 20;
+
+
+        public int getNumber() {
+            return number;
+        }
+
+        public void setNumber(int number) {
+            this.number = number;
         }
     }
 }
