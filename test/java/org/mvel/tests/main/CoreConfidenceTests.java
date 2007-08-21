@@ -1,8 +1,6 @@
 package org.mvel.tests.main;
 
-import junit.framework.TestCase;
 import org.mvel.*;
-
 import static org.mvel.MVEL.*;
 import org.mvel.ast.WithNode;
 import org.mvel.debug.DebugTools;
@@ -20,51 +18,13 @@ import org.mvel.tests.main.res.*;
 
 import java.io.Serializable;
 import static java.lang.System.currentTimeMillis;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.math.BigInteger;
-import java.math.BigDecimal;
 
-public class CoreConfidenceTests extends TestCase {
-    protected Foo foo = new Foo();
-    protected Map<String, Object> map = new HashMap<String, Object>();
-    protected Base base = new Base();
-    protected DerivedClass derived = new DerivedClass();
-
-    public CoreConfidenceTests() {
-        foo.setBar(new Bar());
-        map.put("foo", foo);
-        map.put("a", null);
-        map.put("b", null);
-        map.put("c", "cat");
-        map.put("BWAH", "");
-
-        map.put("misc", new MiscTestClass());
-
-        map.put("pi", "3.14");
-        map.put("hour", "60");
-        map.put("zero", 0);
-
-        map.put("testImpl",
-                new TestInterface() {
-
-                    public String getName() {
-                        return "FOOBAR!";
-                    }
-
-
-                    public boolean isFoo() {
-                        return true;
-                    }
-                });
-
-        map.put("derived", derived);
-    }
+public class CoreConfidenceTests extends AbstractTest {
 
     public void testSingleProperty() {
         assertEquals(false, test("fun"));
     }
-
 
     public void testMethodOnValue() {
         assertEquals("DOG", test("foo.bar.name.toUpperCase()"));
@@ -241,7 +201,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testMethodAccess2() {
-        assertEquals("FUBAR", test("foo.toUC('fubar')"));
+        assertEquals("FUBAR", test("foo.toUC( 'fubar' )"));
     }
 
     public void testMethodAccess3() {
@@ -337,11 +297,11 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testBooleanModeOnly2() {
-        assertEquals(false, (Object) MVEL.evalToBoolean("BWAH", base, map));
+        assertEquals(false, (Object) evalToBoolean("BWAH", base, map));
     }
 
     public void testBooleanModeOnly4() {
-        assertEquals(true, (Object) MVEL.evalToBoolean("hour == (hour + 0)", base, map));
+        assertEquals(true, (Object) evalToBoolean("hour == (hour + 0)", base, map));
     }
 
     public void testTernary() {
@@ -650,8 +610,8 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testEvalToBoolean() {
-        assertEquals(true, (boolean) MVEL.evalToBoolean("true ", "true"));
-        assertEquals(true, (boolean) MVEL.evalToBoolean("true ", "true"));
+        assertEquals(true, (boolean) evalToBoolean("true ", "true"));
+        assertEquals(true, (boolean) evalToBoolean("true ", "true"));
     }
 
     public void testCompiledMapStructures() {
@@ -1519,7 +1479,7 @@ public class CoreConfidenceTests extends TestCase {
         innermap.put("test", "foo");
         outermap.put("innermap", innermap);
 
-        assertEquals("foo", compiledExecute("innermap['test']", outermap, null));
+        assertEquals("foo", test("innermap['test']", outermap, null));
     }
 
     public void testMapBindingSemantics() {
@@ -1531,7 +1491,7 @@ public class CoreConfidenceTests extends TestCase {
 
         MVEL.setProperty(outermap, "innermap['test']", "bar");
 
-        assertEquals("bar", compiledExecute("innermap['test']", outermap, null));
+        assertEquals("bar", test("innermap['test']", outermap, null));
     }
 
     public void testSetSemantics() {
@@ -1553,9 +1513,7 @@ public class CoreConfidenceTests extends TestCase {
 
         MVEL.executeSetExpression(s, outermap, "bar");
 
-        //  MVEL.setProperty(outermap, "innermap['test']", "bar");
-
-        assertEquals("bar", compiledExecute("innermap['test']", outermap, null));
+        assertEquals("bar", test("innermap['test']", outermap, null));
     }
 
     public void testDynamicImports() {
@@ -1580,97 +1538,6 @@ public class CoreConfidenceTests extends TestCase {
     public void testPrecedenceOrder() {
         assertTrue((Boolean) test("5 > 6 && 2 < 1 || 10 > 9"));
     }
-
-    public Object test(String ex) {
-        return compiledExecute(ex, this.base, this.map);
-    }
-
-    public Object compiledExecute(String ex, Object base, Map map) {
-        OptimizerFactory.setDefaultOptimizer("ASM");
-
-        ExpressionCompiler compiler = new ExpressionCompiler(ex);
-
-        Serializable compiled = compiler.compile();
-
-        Object first = executeExpression(compiled, base, map);
-        Object second = executeExpression(compiled, base, map);
-
-        Object third = MVEL.eval(ex, base, map);
-
-        if (first != null && !first.getClass().isArray()) {
-            if (!first.equals(second)) {
-                throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run / JIT) [first: "
-                        + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
-            }
-
-            if (!first.equals(third)) {
-                throw new AssertionError("Different result from test 1 and 3 (Compiled to Interpreted) [first: " +
-                        String.valueOf(first) + " (" + first.getClass().getName() + "); third: " + String.valueOf(third) + " (" + (second != null ? first.getClass().getName() : "null") + ")]");
-            }
-        }
-
-        OptimizerFactory.setDefaultOptimizer("reflective");
-
-        compiled = compileExpression(ex);
-
-        Object fourth = executeExpression(compiled, base, map);
-        Object fifth = executeExpression(compiled, base, map);
-
-        if (fourth != null && !fourth.getClass().isArray()) {
-            if (!fourth.equals(fifth)) {
-                throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-                        + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
-            }
-        }
-
-        ParserContext ctx = new ParserContext();
-        ctx.setSourceFile("unittest");
-        ExpressionCompiler debuggingCompiler = new ExpressionCompiler(ex);
-        debuggingCompiler.setDebugSymbols(true);
-
-        Serializable compiledD = debuggingCompiler.compile(ctx);
-
-        Object sixth = executeExpression(compiledD, base, map);
-        if (sixth != null && !sixth.getClass().isArray()) {
-            if (!fifth.equals(sixth)) {
-                System.out.println("Payload 1 -- No Symbols: ");
-                System.out.println(DebugTools.decompile(compiled));
-                System.out.println();
-
-                System.out.println("Payload 2 -- With Symbols: ");
-                System.out.println(DebugTools.decompile(compiledD));
-                System.out.println();
-
-                throw new AssertionError("Different result from test 5 and 6 (Compiled to Compiled+DebuggingSymbols) [first: "
-                        + String.valueOf(fifth) + "; second: " + String.valueOf(sixth) + "]");
-            }
-        }
-
-        Object seventh = executeExpression(compiledD, base, map);
-
-        if (seventh != null && !seventh.getClass().isArray()) {
-            if (!seventh.equals(sixth)) {
-                throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-                        + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
-            }
-        }
-
-
-        return second;
-    }
-//
-//    public Object compiledExecute(String ex, Object base, Map map) {
-//        Serializable compiled = compileExpression(ex);
-//
-//        Object first = executeExpression(compiled, base, map);
-//        Object second = executeExpression(compiled, base, map);
-//
-//        if (first != null && !first.getClass().isArray())
-//            assertSame(first, second);
-//
-//        return second;
-//    }
-
 
     @SuppressWarnings({"unchecked"})
     public void testDifferentImplSameCompile() {
@@ -1791,27 +1658,6 @@ public class CoreConfidenceTests extends TestCase {
         }
     }
 
-    public static class MiscTestClass {
-        int exec = 0;
-
-        @SuppressWarnings({"unchecked", "UnnecessaryBoxing"})
-        public List toList(Object object1, String string, int integer, Map map, List list) {
-            exec++;
-            List l = new ArrayList();
-            l.add(object1);
-            l.add(string);
-            l.add(new Integer(integer));
-            l.add(map);
-            l.add(list);
-            return l;
-        }
-
-
-        public int getExec() {
-            return exec;
-        }
-    }
-
 
     /**
      * Community provided test cases
@@ -1826,7 +1672,7 @@ public class CoreConfidenceTests extends TestCase {
         Map propertyMap = new HashMap(1);
         propertyMap.put("GEBDAT", c1.getTime());
         objectMap.put("EV_VI_ANT1", propertyMap);
-        assertEquals("N", compiledExecute("new org.mvel.tests.main.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'Y' : 'N'"
+        assertEquals("N", test("new org.mvel.tests.main.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'Y' : 'N'"
                 , null, objectMap));
     }
 
@@ -1847,51 +1693,6 @@ public class CoreConfidenceTests extends TestCase {
         System.out.println("formatDate(bean.myDate): " + MVEL.eval("formatDate(bean.myDate)", ctx, vars));
         //same here
         System.out.println(MVEL.eval("formatDate(bean.nullDate)", ctx, vars));
-    }
-
-    public static class Bean {
-        private Date myDate = new Date();
-
-        public Date getToday() {
-            return new Date();
-        }
-
-        public Date getNullDate() {
-            return null;
-        }
-
-        public String getNullString() {
-            return null;
-        }
-
-        public Date getMyDate() {
-            return myDate;
-        }
-
-        public void setMyDate(Date myDate) {
-            this.myDate = myDate;
-        }
-    }
-
-    public static class Context {
-        private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy");
-        private Bean bean;
-
-        public Bean getBean() {
-            return bean;
-        }
-
-        public void setBean(Bean bean) {
-            this.bean = bean;
-        }
-
-        public String formatDate(Date date) {
-            return date == null ? null : dateFormat.format(date);
-        }
-
-        public String formatString(String str) {
-            return str == null ? "<NULL>" : str;
-        }
     }
 
     /**
@@ -1917,7 +1718,7 @@ public class CoreConfidenceTests extends TestCase {
     }
 
     public void testStaticNested() {
-        assertEquals(1, MVEL.eval("org.mvel.tests.main.CoreConfidenceTests$Message.GOODBYE", new HashMap()));
+        assertEquals(1, MVEL.eval("org.mvel.tests.main.AbstractTest$Message.GOODBYE", new HashMap()));
     }
 
     public void testStaticNestedWithImport() {
@@ -1971,99 +1772,6 @@ public class CoreConfidenceTests extends TestCase {
         compiler.compile(context);
     }
 
-    public static class Person {
-        private String name;
-
-        private int age;
-
-        public Person() {
-
-        }
-
-        public Person(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public int getAge() {
-            return age;
-        }
-
-        public void setAge(int age) {
-            this.age = age;
-        }
-
-    }
-
-    public static class Address {
-        private String street;
-
-        public Address(String street) {
-            super();
-            this.street = street;
-        }
-
-
-        public String getStreet() {
-            return street;
-        }
-
-        public void setStreet(String street) {
-            this.street = street;
-        }
-    }
-
-    public static class Drools {
-        public void insert(Object obj) {
-        }
-    }
-
-
-    public static class Model {
-        private List latestHeadlines;
-
-
-        public List getLatestHeadlines() {
-            return latestHeadlines;
-        }
-
-        public void setLatestHeadlines(List latestHeadlines) {
-            this.latestHeadlines = latestHeadlines;
-        }
-    }
-
-
-    public static class Message {
-        public static final int HELLO = 0;
-        public static final int GOODBYE = 1;
-
-        private String message;
-
-        private int status;
-
-        public String getMessage() {
-            return this.message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
-        public int getStatus() {
-            return this.status;
-        }
-
-        public void setStatus(int status) {
-            this.status = status;
-        }
-    }
 
     /**
      * Submitted by: cleverpig
@@ -2076,120 +1784,6 @@ public class CoreConfidenceTests extends TestCase {
         System.out.println(MVEL.getProperty("date", B));
     }
 
-
-    public class ClassA {
-        private Integer i;
-        private double d;
-        private String s;
-        public Date date;
-        private BigDecimal bigdec;
-        private BigInteger bigint;
-
-        public Integer getI() {
-            return i;
-        }
-
-        public void setI(Integer i) {
-            this.i = i;
-        }
-
-        public double getD() {
-            return d;
-        }
-
-        public void setD(double d) {
-            this.d = d;
-        }
-
-        public String getS() {
-            return s;
-        }
-
-        public void setS(String s) {
-            this.s = s;
-        }
-
-        public Date getDate() {
-            return date;
-        }
-
-        public void setDate(Date date) {
-            this.date = date;
-        }
-
-        public BigDecimal getBigdec() {
-            return bigdec;
-        }
-
-        public void setBigdec(BigDecimal bigdec) {
-            this.bigdec = bigdec;
-        }
-
-        public BigInteger getBigint() {
-            return bigint;
-        }
-
-        public void setBigint(BigInteger bigint) {
-            this.bigint = bigint;
-        }
-    }
-
-    public class ClassB {
-        private Integer i;
-        private double d;
-        private String s;
-        public String date;
-        private BigDecimal bigdec;
-        private BigInteger bigint;
-
-        public Integer getI() {
-            return i;
-        }
-
-        public void setI(Integer i) {
-            this.i = i;
-        }
-
-        public double getD() {
-            return d;
-        }
-
-        public void setD(double d) {
-            this.d = d;
-        }
-
-        public String getS() {
-            return s;
-        }
-
-        public void setS(String s) {
-            this.s = s;
-        }
-
-        public String getDate() {
-            return date;
-        }
-
-        public void setDate(String date) {
-            this.date = date;
-        }
-
-        public BigDecimal getBigdec() {
-            return bigdec;
-        }
-
-        public void setBigdec(BigDecimal bigdec) {
-            this.bigdec = bigdec;
-        }
-
-        public BigInteger getBigint() {
-            return bigint;
-        }
-
-        public void setBigint(BigInteger bigint) {
-            this.bigint = bigint;
-        }
-    }
 
     /**
      * Submitted by: Michael Neale

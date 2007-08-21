@@ -1,7 +1,7 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
-import org.mvel.PropertyAccessException;
+import org.mvel.CompileException;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Method;
@@ -20,7 +20,7 @@ public class SetterAccessor implements AccessorNode {
             return method.invoke(ctx, value);
         }
         catch (Exception e) {
-            throw new PropertyAccessException("error binding property", e);
+            throw new CompileException("error binding property", e);
         }
 
     }
