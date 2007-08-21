@@ -388,6 +388,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("!(sentence contains 'mike')"));
     }
 
+    public void testContains6() {
+        assertEquals(true, test("bwahbwah = 'mikebrock'; testVar10 = 'mike'; bwahbwah contains testVar10"));
+    }
+
     public void testInvert() {
         assertEquals(~10, test("~10"));
     }
