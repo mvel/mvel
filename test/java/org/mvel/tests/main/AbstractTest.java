@@ -8,7 +8,6 @@ import org.mvel.debug.DebugTools;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.StringAppender;
-import sun.jvm.hotspot.utilities.AssertionFailure;
 
 import java.io.CharArrayWriter;
 import java.io.PrintWriter;
@@ -216,7 +215,7 @@ public class AbstractTest extends TestCase {
         }
 
         if (failErrors != null) {
-            throw new AssertionFailure("Detailed Failure Report:\n" + failErrors.toString());
+            throw new AssertionError("Detailed Failure Report:\n" + failErrors.toString());
 
         }
 
