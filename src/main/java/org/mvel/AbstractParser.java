@@ -604,7 +604,6 @@ public class AbstractParser implements Serializable {
                             switch (expr[cursor]) {
                                 case'(':
                                     brace++;
-                                    skipWhitespace();
                                     break;
                                 case')':
                                     brace--;

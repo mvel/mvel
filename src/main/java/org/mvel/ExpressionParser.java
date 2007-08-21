@@ -354,7 +354,7 @@ public class ExpressionParser extends AbstractParser {
      */
     private boolean unwindStatement() {
         ASTNode tk;
-        while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT)) {
+        while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT) && !tk.isOperator(Operator.OR)) {
             //nothing
         }
         return tk == null;

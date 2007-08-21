@@ -84,4 +84,9 @@ public class Base {
     public String getDATA() {
         return data;
     }
+
+    public boolean ord(boolean val, int num) {
+        System.out.println("num: " + num);
+        return val;
+    }
 }
