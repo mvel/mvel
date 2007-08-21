@@ -19,6 +19,8 @@ import org.mvel.tests.main.res.*;
 import java.io.Serializable;
 import static java.lang.System.currentTimeMillis;
 import java.util.*;
+import java.util.List;
+import java.awt.*;
 
 public class CoreConfidenceTests extends AbstractTest {
 
@@ -1664,6 +1666,23 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testParsingStability1() {
         assertEquals(true, test("( order.number == 1 || order.number == ( 1+1) || order.number == $id )"));
+    }
+
+    public void testParsingStability2() {
+
+        ExpressionCompiler compiler = new ExpressionCompiler("( dim.height == 1 || dim.height == ( 1+1) || dim.height == x )");
+
+        Map imports = new HashMap();
+        imports.put("java.awt.Dimension", Dimension.class);
+
+        final ParserContext parserContext = new ParserContext(imports,
+                null,
+                "sourceFile");
+
+        parserContext.setStrictTypeEnforcement(false);
+
+        compiler.compile(parserContext);
+
     }
 
 
