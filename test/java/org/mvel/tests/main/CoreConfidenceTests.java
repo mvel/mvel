@@ -1577,6 +1577,9 @@ public class CoreConfidenceTests extends TestCase {
         assertEquals(Integer.MIN_VALUE, test("list = [java.lang.Integer.MIN_VALUE]; list[0]"));
     }
 
+    public void testPrecedenceOrder() {
+        assertTrue((Boolean) test("5 > 6 && 2 < 1 || 10 > 9"));
+    }
 
     public Object test(String ex) {
         return compiledExecute(ex, this.base, this.map);
