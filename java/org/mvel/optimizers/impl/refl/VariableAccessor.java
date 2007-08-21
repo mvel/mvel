@@ -19,7 +19,7 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
-import org.mvel.PropertyAccessException;
+import org.mvel.CompileException;
 import org.mvel.integration.VariableResolverFactory;
 
 public class VariableAccessor implements AccessorNode {
@@ -33,7 +33,7 @@ public class VariableAccessor implements AccessorNode {
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
         if (vrf == null)
-            throw new PropertyAccessException("cannot access property in optimized accessor: " + property);
+            throw new CompileException("cannot access property in optimized accessor: " + property);
 
         if (nextNode != null) {
             return nextNode.getValue(vrf.getVariableResolver(property).getValue(), elCtx, vrf);

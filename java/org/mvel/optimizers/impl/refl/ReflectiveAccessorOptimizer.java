@@ -274,25 +274,25 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return rootNode;
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException(new String(expr), e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException(new String(expr), e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException("array or collections index out of bounds (property: " + new String(expr) + ")", e);
+            throw new PropertyAccessException(new String(expr), e);
         }
         catch (PropertyAccessException e) {
-            throw new PropertyAccessException("failed to access property: <<" + new String(expr) + ">> in: " + (ctx != null ? ctx.getClass() : null), e);
+            throw new PropertyAccessException(new String(expr), e);
         }
         catch (CompileException e) {
             throw e;
         }
         catch (NullPointerException e) {
-            throw new PropertyAccessException("null pointer exception in property: " + new String(expr), e);
+            throw new PropertyAccessException(new String(expr), e);
         }
         catch (Exception e) {
-            throw new PropertyAccessException("unknown exception in expression: " + new String(expr), e);
+            throw new PropertyAccessException(new String(expr), e);
         }
     }
 
@@ -399,7 +399,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
 
-            throw new PropertyAccessException("could not access property ('" + property + "')");
+            throw new PropertyAccessException( property);
         }
     }
 
@@ -419,13 +419,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         whiteSpaceSkip();
 
         if (cursor == length)
-            throw new PropertyAccessException("unterminated '['");
+            throw new CompileException("unterminated '['");
 
         String item;
 
 
         if (!scanTo(']'))
-            throw new PropertyAccessException("unterminated '['");
+            throw new CompileException("unterminated '['");
 
         item = new String(expr, start, cursor - start);
 
@@ -506,7 +506,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return ((CharSequence) ctx).charAt((Integer) idx);
         }
         else {
-            throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+            throw new CompileException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
         }
     }
 

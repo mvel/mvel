@@ -254,28 +254,28 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return _initializeAccessor();
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException(new String(expr), e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException(new String(expr), e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException("array or collections index out of bounds (property: " + new String(expr) + ")", e);
+            throw new PropertyAccessException(new String(expr), e);
         }
         catch (PropertyAccessException e) {
-            throw new PropertyAccessException("failed to access property: <<" + new String(expr) + ">> in: " + (ctx != null ? ctx.getClass() : "local scope"), e);
+            throw new PropertyAccessException(new String(expr), e);
         }
         catch (CompileException e) {
             throw e;
         }
         catch (NullPointerException e) {
-            throw new PropertyAccessException("null pointer exception in property: " + new String(expr), e);
+            throw new PropertyAccessException(new String(expr), e);
         }
         catch (OptimizationNotSupported e) {
             throw e;
         }
         catch (Exception e) {
-            throw new PropertyAccessException("unknown exception in expression: " + new String(expr), e);
+            throw new PropertyAccessException(new String(expr), e);
         }
     }
 
@@ -487,7 +487,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 }
             }
 
-            throw new PropertyAccessException("could not access property (" + property + ")");
+            throw new PropertyAccessException(property);
         }
     }
 
@@ -503,10 +503,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         whiteSpaceSkip();
 
         if (cursor == length)
-            throw new PropertyAccessException("unterminated '['");
+            throw new CompileException("unterminated '['");
 
         if (!scanTo(']'))
-            throw new PropertyAccessException("unterminated '['");
+            throw new CompileException("unterminated '['");
 
         String tk = new String(expr, start, cursor - start);
 
@@ -647,7 +647,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
         }
         else {
-            throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+            throw new CompileException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
         }
     }
 
@@ -773,7 +773,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return getLength(ctx);
             }
 
-            throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
+            throw new CompileException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
             m = ParseTools.getWidenedTarget(m);
