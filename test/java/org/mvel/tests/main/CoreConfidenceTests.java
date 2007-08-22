@@ -1689,6 +1689,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(false, test("!( [\"X\", \"Y\"] contains \"Y\" )"));
     }
 
+    public void testParsingStability4() {
+        assertEquals(true, test("vv=\"Edson\"; !(vv ~= \"Mark\")"));
+    }
+
 
     /**
      * Community provided test cases
