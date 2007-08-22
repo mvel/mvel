@@ -65,10 +65,8 @@ public abstract class AbstractTest extends TestCase {
     }
 
     protected Object test(String ex, Object base, Map map) {
-
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
         StringAppender failErrors = null;
-
 
         Serializable compiled = compiler.compile();
         Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null;
