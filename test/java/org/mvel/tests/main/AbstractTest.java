@@ -229,7 +229,7 @@ public abstract class AbstractTest extends TestCase {
         }
 
 
-        return second;
+        return fourth;
     }
 
     public static class MiscTestClass {
