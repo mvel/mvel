@@ -17,11 +17,15 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class AbstractTest extends TestCase {
+public abstract class AbstractTest extends TestCase {
     protected Foo foo = new Foo();
     protected Map<String, Object> map = new HashMap<String, Object>();
     protected Base base = new Base();
     protected DerivedClass derived = new DerivedClass();
+
+    public void testNothing() {
+        // to satify Eclipse and Surefire.
+    }
 
     public AbstractTest() {
         foo.setBar(new Bar());
@@ -61,7 +65,6 @@ public class AbstractTest extends TestCase {
     }
 
     protected Object test(String ex, Object base, Map map) {
-        OptimizerFactory.setDefaultOptimizer("ASM");
 
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
         StringAppender failErrors = null;
@@ -70,30 +73,36 @@ public class AbstractTest extends TestCase {
         Serializable compiled = compiler.compile();
         Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null;
 
-        try {
-            first = MVEL.executeExpression(compiled, base, map);
-        }
-        catch (Exception e) {
-            failErrors = new StringAppender();
-            failErrors.append("\nFIRST TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
+        if (!Boolean.getBoolean("mvel.disable.jit")) {
 
-            CharArrayWriter writer = new CharArrayWriter();
-            e.printStackTrace(new PrintWriter(writer));
+            OptimizerFactory.setDefaultOptimizer("ASM");
 
-            failErrors.append(writer.toCharArray());
-        }
+            try {
+                first = MVEL.executeExpression(compiled, base, map);
+            }
+            catch (Exception e) {
+                failErrors = new StringAppender();
+                failErrors.append("\nFIRST TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
-        try {
-            second = MVEL.executeExpression(compiled, base, map);
-        }
-        catch (Exception e) {
-            if (failErrors == null) failErrors = new StringAppender();
-            failErrors.append("\nSECOND TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
+                CharArrayWriter writer = new CharArrayWriter();
+                e.printStackTrace(new PrintWriter(writer));
 
-            CharArrayWriter writer = new CharArrayWriter();
-            e.printStackTrace(new PrintWriter(writer));
+                failErrors.append(writer.toCharArray());
+            }
 
-            failErrors.append(writer.toCharArray());
+            try {
+                second = MVEL.executeExpression(compiled, base, map);
+            }
+            catch (Exception e) {
+                if (failErrors == null) failErrors = new StringAppender();
+                failErrors.append("\nSECOND TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
+
+                CharArrayWriter writer = new CharArrayWriter();
+                e.printStackTrace(new PrintWriter(writer));
+
+                failErrors.append(writer.toCharArray());
+            }
+
         }
 
         try {
