@@ -601,7 +601,7 @@ public class CoreConfidenceTests extends AbstractTest {
         // I think we can all figure this one out.
         Serializable compiled = MVEL.compileExpression("this.foo == 'bar'");
 
-        OptimizerFactory.setDefaultOptimizer("ASM");
+        if (!Boolean.getBoolean("mvel.disable.jit")) OptimizerFactory.setDefaultOptimizer("ASM");
 
         // Run test
         assertEquals(true, MVEL.executeExpression(compiled, map, factory));
