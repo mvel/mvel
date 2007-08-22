@@ -13,6 +13,8 @@ public class Substatement extends ASTNode {
         this.name = expr;
         this.fields = fields;
 
+        System.out.println("substatement<<" + new String(expr) + ">>");
+
         if ((fields & COMPILE_IMMEDIATE) != 0) this.statement = (ExecutableStatement) ParseTools.subCompileExpression(this.name);
     }
 
