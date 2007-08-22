@@ -612,7 +612,7 @@ public class AbstractParser implements Serializable {
                                     cursor = captureStringLiteral('\'', expr, cursor, length);
                                     break;
                                 case'"':
-                                    cursor = captureStringLiteral('\'', expr, cursor, length);
+                                    cursor = captureStringLiteral('"', expr, cursor, length);
                                     break;
 
                                 case'i':
