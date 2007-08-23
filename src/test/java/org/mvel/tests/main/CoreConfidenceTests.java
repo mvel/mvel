@@ -1683,7 +1683,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         compiler.compile(parserContext);
 
-    }
+    }                                                                                
 
     public void testParsingStability3() {
         assertEquals(false, test("!( [\"X\", \"Y\"] contains \"Y\" )"));
@@ -1693,14 +1693,23 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("vv=\"Edson\"; !(vv ~= \"Mark\")"));
     }
 
+    public void testConcatWithLineBreaks() {
+        ExpressionCompiler parser = new ExpressionCompiler("\"foo\"+\n\"bar\"");
+
+        ParserContext ctx = new ParserContext();
+        ctx.setDebugSymbols(true);
+        ctx.setSourceFile("source.mv");
+
+        Serializable c = parser.compile(ctx);
+
+        assertEquals("foobar", MVEL.executeExpression(c));
+    }
 
     /**
      * Community provided test cases
      */
-
     @SuppressWarnings({"unchecked"})
     public void testCalculateAge() {
-        //    System.out.println("Calculating the Age");
         Calendar c1 = Calendar.getInstance();
         c1.set(1999, 0, 10); // 1999 jan 20
         Map objectMap = new HashMap(1);
@@ -1828,4 +1837,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4],'Person.rating' : 'q']")).get("Person.rating"));
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4], 'Person.rating' : 'q']")).get("Person.rating"));
     }
+
+
+
 }

@@ -65,7 +65,7 @@ public class MVEL {
         THREAD_SAFE = threadSafe;
         PropertyAccessor.configureFactory();
         TemplateInterpreter.configureFactory();
-        ExpressionParser.configureFactory();
+        MVELInterpretedRuntime.configureFactory();
     }
 
     public static boolean isThreadSafe() {
@@ -89,30 +89,30 @@ public class MVEL {
     }
 
     public static Object eval(String expression, Object ctx) {
-        return new ExpressionParser(expression, ctx).parse();
+        return new MVELInterpretedRuntime(expression, ctx).parse();
     }
 
     public static Object eval(String expression, VariableResolverFactory resolverFactory) {
-        return new ExpressionParser(expression, resolverFactory).parse();
+        return new MVELInterpretedRuntime(expression, resolverFactory).parse();
 
     }
 
     public static Object eval(char[] expression, Object ctx, VariableResolverFactory resolverFactory) {
-        return new ExpressionParser(expression, ctx, resolverFactory).parse();
+        return new MVELInterpretedRuntime(expression, ctx, resolverFactory).parse();
     }
 
     public static Object eval(String expression, Object ctx, VariableResolverFactory resolverFactory) {
-        return new ExpressionParser(expression, ctx, resolverFactory).parse();
+        return new MVELInterpretedRuntime(expression, ctx, resolverFactory).parse();
     }
 
     @SuppressWarnings({"unchecked"})
     public static Object eval(String expression, Map tokens) {
-        return new ExpressionParser(expression, null, tokens).parse();
+        return new MVELInterpretedRuntime(expression, null, tokens).parse();
     }
 
     @SuppressWarnings({"unchecked"})
     public static Object eval(String expression, Object ctx, Map tokens) {
-        return new ExpressionParser(expression, ctx, tokens).parse();
+        return new MVELInterpretedRuntime(expression, ctx, tokens).parse();
     }
 
 
@@ -352,7 +352,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, Map vars, Class<T> toType) {
         try {
-            return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+            return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
         }
         catch (EndWithValue end) {
             return convert(handleParserEgress(end.getValue(), false), toType);
@@ -362,7 +362,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
         try {
-            return convert(new ExpressionParser(expression, ctx).parse(), toType);
+            return convert(new MVELInterpretedRuntime(expression, ctx).parse(), toType);
         }
         catch (EndWithValue end) {
             return convert(handleParserEgress(end.getValue(), false), toType);
@@ -372,7 +372,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Object ctx, Class<T> toType) {
         try {
-            return convert(new ExpressionParser(expression, ctx).parse(), toType);
+            return convert(new MVELInterpretedRuntime(expression, ctx).parse(), toType);
         }
         catch (EndWithValue end) {
             return convert(handleParserEgress(end.getValue(), false), toType);
@@ -382,7 +382,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Object ctx, Map vars, Class<T> toType) {
         try {
-            return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+            return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
         }
         catch (EndWithValue end) {
             return convert(handleParserEgress(end.getValue(), false), toType);
@@ -392,7 +392,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
         try {
-            return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+            return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
         }
         catch (EndWithValue end) {
             return convert(handleParserEgress(end.getValue(), false), toType);
@@ -402,7 +402,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
         try {
-            return convert(new ExpressionParser(expression, ctx, vars).parse(), toType);
+            return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
         }
         catch (EndWithValue end) {
             return convert(handleParserEgress(end.getValue(), false), toType);
@@ -413,7 +413,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, Map vars, Class<T> toType) {
         try {
-            return convert(new ExpressionParser(expression, null, vars).parse(), toType);
+            return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
         }
         catch (EndWithValue end) {
             return convert(handleParserEgress(end.getValue(), false), toType);
@@ -423,7 +423,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(String expression, VariableResolverFactory vars, Class<T> toType) {
         try {
-            return convert(new ExpressionParser(expression, null, vars).parse(), toType);
+            return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
         }
         catch (EndWithValue end) {
             return convert(handleParserEgress(end.getValue(), false), toType);
@@ -434,7 +434,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Map vars, Class<T> toType) {
         try {
-            return convert(new ExpressionParser(expression, null, vars).parse(), toType);
+            return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
         }
         catch (EndWithValue end) {
             return convert(handleParserEgress(end.getValue(), false), toType);
@@ -444,7 +444,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static Object eval(char[] expression, Object ctx, Map vars) {
         try {
-            return new ExpressionParser(expression, ctx, vars).parse();
+            return new MVELInterpretedRuntime(expression, ctx, vars).parse();
         }
         catch (EndWithValue end) {
             return handleParserEgress(end.getValue(), false);
