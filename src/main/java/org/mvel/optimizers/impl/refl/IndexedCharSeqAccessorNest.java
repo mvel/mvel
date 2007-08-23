@@ -8,6 +8,14 @@ public class IndexedCharSeqAccessorNest implements AccessorNode {
     private AccessorNode nextNode;
     private ExecutableStatement index;
 
+    public IndexedCharSeqAccessorNest() {
+    }
+
+
+    public IndexedCharSeqAccessorNest(ExecutableStatement index) {
+        this.index = index;
+    }
+
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {
             return nextNode.getValue(((String) ctx).charAt((Integer) index.getValue(ctx, elCtx, vars)), elCtx, vars);

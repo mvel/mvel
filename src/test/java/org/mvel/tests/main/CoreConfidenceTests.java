@@ -601,7 +601,7 @@ public class CoreConfidenceTests extends AbstractTest {
         // I think we can all figure this one out.
         Serializable compiled = MVEL.compileExpression("this.foo == 'bar'");
 
-        OptimizerFactory.setDefaultOptimizer("ASM");
+        if (!Boolean.getBoolean("mvel.disable.jit")) OptimizerFactory.setDefaultOptimizer("ASM");
 
         // Run test
         assertEquals(true, MVEL.executeExpression(compiled, map, factory));
@@ -1683,6 +1683,14 @@ public class CoreConfidenceTests extends AbstractTest {
 
         compiler.compile(parserContext);
 
+    }
+
+    public void testParsingStability3() {
+        assertEquals(false, test("!( [\"X\", \"Y\"] contains \"Y\" )"));
+    }
+
+    public void testParsingStability4() {
+        assertEquals(true, test("vv=\"Edson\"; !(vv ~= \"Mark\")"));
     }
 
 

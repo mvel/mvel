@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CompiledPerformanceTests extends TestCase {
-    private static final int ITERATIONS = 1000000;
+    private static final int ITERATIONS = 1000;
 
     protected Foo foo = new Foo();
     protected Map<String, Object> map = new HashMap<String, Object>();

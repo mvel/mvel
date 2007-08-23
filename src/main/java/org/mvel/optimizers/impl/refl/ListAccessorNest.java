@@ -37,6 +37,10 @@ public class ListAccessorNest implements AccessorNode {
         this.index = (ExecutableStatement) ParseTools.subCompileExpression(index);
     }
 
+    public ListAccessorNest(ExecutableStatement index) {
+        this.index = index;
+    }
+
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {
             return nextNode.getValue(((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars)), elCtx, vars);

@@ -48,6 +48,10 @@ public class StaticReferenceAccessor implements AccessorNode {
     public StaticReferenceAccessor() {
     }
 
+    public StaticReferenceAccessor(Object literal) {
+        this.literal = literal;
+    }
+
     public AccessorNode getNextNode() {
         return nextNode;
     }
