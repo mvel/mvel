@@ -396,7 +396,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         String item;
 
-
         if (!scanTo(']'))
             throw new CompileException("unterminated '['");
 
@@ -723,7 +722,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     public static AccessorNode compileConstructor(char[] expression, Object ctx, VariableResolverFactory vars) throws
             InstantiationException, IllegalAccessException, InvocationTargetException,
             ClassNotFoundException, NoSuchMethodException {
-
 
         String[] cnsRes = captureContructorAndResidual(expression);
 
