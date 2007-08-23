@@ -39,7 +39,7 @@ import java.util.Map;
 import static java.util.regex.Pattern.compile;
 
 
-public class ExpressionParser extends AbstractParser {
+public class MVELInterpretedRuntime extends AbstractParser {
     private boolean returnBigDecimal = false;
     private int roundingMode = BigDecimal.ROUND_HALF_DOWN;
 
@@ -360,7 +360,7 @@ public class ExpressionParser extends AbstractParser {
         return tk == null;
     }
 
-    public ExpressionParser setExpressionArray(char[] expressionArray) {
+    public MVELInterpretedRuntime setExpressionArray(char[] expressionArray) {
         this.length = (this.expr = expressionArray).length;
         return this;
     }
@@ -381,56 +381,56 @@ public class ExpressionParser extends AbstractParser {
         this.returnBigDecimal = returnBigDecimal;
     }
 
-    ExpressionParser(char[] expression, Object ctx, Map<String, Object> variables) {
+    MVELInterpretedRuntime(char[] expression, Object ctx, Map<String, Object> variables) {
         this.expr = expression;
         this.length = expr.length;
         this.ctx = ctx;
         this.variableFactory = new MapVariableResolverFactory(variables);
     }
 
-    ExpressionParser(char[] expression, Object ctx) {
+    MVELInterpretedRuntime(char[] expression, Object ctx) {
         this.expr = expression;
         this.length = expr.length;
         this.ctx = ctx;
     }
 
-    ExpressionParser(String expression, Object ctx, Map<String, Object> variables) {
+    MVELInterpretedRuntime(String expression, Object ctx, Map<String, Object> variables) {
         setExpression(expression);
         this.ctx = ctx;
         this.variableFactory = new MapVariableResolverFactory(variables);
     }
 
-    ExpressionParser(String expression) {
+    MVELInterpretedRuntime(String expression) {
         setExpression(expression);
     }
 
-    ExpressionParser(char[] expression) {
+    MVELInterpretedRuntime(char[] expression) {
         this.length = (this.expr = expression).length;
     }
 
-    ExpressionParser(char[] expr, Object ctx, VariableResolverFactory resolverFactory) {
+    MVELInterpretedRuntime(char[] expr, Object ctx, VariableResolverFactory resolverFactory) {
         this.length = (this.expr = expr).length;
         this.ctx = ctx;
         this.variableFactory = resolverFactory;
     }
 
-    ExpressionParser(Object ctx, Map<String, Object> variables) {
+    MVELInterpretedRuntime(Object ctx, Map<String, Object> variables) {
         this.ctx = ctx;
         this.variableFactory = new MapVariableResolverFactory(variables);
     }
 
-    ExpressionParser(String expression, Object ctx, VariableResolverFactory resolverFactory) {
+    MVELInterpretedRuntime(String expression, Object ctx, VariableResolverFactory resolverFactory) {
         setExpression(expression);
         this.ctx = ctx;
         this.variableFactory = resolverFactory;
     }
 
-    ExpressionParser(String expression, VariableResolverFactory resolverFactory) {
+    MVELInterpretedRuntime(String expression, VariableResolverFactory resolverFactory) {
         setExpression(expression);
         this.variableFactory = resolverFactory;
     }
 
-    ExpressionParser(String expression, Object ctx) {
+    MVELInterpretedRuntime(String expression, Object ctx) {
         setExpression(expression);
         this.ctx = ctx;
     }

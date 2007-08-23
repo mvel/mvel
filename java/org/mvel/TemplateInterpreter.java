@@ -372,7 +372,7 @@ public class TemplateInterpreter {
 
         try {
             //noinspection unchecked
-            ExpressionParser oParser = new ExpressionParser(ctx, tokens);
+            MVELInterpretedRuntime oParser = new MVELInterpretedRuntime(ctx, tokens);
 
             initStack();
             pushAndForward();
@@ -412,7 +412,7 @@ public class TemplateInterpreter {
                                 Iterator[] iters = new Iterator[lists.length];
                                 for (int i = 0; i < lists.length; i++) {
                                     //noinspection unchecked
-                                    Object listObject = new ExpressionParser(lists[i], ctx, tokens).parse();
+                                    Object listObject = new MVELInterpretedRuntime(lists[i], ctx, tokens).parse();
                                     if (listObject instanceof Object[]) {
                                         listObject = Arrays.asList((Object[]) listObject);
                                     }

@@ -93,14 +93,14 @@ public class ExpressionCompiler extends AbstractParser {
                  * reducing for certain literals like, 'this', ternary and ternary else.
                  */
                 if (tk.isLiteral() && tk.getLiteralValue() != LITERALS.get("this")) {
-                    if ((tkOp = nextToken()) != null && tkOp.isOperator()
+                    if ((tkOp = nextTokenSkipSymbols()) != null && tkOp.isOperator()
                             && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
 
                         /**
                          * If the next token is ALSO a literal, then we have a candidate for a compile-time literal
                          * reduction.
                          */
-                        if ((tkLA = nextToken()) != null && tkLA.isLiteral()) {
+                        if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()) {
                             stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), tkOp.getLiteralValue());
 
                             /**
@@ -113,7 +113,7 @@ public class ExpressionCompiler extends AbstractParser {
                             /**
                              * Now we need to check to see if this is actually a continuing reduction.
                              */
-                            while ((tkOp2 = nextToken()) != null) {
+                            while ((tkOp2 = nextTokenSkipSymbols()) != null) {
                                 if (!tkOp2.isOperator(tkOp.getOperator())) {
                                     /**
                                      * We can't continue any further because we are dealing with
@@ -123,7 +123,7 @@ public class ExpressionCompiler extends AbstractParser {
                                     astLinkedList.addTokenNode(verify(pCtx, tkOp2));
                                     break;
                                 }
-                                else if ((tkLA2 = nextToken()) != null
+                                else if ((tkLA2 = nextTokenSkipSymbols()) != null
                                         && tkLA2.isLiteral()) {
 
                                     stk.push(tkLA2.getLiteralValue(), tkOp2.getLiteralValue());
