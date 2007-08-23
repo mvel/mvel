@@ -27,6 +27,14 @@ public class IndexedCharSeqAccessor implements AccessorNode {
 
     private int index;
 
+
+    public IndexedCharSeqAccessor() {
+    }
+
+    public IndexedCharSeqAccessor(int index) {
+        this.index = index;
+    }
+
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {
             return nextNode.getValue(((String)ctx).charAt(index), elCtx, vars);

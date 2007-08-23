@@ -9,6 +9,14 @@ public class ListAccessor implements AccessorNode {
     private AccessorNode nextNode;
     private int index;
 
+
+    public ListAccessor() {
+    }
+
+    public ListAccessor(int index) {
+        this.index = index;
+    }
+
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {
             return nextNode.getValue(((List) ctx).get(index), elCtx, vars);

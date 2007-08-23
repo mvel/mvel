@@ -110,6 +110,14 @@ public class MethodAccessor implements AccessorNode {
     public MethodAccessor() {
     }
 
+
+    public MethodAccessor(Method method, ExecutableStatement[] parms) {
+        this.method = method;
+        this.length = (this.parameterTypes = this.method.getParameterTypes()).length;
+                
+        this.parms = parms;
+    }
+
     public AccessorNode getNextNode() {
         return nextNode;
     }

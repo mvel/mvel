@@ -27,6 +27,14 @@ public class ArrayAccessor implements AccessorNode {
 
     private int index;
 
+
+    public ArrayAccessor() {
+    }
+
+    public ArrayAccessor(int index) {
+        this.index = index;
+    }
+
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {
             return nextNode.getValue(((Object[])ctx)[index], elCtx, vars);
