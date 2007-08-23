@@ -49,7 +49,7 @@ public class CompilerTools {
                      * right here.
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                            && tkOp2.getOperator() < 12) {
+                            && tkOp2.getFields() != -1 && tkOp2.getOperator() < 12) {
                         bo = new BinaryOperation(((tkOp = tkOp2).getOperator()), bo, astLinkedList.nextNode());
                     }
                     optimizedAst.addTokenNode(bo);

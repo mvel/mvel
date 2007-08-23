@@ -136,6 +136,12 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    protected ASTNode nextTokenSkipSymbols() {
+        ASTNode n = nextToken();
+        if (n != null && n.getFields() == -1) n = nextToken();
+        return n;
+    }
+
     /**
      * Retrieve the next token in the expression.
      *
