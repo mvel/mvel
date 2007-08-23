@@ -289,6 +289,11 @@ public class AbstractParser implements Serializable {
                             case')':
                                 brace--;
                                 break;
+
+                                /**
+                                 * String literals need to be skipped over or encountering a ')' in a String
+                                 * will cause an explosion.
+                                 */
                             case'\'':
                                 cursor = captureStringLiteral('\'', expr, cursor, length) + 1;
                                 break;
