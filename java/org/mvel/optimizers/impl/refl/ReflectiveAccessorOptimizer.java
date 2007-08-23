@@ -485,10 +485,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         int st = cursor;
 
-        cursor = ParseTools.balancedCapture(expr, cursor, '(');
-
-
-        String tk = (cursor - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
+        String tk = ((cursor = ParseTools.balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
 
         cursor++;
 
@@ -513,8 +510,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
          * adjust the Class scope target.
          */
         Class<? extends Object> cls = ctx instanceof Class ? (Class<? extends Object>) ctx : ctx.getClass();
-
-        //    Integer signature = ;
 
         Method m;
         Class[] parameterTypes = null;
