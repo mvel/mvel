@@ -1166,7 +1166,7 @@ public class AbstractParser implements Serializable {
                 length = (this.expr = expression.toCharArray()).length;
 
                 // trim any whitespace.
-                while (isWhitespace(this.expr[length - 1])) length--;
+                while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
 
                 char[] e = new char[length];
                 arraycopy(this.expr, 0, e, 0, length);
