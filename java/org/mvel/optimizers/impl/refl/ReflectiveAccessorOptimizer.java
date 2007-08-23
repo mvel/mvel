@@ -19,6 +19,7 @@
 
 package org.mvel.optimizers.impl.refl;
 
+import static org.mvel.util.ParseTools.subCompileExpression;
 import static org.mvel.MVEL.eval;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
@@ -159,7 +160,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             if (col) {
                 int start = cursor;
                 whiteSpaceSkip();
-                
+
                 if (cursor == length)
                     throw new PropertyAccessException("unterminated '['");
 
@@ -308,10 +309,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             throws IllegalAccessException, InvocationTargetException {
 
         if (first && variableFactory != null && variableFactory.isResolveable(property)) {
-            VariableAccessor accessor = new VariableAccessor(property, variableFactory);
-
-            addAccessorNode(accessor);
-
+            addAccessorNode(new VariableAccessor(property, variableFactory));
             return variableFactory.getVariableResolver(property).getValue();
         }
 
@@ -320,11 +318,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
 
         if (member instanceof Field) {
-            FieldAccessor accessor = new FieldAccessor();
-            accessor.setField((Field) member);
-
-            addAccessorNode(accessor);
-
+            addAccessorNode(new FieldAccessor((Field) member));
             return ((Field) member).get(ctx);
         }
         else if (member != null) {
@@ -332,55 +326,38 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             try {
                 o = ((Method) member).invoke(ctx, EMPTYARG);
-
-                GetterAccessor accessor = new GetterAccessor((Method) member);
-                addAccessorNode(accessor);
+                addAccessorNode(new GetterAccessor((Method) member));
             }
             catch (IllegalAccessException e) {
                 Method iFaceMeth = ParseTools.determineActualTargetMethod((Method) member);
-                GetterAccessor accessor = new GetterAccessor(iFaceMeth);
-                addAccessorNode(accessor);
-
+                addAccessorNode(new GetterAccessor(iFaceMeth));
                 o = iFaceMeth.invoke(ctx, EMPTYARG);
             }
             return o;
         }
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
-            MapAccessor accessor = new MapAccessor();
-            accessor.setProperty(property);
-
-            addAccessorNode(accessor);
-
+            addAccessorNode(new MapAccessor(property));
             return ((Map) ctx).get(property);
         }
         else if ("this".equals(property)) {
-            ThisValueAccessor accessor = new ThisValueAccessor();
-
-            addAccessorNode(accessor);
-
+            addAccessorNode(new ThisValueAccessor());
             return this.thisRef;
         }
         else if (LITERALS.containsKey(property)) {
-            StaticReferenceAccessor accessor = new StaticReferenceAccessor();
-            accessor.setLiteral(LITERALS.get(property));
-
-            addAccessorNode(accessor);
-
-            return accessor.getLiteral();
+            Object literal = LITERALS.get(property);
+            addAccessorNode(new StaticReferenceAccessor(literal));
+            return literal;
         }
         else {
             Object tryStaticMethodRef = tryStaticAccess();
 
             if (tryStaticMethodRef != null) {
                 if (tryStaticMethodRef instanceof Class) {
-                    StaticReferenceAccessor accessor = new StaticReferenceAccessor();
-                    accessor.setLiteral(tryStaticMethodRef);
-                    addAccessorNode(accessor);
+                    addAccessorNode(new StaticReferenceAccessor(tryStaticMethodRef));
                     return tryStaticMethodRef;
                 }
                 else {
-                    StaticVarAccessor accessor = new StaticVarAccessor((Field) tryStaticMethodRef);
-                    addAccessorNode(accessor);
+                    addAccessorNode(new StaticVarAccessor((Field) tryStaticMethodRef));
                     return ((Field) tryStaticMethodRef).get(null);
                 }
 
@@ -389,17 +366,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 Class c = (Class) ctx;
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
-                        StaticReferenceAccessor accessor = new StaticReferenceAccessor();
-                        accessor.setLiteral(m);
-                        addAccessorNode(accessor);
-
+                        addAccessorNode(new StaticReferenceAccessor(m));
                         return m;
                     }
                 }
             }
 
-
-            throw new PropertyAccessException( property);
+            throw new PropertyAccessException(property);
         }
     }
 
@@ -443,64 +416,47 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         ExecutableStatement itemStmt = null;
         if (itemSubExpr) {
-            itemStmt = (ExecutableStatement) ParseTools.subCompileExpression(item);
-            idx = itemStmt.getValue(ctx, thisRef, variableFactory);
+            idx = (itemStmt = (ExecutableStatement) subCompileExpression(item)).getValue(ctx, thisRef, variableFactory);
         }
 
         ++cursor;
 
         if (ctx instanceof Map) {
             if (itemSubExpr) {
-                MapAccessorNest accessor = new MapAccessorNest();
-                accessor.setProperty(itemStmt);
-                addAccessorNode(accessor);
+                addAccessorNode(new MapAccessorNest(itemStmt));
             }
             else {
-                MapAccessor accessor = new MapAccessor();
-                accessor.setProperty(parseInt(item));
-                addAccessorNode(accessor);
+                addAccessorNode(new MapAccessor(parseInt(item)));
             }
 
             return ((Map) ctx).get(idx);
         }
         else if (ctx instanceof List) {
             if (itemSubExpr) {
-                ListAccessorNest accessor = new ListAccessorNest();
-                accessor.setIndex(itemStmt);
-                addAccessorNode(accessor);
+                addAccessorNode(new ListAccessorNest(itemStmt));
             }
             else {
-                ListAccessor accessor = new ListAccessor();
-                accessor.setIndex(parseInt(item));
-                addAccessorNode(accessor);
+                addAccessorNode(new ListAccessor(parseInt(item)));
             }
 
             return ((List) ctx).get((Integer) idx);
         }
         else if (ctx instanceof Object[]) {
             if (itemSubExpr) {
-                ArrayAccessorNest accessor = new ArrayAccessorNest();
-                accessor.setIndex(itemStmt);
-                addAccessorNode(accessor);
+                addAccessorNode(new ArrayAccessorNest(itemStmt));
             }
             else {
-                ArrayAccessor accessor = new ArrayAccessor();
-                accessor.setIndex(parseInt(item));
-                addAccessorNode(accessor);
+                addAccessorNode(new ArrayAccessor(parseInt(item)));
             }
 
             return ((Object[]) ctx)[(Integer) idx];
         }
         else if (ctx instanceof CharSequence) {
             if (itemSubExpr) {
-                IndexedCharSeqAccessorNest accessor = new IndexedCharSeqAccessorNest();
-                accessor.setIndex(itemStmt);
-                addAccessorNode(accessor);
+                addAccessorNode(new IndexedCharSeqAccessorNest(itemStmt));
             }
             else {
-                IndexedCharSeqAccessor accessor = new IndexedCharSeqAccessor();
-                accessor.setIndex(parseInt(item));
-                addAccessorNode(accessor);
+                addAccessorNode(new IndexedCharSeqAccessor(parseInt(item)));
             }
 
             return ((CharSequence) ctx).charAt((Integer) idx);
@@ -548,7 +504,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             es = new ExecutableStatement[subtokens.length];
             args = new Object[subtokens.length];
             for (int i = 0; i < subtokens.length; i++) {
-                args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue(this.ctx, thisRef, variableFactory);
+                args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i])).getValue(this.ctx, thisRef, variableFactory);
             }
         }
 
@@ -621,11 +577,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
 
-            MethodAccessor access = new MethodAccessor();
-            access.setMethod(ParseTools.getWidenedTarget(m));
-            access.setParms((ExecutableStatement[]) es);
-
-            addAccessorNode(access);
+            addAccessorNode(new MethodAccessor(ParseTools.getWidenedTarget(m), (ExecutableStatement[]) es));
 
             /**
              * Invoke the target method and return the response.
@@ -789,7 +741,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
 
             for (int i = 0; i < constructorParms.length; i++) {
-                cStmts[i] = (ExecutableStatement) ParseTools.subCompileExpression(constructorParms[i]);
+                cStmts[i] = (ExecutableStatement) subCompileExpression(constructorParms[i]);
             }
 
             Object[] parms = new Object[constructorParms.length];

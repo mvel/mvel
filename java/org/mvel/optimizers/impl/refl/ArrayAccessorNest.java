@@ -17,6 +17,11 @@ public class ArrayAccessorNest implements AccessorNode {
         this.index = (ExecutableStatement) ParseTools.subCompileExpression(index);
     }
 
+    public ArrayAccessorNest(ExecutableStatement stmt) {
+        this.index = stmt;
+    }
+
+
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {
             return nextNode.getValue(((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)], elCtx, vars);
@@ -28,7 +33,7 @@ public class ArrayAccessorNest implements AccessorNode {
 
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-       return ((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, variableFactory)] = convert(value, ctx.getClass().getComponentType()); 
+        return ((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, variableFactory)] = convert(value, ctx.getClass().getComponentType());
     }
 
     public ExecutableStatement getIndex() {
