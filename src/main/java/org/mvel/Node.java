@@ -147,6 +147,15 @@ public class Node implements Cloneable {
 
 
     protected Node clone() throws CloneNotSupportedException {
-        return (Node) super.clone();
+        Node n = new Node();
+        n.nodeType = nodeType;
+        n.startPos = startPos;
+        n.length = length;
+        n.node = node;
+        n.endNode = endNode;
+        n.alias = alias;
+        n.name = name;
+
+        return n;
     }
 }
