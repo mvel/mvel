@@ -169,22 +169,26 @@ public class TemplateInterpreter {
      * @param template -
      */
     public TemplateInterpreter(CharSequence template) {
-        if (!EX_PRECACHE.containsKey(template)) {
-            EX_PRECACHE.put(template, this.expression = template.toString().toCharArray());
-            nodes = new TemplateCompiler(this).compileExpression();
-            Node[] nodes = cloneAll(EX_NODE_CACHE.get(expression));
+        synchronized (Runtime.getRuntime()) {
 
-            EX_NODE_CACHE.put(template, nodes);
-        }
-        else {
-            this.expression = EX_PRECACHE.get(template);
-            try {
-                this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
-            }
-            catch (NullPointerException e) {
-                EX_NODE_CACHE.remove(expression);
+            if (!EX_PRECACHE.containsKey(template)) {
+                EX_PRECACHE.put(template, this.expression = template.toString().toCharArray());
                 nodes = new TemplateCompiler(this).compileExpression();
-                EX_NODE_CACHE.put(expression, nodes.clone());
+                Node[] nodes = cloneAll(EX_NODE_CACHE.get(expression));
+
+                EX_NODE_CACHE.put(template, nodes);
+            }
+            else {
+                this.expression = EX_PRECACHE.get(template);
+                try {
+                    this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
+                }
+                catch (NullPointerException e) {
+                    EX_NODE_CACHE.remove(expression);
+                    nodes = new TemplateCompiler(this).compileExpression();
+                    EX_NODE_CACHE.put(expression, cloneAll(nodes));
+                }
+
             }
 
         }
@@ -211,22 +215,24 @@ public class TemplateInterpreter {
 
 
     public TemplateInterpreter(String expression) {
-        if (!EX_PRECACHE.containsKey(expression)) {
-            EX_PRECACHE.put(expression, this.expression = expression.toCharArray());
-            nodes = new TemplateCompiler(this).compileExpression();
-            EX_NODE_CACHE.put(expression, nodes);
-            this.nodes = cloneAll(nodes);           
-        }
-        else {
-            this.expression = EX_PRECACHE.get(expression);
-            try {
-                this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
-            }
-            catch (NullPointerException e) {
-                EX_NODE_CACHE.remove(expression);
+        synchronized (Runtime.getRuntime()) {
+            if (!EX_PRECACHE.containsKey(expression)) {
+                EX_PRECACHE.put(expression, this.expression = expression.toCharArray());
                 nodes = new TemplateCompiler(this).compileExpression();
                 EX_NODE_CACHE.put(expression, nodes);
                 this.nodes = cloneAll(nodes);
+            }
+            else {
+                this.expression = EX_PRECACHE.get(expression);
+                try {
+                    this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
+                }
+                catch (NullPointerException e) {
+                    EX_NODE_CACHE.remove(expression);
+                    nodes = new TemplateCompiler(this).compileExpression();
+                    EX_NODE_CACHE.put(expression, nodes);
+                    this.nodes = cloneAll(nodes);
+                }
             }
         }
     }
