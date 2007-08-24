@@ -14,7 +14,7 @@ public class CompilerTools {
     /**
      * Optimize the AST, by reducing any stack-based-operations to dedicated nodes where possible.
      *
-     * @param astLinkedList - AST to be optimized.
+     * @param astLinkedList          - AST to be optimized.
      * @param secondPassOptimization - perform a second pass optimization to optimize boolean expressions.
      * @return optimized AST
      */
@@ -148,6 +148,25 @@ public class CompilerTools {
         }
 
         return optimizedAst;
+    }
+
+    public static boolean isOperator(char item) {
+        switch (item) {
+            case'+':
+            case'-':
+            case'*':
+            case'/':
+            case'&':
+            case'|':
+            case'^':
+            case'.':
+            case'>':
+            case'<':
+
+                return true;
+            default:
+                return false;
+        }
     }
 
 }

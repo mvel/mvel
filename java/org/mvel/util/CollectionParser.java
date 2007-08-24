@@ -2,12 +2,18 @@ package org.mvel.util;
 
 import static org.mvel.util.ParseTools.balancedCapture;
 
+import static java.lang.Character.isWhitespace;
+import static java.lang.System.arraycopy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
+ * This is the inline collection sub-parser.  It produces a skeleton model of the collection which is in turn translated
+ * into a sequenced AST to produce the collection efficiently at runtime, and passed off to one of the JIT's if
+ * configured.
+ *
  * @author Christopher Brock
  */
 public class CollectionParser {
@@ -16,7 +22,6 @@ public class CollectionParser {
     private int cursor;
     private int length;
     private int start;
-    private int end;
 
     private int type;
 
@@ -38,9 +43,8 @@ public class CollectionParser {
         this.cursor = 0;
         this.length = property.length;
 
-
         if (length > 0)
-            while (length > 0 && Character.isWhitespace(property[length - 1]))
+            while (length > 0 && isWhitespace(property[length - 1]))
                 length--;
 
         return parseCollection();
@@ -69,26 +73,25 @@ public class CollectionParser {
         }
 
         Object curr = null;
-
         int newType = -1;
 
-        //   int end;
         for (; cursor < length; cursor++) {
             switch (property[cursor]) {
                 case'{':
                     if (newType == -1) {
                         newType = ARRAY;
                     }
+
                 case'[':
                     if (newType == -1) {
                         newType = LIST;
                     }
 
-                    start = cursor;
-
-                    end = cursor = balancedCapture(property, start, property[start]);
-
-                    Object o = new CollectionParser(newType).parseCollection(subset(property, start + 1, end));
+                    /**
+                     * Sub-parse nested collections.
+                     */
+                    Object o = new CollectionParser(newType).parseCollection(subset(property, (start = cursor) + 1,
+                            cursor = balancedCapture(property, start, property[start])));
 
                     if (type == MAP) {
                         map.put(curr, o);
@@ -105,24 +108,22 @@ public class CollectionParser {
 
                 case'\"':
                 case'\'':
-                    end = cursor = balancedCapture(property, start = cursor, property[start]);
-
-                    if (end == -1) {
+                    if ((cursor = balancedCapture(property, start = cursor, property[start])) == -1) {
                         throw new RuntimeException("unterminated string literal starting at index " + start + " {" + property[start] + "}: " + new String(property));
                     }
 
-                    
                     break;
 
                 case',':
                     if (type != MAP) {
-                        list.add(new String(subset(property, start, cursor)));
+                        list.add(new String(property, start, cursor - start));
                     }
                     else {
-                        map.put(curr, new String(subset(property, start, cursor)).trim());
+                        map.put(curr, new String(property, start, cursor - start).trim());
                     }
 
                     start = cursor + 1;
+
                     break;
 
                 case':':
@@ -130,23 +131,37 @@ public class CollectionParser {
                         map = new HashMap<Object, Object>();
                         type = MAP;
                     }
-                    curr = new String(subset(property, start, cursor)).trim();
+                    curr = new String(property, start, cursor - start).trim();
 
                     start = cursor + 1;
                     break;
+
+                default:
+                    /**
+                     * This is an attempt at a hack to make Michael Neale happy and provide optional commas
+                     * between elements.
+                     */
+                    if (isWhitespace(property[cursor])) {
+                        int end = cursor;
+                        skipWhitespace();
+
+                    }
+
+
+
+
             }
         }
-
 
         if (start < length) {
             if (cursor < (length - 1)) cursor++;
 
             if (type == MAP) {
-                map.put(curr, new String(subset(property, start, cursor)).trim());
+                map.put(curr, new String(property, start, cursor - start).trim());
             }
             else {
                 if (cursor < length) cursor++;
-                list.add(new String(subset(property, start, cursor)).trim());
+                list.add(new String(property, start, cursor - start).trim());
             }
         }
 
@@ -161,18 +176,22 @@ public class CollectionParser {
     }
 
 
+    private void skipWhitespace() {
+        while (cursor < length && isWhitespace(property[cursor])) cursor++;
+    }
+
     private static char[] subset(char[] property, int start, int end) {
-        while (start < (end - 1) && Character.isWhitespace(property[start]))
+        while (start < (end - 1) && isWhitespace(property[start]))
             start++;
 
         char[] newA = new char[end - start];
-        System.arraycopy(property, start, newA, 0, end - start);
+        arraycopy(property, start, newA, 0, end - start);
         return newA;
     }
 
 
-    public int getEnd() {
-        return end;
+    public int getCursor() {
+        return cursor;
     }
 
 }

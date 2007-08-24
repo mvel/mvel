@@ -177,7 +177,18 @@ public class TemplateInterpreter {
         else {
             this.expression = EX_PRECACHE.get(template);
             try {
-                this.nodes = EX_NODE_CACHE.get(expression).clone();
+                Node[] nodes = EX_NODE_CACHE.get(expression);
+
+                this.nodes = new Node[nodes.length];
+
+                int i = 0;
+                for (Node n : nodes) {
+                    this.nodes[i++] = n.clone();
+                }
+                
+            }
+            catch (CloneNotSupportedException e) {
+
             }
             catch (NullPointerException e) {
                 EX_NODE_CACHE.remove(expression);

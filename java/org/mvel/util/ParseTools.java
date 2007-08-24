@@ -25,6 +25,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
+
+/**
+ * This class contains much of the actual parsing code used by the core parser.  
+ */
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
     public static final MathProcessor MATH_PROCESSOR;
@@ -277,7 +281,6 @@ public class ParseTools {
     }
 
     public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
-
         Class[] parmTypes;
         Constructor bestCandidate = null;
         int bestScore = 0;
@@ -855,6 +858,24 @@ public class ParseTools {
     }
 
 
+    /**
+     * This is an important aspect of the core parser tools.  This method is used throughout the core parser
+     * and sub-lexical parsers to capture a balanced capture between opening and terminating tokens such as:
+     * <em>( [ { ' " </em>
+     * <br>
+     * <br>
+     * For example: ((foo + bar + (bar - foo)) * 20;<br>
+     * <br>
+     *
+     * If a balanced capture is performed from position 2, we get "(foo + bar + (bar - foo))" back.<br>
+     * If a balanced capture is performed from position 15, we get "(bar - foo)" back.<br>
+     * Etc.
+     *
+     * @param chars
+     * @param start
+     * @param type
+     * @return
+     */
     public static int balancedCapture(char[] chars, int start, char type) {
         int depth = 1;
         char term = type;

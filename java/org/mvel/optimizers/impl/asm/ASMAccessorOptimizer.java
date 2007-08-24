@@ -1602,7 +1602,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         _finishJIT();
 
-        int end = parser.getEnd() + 2;
+        int end = parser.getCursor() + 2;
         try {
             Accessor compiledAccessor = _initializeAccessor();
 
