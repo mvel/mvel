@@ -135,21 +135,6 @@ public class CollectionParser {
 
                     start = cursor + 1;
                     break;
-
-                default:
-                    /**
-                     * This is an attempt at a hack to make Michael Neale happy and provide optional commas
-                     * between elements.
-                     */
-                    if (isWhitespace(property[cursor])) {
-                        int end = cursor;
-                        skipWhitespace();
-
-                    }
-
-
-
-
             }
         }
 
