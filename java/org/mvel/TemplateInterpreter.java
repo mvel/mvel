@@ -169,26 +169,22 @@ public class TemplateInterpreter {
      * @param template -
      */
     public TemplateInterpreter(CharSequence template) {
-        synchronized (Runtime.getRuntime()) {
+        if (!EX_PRECACHE.containsKey(template)) {
+            EX_PRECACHE.put(template, this.expression = template.toString().toCharArray());
+            nodes = new TemplateCompiler(this).compileExpression();
+            Node[] nodes = cloneAll(EX_NODE_CACHE.get(expression));
 
-            if (!EX_PRECACHE.containsKey(template)) {
-                EX_PRECACHE.put(template, this.expression = template.toString().toCharArray());
-                nodes = new TemplateCompiler(this).compileExpression();
-                Node[] nodes = cloneAll(EX_NODE_CACHE.get(expression));
-
-                EX_NODE_CACHE.put(template, nodes);
+            EX_NODE_CACHE.put(template, nodes);
+        }
+        else {
+            this.expression = EX_PRECACHE.get(template);
+            try {
+                this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
             }
-            else {
-                this.expression = EX_PRECACHE.get(template);
-                try {
-                    this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
-                }
-                catch (NullPointerException e) {
-                    EX_NODE_CACHE.remove(expression);
-                    nodes = new TemplateCompiler(this).compileExpression();
-                    EX_NODE_CACHE.put(expression, cloneAll(nodes));
-                }
-
+            catch (NullPointerException e) {
+                EX_NODE_CACHE.remove(expression);
+                nodes = new TemplateCompiler(this).compileExpression();
+                EX_NODE_CACHE.put(expression, cloneAll(nodes));
             }
 
         }
@@ -215,26 +211,25 @@ public class TemplateInterpreter {
 
 
     public TemplateInterpreter(String expression) {
-        synchronized (Runtime.getRuntime()) {
-            if (!EX_PRECACHE.containsKey(expression)) {
-                EX_PRECACHE.put(expression, this.expression = expression.toCharArray());
+        if (!EX_PRECACHE.containsKey(expression)) {
+            EX_PRECACHE.put(expression, this.expression = expression.toCharArray());
+            nodes = new TemplateCompiler(this).compileExpression();
+            EX_NODE_CACHE.put(expression, nodes);
+            this.nodes = cloneAll(nodes);
+        }
+        else {
+            this.expression = EX_PRECACHE.get(expression);
+            try {
+                this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
+            }
+            catch (NullPointerException e) {
+                EX_NODE_CACHE.remove(expression);
                 nodes = new TemplateCompiler(this).compileExpression();
                 EX_NODE_CACHE.put(expression, nodes);
                 this.nodes = cloneAll(nodes);
             }
-            else {
-                this.expression = EX_PRECACHE.get(expression);
-                try {
-                    this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
-                }
-                catch (NullPointerException e) {
-                    EX_NODE_CACHE.remove(expression);
-                    nodes = new TemplateCompiler(this).compileExpression();
-                    EX_NODE_CACHE.put(expression, nodes);
-                    this.nodes = cloneAll(nodes);
-                }
-            }
         }
+
     }
 
     public TemplateInterpreter(char[] expression) {
@@ -279,6 +274,7 @@ public class TemplateInterpreter {
     }
 
     public static Object parse(File file, Object ctx, Map tokens, TemplateRegistry registry) throws IOException {
+
         if (!file.exists())
             throw new CompileException("cannot find file: " + file.getName());
 
@@ -343,188 +339,191 @@ public class TemplateInterpreter {
     }
 
     public Object execute(Object ctx, Map tokens, TemplateRegistry registry) {
-        if (nodes == null) {
-            return new String(expression);
-        }
-        else if (nodes.length == 2) {
-            /**
-             * This is an optimization for property expressions.
-             */
-            switch (nodes[0].getToken()) {
-                case PROPERTY_EX:
-                    //noinspection unchecked
-                    if (!cacheAggressively) {
-                        char[] seg = new char[expression.length - 3];
-                        arraycopy(expression, 2, seg, 0, seg.length);
+        synchronized (Runtime.getRuntime()) {
 
-                        return MVEL.eval(seg, ctx, tokens);
-                    }
-                    else {
-                        String s = new String(expression, 2, expression.length - 3);
-                        if (!EX_PRECOMP_CACHE.containsKey(s)) {
-                            synchronized (EX_PRECOMP_CACHE) {
-                                EX_PRECOMP_CACHE.put(s, compileExpression(s));
+            if (nodes == null) {
+                return new String(expression);
+            }
+            else if (nodes.length == 2) {
+                /**
+                 * This is an optimization for property expressions.
+                 */
+                switch (nodes[0].getToken()) {
+                    case PROPERTY_EX:
+                        //noinspection unchecked
+                        if (!cacheAggressively) {
+                            char[] seg = new char[expression.length - 3];
+                            arraycopy(expression, 2, seg, 0, seg.length);
+
+                            return MVEL.eval(seg, ctx, tokens);
+                        }
+                        else {
+                            String s = new String(expression, 2, expression.length - 3);
+                            if (!EX_PRECOMP_CACHE.containsKey(s)) {
+                                synchronized (EX_PRECOMP_CACHE) {
+                                    EX_PRECOMP_CACHE.put(s, compileExpression(s));
+                                    return executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
+                                }
+                            }
+                            else {
                                 return executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
                             }
+
                         }
-                        else {
-                            return executeExpression(EX_PRECOMP_CACHE.get(s), ctx, tokens);
-                        }
+                    case LITERAL:
+                        return new String(expression);
 
-                    }
-                case LITERAL:
-                    return new String(expression);
-
-            }
-
-            return new String(expression);
-        }
-
-        Object register = null;
-
-        StringAppender sbuf = new StringAppender(10);
-        Node currNode = null;
-
-        try {
-            //noinspection unchecked
-            MVELInterpretedRuntime oParser = new MVELInterpretedRuntime(ctx, tokens);
-
-            initStack();
-            pushAndForward();
-
-            while ((currNode = pop()) != null) {
-                node = currNode.getNode();
-
-                switch (currNode.getToken()) {
-                    case LITERAL: {
-                        sbuf.append(register = new String(expression, currNode.getStartPos(),
-                                currNode.getEndPos() - currNode.getStartPos()));
-                        break;
-                    }
-                    case PROPERTY_EX: {
-                        sbuf.append(
-                                valueOf(register = oParser.setExpressionArray(getInternalSegment(currNode)).parse())
-                        );
-                        break;
-                    }
-                    case IF:
-                    case ELSEIF: {
-                        try {
-                            if (!((Boolean) oParser.setExpressionArray(getInternalSegment(currNode)).parse())) {
-                                exitContext();
-                            }
-                        }
-                        catch (ClassCastException e) {
-                            throw new CompileException("IF expression does not return a boolean: " + new String(getSegment(currNode)));
-                        }
-                        break;
-                    }
-                    case FOREACH: {
-                        ForeachContext foreachContext = (ForeachContext) currNode.getRegister();
-                        if (foreachContext.getItererators() == null) {
-                            try {
-                                String[] lists = getForEachSegment(currNode).split(",");
-                                Iterator[] iters = new Iterator[lists.length];
-                                for (int i = 0; i < lists.length; i++) {
-                                    //noinspection unchecked
-                                    Object listObject = new MVELInterpretedRuntime(lists[i], ctx, tokens).parse();
-                                    if (listObject instanceof Object[]) {
-                                        listObject = Arrays.asList((Object[]) listObject);
-                                    }
-                                    iters[i] = ((Collection) listObject).iterator();
-                                }
-                                foreachContext.setIterators(iters);
-                            }
-                            catch (ClassCastException e) {
-                                throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)));
-                            }
-                            catch (NullPointerException e) {
-                                throw new CompileException("null returned for foreach in expression: " + (getForEachSegment(currNode)));
-                            }
-                        }
-
-                        Iterator[] iters = foreachContext.getItererators();
-                        String[] alias = currNode.getAlias().split(",");
-                        // must trim vars
-                        for (int i = 0; i < alias.length; i++) {
-                            alias[i] = alias[i].trim();
-                        }
-
-                        if (iters[0].hasNext()) {
-                            push();
-
-                            //noinspection unchecked
-                            for (int i = 0; i < iters.length; i++) {
-                                //noinspection unchecked
-                                tokens.put(alias[i], iters[i].next());
-                            }
-                            if (foreachContext.getCount() != 0) {
-                                sbuf.append(foreachContext.getSeperator());
-                            }
-                            //noinspection unchecked
-                            tokens.put("i0", foreachContext.getCount());
-                            foreachContext.setCount(foreachContext.getCount() + 1);
-                        }
-                        else {
-                            for (int i = 0; i < iters.length; i++) {
-                                tokens.remove(alias[i]);
-                            }
-                            foreachContext.setIterators(null);
-                            foreachContext.setCount(0);
-                            exitContext();
-                        }
-                        break;
-                    }
-                    case ELSE:
-                    case END:
-                        if (stack.isEmpty()) forwardAndPush();
-                        continue;
-                    case GOTO:
-                        pushNode(currNode.getEndNode());
-                        continue;
-                    case TERMINUS: {
-                        if (nodes.length != 2) {
-                            return sbuf.toString();
-                        }
-                        else {
-                            return register;
-                        }
-                    }
-                    case INCLUDE_BY_REF: {
-                        IncludeRef includeRef = (IncludeRef) nodes[node].getRegister();
-
-                        IncludeRefParam[] params = includeRef.getParams();
-                        Map<String, Object> vars = new HashMap<String, Object>(params.length * 2);
-                        for (IncludeRefParam param : params) {
-                            vars.put(param.getIdentifier(), MVEL.eval(param.getValue(), ctx, tokens));
-                        }
-
-                        if (registry == null) {
-                            throw new CompileException("No TemplateRegistry specified, cannot load template='" + includeRef.getName() + "'");
-                        }
-                        String template = registry.getTemplate(includeRef.getName());
-
-                        if (template == null) {
-                            throw new CompileException("Template does not exist in the TemplateRegistry, cannot load template='" + includeRef.getName() + "'");
-                        }
-
-                        sbuf.append(TemplateInterpreter.parse(template, ctx, vars, registry));
-                    }
                 }
 
-                forwardAndPush();
+                return new String(expression);
             }
-            throw new CompileException("expression did not end properly: expected TERMINUS node");
-        }
-        catch (CompileException e) {
-            throw e;
-        }
-        catch (Exception e) {
-            if (currNode != null) {
-                throw new CompileException("problem encountered at node [" + currNode.getNode() + "] "
-                        + currNode.getToken() + "{" + currNode.getStartPos() + "," + currNode.getEndPos() + "}: " + e.getMessage(), e);
+
+            Object register = null;
+
+            StringAppender sbuf = new StringAppender(10);
+            Node currNode = null;
+
+            try {
+                //noinspection unchecked
+                MVELInterpretedRuntime oParser = new MVELInterpretedRuntime(ctx, tokens);
+
+                initStack();
+                pushAndForward();
+
+                while ((currNode = pop()) != null) {
+                    node = currNode.getNode();
+
+                    switch (currNode.getToken()) {
+                        case LITERAL: {
+                            sbuf.append(register = new String(expression, currNode.getStartPos(),
+                                    currNode.getEndPos() - currNode.getStartPos()));
+                            break;
+                        }
+                        case PROPERTY_EX: {
+                            sbuf.append(
+                                    valueOf(register = oParser.setExpressionArray(getInternalSegment(currNode)).parse())
+                            );
+                            break;
+                        }
+                        case IF:
+                        case ELSEIF: {
+                            try {
+                                if (!((Boolean) oParser.setExpressionArray(getInternalSegment(currNode)).parse())) {
+                                    exitContext();
+                                }
+                            }
+                            catch (ClassCastException e) {
+                                throw new CompileException("IF expression does not return a boolean: " + new String(getSegment(currNode)));
+                            }
+                            break;
+                        }
+                        case FOREACH: {
+                            ForeachContext foreachContext = (ForeachContext) currNode.getRegister();
+                            if (foreachContext.getItererators() == null) {
+                                try {
+                                    String[] lists = getForEachSegment(currNode).split(",");
+                                    Iterator[] iters = new Iterator[lists.length];
+                                    for (int i = 0; i < lists.length; i++) {
+                                        //noinspection unchecked
+                                        Object listObject = new MVELInterpretedRuntime(lists[i], ctx, tokens).parse();
+                                        if (listObject instanceof Object[]) {
+                                            listObject = Arrays.asList((Object[]) listObject);
+                                        }
+                                        iters[i] = ((Collection) listObject).iterator();
+                                    }
+                                    foreachContext.setIterators(iters);
+                                }
+                                catch (ClassCastException e) {
+                                    throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)));
+                                }
+                                catch (NullPointerException e) {
+                                    throw new CompileException("null returned for foreach in expression: " + (getForEachSegment(currNode)));
+                                }
+                            }
+
+                            Iterator[] iters = foreachContext.getItererators();
+                            String[] alias = currNode.getAlias().split(",");
+                            // must trim vars
+                            for (int i = 0; i < alias.length; i++) {
+                                alias[i] = alias[i].trim();
+                            }
+
+                            if (iters[0].hasNext()) {
+                                push();
+
+                                //noinspection unchecked
+                                for (int i = 0; i < iters.length; i++) {
+                                    //noinspection unchecked
+                                    tokens.put(alias[i], iters[i].next());
+                                }
+                                if (foreachContext.getCount() != 0) {
+                                    sbuf.append(foreachContext.getSeperator());
+                                }
+                                //noinspection unchecked
+                                tokens.put("i0", foreachContext.getCount());
+                                foreachContext.setCount(foreachContext.getCount() + 1);
+                            }
+                            else {
+                                for (int i = 0; i < iters.length; i++) {
+                                    tokens.remove(alias[i]);
+                                }
+                                foreachContext.setIterators(null);
+                                foreachContext.setCount(0);
+                                exitContext();
+                            }
+                            break;
+                        }
+                        case ELSE:
+                        case END:
+                            if (stack.isEmpty()) forwardAndPush();
+                            continue;
+                        case GOTO:
+                            pushNode(currNode.getEndNode());
+                            continue;
+                        case TERMINUS: {
+                            if (nodes.length != 2) {
+                                return sbuf.toString();
+                            }
+                            else {
+                                return register;
+                            }
+                        }
+                        case INCLUDE_BY_REF: {
+                            IncludeRef includeRef = (IncludeRef) nodes[node].getRegister();
+
+                            IncludeRefParam[] params = includeRef.getParams();
+                            Map<String, Object> vars = new HashMap<String, Object>(params.length * 2);
+                            for (IncludeRefParam param : params) {
+                                vars.put(param.getIdentifier(), MVEL.eval(param.getValue(), ctx, tokens));
+                            }
+
+                            if (registry == null) {
+                                throw new CompileException("No TemplateRegistry specified, cannot load template='" + includeRef.getName() + "'");
+                            }
+                            String template = registry.getTemplate(includeRef.getName());
+
+                            if (template == null) {
+                                throw new CompileException("Template does not exist in the TemplateRegistry, cannot load template='" + includeRef.getName() + "'");
+                            }
+
+                            sbuf.append(TemplateInterpreter.parse(template, ctx, vars, registry));
+                        }
+                    }
+
+                    forwardAndPush();
+                }
+                throw new CompileException("expression did not end properly: expected TERMINUS node");
             }
-            throw new CompileException("unhandled fatal exception (node:" + node + ")", e);
+            catch (CompileException e) {
+                throw e;
+            }
+            catch (Exception e) {
+                if (currNode != null) {
+                    throw new CompileException("problem encountered at node [" + currNode.getNode() + "] "
+                            + currNode.getToken() + "{" + currNode.getStartPos() + "," + currNode.getEndPos() + "}: " + e.getMessage(), e);
+                }
+                throw new CompileException("unhandled fatal exception (node:" + node + ")", e);
+            }
         }
     }
 
