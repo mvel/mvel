@@ -1706,10 +1706,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
-    public void testEmpty() {
-        assertEquals("", test(" "));
-    }
-
     /**
      * Community provided test cases
      */
@@ -1842,4 +1838,5 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4],'Person.rating' : 'q']")).get("Person.rating"));
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4], 'Person.rating' : 'q']")).get("Person.rating"));
     }
+
 }
