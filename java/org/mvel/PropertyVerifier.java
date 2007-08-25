@@ -145,7 +145,6 @@ public class PropertyVerifier extends AbstractOptimizer {
                 addFatalError("unqualified type in strict mode for: " + property);
             }
             return Object.class;
-
         }
     }
 
