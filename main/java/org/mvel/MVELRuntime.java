@@ -71,7 +71,6 @@ public class MVELRuntime {
 
                         try {
                             context.checkBreak(label, variableFactory, expression);
-                            tk = node.nextNode();
 
 
 //                            if (context.checkBreak(label, variableFactory, expression) == Debugger.STEP_OVER) {
