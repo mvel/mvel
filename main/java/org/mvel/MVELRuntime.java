@@ -71,11 +71,6 @@ public class MVELRuntime {
 
                         try {
                             context.checkBreak(label, variableFactory, expression);
-
-
-//                            if (context.checkBreak(label, variableFactory, expression) == Debugger.STEP_OVER) {
-//                                node.nextNode();
-//                            }
                         }
                         catch (NullPointerException e) {
                             // do nothing for now.  this isn't as calus as it seems.   
