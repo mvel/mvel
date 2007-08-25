@@ -1684,7 +1684,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         compiler.compile(parserContext);
 
-    }                                                                                
+    }
 
     public void testParsingStability3() {
         assertEquals(false, test("!( [\"X\", \"Y\"] contains \"Y\" )"));
@@ -1839,11 +1839,19 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4],'Person.rating' : 'q']")).get("Person.rating"));
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4], 'Person.rating' : 'q']")).get("Person.rating"));
     }
-    
+
     public void testX() throws Exception {
-    	String ex = "drools = \"zzzz\";\n drools.yyy.zzz(\"org.xxx\", \"xxx\"); ";    
-        Serializable compiled = MVEL.compileExpression(ex);
-        Object object =  MVEL.executeExpression(compiled, new Object(), new HashMap());
+
+        String ex = "drools = \"zzzz\";\n drools.yyy.zzz(\"org.xxx\", \"xxx\"); ";
+
+        try {
+            Serializable compiled = MVEL.compileExpression(ex);
+        }
+        catch (Exception e) {
+            return;
+        }
+
+        assertTrue(false);
     }
 
 }

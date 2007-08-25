@@ -1,6 +1,7 @@
 package org.mvel.optimizers;
 
 import org.mvel.AbstractParser;
+import static org.mvel.util.ParseTools.captureStringLiteral;
 
 /**
  * @author Christopher Brock
@@ -53,6 +54,14 @@ public class AbstractOptimizer extends AbstractParser {
                     case'(':
                         depth--;
                         break;
+
+                    case'\'':
+                        cursor = captureStringLiteral('\'', expr, cursor, length) + 1;
+                        break;
+
+                    case'"':
+                        cursor = captureStringLiteral('"', expr, cursor, length) + 1;
+                        break;
                 }
             }
         }
@@ -65,7 +74,7 @@ public class AbstractOptimizer extends AbstractParser {
 
     protected int nextSubToken() {
         skipWhitespace();
-        
+
         switch (expr[start = cursor]) {
             case'[':
                 return COL;
@@ -95,7 +104,7 @@ public class AbstractOptimizer extends AbstractParser {
     protected String capture() {
         /**
          * Trim off any whitespace.
-         */        
+         */
         return new String(expr, start = trimRight(start), trimLeft(cursor) - start);
     }
 
