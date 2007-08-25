@@ -1,6 +1,7 @@
 package org.mvel.tests.main;
 
 import org.mvel.*;
+
 import static org.mvel.MVEL.*;
 import org.mvel.ast.WithNode;
 import org.mvel.debug.DebugTools;
@@ -1837,6 +1838,12 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testInlineCollectionParser1() {
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4],'Person.rating' : 'q']")).get("Person.rating"));
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4], 'Person.rating' : 'q']")).get("Person.rating"));
+    }
+    
+    public void testX() throws Exception {
+    	String ex = "drools = \"zzzz\";\n drools.yyy.zzz(\"org.xxx\", \"xxx\"); ";    
+        Serializable compiled = MVEL.compileExpression(ex);
+        Object object =  MVEL.executeExpression(compiled, new Object(), new HashMap());
     }
 
 }
