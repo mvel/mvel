@@ -71,12 +71,15 @@ public abstract class AbstractTest extends TestCase {
         Serializable compiled = compiler.compile();
         Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null;
 
+        System.out.println(DebugTools.decompile((Serializable) compiled));
+
         if (!Boolean.getBoolean("mvel.disable.jit")) {
 
             OptimizerFactory.setDefaultOptimizer("ASM");
 
             try {
                 first = MVEL.executeExpression(compiled, base, map);
+
             }
             catch (Exception e) {
                 failErrors = new StringAppender();

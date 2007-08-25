@@ -3,7 +3,9 @@ package org.mvel.debug;
 import org.mvel.*;
 import static org.mvel.Operator.ADD;
 import static org.mvel.Operator.SUB;
+import org.mvel.ast.BinaryOperation;
 import org.mvel.ast.NestedStatement;
+import org.mvel.ast.Substatement;
 import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.getSimpleClassName;
@@ -28,14 +30,18 @@ public class DebugTools {
     }
 
     public static String decompile(CompiledExpression cExp) {
-        return decompile(cExp, false);
+        return decompile(cExp, false, new DecompileContext());
     }
 
-    private static String decompile(CompiledExpression cExp, boolean nest) {
+    private static final class DecompileContext {
+        public int node = 0;
+    }
+
+    private static String decompile(CompiledExpression cExp, boolean nest, DecompileContext context) {
         ASTIterator iter = cExp.getTokens();
         ASTNode tk;
 
-        int node = 0;
+     //   int node = 0;
 
         StringBuffer sbuf = new StringBuffer();
 
@@ -46,20 +52,26 @@ public class DebugTools {
         while (iter.hasMoreNodes()) {
             tk = iter.nextNode();
 
-            sbuf.append("(").append(node++).append(") ");
+            sbuf.append("(").append(context.node++).append(") ");
 
             if (tk instanceof NestedStatement
                     && ((NestedStatement) tk).getNestedStatement() instanceof CompiledExpression) {
                 //noinspection StringConcatenationInsideStringBufferAppend
-                sbuf.append("ASTNODE [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }\n");
-                sbuf.append(decompile((CompiledExpression) ((NestedStatement) tk).getNestedStatement(), true));
+                sbuf.append("NEST [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }\n");
+                sbuf.append(decompile((CompiledExpression) ((NestedStatement) tk).getNestedStatement(), true, context));
+            }
+            if (tk instanceof Substatement
+                    && ((Substatement) tk).getStatement() instanceof CompiledExpression) {
+                //noinspection StringConcatenationInsideStringBufferAppend
+                sbuf.append("NEST [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }\n");
+                sbuf.append(decompile((CompiledExpression) ((Substatement) tk).getStatement(), true, context));
             }
             else if (tk.isDebuggingSymbol()) {
                 //noinspection StringConcatenationInsideStringBufferAppend
-                sbuf.append("DEBUG_SYMBOL " + tk.toString());
+                sbuf.append("DEBUG_SYMBOL :: " + tk.toString());
             }
             else if (tk.isLiteral()) {
-                sbuf.append("PUSH LITERAL '").append(tk.getLiteralValue()).append("'");
+                sbuf.append("LITERAL :: ").append(tk.getLiteralValue()).append("'");
             }
             else if (tk.isOperator()) {
                 sbuf.append("OPERATOR [").append(getOperatorName(tk.getOperator())).append("]: ")
@@ -68,11 +80,16 @@ public class DebugTools {
                 if (tk.isOperator(Operator.END_OF_STMT)) sbuf.append("\n");
             }
             else if (tk.isIdentifier()) {
-                sbuf.append("PUSH VAR :: ").append(tk.getName());
+                sbuf.append("REFERENCE :: ").append(getSimpleClassName(tk.getClass())).append(":").append(tk.getName());
+            }
+            else if (tk instanceof BinaryOperation) {
+               BinaryOperation bo = (BinaryOperation) tk;
+               sbuf.append("OPERATION [" + getOperatorName(bo.getOperation()) + "] {").append(bo.getLeft().getName())
+                       .append("} {").append(bo.getRight().getName()).append("}");
             }
             else {
                 //noinspection StringConcatenationInsideStringBufferAppend
-                sbuf.append("ASTNODE [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }");
+                sbuf.append("NODE [" + getSimpleClassName(tk.getClass()) + "] :: " + tk.getName());
             }
 
             sbuf.append("\n");
@@ -211,10 +228,10 @@ public class DebugTools {
 
         VariableResolverFactory vrf = rootFactory;
         do {
-           for (String var : vrf.getKnownVariables()) {
+            for (String var : vrf.getKnownVariables()) {
                 allVariableResolvers.put(var, vrf.getVariableResolver(var));
 
-           }
+            }
         }
         while ((vrf = vrf.getNextFactory()) != null);
 
