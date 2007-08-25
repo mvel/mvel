@@ -1672,7 +1672,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ExpressionCompiler compiler = new ExpressionCompiler("( dim.height == 1 || dim.height == ( 1+1) || dim.height == x )");
 
-        Map imports = new HashMap();
+        Map<String, Object> imports = new HashMap<String, Object>();
         imports.put("java.awt.Dimension", Dimension.class);
 
         final ParserContext parserContext = new ParserContext(imports,
