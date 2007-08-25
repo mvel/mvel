@@ -1839,19 +1839,4 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4],'Person.rating' : 'q']")).get("Person.rating"));
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4], 'Person.rating' : 'q']")).get("Person.rating"));
     }
-
-    public void testX() throws Exception {
-
-        String ex = "drools = \"zzzz\";\n drools.yyy.zzz(\"org.xxx\", \"xxx\"); ";
-
-        try {
-            Serializable compiled = MVEL.compileExpression(ex);
-        }
-        catch (Exception e) {
-            return;
-        }
-
-        assertTrue(false);
-    }
-
 }
