@@ -1,16 +1,16 @@
 package org.mvel.ast;
 
 import org.mvel.*;
-import org.mvel.util.ArrayTools;
-import org.mvel.util.ParseTools;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
+import org.mvel.util.ArrayTools;
 
 /**
  * @author Christopher Brock
  */
 public class NewObjectNode extends ASTNode {
     private Accessor newObjectOptimizer;
+    private String FQCN;
 
     public NewObjectNode(char[] expr, int fields) {
         super(expr, fields);
@@ -38,6 +38,18 @@ public class NewObjectNode extends ASTNode {
                 }
                 catch (ClassNotFoundException e) {
                     throw new CompileException("class not found: " + name, e);
+                }
+            }
+
+            FQCN = egressType.getName();
+
+            if (!name.equals(FQCN)) {
+                int idx = FQCN.lastIndexOf('$');
+                if (idx != -1 && name.lastIndexOf('$') == -1) {
+                    this.name = (FQCN.substring(0, idx + 1) + new String(this.name)).toCharArray();
+                }
+                else {
+                    this.name = (FQCN.substring(0, FQCN.lastIndexOf('.') + 1) + new String(this.name)).toCharArray();
                 }
             }
         }
