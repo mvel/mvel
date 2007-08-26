@@ -369,6 +369,8 @@ public abstract class AbstractTest extends TestCase {
     public static class Message {
         public static final int HELLO = 0;
         public static final int GOODBYE = 1;
+        
+        private List items = new ArrayList();
 
         private String message;
 
@@ -389,6 +391,30 @@ public abstract class AbstractTest extends TestCase {
         public void setStatus(int status) {
             this.status = status;
         }
+        
+        public void addItem(Item item) {
+            this.items.add( item );
+        }
+        
+        public List getItems() {
+            return items;
+        }
+    }
+    
+    public static class Item {
+        private String name;
+
+        public Item(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }                                
     }
 
     public class ClassA {
