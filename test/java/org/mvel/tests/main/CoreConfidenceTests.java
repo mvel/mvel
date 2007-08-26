@@ -1787,6 +1787,23 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(1, MVEL.executeExpression(compiledExpression));
     }
+    
+    public void testStaticNestedWithMethodCall() {
+        String expr = "$msg  = new Message(); item = new Item( \"Some Item\"); $msg.addItem( item ); return msg";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+        ParserContext context = new ParserContext();
+        context.setStrictTypeEnforcement(false);
+
+        context.addImport("Message", Message.class);
+        context.addImport("Item", Item.class);
+        Serializable compiledExpression = compiler.compile(context);
+        
+        Message msg = ( Message ) MVEL.executeExpression(compiledExpression, new HashMap());
+        assertEquals( "Some String", msg.getItems().get( 0 ) );
+        //assertEquals(1,);
+    }    
 
 
     /**
