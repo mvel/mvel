@@ -1801,8 +1801,8 @@ public class CoreConfidenceTests extends AbstractTest {
         Serializable compiledExpression = compiler.compile(context);
         
         Message msg = ( Message ) MVEL.executeExpression(compiledExpression, new HashMap());
-        assertEquals( "Some String", msg.getItems().get( 0 ) );
-        //assertEquals(1,);
+        Item item = ( Item )  msg.getItems().get( 0 ) ;
+        assertEquals( "Some Item", item.getName());
     }    
 
 
