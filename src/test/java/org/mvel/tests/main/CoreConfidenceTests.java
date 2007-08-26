@@ -1789,7 +1789,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
     
     public void testStaticNestedWithMethodCall() {
-        String expr = "$msg  = new Message(); item = new Item( \"Some Item\"); $msg.addItem( item ); return msg";
+        String expr = "item = new Item( \"Some Item\"); $msg.addItem( item ); return msg";
 
         ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
@@ -1800,7 +1800,9 @@ public class CoreConfidenceTests extends AbstractTest {
         context.addImport("Item", Item.class);
         Serializable compiledExpression = compiler.compile(context);
         
-        Message msg = ( Message ) MVEL.executeExpression(compiledExpression, new HashMap());
+        Map vars = new HashMap();
+        vars.put( "$msg", new Message() );
+        Message msg = ( Message ) MVEL.executeExpression(compiledExpression, vars);
         Item item = ( Item )  msg.getItems().get( 0 ) ;
         assertEquals( "Some Item", item.getName());
     }    
