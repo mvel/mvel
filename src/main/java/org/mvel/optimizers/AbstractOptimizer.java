@@ -1,7 +1,6 @@
 package org.mvel.optimizers;
 
 import org.mvel.AbstractParser;
-import static org.mvel.util.ParseTools.captureStringLiteral;
 
 /**
  * @author Christopher Brock
@@ -14,6 +13,7 @@ public class AbstractOptimizer extends AbstractParser {
     protected int start = 0;
 
     protected Object tryStaticAccess() {
+        int begin = cursor;
         try {
             /**
              * Try to resolve this *smartly* as a static class reference.
@@ -56,17 +56,26 @@ public class AbstractOptimizer extends AbstractParser {
                         break;
 
                     case'\'':
-                        cursor = captureStringLiteral('\'', expr, cursor, length) + 1;
+                        while (--i > 0) {
+                            if (expr[i] == '\'' && expr[i - 1] != '\\') {
+                                break;
+                            }
+                        }
                         break;
 
+
                     case'"':
-                        cursor = captureStringLiteral('"', expr, cursor, length) + 1;
+                        while (--i > 0) {
+                            if (expr[i] == '"' && expr[i - 1] != '\\') {
+                                break;
+                            }
+                        }
                         break;
                 }
             }
         }
         catch (Exception cnfe) {
-            // do nothing.
+            cursor = begin;
         }
 
         return null;
