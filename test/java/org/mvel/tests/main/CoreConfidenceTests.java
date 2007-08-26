@@ -1170,6 +1170,13 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertFalse(compiler.getParserContextState().getInputs().keySet().contains("home"));
     }
+    
+    public void testVarInputs4() {
+        ExpressionCompiler compiler = new ExpressionCompiler("System.out.println( message );");
+        compiler.compile();
+
+        assertTrue(compiler.getParserContextState().getInputs().keySet().contains("message"));
+    }
 
 
     public void testAnalyzer() {
