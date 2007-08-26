@@ -1789,7 +1789,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
     
     public void testStaticNestedWithMethodCall() {
-        String expr = "item = new Item( \"Some Item\"); $msg.addItem( item ); return msg";
+        String expr = "item = new Item( \"Some Item\"); $msg.addItem( item ); return $msg";
 
         ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
