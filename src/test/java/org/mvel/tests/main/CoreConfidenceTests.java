@@ -1806,6 +1806,44 @@ public class CoreConfidenceTests extends AbstractTest {
         Item item = ( Item )  msg.getItems().get( 0 ) ;
         assertEquals( "Some Item", item.getName());
     }    
+    
+    public void testParserStringIssueNeverReturns() {
+        String expr = "Sstem.out.println(drools.workingMemory); ";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+        ParserContext context = new ParserContext();
+        context.setStrictTypeEnforcement(true);        
+        context.addInput( "drools", KnowledgeHelper.class);
+        
+        RuleBase ruleBase = new RuleBaseImpl();
+        WorkingMemory wm = new WorkingMemoryImpl( ruleBase );
+        KnowledgeHelper drools = new DefaultKnowledgeHelper( wm );
+        Serializable compiledExpression = compiler.compile(context);
+        
+        Map vars = new HashMap();
+        vars.put( "drools", drools );
+        MVEL.executeExpression(compiledExpression, vars);
+    }
+    
+    public void testsequentialAccessorsThenMethodCall() {
+        String expr = "System.out.println(drools.workingMemory); drools.workingMemory.ruleBase.removeRule(\"org.drools.examples\", \"some rule\"); ";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+        ParserContext context = new ParserContext();
+        context.setStrictTypeEnforcement(true);        
+        context.addInput( "drools", KnowledgeHelper.class);
+        
+        RuleBase ruleBase = new RuleBaseImpl();
+        WorkingMemory wm = new WorkingMemoryImpl( ruleBase );
+        KnowledgeHelper drools = new DefaultKnowledgeHelper( wm );
+        Serializable compiledExpression = compiler.compile(context);
+        
+        Map vars = new HashMap();
+        vars.put( "drools", drools );
+        MVEL.executeExpression(compiledExpression, vars);
+    }    
 
 
     /**
