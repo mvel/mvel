@@ -70,7 +70,9 @@ public class ASTNode implements Cloneable, Serializable {
     protected String nameCache;
 
     protected Object literal;
-    protected Accessor accessor;
+
+    // don't serialize this.
+    protected transient Accessor accessor;
 
     protected int cursorPosition;
     public ASTNode nextASTNode;
