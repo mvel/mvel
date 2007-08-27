@@ -228,10 +228,14 @@ public class ExpressionCompiler extends AbstractParser {
                 pCtx.addVariable(varName, returnType = tk.getEgressType());
             }
             else if (tk.isIdentifier()) {
-                if (pCtx.hasImport(tk.getAbsoluteRootElement())) return tk;
+                //              if (pCtx.hasImport(tk.getAbsoluteRootElement())) return tk;
 
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
-                pCtx.addInput(tk.getAbsoluteName(), returnType = propVerifier.analyze());
+                returnType = propVerifier.analyze();
+
+                if (propVerifier.isResolvedExternally()) {
+                    pCtx.addInput(tk.getAbsoluteName(), returnType);
+                }
             }
         }
         return tk;
