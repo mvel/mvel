@@ -153,7 +153,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.variableFactory = factory;
 
         _initJIT();
-       
+
         return compileAccessor();
     }
 
@@ -318,11 +318,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             else {
                 mv.visitVarInsn(ALOAD, 1);
             }
-                    
+
         }
 
 
-         if (member instanceof Field) {
+        if (member instanceof Field) {
             Object o = ((Field) member).get(ctx);
 
             if (first) {

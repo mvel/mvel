@@ -76,6 +76,9 @@ public class ASTNode implements Cloneable, Serializable {
 
     protected int cursorPosition;
     public ASTNode nextASTNode;
+
+    // this field is marked true by the compiler to tell the optimizer
+    // that it's safe to remove this node.
     protected boolean discard;
 
     private int intRegister;
