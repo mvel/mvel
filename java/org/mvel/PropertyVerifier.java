@@ -24,6 +24,7 @@ import static org.mvel.util.ParseTools.getBestCandidate;
 import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
+import org.mvel.util.ParseTools;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -40,6 +41,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     private ParserContext parserContext;
     private List<String> inputs = new LinkedList<String>();
     private boolean first = true;
+    private boolean resolvedExternally;
 
 
     public PropertyVerifier(char[] property, ParserContext parserContext) {
@@ -64,6 +66,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     public Class analyze() {
         Class ctx = Object.class;
+        resolvedExternally = true;
 
         first = true;
         while (cursor < length) {
@@ -80,9 +83,9 @@ public class PropertyVerifier extends AbstractOptimizer {
                 case DONE:
                     break;
             }
+
             first = false;
         }
-
         return ctx;
     }
 
@@ -92,8 +95,9 @@ public class PropertyVerifier extends AbstractOptimizer {
             if (parserContext.hasVarOrInput(property)) {
                 return parserContext.getVarOrInputType(property);
             }
-            else if (AbstractParser.LITERALS.containsKey(property)) {
-                return (Class) AbstractParser.LITERALS.get(property);
+            else if (parserContext.hasImport(property)) {
+                resolvedExternally = false;
+                return parserContext.getImport(property);
             }
             else {
                 return Object.class;
@@ -180,20 +184,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         int st = cursor;
 
-        int depth = 1;
-
-        while (cursor++ < length - 1 && depth != 0) {
-            switch (expr[cursor]) {
-                case'(':
-                    depth++;
-                    continue;
-                case')':
-                    depth--;
-            }
-        }
-        cursor--;
-
-        String tk = (cursor - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
+        String tk = ((cursor = ParseTools.balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
 
         cursor++;
 
@@ -256,5 +247,10 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
 
         return m.getReturnType();
+    }
+
+
+    public boolean isResolvedExternally() {
+        return resolvedExternally;
     }
 }
