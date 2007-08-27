@@ -117,8 +117,8 @@ public class PropertyVerifier extends AbstractOptimizer {
         else if (member != null) {
             return ((Method) member).getReturnType();
         }
-        else if (AbstractParser.LITERALS.containsKey(property)) {
-            return (Class) AbstractParser.LITERALS.get(property);
+        else if (parserContext.hasImport(property)) {
+            return parserContext.getImport(property);
         }
         else {
             Object tryStaticMethodRef = tryStaticAccess();
