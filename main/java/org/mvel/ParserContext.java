@@ -28,7 +28,7 @@ public class ParserContext implements Serializable {
     private List<ErrorDetail> errorList;
 
     private Map<String, Set<Integer>> sourceMap;
-    private LineLabel firstLineLabel;
+    private LineLabel lastLineLabel;
 
     private Object rootParser;
 
@@ -37,6 +37,8 @@ public class ParserContext implements Serializable {
     private boolean fatalError = false;
     private boolean retainParserState = false;
     private boolean debugSymbols = false;
+
+    private boolean executableCodeReached = false;
 
     public ParserContext() {
     }
@@ -136,7 +138,7 @@ public class ParserContext implements Serializable {
         return (imports != null && imports.containsKey(name)) ||
                 (!"this".equals(name) && !"self".equals(name) && !"empty".equals(name) && !"null".equals(name) &&
                         !"nil".equals(name) && !"true".equals(name) && !"false".equals(name)
-            && AbstractParser.LITERALS.containsKey(name))
+                        && AbstractParser.LITERALS.containsKey(name))
                 || checkForDynamicImport(name);
     }
 
@@ -301,15 +303,24 @@ public class ParserContext implements Serializable {
     }
 
 
-    public LineLabel getFirstLineLabel() {
-        return firstLineLabel;
+    public LineLabel getLastLineLabel() {
+        return lastLineLabel;
     }
 
-    public void setFirstLineLabel(LineLabel firstLineLabel) {
-        this.firstLineLabel = firstLineLabel;
+    public void setLastLineLabel(LineLabel lastLineLabel) {
+        this.lastLineLabel = lastLineLabel;
     }
 
     public boolean hasImports() {
         return (imports != null && imports.size() != 0) || (packageImports != null && packageImports.size() != 0);
+    }
+
+
+    public boolean isExecutableCodeReached() {
+        return executableCodeReached;
+    }
+
+    public void setExecutableCodeReached(boolean executableCodeReached) {
+        this.executableCodeReached = executableCodeReached;
     }
 }

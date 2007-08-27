@@ -971,15 +971,16 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testBreakpointsAcrossComments() {
-        ExpressionCompiler compiler = new ExpressionCompiler("/** This is a comment\n" +
-                "Second comment line\n" +
-                "Third Comment Line\n" +
-                "*/\n" +
-                "System.out.println('4');\n" +
-                "System.out.println('5');\n" +
-                "a = 0;\n" +
-                " b = 1;\n" +
-                " a + b");
+        ExpressionCompiler compiler = new ExpressionCompiler(
+                "/** This is a comment\n" +      // 1
+                "Second comment line\n" +        // 2
+                "Third Comment Line\n" +         // 3
+                "*/\n" +                         // 4
+                "System.out.println('4');\n" +   // 5
+                "System.out.println('5');\n" +   // 6
+                "a = 0;\n" +                     // 7
+                " b = 1;\n" +                    // 8
+                " a + b");                       // 9
         compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
@@ -1008,15 +1009,17 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testBreakpointsAcrossComments2() {
         ExpressionCompiler compiler = new ExpressionCompiler(
-                "// This is a comment\n" +
-                        "//Second comment line\n" +
-                        "//Third Comment Line\n" +
-                        "\n" +
-                        "System.out.println('4');\n" +
-                        "System.out.println('5');\n" +
-                        "a = 0;\n" +
-                        "b = 1;\n" +
-                        " a + b");
+                "// This is a comment\n" +                  // 1
+                        "//Second comment line\n" +         // 2
+                        "//Third Comment Line\n" +          // 3
+                        "\n" +                              // 4
+                        "//Test\n" +                        // 5
+                        "System.out.println('4');\n" +      // 6
+                        "//System.out.println('5'); \n" +    // 7
+                        "a = 0;\n" +                        // 8
+                        "b = 1;\n" +                        // 9
+                        " a + b");                          // 10
+
         compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
