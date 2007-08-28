@@ -1,9 +1,15 @@
 package org.mvel.ast;
 
-import org.mvel.*;
+import org.mvel.ASTNode;
+import static org.mvel.AbstractParser.getCurrentThreadParserContext;
+import org.mvel.Accessor;
+import org.mvel.CompileException;
+import org.mvel.ParserContext;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
-import org.mvel.util.ArrayTools;
+import static org.mvel.util.ArrayTools.findFirst;
+
+import static java.lang.Class.forName;
 
 /**
  * @author Christopher Brock
@@ -15,22 +21,22 @@ public class NewObjectNode extends ASTNode {
         super(expr, fields);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            int endRange = ArrayTools.findFirst('(', expr);
+            int endRange = findFirst('(', expr);
             String name;
             if (endRange == -1) {
                 name = new String(expr);
             }
             else {
-                name = new String(expr, 0, ArrayTools.findFirst('(', expr));
+                name = new String(expr, 0, findFirst('(', expr));
             }
 
-            ParserContext pCtx = AbstractParser.getCurrentThreadParserContext();
+            ParserContext pCtx = getCurrentThreadParserContext();
             if (pCtx != null && pCtx.hasImport(name)) {
                 egressType = pCtx.getImport(name);
             }
             else {
                 try {
-                    egressType = Class.forName(name);
+                    egressType = forName(name);
                 }
                 catch (ClassNotFoundException e) {
                     throw new CompileException("class not found: " + name, e);
