@@ -3,11 +3,10 @@ package org.mvel.ast;
 import org.mvel.ASTNode;
 import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.Accessor;
-import org.mvel.CompileException;
 import org.mvel.ParserContext;
 import org.mvel.integration.VariableResolverFactory;
-import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
+import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import static org.mvel.util.ArrayTools.findFirst;
 
 import static java.lang.Class.forName;
@@ -40,19 +39,22 @@ public class NewObjectNode extends ASTNode {
                     egressType = forName(name);
                 }
                 catch (ClassNotFoundException e) {
-                    throw new CompileException("class not found: " + name, e);
+                    //           throw new CompileException("class not found: " + name, e);
                 }
             }
 
-            String FQCN = egressType.getName();
 
-            if (!name.equals(FQCN)) {
-                int idx = FQCN.lastIndexOf('$');
-                if (idx != -1 && name.lastIndexOf('$') == -1) {
-                    this.name = (FQCN.substring(0, idx + 1) + new String(this.name)).toCharArray();
-                }
-                else {
-                    this.name = (FQCN.substring(0, FQCN.lastIndexOf('.') + 1) + new String(this.name)).toCharArray();
+            if (egressType != null) {
+                String FQCN = egressType.getName();
+
+                if (!name.equals(FQCN)) {
+                    int idx = FQCN.lastIndexOf('$');
+                    if (idx != -1 && name.lastIndexOf('$') == -1) {
+                        this.name = (FQCN.substring(0, idx + 1) + new String(this.name)).toCharArray();
+                    }
+                    else {
+                        this.name = (FQCN.substring(0, FQCN.lastIndexOf('.') + 1) + new String(this.name)).toCharArray();
+                    }
                 }
             }
         }
@@ -69,6 +71,7 @@ public class NewObjectNode extends ASTNode {
              * we return that value now.
              */
             if (optimizer.getResultOptPass() != null) {
+                egressType = optimizer.getEgressType();
                 return optimizer.getResultOptPass();
             }
         }
