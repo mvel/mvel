@@ -129,26 +129,17 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testPowerOf() {
         assertEquals(25, test("5 ** 2"));
     }
-//
-//    public void testWhileUsingImports() {
-//        Map<String, Object> imports = new HashMap<String, Object>();
-//        imports.put("ArrayList", java.util.ArrayList.class);
-//        imports.put("List", java.util.List.class);
-//
-//        ParserContext context = new ParserContext(imports, null, "testfile");
-//        ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == empty)");
-//        assertTrue((Boolean) MVEL.executeExpression(compiler.compile(context)));
-//    }
-//
-//    public void testWhileUsingImports2() {
-//        Map<String, Object> imports = new HashMap<String, Object>();
-//        imports.put("List", java.util.List.class);
-//        imports.put("ArrayList", java.util.ArrayList.class);
-//
-//        ParserContext context = new ParserContext(imports, null, "testfile");
-//        ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == null)");
-//        assertTrue((Boolean) MVEL.executeExpression(compiler.compile(context)));
-//    }
+
+    public void testWhileUsingImports() {
+        Map<String, Object> imports = new HashMap<String, Object>();
+        imports.put("ArrayList", java.util.ArrayList.class);
+        imports.put("List", java.util.List.class);
+
+        ParserContext context = new ParserContext(imports, null, "testfile");
+        ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == empty)");
+        assertTrue((Boolean) MVEL.executeExpression(compiler.compile(context), new LocalVariableResolverFactory()));
+    }
+
 
     public void testComplexExpression() {
         assertEquals("bar", test("a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]"));
@@ -1547,6 +1538,10 @@ public class CoreConfidenceTests extends AbstractTest {
         s = compiler.compile(ctx);
 
         assertEquals(0, MVEL.executeExpression(s, new LocalVariableResolverFactory()));
+    }
+
+    public void testTypedAssignment() {
+        assertEquals("foobar", test("java.util.Map map = new java.util.HashMap(); map.put('conan', 'foobar'); map['conan'];"));
     }
 
     public void testFQCNwithStaticInList() {
