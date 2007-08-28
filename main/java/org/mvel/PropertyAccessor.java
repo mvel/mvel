@@ -23,13 +23,17 @@ import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.eval;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.parseParameterList;
+import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.StringAppender;
 
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isWhitespace;
-import java.lang.reflect.*;
+import static java.lang.reflect.Array.getLength;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.*;
 import static java.util.Collections.synchronizedMap;
 
@@ -144,7 +148,6 @@ public class PropertyAccessor {
 
     private Object get() {
         curr = ctx;
-
         try {
             while (cursor < length) {
                 switch (nextToken()) {
@@ -194,9 +197,8 @@ public class PropertyAccessor {
         try {
             int oLength = length;
             length = findAbsoluteLast(property);
-            curr = get();
-
-            if (curr == null)
+            
+            if ((curr = get()) == null)
                 throw new PropertyAccessException("cannot bind to null context: " + new String(property));
 
             length = oLength;
@@ -286,12 +288,6 @@ public class PropertyAccessor {
 
     }
 
-
-//    private String captureNext() {
-//        nextToken();
-//        return capture();
-//    }
-
     private int nextToken() {
         switch (property[start = cursor]) {
             case'[':
@@ -302,7 +298,6 @@ public class PropertyAccessor {
 
         //noinspection StatementWithEmptyBody
         while (++cursor < length && isJavaIdentifierPart(property[cursor])) ;
-
 
         if (cursor < length) {
             while (isWhitespace(property[cursor])) cursor++;
@@ -396,7 +391,6 @@ public class PropertyAccessor {
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
-
         if (first && resolver != null && resolver.isResolveable(property)) {
             return resolver.getVariableResolver(property).getValue();
         }
@@ -442,8 +436,6 @@ public class PropertyAccessor {
                     return m;
                 }
             }
-
-
         }
         throw new PropertyAccessException("could not access property (" + property + ")");
     }
@@ -472,7 +464,9 @@ public class PropertyAccessor {
      * @throws Exception -
      */
     private Object getCollectionProperty(Object ctx, String prop) throws Exception {
-        if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
+        if (prop.length() != 0) {
+            ctx = getBeanProperty(ctx, prop);
+        }
 
         int start = ++cursor;
 
@@ -486,11 +480,8 @@ public class PropertyAccessor {
         if (!scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
-        String ex = new String(property, start, cursor - start);
-
+        String ex = new String(property, start, cursor++ - start);
         item = eval(ex, ctx, resolver);
-
-        ++cursor;
 
         if (ctx instanceof Map) {
             return ((Map) ctx).get(item);
@@ -534,25 +525,22 @@ public class PropertyAccessor {
             name = m.getName();
             first = false;
         }
+        
         int st = cursor;
-
-        cursor = ParseTools.balancedCapture(property, cursor, '(');
-
-        String tk = (cursor - st) > 1 ? new String(property, st + 1, cursor - st - 1) : "";
+        String tk = ((cursor = balancedCapture(property, cursor, '(')) - st) > 1 ?
+                new String(property, st + 1, cursor - st - 1) : "";
 
         cursor++;
 
         Object[] args;
-
         if (tk.length() == 0) {
             args = ParseTools.EMPTY_OBJ_ARR;
         }
         else {
                 String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
-
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
-                    args[i] = MVEL.eval(subtokens[i], thisReference, resolver);
+                    args[i] = eval(subtokens[i], thisReference, resolver);
                 }
         }
 
@@ -561,8 +549,6 @@ public class PropertyAccessor {
          * adjust the Class scope target.
          */
         Class cls = ctx instanceof Class ? (Class) ctx : ctx.getClass();
-
-        //    Integer signature = ;
 
         /**
          * Check to see if we have already cached this method;
@@ -589,7 +575,7 @@ public class PropertyAccessor {
              * Try to find an instance method from the class target.
              */
 
-            if ((m = ParseTools.getBestCandidate(args, name, cls.getMethods())) != null) {
+            if ((m = getBestCandidate(args, name, cls.getMethods())) != null) {
                 addMethodCache(cls, createSignature(name, tk), m);
                 parameterTypes = m.getParameterTypes();
             }
@@ -598,7 +584,7 @@ public class PropertyAccessor {
                 /**
                  * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
                  */
-                if ((m = ParseTools.getBestCandidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
+                if ((m = getBestCandidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
                     addMethodCache(cls, createSignature(name, tk), m);
                     parameterTypes = m.getParameterTypes();
                 }
@@ -613,13 +599,12 @@ public class PropertyAccessor {
             }
 
             if ("size".equals(name) && args.length == 0 && cls.isArray()) {
-                return Array.getLength(ctx);
+                return getLength(ctx);
             }
 
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
-
                 for (int i = 0; i < args.length; i++)
                     args[i] = convert(args[i], parameterTypes[i]);
 
