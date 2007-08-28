@@ -651,7 +651,7 @@ public class ParseTools {
             if (AbstractParser.LITERALS.containsKey(name)) {
                 return (Class) AbstractParser.LITERALS.get(name);
             }
-            else if (factory.isResolveable(name)) {
+            else if (factory != null && factory.isResolveable(name)) {
                 return (Class) factory.getVariableResolver(name).getValue();
             }
             else if (getCurrentThreadParserContext() != null && getCurrentThreadParserContext().hasImport(name)) {
