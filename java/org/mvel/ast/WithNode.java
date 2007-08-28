@@ -145,7 +145,7 @@ public class WithNode extends BlockNode implements NestedStatement {
         return withExpressions;
     }
 
-    public static final class ParmValuePair {
+    public static final class ParmValuePair implements Serializable {
         private Serializable setExpression;
         private ExecutableStatement statement;
 

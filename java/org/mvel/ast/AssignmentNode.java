@@ -15,7 +15,9 @@ import static org.mvel.util.PropertyTools.find;
  */
 public class AssignmentNode extends ASTNode implements Assignment {
     private String name;
-    private CompiledSetExpression setExpr;
+    private transient CompiledSetExpression setExpr;
+
+    private char[] indexTarget;
     private char[] index;
 
     private char[] stmt;
@@ -43,15 +45,15 @@ public class AssignmentNode extends ASTNode implements Assignment {
                 this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt)).getKnownEgressType();
             }
 
-            if (col = ((endOfName = findFirst('[', index = this.name.toCharArray())) > 0)) {
+            if (col = ((endOfName = findFirst('[',  indexTarget = this.name.toCharArray())) > 0)) {
                 this.fields |= COLLECTION;
 
                 if ((fields & COMPILE_IMMEDIATE) != 0) {
-                    setExpr = (CompiledSetExpression) compileSetExpression(index);
+                    setExpr = (CompiledSetExpression) compileSetExpression(indexTarget);
                 }
 
                 this.name = new String(expr, 0, endOfName);
-                index = subset(index, endOfName, index.length - endOfName);
+                index = subset(indexTarget, endOfName, indexTarget.length - endOfName);
             }
 
             checkNameSafety(this.name);
@@ -59,7 +61,6 @@ public class AssignmentNode extends ASTNode implements Assignment {
         else {
             checkNameSafety(this.name = new String(expr));
         }
-
     }
 
     public AssignmentNode(char[] expr, int fields) {
@@ -67,6 +68,11 @@ public class AssignmentNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        if (setExpr == null) {
+            setExpr = (CompiledSetExpression) compileSetExpression(indexTarget);
+      //      statement = (ExecutableStatement) subCompileExpression(stmt);
+        }
+
         Object o;
 
         if (col) {
