@@ -1883,7 +1883,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     /**
-     * Submitted by: cleverpig
+     * Submitted by: cleverpig                                                                               
      */
 
     public void testBug4() {
@@ -1902,4 +1902,13 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4],'Person.rating' : 'q']")).get("Person.rating"));
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4], 'Person.rating' : 'q']")).get("Person.rating"));
     }
+
+    public void testIndexer() {
+        assertEquals("foobar", test("import java.util.LinkedHashMap; LinkedHashMap map = new LinkedHashMap();" +
+                " map.put('a', 'foo'); map.put('b', 'bar'); s = ''; foreach (key : map.keySet()) { System.out.println(map[key]); s += map[key]; }; return s;"));
+    }
+
 }
+
+
+

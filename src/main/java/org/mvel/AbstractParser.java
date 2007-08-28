@@ -336,7 +336,7 @@ public class AbstractParser implements Serializable {
                                     return lastNode = n;
 
                                 case'=':
-                                    name = new String(expr, start, trimLeft(cursor));
+                                    name = new String(expr, start, trimLeft(cursor) - start);
                                     start = cursor += 2;
                                     captureToEOS();
 
@@ -1015,7 +1015,11 @@ public class AbstractParser implements Serializable {
 
         skipWhitespace();
 
-        if (expr[cursor] == '{') {
+
+        if (cursor >= length) {
+            throw new CompileException("unbalanced braces", expr, cursor);
+        }
+        else if (expr[cursor] == '{') {
             blockStart = cursor;
             if ((blockEnd = balancedCapture('{')) == -1) {
                 throw new CompileException("unbalanced braces { }", expr, cursor);

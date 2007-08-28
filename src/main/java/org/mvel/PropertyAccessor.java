@@ -322,7 +322,6 @@ public class PropertyAccessor {
         return pos;
     }
 
-
     public static void clearPropertyResolverCache() {
         READ_PROPERTY_RESOLVER_CACHE.clear();
         WRITE_PROPERTY_RESOLVER_CACHE.clear();
