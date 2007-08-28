@@ -9,6 +9,7 @@ import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 import org.mvel.util.ThisLiteral;
+import org.mvel.util.Stack;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -50,6 +51,7 @@ public class AbstractParser implements Serializable {
     public static final Map<String, Integer> OPERATORS =
             new HashMap<String, Integer>(25 * 2, 0.4f);
 
+    protected Stack stk;  
     protected ExecutionStack splitAccumulator = new ExecutionStack();
 
     protected static ThreadLocal<ParserContext> parserContext;
@@ -427,6 +429,10 @@ public class AbstractParser implements Serializable {
                                     if (lastNode.getLiteralValue() instanceof String) {
                                         if (getParserContext().hasImport((String) lastNode.getLiteralValue())) {
                                             lastNode.setLiteralValue(getParserContext().getImport((String) lastNode.getLiteralValue()));
+                                            lastNode.setAsLiteral();
+                                        }
+                                        else if (stk != null && stk.peek() instanceof Class) {
+                                            lastNode.setLiteralValue(stk.pop());
                                             lastNode.setAsLiteral();
                                         }
                                         else {

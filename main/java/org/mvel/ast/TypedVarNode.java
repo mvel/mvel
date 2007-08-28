@@ -2,6 +2,7 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
+import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
@@ -12,6 +13,7 @@ import org.mvel.util.ParseTools;
  */
 public class TypedVarNode extends ASTNode implements Assignment {
     private String name;
+    private char[] stmt;
     private ExecutableStatement statement;
 
     public TypedVarNode(char[] expr, int fields, Class type) {
@@ -22,7 +24,11 @@ public class TypedVarNode extends ASTNode implements Assignment {
         if ((assignStart = find(expr, '=')) != -1) {
             fields |= ASSIGN;
             checkNameSafety(name = new String(expr, 0, assignStart).trim());
-            statement = (ExecutableStatement) ParseTools.subCompileExpression(subset(expr, assignStart + 1));
+            stmt = subset(expr, assignStart + 1);
+
+            if ((fields & COMPILE_IMMEDIATE) != 0) {
+                statement = (ExecutableStatement) ParseTools.subCompileExpression(stmt);
+            }
         }
         else {
             checkNameSafety(name = new String(expr));
@@ -41,13 +47,15 @@ public class TypedVarNode extends ASTNode implements Assignment {
         }
         else {
             factory.createVariable(name, null, egressType);
-            return Void.class;
+            return null;
         }
 
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
+        Object o = MVEL.eval(stmt, ctx, factory);
+        finalLocalVariableFactory(factory).createVariable(name, o, egressType);
+        return o;
     }
 
 

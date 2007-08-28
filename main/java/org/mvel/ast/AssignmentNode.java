@@ -31,13 +31,17 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
         if (operation != -1) {
             checkNameSafety(this.name = name.trim());
-            
+
             this.egressType = (statement = (ExecutableStatement)
                     subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation))).getKnownEgressType();
         }
         else if ((assignStart = find(expr, '=')) != -1) {
             this.name = new String(expr, 0, assignStart).trim();
-            this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1))).getKnownEgressType();
+            stmt = subset(expr, assignStart + 1);
+
+            if ((fields & COMPILE_IMMEDIATE) != 0) {
+                this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt)).getKnownEgressType();
+            }
 
             if (col = ((endOfName = findFirst('[', index = this.name.toCharArray())) > 0)) {
                 this.fields |= COLLECTION;
@@ -55,6 +59,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
         else {
             checkNameSafety(this.name = new String(expr));
         }
+
     }
 
     public AssignmentNode(char[] expr, int fields) {
@@ -81,15 +86,13 @@ public class AssignmentNode extends ASTNode implements Assignment {
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         Object o;
 
+        checkNameSafety(name);
+
         if (col) {
             MVEL.setProperty(factory.getVariableResolver(name).getValue(), new String(index), o = MVEL.eval(stmt, ctx, factory));
         }
-        else if (statement != null) {
-            finalLocalVariableFactory(factory).createVariable(name, o = statement.getValue(ctx, thisValue, factory));
-        }
         else {
-            factory.createVariable(name, null);
-            return Void.class;
+            finalLocalVariableFactory(factory).createVariable(name, o = MVEL.eval(stmt, ctx, factory));
         }
 
         return o;
