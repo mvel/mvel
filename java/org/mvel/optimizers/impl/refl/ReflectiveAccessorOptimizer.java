@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
-
     private AccessorNode rootNode;
     private AccessorNode currNode;
 
