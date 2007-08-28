@@ -29,9 +29,6 @@ public class NewObjectNode extends ASTNode {
             if (pCtx != null && pCtx.hasImport(name)) {
                 egressType = pCtx.getImport(name);
             }
-            else if (AbstractParser.LITERALS.containsKey(name)) {
-                egressType = (Class) AbstractParser.LITERALS.get(name);
-            }
             else {
                 try {
                     egressType = Class.forName(name);
