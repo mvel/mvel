@@ -22,15 +22,15 @@ public class NewObjectNode extends ASTNode {
     public NewObjectNode(char[] expr, int fields) {
         super(expr, fields);
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            int endRange = findFirst('(', expr);
-            if (endRange == -1) {
-                className = new String(expr);
-            }
-            else {
-                className = new String(expr, 0, findFirst('(', expr));
-            }
+        int endRange = findFirst('(', expr);
+        if (endRange == -1) {
+            className = new String(expr);
+        }
+        else {
+            className = new String(expr, 0, findFirst('(', expr));
+        }
 
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
             ParserContext pCtx = getCurrentThreadParserContext();
             if (pCtx != null && pCtx.hasImport(className)) {
                 egressType = pCtx.getImport(className);
@@ -43,7 +43,6 @@ public class NewObjectNode extends ASTNode {
                     //           throw new CompileException("class not found: " + name, e);
                 }
             }
-
 
             if (egressType != null) {
                 rewriteClassReferenceToFQCN();
