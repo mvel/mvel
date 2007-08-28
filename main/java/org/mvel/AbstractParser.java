@@ -358,7 +358,7 @@ public class AbstractParser implements Serializable {
                                     return lastNode = n;
 
                                 case'=':
-                                    name = new String(expr, start, trimLeft(cursor));
+                                    name = new String(expr, start, trimLeft(cursor) - start);
                                     start = cursor += 2;
                                     captureToEOS();
                                     return lastNode = new AssignSub(subArray(start, cursor), fields, name);
@@ -367,7 +367,7 @@ public class AbstractParser implements Serializable {
 
                         case'*':
                             if (isAt('=', 1)) {
-                                name = new String(expr, start, trimLeft(cursor));
+                                name = new String(expr, start, trimLeft(cursor) - start);
                                 start = cursor += 2;
                                 captureToEOS();
                                 return lastNode = new AssignMult(subArray(start, cursor), fields, name);
@@ -376,7 +376,7 @@ public class AbstractParser implements Serializable {
 
                         case'/':
                             if (isAt('=', 1)) {
-                                name = new String(expr, start, trimLeft(cursor));
+                                name = new String(expr, start, trimLeft(cursor) - start);
                                 start = cursor += 2;
                                 captureToEOS();
                                 return lastNode = new AssignDiv(subArray(start, cursor), fields, name);
@@ -404,7 +404,7 @@ public class AbstractParser implements Serializable {
 
                         case'=':
                             if (isAt('+', 1)) {
-                                name = new String(expr, start, trimLeft(cursor));
+                                name = new String(expr, start, trimLeft(cursor) - start);
                                 start = cursor += 2;
                                 captureToEOS();
                                 return lastNode = new AssignAdd(subArray(start, cursor), fields, name);
