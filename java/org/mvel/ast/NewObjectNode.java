@@ -10,7 +10,6 @@ import org.mvel.util.ArrayTools;
  */
 public class NewObjectNode extends ASTNode {
     private Accessor newObjectOptimizer;
-    private String FQCN;
 
     public NewObjectNode(char[] expr, int fields) {
         super(expr, fields);
@@ -38,7 +37,7 @@ public class NewObjectNode extends ASTNode {
                 }
             }
 
-            FQCN = egressType.getName();
+            String FQCN = egressType.getName();
 
             if (!name.equals(FQCN)) {
                 int idx = FQCN.lastIndexOf('$');
