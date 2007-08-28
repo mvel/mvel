@@ -25,12 +25,11 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
-import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isEmpty;
 import static org.mvel.util.PropertyTools.similarity;
-import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
+import org.mvel.util.ExecutionStack;
 
 import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
@@ -45,7 +44,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
     private Object ctx;
     private VariableResolverFactory variableFactory;
-    private final Stack stk = new ExecutionStack();
 
 
     Object parse() {
@@ -53,7 +51,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
         debugSymbols = false;
 
         try {
-            stk.clear();
+            stk = new ExecutionStack();
 
             cursor = 0;
 
