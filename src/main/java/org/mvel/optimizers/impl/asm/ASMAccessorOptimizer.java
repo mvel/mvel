@@ -193,6 +193,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private Accessor _initializeAccessor() throws Exception {
+
+        /**
+         * Hot load the class we just generated.
+         */
         Class cls = loadClass(className, cw.toByteArray());
 
         debug("[MVEL JIT Completed Optimization <<" + new String(expr) + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
@@ -436,6 +440,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             }
             else if (ctx instanceof Class) {
+                /**
+                 * This is our ugly support for function pointers.  This works but needs to be re-thought out at some
+                 * point.
+                 */
                 Class c = (Class) ctx;
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
@@ -1013,6 +1021,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private java.lang.Class loadClass(String className, byte[] b) throws Exception {
+        /**
+         * This must be synchronized.  Two classes cannot be simultaneously deployed in the JVM.
+         */
         synchronized (defineClass) {
             defineClass.setAccessible(true);
             try {
