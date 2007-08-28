@@ -659,7 +659,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.cursor = 0;
         try {
             Accessor contructor = compileConstructor(property, ctx, factory);
-            val = contructor.getValue(property, thisRef, factory);
+     //       val = contructor.getValue(property, thisRef, factory);
             return contructor;
         }
         catch (CompileException e) {
@@ -718,7 +718,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     @SuppressWarnings({"WeakerAccess"})
-    public static AccessorNode compileConstructor(char[] expression, Object ctx, VariableResolverFactory vars) throws
+    public  AccessorNode compileConstructor(char[] expression, Object ctx, VariableResolverFactory vars) throws
             InstantiationException, IllegalAccessException, InvocationTargetException,
             ClassNotFoundException, NoSuchMethodException {
 
@@ -759,6 +759,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 compiledOptimizer.setRootNode(ca);
                 compiledOptimizer.compileGetChain();
                 ca = compiledOptimizer.getRootNode();
+
+                this.val = compiledOptimizer.getResultOptPass();
             }
 
             return ca;
@@ -774,6 +776,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 compiledOptimizer.setRootNode(ca);
                 compiledOptimizer.compileGetChain();
                 ca = compiledOptimizer.getRootNode();
+
+                this.val = compiledOptimizer.getResultOptPass();
             }
 
             return ca;

@@ -490,7 +490,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testObjectInstantiationWithMethodCall() {
-        test("new String('foobie')  . toString()");
+        assertEquals("FOOBIE", test("new String('foobie')  . toUpperCase()"));
     }
 
     public void testObjectInstantiation2() {
