@@ -22,9 +22,13 @@ import static org.mvel.util.PropertyTools.isNumeric;
 
 import static java.lang.String.valueOf;
 import java.util.Collection;
+import java.io.Serializable;
 
-public class BlankLiteral {
+public class BlankLiteral implements Serializable {
     public static final BlankLiteral INSTANCE = new BlankLiteral();
+
+    public BlankLiteral() {
+    }
 
     public boolean equals(Object obj) {
         if (obj == null || "".equals(valueOf(obj))) {

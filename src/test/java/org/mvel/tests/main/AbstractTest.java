@@ -9,9 +9,7 @@ import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.StringAppender;
 
-import java.io.CharArrayWriter;
-import java.io.PrintWriter;
-import java.io.Serializable;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
@@ -78,7 +76,8 @@ public abstract class AbstractTest extends TestCase {
         StringAppender failErrors = null;
 
         Serializable compiled = compiler.compile();
-        Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null;
+        Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null,
+                eighth = null;
 
         //  System.out.println(DebugTools.decompile((Serializable) compiled));
 
@@ -233,14 +232,64 @@ public abstract class AbstractTest extends TestCase {
             }
         }
 
-        if (failErrors != null) {
-            throw new AssertionError("Detailed Failure Report:\n" + failErrors.toString());
+        try {
+            eighth = MVEL.executeExpression(serializationTest(compiledD), base, map);
+        }
+        catch (Exception e) {
+            if (failErrors == null) failErrors = new StringAppender();
+            failErrors.append("\nEIGHTH TEST (Serializability): { " + ex + " }: EXCEPTION REPORT: \n\n");
 
+            CharArrayWriter writer = new CharArrayWriter();
+            e.printStackTrace(new PrintWriter(writer));
+
+            failErrors.append(writer.toCharArray());
+        }
+
+        if (eighth != null && !eighth.getClass().isArray()) {
+            if (!eighth.equals(seventh)) {
+                throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
+                        + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
+            }
         }
 
 
+
+        if (failErrors != null) {
+            System.out.println(DebugTools.decompile(compiledD));
+            throw new AssertionError("Detailed Failure Report:\n" + failErrors.toString());
+        }
+
         return fourth;
     }
+
+    private static Object serializationTest(Serializable s) throws Exception {
+        File file = new File("./mvel_ser_test.tmp");
+        FileInputStream inputStream = null;
+        ObjectInputStream objectIn = null;
+        try {
+            file.createNewFile();
+
+            FileOutputStream fileStream = new FileOutputStream(file);
+            ObjectOutputStream objectOut = new ObjectOutputStream(fileStream);
+            objectOut.writeObject(s);
+
+            objectOut.flush();
+            fileStream.flush();
+            fileStream.close();
+
+            inputStream = new FileInputStream(file);
+            objectIn = new ObjectInputStream(inputStream);
+
+            return objectIn.readObject();
+        }
+        finally {
+            if (inputStream != null) inputStream.close();
+            if (objectIn != null) objectIn.close();
+            file.delete();
+        }
+
+    }
+
 
     public static class MiscTestClass {
         int exec = 0;

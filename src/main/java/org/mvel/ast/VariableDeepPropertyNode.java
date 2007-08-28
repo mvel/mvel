@@ -10,7 +10,7 @@ import org.mvel.optimizers.OptimizerFactory;
  * @author Christopher Brock
  */
 public class VariableDeepPropertyNode extends ASTNode {
-    private Accessor accessor;
+    private transient Accessor accessor;
 
     public VariableDeepPropertyNode(char[] expr, int fields) {
         super(expr, fields);

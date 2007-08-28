@@ -14,7 +14,8 @@ import org.mvel.util.ParseTools;
 public class TypedVarNode extends ASTNode implements Assignment {
     private String name;
     private char[] stmt;
-    private ExecutableStatement statement;
+
+    private transient ExecutableStatement statement;
 
     public TypedVarNode(char[] expr, int fields, Class type) {
         super(expr, fields);
@@ -38,18 +39,11 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (statement != null) {
-            Object o = statement.getValue(ctx, thisValue, factory);
+        if (statement == null) statement = (ExecutableStatement) ParseTools.subCompileExpression(stmt);
 
-            finalLocalVariableFactory(factory).createVariable(name, o, egressType);
-
-            return o;
-        }
-        else {
-            factory.createVariable(name, null, egressType);
-            return null;
-        }
-
+        Object o = statement.getValue(ctx, thisValue, factory);
+        finalLocalVariableFactory(factory).createVariable(name, o, egressType);
+        return o;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {

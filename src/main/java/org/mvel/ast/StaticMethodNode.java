@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
  * @author Christopher Brock
  */
 public class StaticMethodNode extends ASTNode {
-    private Accessor accessor;
+    private transient Accessor accessor;
     private String method;
     private Class declaringClass;
 
