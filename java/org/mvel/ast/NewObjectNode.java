@@ -7,6 +7,7 @@ import org.mvel.CompileException;
 import org.mvel.ParserContext;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
+import org.mvel.optimizers.AccessorOptimizer;
 import static org.mvel.util.ArrayTools.findFirst;
 
 import static java.lang.Class.forName;
@@ -60,7 +61,12 @@ public class NewObjectNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (newObjectOptimizer == null) {
-            newObjectOptimizer = getThreadAccessorOptimizer().optimizeObjectCreation(name, ctx, thisValue, factory);
+            AccessorOptimizer optimizer = getThreadAccessorOptimizer();
+            newObjectOptimizer = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
+
+            if (optimizer.getResultOptPass() != null) {
+                return optimizer.getResultOptPass();
+            }
         }
 
         return newObjectOptimizer.getValue(ctx, thisValue, factory);
