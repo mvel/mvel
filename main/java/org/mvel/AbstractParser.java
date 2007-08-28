@@ -210,7 +210,7 @@ public class AbstractParser implements Serializable {
                 lastWasComment = lastWasLineLabel = false;
             }
         }
-
+                                                                              
         /**
          * Skip any whitespace currently under the starting point.
          */
