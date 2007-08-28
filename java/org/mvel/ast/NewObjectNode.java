@@ -64,6 +64,10 @@ public class NewObjectNode extends ASTNode {
             AccessorOptimizer optimizer = getThreadAccessorOptimizer();
             newObjectOptimizer = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
 
+            /**
+             * Check to see if the optimizer actually produced the object during optimization.  If so,
+             * we return that value now.
+             */
             if (optimizer.getResultOptPass() != null) {
                 return optimizer.getResultOptPass();
             }
