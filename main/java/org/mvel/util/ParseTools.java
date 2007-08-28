@@ -111,8 +111,10 @@ public class ParseTools {
 
                 case'[':
                 case'{':
-                    if (adepth++ == 0)
-                        start = i;
+                    adepth++;
+//                    if (adepth++ == 0)
+//                        start = i;
+                    
                     continue;
 
                 case']':
