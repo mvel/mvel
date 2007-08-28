@@ -18,16 +18,21 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public abstract class AbstractTest extends TestCase {
-    protected Foo foo = new Foo();
-    protected Map<String, Object> map = new HashMap<String, Object>();
-    protected Base base = new Base();
-    protected DerivedClass derived = new DerivedClass();
+    protected Foo foo;
+    protected Map<String, Object> map;
+    protected Base base;
+    protected DerivedClass derived;
 
     public void testNothing() {
         // to satify Eclipse and Surefire.
     }
 
-    public AbstractTest() {
+    protected void setUp() throws Exception {
+        foo = new Foo();
+        map = new HashMap<String, Object>();
+        base = new Base();
+        derived = new DerivedClass();
+
         foo.setBar(new Bar());
         map.put("foo", foo);
         map.put("a", null);
@@ -60,6 +65,10 @@ public abstract class AbstractTest extends TestCase {
         map.put("derived", derived);
     }
 
+
+    protected void tearDown() throws Exception {
+    }
+
     protected Object test(String ex) {
         return test(ex, this.base, this.map);
     }
@@ -71,7 +80,7 @@ public abstract class AbstractTest extends TestCase {
         Serializable compiled = compiler.compile();
         Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null;
 
-     //  System.out.println(DebugTools.decompile((Serializable) compiled));
+        //  System.out.println(DebugTools.decompile((Serializable) compiled));
 
         if (!Boolean.getBoolean("mvel.disable.jit")) {
 
@@ -369,7 +378,7 @@ public abstract class AbstractTest extends TestCase {
     public static class Message {
         public static final int HELLO = 0;
         public static final int GOODBYE = 1;
-        
+
         private List items = new ArrayList();
 
         private String message;
@@ -391,16 +400,16 @@ public abstract class AbstractTest extends TestCase {
         public void setStatus(int status) {
             this.status = status;
         }
-        
+
         public void addItem(Item item) {
-            this.items.add( item );
+            this.items.add(item);
         }
-        
+
         public List getItems() {
             return items;
         }
     }
-    
+
     public static class Item {
         private String name;
 
@@ -414,7 +423,7 @@ public abstract class AbstractTest extends TestCase {
 
         public void setName(String name) {
             this.name = name;
-        }                                
+        }
     }
 
     public class ClassA {
