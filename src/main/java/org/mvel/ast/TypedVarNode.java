@@ -47,7 +47,7 @@ public class TypedVarNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        Object o = MVEL.eval(stmt, ctx, factory);
+        Object o = MVEL.eval(stmt, thisValue, factory);
         finalLocalVariableFactory(factory).createVariable(name, o, egressType);
         return o;
     }
