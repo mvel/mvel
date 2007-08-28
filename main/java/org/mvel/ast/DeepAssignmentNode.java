@@ -19,7 +19,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
     private char[] stmt;
 
     private CompiledSetExpression set;
-    private Accessor statement;
+    private transient Accessor statement;
 
     public DeepAssignmentNode(char[] expr, int fields, int operation, String name) {
         super(expr, fields);
@@ -28,14 +28,18 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         if (operation != -1) {
             this.property = name.trim();
 
-            this.egressType = ((ExecutableStatement)(statement =
+            this.egressType = ((ExecutableStatement) (statement =
                     (ExecutableStatement) subCompileExpression(stmt =
                             createShortFormOperativeAssignment(property, expr, operation)))).getKnownEgressType();
 
         }
         else if ((mark = find(expr, '=')) != -1) {
             property = new String(expr, 0, mark).trim();
-            statement = (ExecutableStatement) subCompileExpression(stmt = subset(expr, mark + 1));
+            stmt = subset(expr, mark + 1);
+
+            if ((fields & COMPILE_IMMEDIATE) != 0) {
+                statement = (ExecutableStatement) subCompileExpression(stmt);
+            }
         }
         else {
             property = new String(expr);
@@ -51,6 +55,11 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        if (statement == null) {
+            statement = (ExecutableStatement) subCompileExpression(stmt);
+            set = (CompiledSetExpression) compileSetExpression(property.toCharArray());
+        }
+
         Object val;
         set.setValue(ctx, factory, val = statement.getValue(ctx, thisValue, factory));
         return val;

@@ -9,7 +9,7 @@ import org.mvel.util.ArrayTools;
  * @author Christopher Brock
  */
 public class NewObjectNode extends ASTNode {
-    private Accessor newObjectOptimizer;
+    private transient Accessor newObjectOptimizer;
 
     public NewObjectNode(char[] expr, int fields) {
         super(expr, fields);

@@ -10,7 +10,7 @@ import org.mvel.optimizers.OptimizerFactory;
  * @author Christopher Brock
  */
 public class ThisValDeepPropertyNode extends ASTNode {
-    private Accessor accessor;
+    private transient Accessor accessor;
 
     public ThisValDeepPropertyNode(char[] expr, int fields) {
         super(expr, fields);

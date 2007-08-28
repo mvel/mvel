@@ -8,7 +8,7 @@ import org.mvel.util.ThisLiteral;
  * @author Christopher Brock
  */
 public class PropertyASTNode extends ASTNode {
-    private ASTNode wrappedNode;
+    private transient ASTNode wrappedNode;
 
     public PropertyASTNode(char[] expr, int start, int end, int fields) {
         super(expr, start, end, fields);
