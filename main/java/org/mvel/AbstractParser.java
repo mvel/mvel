@@ -430,10 +430,12 @@ public class AbstractParser implements Serializable {
                                         if (getParserContext().hasImport((String) lastNode.getLiteralValue())) {
                                             lastNode.setLiteralValue(getParserContext().getImport((String) lastNode.getLiteralValue()));
                                             lastNode.setAsLiteral();
+                                            lastNode.discard();
                                         }
                                         else if (stk != null && stk.peek() instanceof Class) {
                                             lastNode.setLiteralValue(stk.pop());
                                             lastNode.setAsLiteral();
+                                            lastNode.discard();
                                         }
                                         else {
                                             try {
@@ -442,6 +444,7 @@ public class AbstractParser implements Serializable {
                                                  */
                                                 lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
                                                 lastNode.setAsLiteral();
+                                                lastNode.discard();
                                             }
                                             catch (ClassNotFoundException e) {
                                                 /**
@@ -452,10 +455,10 @@ public class AbstractParser implements Serializable {
                                     }
 
                                     if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
-                                        lastNode.setDiscard(true);
+                                        lastNode.discard();
 
                                         captureToEOS();
-                                        return lastNode = new TypedVarNode(subArray(start, cursor), fields, (Class)
+                                        return  new TypedVarNode(subArray(start, cursor), fields, (Class)
                                                 lastNode.getLiteralValue());
                                     }
 
