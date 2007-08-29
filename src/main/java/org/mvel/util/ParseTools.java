@@ -6,6 +6,7 @@ import static org.mvel.DataConversion.canConvert;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
+import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.math.MathProcessor;
@@ -27,7 +28,7 @@ import java.util.*;
 
 
 /**
- * This class contains much of the actual parsing code used by the core parser.  
+ * This class contains much of the actual parsing code used by the core parser.
  */
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
@@ -114,7 +115,7 @@ public class ParseTools {
                     adepth++;
 //                    if (adepth++ == 0)
 //                        start = i;
-                    
+
                     continue;
 
                 case']':
@@ -609,7 +610,7 @@ public class ParseTools {
             throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
         }
         else {
-            return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
+            return new DefaultLocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
         }
     }
 
@@ -867,7 +868,7 @@ public class ParseTools {
      * <br>
      * For example: ((foo + bar + (bar - foo)) * 20;<br>
      * <br>
-     *
+     * <p/>
      * If a balanced capture is performed from position 2, we get "(foo + bar + (bar - foo))" back.<br>
      * If a balanced capture is performed from position 15, we get "(bar - foo)" back.<br>
      * Etc.
@@ -960,12 +961,13 @@ public class ParseTools {
     public static String getSimpleClassName(Class cls) {
         if (JDK_14_COMPATIBILITY) {
             int lastIndex = cls.getName().lastIndexOf('$');
-            if ( lastIndex < 0 ) {
-                lastIndex = cls.getName().lastIndexOf('.');    
+            if (lastIndex < 0) {
+                lastIndex = cls.getName().lastIndexOf('.');
             }
-            if ( cls.isArray() ) {
+            if (cls.isArray()) {
                 return cls.getName().substring(lastIndex + 1) + "[]";
-            } else {
+            }
+            else {
                 return cls.getName().substring(lastIndex + 1);
             }
         }

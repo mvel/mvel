@@ -10,7 +10,7 @@ import org.mvel.integration.Interceptor;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
-import org.mvel.integration.impl.LocalVariableResolverFactory;
+import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
@@ -136,7 +136,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ParserContext context = new ParserContext(imports, null, "testfile");
         ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == empty)");
-        assertTrue((Boolean) MVEL.executeExpression(compiler.compile(context), new LocalVariableResolverFactory()));
+        assertTrue((Boolean) MVEL.executeExpression(compiler.compile(context), new DefaultLocalVariableResolverFactory()));
     }
 
 
@@ -1378,7 +1378,7 @@ public class CoreConfidenceTests extends AbstractTest {
                         "System.out.println(message + ';' + b); b");
 
 
-        assertEquals(7, executeExpression(compiler.compile(ctx), new LocalVariableResolverFactory()));
+        assertEquals(7, executeExpression(compiler.compile(ctx), new DefaultLocalVariableResolverFactory()));
     }
 
     public void testProvidedExternalTypes() {
@@ -1539,7 +1539,7 @@ public class CoreConfidenceTests extends AbstractTest {
         compiler = new ExpressionCompiler("map = new HashMap(); map.size()");
         s = compiler.compile(ctx);
 
-        assertEquals(0, MVEL.executeExpression(s, new LocalVariableResolverFactory()));
+        assertEquals(0, MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory()));
     }
 
     public void testTypedAssignment() {

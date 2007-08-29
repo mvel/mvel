@@ -6,7 +6,7 @@ import static org.mvel.debug.DebugTools.decompile;
 import org.mvel.debug.Debugger;
 import org.mvel.debug.Frame;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.integration.impl.LocalVariableResolverFactory;
+import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 
 public class DebuggerTests extends TestCase {
 
@@ -46,7 +46,7 @@ public class DebuggerTests extends TestCase {
         MVELRuntime.registerBreakpoint(ctx.getSourceFile(), 3);
         MVELRuntime.registerBreakpoint(ctx.getSourceFile(), 7);
 
-        VariableResolverFactory factory = new LocalVariableResolverFactory();
+        VariableResolverFactory factory = new DefaultLocalVariableResolverFactory();
         MVEL.executeDebugger(compexpr, null, factory);
 
         System.out.println(a1);
@@ -88,7 +88,7 @@ public class DebuggerTests extends TestCase {
         MVELRuntime.registerBreakpoint(ctx.getSourceFile(), 5);
 
 
-        VariableResolverFactory factory = new LocalVariableResolverFactory();
+        VariableResolverFactory factory = new DefaultLocalVariableResolverFactory();
         MVEL.executeDebugger(compexpr, null, factory);
 
         System.out.println(count);

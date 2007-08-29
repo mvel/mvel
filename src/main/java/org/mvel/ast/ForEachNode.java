@@ -3,9 +3,9 @@ package org.mvel.ast;
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.integration.impl.LocalVariableResolverFactory;
-import static org.mvel.util.ParseTools.subset;
+import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.subset;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +26,7 @@ public class ForEachNode extends BlockNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         Map<String, Object> locals = new HashMap<String, Object>();
-        LocalVariableResolverFactory local = new LocalVariableResolverFactory(locals);
+        VariableResolverFactory local = new DefaultLocalVariableResolverFactory(locals);
         local.setNextFactory(factory);
 
         Object ret = null;
