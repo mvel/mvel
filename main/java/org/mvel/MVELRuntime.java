@@ -37,7 +37,7 @@ public class MVELRuntime {
      * @return -
      * @see org.mvel.MVEL
      */
-    public static Object execute(boolean debugger, CompiledExpression expression, Object ctx, VariableResolverFactory variableFactory) {
+    public static Object execute(boolean debugger, final CompiledExpression expression, final Object ctx, VariableResolverFactory variableFactory) {
         final ASTLinkedList node = new ASTLinkedList(expression.getTokens().firstNode());
 
         if (expression.isImportInjectionRequired()) {
