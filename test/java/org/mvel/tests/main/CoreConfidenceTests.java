@@ -1918,7 +1918,7 @@ public class CoreConfidenceTests extends AbstractTest {
         CompiledExpression s = compiler.compile(ctx);
         compiler.removeParserContext();
 
-        System.out.println(MVEL.executeSerializedExpression(s, null, null));
+        System.out.println(MVEL.executeExpression(s));
     }
 
 //    public void testSwing() {

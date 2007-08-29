@@ -1,12 +1,12 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
+import org.mvel.CompiledExpression;
 import org.mvel.ExpressionCompiler;
 import org.mvel.MVEL;
 import org.mvel.ParserContext;
-import org.mvel.CompiledExpression;
-import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.debug.DebugTools;
+import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.StringAppender;
@@ -129,16 +129,20 @@ public abstract class AbstractTest extends TestCase {
             failErrors.append(writer.toCharArray());
         }
 
-
         if (first != null && !first.getClass().isArray()) {
             if (!first.equals(second)) {
+                System.out.println(failErrors.toString());
+
                 throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run / JIT) [first: "
                         + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
             }
 
             if (!first.equals(third)) {
+                System.out.println(failErrors.toString());
+
+
                 throw new AssertionError("Different result from test 1 and 3 (Compiled to Interpreted) [first: " +
-                        String.valueOf(first) + " (" + first.getClass().getName() + "); third: " + String.valueOf(third) + " (" + (second != null ? first.getClass().getName() : "null") + ")]");
+                        String.valueOf(first) + " (" + first.getClass().getName() + "); third: " + String.valueOf(third) + " (" + (third != null ? third.getClass().getName() : "null") + ")]");
             }
         }
 
@@ -235,7 +239,7 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            eighth = MVEL.executeSerializedExpression((CompiledExpression) serializationTest(compiledD), base, new MapVariableResolverFactory(map));
+            eighth = MVEL.executeExpression((CompiledExpression) serializationTest(compiledD), base, new MapVariableResolverFactory(map));
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -253,7 +257,6 @@ public abstract class AbstractTest extends TestCase {
                         + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
             }
         }
-
 
 
         if (failErrors != null) {

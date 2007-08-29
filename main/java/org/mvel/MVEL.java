@@ -19,8 +19,8 @@
 
 package org.mvel;
 
-import static org.mvel.MVELRuntime.execute;
 import static org.mvel.DataConversion.convert;
+import static org.mvel.MVELRuntime.execute;
 import org.mvel.integration.Interceptor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
@@ -348,34 +348,34 @@ public class MVEL {
         }
     }
 
-    public static Object executeSerializedDebugger(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
-        try {
-            if (expression.getParserContext().getImports() != null) {
-                return handleParserEgress(execute(true, expression, ctx, new MapVariableResolverFactory(expression.getParserContext().getImports(), vars)), false);
-            }
-            else {
-                return handleParserEgress(execute(true, expression, ctx, vars), false);
-            }
-        }
-        catch (EndWithValue e) {
-            return handleParserEgress(e.getValue(), false);
-        }
-    }
-
-
-    public static Object executeSerializedExpression(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
-        try {
-            if (expression.getParserContext().getImports() != null) {
-                return handleParserEgress(execute(false, expression, ctx, new MapVariableResolverFactory(expression.getParserContext().getImports(), vars)), false);
-            }
-            else {
-                return handleParserEgress(execute(false, expression, ctx, vars), false);
-            }
-        }
-        catch (EndWithValue e) {
-            return handleParserEgress(e.getValue(), false);
-        }
-    }
+//    public static Object executeSerializedDebugger(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
+//        try {
+//            if (expression.getParserContext().getImports() != null) {
+//                return handleParserEgress(execute(true, expression, ctx, new MapVariableResolverFactory(expression.getParserContext().getImports(), vars)), false);
+//            }
+//            else {
+//                return handleParserEgress(execute(true, expression, ctx, vars), false);
+//            }
+//        }
+//        catch (EndWithValue e) {
+//            return handleParserEgress(e.getValue(), false);
+//        }
+//    }
+//
+//
+//    public static Object executeSerializedExpression(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
+//        try {
+//            if (expression.getParserContext().getImports() != null) {
+//                return handleParserEgress(execute(false, expression, ctx, new MapVariableResolverFactory(expression.getParserContext().getImports(), vars)), false);
+//            }
+//            else {
+//                return handleParserEgress(execute(false, expression, ctx, vars), false);
+//            }
+//        }
+//        catch (EndWithValue e) {
+//            return handleParserEgress(e.getValue(), false);
+//        }
+//    }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, Map vars, Class<T> toType) {
