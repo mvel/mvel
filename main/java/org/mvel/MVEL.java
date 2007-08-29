@@ -348,7 +348,7 @@ public class MVEL {
         }
     }
 
-    public static Object executeDebuggerWithTypeReInjection(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
+    public static Object executeSerializedDebugger(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
         try {
             if (expression.getParserContext().getImports() != null) {
                 return handleParserEgress(execute(true, expression, ctx, new MapVariableResolverFactory(expression.getParserContext().getImports(), vars)), false);
@@ -363,7 +363,7 @@ public class MVEL {
     }
 
 
-    public static Object executeExpressionWithTypeReInjection(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
+    public static Object executeSerializedExpression(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
         try {
             if (expression.getParserContext().getImports() != null) {
                 return handleParserEgress(execute(false, expression, ctx, new MapVariableResolverFactory(expression.getParserContext().getImports(), vars)), false);

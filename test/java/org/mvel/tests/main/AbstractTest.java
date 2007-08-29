@@ -235,7 +235,7 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            eighth = MVEL.executeExpressionWithTypeReInjection((CompiledExpression) serializationTest(compiledD), base, new MapVariableResolverFactory(map));
+            eighth = MVEL.executeSerializedExpression((CompiledExpression) serializationTest(compiledD), base, new MapVariableResolverFactory(map));
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
