@@ -35,7 +35,8 @@ public class ExpressionCompiler extends AbstractParser {
         newContext(ctx);
 
         CompiledExpression c = _compile();
-    //    c.setParserContext(pCtx);
+
+        removeContext();
 
         if (pCtx.isFatalError()) {
             contextControl(REMOVE, null, null);
@@ -187,7 +188,7 @@ public class ExpressionCompiler extends AbstractParser {
             CompiledExpression ce = new CompiledExpression(optimizeAST(astLinkedList, secondPassOptimization), getCurrentSourceFileName());
             ce.setKnownEgressType(returnType);
             ce.setParserContext(pCtx);
-            
+
             return ce;
 
         }
