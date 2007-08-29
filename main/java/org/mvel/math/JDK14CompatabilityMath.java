@@ -2,10 +2,9 @@ package org.mvel.math;
 
 import org.mvel.CompileException;
 import org.mvel.ConversionException;
+import static org.mvel.DataConversion.convert;
 import org.mvel.DataTypes;
 import org.mvel.Operator;
-import org.mvel.util.ParseTools;
-
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
 
@@ -83,6 +82,9 @@ public class JDK14CompatabilityMath implements MathProcessor {
             }
             else if ((type1 > 99 && (type2 > 99)) || (isNumber(val1) && isNumber(val2))) {
                 return doBigDecimalArithmetic(getBigDecimalFromType(val1, type1), operation, getBigDecimalFromType(val2, type2));
+            }
+            else if ((type1 == 15 || type2 == 15) && type1 != type2) {
+                return doOperationNonNumeric(convert(val1, Boolean.class), operation, convert(val1, Boolean.class));
             }
         }
         return doOperationNonNumeric(val1, operation, val2);
@@ -274,7 +276,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
                     case Operator.MULT:
                         return ((Float) val1) * ((Float) val2);
                     case Operator.POWER:
-                        Math.pow( (Float) val1, (Float) val2 );         
+                        Math.pow((Float) val1, (Float) val2);
                     case Operator.MOD:
                         return ((Float) val1) % ((Float) val2);
 
