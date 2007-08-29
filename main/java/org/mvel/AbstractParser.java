@@ -51,7 +51,7 @@ public class AbstractParser implements Serializable {
     public static final Map<String, Integer> OPERATORS =
             new HashMap<String, Integer>(25 * 2, 0.4f);
 
-    protected Stack stk;  
+    protected Stack stk;
     protected ExecutionStack splitAccumulator = new ExecutionStack();
 
     protected static ThreadLocal<ParserContext> parserContext;
@@ -155,6 +155,14 @@ public class AbstractParser implements Serializable {
          * return null.
          */
         if (cursor >= length) {
+            if (debugSymbols && lastNode != null) {
+                /**
+                 * Produce a trailing line label.
+                 */
+                lastNode = null;
+                return new LineLabel(getParserContext().getSourceFile(), getParserContext().getLineCount() + 1);
+            }
+
             return null;
         }
         else if (!splitAccumulator.isEmpty()) {
@@ -205,7 +213,7 @@ public class AbstractParser implements Serializable {
                 lastWasComment = lastWasLineLabel = false;
             }
         }
-                                                                              
+
         /**
          * Skip any whitespace currently under the starting point.
          */
@@ -453,7 +461,7 @@ public class AbstractParser implements Serializable {
                                         lastNode.discard();
 
                                         captureToEOS();
-                                        return  new TypedVarNode(subArray(start, cursor), fields, (Class)
+                                        return new TypedVarNode(subArray(start, cursor), fields, (Class)
                                                 lastNode.getLiteralValue());
                                     }
 
@@ -538,7 +546,7 @@ public class AbstractParser implements Serializable {
 
                                 skipWhitespaceWithLineAccounting();
 
-                     //           getParserContext().setLineCount(line);
+                                //           getParserContext().setLineCount(line);
 
                                 if (lastNode instanceof LineLabel) {
                                     getParserContext().getLastLineLabel().setLineNumber(line);
@@ -598,7 +606,7 @@ public class AbstractParser implements Serializable {
 
                                 if (lastNode instanceof LineLabel) {
                                     getParserContext().getLastLineLabel().setLineNumber(line);
-                                    getParserContext().addKnownLine(line);                           
+                                    getParserContext().addKnownLine(line);
                                 }
 
                                 lastWasComment = true;
