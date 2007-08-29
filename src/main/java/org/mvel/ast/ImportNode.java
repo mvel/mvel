@@ -15,7 +15,7 @@ public class ImportNode extends ASTNode {
         super(expr, fields);
 
         try {
-            this.importClass = Class.forName(new String(expr));
+            this.importClass = Thread.currentThread().getContextClassLoader().loadClass(new String(expr));
         }
         catch (ClassNotFoundException e) {
             throw new CompileException("class not found: " + new String(expr));

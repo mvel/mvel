@@ -34,12 +34,12 @@ public class AbstractOptimizer extends AbstractParser {
                         if (!meth) {
                             try {
                                 cursor = last;
-                                return Class.forName(new String(expr, 0, last));
+                                return Thread.currentThread().getContextClassLoader().loadClass(new String(expr, 0, last));
                             }
                             catch (ClassNotFoundException e) {
                                 // return a field instead
 
-                                return Class.forName(new String(expr, 0, i))
+                                return Thread.currentThread().getContextClassLoader().loadClass(new String(expr, 0, i))
                                         .getField(new String(expr, i + 1, expr.length - i - 1));
                             }
                         }
