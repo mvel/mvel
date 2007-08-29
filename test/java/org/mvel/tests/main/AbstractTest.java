@@ -84,6 +84,10 @@ public abstract class AbstractTest extends TestCase {
             };
         }
 
+        System.out.println("\n[test] begin test for:\n----------------------");
+        System.out.println(ex);
+        System.out.println("----------------------");
+
         for (Thread thread1 : threads) {
             thread1.setPriority(Thread.MIN_PRIORITY);
             thread1.run();
@@ -99,6 +103,9 @@ public abstract class AbstractTest extends TestCase {
         }
 
         // analyze results
+
+        System.out.println("[test] finished in: " + (System.currentTimeMillis() - time) + "ms (execution count: " + (threads.length * 8) + " [mixed modes])");
+        System.out.print("[test] analyzing results ... ");
 
         Object last = results.getFirst();
         if (last != null)
@@ -126,7 +133,8 @@ public abstract class AbstractTest extends TestCase {
                 last = o;
             }
 
-        System.out.println("[test complete] ran in: " + (System.currentTimeMillis() - time) + "ms (execution count: " + (threads.length * 8) + " [mixed modes])");
+        System.out.println("good!");
+
         return last;
     }
 
