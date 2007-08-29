@@ -307,6 +307,10 @@ public class ParserContext implements Serializable {
         sourceMap.get(sourceName).add(lineNumber);
     }
 
+    public void addKnownLine(int lineNumber) {
+        addKnownLine(sourceFile, lineNumber);
+    }
+
 
     public LineLabel getLastLineLabel() {
         return lastLineLabel;
