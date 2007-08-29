@@ -956,7 +956,7 @@ public class CoreConfidenceTests extends AbstractTest {
         while ((fromIndex = s.indexOf("DEBUG_SYMBOL", fromIndex + 1)) > -1) {
             count++;
         }
-        assertEquals(5, count);
+        assertEquals(4, count);
 
     }
 
@@ -1062,7 +1062,7 @@ public class CoreConfidenceTests extends AbstractTest {
         while ((fromIndex = s.indexOf("DEBUG_SYMBOL", fromIndex + 1)) > -1) {
             count++;
         }
-        assertEquals(5, count);
+        assertEquals(4, count);
 
     }
 
@@ -1090,7 +1090,7 @@ public class CoreConfidenceTests extends AbstractTest {
         while ((fromIndex = s.indexOf("DEBUG_SYMBOL", fromIndex + 1)) > -1) {
             count++;
         }
-        assertEquals(5, count);
+        assertEquals(4, count);
 
     }
 
@@ -1119,7 +1119,7 @@ public class CoreConfidenceTests extends AbstractTest {
         while ((fromIndex = s.indexOf("DEBUG_SYMBOL", fromIndex + 1)) > -1) {
             count++;
         }
-        assertEquals(5, count);
+        assertEquals(4, count);
 
     }
 
