@@ -187,11 +187,6 @@ public class AbstractParser implements Serializable {
                     skipWhitespaceWithLineAccounting();
                 }
 
-//                if (lastWasComment) {
-//                   line++;
-//                    lastWasComment = false;
-//                }
-
                 pCtx.setLineCount(line);
 
                 if (!pCtx.isKnownLine(pCtx.getSourceFile(), line)) {
@@ -547,6 +542,7 @@ public class AbstractParser implements Serializable {
 
                                 if (lastNode instanceof LineLabel) {
                                     getParserContext().getLastLineLabel().setLineNumber(line);
+                                    getParserContext().addKnownLine(line);
                                 }
 
                                 lastWasComment = true;
@@ -602,6 +598,7 @@ public class AbstractParser implements Serializable {
 
                                 if (lastNode instanceof LineLabel) {
                                     getParserContext().getLastLineLabel().setLineNumber(line);
+                                    getParserContext().addKnownLine(line);                           
                                 }
 
                                 lastWasComment = true;

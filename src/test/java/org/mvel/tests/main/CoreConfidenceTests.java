@@ -1021,6 +1021,9 @@ public class CoreConfidenceTests extends AbstractTest {
         System.out.println(DebugTools.decompile(compiled));
 
         MVELRuntime.registerBreakpoint("test2.mv", 6);
+        MVELRuntime.registerBreakpoint("test2.mv", 8);
+        MVELRuntime.registerBreakpoint("test2.mv", 9);
+        MVELRuntime.registerBreakpoint("test2.mv", 10);
 
         Debugger testDebugger = new Debugger() {
             public int onBreak(Frame frame) {
