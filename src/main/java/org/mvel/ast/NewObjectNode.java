@@ -20,13 +20,7 @@ public class NewObjectNode extends ASTNode {
     public NewObjectNode(char[] expr, int fields) {
         super(expr, fields);
 
-        int endRange = findFirst('(', expr);
-        if (endRange == -1) {
-            className = new String(expr);
-        }
-        else {
-            className = new String(expr, 0, findFirst('(', expr));
-        }
+        updateClassName();
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             ParserContext pCtx = getCurrentThreadParserContext();
@@ -53,7 +47,7 @@ public class NewObjectNode extends ASTNode {
     private void rewriteClassReferenceToFQCN() {
         String FQCN = egressType.getName();
 
-        if (!className.equals(FQCN)) {
+        if (className.indexOf('.') == -1) {
             int idx = FQCN.lastIndexOf('$');
             if (idx != -1 && className.lastIndexOf('$') == -1) {
                 this.name = (FQCN.substring(0, idx + 1) + new String(this.name)).toCharArray();
@@ -61,7 +55,20 @@ public class NewObjectNode extends ASTNode {
             else {
                 this.name = (FQCN.substring(0, FQCN.lastIndexOf('.') + 1) + new String(this.name)).toCharArray();
             }
+
+            updateClassName();
         }
+    }
+
+    private void updateClassName() {
+        int endRange = findFirst('(', name);
+        if (endRange == -1) {
+            className = new String(name);
+        }
+        else {
+            className = new String(name, 0, findFirst('(', name));
+        }
+
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

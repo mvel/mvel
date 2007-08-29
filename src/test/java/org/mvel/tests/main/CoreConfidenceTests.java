@@ -1918,9 +1918,22 @@ public class CoreConfidenceTests extends AbstractTest {
         CompiledExpression s = compiler.compile(ctx);
         compiler.removeParserContext();
 
-        System.out.println(MVEL.executeExpressionWithTypeReInjection(s, null, null));
+        System.out.println(MVEL.executeSerializedExpression(s, null, null));
     }
 
+    public void testSwing() {
+        test("import javax.swing.JFrame;\n" +
+                "import javax.swing.JLabel;\n" +
+                "\n" +
+                "with (frame = new JFrame()) {\n" +
+                "    title = \"My Swing Frame\",\n" +
+                "    resizable = true\n" +
+                "}\n" +
+                "\n" +
+                "frame.contentPane.add(new JLabel(\"My Label\"));\n" +
+                "frame.pack();\n" +
+                "frame.visible = true;");
+    }
 
 }
 
