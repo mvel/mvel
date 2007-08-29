@@ -30,7 +30,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
      * Holds the instance of the variables.
      */
     private Map<String, Object> variables;
-    private VariableResolverFactory nextFactory;
+    //   private VariableResolverFactory nextFactory;
 
     private boolean cachingSafe = false;
 
@@ -74,13 +74,13 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         }
     }
 
-    public VariableResolverFactory getNextFactory() {
-        return nextFactory;
-    }
-
-    public VariableResolverFactory setNextFactory(VariableResolverFactory resolverFactory) {
-        return nextFactory = resolverFactory;
-    }
+//    public VariableResolverFactory getNextFactory() {
+//        return nextFactory;
+//    }
+//
+//    public VariableResolverFactory setNextFactory(VariableResolverFactory resolverFactory) {
+//        return nextFactory = resolverFactory;
+//    }
 
     public VariableResolver getVariableResolver(String name) {
         if (variables.containsKey(name)) {
