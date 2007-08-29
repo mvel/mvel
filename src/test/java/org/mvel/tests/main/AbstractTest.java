@@ -69,7 +69,68 @@ public abstract class AbstractTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    protected Object test(String ex) {
+    protected Object test(final String ex) {
+        Thread[] threads = new Thread[45];
+
+        final AbstractTest aTest = this;
+        final LinkedList<Object> results = new LinkedList<Object>();
+        long time = System.currentTimeMillis();
+
+        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new Thread() {
+                public void run() {
+                    results.add(aTest.runSingleTest(ex));
+                }
+            };
+        }
+
+        for (Thread thread1 : threads) {
+            thread1.setPriority(Thread.MIN_PRIORITY);
+            thread1.run();
+        }
+
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            }
+            catch (InterruptedException e) {
+
+            }
+        }
+
+        // analyze results
+
+        Object last = results.getFirst();
+        if (last != null)
+            for (Object o : results) {
+                if (!o.equals(last)) {
+                    if (o.getClass().isArray()) {
+                        Object[] a1 = (Object[]) o;
+                        Object[] a2 = (Object[]) last;
+
+                        if (a1.length == a2.length) {
+                            for (int i = 0; i < a1.length; i++) {
+                                if (!a1[i].equals(a2[i])) {
+                                    throw new AssertionError("differing result in multi-thread test (first array has: " + String.valueOf(last) + "; second has: " + String.valueOf(o) + ")");
+                                }
+                            }
+                        }
+                        else {
+                            throw new AssertionError("differing result in multi-thread test: array sizes differ.");
+                        }
+                    }
+                    else {
+                        throw new AssertionError("differing result in multi-thread test (last was: " + String.valueOf(last) + "; current is: " + String.valueOf(o) + ")");
+                    }
+                }
+                last = o;
+            }
+
+        System.out.println("[test complete] ran in: " + (System.currentTimeMillis() - time) + "ms (execution count: " + (threads.length * 8) + " [mixed modes])");
+        return last;
+    }
+
+    protected Object runSingleTest(final String ex) {
         return test(ex, this.base, this.map);
     }
 
@@ -239,7 +300,7 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            eighth = MVEL.executeExpression((CompiledExpression) serializationTest(compiledD), base, new MapVariableResolverFactory(map));
+            eighth = MVEL.executeExpression(serializationTest(compiledD), base, new MapVariableResolverFactory(map));
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -268,21 +329,22 @@ public abstract class AbstractTest extends TestCase {
     }
 
     protected static Object serializationTest(Serializable s) throws Exception {
-        File file = new File("./mvel_ser_test.tmp");
-        FileInputStream inputStream = null;
+        File file = new File("./mvel_ser_test" + System.currentTimeMillis() + Math.round(Math.random() * 1000) + ".tmp");
+        InputStream inputStream = null;
         ObjectInputStream objectIn = null;
         try {
             file.createNewFile();
 
             FileOutputStream fileStream = new FileOutputStream(file);
-            ObjectOutputStream objectOut = new ObjectOutputStream(fileStream);
+            ObjectOutputStream objectOut = new ObjectOutputStream(new BufferedOutputStream(fileStream));
             objectOut.writeObject(s);
 
             objectOut.flush();
             fileStream.flush();
             fileStream.close();
 
-            inputStream = new FileInputStream(file);
+            inputStream = new BufferedInputStream(new FileInputStream(file));
+
             objectIn = new ObjectInputStream(inputStream);
 
             return objectIn.readObject();
