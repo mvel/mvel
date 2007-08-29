@@ -35,6 +35,7 @@ public class ExpressionCompiler extends AbstractParser {
         newContext(ctx);
 
         CompiledExpression c = _compile();
+        c.setParserContext(pCtx);
 
         if (pCtx.isFatalError()) {
             contextControl(REMOVE, null, null);
@@ -423,5 +424,9 @@ public class ExpressionCompiler extends AbstractParser {
 
     public ParserContext getParserContextState() {
         return pCtx;
+    }
+
+    public void removeParserContext() {
+        removeContext();
     }
 }

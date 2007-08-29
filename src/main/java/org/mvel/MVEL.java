@@ -19,6 +19,7 @@
 
 package org.mvel;
 
+import static org.mvel.MVELRuntime.execute;
 import static org.mvel.DataConversion.convert;
 import org.mvel.integration.Interceptor;
 import org.mvel.integration.VariableResolverFactory;
@@ -189,7 +190,6 @@ public class MVEL {
     }
 
 
-
     public static Object executeExpression(Object compiledExpression) {
         return ((ExecutableStatement) compiledExpression).getValue(null, null);
     }
@@ -341,13 +341,26 @@ public class MVEL {
 
     public static Object executeDebugger(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
         try {
-            return MVELRuntime.execute(true, expression, ctx, vars);
+            return execute(true, expression, ctx, vars);
         }
         catch (EndWithValue e) {
             return handleParserEgress(e.getValue(), false);
         }
     }
 
+    public static Object executeExpressionWithTypeReInjection(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
+        try {
+            if (expression.getParserContext().getImports() != null) {
+                return handleParserEgress(execute(false, expression, ctx, new MapVariableResolverFactory(expression.getParserContext().getImports(), vars)), false);
+            }
+            else {
+                return handleParserEgress(execute(false, expression, ctx, vars), false);
+            }
+        }
+        catch (EndWithValue e) {
+            return handleParserEgress(e.getValue(), false);
+        }
+    }
 
     @SuppressWarnings({"unchecked"})
     public static <T> T eval(char[] expression, Object ctx, Map vars, Class<T> toType) {
