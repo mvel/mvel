@@ -84,7 +84,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 return doBigDecimalArithmetic(getBigDecimalFromType(val1, type1), operation, getBigDecimalFromType(val2, type2));
             }
             else if ((type1 == 15 || type2 == 15) && type1 != type2) {
-                return doOperationNonNumeric(convert(val1, Boolean.class), operation, convert(val1, Boolean.class));
+                return doOperationNonNumeric(convert(val1, Boolean.class), operation, convert(val2, Boolean.class));
             }
         }
         return doOperationNonNumeric(val1, operation, val2);
@@ -383,6 +383,8 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 return new BigDecimal((Short) in);
             case DataTypes.W_CHAR:
                 return new BigDecimal((Character) in);
+            case DataTypes.W_BOOLEAN:
+                return BigDecimal.valueOf(((Boolean) in) ? 1 : 0);
 
         }
 

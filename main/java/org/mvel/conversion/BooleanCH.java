@@ -4,6 +4,7 @@ import org.mvel.ConversionException;
 import org.mvel.ConversionHandler;
 
 import static java.lang.String.valueOf;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +31,7 @@ public class BooleanCH implements ConversionHandler {
                         return !(((String) o).equalsIgnoreCase("false")
                                 || (((String) o).equalsIgnoreCase("no"))
                                 || (((String) o).equalsIgnoreCase("off"))
-                                || ("0".equals(o)) 
+                                || ("0".equals(o))
                                 || ("".equals(o)));
                     }
                 }
@@ -97,6 +98,15 @@ public class BooleanCH implements ConversionHandler {
 
                     public Boolean convert(Object o) {
                         return Boolean.valueOf((Boolean) o);
+                    }
+                }
+        );
+
+        CNV.put(BigDecimal.class,
+                new Converter() {
+
+                    public Boolean convert(Object o) {
+                        return Boolean.valueOf(((BigDecimal) o).doubleValue() > 0);
                     }
                 }
         );
