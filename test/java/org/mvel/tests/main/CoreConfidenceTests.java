@@ -1,7 +1,6 @@
 package org.mvel.tests.main;
 
 import org.mvel.*;
-
 import static org.mvel.MVEL.*;
 import org.mvel.ast.WithNode;
 import org.mvel.debug.DebugTools;
@@ -17,11 +16,11 @@ import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 
+import java.awt.*;
 import java.io.Serializable;
 import static java.lang.System.currentTimeMillis;
 import java.util.*;
 import java.util.List;
-import java.awt.*;
 
 public class CoreConfidenceTests extends AbstractTest {
 
@@ -1906,6 +1905,16 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testIndexer() {
         assertEquals("foobar", test("import java.util.LinkedHashMap; LinkedHashMap map = new LinkedHashMap();" +
                 " map.put('a', 'foo'); map.put('b', 'bar'); s = ''; foreach (key : map.keySet()) { System.out.println(map[key]); s += map[key]; }; return s;"));
+    }
+
+    public void testLateResolveOfClass() {
+        ExpressionCompiler compiler = new ExpressionCompiler("System.out.println(new Foo());");
+        Serializable s = compiler.compile();
+
+        ClassImportResolverFactory cirf = new ClassImportResolverFactory();
+        cirf.addClass(Foo.class);
+
+        MVEL.executeExpression(s, cirf);
     }
 
 }
