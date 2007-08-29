@@ -19,7 +19,8 @@
 
 package org.mvel;
 
-import org.mvel.integration.impl.LocalVariableResolverFactory;
+import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -38,7 +39,7 @@ public class MVELSH {
 
         String in;
 
-        LocalVariableResolverFactory lvrf = new LocalVariableResolverFactory(new HashMap<String, Object>());
+        VariableResolverFactory lvrf = new DefaultLocalVariableResolverFactory(new HashMap<String, Object>());
 
         Object out = null;
 

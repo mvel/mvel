@@ -30,6 +30,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
      * Holds the instance of the variables.
      */
     private Map<String, Object> variables;
+
     //   private VariableResolverFactory nextFactory;
 
     private boolean cachingSafe = false;
