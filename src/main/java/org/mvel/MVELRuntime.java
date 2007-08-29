@@ -7,6 +7,7 @@ import org.mvel.ast.LineLabel;
 import org.mvel.debug.Debugger;
 import org.mvel.debug.DebuggerContext;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.PropertyTools.isEmpty;
@@ -38,6 +39,10 @@ public class MVELRuntime {
      */
     public static Object execute(boolean debugger, CompiledExpression expression, Object ctx, VariableResolverFactory variableFactory) {
         final ASTLinkedList node = new ASTLinkedList(expression.getTokens().firstNode());
+
+        if (expression.isImportInjectionRequired()) {
+            variableFactory = new MapVariableResolverFactory(expression.getParserContext().getImports(), variableFactory);
+        }
 
         Stack stk = new ExecutionStack();
         Object v1, v2;
@@ -215,9 +220,9 @@ public class MVELRuntime {
 
     /**
      * Register a debugger breakpoint.
-     * 
+     *
      * @param source - the source file the breakpoint is registered in
-     * @param line - the line number of the breakpoint
+     * @param line   - the line number of the breakpoint
      */
     public static void registerBreakpoint(String source, int line) {
         ensureDebuggerContext();
@@ -228,7 +233,7 @@ public class MVELRuntime {
      * Remove a specific breakpoint.
      *
      * @param source - the source file the breakpoint is registered in
-     * @param line - the line number of the breakpoint to be removed
+     * @param line   - the line number of the breakpoint to be removed
      */
     public static void removeBreakpoint(String source, int line) {
         if (hasDebuggerContext()) {
@@ -262,6 +267,7 @@ public class MVELRuntime {
      * Sets the Debugger instance to handle breakpoints.   A debugger may only be registered once per thread.
      * Calling this method more than once will result in the second and subsequent calls to simply fail silently.
      * To re-register the Debugger, you must call {@link #resetDebugger}
+     *
      * @param debugger - debugger instance
      */
     public static void setThreadDebugger(Debugger debugger) {

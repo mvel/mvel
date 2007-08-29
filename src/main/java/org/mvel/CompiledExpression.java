@@ -31,10 +31,11 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private ASTIterator tokens;
 
     private Class knownEgressType;
-    private Class knownIngressType;     
+    private Class knownIngressType;
 
     private boolean convertableIngressEgress;
     private boolean optimized = false;
+    private boolean importInjectionRequired = false;
 
     private Class<? extends AccessorOptimizer> accessorOptimizer;
 
@@ -43,7 +44,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private ParserContext parserContext;
 
     public CompiledExpression(ASTIterator astMap, String sourceName) {
-       this.tokens = astMap;
+        this.tokens = astMap;
         this.sourceName = sourceName;
     }
 
@@ -98,8 +99,8 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         return handleParserEgress(execute(false, this, staticContext, factory), false);
     }
 
-    public Object getDirectValue(Object staticContext, VariableResolverFactory factory) {    
-         return execute(false, this, staticContext, factory);
+    public Object getDirectValue(Object staticContext, VariableResolverFactory factory) {
+        return execute(false, this, staticContext, factory);
     }
 
     private void setupOptimizers() {
@@ -128,7 +129,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         this.accessorOptimizer = accessorOptimizer;
     }
 
-
     public String getSourceName() {
         return sourceName;
     }
@@ -146,9 +146,19 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public void setParserContext(ParserContext parserContext) {
-        this.parserContext = parserContext;
+        if ((this.parserContext = parserContext) != null) {
+            this.importInjectionRequired = this.parserContext.getImports() != null;
+        }
     }
 
+
+    public boolean isImportInjectionRequired() {
+        return importInjectionRequired;
+    }
+
+    public void setImportInjectionRequired(boolean importInjectionRequired) {
+        this.importInjectionRequired = importInjectionRequired;
+    }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;
