@@ -3,14 +3,12 @@ package org.mvel.ast;
 import org.mvel.ASTNode;
 import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.Accessor;
-import org.mvel.ParserContext;
 import org.mvel.CompileException;
+import org.mvel.ParserContext;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import static org.mvel.util.ArrayTools.findFirst;
-
-import static java.lang.Class.forName;
 
 /**
  * @author Christopher Brock
@@ -37,7 +35,8 @@ public class NewObjectNode extends ASTNode {
             }
             else {
                 try {
-                    egressType = forName(className);
+                    egressType = Thread.currentThread().getContextClassLoader().loadClass(className);
+                    //        egressType = Class.forName(className);
                 }
                 catch (ClassNotFoundException e) {
                     //           throw new CompileException("class not found: " + name, e);

@@ -766,7 +766,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return ca;
         }
         else {
-            Constructor<?> cns = Class.forName(new String(expression)).getConstructor(EMPTYCLS);
+            Constructor<?> cns = Thread.currentThread().getContextClassLoader().loadClass(new String(expression)).getConstructor(EMPTYCLS);
             AccessorNode ca = new ConstructorAccessor(cns, null);
 
             if (cnsRes.length > 1) {

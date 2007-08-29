@@ -15,10 +15,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
-import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
+import static java.lang.Thread.currentThread;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -38,11 +38,11 @@ public class ParseTools {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
-                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) currentThread().getContextClassLoader().loadClass("org.mvel.math.JDK14CompatabilityMath").newInstance();
                 JDK_14_COMPATIBILITY = true;
             }
             else if (version > 1.4) {
-                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) currentThread().getContextClassLoader().loadClass("org.mvel.math.IEEEFloatingPointMath").newInstance();
                 JDK_14_COMPATIBILITY = false;
             }
             else {
@@ -363,7 +363,7 @@ public class ParseTools {
         if (CLASS_RESOLVER_CACHE.containsKey(className))
             return CLASS_RESOLVER_CACHE.get(className);
         else {
-            Class cls = Class.forName(className);
+            Class cls = currentThread().getContextClassLoader().loadClass(className);
             CLASS_RESOLVER_CACHE.put(className, cls);
             return cls;
         }

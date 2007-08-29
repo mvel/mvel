@@ -1260,8 +1260,8 @@ public class ClassWriter implements ClassVisitor {
     protected String getCommonSuperClass(final String type1, final String type2) {
         Class c, d;
         try {
-            c = Class.forName(type1.replace('/', '.'));
-            d = Class.forName(type2.replace('/', '.'));
+            c = Thread.currentThread().getContextClassLoader().loadClass(type1.replace('/', '.'));
+            d = Thread.currentThread().getContextClassLoader().loadClass(type2.replace('/', '.'));
         }
         catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
