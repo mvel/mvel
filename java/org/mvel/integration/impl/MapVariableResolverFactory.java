@@ -24,8 +24,6 @@ import org.mvel.integration.VariableResolverFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 
 public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     /**
@@ -38,6 +36,12 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
 
     public MapVariableResolverFactory(Map<String, Object> variables) {
         this.variables = variables;
+    }
+
+
+    public MapVariableResolverFactory(Map<String, Object> variables, VariableResolverFactory nextFactory) {
+        this.variables = variables;
+        this.nextFactory = nextFactory;
     }
 
     public MapVariableResolverFactory(Map<String, Object> variables, boolean cachingSafe) {
