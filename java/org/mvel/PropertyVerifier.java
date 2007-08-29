@@ -209,7 +209,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 ExpressionCompiler compiler = new ExpressionCompiler(subtokens[i]);
                 compiler.setVerifying(true);
                 compiler._compile();
-                args[i] = compiler.getReturnType();
+                args[i] = compiler.getReturnType() != null ? compiler.getReturnType() : Object.class;
             }
         }
 
