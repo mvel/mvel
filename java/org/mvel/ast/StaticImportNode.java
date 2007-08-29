@@ -7,7 +7,6 @@ import static org.mvel.util.ArrayTools.findLast;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.subset;
 
-import static java.lang.Class.forName;
 import java.lang.reflect.Method;
 import static java.lang.reflect.Modifier.isStatic;
 
@@ -23,7 +22,7 @@ public class StaticImportNode extends ASTNode {
         super(expr, fields);
 
         try {
-            declaringClass = forName(new String(subset(expr, 0, findLast('.', expr))));
+            declaringClass = Thread.currentThread().getContextClassLoader().loadClass(new String(subset(expr, 0, findLast('.', expr))));
             methodName = new String(subset(expr, findLast('.', expr) + 1));
 
             resolveMethod();

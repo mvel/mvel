@@ -25,14 +25,14 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
+import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isEmpty;
 import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.StringAppender;
-import org.mvel.util.ExecutionStack;
 
-import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
+import static java.lang.Thread.currentThread;
 import java.math.BigDecimal;
 import java.util.Map;
 import static java.util.regex.Pattern.compile;
@@ -252,7 +252,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         if (v1 instanceof Class)
                             stk.push(((Class) v1).isInstance(v2));
                         else
-                            stk.push(forName(valueOf(v1)).isInstance(v2));
+                            stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
 
                         break;
 
@@ -260,7 +260,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         if (v1 instanceof Class)
                             stk.push(canConvert(v2.getClass(), (Class) v1));
                         else
-                            stk.push(canConvert(v2.getClass(), forName(valueOf(v1))));
+                            stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
                         break;
 
                     case CONTAINS:

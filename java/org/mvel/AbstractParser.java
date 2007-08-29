@@ -118,7 +118,7 @@ public class AbstractParser implements Serializable {
 
         if (parseFloat(getProperty("java.version").substring(0, 2)) >= 1.5) {
             try {
-                LITERALS.put("StringBuilder", Class.forName("java.lang.StringBuilder"));
+                LITERALS.put("StringBuilder", Thread.currentThread().getContextClassLoader().loadClass("java.lang.StringBuilder"));
             }
             catch (Exception e) {
                 throw new RuntimeException("cannot resolve a built-in literal", e);

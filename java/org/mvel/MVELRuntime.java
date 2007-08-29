@@ -14,8 +14,8 @@ import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
-import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
+import static java.lang.Thread.currentThread;
 
 /**
  * This class contains the runtime for running compiled MVEL expressions.
@@ -133,7 +133,7 @@ public class MVELRuntime {
                                 if (v1 instanceof Class)
                                     stk.push(((Class) v1).isInstance(v2));
                                 else
-                                    stk.push(forName(valueOf(v1)).isInstance(v2));
+                                    stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
 
                                 break;
 
@@ -141,7 +141,7 @@ public class MVELRuntime {
                                 if (v1 instanceof Class)
                                     stk.push(canConvert(v2.getClass(), (Class) v1));
                                 else
-                                    stk.push(canConvert(v2.getClass(), forName(valueOf(v1))));
+                                    stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
                                 break;
 
                             case CONTAINS:
