@@ -348,6 +348,21 @@ public class MVEL {
         }
     }
 
+    public static Object executeDebuggerWithTypeReInjection(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
+        try {
+            if (expression.getParserContext().getImports() != null) {
+                return handleParserEgress(execute(true, expression, ctx, new MapVariableResolverFactory(expression.getParserContext().getImports(), vars)), false);
+            }
+            else {
+                return handleParserEgress(execute(true, expression, ctx, vars), false);
+            }
+        }
+        catch (EndWithValue e) {
+            return handleParserEgress(e.getValue(), false);
+        }
+    }
+
+
     public static Object executeExpressionWithTypeReInjection(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
         try {
             if (expression.getParserContext().getImports() != null) {
