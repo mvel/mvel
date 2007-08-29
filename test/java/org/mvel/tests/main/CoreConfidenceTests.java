@@ -964,14 +964,14 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testBreakpointsAcrossComments() {
         ExpressionCompiler compiler = new ExpressionCompiler(
                 "/** This is a comment\n" +      // 1
-                "Second comment line\n" +        // 2
-                "Third Comment Line\n" +         // 3
-                "*/\n" +                         // 4
-                "System.out.println('4');\n" +   // 5
-                "System.out.println('5');\n" +   // 6
-                "a = 0;\n" +                     // 7
-                " b = 1;\n" +                    // 8
-                " a + b");                       // 9
+                        "Second comment line\n" +        // 2
+                        "Third Comment Line\n" +         // 3
+                        "*/\n" +                         // 4
+                        "System.out.println('4');\n" +   // 5
+                        "System.out.println('5');\n" +   // 6
+                        "a = 0;\n" +                     // 7
+                        " b = 1;\n" +                    // 8
+                        " a + b");                       // 9
         compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
@@ -1164,7 +1164,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertFalse(compiler.getParserContextState().getInputs().keySet().contains("home"));
     }
-    
+
     public void testVarInputs4() {
         ExpressionCompiler compiler = new ExpressionCompiler("System.out.println( message );");
         compiler.compile();
@@ -1785,7 +1785,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(1, MVEL.executeExpression(compiledExpression));
     }
-    
+
     public void testStaticNestedWithMethodCall() {
         String expr = "item = new Item( \"Some Item\"); $msg.addItem( item ); return $msg";
 
@@ -1797,14 +1797,14 @@ public class CoreConfidenceTests extends AbstractTest {
         context.addImport("Message", Message.class);
         context.addImport("Item", Item.class);
         Serializable compiledExpression = compiler.compile(context);
-        
+
         Map vars = new HashMap();
-        vars.put( "$msg", new Message() );
-        Message msg = ( Message ) MVEL.executeExpression(compiledExpression, vars);
-        Item item = ( Item )  msg.getItems().get( 0 ) ;
-        assertEquals( "Some Item", item.getName());
-    }    
-    
+        vars.put("$msg", new Message());
+        Message msg = (Message) MVEL.executeExpression(compiledExpression, vars);
+        Item item = (Item) msg.getItems().get(0);
+        assertEquals("Some Item", item.getName());
+    }
+
 //    public void testParserStringIssueNeverReturns() {
 //        String expr = "Sstem.out.println(drools.workingMemory); ";
 //
@@ -1823,25 +1823,25 @@ public class CoreConfidenceTests extends AbstractTest {
 //        vars.put( "drools", drools );
 //        MVEL.executeExpression(compiledExpression, vars);
 //    }
-    
+
     public void testsequentialAccessorsThenMethodCall() {
         String expr = "System.out.println(drools.workingMemory); drools.workingMemory.ruleBase.removeRule(\"org.drools.examples\", \"some rule\"); ";
 
         ExpressionCompiler compiler = new ExpressionCompiler(expr);
 
         ParserContext context = new ParserContext();
-        context.setStrictTypeEnforcement(true);        
-        context.addInput( "drools", KnowledgeHelper.class);
-        
+        context.setStrictTypeEnforcement(true);
+        context.addInput("drools", KnowledgeHelper.class);
+
         RuleBase ruleBase = new RuleBaseImpl();
-        WorkingMemory wm = new WorkingMemoryImpl( ruleBase );
-        KnowledgeHelper drools = new DefaultKnowledgeHelper( wm );
+        WorkingMemory wm = new WorkingMemoryImpl(ruleBase);
+        KnowledgeHelper drools = new DefaultKnowledgeHelper(wm);
         Serializable compiledExpression = compiler.compile(context);
-        
+
         Map vars = new HashMap();
-        vars.put( "drools", drools );
+        vars.put("drools", drools);
         MVEL.executeExpression(compiledExpression, vars);
-    }    
+    }
 
 
     /**
@@ -1882,7 +1882,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     /**
-     * Submitted by: cleverpig                                                                               
+     * Submitted by: cleverpig
      */
 
     public void testBug4() {
@@ -1909,13 +1909,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testLateResolveOfClass() {
         ExpressionCompiler compiler = new ExpressionCompiler("System.out.println(new Foo());");
-        Serializable s = compiler.compile();
+        ParserContext ctx = new ParserContext();
+        ctx.addImport(Foo.class);
 
-        ClassImportResolverFactory cirf = new ClassImportResolverFactory();
-        cirf.addClass(Foo.class);
+        CompiledExpression s = compiler.compile(ctx);
+        compiler.removeParserContext();
 
-        MVEL.executeExpression(s, cirf);
+        System.out.println(MVEL.executeExpressionWithTypeReInjection(s, null, null));
     }
+
 
 }
 

@@ -11,7 +11,6 @@ import org.mvel.optimizers.OptimizerFactory;
 public class LiteralDeepPropertyNode extends ASTNode {
     private Object literal;
 
-
     public LiteralDeepPropertyNode(char[] expr, int fields, Object literal) {
         super(expr, fields);
         this.literal = literal;

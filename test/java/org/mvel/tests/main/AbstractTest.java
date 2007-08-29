@@ -4,6 +4,8 @@ import junit.framework.TestCase;
 import org.mvel.ExpressionCompiler;
 import org.mvel.MVEL;
 import org.mvel.ParserContext;
+import org.mvel.CompiledExpression;
+import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.debug.DebugTools;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
@@ -75,7 +77,7 @@ public abstract class AbstractTest extends TestCase {
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
         StringAppender failErrors = null;
 
-        Serializable compiled = compiler.compile();
+        CompiledExpression compiled = compiler.compile();
         Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null,
                 eighth = null;
 
@@ -141,10 +143,10 @@ public abstract class AbstractTest extends TestCase {
         }
 
         OptimizerFactory.setDefaultOptimizer("reflective");
-        compiled = MVEL.compileExpression(ex);
+        Serializable compiled2 = MVEL.compileExpression(ex);
 
         try {
-            fourth = MVEL.executeExpression(compiled, base, map);
+            fourth = MVEL.executeExpression(compiled2, base, map);
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -157,7 +159,7 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            fifth = MVEL.executeExpression(compiled, base, map);
+            fifth = MVEL.executeExpression(compiled2, base, map);
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -181,7 +183,7 @@ public abstract class AbstractTest extends TestCase {
         ExpressionCompiler debuggingCompiler = new ExpressionCompiler(ex);
         debuggingCompiler.setDebugSymbols(true);
 
-        Serializable compiledD = debuggingCompiler.compile(ctx);
+        CompiledExpression compiledD = debuggingCompiler.compile(ctx);
 
         try {
             sixth = MVEL.executeExpression(compiledD, base, map);
@@ -233,7 +235,7 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            eighth = MVEL.executeExpression(serializationTest(compiledD), base, map);
+            eighth = MVEL.executeExpressionWithTypeReInjection((CompiledExpression) serializationTest(compiledD), base, new MapVariableResolverFactory(map));
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -262,7 +264,7 @@ public abstract class AbstractTest extends TestCase {
         return fourth;
     }
 
-    private static Object serializationTest(Serializable s) throws Exception {
+    protected static Object serializationTest(Serializable s) throws Exception {
         File file = new File("./mvel_ser_test.tmp");
         FileInputStream inputStream = null;
         ObjectInputStream objectIn = null;

@@ -2,6 +2,7 @@ package org.mvel;
 
 import org.mvel.integration.Interceptor;
 import org.mvel.ast.LineLabel;
+import org.mvel.util.ParseTools;
 
 import java.util.*;
 import java.io.Serializable;
@@ -142,6 +143,10 @@ public class ParserContext implements Serializable {
                 || checkForDynamicImport(name);
     }
 
+
+    public void addImport(Class cls) {
+        addImport(ParseTools.getSimpleClassName(cls), cls);
+    }
 
     public void addImport(String name, Class cls) {
         if (this.imports == null) this.imports = new HashMap<String, Object>();
