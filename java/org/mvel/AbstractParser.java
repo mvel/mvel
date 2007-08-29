@@ -157,7 +157,7 @@ public class AbstractParser implements Serializable {
         if (cursor >= length) {
             if (debugSymbols && lastNode != null) {
                 /**
-                 * Produce a trailing line label.
+                 * Produce a trailing line label. This allows debuggers to step into the last line.
                  */
                 lastNode = null;
                 return new LineLabel(getParserContext().getSourceFile(), getParserContext().getLineCount() + 1);
