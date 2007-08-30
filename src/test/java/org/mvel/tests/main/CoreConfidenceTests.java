@@ -1178,7 +1178,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Debugger testDebugger = new Debugger() {
             public int onBreak(Frame frame) {
                 System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
-                System.out.println("Stepover");
+                //           System.out.println("Stepover");
                 return Debugger.STEP_OVER;
             }
         };
@@ -1188,6 +1188,8 @@ public class CoreConfidenceTests extends AbstractTest {
         System.out.println("\n==RUN==\n");
 
         assertEquals("bar", MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
+
+        //       MVELRuntime.setThreadDebugger(null);
     }
 
 
