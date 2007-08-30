@@ -23,7 +23,9 @@ import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     /**
@@ -117,4 +119,18 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         return variableResolvers.containsKey(name);
     }
 
+
+    public Set<String> getKnownVariables() {
+        Set<String> knownVars = new HashSet<String>();
+
+        if (nextFactory == null) {
+            if (variables != null) knownVars.addAll(variables.keySet());
+            return knownVars;
+        }
+        else {
+            if (variables != null) knownVars.addAll(variables.keySet());
+            knownVars.addAll(nextFactory.getKnownVariables());
+            return knownVars;
+        }
+    }
 }
