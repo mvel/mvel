@@ -1045,6 +1045,48 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(1, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
     }
 
+    public void testBreakpoints4() {
+        String expression = "System.out.println('foo');\n" +
+                "a = new Foo();\n" +
+                "with (a) { name = 'bar' };\n" +
+                "System.out.println('name:' + a.name);\n" +
+                "return a.name;";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expression);
+
+        compiler.setDebugSymbols(true);
+
+        ParserContext ctx = new ParserContext();
+        ctx.setSourceFile("test2.mv");
+        ctx.addImport("Foo", Foo.class);
+
+        CompiledExpression compiled = compiler.compile(ctx);
+
+        System.out.println("\nExpression:------------");
+        System.out.println(expression);
+        System.out.println("------------");
+
+
+        System.out.println(DebugTools.decompile(compiled));
+
+        MVELRuntime.registerBreakpoint("test2.mv", 3);
+//        MVELRuntime.registerBreakpoint("test2.mv", 8);
+//        MVELRuntime.registerBreakpoint("test2.mv", 9);
+//        MVELRuntime.registerBreakpoint("test2.mv", 10);
+
+        Debugger testDebugger = new Debugger() {
+            public int onBreak(Frame frame) {
+                System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+                return 0;
+            }
+        };
+
+        MVELRuntime.setThreadDebugger(testDebugger);
+
+        assertEquals("bar", MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
+    }
+
+
     public void testDebugSymbolsWithWindowsLinedEndings() throws Exception {
         String expr = "   System.out.println( \"a1\" );\r\n" +
                 "   System.out.println( \"a2\" );\r\n" +
