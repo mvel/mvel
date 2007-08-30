@@ -8,8 +8,8 @@ import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
-import org.mvel.util.ThisLiteral;
 import org.mvel.util.Stack;
+import org.mvel.util.ThisLiteral;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -191,9 +191,9 @@ public class AbstractParser implements Serializable {
 
                 line = pCtx.getLineCount();
 
-                if (expr[cursor] == '\n' || expr[cursor] == '\r') {
-                    skipWhitespaceWithLineAccounting();
-                }
+                //    if (expr[cursor] == '\n' || expr[cursor] == '\r') {
+                skipWhitespaceWithLineAccounting();
+                //    }
 
                 pCtx.setLineCount(line);
 
