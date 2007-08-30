@@ -993,6 +993,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
             public int onBreak(Frame frame) {
                 System.out.println("Breakpoint Encountered [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+                System.out.println("vars:" + frame.getFactory().getKnownVariables());
                 System.out.println("Resume Execution");
                 return 0;
             }
