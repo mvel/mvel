@@ -6,6 +6,7 @@ import static org.mvel.DataConversion.canConvert;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
+import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.LocalVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.math.MathProcessor;
@@ -15,16 +16,20 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
-import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
+import static java.lang.Thread.currentThread;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
+
+/**
+ * This class contains much of the actual parsing code used by the core parser.
+ */
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
     public static final MathProcessor MATH_PROCESSOR;
@@ -34,11 +39,11 @@ public class ParseTools {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
-                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) currentThread().getContextClassLoader().loadClass("org.mvel.math.JDK14CompatabilityMath").newInstance();
                 JDK_14_COMPATIBILITY = true;
             }
             else if (version > 1.4) {
-                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) currentThread().getContextClassLoader().loadClass("org.mvel.math.IEEEFloatingPointMath").newInstance();
                 JDK_14_COMPATIBILITY = false;
             }
             else {
@@ -107,8 +112,10 @@ public class ParseTools {
 
                 case'[':
                 case'{':
-                    if (adepth++ == 0)
-                        start = i;
+                    adepth++;
+//                    if (adepth++ == 0)
+//                        start = i;
+
                     continue;
 
                 case']':
@@ -165,7 +172,6 @@ public class ParseTools {
     }
 
     private static Map<String, Map<Integer, Method>> RESOLVED_METH_CACHE = new WeakHashMap<String, Map<Integer, Method>>(10);
-
 
     public static Method getBestCandidate(Object[] arguments, String method, Method[] methods) {
         Class[] targetParms = new Class[arguments.length];
@@ -277,7 +283,6 @@ public class ParseTools {
     }
 
     public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
-
         Class[] parmTypes;
         Constructor bestCandidate = null;
         int bestScore = 0;
@@ -359,7 +364,7 @@ public class ParseTools {
         if (CLASS_RESOLVER_CACHE.containsKey(className))
             return CLASS_RESOLVER_CACHE.get(className);
         else {
-            Class cls = Class.forName(className);
+            Class cls = currentThread().getContextClassLoader().loadClass(className);
             CLASS_RESOLVER_CACHE.put(className, cls);
             return cls;
         }
@@ -605,7 +610,7 @@ public class ParseTools {
             throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
         }
         else {
-            return new LocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
+            return new DefaultLocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
         }
     }
 
@@ -648,7 +653,7 @@ public class ParseTools {
             if (AbstractParser.LITERALS.containsKey(name)) {
                 return (Class) AbstractParser.LITERALS.get(name);
             }
-            else if (factory.isResolveable(name)) {
+            else if (factory != null && factory.isResolveable(name)) {
                 return (Class) factory.getVariableResolver(name).getValue();
             }
             else if (getCurrentThreadParserContext() != null && getCurrentThreadParserContext().hasImport(name)) {
@@ -855,6 +860,24 @@ public class ParseTools {
     }
 
 
+    /**
+     * This is an important aspect of the core parser tools.  This method is used throughout the core parser
+     * and sub-lexical parsers to capture a balanced capture between opening and terminating tokens such as:
+     * <em>( [ { ' " </em>
+     * <br>
+     * <br>
+     * For example: ((foo + bar + (bar - foo)) * 20;<br>
+     * <br>
+     * <p/>
+     * If a balanced capture is performed from position 2, we get "(foo + bar + (bar - foo))" back.<br>
+     * If a balanced capture is performed from position 15, we get "(bar - foo)" back.<br>
+     * Etc.
+     *
+     * @param chars
+     * @param start
+     * @param type
+     * @return
+     */
     public static int balancedCapture(char[] chars, int start, char type) {
         int depth = 1;
         char term = type;
@@ -938,12 +961,13 @@ public class ParseTools {
     public static String getSimpleClassName(Class cls) {
         if (JDK_14_COMPATIBILITY) {
             int lastIndex = cls.getName().lastIndexOf('$');
-            if ( lastIndex < 0 ) {
-                lastIndex = cls.getName().lastIndexOf('.');    
+            if (lastIndex < 0) {
+                lastIndex = cls.getName().lastIndexOf('.');
             }
-            if ( cls.isArray() ) {
+            if (cls.isArray()) {
                 return cls.getName().substring(lastIndex + 1) + "[]";
-            } else {
+            }
+            else {
                 return cls.getName().substring(lastIndex + 1);
             }
         }

@@ -2,6 +2,7 @@ package org.mvel;
 
 import org.mvel.integration.Interceptor;
 import org.mvel.ast.LineLabel;
+import org.mvel.util.ParseTools;
 
 import java.util.*;
 import java.io.Serializable;
@@ -28,7 +29,7 @@ public class ParserContext implements Serializable {
     private List<ErrorDetail> errorList;
 
     private Map<String, Set<Integer>> sourceMap;
-    private LineLabel firstLineLabel;
+    private LineLabel lastLineLabel;
 
     private Object rootParser;
 
@@ -37,6 +38,8 @@ public class ParserContext implements Serializable {
     private boolean fatalError = false;
     private boolean retainParserState = false;
     private boolean debugSymbols = false;
+
+    private boolean executableCodeReached = false;
 
     public ParserContext() {
     }
@@ -136,10 +139,14 @@ public class ParserContext implements Serializable {
         return (imports != null && imports.containsKey(name)) ||
                 (!"this".equals(name) && !"self".equals(name) && !"empty".equals(name) && !"null".equals(name) &&
                         !"nil".equals(name) && !"true".equals(name) && !"false".equals(name)
-            && AbstractParser.LITERALS.containsKey(name))
+                        && AbstractParser.LITERALS.containsKey(name))
                 || checkForDynamicImport(name);
     }
 
+
+    public void addImport(Class cls) {
+        addImport(ParseTools.getSimpleClassName(cls), cls);
+    }
 
     public void addImport(String name, Class cls) {
         if (this.imports == null) this.imports = new HashMap<String, Object>();
@@ -300,16 +307,29 @@ public class ParserContext implements Serializable {
         sourceMap.get(sourceName).add(lineNumber);
     }
 
-
-    public LineLabel getFirstLineLabel() {
-        return firstLineLabel;
+    public void addKnownLine(int lineNumber) {
+        addKnownLine(sourceFile, lineNumber);
     }
 
-    public void setFirstLineLabel(LineLabel firstLineLabel) {
-        this.firstLineLabel = firstLineLabel;
+
+    public LineLabel getLastLineLabel() {
+        return lastLineLabel;
+    }
+
+    public void setLastLineLabel(LineLabel lastLineLabel) {
+        this.lastLineLabel = lastLineLabel;
     }
 
     public boolean hasImports() {
         return (imports != null && imports.size() != 0) || (packageImports != null && packageImports.size() != 0);
+    }
+
+
+    public boolean isExecutableCodeReached() {
+        return executableCodeReached;
+    }
+
+    public void setExecutableCodeReached(boolean executableCodeReached) {
+        this.executableCodeReached = executableCodeReached;
     }
 }

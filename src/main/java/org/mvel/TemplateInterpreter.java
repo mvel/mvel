@@ -172,54 +172,64 @@ public class TemplateInterpreter {
         if (!EX_PRECACHE.containsKey(template)) {
             EX_PRECACHE.put(template, this.expression = template.toString().toCharArray());
             nodes = new TemplateCompiler(this).compileExpression();
-            EX_NODE_CACHE.put(template, nodes.clone());
+            Node[] nodes = cloneAll(EX_NODE_CACHE.get(expression));
+
+            EX_NODE_CACHE.put(template, nodes);
         }
         else {
             this.expression = EX_PRECACHE.get(template);
             try {
-                this.nodes = EX_NODE_CACHE.get(expression).clone();
+                this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
             }
             catch (NullPointerException e) {
                 EX_NODE_CACHE.remove(expression);
                 nodes = new TemplateCompiler(this).compileExpression();
-                EX_NODE_CACHE.put(expression, nodes.clone());
+                EX_NODE_CACHE.put(expression, cloneAll(nodes));
             }
 
         }
-        cloneAllNodes();
+
+        //    cloneAllNodes();
 
     }
+
+    private Node[] cloneAll(Node[] nodes) {
+        Node[] newNodes = new Node[nodes.length];
+
+        try {
+            int i = 0;
+            for (Node n : nodes) {
+                newNodes[i++] = n.clone();
+            }
+        }
+        catch (CloneNotSupportedException e) {
+
+        }
+
+        return newNodes;
+    }
+
 
     public TemplateInterpreter(String expression) {
         if (!EX_PRECACHE.containsKey(expression)) {
             EX_PRECACHE.put(expression, this.expression = expression.toCharArray());
             nodes = new TemplateCompiler(this).compileExpression();
-            EX_NODE_CACHE.put(expression, nodes.clone());
+            EX_NODE_CACHE.put(expression, nodes);
+            this.nodes = cloneAll(nodes);
         }
         else {
             this.expression = EX_PRECACHE.get(expression);
             try {
-                this.nodes = EX_NODE_CACHE.get(expression).clone();
+                this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
             }
             catch (NullPointerException e) {
                 EX_NODE_CACHE.remove(expression);
                 nodes = new TemplateCompiler(this).compileExpression();
-                EX_NODE_CACHE.put(expression, nodes.clone());
-            }
-
-        }
-        cloneAllNodes();
-    }
-
-    private void cloneAllNodes() {
-        try {
-            for (int i = 0; i < nodes.length; i++) {
-                nodes[i] = nodes[i].clone();
+                EX_NODE_CACHE.put(expression, nodes);
+                this.nodes = cloneAll(nodes);
             }
         }
-        catch (Exception e) {
-            throw new CompileException("unknown exception", e);
-        }
+
     }
 
     public TemplateInterpreter(char[] expression) {
@@ -264,6 +274,7 @@ public class TemplateInterpreter {
     }
 
     public static Object parse(File file, Object ctx, Map tokens, TemplateRegistry registry) throws IOException {
+
         if (!file.exists())
             throw new CompileException("cannot find file: " + file.getName());
 
@@ -328,6 +339,7 @@ public class TemplateInterpreter {
     }
 
     public Object execute(Object ctx, Map tokens, TemplateRegistry registry) {
+
         if (nodes == null) {
             return new String(expression);
         }
@@ -372,7 +384,7 @@ public class TemplateInterpreter {
 
         try {
             //noinspection unchecked
-            ExpressionParser oParser = new ExpressionParser(ctx, tokens);
+            MVELInterpretedRuntime oParser = new MVELInterpretedRuntime(ctx, tokens);
 
             initStack();
             pushAndForward();
@@ -412,7 +424,7 @@ public class TemplateInterpreter {
                                 Iterator[] iters = new Iterator[lists.length];
                                 for (int i = 0; i < lists.length; i++) {
                                     //noinspection unchecked
-                                    Object listObject = new ExpressionParser(lists[i], ctx, tokens).parse();
+                                    Object listObject = new MVELInterpretedRuntime(lists[i], ctx, tokens).parse();
                                     if (listObject instanceof Object[]) {
                                         listObject = Arrays.asList((Object[]) listObject);
                                     }
@@ -511,6 +523,7 @@ public class TemplateInterpreter {
             }
             throw new CompileException("unhandled fatal exception (node:" + node + ")", e);
         }
+
     }
 
     private void initStack() {

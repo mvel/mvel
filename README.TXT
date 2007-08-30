@@ -14,7 +14,7 @@ This version of MVEL is a beta, pre-release version, which may contain unknown p
 any problems or bugs in MVEL, please report them promptly to our issue tracking system located at:
 http://jira.codehaus.org/browse/MVEL and we will deal with them quickly.
 
-* Note that all of the convenience methods have been moved from the class org.mvel.ExpressionParser to the class
+* Note that all of the convenience methods have been moved from the class org.mvel.MVELInterpretedRuntime to the class
   org.mvel.MVEL
 
   

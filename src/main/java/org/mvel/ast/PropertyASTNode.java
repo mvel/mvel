@@ -8,7 +8,7 @@ import org.mvel.util.ThisLiteral;
  * @author Christopher Brock
  */
 public class PropertyASTNode extends ASTNode {
-    private ASTNode wrappedNode;
+    private transient ASTNode wrappedNode;
 
     public PropertyASTNode(char[] expr, int start, int end, int fields) {
         super(expr, start, end, fields);
@@ -71,7 +71,6 @@ public class PropertyASTNode extends ASTNode {
                 return (wrappedNode = new VariableDeepPropertyNode(name, fields)).getReducedValueAccelerated(ctx, thisValue, factory);
             }
             else {
-
                 if (ctx != null) {
                     try {
                         return (wrappedNode = new ContextDeepPropertyNode(name, fields)).getReducedValueAccelerated(ctx, thisValue, factory);
@@ -99,9 +98,7 @@ public class PropertyASTNode extends ASTNode {
                     /**
                      * This is probably an indexed property.
                      */
-
                     wrappedNode = new VariableDeepPropertyNode(name, fields);
-
                 }
                 else {
                     wrappedNode = new VarPropertyNode(name, fields, s);

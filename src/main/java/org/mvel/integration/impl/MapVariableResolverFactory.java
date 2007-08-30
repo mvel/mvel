@@ -23,21 +23,28 @@ import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 
 public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     /**
      * Holds the instance of the variables.
      */
-    private Map<String, Object> variables;
-    private VariableResolverFactory nextFactory;
+    protected Map<String, Object> variables;
+
+    //   private VariableResolverFactory nextFactory;
 
     private boolean cachingSafe = false;
 
     public MapVariableResolverFactory(Map<String, Object> variables) {
         this.variables = variables;
+    }
+
+
+    public MapVariableResolverFactory(Map<String, Object> variables, VariableResolverFactory nextFactory) {
+        this.variables = variables;
+        this.nextFactory = nextFactory;
     }
 
     public MapVariableResolverFactory(Map<String, Object> variables, boolean cachingSafe) {
@@ -70,13 +77,13 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         }
     }
 
-    public VariableResolverFactory getNextFactory() {
-        return nextFactory;
-    }
-
-    public VariableResolverFactory setNextFactory(VariableResolverFactory resolverFactory) {
-        return nextFactory = resolverFactory;
-    }
+//    public VariableResolverFactory getNextFactory() {
+//        return nextFactory;
+//    }
+//
+//    public VariableResolverFactory setNextFactory(VariableResolverFactory resolverFactory) {
+//        return nextFactory = resolverFactory;
+//    }
 
     public VariableResolver getVariableResolver(String name) {
         if (variables.containsKey(name)) {
@@ -112,4 +119,18 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         return variableResolvers.containsKey(name);
     }
 
+
+    public Set<String> getKnownVariables() {
+        Set<String> knownVars = new HashSet<String>();
+
+        if (nextFactory == null) {
+            if (variables != null) knownVars.addAll(variables.keySet());
+            return knownVars;
+        }
+        else {
+            if (variables != null) knownVars.addAll(variables.keySet());
+            knownVars.addAll(nextFactory.getKnownVariables());
+            return knownVars;
+        }
+    }
 }

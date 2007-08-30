@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 public class CompiledSetExpression implements Serializable {
     private char[] expression;
-    private SetAccessor accessor;
+    private transient SetAccessor accessor;
 
     public CompiledSetExpression(char[] expression) {
         this.expression = expression;

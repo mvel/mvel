@@ -7,7 +7,6 @@ import static org.mvel.util.ArrayTools.findLast;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.subset;
 
-import static java.lang.Class.forName;
 import java.lang.reflect.Method;
 import static java.lang.reflect.Modifier.isStatic;
 
@@ -17,21 +16,16 @@ import static java.lang.reflect.Modifier.isStatic;
 public class StaticImportNode extends ASTNode {
     private Class declaringClass;
     private String methodName;
-    private Method method;
+    private transient Method method;
 
     public StaticImportNode(char[] expr, int fields) {
         super(expr, fields);
 
         try {
-            declaringClass = forName(new String(subset(expr, 0, findLast('.', expr))));
+            declaringClass = Thread.currentThread().getContextClassLoader().loadClass(new String(subset(expr, 0, findLast('.', expr))));
             methodName = new String(subset(expr, findLast('.', expr) + 1));
 
-            for (Method meth : declaringClass.getMethods()) {
-                if (isStatic(meth.getModifiers()) && methodName.equals(meth.getName())) {
-                    method = meth;
-                    return;
-                }
-            }
+            resolveMethod();
 
             if (method == null) {
                 throw new CompileException("can not find method for static import: "
@@ -43,8 +37,20 @@ public class StaticImportNode extends ASTNode {
         }
     }
 
+    private void resolveMethod() {
+        for (Method meth : declaringClass.getMethods()) {
+            if (isStatic(meth.getModifiers()) && methodName.equals(meth.getName())) {
+                method = meth;
+                return;
+            }
+        }
+    }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        if (method == null) {
+            resolveMethod();
+        }
+
         ParseTools.findStaticMethodImportResolverFactory(factory).createVariable(methodName, method);
         return null;
     }

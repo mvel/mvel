@@ -46,7 +46,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return getReducedValueAccelerated(ctx, thisValue, factory);
-    }
+    }                                                      
 
     private void compileWithExpressions() {
         List<ParmValuePair> parms = new ArrayList<ParmValuePair>();
@@ -107,7 +107,6 @@ public class WithNode extends BlockNode implements NestedStatement {
                         start = ++i;
                     }
                     else {
-
                         parms.add(new ParmValuePair(
                                 parm,
                                 (ExecutableStatement) subCompileExpression(
@@ -146,7 +145,7 @@ public class WithNode extends BlockNode implements NestedStatement {
         return withExpressions;
     }
 
-    public static final class ParmValuePair {
+    public static final class ParmValuePair implements Serializable {
         private Serializable setExpression;
         private ExecutableStatement statement;
 

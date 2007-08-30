@@ -2,6 +2,7 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
+import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
@@ -12,7 +13,9 @@ import org.mvel.util.ParseTools;
  */
 public class TypedVarNode extends ASTNode implements Assignment {
     private String name;
-    private ExecutableStatement statement;
+    private char[] stmt;
+
+    private transient ExecutableStatement statement;
 
     public TypedVarNode(char[] expr, int fields, Class type) {
         super(expr, fields);
@@ -22,7 +25,11 @@ public class TypedVarNode extends ASTNode implements Assignment {
         if ((assignStart = find(expr, '=')) != -1) {
             fields |= ASSIGN;
             checkNameSafety(name = new String(expr, 0, assignStart).trim());
-            statement = (ExecutableStatement) ParseTools.subCompileExpression(subset(expr, assignStart + 1));
+            stmt = subset(expr, assignStart + 1);
+
+            if ((fields & COMPILE_IMMEDIATE) != 0) {
+                statement = (ExecutableStatement) ParseTools.subCompileExpression(stmt);
+            }
         }
         else {
             checkNameSafety(name = new String(expr));
@@ -32,22 +39,17 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (statement != null) {
-            Object o = statement.getValue(ctx, thisValue, factory);
+        if (statement == null) statement = (ExecutableStatement) ParseTools.subCompileExpression(stmt);
 
-            finalLocalVariableFactory(factory).createVariable(name, o, egressType);
-
-            return o;
-        }
-        else {
-            factory.createVariable(name, null, egressType);
-            return Void.class;
-        }
-
+        Object o = statement.getValue(ctx, thisValue, factory);
+        finalLocalVariableFactory(factory).createVariable(name, o, egressType);
+        return o;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
+        Object o = MVEL.eval(stmt, thisValue, factory);
+        finalLocalVariableFactory(factory).createVariable(name, o, egressType);
+        return o;
     }
 
 

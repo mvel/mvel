@@ -21,8 +21,6 @@ package org.mvel.integration.impl;
 import org.mvel.CompileException;
 import org.mvel.integration.VariableResolver;
 
-import static java.lang.Class.forName;
-
 public class ClassImportResolver implements VariableResolver {
     private String name;
     private Class type;
@@ -30,7 +28,7 @@ public class ClassImportResolver implements VariableResolver {
     public ClassImportResolver(String fqcn, String name) {
         this.name = name;
         try {
-            this.type = forName(fqcn);
+            this.type = Thread.currentThread().getContextClassLoader().loadClass(fqcn);
         }
         catch (Exception e) {
             throw new CompileException("failed import", e);

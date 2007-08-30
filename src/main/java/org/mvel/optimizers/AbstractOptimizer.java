@@ -13,6 +13,7 @@ public class AbstractOptimizer extends AbstractParser {
     protected int start = 0;
 
     protected Object tryStaticAccess() {
+        int begin = cursor;
         try {
             /**
              * Try to resolve this *smartly* as a static class reference.
@@ -33,12 +34,12 @@ public class AbstractOptimizer extends AbstractParser {
                         if (!meth) {
                             try {
                                 cursor = last;
-                                return Class.forName(new String(expr, 0, last));
+                                return Thread.currentThread().getContextClassLoader().loadClass(new String(expr, 0, last));
                             }
                             catch (ClassNotFoundException e) {
                                 // return a field instead
 
-                                return Class.forName(new String(expr, 0, i))
+                                return Thread.currentThread().getContextClassLoader().loadClass(new String(expr, 0, i))
                                         .getField(new String(expr, i + 1, expr.length - i - 1));
                             }
                         }
@@ -53,11 +54,28 @@ public class AbstractOptimizer extends AbstractParser {
                     case'(':
                         depth--;
                         break;
+
+                    case'\'':
+                        while (--i > 0) {
+                            if (expr[i] == '\'' && expr[i - 1] != '\\') {
+                                break;
+                            }
+                        }
+                        break;
+
+
+                    case'"':
+                        while (--i > 0) {
+                            if (expr[i] == '"' && expr[i - 1] != '\\') {
+                                break;
+                            }
+                        }
+                        break;
                 }
             }
         }
         catch (Exception cnfe) {
-            // do nothing.
+            cursor = begin;
         }
 
         return null;
@@ -65,7 +83,7 @@ public class AbstractOptimizer extends AbstractParser {
 
     protected int nextSubToken() {
         skipWhitespace();
-        
+
         switch (expr[start = cursor]) {
             case'[':
                 return COL;
@@ -95,7 +113,7 @@ public class AbstractOptimizer extends AbstractParser {
     protected String capture() {
         /**
          * Trim off any whitespace.
-         */        
+         */
         return new String(expr, start = trimRight(start), trimLeft(cursor) - start);
     }
 

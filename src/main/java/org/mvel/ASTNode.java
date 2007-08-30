@@ -31,8 +31,8 @@ import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
 
 import java.io.Serializable;
-import static java.lang.Class.forName;
 import static java.lang.System.arraycopy;
+import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
 
 public class ASTNode implements Cloneable, Serializable {
@@ -70,10 +70,15 @@ public class ASTNode implements Cloneable, Serializable {
     protected String nameCache;
 
     protected Object literal;
-    protected Accessor accessor;
+
+    // don't serialize this.
+    protected transient Accessor accessor;
 
     protected int cursorPosition;
     public ASTNode nextASTNode;
+
+    // this field is marked true by the compiler to tell the optimizer
+    // that it's safe to remove this node.
     protected boolean discard;
 
     private int intRegister;
@@ -364,10 +369,12 @@ public class ASTNode implements Cloneable, Serializable {
                     case'.':
                         if (!meth) {
                             try {
-                                return get(new String(name, last, name.length - last), forName(new String(name, 0, last)), factory, thisRef);
+                                return get(new String(name, last, name.length - last),
+                                        currentThread().getContextClassLoader().loadClass(new String(name, 0, last)), factory, thisRef);
                             }
                             catch (ClassNotFoundException e) {
-                                return get(new String(name, i + 1, name.length - i - 1), forName(new String(name, 0, i)), factory, thisRef);
+                                return get(new String(name, i + 1, name.length - i - 1),
+                                        currentThread().getContextClassLoader().loadClass(new String(name, 0, i)), factory, thisRef);
                             }
                         }
                         meth = false;
@@ -542,6 +549,10 @@ public class ASTNode implements Cloneable, Serializable {
 
     public void setDiscard(boolean discard) {
         this.discard = discard;
+    }
+
+    public void discard() {
+        this.discard = true;
     }
 
     public boolean isDebuggingSymbol() {

@@ -7,6 +7,7 @@ import org.mvel.ast.LineLabel;
 import org.mvel.debug.Debugger;
 import org.mvel.debug.DebuggerContext;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.impl.TypeInjectionResolverFactoryImpl;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.PropertyTools.isEmpty;
@@ -14,8 +15,8 @@ import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
-import static java.lang.Class.forName;
 import static java.lang.String.valueOf;
+import static java.lang.Thread.currentThread;
 
 /**
  * This class contains the runtime for running compiled MVEL expressions.
@@ -36,8 +37,12 @@ public class MVELRuntime {
      * @return -
      * @see org.mvel.MVEL
      */
-    public static Object execute(boolean debugger, CompiledExpression expression, Object ctx, VariableResolverFactory variableFactory) {
+    public static Object execute(boolean debugger, final CompiledExpression expression, final Object ctx, VariableResolverFactory variableFactory) {
         final ASTLinkedList node = new ASTLinkedList(expression.getTokens().firstNode());
+
+        if (expression.isImportInjectionRequired()) {
+            variableFactory = new TypeInjectionResolverFactoryImpl(expression.getParserContext().getImports(), variableFactory);
+        }
 
         Stack stk = new ExecutionStack();
         Object v1, v2;
@@ -70,9 +75,7 @@ public class MVELRuntime {
                         DebuggerContext context = debuggerContext.get();
 
                         try {
-                            if (context.checkBreak(label, variableFactory, expression) == Debugger.STEP_OVER) {
-                                node.nextNode();   
-                            }
+                            context.checkBreak(label, variableFactory, expression);
                         }
                         catch (NullPointerException e) {
                             // do nothing for now.  this isn't as calus as it seems.   
@@ -135,7 +138,7 @@ public class MVELRuntime {
                                 if (v1 instanceof Class)
                                     stk.push(((Class) v1).isInstance(v2));
                                 else
-                                    stk.push(forName(valueOf(v1)).isInstance(v2));
+                                    stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
 
                                 break;
 
@@ -143,7 +146,7 @@ public class MVELRuntime {
                                 if (v1 instanceof Class)
                                     stk.push(canConvert(v2.getClass(), (Class) v1));
                                 else
-                                    stk.push(canConvert(v2.getClass(), forName(valueOf(v1))));
+                                    stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
                                 break;
 
                             case CONTAINS:
@@ -217,9 +220,9 @@ public class MVELRuntime {
 
     /**
      * Register a debugger breakpoint.
-     * 
+     *
      * @param source - the source file the breakpoint is registered in
-     * @param line - the line number of the breakpoint
+     * @param line   - the line number of the breakpoint
      */
     public static void registerBreakpoint(String source, int line) {
         ensureDebuggerContext();
@@ -230,7 +233,7 @@ public class MVELRuntime {
      * Remove a specific breakpoint.
      *
      * @param source - the source file the breakpoint is registered in
-     * @param line - the line number of the breakpoint to be removed
+     * @param line   - the line number of the breakpoint to be removed
      */
     public static void removeBreakpoint(String source, int line) {
         if (hasDebuggerContext()) {
@@ -264,6 +267,7 @@ public class MVELRuntime {
      * Sets the Debugger instance to handle breakpoints.   A debugger may only be registered once per thread.
      * Calling this method more than once will result in the second and subsequent calls to simply fail silently.
      * To re-register the Debugger, you must call {@link #resetDebugger}
+     *
      * @param debugger - debugger instance
      */
     public static void setThreadDebugger(Debugger debugger) {

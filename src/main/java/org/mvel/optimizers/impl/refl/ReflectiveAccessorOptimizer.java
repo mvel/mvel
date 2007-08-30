@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
-
     private AccessorNode rootNode;
     private AccessorNode currNode;
 
@@ -644,7 +643,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         Object o = ((List) parser.parseCollection(property)).get(0);
 
         Accessor root = _getAccessor(o);
-        int end = parser.getEnd() + 2;
+        int end = parser.getCursor() + 2;
 
         if (end < property.length) {
             return new Union(root, subset(property, end));
@@ -660,7 +659,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.cursor = 0;
         try {
             Accessor contructor = compileConstructor(property, ctx, factory);
-            val = contructor.getValue(property, thisRef, factory);
+     //       val = contructor.getValue(property, thisRef, factory);
             return contructor;
         }
         catch (CompileException e) {
@@ -719,7 +718,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     @SuppressWarnings({"WeakerAccess"})
-    public static AccessorNode compileConstructor(char[] expression, Object ctx, VariableResolverFactory vars) throws
+    public  AccessorNode compileConstructor(char[] expression, Object ctx, VariableResolverFactory vars) throws
             InstantiationException, IllegalAccessException, InvocationTargetException,
             ClassNotFoundException, NoSuchMethodException {
 
@@ -760,12 +759,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 compiledOptimizer.setRootNode(ca);
                 compiledOptimizer.compileGetChain();
                 ca = compiledOptimizer.getRootNode();
+
+                this.val = compiledOptimizer.getResultOptPass();
             }
 
             return ca;
         }
         else {
-            Constructor<?> cns = Class.forName(new String(expression)).getConstructor(EMPTYCLS);
+            Constructor<?> cns = Thread.currentThread().getContextClassLoader().loadClass(new String(expression)).getConstructor(EMPTYCLS);
             AccessorNode ca = new ConstructorAccessor(cns, null);
 
             if (cnsRes.length > 1) {
@@ -775,6 +776,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 compiledOptimizer.setRootNode(ca);
                 compiledOptimizer.compileGetChain();
                 ca = compiledOptimizer.getRootNode();
+
+                this.val = compiledOptimizer.getResultOptPass();
             }
 
             return ca;

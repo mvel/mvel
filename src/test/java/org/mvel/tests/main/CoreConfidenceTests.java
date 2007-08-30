@@ -10,17 +10,17 @@ import org.mvel.integration.Interceptor;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
-import org.mvel.integration.impl.LocalVariableResolverFactory;
+import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 
+import java.awt.*;
 import java.io.Serializable;
 import static java.lang.System.currentTimeMillis;
 import java.util.*;
 import java.util.List;
-import java.awt.*;
 
 public class CoreConfidenceTests extends AbstractTest {
 
@@ -129,24 +129,16 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(25, test("5 ** 2"));
     }
 
-    public void EmptyTestWhileUsingImports() {
+    public void testWhileUsingImports() {
         Map<String, Object> imports = new HashMap<String, Object>();
         imports.put("ArrayList", java.util.ArrayList.class);
+        imports.put("List", java.util.List.class);
 
         ParserContext context = new ParserContext(imports, null, "testfile");
         ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == empty)");
-        assertTrue((Boolean) MVEL.executeExpression(compiler.compile(context)));
+        assertTrue((Boolean) MVEL.executeExpression(compiler.compile(context), new DefaultLocalVariableResolverFactory()));
     }
 
-    public void NullTestWhileUsingImports() {
-        Map<String, Object> imports = new HashMap<String, Object>();
-        imports.put("List", java.util.List.class);
-        imports.put("ArrayList", java.util.ArrayList.class);
-
-        ParserContext context = new ParserContext(imports, null, "testfile");
-        ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == null)");
-        assertTrue((Boolean) MVEL.executeExpression(compiler.compile(context)));
-    }
 
     public void testComplexExpression() {
         assertEquals("bar", test("a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]"));
@@ -497,7 +489,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testObjectInstantiationWithMethodCall() {
-        test("new String('foobie')  . toString()");
+        assertEquals("FOOBIE", test("new String('foobie')  . toUpperCase()"));
     }
 
     public void testObjectInstantiation2() {
@@ -970,16 +962,23 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testBreakpointsAcrossComments() {
-        ExpressionCompiler compiler = new ExpressionCompiler("/** This is a comment\n" +
-                "Second comment line\n" +
-                "Third Comment Line\n" +
-                "*/\n" +
-                "System.out.println('4');\n" +
-                "System.out.println('5');\n" +
-                "a = 0;\n" +
-                " b = 1;\n" +
-                " a + b");
+        String expression = "/** This is a comment\n" +  // 1
+                " *  Second comment line\n" +        // 2
+                " *  Third Comment Line\n" +         // 3
+                " */\n" +                         // 4
+                "System.out.println('4');\n" +   // 5
+                "System.out.println('5');\n" +   // 6
+                "a = 0;\n" +                     // 7
+                "b = 1;\n" +                    // 8
+                "a + b";                        // 9
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expression);
         compiler.setDebugSymbols(true);
+
+        System.out.println("Expression:\n------------");
+        System.out.println(expression);
+        System.out.println("------------");
+
 
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("test2.mv");
@@ -988,12 +987,14 @@ public class CoreConfidenceTests extends AbstractTest {
 
         System.out.println(DebugTools.decompile(compiled));
 
-        MVELRuntime.registerBreakpoint("test2.mv", 5);
+        MVELRuntime.registerBreakpoint("test2.mv", 9);
 
         Debugger testDebugger = new Debugger() {
 
             public int onBreak(Frame frame) {
-                System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+                System.out.println("Breakpoint Encountered [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+                System.out.println("vars:" + frame.getFactory().getKnownVariables());
+                System.out.println("Resume Execution");
                 return 0;
             }
 
@@ -1007,15 +1008,17 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testBreakpointsAcrossComments2() {
         ExpressionCompiler compiler = new ExpressionCompiler(
-                "// This is a comment\n" +
-                        "//Second comment line\n" +
-                        "//Third Comment Line\n" +
-                        "\n" +
-                        "System.out.println('4');\n" +
-                        "System.out.println('5');\n" +
-                        "a = 0;\n" +
-                        "b = 1;\n" +
-                        " a + b");
+                "// This is a comment\n" +                  // 1
+                        "//Second comment line\n" +         // 2
+                        "//Third Comment Line\n" +          // 3
+                        "\n" +                              // 4
+                        "//Test\n" +                        // 5
+                        "System.out.println('4');\n" +      // 6
+                        "//System.out.println('5'); \n" +    // 7
+                        "a = 0;\n" +                        // 8
+                        "b = 1;\n" +                        // 9
+                        " a + b");                          // 10
+
         compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
@@ -1026,6 +1029,9 @@ public class CoreConfidenceTests extends AbstractTest {
         System.out.println(DebugTools.decompile(compiled));
 
         MVELRuntime.registerBreakpoint("test2.mv", 6);
+        MVELRuntime.registerBreakpoint("test2.mv", 8);
+        MVELRuntime.registerBreakpoint("test2.mv", 9);
+        MVELRuntime.registerBreakpoint("test2.mv", 10);
 
         Debugger testDebugger = new Debugger() {
             public int onBreak(Frame frame) {
@@ -1038,6 +1044,154 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(1, MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
     }
+
+    public void testBreakpoints4() {
+        String expression = "System.out.println('foo');\n" +
+                "a = new Foo();\n" +
+                "update (a) { name = 'bar' };\n" +
+                "System.out.println('name:' + a.name);\n" +
+                "return a.name;";
+
+
+        Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
+        Map<String, Macro> macros = new HashMap<String, Macro>();
+
+        interceptors.put("Update", new Interceptor() {
+            public int doBefore(ASTNode node, VariableResolverFactory factory) {
+                ((WithNode) node).getNestedStatement().getValue(null,
+                        factory);
+                System.out.println("fired update interceptor -- before");
+                return 0;
+            }
+
+            public int doAfter(Object val, ASTNode node, VariableResolverFactory factory) {
+                System.out.println("fired update interceptor -- after");
+                return 0;
+            }
+        });
+
+        macros.put("update", new Macro() {
+            public String doMacro() {
+                return "@Update with";
+            }
+        });
+
+
+        expression = parseMacros(expression, macros);
+
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expression);
+        compiler.setDebugSymbols(true);
+
+
+        ParserContext ctx = new ParserContext();
+        ctx.setSourceFile("test2.mv");
+        ctx.addImport("Foo", Foo.class);
+        ctx.setInterceptors(interceptors);
+
+
+        CompiledExpression compiled = compiler.compile(ctx);
+
+        System.out.println("\nExpression:------------");
+        System.out.println(expression);
+        System.out.println("------------");
+
+
+        System.out.println(DebugTools.decompile(compiled));
+
+        MVELRuntime.registerBreakpoint("test2.mv", 3);
+        MVELRuntime.registerBreakpoint("test2.mv", 4);
+        MVELRuntime.registerBreakpoint("test2.mv", 5);
+//        MVELRuntime.registerBreakpoint("test2.mv", 10);
+
+        Debugger testDebugger = new Debugger() {
+            public int onBreak(Frame frame) {
+                System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+                return 0;
+            }
+        };
+
+        MVELRuntime.setThreadDebugger(testDebugger);
+
+        assertEquals("bar", MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
+    }
+
+    public void testBreakpoints5() {
+        String expression = "System.out.println('foo');\r\n" +
+                "a = new Foo();\r\n" +
+                "a.name = 'bar'\r\n" +
+                "foo.happy();\r\n" +
+                "System.out.println( 'name:' + a.name );               \r\n" +
+                "System.out.println( 'name:' + a.name );         \r\n" +
+                "System.out.println( 'name:' + a.name );     \r\n" +
+                "return a.name;";
+
+
+        Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
+        Map<String, Macro> macros = new HashMap<String, Macro>();
+
+        interceptors.put("Update", new Interceptor() {
+            public int doBefore(ASTNode node, VariableResolverFactory factory) {
+                ((WithNode) node).getNestedStatement().getValue(null,
+                        factory);
+                System.out.println("fired update interceptor -- before");
+                return 0;
+            }
+
+            public int doAfter(Object val, ASTNode node, VariableResolverFactory factory) {
+                System.out.println("fired update interceptor -- after");
+                return 0;
+            }
+        });
+
+        macros.put("update", new Macro() {
+            public String doMacro() {
+                return "@Update with";
+            }
+        });
+
+
+        expression = parseMacros(expression, macros);
+
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expression);
+        compiler.setDebugSymbols(true);
+
+
+        ParserContext ctx = new ParserContext();
+        ctx.setSourceFile("test2.mv");
+        ctx.addImport("Foo", Foo.class);
+        ctx.setInterceptors(interceptors);
+
+
+        CompiledExpression compiled = compiler.compile(ctx);
+
+        System.out.println("\nExpression:------------");
+        System.out.println(expression);
+        System.out.println("------------");
+
+
+        System.out.println(DebugTools.decompile(compiled));
+        MVELRuntime.registerBreakpoint("test2.mv", 1);
+//        MVELRuntime.registerBreakpoint("test2.mv", 10);
+
+        Debugger testDebugger = new Debugger() {
+            public int onBreak(Frame frame) {
+                System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+                //           System.out.println("Stepover");
+                return Debugger.STEP_OVER;
+            }
+        };
+
+        MVELRuntime.setThreadDebugger(testDebugger);
+
+        System.out.println("\n==RUN==\n");
+
+        assertEquals("bar", MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(map)));
+
+        //       MVELRuntime.setThreadDebugger(null);
+    }
+
 
     public void testDebugSymbolsWithWindowsLinedEndings() throws Exception {
         String expr = "   System.out.println( \"a1\" );\r\n" +
@@ -1168,6 +1322,13 @@ public class CoreConfidenceTests extends AbstractTest {
         compiler.compile();
 
         assertFalse(compiler.getParserContextState().getInputs().keySet().contains("home"));
+    }
+
+    public void testVarInputs4() {
+        ExpressionCompiler compiler = new ExpressionCompiler("System.out.println( message );");
+        compiler.compile();
+
+        assertTrue(compiler.getParserContextState().getInputs().keySet().contains("message"));
     }
 
 
@@ -1373,7 +1534,7 @@ public class CoreConfidenceTests extends AbstractTest {
                         "System.out.println(message + ';' + b); b");
 
 
-        assertEquals(7, executeExpression(compiler.compile(ctx), new LocalVariableResolverFactory()));
+        assertEquals(7, executeExpression(compiler.compile(ctx), new DefaultLocalVariableResolverFactory()));
     }
 
     public void testProvidedExternalTypes() {
@@ -1534,7 +1695,11 @@ public class CoreConfidenceTests extends AbstractTest {
         compiler = new ExpressionCompiler("map = new HashMap(); map.size()");
         s = compiler.compile(ctx);
 
-        assertEquals(0, MVEL.executeExpression(s, new LocalVariableResolverFactory()));
+        assertEquals(0, MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory()));
+    }
+
+    public void testTypedAssignment() {
+        assertEquals("foobar", test("java.util.Map map = new java.util.HashMap(); map.put('conan', 'foobar'); map['conan'];"));
     }
 
     public void testFQCNwithStaticInList() {
@@ -1672,7 +1837,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ExpressionCompiler compiler = new ExpressionCompiler("( dim.height == 1 || dim.height == ( 1+1) || dim.height == x )");
 
-        Map imports = new HashMap();
+        Map<String, Object> imports = new HashMap<String, Object>();
         imports.put("java.awt.Dimension", Dimension.class);
 
         final ParserContext parserContext = new ParserContext(imports,
@@ -1693,14 +1858,24 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("vv=\"Edson\"; !(vv ~= \"Mark\")"));
     }
 
+    public void testConcatWithLineBreaks() {
+        ExpressionCompiler parser = new ExpressionCompiler("\"foo\"+\n\"bar\"");
+
+        ParserContext ctx = new ParserContext();
+        ctx.setDebugSymbols(true);
+        ctx.setSourceFile("source.mv");
+
+        Serializable c = parser.compile(ctx);
+
+        assertEquals("foobar", MVEL.executeExpression(c));
+    }
+
 
     /**
      * Community provided test cases
      */
-
     @SuppressWarnings({"unchecked"})
     public void testCalculateAge() {
-        //    System.out.println("Calculating the Age");
         Calendar c1 = Calendar.getInstance();
         c1.set(1999, 0, 10); // 1999 jan 20
         Map objectMap = new HashMap(1);
@@ -1770,6 +1945,63 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(1, MVEL.executeExpression(compiledExpression));
     }
 
+    public void testStaticNestedWithMethodCall() {
+        String expr = "item = new Item( \"Some Item\"); $msg.addItem( item ); return $msg";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+        ParserContext context = new ParserContext();
+        context.setStrictTypeEnforcement(false);
+
+        context.addImport("Message", Message.class);
+        context.addImport("Item", Item.class);
+        Serializable compiledExpression = compiler.compile(context);
+
+        Map vars = new HashMap();
+        vars.put("$msg", new Message());
+        Message msg = (Message) MVEL.executeExpression(compiledExpression, vars);
+        Item item = (Item) msg.getItems().get(0);
+        assertEquals("Some Item", item.getName());
+    }
+
+//    public void testParserStringIssueNeverReturns() {
+//        String expr = "Sstem.out.println(drools.workingMemory); ";
+//
+//        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+//
+//        ParserContext context = new ParserContext();
+//        context.setStrictTypeEnforcement(true);
+//        context.addInput( "drools", KnowledgeHelper.class);
+//
+//        RuleBase ruleBase = new RuleBaseImpl();
+//        WorkingMemory wm = new WorkingMemoryImpl( ruleBase );
+//        KnowledgeHelper drools = new DefaultKnowledgeHelper( wm );
+//        Serializable compiledExpression = compiler.compile(context);
+//
+//        Map vars = new HashMap();
+//        vars.put( "drools", drools );
+//        MVEL.executeExpression(compiledExpression, vars);
+//    }
+
+    public void testsequentialAccessorsThenMethodCall() {
+        String expr = "System.out.println(drools.workingMemory); drools.workingMemory.ruleBase.removeRule(\"org.drools.examples\", \"some rule\"); ";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+
+        ParserContext context = new ParserContext();
+        context.setStrictTypeEnforcement(true);
+        context.addInput("drools", KnowledgeHelper.class);
+
+        RuleBase ruleBase = new RuleBaseImpl();
+        WorkingMemory wm = new WorkingMemoryImpl(ruleBase);
+        KnowledgeHelper drools = new DefaultKnowledgeHelper(wm);
+        Serializable compiledExpression = compiler.compile(context);
+
+        Map vars = new HashMap();
+        vars.put("drools", drools);
+        MVEL.executeExpression(compiledExpression, vars);
+    }
+
 
     /**
      * Provided by: Aadi Deshpande
@@ -1828,4 +2060,38 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4],'Person.rating' : 'q']")).get("Person.rating"));
         assertEquals("q", ((Map) test("['Person.age' : [1, 2, 3, 4], 'Person.rating' : 'q']")).get("Person.rating"));
     }
+
+    public void testIndexer() {
+        assertEquals("foobar", test("import java.util.LinkedHashMap; LinkedHashMap map = new LinkedHashMap();" +
+                " map.put('a', 'foo'); map.put('b', 'bar'); s = ''; foreach (key : map.keySet()) { System.out.println(map[key]); s += map[key]; }; return s;"));
+    }
+
+    public void testLateResolveOfClass() {
+        ExpressionCompiler compiler = new ExpressionCompiler("System.out.println(new Foo());");
+        ParserContext ctx = new ParserContext();
+        ctx.addImport(Foo.class);
+
+        CompiledExpression s = compiler.compile(ctx);
+        compiler.removeParserContext();
+
+        System.out.println(MVEL.executeExpression(s));
+    }
+
+//    public void testSwing() {
+//        test("import javax.swing.JFrame;\n" +
+//                "import javax.swing.JLabel;\n" +
+//                "\n" +
+//                "with (frame = new JFrame()) {\n" +
+//                "    title = \"My Swing Frame\",\n" +
+//                "    resizable = true\n" +
+//                "}\n" +
+//                "\n" +
+//                "frame.contentPane.add(new JLabel(\"My Label\"));\n" +
+//                "frame.pack();\n" +
+//                "frame.visible = true;");
+//    }
+
 }
+
+
+

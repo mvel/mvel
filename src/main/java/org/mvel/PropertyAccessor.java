@@ -23,14 +23,17 @@ import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.eval;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.parseParameterList;
+import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.StringAppender;
 
-import java.io.Serializable;
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isWhitespace;
-import java.lang.reflect.*;
+import static java.lang.reflect.Array.getLength;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.*;
 import static java.util.Collections.synchronizedMap;
 
@@ -145,7 +148,6 @@ public class PropertyAccessor {
 
     private Object get() {
         curr = ctx;
-
         try {
             while (cursor < length) {
                 switch (nextToken()) {
@@ -195,9 +197,8 @@ public class PropertyAccessor {
         try {
             int oLength = length;
             length = findAbsoluteLast(property);
-            curr = get();
-
-            if (curr == null)
+            
+            if ((curr = get()) == null)
                 throw new PropertyAccessException("cannot bind to null context: " + new String(property));
 
             length = oLength;
@@ -287,12 +288,6 @@ public class PropertyAccessor {
 
     }
 
-
-//    private String captureNext() {
-//        nextToken();
-//        return capture();
-//    }
-
     private int nextToken() {
         switch (property[start = cursor]) {
             case'[':
@@ -303,7 +298,6 @@ public class PropertyAccessor {
 
         //noinspection StatementWithEmptyBody
         while (++cursor < length && isJavaIdentifierPart(property[cursor])) ;
-
 
         if (cursor < length) {
             while (isWhitespace(property[cursor])) cursor++;
@@ -327,7 +321,6 @@ public class PropertyAccessor {
         while (pos > 0 && isWhitespace(property[pos - 1])) pos--;
         return pos;
     }
-
 
     public static void clearPropertyResolverCache() {
         READ_PROPERTY_RESOLVER_CACHE.clear();
@@ -397,7 +390,6 @@ public class PropertyAccessor {
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
-
         if (first && resolver != null && resolver.isResolveable(property)) {
             return resolver.getVariableResolver(property).getValue();
         }
@@ -443,8 +435,6 @@ public class PropertyAccessor {
                     return m;
                 }
             }
-
-
         }
         throw new PropertyAccessException("could not access property (" + property + ")");
     }
@@ -464,16 +454,6 @@ public class PropertyAccessor {
         return false;
     }
 
-//    private int containsStringLiteralTermination() {
-//        int pos = cursor;
-//        for (pos--; pos > 0; pos--) {
-//            if (property[pos] == '\'' || property[pos] == '"') return pos;
-//            else if (!isWhitespace(property[pos])) return pos;
-//        }
-//        return -1;
-//    }
-
-
     /**
      * Handle accessing a property embedded in a collections, map, or array
      *
@@ -483,7 +463,9 @@ public class PropertyAccessor {
      * @throws Exception -
      */
     private Object getCollectionProperty(Object ctx, String prop) throws Exception {
-        if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
+        if (prop.length() != 0) {
+            ctx = getBeanProperty(ctx, prop);
+        }
 
         int start = ++cursor;
 
@@ -497,11 +479,8 @@ public class PropertyAccessor {
         if (!scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
-        String ex = new String(property, start, cursor - start);
-
+        String ex = new String(property, start, cursor++ - start);
         item = eval(ex, ctx, resolver);
-
-        ++cursor;
 
         if (ctx instanceof Map) {
             return ((Map) ctx).get(item);
@@ -529,8 +508,6 @@ public class PropertyAccessor {
         }
     }
 
-    private static final Map<String, Serializable[]> SUBEXPRESSION_CACHE = new WeakHashMap<String, Serializable[]>();
-
     /**
      * Find an appropriate method, execute it, and return it's response.
      *
@@ -547,61 +524,23 @@ public class PropertyAccessor {
             name = m.getName();
             first = false;
         }
+        
         int st = cursor;
-
- //       int depth = 1;
-
-        cursor = ParseTools.balancedCapture(property, cursor, '(');
-
-
-//        while (cursor++ < length - 1 && depth != 0) {
-//            switch (property[cursor]) {
-//                case'(':
-//                    depth++;
-//                    continue;
-//                case')':
-//                    depth--;
-//
-//            }
-//        }
-//        cursor--;
-
-        String tk = (cursor - st) > 1 ? new String(property, st + 1, cursor - st - 1) : "";
+        String tk = ((cursor = balancedCapture(property, cursor, '(')) - st) > 1 ?
+                new String(property, st + 1, cursor - st - 1) : "";
 
         cursor++;
 
         Object[] args;
-        Serializable[] es;
-
         if (tk.length() == 0) {
             args = ParseTools.EMPTY_OBJ_ARR;
-            es = null;
         }
         else {
-            if (SUBEXPRESSION_CACHE.containsKey(tk)) {
-                es = SUBEXPRESSION_CACHE.get(tk);
-                args = new Object[es.length];
-                for (int i = 0; i < es.length; i++) {
-                    args[i] = MVEL.executeExpression(es[i], thisReference, resolver);
-                }
-
-            }
-            else {
                 String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
-
-                es = new Serializable[subtokens.length];
                 args = new Object[subtokens.length];
                 for (int i = 0; i < subtokens.length; i++) {
-                    es[i] = ParseTools.subCompileExpression(subtokens[i]);
-                    args[i] = MVEL.executeExpression(es[i], thisReference, resolver);
-
-                    if (es[i] instanceof CompiledExpression)
-                        ((CompiledExpression) es[i]).setKnownEgressType(args[i] != null ? args[i].getClass() : null);
+                    args[i] = eval(subtokens[i], thisReference, resolver);
                 }
-
-                SUBEXPRESSION_CACHE.put(tk, es);
-            }
-
         }
 
         /**
@@ -609,8 +548,6 @@ public class PropertyAccessor {
          * adjust the Class scope target.
          */
         Class cls = ctx instanceof Class ? (Class) ctx : ctx.getClass();
-
-        //    Integer signature = ;
 
         /**
          * Check to see if we have already cached this method;
@@ -637,7 +574,7 @@ public class PropertyAccessor {
              * Try to find an instance method from the class target.
              */
 
-            if ((m = ParseTools.getBestCandidate(args, name, cls.getMethods())) != null) {
+            if ((m = getBestCandidate(args, name, cls.getMethods())) != null) {
                 addMethodCache(cls, createSignature(name, tk), m);
                 parameterTypes = m.getParameterTypes();
             }
@@ -646,7 +583,7 @@ public class PropertyAccessor {
                 /**
                  * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
                  */
-                if ((m = ParseTools.getBestCandidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
+                if ((m = getBestCandidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
                     addMethodCache(cls, createSignature(name, tk), m);
                     parameterTypes = m.getParameterTypes();
                 }
@@ -661,32 +598,14 @@ public class PropertyAccessor {
             }
 
             if ("size".equals(name) && args.length == 0 && cls.isArray()) {
-                return Array.getLength(ctx);
+                return getLength(ctx);
             }
 
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
-            if (es != null) {
-                ExecutableStatement cExpr;
-                for (int i = 0; i < es.length; i++) {
-                    cExpr = (ExecutableStatement) es[i];
-                    if (cExpr.getKnownIngressType() == null) {
-                        cExpr.setKnownIngressType(parameterTypes[i]);
-                        cExpr.computeTypeConversionRule();
-                    }
-                    if (!cExpr.isConvertableIngressEgress()) {
-                        args[i] = convert(args[i], parameterTypes[i]);
-                    }
-                }
-            }
-            else {
-                /**
-                 * Coerce any types if required.
-                 */
                 for (int i = 0; i < args.length; i++)
                     args[i] = convert(args[i], parameterTypes[i]);
-            }
 
             /**
              * Invoke the target method and return the response.

@@ -10,7 +10,7 @@ import org.mvel.optimizers.AccessorOptimizer;
  * @author Christopher Brock
  */
 public class InlineCollectionNode extends ASTNode {
-    private Accessor accessor;
+    private transient Accessor accessor;
 
     public InlineCollectionNode(char[] expr, int start, int end, int fields) {
         super(expr, start, end, fields | INLINE_COLLECTION);

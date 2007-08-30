@@ -14,7 +14,7 @@ public class CompilerTools {
     /**
      * Optimize the AST, by reducing any stack-based-operations to dedicated nodes where possible.
      *
-     * @param astLinkedList - AST to be optimized.
+     * @param astLinkedList          - AST to be optimized.
      * @param secondPassOptimization - perform a second pass optimization to optimize boolean expressions.
      * @return optimized AST
      */
@@ -49,7 +49,7 @@ public class CompilerTools {
                      * right here.
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                            && tkOp2.getOperator() < 12) {
+                            && tkOp2.getFields() != -1 && tkOp2.getOperator() < 12) {
                         bo = new BinaryOperation(((tkOp = tkOp2).getOperator()), bo, astLinkedList.nextNode());
                     }
                     optimizedAst.addTokenNode(bo);
@@ -148,6 +148,25 @@ public class CompilerTools {
         }
 
         return optimizedAst;
+    }
+
+    public static boolean isOperator(char item) {
+        switch (item) {
+            case'+':
+            case'-':
+            case'*':
+            case'/':
+            case'&':
+            case'|':
+            case'^':
+            case'.':
+            case'>':
+            case'<':
+
+                return true;
+            default:
+                return false;
+        }
     }
 
 }

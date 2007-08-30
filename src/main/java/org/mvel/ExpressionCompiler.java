@@ -11,7 +11,7 @@ import org.mvel.util.PropertyTools;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
-import static java.lang.Class.forName;
+import static java.lang.Thread.currentThread;
 import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
@@ -35,6 +35,8 @@ public class ExpressionCompiler extends AbstractParser {
         newContext(ctx);
 
         CompiledExpression c = _compile();
+
+        removeContext();
 
         if (pCtx.isFatalError()) {
             contextControl(REMOVE, null, null);
@@ -93,14 +95,14 @@ public class ExpressionCompiler extends AbstractParser {
                  * reducing for certain literals like, 'this', ternary and ternary else.
                  */
                 if (tk.isLiteral() && tk.getLiteralValue() != LITERALS.get("this")) {
-                    if ((tkOp = nextToken()) != null && tkOp.isOperator()
+                    if ((tkOp = nextTokenSkipSymbols()) != null && tkOp.isOperator()
                             && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
 
                         /**
                          * If the next token is ALSO a literal, then we have a candidate for a compile-time literal
                          * reduction.
                          */
-                        if ((tkLA = nextToken()) != null && tkLA.isLiteral()) {
+                        if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()) {
                             stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), tkOp.getLiteralValue());
 
                             /**
@@ -113,7 +115,7 @@ public class ExpressionCompiler extends AbstractParser {
                             /**
                              * Now we need to check to see if this is actually a continuing reduction.
                              */
-                            while ((tkOp2 = nextToken()) != null) {
+                            while ((tkOp2 = nextTokenSkipSymbols()) != null) {
                                 if (!tkOp2.isOperator(tkOp.getOperator())) {
                                     /**
                                      * We can't continue any further because we are dealing with
@@ -123,7 +125,7 @@ public class ExpressionCompiler extends AbstractParser {
                                     astLinkedList.addTokenNode(verify(pCtx, tkOp2));
                                     break;
                                 }
-                                else if ((tkLA2 = nextToken()) != null
+                                else if ((tkLA2 = nextTokenSkipSymbols()) != null
                                         && tkLA2.isLiteral()) {
 
                                     stk.push(tkLA2.getLiteralValue(), tkOp2.getLiteralValue());
@@ -185,7 +187,8 @@ public class ExpressionCompiler extends AbstractParser {
 
             CompiledExpression ce = new CompiledExpression(optimizeAST(astLinkedList, secondPassOptimization), getCurrentSourceFileName());
             ce.setKnownEgressType(returnType);
-            if (debugSymbols) ce.setParserContext(pCtx);
+            ce.setParserContext(pCtx);
+
             return ce;
 
         }
@@ -228,10 +231,14 @@ public class ExpressionCompiler extends AbstractParser {
                 pCtx.addVariable(varName, returnType = tk.getEgressType());
             }
             else if (tk.isIdentifier()) {
-                if (pCtx.hasImport(tk.getAbsoluteRootElement())) return tk;
+                //              if (pCtx.hasImport(tk.getAbsoluteRootElement())) return tk;
 
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
-                pCtx.addInput(tk.getAbsoluteName(), returnType = propVerifier.analyze());
+                returnType = propVerifier.analyze();
+
+                if (propVerifier.isResolvedExternally()) {
+                    pCtx.addInput(tk.getAbsoluteName(), returnType);
+                }
             }
         }
         return tk;
@@ -294,7 +301,7 @@ public class ExpressionCompiler extends AbstractParser {
                         if (v1 instanceof Class)
                             stk.push(((Class) v1).isInstance(v2));
                         else
-                            stk.push(forName(String.valueOf(v1)).isInstance(v2));
+                            stk.push(currentThread().getContextClassLoader().loadClass(String.valueOf(v1)).isInstance(v2));
 
                         break;
 
@@ -302,7 +309,7 @@ public class ExpressionCompiler extends AbstractParser {
                         if (v1 instanceof Class)
                             stk.push(canConvert(v2.getClass(), (Class) v1));
                         else
-                            stk.push(canConvert(v2.getClass(), forName(String.valueOf(v1))));
+                            stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(String.valueOf(v1))));
                         break;
 
                     case Operator.CONTAINS:
@@ -419,5 +426,9 @@ public class ExpressionCompiler extends AbstractParser {
 
     public ParserContext getParserContextState() {
         return pCtx;
+    }
+
+    public void removeParserContext() {
+        removeContext();
     }
 }
