@@ -21,6 +21,7 @@ package org.mvel.integration.impl;
 import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -80,6 +81,7 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
 
     public Set<String> getKnownVariables() {
+        if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
         return variableResolvers.keySet();
     }
 }

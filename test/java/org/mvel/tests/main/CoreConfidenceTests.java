@@ -962,17 +962,23 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testBreakpointsAcrossComments() {
-        ExpressionCompiler compiler = new ExpressionCompiler(
-                "/** This is a comment\n" +      // 1
-                        "Second comment line\n" +        // 2
-                        "Third Comment Line\n" +         // 3
-                        "*/\n" +                         // 4
-                        "System.out.println('4');\n" +   // 5
-                        "System.out.println('5');\n" +   // 6
-                        "a = 0;\n" +                     // 7
-                        " b = 1;\n" +                    // 8
-                        " a + b");                       // 9
+        String expression = "/** This is a comment\n" +  // 1
+                " *  Second comment line\n" +        // 2
+                " *  Third Comment Line\n" +         // 3
+                " */\n" +                         // 4
+                "System.out.println('4');\n" +   // 5
+                "System.out.println('5');\n" +   // 6
+                "a = 0;\n" +                     // 7
+                "b = 1;\n" +                    // 8
+                "a + b";                        // 9
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expression);
         compiler.setDebugSymbols(true);
+
+        System.out.println("Expression:\n------------");
+        System.out.println(expression);
+        System.out.println("------------");
+
 
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("test2.mv");
@@ -981,12 +987,13 @@ public class CoreConfidenceTests extends AbstractTest {
 
         System.out.println(DebugTools.decompile(compiled));
 
-        MVELRuntime.registerBreakpoint("test2.mv", 5);
+        MVELRuntime.registerBreakpoint("test2.mv", 9);
 
         Debugger testDebugger = new Debugger() {
 
             public int onBreak(Frame frame) {
-                System.out.println("Breakpoint [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+                System.out.println("Breakpoint Encountered [source:" + frame.getSourceName() + "; line:" + frame.getLineNumber() + "]");
+                System.out.println("Resume Execution");
                 return 0;
             }
 
