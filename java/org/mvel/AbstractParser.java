@@ -835,6 +835,7 @@ public class AbstractParser implements Serializable {
                 }
         }
 
+        if (start == cursor) return null;
         return createPropertyToken(start, cursor);
     }
 
