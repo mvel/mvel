@@ -1823,11 +1823,11 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("value1", map.get("cat"));
     }
 
-    public void testToList2() {
-        for (int i = 0; i < 10; i++) {
-            testToList();
-        }
-    }
+//    public void testToList2() {
+//        for (int i = 0; i < 10; i++) {
+//            testToList();
+//        }
+//    }
 
     public void testParsingStability1() {
         assertEquals(true, test("( order.number == 1 || order.number == ( 1+1) || order.number == $id )"));
