@@ -850,32 +850,6 @@ public class AbstractParser implements Serializable {
         return lastNode = node;
     }
 
-//    protected int balancedCapture(char type) {
-//        int depth = 1;
-//        char term = type;
-//        switch (type) {
-//            case'[':
-//                term = ']';
-//                break;
-//            case'{':
-//                term = '}';
-//                break;
-//            case'(':
-//                term = ')';
-//                break;
-//        }
-//
-//        for (cursor++; cursor < length; cursor++) {
-//            if (expr[cursor] == type) {
-//                depth++;
-//            }
-//            else if (expr[cursor] == term && --depth == 0) {
-//                return cursor;
-//            }
-//        }
-//
-//        return -1;
-//    }
 
     /**
      * Most of this method should be self-explanatory.
@@ -1029,16 +1003,11 @@ public class AbstractParser implements Serializable {
 
             if (node != null) {
                 if (!cond) {
-                    ifNode.setElseBlock(subArray(trimRight(blockStart + 1), trimLeft(blockEnd - 1)));
-                    return node;
+                    return ifNode.setElseBlock(subArray(trimRight(blockStart + 1), trimLeft(blockEnd - 1)));
                 }
                 else {
-                    IfNode tk = (IfNode) createBlockToken(startCond, endCond, trimRight(blockStart + 1),
-                            trimLeft(blockEnd));
-
-                    ifNode.setElseIf(tk);
-
-                    return tk;
+                    return ifNode.setElseIf((IfNode) createBlockToken(startCond, endCond, trimRight(blockStart + 1),
+                            trimLeft(blockEnd)));
                 }
             }
             else {

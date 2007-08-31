@@ -61,15 +61,16 @@ public class IfNode extends ASTNode implements NestedStatement {
         return nestedStatement;
     }
 
-    public void setElseIf(IfNode elseIf) {
-        this.elseIf = elseIf;
+    public IfNode setElseIf(IfNode elseIf) {
+        return this.elseIf = elseIf;
     }
 
     public ExecutableStatement getElseBlock() {
         return elseBlock;
     }
 
-    public void setElseBlock(char[] block) {
+    public IfNode setElseBlock(char[] block) {
         elseBlock = (ExecutableStatement) subCompileExpression(block);
+        return this;
     }
 }
