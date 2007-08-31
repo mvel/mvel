@@ -155,14 +155,6 @@ public class AbstractParser implements Serializable {
          * return null.
          */
         if (cursor >= length) {
-//            if (debugSymbols && lastNode != null) {
-//                /**
-//                 * Produce a trailing line label. This allows debuggers to step into the last line.
-//                 */
-//                lastNode = null;
-//                return new LineLabel(getParserContext().getSourceFile(), getParserContext().getLineCount() + 1);
-//            }
-
             return null;
         }
         else if (!splitAccumulator.isEmpty()) {
@@ -191,9 +183,7 @@ public class AbstractParser implements Serializable {
 
                 line = pCtx.getLineCount();
 
-                //    if (expr[cursor] == '\n' || expr[cursor] == '\r') {
                 skipWhitespaceWithLineAccounting();
-                //    }
 
                 pCtx.setLineCount(line);
 
@@ -545,8 +535,6 @@ public class AbstractParser implements Serializable {
                                 line = getParserContext().getLineCount();
 
                                 skipWhitespaceWithLineAccounting();
-
-                                //           getParserContext().setLineCount(line);
 
                                 if (lastNode instanceof LineLabel) {
                                     getParserContext().getLastLineLabel().setLineNumber(line);

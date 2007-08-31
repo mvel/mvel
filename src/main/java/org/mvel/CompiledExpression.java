@@ -43,6 +43,14 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     private ParserContext parserContext;
 
+    public CompiledExpression(ASTIterator astMap, String sourceName, Class egressType, ParserContext ctx) {
+        this.tokens = astMap;
+        this.sourceName = sourceName;
+        this.knownEgressType = egressType;
+        setParserContext(ctx);
+    }
+
+
     public CompiledExpression(ASTIterator astMap, String sourceName) {
         this.tokens = astMap;
         this.sourceName = sourceName;
