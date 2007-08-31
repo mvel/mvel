@@ -83,10 +83,8 @@ public class ExpressionCompiler extends AbstractParser {
                 returnType = tk.getEgressType();
 
                 if (tk instanceof Substatement) {
-                    ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray());
-                    subCompiler.setParserContext(pCtx);
+                    ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray(), pCtx);
                     tk.setAccessor(subCompiler._compile());
-
                     returnType = subCompiler.getReturnType();
                 }
 
@@ -121,8 +119,7 @@ public class ExpressionCompiler extends AbstractParser {
                                      * We can't continue any further because we are dealing with
                                      * different operators.
                                      */
-                                    astLinkedList.addTokenNode(new LiteralNode(stk.pop()));
-                                    astLinkedList.addTokenNode(verify(pCtx, tkOp2));
+                                    astLinkedList.addTokenNode(new LiteralNode(stk.pop()), verify(pCtx, tkOp2));
                                     break;
                                 }
                                 else if ((tkLA2 = nextTokenSkipSymbols()) != null
@@ -185,12 +182,7 @@ public class ExpressionCompiler extends AbstractParser {
 
             astLinkedList.finish();
 
-            CompiledExpression ce = new CompiledExpression(optimizeAST(astLinkedList, secondPassOptimization), getCurrentSourceFileName());
-            ce.setKnownEgressType(returnType);
-            ce.setParserContext(pCtx);
-
-            return ce;
-
+            return new CompiledExpression(optimizeAST(astLinkedList, secondPassOptimization), getCurrentSourceFileName(), returnType, pCtx);
         }
         catch (Throwable e) {
             parserContext.set(null);
@@ -223,16 +215,10 @@ public class ExpressionCompiler extends AbstractParser {
                     addFatalError("invalid assignment - variable name is a reserved keyword: " + varName);
                 }
 
-                ExpressionCompiler subCompiler =
-                        new ExpressionCompiler(new String(assign, c, assign.length - c).trim());
-
-                subCompiler._compile();
-
+                new ExpressionCompiler(new String(assign, c, assign.length - c).trim())._compile();
                 pCtx.addVariable(varName, returnType = tk.getEgressType());
             }
             else if (tk.isIdentifier()) {
-                //              if (pCtx.hasImport(tk.getAbsoluteRootElement())) return tk;
-
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
                 returnType = propVerifier.analyze();
 
@@ -398,6 +384,11 @@ public class ExpressionCompiler extends AbstractParser {
 
     public ExpressionCompiler(char[] expression) {
         setExpression(expression);
+    }
+
+    ExpressionCompiler(char[] expression, ParserContext ctx) {
+        setExpression(expression);
+        this.pCtx = ctx;
     }
 
     public boolean isVerifying() {

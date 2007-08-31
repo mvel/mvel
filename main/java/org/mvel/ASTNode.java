@@ -169,7 +169,7 @@ public class ASTNode implements Cloneable, Serializable {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((fields & (LITERAL)) != 0) {
-                return literal;
+            return literal;
         }
         try {
             return valRet(accessor.getValue(ctx, thisValue, factory));
@@ -179,8 +179,8 @@ public class ASTNode implements Cloneable, Serializable {
             AccessorOptimizer optimizer;
             Object retVal = null;
 
-            if ((fields & FOLD) != 0) {                
-                retVal = (accessor =  (optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeFold(name, ctx, thisValue, factory)).getValue(ctx, thisValue, factory);
+            if ((fields & FOLD) != 0) {
+                retVal = (accessor = (optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeFold(name, ctx, thisValue, factory)).getValue(ctx, thisValue, factory);
             }
             else {
                 try {
@@ -206,7 +206,7 @@ public class ASTNode implements Cloneable, Serializable {
         }
     }
 
-    
+
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         String s;
         if ((fields & (LITERAL)) != 0) {
@@ -496,7 +496,6 @@ public class ASTNode implements Cloneable, Serializable {
     public boolean isIdentifier() {
         return (fields & IDENTIFIER) != 0;
     }
-
 
     public boolean isLiteral() {
         return (fields & LITERAL) != 0;
