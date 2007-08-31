@@ -19,10 +19,9 @@
 
 package org.mvel.optimizers.impl.refl;
 
-import static org.mvel.util.ParseTools.subCompileExpression;
-import static org.mvel.MVEL.eval;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
+import static org.mvel.MVEL.eval;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
@@ -659,7 +658,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.cursor = 0;
         try {
             Accessor contructor = compileConstructor(property, ctx, factory);
-     //       val = contructor.getValue(property, thisRef, factory);
+            //       val = contructor.getValue(property, thisRef, factory);
             return contructor;
         }
         catch (CompileException e) {
@@ -677,8 +676,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         greedy = false; // don't be greedy!
 
         if (expr[cursor] == '(') {
-            balancedCapture('(');
-            length = cursor;
+            //balancedCapture('(');
+            length = cursor = balancedCapture(expr, cursor, '(');
             cursor = 1;
         }
 
@@ -718,7 +717,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     @SuppressWarnings({"WeakerAccess"})
-    public  AccessorNode compileConstructor(char[] expression, Object ctx, VariableResolverFactory vars) throws
+    public AccessorNode compileConstructor(char[] expression, Object ctx, VariableResolverFactory vars) throws
             InstantiationException, IllegalAccessException, InvocationTargetException,
             ClassNotFoundException, NoSuchMethodException {
 
