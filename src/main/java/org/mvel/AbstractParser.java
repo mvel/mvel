@@ -4,7 +4,6 @@ import static org.mvel.Operator.*;
 import org.mvel.ast.*;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
-import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
@@ -171,7 +170,6 @@ public class AbstractParser implements Serializable {
         fields = fields & (ASTNode.INLINE_COLLECTION | ASTNode.COMPILE_IMMEDIATE);
 
         boolean capture = false, union = false;
-
 
         if (debugSymbols) {
             if (!lastWasLineLabel) {
@@ -378,7 +376,9 @@ public class AbstractParser implements Serializable {
 
                         case']':
                         case'[':
-                            balancedCapture('[');
+                            //   balancedCapture('[');
+                            cursor = balancedCapture(expr, cursor, '[');
+
                             cursor++;
                             continue;
                         case'.':
@@ -643,12 +643,12 @@ public class AbstractParser implements Serializable {
                                                 case')':
                                                     if (--brace < level) {
                                                         if (lookAhead(1) == '.') {
-                                                            ASTNode node = createToken(expr, trimRight(start), (start = cursor++), ASTNode.FOLD);
+                                                            ASTNode node = createToken(expr, trimRight(start + 1), (start = cursor++), ASTNode.FOLD);
                                                             captureToEOT();
                                                             return lastNode = new Union(expr, trimRight(start + 2), cursor, fields, node);
                                                         }
                                                         else {
-                                                            return createToken(expr, trimRight(start), cursor++, ASTNode.FOLD);
+                                                            return createToken(expr, trimRight(start + 1), cursor++, ASTNode.FOLD);
                                                         }
                                                     }
                                                     break;
@@ -816,7 +816,7 @@ public class AbstractParser implements Serializable {
 
                     case'[':
                     case'{':
-                        if (balancedCapture(expr[cursor]) == -1) {
+                        if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
                             if (cursor >= length) cursor--;
                             throw new CompileException("unbalanced brace: in inline map/list/array creation", expr, cursor);
                         }
@@ -850,33 +850,32 @@ public class AbstractParser implements Serializable {
         return lastNode = node;
     }
 
-
-    protected int balancedCapture(char type) {
-        int depth = 1;
-        char term = type;
-        switch (type) {
-            case'[':
-                term = ']';
-                break;
-            case'{':
-                term = '}';
-                break;
-            case'(':
-                term = ')';
-                break;
-        }
-
-        for (cursor++; cursor < length; cursor++) {
-            if (expr[cursor] == type) {
-                depth++;
-            }
-            else if (expr[cursor] == term && --depth == 0) {
-                return cursor;
-            }
-        }
-
-        return -1;
-    }
+//    protected int balancedCapture(char type) {
+//        int depth = 1;
+//        char term = type;
+//        switch (type) {
+//            case'[':
+//                term = ']';
+//                break;
+//            case'{':
+//                term = '}';
+//                break;
+//            case'(':
+//                term = ')';
+//                break;
+//        }
+//
+//        for (cursor++; cursor < length; cursor++) {
+//            if (expr[cursor] == type) {
+//                depth++;
+//            }
+//            else if (expr[cursor] == term && --depth == 0) {
+//                return cursor;
+//            }
+//        }
+//
+//        return -1;
+//    }
 
     /**
      * Most of this method should be self-explanatory.
@@ -1001,8 +1000,7 @@ public class AbstractParser implements Serializable {
         int endCond = 0;
 
         if (cond) {
-            startCond = ++cursor;
-            endCond = balancedCapture('(');
+            endCond = cursor = balancedCapture(expr, startCond = ++cursor, '(');
             cursor++;
         }
 
@@ -1011,13 +1009,12 @@ public class AbstractParser implements Serializable {
 
         skipWhitespace();
 
-
         if (cursor >= length) {
             throw new CompileException("unbalanced braces", expr, cursor);
         }
         else if (expr[cursor] == '{') {
             blockStart = cursor;
-            if ((blockEnd = balancedCapture('{')) == -1) {
+            if ((blockEnd = cursor = balancedCapture(expr, cursor, '{')) == -1) {
                 throw new CompileException("unbalanced braces { }", expr, cursor);
             }
         }
@@ -1086,7 +1083,7 @@ public class AbstractParser implements Serializable {
                 case'(':
                 case'[':
                 case'{':
-                    if ((cursor = ParseTools.balancedCapture(expr, cursor, expr[cursor])) == -1) {
+                    if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
                         throw new CompileException("unbalanced braces", expr, cursor);
                     }
                     break;
