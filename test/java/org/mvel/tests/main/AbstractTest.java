@@ -70,7 +70,7 @@ public abstract class AbstractTest extends TestCase {
     }
 
     protected Object test(final String ex) {
-        Thread[] threads = new Thread[45];
+        Thread[] threads = new Thread[10];
 
         final AbstractTest aTest = this;
         final LinkedList<Object> results = new LinkedList<Object>();

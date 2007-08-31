@@ -1,6 +1,7 @@
 package org.mvel.tests.perftests;
 
-import ognl.Ognl;
+// import ognl.Ognl;
+
 import org.apache.commons.el.ExpressionEvaluatorImpl;
 import org.mvel.MVEL;
 import org.mvel.tests.main.res.Base;
@@ -324,7 +325,7 @@ public class ELComparisons implements Runnable {
                 try {
                     // unbenched warm-up
                     for (int i = 0; i < count; i++) {
-                        Ognl.getValue(expression, baseClass);
+                        // Ognl.getValue(expression, baseClass);
                     }
 
                     //           System.gc();
@@ -334,7 +335,7 @@ public class ELComparisons implements Runnable {
 
                     for (int reps = 0; reps < TESTITER; reps++) {
                         for (int i = 0; i < count; i++) {
-                            Ognl.getValue(expression, baseClass);
+                            //             Ognl.getValue(expression, baseClass);
                         }
 
                         if (reps == 0) res[0] = total += currentTimeMillis() - time;
@@ -551,7 +552,7 @@ public class ELComparisons implements Runnable {
         if ((testFlags & RUN_OGNL) != 0 && ((exFlags & RUN_OGNL) != 0)) {
             try {
                 for (int i = 0; i < count; i++) {
-                    Ognl.getValue(compiledOgnl, baseClass);
+                    //            Ognl.getValue(compiledOgnl, baseClass);
                 }
 
                 time = currentTimeMillis();
@@ -559,7 +560,7 @@ public class ELComparisons implements Runnable {
 
                 for (int reps = 0; reps < TESTITER; reps++) {
                     for (int i = 0; i < count; i++) {
-                        Ognl.getValue(compiledOgnl, baseClass);
+                        //              Ognl.getValue(compiledOgnl, baseClass);
                     }
 
                     if (reps == 0) res[0] = total += currentTimeMillis() - time;
