@@ -1,6 +1,7 @@
 package org.mvel.tests.perftests;
 
-import ognl.Ognl;
+// import ognl.Ognl;
+
 import org.apache.commons.el.ExpressionEvaluatorImpl;
 import org.mvel.MVEL;
 
@@ -98,8 +99,8 @@ public class PerfTest {
             this.mvelCompiled = MVEL.compileExpression(expression);
 
         try {
-            if ((runFlags & ELComparisons.RUN_OGNL) != 0)
-                this.ognlCompiled = Ognl.parseExpression(expression);
+            //         if ((runFlags & ELComparisons.RUN_OGNL) != 0)
+            //            this.ognlCompiled = Ognl.parseExpression(expression);
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -112,7 +113,7 @@ public class PerfTest {
 //                this.groovyCompiled = sh.parse(expression);
 //            }
 
-            this.ognlCompiled = Ognl.parseExpression(expression);
+//            this.ognlCompiled = Ognl.parseExpression(expression);
         }
         catch (Exception e) {
             throw new RuntimeException(e);

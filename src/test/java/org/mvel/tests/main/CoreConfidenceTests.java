@@ -61,6 +61,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("happyBar", test("funMap['foo'].happy()"));
     }
 
+    public void testSimpleIfStatement() {
+        test("if (true) { System.out.println(\"test!\") }  \n");
+    }
+
     public void testBooleanOperator() {
         assertEquals(true, test("foo.bar.woof == true"));
     }
