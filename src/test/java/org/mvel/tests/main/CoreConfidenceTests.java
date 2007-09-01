@@ -1515,7 +1515,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(1, executeExpression(s));
     }
 
-    public void testStrictTypingCompilation2() throws NoSuchMethodException {
+    public void testStrictTypingCompilation2() throws Exception  {
         ParserContext ctx = new ParserContext();
         //noinspection RedundantArrayCreation
         ctx.addImport("getRuntime", Runtime.class.getMethod("getRuntime", new Class[]{}));
@@ -1524,8 +1524,12 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ExpressionCompiler compiler = new ExpressionCompiler("getRuntime()");
         StaticMethodImportResolverFactory si = new StaticMethodImportResolverFactory(ctx);
+        
+        Serializable expression = compiler.compile(ctx);
+        
+        serializationTest( expression );
 
-        assertTrue(executeExpression(compiler.compile(ctx), si) instanceof Runtime);
+        assertTrue(executeExpression(expression, si) instanceof Runtime);
     }
 
     public void testStrictTypingCompilation3() throws NoSuchMethodException {
