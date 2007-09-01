@@ -33,11 +33,8 @@ import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.impl.refl.Union;
 import static org.mvel.util.ArrayTools.findFirst;
-import org.mvel.util.CollectionParser;
-import org.mvel.util.ParseTools;
+import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
-import org.mvel.util.PropertyTools;
-import org.mvel.util.StringAppender;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -666,9 +663,19 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         debug("\n  **  {method: " + name + "}");
 
         if (first && variableFactory != null && variableFactory.isResolveable(name)) {
-            Method m = (Method) variableFactory.getVariableResolver(name).getValue();
-            ctx = m.getDeclaringClass();
-            name = m.getName();
+            Object ptr = variableFactory.getVariableResolver(name).getValue();
+            if (ptr instanceof Method) {
+                ctx = ((Method) ptr).getDeclaringClass();
+                name = ((Method) ptr).getName();
+            }
+            else {
+                ctx = ((MethodStub) ptr).getClassReference();
+                name = ((MethodStub) ptr).getMethodName();
+            }
+
+//            Method m = ((MethodStub) variableFactory.getVariableResolver(name).getValue()).getMethod();
+//            ctx = m.getDeclaringClass();
+//            name = m.getName();
             first = false;
         }
 
