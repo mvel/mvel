@@ -15,6 +15,7 @@ import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
+import org.mvel.util.MethodStub;
 
 import java.awt.*;
 import java.io.Serializable;
@@ -1515,19 +1516,19 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(1, executeExpression(s));
     }
 
-    public void testStrictTypingCompilation2() throws Exception  {
+    public void testStrictTypingCompilation2() throws Exception {
         ParserContext ctx = new ParserContext();
         //noinspection RedundantArrayCreation
-        ctx.addImport("getRuntime", Runtime.class.getMethod("getRuntime", new Class[]{}));
+        ctx.addImport("getRuntime", new MethodStub(Runtime.class.getMethod("getRuntime", new Class[]{})));
 
         ctx.setStrictTypeEnforcement(true);
 
         ExpressionCompiler compiler = new ExpressionCompiler("getRuntime()");
         StaticMethodImportResolverFactory si = new StaticMethodImportResolverFactory(ctx);
-        
+
         Serializable expression = compiler.compile(ctx);
-        
-        serializationTest( expression );
+
+        serializationTest(expression);
 
         assertTrue(executeExpression(expression, si) instanceof Runtime);
     }

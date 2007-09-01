@@ -20,11 +20,11 @@ package org.mvel;
 
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.impl.refl.FieldAccessor;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.getBestCandidate;
 import static org.mvel.util.ParseTools.parseParameterList;
 import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
-import org.mvel.util.ParseTools;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -176,7 +176,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     private Class getMethod(Class ctx, String name) {
         if (first && parserContext.hasImport(name)) {
-            Method m = parserContext.getStaticImport(name);
+            Method m = parserContext.getStaticImport(name).getMethod();
             ctx = m.getDeclaringClass();
             name = m.getName();
             first = false;
