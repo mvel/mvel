@@ -22,6 +22,7 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.eval;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.MethodStub;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
@@ -197,7 +198,7 @@ public class PropertyAccessor {
         try {
             int oLength = length;
             length = findAbsoluteLast(property);
-            
+
             if ((curr = get()) == null)
                 throw new PropertyAccessException("cannot bind to null context: " + new String(property));
 
@@ -519,12 +520,22 @@ public class PropertyAccessor {
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name) throws Exception {
         if (first && resolver != null && resolver.isResolveable(name)) {
-            Method m = (Method) resolver.getVariableResolver(name).getValue();
-            ctx = m.getDeclaringClass();
-            name = m.getName();
+            Object ptr = resolver.getVariableResolver(name).getValue();
+            if (ptr instanceof Method) {
+                ctx = ((Method) ptr).getDeclaringClass();
+                name = ((Method) ptr).getName();
+            }
+            else {
+                ctx = ((MethodStub) ptr).getClassReference();
+                name = ((MethodStub) ptr).getMethodName();
+            }
+
+//            Method m = ((MethodStub)resolver.getVariableResolver(name).getValue()).getMethod();
+//            ctx = m.getDeclaringClass();
+//            name = m.getName();
             first = false;
         }
-        
+
         int st = cursor;
         String tk = ((cursor = balancedCapture(property, cursor, '(')) - st) > 1 ?
                 new String(property, st + 1, cursor - st - 1) : "";
@@ -536,11 +547,11 @@ public class PropertyAccessor {
             args = ParseTools.EMPTY_OBJ_ARR;
         }
         else {
-                String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
-                args = new Object[subtokens.length];
-                for (int i = 0; i < subtokens.length; i++) {
-                    args[i] = eval(subtokens[i], thisReference, resolver);
-                }
+            String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
+            args = new Object[subtokens.length];
+            for (int i = 0; i < subtokens.length; i++) {
+                args[i] = eval(subtokens[i], thisReference, resolver);
+            }
         }
 
         /**
@@ -604,8 +615,8 @@ public class PropertyAccessor {
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
-                for (int i = 0; i < args.length; i++)
-                    args[i] = convert(args[i], parameterTypes[i]);
+            for (int i = 0; i < args.length; i++)
+                args[i] = convert(args[i], parameterTypes[i]);
 
             /**
              * Invoke the target method and return the response.

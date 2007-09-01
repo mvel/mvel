@@ -2,6 +2,7 @@ package org.mvel.integration.impl;
 
 import org.mvel.ParserContext;
 import org.mvel.integration.VariableResolver;
+import org.mvel.util.MethodStub;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -28,7 +29,9 @@ public class StaticMethodImportResolverFactory extends BaseVariableResolverFacto
     }
 
     public VariableResolver createVariable(String name, Object value) {
-        StaticMethodImportResolver methodResolver = new StaticMethodImportResolver(name, (Method) value);
+        if (value instanceof Method) value = new MethodStub((Method) value);
+
+        StaticMethodImportResolver methodResolver = new StaticMethodImportResolver(name, (MethodStub) value);
         this.variableResolvers.put(name, methodResolver);
         return methodResolver;
     }

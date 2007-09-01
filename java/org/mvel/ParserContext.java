@@ -1,12 +1,13 @@
 package org.mvel;
 
-import org.mvel.integration.Interceptor;
 import org.mvel.ast.LineLabel;
+import org.mvel.integration.Interceptor;
+import org.mvel.util.MethodStub;
 import org.mvel.util.ParseTools;
 
-import java.util.*;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * The ParserContext is the main enviroment object used for sharing state throughout the entire
@@ -99,8 +100,8 @@ public class ParserContext implements Serializable {
         return (imports != null && imports.containsKey(name) ? (Class) imports.get(name) : (Class) AbstractParser.LITERALS.get(name));
     }
 
-    public Method getStaticImport(String name) {
-        return imports != null ? (Method) imports.get(name) : null;
+    public MethodStub getStaticImport(String name) {
+        return imports != null ? (MethodStub) imports.get(name) : null;
     }
 
     public void addPackageImport(String packageName) {
@@ -154,6 +155,10 @@ public class ParserContext implements Serializable {
     }
 
     public void addImport(String name, Method method) {
+        addImport(name, new MethodStub(method));
+    }
+
+    public void addImport(String name, MethodStub method) {
         if (this.imports == null) this.imports = new HashMap<String, Object>();
         this.imports.put(name, method);
     }
