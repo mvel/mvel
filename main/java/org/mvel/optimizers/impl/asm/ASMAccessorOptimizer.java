@@ -668,14 +668,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 ctx = ((Method) ptr).getDeclaringClass();
                 name = ((Method) ptr).getName();
             }
-            else {
+            else if (ptr instanceof MethodStub) {
                 ctx = ((MethodStub) ptr).getClassReference();
                 name = ((MethodStub) ptr).getMethodName();
             }
+            else {
+                throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
+                        + name + " (reference is type: " + (ctx != null ? ctx.getClass().getName() : null) + ")");
+            }
 
-//            Method m = ((MethodStub) variableFactory.getVariableResolver(name).getValue()).getMethod();
-//            ctx = m.getDeclaringClass();
-//            name = m.getName();
             first = false;
         }
 
