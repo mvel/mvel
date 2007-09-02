@@ -261,7 +261,6 @@ public class ParserContext implements Serializable {
         this.interceptors = interceptors;
     }
 
-
     public Map<String, Object> getImports() {
         return imports;
     }
