@@ -11,6 +11,8 @@ import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import org.mvel.util.ArrayTools;
 import static org.mvel.util.ArrayTools.findFirst;
 
+import static java.lang.System.arraycopy;
+
 /**
  * @author Christopher Brock
  */
@@ -49,30 +51,16 @@ public class NewObjectNode extends ASTNode {
         String FQCN = egressType.getName();
 
         if (className.indexOf('.') == -1) {
-            char[] newName;
-
             int idx = ArrayTools.findFirst('(', name);
             if (idx == -1) {
-                idx = FQCN.length();
-                newName = new char[idx];
-                System.arraycopy(FQCN.toCharArray(), 0, newName, 0, idx);
-                this.name = newName;
+                arraycopy(FQCN.toCharArray(), 0, this.name = new char[idx = FQCN.length()], 0, idx);
             }
             else {
-                newName = new char[FQCN.length() + (name.length - idx)];
-                System.arraycopy(FQCN.toCharArray(), 0, newName, 0, FQCN.length());
-                System.arraycopy(name, idx, newName, FQCN.length(), (name.length - idx));
+                char[] newName = new char[FQCN.length() + (name.length - idx)];
+                arraycopy(FQCN.toCharArray(), 0, newName, 0, FQCN.length());
+                arraycopy(name, idx, newName, FQCN.length(), (name.length - idx));
                 this.name = newName;
             }
-
-//            int idx = FQCN.lastIndexOf('$');
-//            if (idx != -1 && className.lastIndexOf('$') == -1) {
-//                this.name = (FQCN.substring(0, idx + 1) + new String(this.name)).toCharArray();
-//            }
-//            else {
-//                this.name = (FQCN.substring(0, FQCN.lastIndexOf('.') + 1) + new String(this.name)).toCharArray();
-//            }
-
             updateClassName();
         }
     }
