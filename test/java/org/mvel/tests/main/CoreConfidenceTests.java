@@ -2086,6 +2086,10 @@ public class CoreConfidenceTests extends AbstractTest {
         System.out.println(MVEL.executeExpression(s));
     }
 
+    public void testClassAliasing() {
+        assertEquals("foobar", test("Foo = String; new Foo('foobar')"));
+    }
+
 //    public void testSwing() {
 //        test("import javax.swing.JFrame;\n" +
 //                "import javax.swing.JLabel;\n" +
