@@ -51,7 +51,7 @@ public class PropertyAccessor {
 
     private boolean first = true;
 
-    private VariableResolverFactory resolver;
+    private VariableResolverFactory variableFactory;
 
     private static final int DONE = -1;
     private static final int NORM = 0;
@@ -91,7 +91,7 @@ public class PropertyAccessor {
         this.property = property;
         this.length = property.length;
         this.ctx = ctx;
-        this.resolver = resolver;
+        this.variableFactory = resolver;
         this.thisReference = thisReference;
     }
 
@@ -100,12 +100,12 @@ public class PropertyAccessor {
         this.length = property.length;
         this.ctx = ctx;
         this.thisReference = thisRef;
-        this.resolver = resolver;
+        this.variableFactory = resolver;
         this.thisReference = thisReference;
     }
 
     public PropertyAccessor(VariableResolverFactory resolver, Object thisReference) {
-        this.resolver = resolver;
+        this.variableFactory = resolver;
         this.thisReference = thisReference;
     }
 
@@ -115,7 +115,7 @@ public class PropertyAccessor {
         this.cursor = offset;
         this.length = end;
         this.ctx = ctx;
-        this.resolver = resolver;
+        this.variableFactory = resolver;
     }
 
     public PropertyAccessor(String property, Object ctx) {
@@ -219,14 +219,14 @@ public class PropertyAccessor {
 
                 if (curr instanceof Map) {
                     //noinspection unchecked
-                    ((Map) curr).put(eval(ex, this.ctx, this.resolver), value);
+                    ((Map) curr).put(eval(ex, this.ctx, this.variableFactory), value);
                 }
                 else if (curr instanceof List) {
                     //noinspection unchecked
-                    ((List) curr).set(eval(ex, this.ctx, this.resolver, Integer.class), value);
+                    ((List) curr).set(eval(ex, this.ctx, this.variableFactory, Integer.class), value);
                 }
                 else if (curr instanceof Object[]) {
-                    ((Object[]) curr)[eval(ex, this.ctx, this.resolver, Integer.class)] = convert(value, ctx.getClass().getComponentType());
+                    ((Object[]) curr)[eval(ex, this.ctx, this.variableFactory, Integer.class)] = convert(value, ctx.getClass().getComponentType());
                 }
 
                 else {
@@ -274,7 +274,7 @@ public class PropertyAccessor {
             }
             else if (curr instanceof Map) {
                 //noinspection unchecked
-                ((Map) curr).put(eval(tk, this.ctx, this.resolver), value);
+                ((Map) curr).put(eval(tk, this.ctx, this.variableFactory), value);
             }
             else {
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
@@ -391,8 +391,8 @@ public class PropertyAccessor {
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
-        if (first && resolver != null && resolver.isResolveable(property)) {
-            return resolver.getVariableResolver(property).getValue();
+        if (first && variableFactory != null && variableFactory.isResolveable(property)) {
+            return variableFactory.getVariableResolver(property).getValue();
         }
 
 
@@ -481,7 +481,7 @@ public class PropertyAccessor {
             throw new PropertyAccessException("unterminated '['");
 
         String ex = new String(property, start, cursor++ - start);
-        item = eval(ex, ctx, resolver);
+        item = eval(ex, ctx, variableFactory);
 
         if (ctx instanceof Map) {
             return ((Map) ctx).get(item);
@@ -519,20 +519,21 @@ public class PropertyAccessor {
      */
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name) throws Exception {
-        if (first && resolver != null && resolver.isResolveable(name)) {
-            Object ptr = resolver.getVariableResolver(name).getValue();
+        if (first && variableFactory != null && variableFactory.isResolveable(name)) {
+            Object ptr = variableFactory.getVariableResolver(name).getValue();
             if (ptr instanceof Method) {
                 ctx = ((Method) ptr).getDeclaringClass();
                 name = ((Method) ptr).getName();
             }
-            else {
+            else if (ptr instanceof MethodStub) {
                 ctx = ((MethodStub) ptr).getClassReference();
                 name = ((MethodStub) ptr).getMethodName();
             }
+            else {
+                throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
+                        + name + " (reference is type: " + (ctx != null ? ctx.getClass().getName() : null) + ")");
+            }
 
-//            Method m = ((MethodStub)resolver.getVariableResolver(name).getValue()).getMethod();
-//            ctx = m.getDeclaringClass();
-//            name = m.getName();
             first = false;
         }
 
@@ -550,7 +551,7 @@ public class PropertyAccessor {
             String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
             args = new Object[subtokens.length];
             for (int i = 0; i < subtokens.length; i++) {
-                args[i] = eval(subtokens[i], thisReference, resolver);
+                args[i] = eval(subtokens[i], thisReference, variableFactory);
             }
         }
 
