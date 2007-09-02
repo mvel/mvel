@@ -70,7 +70,17 @@ public abstract class AbstractTest extends TestCase {
     }
 
     protected Object test(final String ex) {
-        Thread[] threads = new Thread[5];
+        Thread[] threads;
+
+        if (Boolean.getBoolean("mvel.tests.quick")) {
+            threads = new Thread[1];
+        }
+        else if (System.getProperty("mvel.tests.threadcount") != null) {
+            threads = new Thread[Integer.parseInt(System.getProperty("mvel.tests.threadcount"))];
+        }
+        else {
+            threads = new Thread[5];
+        }
 
         final AbstractTest aTest = this;
         final LinkedList<Object> results = new LinkedList<Object>();
