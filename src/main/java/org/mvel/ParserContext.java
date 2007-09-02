@@ -54,7 +54,7 @@ public class ParserContext implements Serializable {
     }
 
     public ParserContext(Map<String, Object> imports, Map<String, Interceptor> interceptors, String sourceFile) {
-        this.imports = imports;
+        setImports(imports);
         this.interceptors = interceptors;
         this.sourceFile = sourceFile;
     }
@@ -269,11 +269,20 @@ public class ParserContext implements Serializable {
     public void setImports(Map<String, Object> imports) {
         if (imports == null) return;
 
-        if (this.imports != null) {
-            this.imports.putAll(imports);
-        }
-        else {
-            this.imports = imports;
+        Object val;
+        for (String name : imports.keySet()) {
+            if ((val = imports.get(name)) instanceof Class) {
+                addImport(name, (Class) val);
+            }
+            else if (val instanceof Method) {
+                addImport(name, (Method) val);
+            }
+            else if (val instanceof MethodStub) {
+                addImport(name, (MethodStub) val);
+            }
+            else {
+                throw new RuntimeException("invalid element in imports map: " + name + " (" + val + ")");
+            }
         }
     }
 
