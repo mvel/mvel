@@ -1025,7 +1025,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
 
     private java.lang.Class loadClass(String className, byte[] b) throws Exception {

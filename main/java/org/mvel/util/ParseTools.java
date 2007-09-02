@@ -802,7 +802,6 @@ public class ParseTools {
         return MATH_PROCESSOR.doOperation(val1, operation, val2);
     }
 
-
     public static Object increment(Object o) {
         if (o instanceof Integer) {
             return (Integer) o + 1;
