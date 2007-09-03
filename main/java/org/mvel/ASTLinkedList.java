@@ -37,13 +37,14 @@ public class ASTLinkedList implements ASTIterator {
     }
 
     public void addTokenNode(ASTNode astNode) {
+        size++;
+
         if (this.firstASTNode == null) {
             this.firstASTNode = this.current = astNode;
         }
         else {
             this.current = (this.current.nextASTNode = astNode);
         }
-        size++;
     }
 
     public void addTokenNode(ASTNode astNode, ASTNode token2) {

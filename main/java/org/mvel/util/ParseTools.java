@@ -2,6 +2,7 @@ package org.mvel.util;
 
 import org.mvel.*;
 import static org.mvel.AbstractParser.getCurrentThreadParserContext;
+import static org.mvel.AbstractParser.isReservedWord;
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
@@ -113,9 +114,6 @@ public class ParseTools {
                 case'[':
                 case'{':
                     adepth++;
-//                    if (adepth++ == 0)
-//                        start = i;
-
                     continue;
 
                 case']':
@@ -257,8 +255,7 @@ public class ParseTools {
 
         do {
             for (Class iface : cls.getInterfaces()) {
-                m = getBestCandidate(args, name, iface.getMethods());
-                if (m != null && m.getDeclaringClass().getSuperclass() != null) {
+                if ((m = getBestCandidate(args, name, iface.getMethods())) != null && m.getDeclaringClass().getSuperclass() != null) {
                     cls = m.getDeclaringClass();
                 }
             }
@@ -580,7 +577,6 @@ public class ParseTools {
             case Operator.DIV:
                 op = '/';
                 break;
-
             case Operator.BW_AND:
                 op = '&';
                 break;
@@ -835,8 +831,8 @@ public class ParseTools {
         for (; i < parms.length; i++) {
             switch (parms[i]) {
                 case'=':
-                    i++;
-                    parmName = new String(parms, start, i - start - 1).trim();
+                    //    i++;
+                    parmName = new String(parms, start, ++i - start - 1).trim();
                     capture = true;
                     start = i;
                     break;
@@ -977,7 +973,7 @@ public class ParseTools {
 
 
     public static void checkNameSafety(String name) {
-        if (AbstractParser.isReservedWord(name)) {
+        if (isReservedWord(name)) {
             throw new CompileException("reserved word in assignment: " + name);
         }
     }

@@ -1,6 +1,7 @@
 package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
+import static org.mvel.Soundex.soundex;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
 import static org.mvel.util.CompilerTools.optimizeAST;
@@ -8,9 +9,11 @@ import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.ParseTools.doOperations;
 import org.mvel.util.PropertyTools;
+import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
+import static java.lang.String.valueOf;
 import static java.lang.Thread.currentThread;
 import java.util.regex.Pattern;
 
@@ -29,25 +32,25 @@ public class ExpressionCompiler extends AbstractParser {
     }
 
     public CompiledExpression compile(ParserContext ctx) {
-        if (debugSymbols) ctx.setDebugSymbols(debugSymbols);
-        else if (ctx.isDebugSymbols()) debugSymbols = true;
-
-        newContext(ctx);
-
-        CompiledExpression c = _compile();
-
-        removeContext();
-
-        if (pCtx.isFatalError()) {
-            contextControl(REMOVE, null, null);
-            throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
+        if (debugSymbols) {
+            ctx.setDebugSymbols(debugSymbols);
         }
-//        else if (pCtx.is) {
-//            contextControl(REMOVE, null, null);
-//            throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
-//        }
+        else if (ctx.isDebugSymbols()) {
+            debugSymbols = true;
+        }
 
-        return c;
+        try {
+            newContext(ctx);
+            return _compile();
+        }
+        finally {
+            removeContext();
+            if (pCtx.isFatalError()) {
+                contextControl(REMOVE, null, null);
+                //noinspection ThrowFromFinallyBlock
+                throw new CompileException("Failed to compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
+            }
+        }
     }
 
     /**
@@ -280,14 +283,14 @@ public class ExpressionCompiler extends AbstractParser {
                         break;
 
                     case Operator.REGEX:
-                        stk.push(Pattern.compile(String.valueOf(v1)).matcher(String.valueOf(v2)).matches());
+                        stk.push(Pattern.compile(valueOf(v1)).matcher(valueOf(v2)).matches());
                         break;
 
                     case Operator.INSTANCEOF:
                         if (v1 instanceof Class)
                             stk.push(((Class) v1).isInstance(v2));
                         else
-                            stk.push(currentThread().getContextClassLoader().loadClass(String.valueOf(v1)).isInstance(v2));
+                            stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
 
                         break;
 
@@ -295,7 +298,7 @@ public class ExpressionCompiler extends AbstractParser {
                         if (v1 instanceof Class)
                             stk.push(canConvert(v2.getClass(), (Class) v1));
                         else
-                            stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(String.valueOf(v1))));
+                            stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
                         break;
 
                     case Operator.CONTAINS:
@@ -333,15 +336,15 @@ public class ExpressionCompiler extends AbstractParser {
                         break;
 
                     case Operator.STR_APPEND:
-                        stk.push(new StringAppender(String.valueOf(v2)).append(String.valueOf(v1)).toString());
+                        stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
                         break;
 
                     case Operator.SOUNDEX:
-                        stk.push(Soundex.soundex(String.valueOf(v1)).equals(Soundex.soundex(String.valueOf(v2))));
+                        stk.push(soundex(valueOf(v1)).equals(soundex(valueOf(v2))));
                         break;
 
                     case Operator.SIMILARITY:
-                        stk.push(PropertyTools.similarity(String.valueOf(v1), String.valueOf(v2)));
+                        stk.push(similarity(valueOf(v1), valueOf(v2)));
                         break;
                 }
             }
@@ -411,9 +414,9 @@ public class ExpressionCompiler extends AbstractParser {
         return new String(expr);
     }
 
-    private void setParserContext(ParserContext pCtx) {
-        this.pCtx = pCtx;
-    }
+//    private void setParserContext(ParserContext pCtx) {
+//        this.pCtx = pCtx;
+//    }
 
     public ParserContext getParserContextState() {
         return pCtx;

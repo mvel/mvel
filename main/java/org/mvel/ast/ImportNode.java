@@ -3,7 +3,7 @@ package org.mvel.ast;
 import org.mvel.ASTNode;
 import org.mvel.CompileException;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.findClassImportResolverFactory;
 
 /**
  * @author Christopher Brock
@@ -24,8 +24,8 @@ public class ImportNode extends ASTNode {
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        ParseTools.findClassImportResolverFactory(factory).addClass(importClass);
-        return importClass;
+        return findClassImportResolverFactory(factory).addClass(importClass);
+        //    return importClass;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
