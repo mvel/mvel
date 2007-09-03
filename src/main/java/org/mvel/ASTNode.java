@@ -87,11 +87,9 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public ASTNode(char[] expr, int start, int end, int fields) {
-        this.cursorPosition = start;
         this.fields = fields;
 
-
-        char[] name = new char[end - start];
+        char[] name = new char[end - (this.cursorPosition = start)];
         arraycopy(expr, start, name, 0, end - start);
         setName(name);
     }
@@ -235,8 +233,9 @@ public class ASTNode implements Cloneable, Serializable {
                 /**
                  * The root of the DEEP PROPERTY is a literal.
                  */
-                Object literal = AbstractParser.LITERALS.get(s);
-                if (literal == ThisLiteral.class) literal = thisValue;
+                if ((literal = AbstractParser.LITERALS.get(s)) == ThisLiteral.class) {
+                    literal = thisValue;
+                }
 
                 return valRet(get(getAbsoluteRemainder(), literal, factory, thisValue));
             }
@@ -260,14 +259,13 @@ public class ASTNode implements Cloneable, Serializable {
                     /**
                      * No luck. Make a last-ditch effort to resolve this as a static-class reference.
                      */
-                    Object sa = tryStaticAccess(ctx, factory);
-                    if (sa == null) throw e;
+                    if ((literal = tryStaticAccess(ctx, factory)) == null) throw e;
 
                     /**
                      * Since this clearly is a class literal, we change the nature of theis node to
                      * make it a literal to prevent re-evaluation.
                      */
-                    literal = valRet(sa);
+                    literal = valRet(literal);
                     fields |= LITERAL;
 
                     return literal;
@@ -319,11 +317,10 @@ public class ASTNode implements Cloneable, Serializable {
             }
         }
 
-
-        Object sa = tryStaticAccess(ctx, factory);
-        if (sa == null) throw new UnresolveablePropertyException(this);
-        return valRet(sa);
-
+        if ((literal = tryStaticAccess(ctx, factory)) == null) {
+            throw new UnresolveablePropertyException(this);
+        }
+        return valRet(literal);
     }
 
 
@@ -438,14 +435,12 @@ public class ASTNode implements Cloneable, Serializable {
         }
         else if (AbstractParser.OPERATORS.containsKey(literal)) {
             fields |= OPERATOR;
-            literal = AbstractParser.OPERATORS.get(literal);
-            egressType = literal.getClass();
+            egressType = (literal = AbstractParser.OPERATORS.get(literal)).getClass();
             return;
         }
         else if (isNumber(name)) {
             fields |= NUMERIC | LITERAL | IDENTIFIER;
-            literal = handleNumericConversion(name);
-            egressType = literal.getClass();
+            egressType = (literal = handleNumericConversion(name)).getClass();
 
             if ((fields & INVERT) != 0) {
                 try {
