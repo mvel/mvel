@@ -42,10 +42,10 @@ public class ExpressionCompiler extends AbstractParser {
             contextControl(REMOVE, null, null);
             throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
         }
-        else if (pCtx.isFatalError()) {
-            contextControl(REMOVE, null, null);
-            throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
-        }
+//        else if (pCtx.is) {
+//            contextControl(REMOVE, null, null);
+//            throw new CompileException("Failed to _compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
+//        }
 
         return c;
     }
