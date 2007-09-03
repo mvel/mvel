@@ -41,9 +41,8 @@ public class CollectionParser {
     public Object parseCollection(char[] property) {
         this.property = property;
         this.cursor = 0;
-        this.length = property.length;
 
-        if (length > 0)
+        if ((this.length = property.length) > 0)
             while (length > 0 && isWhitespace(property[length - 1]))
                 length--;
 
@@ -158,11 +157,6 @@ public class CollectionParser {
             default:
                 return list;
         }
-    }
-
-
-    private void skipWhitespace() {
-        while (cursor < length && isWhitespace(property[cursor])) cursor++;
     }
 
     private static char[] subset(char[] property, int start, int end) {

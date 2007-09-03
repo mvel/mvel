@@ -79,8 +79,8 @@ public class ParserContext implements Serializable {
         return lineCount;
     }
 
-    public void setLineCount(int lineCount) {
-        this.lineCount = lineCount;
+    public int setLineCount(int lineCount) {
+        return this.lineCount = lineCount;
     }
 
     public int getLineOffset() {
@@ -329,8 +329,8 @@ public class ParserContext implements Serializable {
         return lastLineLabel;
     }
 
-    public void setLastLineLabel(LineLabel lastLineLabel) {
-        this.lastLineLabel = lastLineLabel;
+    public LineLabel setLastLineLabel(LineLabel lastLineLabel) {
+        return this.lastLineLabel = lastLineLabel;
     }
 
     public boolean hasImports() {

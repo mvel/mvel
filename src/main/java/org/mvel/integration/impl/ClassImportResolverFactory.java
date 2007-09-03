@@ -23,7 +23,6 @@ import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     public ClassImportResolverFactory() {
@@ -46,8 +45,9 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
                 "importantly, not implemented.");
     }
 
-    public void addClass(Class clazz) {
+    public Class addClass(Class clazz) {
         variableResolvers.put(getSimpleClassName(clazz), new ClassImportResolver(getSimpleClassName(clazz), clazz));
+        return clazz;
     }
 
     public boolean isTarget(String name) {
