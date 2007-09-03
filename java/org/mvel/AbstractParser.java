@@ -178,23 +178,17 @@ public class AbstractParser implements Serializable {
                 }
 
                 ParserContext pCtx = getParserContext();
-
                 line = pCtx.getLineCount();
 
                 skipWhitespaceWithLineAccounting();
 
-                pCtx.setLineCount(line);
-
-                if (!pCtx.isKnownLine(pCtx.getSourceFile(), line)) {
+                if (!pCtx.isKnownLine(pCtx.getSourceFile(), pCtx.setLineCount(line))) {
                     lastWasLineLabel = true;
 
                     pCtx.setLineAndOffset(line, cursor);
-                    pCtx.addKnownLine(pCtx.getSourceFile(), line);
+                    pCtx.addKnownLine(line);
 
-                    LineLabel ll = new LineLabel(pCtx.getSourceFile(), line);
-                    pCtx.setLastLineLabel(ll);
-
-                    return lastNode = ll;
+                    return lastNode = pCtx.setLastLineLabel(new LineLabel(pCtx.getSourceFile(), line));
                 }
             }
             else {
@@ -376,10 +370,7 @@ public class AbstractParser implements Serializable {
 
                         case']':
                         case'[':
-                            //   balancedCapture('[');
-                            cursor = balancedCapture(expr, cursor, '[');
-
-                            cursor++;
+                            cursor = balancedCapture(expr, cursor, '[') + 1;
                             continue;
                         case'.':
                             union = true;
@@ -1370,6 +1361,4 @@ public class AbstractParser implements Serializable {
     public static void resetParserContext() {
         contextControl(REMOVE, null, null);
     }
-
-
 }
