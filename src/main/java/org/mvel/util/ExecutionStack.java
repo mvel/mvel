@@ -8,7 +8,6 @@ public class ExecutionStack implements Stack {
         return element == null;
     }
 
-
     public void add(Object o) {
         size++;
         StackElement el = element;
@@ -52,10 +51,12 @@ public class ExecutionStack implements Stack {
 
     public Object pop() {
         if (size-- == 0) return null;
-        Object el = element.value;
-        element = element.next;
-
-        return el;
+        try {
+            return element.value;
+        }
+        finally {
+            element = element.next;
+        }
     }
 
     public void discard() {

@@ -13,12 +13,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Map;
-import java.util.regex.Pattern;
-import static java.util.regex.Pattern.compile;
 
 public class PropertyTools {
-    private static final Pattern truePattern = compile("(on|yes|true|1|hi|high|y)");
-
+//    private static final Pattern truePattern = compile("(on|yes|true|1|hi|high|y)");
 
     public static boolean isEmpty(Object o) {
         if (o != null) {

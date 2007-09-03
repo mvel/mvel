@@ -1,6 +1,9 @@
 package org.mvel.optimizers;
 
 import org.mvel.AbstractParser;
+import static org.mvel.util.PropertyTools.isIdentifierPart;
+
+import static java.lang.Character.isWhitespace;
 
 /**
  * @author Christopher Brock
@@ -63,7 +66,6 @@ public class AbstractOptimizer extends AbstractParser {
                         }
                         break;
 
-
                     case'"':
                         while (--i > 0) {
                             if (expr[i] == '"' && expr[i - 1] != '\\') {
@@ -94,7 +96,7 @@ public class AbstractOptimizer extends AbstractParser {
         }
 
         //noinspection StatementWithEmptyBody
-        while (++cursor < length && Character.isJavaIdentifierPart(expr[cursor])) ;
+        while (++cursor < length && isIdentifierPart(expr[cursor])) ;
 
         if (cursor < length) {
             skipWhitespace();
@@ -120,7 +122,7 @@ public class AbstractOptimizer extends AbstractParser {
     protected void whiteSpaceSkip() {
         if (cursor < length)
             //noinspection StatementWithEmptyBody
-            while (Character.isWhitespace(expr[cursor]) && ++cursor < length) ;
+            while (isWhitespace(expr[cursor]) && ++cursor < length) ;
     }
 
     protected boolean scanTo(char c) {
@@ -136,7 +138,7 @@ public class AbstractOptimizer extends AbstractParser {
         int pos = cursor;
         for (pos--; pos > 0; pos--) {
             if (expr[pos] == '\'' || expr[pos] == '"') return pos;
-            else if (!Character.isWhitespace(expr[pos])) return pos;
+            else if (!isWhitespace(expr[pos])) return pos;
         }
         return -1;
     }

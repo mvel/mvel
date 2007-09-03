@@ -39,10 +39,8 @@ public class CollectionParser {
     }
 
     public Object parseCollection(char[] property) {
-        this.property = property;
         this.cursor = 0;
-
-        if ((this.length = property.length) > 0)
+        if ((this.length = (this.property = property).length) > 0)
             while (length > 0 && isWhitespace(property[length - 1]))
                 length--;
 
