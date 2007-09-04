@@ -2128,6 +2128,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(false, test("_abc = 'someString'.hashCode(); _xyz = _abc + 1; _abc == _xyz"));
     }
 
+    public void testRandomExpression10() {
+        assertEquals(false, test("(_abc = (_xyz = 'someString'.hashCode()) + 1); _abc == _xyz"));
+    }
+
 //    public void testSwing() {
 //        test("import javax.swing.JFrame;\n" +
 //                "import javax.swing.JLabel;\n" +
