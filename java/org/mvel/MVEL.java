@@ -89,6 +89,10 @@ public class MVEL {
         return OPTIMIZER;
     }
 
+    public static Object eval(String expression) {
+        return new MVELInterpretedRuntime(expression).parse();
+    }
+
     public static Object eval(String expression, Object ctx) {
         return new MVELInterpretedRuntime(expression, ctx).parse();
     }
