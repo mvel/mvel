@@ -2116,6 +2116,18 @@ public class CoreConfidenceTests extends AbstractTest {
                 " return org.mvel.MVEL.executeExpression(compiledExpr);"));
     }
 
+    public void testRandomExpression7() {
+        assertEquals("FOOBAR", test("'foobar'.toUpperCase();"));
+    }
+
+    public void testRandomExpression8() {
+        assertEquals(true, test("'someString'.intern(); 'someString'.hashCode() == 'someString'.hashCode();"));
+    }
+
+    public void testRandomExpression9() {
+        assertEquals(false, test("_abc = 'someString'.hashCode(); _xyz = _abc + 1; _abc == _xyz"));
+    }
+
 //    public void testSwing() {
 //        test("import javax.swing.JFrame;\n" +
 //                "import javax.swing.JLabel;\n" +

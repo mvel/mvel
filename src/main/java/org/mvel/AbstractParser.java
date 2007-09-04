@@ -746,13 +746,16 @@ public class AbstractParser implements Serializable {
                     }
 
                     case'\'':
-                        cursor = captureStringLiteral('\'', expr, cursor, length);
-                        return lastNode = new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
-
-
                     case'"':
-                        cursor = captureStringLiteral('"', expr, cursor, length);
-                        return lastNode = new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
+                        cursor = captureStringLiteral(expr[cursor], expr, cursor, length);
+
+                        lastNode = new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
+
+                        if (tokenContinues()) {
+                            return handleUnion(lastNode);
+                        }
+
+                        return lastNode;
 
 
                     case'&': {
@@ -812,13 +815,16 @@ public class AbstractParser implements Serializable {
                             throw new CompileException("unbalanced brace: in inline map/list/array creation", expr, cursor);
                         }
 
-                        if (lookAhead(1) == '.') {
-                            InlineCollectionNode n = new InlineCollectionNode(expr, start, start = ++cursor, fields);
+                        cursor++;
+
+                        if (tokenContinues()) {
+                            //   if (lookAhead(1) == '.') {
+                            InlineCollectionNode n = new InlineCollectionNode(expr, start, start = cursor, fields);
                             captureToEOT();
                             return lastNode = new Union(expr, start + 1, cursor, fields, n);
                         }
                         else {
-                            return lastNode = new InlineCollectionNode(expr, start, ++cursor, fields);
+                            return lastNode = new InlineCollectionNode(expr, start, cursor, fields);
                         }
 
                     default:
@@ -835,7 +841,7 @@ public class AbstractParser implements Serializable {
             skipWhitespace();
             if (expr[cursor] == '.') {
                 int union = cursor + 1;
-                captureToEOS();
+                captureToEOT();
                 return lastNode = new Union(expr, union, cursor, fields, node);
             }
         }
@@ -1025,6 +1031,19 @@ public class AbstractParser implements Serializable {
         return false;
     }
 
+
+    protected boolean tokenContinues() {
+        if (cursor >= length) return false;
+        else if (expr[cursor] == '.') return true;
+        else if (isWhitespace(expr[cursor])) {
+            int markCurrent = cursor;
+            skipWhitespace();
+            if (cursor < length && expr[cursor] == '.') return true;
+            cursor = markCurrent;
+        }
+        return false;
+    }
+
     protected void captureToEOS() {
         while (cursor < length && expr[cursor] != ';') {
             cursor++;
@@ -1050,6 +1069,7 @@ public class AbstractParser implements Serializable {
                     }
                     break;
 
+                case'=':
                 case'&':
                 case'|':
                 case';':
