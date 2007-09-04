@@ -966,7 +966,8 @@ public class AbstractParser implements Serializable {
         int endCond = 0;
 
         if (cond) {
-            endCond = cursor = balancedCapture(expr, startCond = ++cursor, '(');
+            endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
+            startCond++;
             cursor++;
         }
 
