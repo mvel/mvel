@@ -688,7 +688,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("Foo", test("if (false) return 'Bar'; else return 'Foo';"));
     }
 
-    public void testForeEach2() {
+    public void testForEach2() {
         assertEquals(6, test("total = 0; a = {1,2,3}; foreach(item : a) { total += item }; total"));
     }
 
@@ -2089,6 +2089,31 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testClassAliasing() {
         assertEquals("foobar", test("Foo = String; new Foo('foobar')"));
+    }
+
+    public void testRandomExpression1() {
+        assertEquals("HelloWorld", test("if ((x15 = foo.bar) == foo.bar && x15 == foo.bar) { return 'HelloWorld'; } else { return 'GoodbyeWorld' } "));
+    }
+
+    public void testRandomExpression2() {
+        assertEquals(11, test("counterX = 0; foreach (item:{1,2,3,4,5,6,7,8,9,10}) { counterX++; }; return counterX + 1;"));
+    }
+
+    public void testRandomExpression3() {
+        assertEquals(0, test("counterX = 10; foreach (item:{1,1,1,1,1,1,1,1,1,1}) { counterX -= item; } return counterX;"));
+    }
+
+    public void testRandomExpression4() {
+        assertEquals(true, test("result = org.mvel.MVEL.eval('10 * 3'); result == (10 * 3);"));
+    }
+
+    public void testRandomExpression5() {
+        assertEquals(true, test("FooClassRef = foo.getClass(); fooInst = new FooClassRef(); name = org.mvel.MVEL.eval('name', fooInst); return name == 'dog'"));
+    }
+
+    public void testRandomExpression6() {
+        assertEquals(500, test("exprString = '250' + ' ' + '*' + ' ' + '2'; compiledExpr = org.mvel.MVEL.compileExpression(exprString);" +
+                " return org.mvel.MVEL.executeExpression(compiledExpr);"));
     }
 
 //    public void testSwing() {
