@@ -518,28 +518,4 @@ public class TemplateConfidenceTests extends TestCase {
         return TemplateInterpreter.parse(ex, base, map);
     }
 
-
-    public Object compiledExecute(String ex) {
-        Serializable compiled = MVEL.compileExpression(ex);
-        return MVEL.executeExpression(compiled, base, map);
-    }
-
-    public void calculateAge() {
-        System.out.println("Calculating the Age");
-
-        Calendar c1 = Calendar.getInstance();
-        c1.set(1999, 0, 10); // 1999 jan 20
-
-        Map objectMap = new HashMap(1);
-        Map propertyMap = new HashMap(1);
-
-        //noinspection unchecked
-        propertyMap.put("GEBDAT", c1.getTime());
-
-        //noinspection unchecked
-        objectMap.put("EV_VI_ANT1", propertyMap);
-        System.out.println(new PDFFieldUtil().calculateAge(c1.getTime()));
-        System.out.println(MVEL.eval("new org.mvel.tests.main.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'X' : ''"
-                , null, objectMap));
-    }    
 }
