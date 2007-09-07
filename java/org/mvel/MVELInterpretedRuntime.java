@@ -59,10 +59,10 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
             if (parserContext != null
                     && (parserContext.get() == null || parserContext.get().getRootParser() == this)) {
-                
+
                 contextControl(REMOVE, null, null);
             }
- 
+
             return handleParserEgress(stk.peek(), returnBigDecimal);
         }
         catch (ArrayIndexOutOfBoundsException e) {
@@ -412,6 +412,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
         this.variableFactory = resolverFactory;
     }
 
+    MVELInterpretedRuntime(char[] expr, Object ctx, VariableResolverFactory resolverFactory, boolean returnBigDecimal) {
+        this.length = (this.expr = expr).length;
+        this.ctx = ctx;
+        this.variableFactory = resolverFactory;
+        this.returnBigDecimal = returnBigDecimal;
+    }
+
     MVELInterpretedRuntime(Object ctx, Map<String, Object> variables) {
         this.ctx = ctx;
         this.variableFactory = new MapVariableResolverFactory(variables);
@@ -421,6 +428,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
         setExpression(expression);
         this.ctx = ctx;
         this.variableFactory = resolverFactory;
+    }
+
+    MVELInterpretedRuntime(String expression, Object ctx, VariableResolverFactory resolverFactory, boolean returnBigDecimal) {
+        setExpression(expression);
+        this.ctx = ctx;
+        this.variableFactory = resolverFactory;
+        this.returnBigDecimal = returnBigDecimal;
     }
 
     MVELInterpretedRuntime(String expression, VariableResolverFactory resolverFactory) {
@@ -433,13 +447,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
         this.ctx = ctx;
     }
 
-    private void chainFactory(VariableResolverFactory factory) {
-        VariableResolverFactory vrf = variableFactory;
-        while (vrf.getNextFactory() != null) {
-            vrf = vrf.getNextFactory();
-        }
-        vrf.setNextFactory(factory);
-    }
+//    private void chainFactory(VariableResolverFactory factory) {
+//        VariableResolverFactory vrf = variableFactory;
+//        while (vrf.getNextFactory() != null) {
+//            vrf = vrf.getNextFactory();
+//        }
+//        vrf.setNextFactory(factory);
+//    }
 
 
     protected boolean hasImport(String name) {

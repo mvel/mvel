@@ -204,6 +204,7 @@ public class PropertyAccessor {
 
             length = oLength;
 
+
             if (nextToken() == COL) {
                 int start = ++cursor;
 
@@ -237,6 +238,7 @@ public class PropertyAccessor {
             }
 
             String tk = capture();
+
 
             Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
             if (member == null) {
