@@ -139,6 +139,7 @@ public class TemplateInterpreter {
     private static final Map<CharSequence, char[]> EX_PRECACHE;
     private static final Map<Object, Node[]> EX_NODE_CACHE;
     private static final Map<Object, Serializable> EX_PRECOMP_CACHE;
+    private static boolean CACHE_DISABLE = false;
 
     static {
         if (MVEL.THREAD_SAFE) {
@@ -169,7 +170,10 @@ public class TemplateInterpreter {
      * @param template -
      */
     public TemplateInterpreter(CharSequence template) {
-        if (!EX_PRECACHE.containsKey(template)) {
+        if (CACHE_DISABLE) {
+            nodes = new TemplateCompiler(this).compileExpression();
+        }
+        else if (!EX_PRECACHE.containsKey(template)) {
             EX_PRECACHE.put(template, this.expression = template.toString().toCharArray());
             nodes = new TemplateCompiler(this).compileExpression();
             Node[] nodes = cloneAll(EX_NODE_CACHE.get(expression));
@@ -211,7 +215,10 @@ public class TemplateInterpreter {
 
 
     public TemplateInterpreter(String expression) {
-        if (!EX_PRECACHE.containsKey(expression)) {
+        if (CACHE_DISABLE) {
+            nodes = new TemplateCompiler(this).compileExpression();
+        }
+        else if (!EX_PRECACHE.containsKey(expression)) {
             EX_PRECACHE.put(expression, this.expression = expression.toCharArray());
             nodes = new TemplateCompiler(this).compileExpression();
             EX_NODE_CACHE.put(expression, nodes);
@@ -350,7 +357,7 @@ public class TemplateInterpreter {
             switch (nodes[0].getToken()) {
                 case PROPERTY_EX:
                     //noinspection unchecked
-                    if (!cacheAggressively) {
+                    if (CACHE_DISABLE || !cacheAggressively) {
                         char[] seg = new char[expression.length - 3];
                         arraycopy(expression, 2, seg, 0, seg.length);
 
@@ -635,5 +642,9 @@ public class TemplateInterpreter {
 
     public static void setCacheAggressively(boolean cacheAggressively) {
         TemplateInterpreter.cacheAggressively = cacheAggressively;
+    }
+
+    public static void setDisableCache(boolean disableCache) {
+        CACHE_DISABLE = disableCache;
     }
 }
