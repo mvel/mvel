@@ -29,7 +29,7 @@ import java.util.Map;
 
 public class MVELSH {
     public static void main(String[] args) {
-        Map map = new HashMap();
+        Map map;
 
         boolean output = true;
         boolean stacktrace = false;
@@ -39,7 +39,7 @@ public class MVELSH {
 
         String in;
 
-        VariableResolverFactory lvrf = new DefaultLocalVariableResolverFactory(new HashMap<String, Object>());
+        VariableResolverFactory lvrf = new DefaultLocalVariableResolverFactory(map = new HashMap<String, Object>());
 
         Object out = null;
 

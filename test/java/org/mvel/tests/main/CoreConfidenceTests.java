@@ -2146,6 +2146,44 @@ public class CoreConfidenceTests extends AbstractTest {
 //                "frame.visible = true;");
 //    }
 
+    /**
+     * Submitted by: Guerry Semones
+     */
+    private Map<Object, Object> outerMap;
+    private Map<Object, Object> innerMap;
+
+
+    public void testAddIntToMapWithMapSyntax() throws Throwable {
+        outerMap = new HashMap<Object, Object>();
+        innerMap = new HashMap<Object, Object>();
+        outerMap.put("innerMap", innerMap);
+
+        // fails because mvel checks for 'foo' in the outerMap,
+        // rather than inside innerMap in outerMap
+        PropertyAccessor.set(outerMap, "innerMap['foo']", 42);
+
+        // mvel set it here
+//        assertEquals(42, outerMap.get("foo"));
+
+        // instead of here
+        assertEquals(42, innerMap.get("foo"));
+    }
+
+    public void testUpdateIntInMapWithMapSyntax() throws Throwable {
+
+        outerMap = new HashMap<Object, Object>();
+        innerMap = new HashMap<Object, Object>();
+        outerMap.put("innerMap", innerMap);
+
+        // fails because mvel checks for 'foo' in the outerMap,
+        // rather than inside innerMap in outerMap
+        innerMap.put("foo", 21);
+        PropertyAccessor.set(outerMap, "innerMap['foo']", 42);
+
+        // instead of updating it here
+        assertEquals(42, innerMap.get("foo"));
+    }
+
 }
 
 

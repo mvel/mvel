@@ -36,6 +36,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private boolean convertableIngressEgress;
     private boolean optimized = false;
     private boolean importInjectionRequired = false;
+    private boolean returnBigDecimal = false;
 
     private Class<? extends AccessorOptimizer> accessorOptimizer;
 
@@ -104,7 +105,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         if (!optimized) setupOptimizers();
-        return handleParserEgress(execute(false, this, staticContext, factory), false);
+        return handleParserEgress(execute(false, this, staticContext, factory), returnBigDecimal);
     }
 
     public Object getDirectValue(Object staticContext, VariableResolverFactory factory) {
@@ -160,6 +161,14 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         }
     }
 
+
+    public boolean isReturnBigDecimal() {
+        return returnBigDecimal;
+    }
+
+    public void setReturnBigDecimal(boolean returnBigDecimal) {
+        this.returnBigDecimal = returnBigDecimal;
+    }
 
     public boolean isImportInjectionRequired() {
         return importInjectionRequired;
