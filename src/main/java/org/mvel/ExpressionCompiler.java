@@ -385,6 +385,11 @@ public class ExpressionCompiler extends AbstractParser {
         setExpression(expression);
     }
 
+    public ExpressionCompiler(String expression, boolean verifying) {
+        setExpression(expression);
+        this.verifying = verifying;
+    }
+
     public ExpressionCompiler(char[] expression) {
         setExpression(expression);
     }
