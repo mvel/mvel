@@ -19,7 +19,6 @@
 package org.mvel;
 
 import org.mvel.optimizers.AbstractOptimizer;
-import org.mvel.optimizers.impl.refl.FieldAccessor;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.getBestCandidate;
 import static org.mvel.util.ParseTools.parseParameterList;
@@ -45,8 +44,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
 
     public PropertyVerifier(char[] property, ParserContext parserContext) {
-        this.expr = property;
-        this.length = property.length;
+        this.length = (this.expr = property).length;
         this.parserContext = parserContext;
     }
 
@@ -109,9 +107,6 @@ public class PropertyVerifier extends AbstractOptimizer {
         Member member = ctx != null ? PropertyTools.getFieldOrAccessor(ctx, property) : null;
 
         if (member instanceof Field) {
-            FieldAccessor accessor = new FieldAccessor();
-            accessor.setField((Field) member);
-
             return ((Field) member).getType();
         }
         else if (member != null) {
@@ -188,12 +183,9 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         cursor++;
 
-        ExpressionCompiler verifCompiler;
         if (tk.length() > 0) {
-            String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
-            for (String token : subtokens) {
-                verifCompiler = new ExpressionCompiler(token);
-                verifCompiler._compile();
+            for (String token : parseParameterList(tk.toCharArray(), 0, -1)) {
+                new ExpressionCompiler(token)._compile();
             }
         }
 
@@ -206,8 +198,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
             args = new Class[subtokens.length];
             for (int i = 0; i < subtokens.length; i++) {
-                ExpressionCompiler compiler = new ExpressionCompiler(subtokens[i]);
-                compiler.setVerifying(true);
+                ExpressionCompiler compiler = new ExpressionCompiler(subtokens[i], true);
                 compiler._compile();
                 args[i] = compiler.getReturnType() != null ? compiler.getReturnType() : Object.class;
             }
