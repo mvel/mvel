@@ -167,6 +167,12 @@ public class KnowledgeHelperFixerTest extends TestCase {
                                       KnowledgeHelperFixerTest.fixer.fix( raw ) );
     }
 
+    public void testRetract() {
+        final String raw = "System.out.println(\"some text\");retract(object);";
+        assertEqualsIgnoreWhitespace( "System.out.println(\"some text\");drools.retract(object);",
+                                      KnowledgeHelperFixerTest.fixer.fix( raw ) );
+    }
+    
     private void assertEqualsIgnoreWhitespace(final String expected,
                                               final String actual) {
         if ( expected == null || actual == null ) {
