@@ -965,6 +965,39 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(4, count);
 
     }
+    
+    public void testBreakpointsAcrossWith() {
+        String line1 = "System.out.println( \"a1\" );\n";
+        String line2 = "c = new Cheese();\n";
+        String line3 = "with ( c ) { type = 'cheddar',\n" +
+                       "             price = 10 };\n";
+        String line4 = "System.out.println( \"a1\" );\n";
+        String expr = line1 + line2 + line3 + line4;
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+        //      compiler.setDebugSymbols(true);
+
+        ParserContext context = new ParserContext();
+        context.addImport("System", System.class);
+        context.addImport("Cheese", Cheese.class);
+        context.setStrictTypeEnforcement(true);
+        context.setDebugSymbols(true);
+        context.setSourceFile("mysource");
+
+        Serializable compiledExpression = compiler.compile(context);
+
+        String s = org.mvel.debug.DebugTools.decompile(compiledExpression);
+
+        System.out.println("output: " + s);
+
+        int fromIndex = 0;
+        int count = 0;
+        while ((fromIndex = s.indexOf("DEBUG_SYMBOL", fromIndex + 1)) > -1) {
+            count++;
+        }
+        assertEquals(5, count);
+
+    }    
 
 
     public void testBreakpointsAcrossComments() {
