@@ -959,7 +959,12 @@ public class AbstractParser implements Serializable {
         }
         else if (isFlag(ASTNode.BLOCK_FOREACH) || isFlag(ASTNode.BLOCK_WITH)) {
             skipToNextTokenJunction();
-            skipWhitespace();
+            if (debugSymbols) {
+                skipWhitespaceWithLineAccounting();
+            }
+            else {
+                skipWhitespace();
+            }
             return _captureBlock(null, expr, true);
         }
 
@@ -972,9 +977,22 @@ public class AbstractParser implements Serializable {
         int endCond = 0;
 
         if (cond) {
-            endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
-            startCond++;
-            cursor++;
+            if (debugSymbols) {
+                int[] cap = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(');
+                endCond = cursor = cap[0];
+
+                startCond++;
+                cursor++;
+
+                line = getParserContext().getLineCount();
+                line += cap[1];
+                getParserContext().setLineCount(line);
+            }
+            else {
+                endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
+                startCond++;
+                cursor++;
+            }
         }
 
         int blockStart;
@@ -987,9 +1005,23 @@ public class AbstractParser implements Serializable {
         }
         else if (expr[cursor] == '{') {
             blockStart = cursor;
-            if ((blockEnd = cursor = balancedCapture(expr, cursor, '{')) == -1) {
+
+            if (debugSymbols) {
+                int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '{');
+                if (cap[0] == -1) {
+                    throw new CompileException("unbalanced braces { }", expr, cursor);
+                }
+
+                blockEnd = cursor = cap[0];
+
+                line = getParserContext().getLineCount();
+                line += cap[1];
+                getParserContext().setLineCount(line);
+            }
+            else if ((blockEnd = cursor = balancedCapture(expr, cursor, '{')) == -1) {
                 throw new CompileException("unbalanced braces { }", expr, cursor);
             }
+
         }
         else {
             blockStart = cursor - 1;
