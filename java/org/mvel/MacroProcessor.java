@@ -20,14 +20,14 @@ public class MacroProcessor extends AbstractParser implements PreProcessor {
         String token;
 
         for (; cursor < length; cursor++) {
-            while (cursor < length && isWhitespace(expr[cursor])) {
+            while (cursor < length && (isWhitespace(expr[cursor]) || expr[cursor] == ';')) {
                 appender.append(expr[cursor++]);
             }
-            
+
             start = cursor;
 
             while (cursor < length
-                    && (!isWhitespace(expr[cursor]) 
+                    && (!isWhitespace(expr[cursor])
                     && expr[cursor] != '('
                     && expr[cursor] != ')')) {
 
