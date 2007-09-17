@@ -2267,6 +2267,25 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
+    public static class TargetClass {
+        private short _targetValue = 5;
+
+        public short getTargetValue() {
+            return _targetValue;
+        }
+    }
+
+    public void testNestedMethodCall() {
+        List elements = new ArrayList();
+        elements.add(new TargetClass());
+        Map variableMap = new HashMap();
+        variableMap.put("elements", elements);
+
+        MVEL.eval(
+                "results = new java.util.ArrayList(); foreach (element : elements) { if( {5} contains element.targetValue.intValue()) { results.add(element); } }; results",
+                variableMap);
+    }
+
 }
 
 
