@@ -521,7 +521,7 @@ public class ParseTools {
             for (Object o : ((Object[]) compareTo)) {
                 if (compareTest == null && o == null)
                     return true;
-                else if (o != null && o.equals(compareTest))
+                else if ((Boolean) doOperations(o, Operator.EQUAL, compareTest))
                     return true;
             }
         }
