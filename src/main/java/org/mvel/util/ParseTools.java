@@ -912,6 +912,57 @@ public class ParseTools {
         return -1;
     }
 
+    public static int[] balancedCaptureWithLineAccounting(char[] chars, int start, char type) {
+        int depth = 1;
+        char term = type;
+        switch (type) {
+            case'[':
+                term = ']';
+                break;
+            case'{':
+                term = '}';
+                break;
+            case'(':
+                term = ')';
+                break;
+        }
+
+        if (type == term) {
+            for (start++; start < chars.length; start++) {
+                if (chars[start] == type) {
+                    return new int[]{start, 0};
+                }
+            }
+        }
+        else {
+            int lines = 0;
+
+            for (start++; start < chars.length; start++) {
+                if (isWhitespace(chars[start])) {
+                    switch (chars[start]) {
+                        case'\r':
+                            continue;
+                        case'\n':
+                            lines++;
+                    }
+                }
+
+                else if (chars[start] == '\'' || chars[start] == '"') {
+                    start = captureStringLiteral(chars[start], chars, start, chars.length);
+                }
+                else if (chars[start] == type) {
+                    depth++;
+                }
+                else if (chars[start] == term && --depth == 0) {
+                    return new int[]{start, lines};
+                }
+
+            }
+        }
+
+        return new int[]{-1, 0};
+    }
+
     public static String handleStringEscapes(char[] input) {
         int escapes = 0;
         for (int i = 0; i < input.length; i++) {

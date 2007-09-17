@@ -965,14 +965,16 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(4, count);
 
     }
-    
+
     public void testBreakpointsAcrossWith() {
         String line1 = "System.out.println( \"a1\" );\n";
         String line2 = "c = new Cheese();\n";
         String line3 = "with ( c ) { type = 'cheddar',\n" +
-                       "             price = 10 };\n";
+                "             price = 10 };\n";
         String line4 = "System.out.println( \"a1\" );\n";
         String expr = line1 + line2 + line3 + line4;
+
+        System.out.println(expr);
 
         ExpressionCompiler compiler = new ExpressionCompiler(expr);
         //      compiler.setDebugSymbols(true);
@@ -997,7 +999,7 @@ public class CoreConfidenceTests extends AbstractTest {
         }
         assertEquals(5, count);
 
-    }    
+    }
 
 
     public void testBreakpointsAcrossComments() {
@@ -2216,6 +2218,54 @@ public class CoreConfidenceTests extends AbstractTest {
         // instead of updating it here
         assertEquals(42, innerMap.get("foo"));
     }
+
+
+    private HashMap<String, Object> context = new HashMap<String, Object>();
+
+
+    public void before() {
+        HashMap<String, Object> map = new HashMap<String, Object>();
+
+        MyBean bean = new MyBean();
+        bean.setVar(4);
+
+        map.put("bean", bean);
+        context.put("map", map);
+    }
+
+
+    public void testDeepProperty() {
+
+        before();
+        Serializable compiled = MVEL.compileExpression("map.bean.var");
+
+        Object obj = MVEL.executeExpression(compiled, context);
+        assertEquals(4, obj);
+    }
+
+
+    public void testDeepProperty2() {
+        before();
+
+        Serializable compiled = MVEL.compileExpression("map.bean.getVar()");
+
+        Object obj = MVEL.executeExpression(compiled, context);
+        assertEquals(4, obj);
+    }
+
+
+    public class MyBean {
+        int var;
+
+        public int getVar() {
+            return var;
+        }
+
+        public void setVar(int var) {
+            this.var = var;
+        }
+    }
+
 
 }
 
