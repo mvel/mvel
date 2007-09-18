@@ -12,12 +12,21 @@ public class SetterAccessor implements AccessorNode {
     private final Method method;
     private Class<? extends Object> targetType;
 
-    public static final Object[] EMPTY = new Object[0];
+    private boolean coercionRequired = false;
 
+    public static final Object[] EMPTY = new Object[0];
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         try {
-            return method.invoke(ctx, convert(value, targetType));
+            if (coercionRequired) return method.invoke(ctx, convert(value, targetType));
+            else return method.invoke(ctx, value);
+        }
+        catch (IllegalArgumentException e) {
+            if (!coercionRequired) {
+                coercionRequired = true;
+                return setValue(ctx, elCtx, variableFactory, value);
+            }
+            throw new CompileException("unable to bind property", e);
         }
         catch (Exception e) {
             throw new CompileException("error binding property", e);
