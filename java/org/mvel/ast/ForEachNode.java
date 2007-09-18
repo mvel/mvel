@@ -4,7 +4,7 @@ import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
-import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.subCompileExpression;
 import static org.mvel.util.ParseTools.subset;
 
 import java.util.HashMap;
@@ -21,17 +21,16 @@ public class ForEachNode extends BlockNode {
     public ForEachNode(char[] condition, char[] block, int fields) {
         super(condition, fields);
         handleCond(condition);
-        this.compiledBlock = (ExecutableStatement) ParseTools.subCompileExpression(this.block = block);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         Map<String, Object> locals = new HashMap<String, Object>();
         VariableResolverFactory local = new DefaultLocalVariableResolverFactory(locals);
-        local.setNextFactory(factory);
 
         Object ret = null;
 
-        Object iterCond = condition.getValue(ctx, thisValue, factory);
+        Object iterCond = condition.getValue(ctx, thisValue, local.setNextFactory(factory));
 
         if (iterCond instanceof Iterable) {
             for (Object o : (Iterable) iterCond) {
@@ -64,6 +63,6 @@ public class ForEachNode extends BlockNode {
 
         cursor++;
 
-        this.condition = (ExecutableStatement) ParseTools.subCompileExpression(subset(condition, cursor));
+        this.condition = (ExecutableStatement) subCompileExpression(subset(condition, cursor));
     }
 }
