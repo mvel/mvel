@@ -18,8 +18,12 @@ public class SetterAccessor implements AccessorNode {
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         try {
-            if (coercionRequired) return method.invoke(ctx, convert(value, targetType));
-            else return method.invoke(ctx, value);
+            if (coercionRequired) {
+                return method.invoke(ctx, convert(value, targetType));
+            }
+            else {
+                return method.invoke(ctx, value);
+            }
         }
         catch (IllegalArgumentException e) {
             if (!coercionRequired) {
