@@ -1492,6 +1492,24 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("FOOBAR!", MVEL.executeExpression(compiled, null, vars));
     }
+    
+    public void testExecuteCoercionTwice() {
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put("foo", new Foo());
+        vars.put("$value", new Long(5));
+        
+        ExpressionCompiler compiler = new ExpressionCompiler("with (foo) { countTest = $value };");
+        compiler.setDebugSymbols(true);
+
+        ParserContext ctx = new ParserContext();
+        ctx.setSourceFile("test.mv");
+
+        CompiledExpression compiled = compiler.compile(ctx);
+
+        MVEL.executeExpression(compiled, null, vars);
+        
+        MVEL.executeExpression(compiled, null, vars);
+    }
 
     public void testComments() {
         assertEquals(10, test("// This is a comment\n5 + 5"));
