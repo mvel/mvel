@@ -1492,12 +1492,12 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("FOOBAR!", MVEL.executeExpression(compiled, null, vars));
     }
-    
+
     public void testExecuteCoercionTwice() {
         Map<String, Object> vars = new HashMap<String, Object>();
         vars.put("foo", new Foo());
         vars.put("$value", new Long(5));
-        
+
         ExpressionCompiler compiler = new ExpressionCompiler("with (foo) { countTest = $value };");
         compiler.setDebugSymbols(true);
 
@@ -1507,7 +1507,7 @@ public class CoreConfidenceTests extends AbstractTest {
         CompiledExpression compiled = compiler.compile(ctx);
 
         MVEL.executeExpression(compiled, null, vars);
-        
+
         MVEL.executeExpression(compiled, null, vars);
     }
 
@@ -2304,7 +2304,17 @@ public class CoreConfidenceTests extends AbstractTest {
                 variableMap);
     }
 
+
+    public void testBooleanEvaluation() {
+        assertEquals(true, test("true||false||false"));
+    }
+
+    public void testBooleanEvaluation2() {
+        assertEquals(true, test("equalityCheck(1,1)||fun||ackbar"));
+    }
 }
+
+
 
 
 
