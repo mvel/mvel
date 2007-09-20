@@ -39,8 +39,9 @@ public class ParserContext implements Serializable {
     private boolean fatalError = false;
     private boolean retainParserState = false;
     private boolean debugSymbols = false;
-
+    private boolean blockSymbols = false;
     private boolean executableCodeReached = false;
+
 
     public ParserContext() {
     }
@@ -337,6 +338,14 @@ public class ParserContext implements Serializable {
         return (imports != null && imports.size() != 0) || (packageImports != null && packageImports.size() != 0);
     }
 
+
+    public boolean isBlockSymbols() {
+        return blockSymbols;
+    }
+
+    public void setBlockSymbols(boolean blockSymbols) {
+        this.blockSymbols = blockSymbols;
+    }
 
     public boolean isExecutableCodeReached() {
         return executableCodeReached;
