@@ -117,7 +117,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 switch (operator = tk.getOperator()) {
                     case AND:
                         if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
-                            if (unwindStatement()) {
+                            if (unwindStatement(operator)) {
                                 return;
                             }
                             else {
@@ -131,7 +131,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         }
                     case OR:
                         if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
-                            if (unwindStatement()) {
+                            if (unwindStatement(operator)) {
                                 return;
                             }
                             else {
@@ -348,12 +348,22 @@ public class MVELInterpretedRuntime extends AbstractParser {
     /**
      * This method is called to unwind the current statement without any reduction or further parsing.
      *
+     * @param operator -
      * @return -
      */
-    private boolean unwindStatement() {
+    private boolean unwindStatement(int operator) {
         ASTNode tk;
-        while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT) && !tk.isOperator(Operator.OR)) {
-            //nothing
+
+        switch (operator) {
+            case Operator.AND:
+                while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT) && !tk.isOperator(Operator.OR)) {
+                    //nothing
+                }
+                break;
+            default:
+                while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT)) {
+                    //nothing
+                }
         }
         return tk == null;
     }
