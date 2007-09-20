@@ -1,9 +1,6 @@
 package org.mvel.ast;
 
-import org.mvel.CompileException;
-import org.mvel.ExecutableStatement;
-import org.mvel.MVEL;
-import org.mvel.Operator;
+import org.mvel.*;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 
@@ -22,9 +19,19 @@ public class WithNode extends BlockNode implements NestedStatement {
     public WithNode(char[] expr, char[] block, int fields) {
         super(expr, fields, block);
 
-        nestedStatement = (ExecutableStatement) subCompileExpression(nestParm = new String(expr).trim());
+        ParserContext pCtx = null;
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            pCtx = AbstractParser.getCurrentThreadParserContext();
+            pCtx.setBlockSymbols(true);
+        }
 
+        nestedStatement = (ExecutableStatement) subCompileExpression(nestParm = new String(expr).trim());
         compileWithExpressions();
+
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            pCtx.setBlockSymbols(false);
+        }
+
     }
 
     //todo: performance improvement
@@ -46,7 +53,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return getReducedValueAccelerated(ctx, thisValue, factory);
-    }                                                      
+    }
 
     private void compileWithExpressions() {
         List<ParmValuePair> parms = new ArrayList<ParmValuePair>();

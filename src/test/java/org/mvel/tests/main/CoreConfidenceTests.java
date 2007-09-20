@@ -1493,6 +1493,67 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("FOOBAR!", MVEL.executeExpression(compiled, null, vars));
     }
 
+
+    public void testMacroSupportWithDebugging() {
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put("foo", new Foo());
+
+        Map<String, Interceptor> interceptors = new HashMap<String, Interceptor>();
+        Map<String, Macro> macros = new HashMap<String, Macro>();
+
+        interceptors.put("Modify", new Interceptor() {
+            public int doBefore(ASTNode node, VariableResolverFactory factory) {
+                ((WithNode) node).getNestedStatement().getValue(null,
+                        factory);
+
+                factory.createVariable("mod", "FOOBAR!");
+
+
+                return 0;
+            }
+
+            public int doAfter(Object val, ASTNode node, VariableResolverFactory factory) {
+                return 0;
+            }
+        });
+
+        macros.put("modify", new Macro() {
+            public String doMacro() {
+                return "@Modify with";
+            }
+        });
+
+        ExpressionCompiler compiler = new ExpressionCompiler(
+                parseMacros(
+                        "System.out.println('hello');\n" +
+                                "System.out.println('bye');\n" +
+                                "modify (foo) { aValue = 'poo', \n" +
+                                " aValue = 'poo' };\n mod", macros)
+        );
+        compiler.setDebugSymbols(true);
+
+        ParserContext ctx = new ParserContext(null, interceptors, null);
+        ctx.setSourceFile("test.mv");
+
+        CompiledExpression compiled = compiler.compile(ctx);
+
+        MVELRuntime.setThreadDebugger(new Debugger() {
+
+            public int onBreak(Frame frame) {
+                System.out.println(frame.getSourceName() + ":" + frame.getLineNumber());
+
+                return Debugger.STEP;
+            }
+        });
+
+        MVELRuntime.registerBreakpoint("test.mv", 3);
+
+        System.out.println(DebugTools.decompile(compiled
+        ));
+
+        assertEquals("FOOBAR!", MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(vars)));
+    }
+
     public void testExecuteCoercionTwice() {
         Map<String, Object> vars = new HashMap<String, Object>();
         vars.put("foo", new Foo());

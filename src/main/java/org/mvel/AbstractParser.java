@@ -182,7 +182,7 @@ public class AbstractParser implements Serializable {
 
                 skipWhitespaceWithLineAccounting();
 
-                if (!pCtx.isKnownLine(pCtx.getSourceFile(), pCtx.setLineCount(line))) {
+                if (!pCtx.isKnownLine(pCtx.getSourceFile(), pCtx.setLineCount(line)) && !pCtx.isBlockSymbols()) {
                     lastWasLineLabel = true;
 
                     pCtx.setLineAndOffset(line, cursor);
@@ -1013,6 +1013,8 @@ public class AbstractParser implements Serializable {
                 }
 
                 blockEnd = cursor = cap[0];
+
+                System.out.println(new String(expr, blockStart, blockEnd - blockStart));
 
                 line = getParserContext().getLineCount();
                 line += cap[1];
