@@ -1,5 +1,6 @@
 package org.mvel.ast;
 
+import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.*;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
@@ -21,18 +22,15 @@ public class WithNode extends BlockNode implements NestedStatement {
 
         ParserContext pCtx = null;
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            pCtx = AbstractParser.getCurrentThreadParserContext();
-            pCtx.setBlockSymbols(true);
+            (pCtx = getCurrentThreadParserContext()).setBlockSymbols(true);
         }
 
         nestedStatement = (ExecutableStatement) subCompileExpression(nestParm = new String(expr).trim());
         compileWithExpressions();
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            //noinspection ConstantConditions
+        if (pCtx != null) {
             pCtx.setBlockSymbols(false);
         }
-
     }
 
     //todo: performance improvement
