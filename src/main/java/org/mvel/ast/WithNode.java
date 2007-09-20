@@ -29,6 +29,7 @@ public class WithNode extends BlockNode implements NestedStatement {
         compileWithExpressions();
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
+            //noinspection ConstantConditions
             pCtx.setBlockSymbols(false);
         }
 
