@@ -1,9 +1,8 @@
 package org.mvel.ast;
 
-import org.mvel.CompileException;
-import org.mvel.ExecutableStatement;
-import org.mvel.MVEL;
-import org.mvel.Operator;
+import static org.mvel.AbstractParser.getCurrentThreadParserContext;
+import org.mvel.*;
+import static org.mvel.MVEL.executeSetExpression;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 
@@ -22,9 +21,17 @@ public class WithNode extends BlockNode implements NestedStatement {
     public WithNode(char[] expr, char[] block, int fields) {
         super(expr, fields, block);
 
-        nestedStatement = (ExecutableStatement) subCompileExpression(nestParm = new String(expr).trim());
+        ParserContext pCtx = null;
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            (pCtx = getCurrentThreadParserContext()).setBlockSymbols(true);
+        }
 
+        nestedStatement = (ExecutableStatement) subCompileExpression(nestParm = new String(expr).trim());
         compileWithExpressions();
+
+        if (pCtx != null) {
+            pCtx.setBlockSymbols(false);
+        }
     }
 
     //todo: performance improvement
@@ -33,7 +40,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
         for (ParmValuePair pvp : withExpressions) {
             if (pvp.getSetExpression() != null) {
-                MVEL.executeSetExpression(pvp.getSetExpression(), ctxObject, factory, pvp.getStatement().getValue(ctx, thisValue, factory));
+                executeSetExpression(pvp.getSetExpression(), ctxObject, factory, pvp.getStatement().getValue(ctx, thisValue, factory));
             }
             else {
                 pvp.getStatement().getValue(ctxObject, ctxObject, factory);
@@ -46,7 +53,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return getReducedValueAccelerated(ctx, thisValue, factory);
-    }                                                      
+    }
 
     private void compileWithExpressions() {
         List<ParmValuePair> parms = new ArrayList<ParmValuePair>();

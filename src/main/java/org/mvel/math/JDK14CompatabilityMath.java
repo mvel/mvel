@@ -60,17 +60,17 @@ public class JDK14CompatabilityMath implements MathProcessor {
             case Operator.MOD:
                 return val1.doubleValue() % val2.doubleValue();
             case Operator.GTHAN:
-                return val1.compareTo(val2) == 1;
+                return val1.compareTo(val2) == 1 ? Boolean.TRUE : Boolean.FALSE;
             case Operator.GETHAN:
-                return val1.compareTo(val2) >= 0;
+                return val1.compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
             case Operator.LTHAN:
-                return val1.compareTo(val2) == -1;
+                return val1.compareTo(val2) == -1 ? Boolean.TRUE : Boolean.FALSE;
             case Operator.LETHAN:
-                return val1.compareTo(val2) <= 0;
+                return val1.compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
             case Operator.EQUAL:
-                return val1.compareTo(val2) == 0;
+                return val1.compareTo(val2) == 0 ? Boolean.TRUE : Boolean.FALSE;
             case Operator.NEQUAL:
-                return val1.compareTo(val2) != 0;
+                return val1.compareTo(val2) != 0 ? Boolean.TRUE : Boolean.FALSE;
         }
         return null;
     }
@@ -156,17 +156,17 @@ public class JDK14CompatabilityMath implements MathProcessor {
                         return ((Integer) val1) % ((Integer) val2);
 
                     case Operator.GTHAN:
-                        return ((Integer) val1) > ((Integer) val2);
+                        return ((Integer) val1) > ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((Integer) val1) >= ((Integer) val2);
+                        return ((Integer) val1) >= ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((Integer) val1) < ((Integer) val2);
+                        return ((Integer) val1) < ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((Integer) val1) <= ((Integer) val2);
+                        return ((Integer) val1) <= ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((Integer) val1).intValue() == ((Integer) val2).intValue();
+                        return ((Integer) val1).intValue() == ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((Integer) val1).intValue() != ((Integer) val2).intValue();
+                        return ((Integer) val1).intValue() != ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
 
                 }
 
@@ -189,17 +189,17 @@ public class JDK14CompatabilityMath implements MathProcessor {
                         return ((Short) val1) % ((Short) val2);
 
                     case Operator.GTHAN:
-                        return ((Short) val1) > ((Short) val2);
+                        return ((Short) val1) > ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((Short) val1) >= ((Short) val2);
+                        return ((Short) val1) >= ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((Short) val1) < ((Short) val2);
+                        return ((Short) val1) < ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((Short) val1) <= ((Short) val2);
+                        return ((Short) val1) <= ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((Short) val1).shortValue() == ((Short) val2).shortValue();
+                        return ((Short) val1).shortValue() == ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((Short) val1).shortValue() != ((Short) val2).shortValue();
+                        return ((Short) val1).shortValue() != ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
             case DataTypes.LONG:
@@ -221,17 +221,17 @@ public class JDK14CompatabilityMath implements MathProcessor {
                         return ((Long) val1) % ((Long) val2);
 
                     case Operator.GTHAN:
-                        return ((Long) val1) > ((Long) val2);
+                        return ((Long) val1) > ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((Long) val1) >= ((Long) val2);
+                        return ((Long) val1) >= ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((Long) val1) < ((Long) val2);
+                        return ((Long) val1) < ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((Long) val1) <= ((Long) val2);
+                        return ((Long) val1) <= ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((Long) val1).longValue() == ((Long) val2).longValue();
+                        return ((Long) val1).longValue() == ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((Long) val1).longValue() != ((Long) val2).longValue();
+                        return ((Long) val1).longValue() != ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
             case DataTypes.DOUBLE:
@@ -251,17 +251,17 @@ public class JDK14CompatabilityMath implements MathProcessor {
                         return ((Double) val1) % ((Double) val2);
 
                     case Operator.GTHAN:
-                        return ((Double) val1) > ((Double) val2);
+                        return ((Double) val1) > ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((Double) val1) >= ((Double) val2);
+                        return ((Double) val1) >= ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((Double) val1) < ((Double) val2);
+                        return ((Double) val1) < ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((Double) val1) <= ((Double) val2);
+                        return ((Double) val1) <= ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((Double) val1).doubleValue() == ((Double) val2).doubleValue();
+                        return ((Double) val1).doubleValue() == ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((Double) val1).doubleValue() != ((Double) val2).doubleValue();
+                        return ((Double) val1).doubleValue() != ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
             case DataTypes.FLOAT:
@@ -281,17 +281,17 @@ public class JDK14CompatabilityMath implements MathProcessor {
                         return ((Float) val1) % ((Float) val2);
 
                     case Operator.GTHAN:
-                        return ((Float) val1) > ((Float) val2);
+                        return ((Float) val1) > ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((Float) val1) >= ((Float) val2);
+                        return ((Float) val1) >= ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((Float) val1) < ((Float) val2);
+                        return ((Float) val1) < ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((Float) val1) <= ((Float) val2);
+                        return ((Float) val1) <= ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((Float) val1).floatValue() == ((Float) val2).floatValue();
+                        return ((Float) val1).floatValue() == ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((Float) val1).floatValue() != ((Float) val2).floatValue();
+                        return ((Float) val1).floatValue() != ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
 
@@ -311,26 +311,26 @@ public class JDK14CompatabilityMath implements MathProcessor {
                         return ((BigInteger) val1).remainder(((BigInteger) val2));
 
                     case Operator.GTHAN:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 1;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 1 ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0 ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == -1;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == -1 ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0 ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0 ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0 ? Boolean.TRUE : Boolean.FALSE;
 
                 }
 
             default:
                 switch (operation) {
                     case Operator.EQUAL:
-                        return safeEquals(val2, val1);
+                        return safeEquals(val2, val1) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return safeNotEquals(val2, val1);
+                        return safeNotEquals(val2, val1) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.ADD:
                         return valueOf(val1) + valueOf(val2);
                 }
