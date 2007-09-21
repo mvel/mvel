@@ -2,6 +2,7 @@ package org.mvel.ast;
 
 import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.*;
+import static org.mvel.MVEL.executeSetExpression;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 
@@ -39,7 +40,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
         for (ParmValuePair pvp : withExpressions) {
             if (pvp.getSetExpression() != null) {
-                MVEL.executeSetExpression(pvp.getSetExpression(), ctxObject, factory, pvp.getStatement().getValue(ctx, thisValue, factory));
+                executeSetExpression(pvp.getSetExpression(), ctxObject, factory, pvp.getStatement().getValue(ctx, thisValue, factory));
             }
             else {
                 pvp.getStatement().getValue(ctxObject, ctxObject, factory);
