@@ -17,11 +17,11 @@ import java.math.MathContext;
  * @author Christopher Brock
  */
 public class IEEEFloatingPointMath implements MathProcessor {
-    public static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
+    private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
 
-    public Object doOperation(Object val1, int operation, Object val2) {
-        int type1 = val1 == null ? DataTypes.NULL : resolveType(val1.getClass());
-        int type2 = val2 == null ? DataTypes.NULL : resolveType(val2.getClass());
+    public Object doOperation(final Object val1, final int operation, final Object val2) {
+        final int type1 = val1 == null ? DataTypes.NULL : resolveType(val1.getClass());
+        final int type2 = val2 == null ? DataTypes.NULL : resolveType(val2.getClass());
 
         if (type1 == DataTypes.BIG_DECIMAL) {
             if (type2 == DataTypes.BIG_DECIMAL) {
@@ -44,7 +44,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
 
     }
 
-    private static Object doBigDecimalArithmetic(BigDecimal val1, int operation, BigDecimal val2) {
+    private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2) {
         switch (operation) {
             case Operator.ADD:
                 return val1.add(val2);
@@ -60,22 +60,22 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 return val1.remainder(val2);
 
             case Operator.GTHAN:
-                return val1.compareTo(val2) == 1;
+                return val1.compareTo(val2) == 1 ? Boolean.TRUE : Boolean.FALSE;
             case Operator.GETHAN:
-                return val1.compareTo(val2) >= 0;
+                return val1.compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
             case Operator.LTHAN:
-                return val1.compareTo(val2) == -1;
+                return val1.compareTo(val2) == -1 ? Boolean.TRUE : Boolean.FALSE;
             case Operator.LETHAN:
-                return val1.compareTo(val2) <= 0;
+                return val1.compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
             case Operator.EQUAL:
-                return val1.compareTo(val2) == 0;
+                return val1.compareTo(val2) == 0 ? Boolean.TRUE : Boolean.FALSE;
             case Operator.NEQUAL:
-                return val1.compareTo(val2) != 0;
+                return val1.compareTo(val2) != 0 ? Boolean.TRUE : Boolean.FALSE;
         }
         return null;
     }
 
-    private static Object _doOperations(int type1, Object val1, int operation, int type2, Object val2) {
+    private static Object _doOperations(final int type1, final Object val1, final int operation, final int type2, final Object val2) {
         if (operation < 10 || operation == Operator.EQUAL || operation == Operator.NEQUAL) {
             if (type1 > 99 && type1 == type2) {
                 return doOperationsSameType(type1, val1, operation, val2);
@@ -90,16 +90,16 @@ public class IEEEFloatingPointMath implements MathProcessor {
         return doOperationNonNumeric(val1, operation, val2);
     }
 
-    private static Object doOperationNonNumeric(Object val1, int operation, Object val2) {
+    private static Object doOperationNonNumeric(final Object val1, final int operation, final Object val2) {
         switch (operation) {
             case Operator.ADD:
                 return valueOf(val1) + valueOf(val2);
 
             case Operator.EQUAL:
-                return safeEquals(val2, val1);
+                return safeEquals(val2, val1) ? Boolean.TRUE : Boolean.FALSE;
 
             case Operator.NEQUAL:
-                return safeNotEquals(val2, val1);
+                return safeNotEquals(val2, val1) ? Boolean.TRUE : Boolean.FALSE;
 
             case Operator.SUB:
             case Operator.DIV:
@@ -108,28 +108,28 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case Operator.GTHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) == 1;
+                    return ((Comparable) val1).compareTo(val2) == 1 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 break;
 
             case Operator.GETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) >= 0;
+                    return ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 break;
 
             case Operator.LTHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) == -1;
+                    return ((Comparable) val1).compareTo(val2) == -1 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 break;
 
             case Operator.LETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) <= 0;
+                    return ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 break;
         }
@@ -139,23 +139,23 @@ public class IEEEFloatingPointMath implements MathProcessor {
 
     }
 
-    private static Boolean safeEquals(Object val1, Object val2) {
+    private static Boolean safeEquals(final Object val1, final Object val2) {
         if (val1 != null) {
-            return val1.equals(val2);
+            return val1.equals(val2) ? Boolean.TRUE : Boolean.FALSE;
         }
         else if (val2 != null) {
-            return val2.equals(val1);
+            return val2.equals(val1) ? Boolean.TRUE : Boolean.FALSE;
         }
         else {
             return val1 == val2;
         }
     }
 
-    private static Boolean safeNotEquals(Object val1, Object val2) {
+    private static Boolean safeNotEquals(final Object val1, final Object val2) {
         if (val1 != null) {
-            return !val1.equals(val2);
+            return !val1.equals(val2) ? Boolean.TRUE : Boolean.FALSE;
         }
-        else return val2 != null && !val2.equals(val1);
+        else return (val2 != null && !val2.equals(val1)) ? Boolean.TRUE : Boolean.FALSE;
     }
 
     private static Object doOperationsSameType(int type1, Object val1, int operation, Object val2) {
@@ -179,17 +179,17 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((Integer) val1) % ((Integer) val2);
 
                     case Operator.GTHAN:
-                        return ((Integer) val1) > ((Integer) val2);
+                        return ((Integer) val1) > ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((Integer) val1) >= ((Integer) val2);
+                        return ((Integer) val1) >= ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((Integer) val1) < ((Integer) val2);
+                        return ((Integer) val1) < ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((Integer) val1) <= ((Integer) val2);
+                        return ((Integer) val1) <= ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((Integer) val1).intValue() == ((Integer) val2).intValue();
+                        return ((Integer) val1).intValue() == ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((Integer) val1).intValue() != ((Integer) val2).intValue();
+                        return ((Integer) val1).intValue() != ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
 
                 }
 
@@ -212,17 +212,17 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((Short) val1) % ((Short) val2);
 
                     case Operator.GTHAN:
-                        return ((Short) val1) > ((Short) val2);
+                        return ((Short) val1) > ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((Short) val1) >= ((Short) val2);
+                        return ((Short) val1) >= ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((Short) val1) < ((Short) val2);
+                        return ((Short) val1) < ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((Short) val1) <= ((Short) val2);
+                        return ((Short) val1) <= ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((Short) val1).shortValue() == ((Short) val2).shortValue();
+                        return ((Short) val1).shortValue() == ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((Short) val1).shortValue() != ((Short) val2).shortValue();
+                        return ((Short) val1).shortValue() != ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
             case DataTypes.LONG:
@@ -244,17 +244,17 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((Long) val1) % ((Long) val2);
 
                     case Operator.GTHAN:
-                        return ((Long) val1) > ((Long) val2);
+                        return ((Long) val1) > ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((Long) val1) >= ((Long) val2);
+                        return ((Long) val1) >= ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((Long) val1) < ((Long) val2);
+                        return ((Long) val1) < ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((Long) val1) <= ((Long) val2);
+                        return ((Long) val1) <= ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((Long) val1).longValue() == ((Long) val2).longValue();
+                        return ((Long) val1).longValue() == ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((Long) val1).longValue() != ((Long) val2).longValue();
+                        return ((Long) val1).longValue() != ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
             case DataTypes.DOUBLE:
@@ -274,17 +274,17 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((Double) val1) % ((Double) val2);
 
                     case Operator.GTHAN:
-                        return ((Double) val1) > ((Double) val2);
+                        return ((Double) val1) > ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((Double) val1) >= ((Double) val2);
+                        return ((Double) val1) >= ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((Double) val1) < ((Double) val2);
+                        return ((Double) val1) < ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((Double) val1) <= ((Double) val2);
+                        return ((Double) val1) <= ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((Double) val1).doubleValue() == ((Double) val2).doubleValue();
+                        return ((Double) val1).doubleValue() == ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((Double) val1).doubleValue() != ((Double) val2).doubleValue();
+                        return ((Double) val1).doubleValue() != ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
             case DataTypes.FLOAT:
@@ -304,17 +304,17 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((Float) val1) % ((Float) val2);
 
                     case Operator.GTHAN:
-                        return ((Float) val1) > ((Float) val2);
+                        return ((Float) val1) > ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((Float) val1) >= ((Float) val2);
+                        return ((Float) val1) >= ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((Float) val1) < ((Float) val2);
+                        return ((Float) val1) < ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((Float) val1) <= ((Float) val2);
+                        return ((Float) val1) <= ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((Float) val1).floatValue() == ((Float) val2).floatValue();
+                        return ((Float) val1).floatValue() == ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((Float) val1).floatValue() != ((Float) val2).floatValue();
+                        return ((Float) val1).floatValue() != ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
             case DataTypes.BIG_INTEGER:
@@ -333,17 +333,17 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((BigInteger) val1).remainder(((BigInteger) val2));
 
                     case Operator.GTHAN:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 1;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 1 ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.GETHAN:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0 ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LTHAN:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == -1;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == -1 ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.LETHAN:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0 ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.EQUAL:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0 ? Boolean.TRUE : Boolean.FALSE;
                     case Operator.NEQUAL:
-                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0;
+                        return ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0 ? Boolean.TRUE : Boolean.FALSE;
 
                 }
 
@@ -361,7 +361,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
         return null;
     }
 
-    public static BigDecimal getBigDecimalFromType(Object in, int type) {
+    private static BigDecimal getBigDecimalFromType(Object in, int type) {
         if (in == null)
             return new BigDecimal(0);
         switch (type) {
