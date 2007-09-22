@@ -120,7 +120,7 @@ public class ParserContext implements Serializable {
                 cls = Class.forName(pkg + "." + className);
                 found++;
             }
-            catch (ClassNotFoundException e) {
+            catch (Throwable e) {
                 // do nothing.
             }
         }
