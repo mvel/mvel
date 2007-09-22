@@ -1821,6 +1821,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(0, MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory()));
     }
+    
+    public void testDynamicImportsWithIdentifierSameAsClassWithDiffCase() {
+        ParserContext ctx = new ParserContext();
+        ctx.addPackageImport("org.mvel.tests.main.res");
+        ctx.setStrictTypeEnforcement( false );
+
+        ExpressionCompiler compiler = new ExpressionCompiler("bar.add(\"hello\")");
+        Serializable s = compiler.compile(ctx);
+    }    
 
     public void testTypedAssignment() {
         assertEquals("foobar", test("java.util.Map map = new java.util.HashMap(); map.put('conan', 'foobar'); map['conan'];"));
