@@ -120,8 +120,17 @@ public class ParserContext implements Serializable {
                 cls = Class.forName(pkg + "." + className);
                 found++;
             }
-            catch (Throwable e) {
+            catch (ClassNotFoundException e) {
                 // do nothing.
+            }
+            catch (NoClassDefFoundError e) {
+                if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+                    // this seems windows specific see MVEL-43
+                    // no nothing 
+                } else { 
+                    throw e; 
+                }                
+
             }
         }
 
