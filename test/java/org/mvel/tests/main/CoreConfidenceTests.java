@@ -1821,15 +1821,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(0, MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory()));
     }
-    
+
     public void testDynamicImportsWithIdentifierSameAsClassWithDiffCase() {
         ParserContext ctx = new ParserContext();
         ctx.addPackageImport("org.mvel.tests.main.res");
-        ctx.setStrictTypeEnforcement( false );
+        ctx.setStrictTypeEnforcement(false);
 
         ExpressionCompiler compiler = new ExpressionCompiler("bar.add(\"hello\")");
         Serializable s = compiler.compile(ctx);
-    }    
+    }
 
     public void testTypedAssignment() {
         assertEquals("foobar", test("java.util.Map map = new java.util.HashMap(); map.put('conan', 'foobar'); map['conan'];"));
@@ -2382,6 +2382,23 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testBooleanEvaluation2() {
         assertEquals(true, test("equalityCheck(1,1)||fun||ackbar"));
     }
+
+    /**
+     * Submitted by: Dimitar Dimitrov
+     */
+    public void testFailing() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("os", "windows");
+        assertTrue((Boolean) MVEL.eval("os ~= 'windows|unix'", map));
+    }
+
+    public void testSuccess() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("os", "windows");
+        assertTrue((Boolean) MVEL.eval("'windows' ~= 'windows|unix'", map));
+        assertFalse((Boolean) MVEL.eval("time ~= 'windows|unix'", new java.util.Date()));
+    }
+
 }
 
 
