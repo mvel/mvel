@@ -117,21 +117,20 @@ public class ParserContext implements Serializable {
         Class cls = null;
         for (String pkg : packageImports) {
             try {
-                cls = Class.forName(pkg + "." + className);
+                cls = Thread.currentThread().getContextClassLoader().loadClass(pkg + "." + className);
                 found++;
             }
             catch (ClassNotFoundException e) {
                 // do nothing.
             }
             catch (NoClassDefFoundError e) {
-                if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-                    // this seems windows specific see MVEL-43
-                    // do nothing
+                if (e.getMessage().contains("wrong name")) {
+                    // do nothing.  this is a weirdness in the jvm.
+                    // see MVEL-43
                 }
                 else {
                     throw e;
                 }
-
             }
         }
 
