@@ -381,8 +381,9 @@ public class AbstractParser implements Serializable {
                             if (isAt('=', 1)) {
                                 char[] stmt = subArray(start, trimLeft(cursor));
                                 start = cursor += 2;
-                                captureToEOS();
-                                return lastNode = new RegExMatch(stmt, fields, subArray(start, cursor));
+                                skipWhitespace();
+
+                                return lastNode = new RegExMatch(stmt, fields, subArray(start, (cursor = balancedCapture(expr, cursor, expr[cursor]) + 1)));
                             }
                             break;
 
