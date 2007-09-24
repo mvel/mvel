@@ -126,10 +126,11 @@ public class ParserContext implements Serializable {
             catch (NoClassDefFoundError e) {
                 if (System.getProperty("os.name").toLowerCase().contains("windows")) {
                     // this seems windows specific see MVEL-43
-                    // no nothing 
-                } else { 
-                    throw e; 
-                }                
+                    // do nothing
+                }
+                else {
+                    throw e;
+                }
 
             }
         }
