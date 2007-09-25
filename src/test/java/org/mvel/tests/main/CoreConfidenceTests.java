@@ -2399,6 +2399,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertFalse((Boolean) MVEL.eval("time ~= 'windows|unix'", new java.util.Date()));
     }
 
+    public void testBooleanStrAppend() {
+        assertEquals("footrue", test("\"foo\" + true"));
+    }
+
 }
 
 

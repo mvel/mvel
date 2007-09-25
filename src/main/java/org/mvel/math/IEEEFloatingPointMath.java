@@ -4,7 +4,7 @@ import org.mvel.CompileException;
 import org.mvel.ConversionException;
 import static org.mvel.DataConversion.convert;
 import org.mvel.DataTypes;
-import org.mvel.Operator;
+import static org.mvel.Operator.*;
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
 
@@ -46,44 +46,44 @@ public class IEEEFloatingPointMath implements MathProcessor {
 
     private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2) {
         switch (operation) {
-            case Operator.ADD:
+            case ADD:
                 return val1.add(val2);
-            case Operator.DIV:
+            case DIV:
                 return val1.divide(val2, MATH_CONTEXT);
-            case Operator.SUB:
+            case SUB:
                 return val1.subtract(val2);
-            case Operator.MULT:
+            case MULT:
                 return val1.multiply(val2);
-            case Operator.POWER:
+            case POWER:
                 return Math.pow(val1.doubleValue(), val2.doubleValue());
-            case Operator.MOD:
+            case MOD:
                 return val1.remainder(val2);
 
-            case Operator.GTHAN:
+            case GTHAN:
                 return val1.compareTo(val2) == 1 ? Boolean.TRUE : Boolean.FALSE;
-            case Operator.GETHAN:
+            case GETHAN:
                 return val1.compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
-            case Operator.LTHAN:
+            case LTHAN:
                 return val1.compareTo(val2) == -1 ? Boolean.TRUE : Boolean.FALSE;
-            case Operator.LETHAN:
+            case LETHAN:
                 return val1.compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
-            case Operator.EQUAL:
+            case EQUAL:
                 return val1.compareTo(val2) == 0 ? Boolean.TRUE : Boolean.FALSE;
-            case Operator.NEQUAL:
+            case NEQUAL:
                 return val1.compareTo(val2) != 0 ? Boolean.TRUE : Boolean.FALSE;
         }
         return null;
     }
 
     private static Object _doOperations(final int type1, final Object val1, final int operation, final int type2, final Object val2) {
-        if (operation < 10 || operation == Operator.EQUAL || operation == Operator.NEQUAL) {
+        if (operation < 10 || operation == EQUAL || operation == NEQUAL) {
             if (type1 > 99 && type1 == type2) {
                 return doOperationsSameType(type1, val1, operation, val2);
             }
             else if ((type1 > 99 && (type2 > 99)) || (isNumber(val1) && isNumber(val2))) {
                 return doBigDecimalArithmetic(getBigDecimalFromType(val1, type1), operation, getBigDecimalFromType(val2, type2));
             }
-            else if ((type1 == 15 || type2 == 15) && type1 != type2) {
+            else if (operation != ADD && (type1 == 15 || type2 == 15) && type1 != type2) {
                 return doOperationNonNumeric(convert(val1, Boolean.class), operation, convert(val2, Boolean.class));
             }
         }
@@ -92,41 +92,41 @@ public class IEEEFloatingPointMath implements MathProcessor {
 
     private static Object doOperationNonNumeric(final Object val1, final int operation, final Object val2) {
         switch (operation) {
-            case Operator.ADD:
+            case ADD:
                 return valueOf(val1) + valueOf(val2);
 
-            case Operator.EQUAL:
+            case EQUAL:
                 return safeEquals(val2, val1) ? Boolean.TRUE : Boolean.FALSE;
 
-            case Operator.NEQUAL:
+            case NEQUAL:
                 return safeNotEquals(val2, val1) ? Boolean.TRUE : Boolean.FALSE;
 
-            case Operator.SUB:
-            case Operator.DIV:
-            case Operator.MULT:
-            case Operator.MOD:
-            case Operator.GTHAN:
+            case SUB:
+            case DIV:
+            case MULT:
+            case MOD:
+            case GTHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) == 1 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 break;
 
-            case Operator.GETHAN:
+            case GETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 break;
 
-            case Operator.LTHAN:
+            case LTHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) == -1 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 break;
 
-            case Operator.LETHAN:
+            case LETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
@@ -163,32 +163,32 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case DataTypes.INTEGER:
             case DataTypes.W_INTEGER:
                 switch (operation) {
-                    case Operator.ADD:
+                    case ADD:
                         return ((Integer) val1) + ((Integer) val2);
-                    case Operator.SUB:
+                    case SUB:
                         return ((Integer) val1) - ((Integer) val2);
-                    case Operator.DIV:
+                    case DIV:
                         return new BigDecimal((Integer) val1).divide(new BigDecimal((Integer) val2), MATH_CONTEXT);
-                    case Operator.MULT:
+                    case MULT:
                         return ((Integer) val1) * ((Integer) val2);
-                    case Operator.POWER:
+                    case POWER:
                         double d = Math.pow((Integer) val1, (Integer) val2);
                         if (d > Integer.MAX_VALUE) return d;
                         else return (int) d;
-                    case Operator.MOD:
+                    case MOD:
                         return ((Integer) val1) % ((Integer) val2);
 
-                    case Operator.GTHAN:
+                    case GTHAN:
                         return ((Integer) val1) > ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.GETHAN:
+                    case GETHAN:
                         return ((Integer) val1) >= ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LTHAN:
+                    case LTHAN:
                         return ((Integer) val1) < ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LETHAN:
+                    case LETHAN:
                         return ((Integer) val1) <= ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.EQUAL:
+                    case EQUAL:
                         return ((Integer) val1).intValue() == ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.NEQUAL:
+                    case NEQUAL:
                         return ((Integer) val1).intValue() != ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
 
                 }
@@ -196,153 +196,153 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case DataTypes.SHORT:
             case DataTypes.W_SHORT:
                 switch (operation) {
-                    case Operator.ADD:
+                    case ADD:
                         return ((Short) val1) + ((Short) val2);
-                    case Operator.SUB:
+                    case SUB:
                         return ((Short) val1) - ((Short) val2);
-                    case Operator.DIV:
+                    case DIV:
                         return new BigDecimal((Short) val1).divide(new BigDecimal((Short) val2), MATH_CONTEXT);
-                    case Operator.MULT:
+                    case MULT:
                         return ((Short) val1) * ((Short) val2);
-                    case Operator.POWER:
+                    case POWER:
                         double d = Math.pow((Short) val1, (Short) val2);
                         if (d > Short.MAX_VALUE) return d;
                         else return (short) d;
-                    case Operator.MOD:
+                    case MOD:
                         return ((Short) val1) % ((Short) val2);
 
-                    case Operator.GTHAN:
+                    case GTHAN:
                         return ((Short) val1) > ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.GETHAN:
+                    case GETHAN:
                         return ((Short) val1) >= ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LTHAN:
+                    case LTHAN:
                         return ((Short) val1) < ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LETHAN:
+                    case LETHAN:
                         return ((Short) val1) <= ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.EQUAL:
+                    case EQUAL:
                         return ((Short) val1).shortValue() == ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.NEQUAL:
+                    case NEQUAL:
                         return ((Short) val1).shortValue() != ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
             case DataTypes.LONG:
             case DataTypes.W_LONG:
                 switch (operation) {
-                    case Operator.ADD:
+                    case ADD:
                         return ((Long) val1) + ((Long) val2);
-                    case Operator.SUB:
+                    case SUB:
                         return ((Long) val1) - ((Long) val2);
-                    case Operator.DIV:
+                    case DIV:
                         return new BigDecimal((Long) val1).divide(new BigDecimal((Long) val2), MATH_CONTEXT);
-                    case Operator.MULT:
+                    case MULT:
                         return ((Long) val1) * ((Long) val2);
-                    case Operator.POWER:
+                    case POWER:
                         double d = Math.pow((Long) val1, (Long) val2);
                         if (d > Long.MAX_VALUE) return d;
                         else return (long) d;
-                    case Operator.MOD:
+                    case MOD:
                         return ((Long) val1) % ((Long) val2);
 
-                    case Operator.GTHAN:
+                    case GTHAN:
                         return ((Long) val1) > ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.GETHAN:
+                    case GETHAN:
                         return ((Long) val1) >= ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LTHAN:
+                    case LTHAN:
                         return ((Long) val1) < ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LETHAN:
+                    case LETHAN:
                         return ((Long) val1) <= ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.EQUAL:
+                    case EQUAL:
                         return ((Long) val1).longValue() == ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.NEQUAL:
+                    case NEQUAL:
                         return ((Long) val1).longValue() != ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
             case DataTypes.DOUBLE:
             case DataTypes.W_DOUBLE:
                 switch (operation) {
-                    case Operator.ADD:
+                    case ADD:
                         return ((Double) val1) + ((Double) val2);
-                    case Operator.SUB:
+                    case SUB:
                         return ((Double) val1) - ((Double) val2);
-                    case Operator.DIV:
+                    case DIV:
                         return new BigDecimal((Double) val1).divide(new BigDecimal((Double) val2), MATH_CONTEXT);
-                    case Operator.MULT:
+                    case MULT:
                         return ((Double) val1) * ((Double) val2);
-                    case Operator.POWER:
+                    case POWER:
                         return Math.pow((Double) val1, (Double) val2);
-                    case Operator.MOD:
+                    case MOD:
                         return ((Double) val1) % ((Double) val2);
 
-                    case Operator.GTHAN:
+                    case GTHAN:
                         return ((Double) val1) > ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.GETHAN:
+                    case GETHAN:
                         return ((Double) val1) >= ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LTHAN:
+                    case LTHAN:
                         return ((Double) val1) < ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LETHAN:
+                    case LETHAN:
                         return ((Double) val1) <= ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.EQUAL:
+                    case EQUAL:
                         return ((Double) val1).doubleValue() == ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.NEQUAL:
+                    case NEQUAL:
                         return ((Double) val1).doubleValue() != ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
             case DataTypes.FLOAT:
             case DataTypes.W_FLOAT:
                 switch (operation) {
-                    case Operator.ADD:
+                    case ADD:
                         return ((Float) val1) + ((Float) val2);
-                    case Operator.SUB:
+                    case SUB:
                         return ((Float) val1) - ((Float) val2);
-                    case Operator.DIV:
+                    case DIV:
                         return new BigDecimal((Float) val1).divide(new BigDecimal((Float) val2), MATH_CONTEXT);
-                    case Operator.MULT:
+                    case MULT:
                         return ((Float) val1) * ((Float) val2);
-                    case Operator.POWER:
+                    case POWER:
                         return new BigDecimal((Float) val1).pow(new BigDecimal((Float) val2).intValue());
-                    case Operator.MOD:
+                    case MOD:
                         return ((Float) val1) % ((Float) val2);
 
-                    case Operator.GTHAN:
+                    case GTHAN:
                         return ((Float) val1) > ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.GETHAN:
+                    case GETHAN:
                         return ((Float) val1) >= ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LTHAN:
+                    case LTHAN:
                         return ((Float) val1) < ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LETHAN:
+                    case LETHAN:
                         return ((Float) val1) <= ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.EQUAL:
+                    case EQUAL:
                         return ((Float) val1).floatValue() == ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.NEQUAL:
+                    case NEQUAL:
                         return ((Float) val1).floatValue() != ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
             case DataTypes.BIG_INTEGER:
                 switch (operation) {
-                    case Operator.ADD:
+                    case ADD:
                         return ((BigInteger) val1).add(((BigInteger) val2));
-                    case Operator.SUB:
+                    case SUB:
                         return ((BigInteger) val1).subtract(((BigInteger) val2));
-                    case Operator.DIV:
+                    case DIV:
                         return ((BigInteger) val1).divide(((BigInteger) val2));
-                    case Operator.MULT:
+                    case MULT:
                         return ((BigInteger) val1).multiply(((BigInteger) val2));
-                    case Operator.POWER:
+                    case POWER:
                         return ((BigInteger) val1).pow(((BigInteger) val2).intValue());
-                    case Operator.MOD:
+                    case MOD:
                         return ((BigInteger) val1).remainder(((BigInteger) val2));
 
-                    case Operator.GTHAN:
+                    case GTHAN:
                         return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 1 ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.GETHAN:
+                    case GETHAN:
                         return ((BigInteger) val1).compareTo(((BigInteger) val2)) >= 0 ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LTHAN:
+                    case LTHAN:
                         return ((BigInteger) val1).compareTo(((BigInteger) val2)) == -1 ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.LETHAN:
+                    case LETHAN:
                         return ((BigInteger) val1).compareTo(((BigInteger) val2)) <= 0 ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.EQUAL:
+                    case EQUAL:
                         return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0 ? Boolean.TRUE : Boolean.FALSE;
-                    case Operator.NEQUAL:
+                    case NEQUAL:
                         return ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0 ? Boolean.TRUE : Boolean.FALSE;
 
                 }
@@ -350,11 +350,11 @@ public class IEEEFloatingPointMath implements MathProcessor {
 
             default:
                 switch (operation) {
-                    case Operator.EQUAL:
+                    case EQUAL:
                         return safeEquals(val2, val1);
-                    case Operator.NEQUAL:
+                    case NEQUAL:
                         return safeNotEquals(val2, val1);
-                    case Operator.ADD:
+                    case ADD:
                         return valueOf(val1) + valueOf(val2);
                 }
         }
