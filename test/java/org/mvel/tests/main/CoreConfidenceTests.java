@@ -17,6 +17,7 @@ import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.MethodStub;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
 import static java.lang.System.currentTimeMillis;
@@ -710,8 +711,8 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testWith2() {
         assertEquals("OneTwo", test(
                 "with (foo) { \n" +
-                        "aValue = 'One', \n" +
-                        "bValue='Two' \n" +
+                        "aValue = 'One', // this is a comment \n" +
+                        "bValue='Two'  // this is also a comment \n" +
                         "}; \n" +
                         "foo.aValue + foo.bValue;"));
     }
@@ -2399,8 +2400,51 @@ public class CoreConfidenceTests extends AbstractTest {
         assertFalse((Boolean) MVEL.eval("time ~= 'windows|unix'", new java.util.Date()));
     }
 
+
     public void testBooleanStrAppend() {
         assertEquals("footrue", test("\"foo\" + true"));
+    }
+
+    public void testFail() {
+        Map map = new HashMap();
+        map.put("a", new JButton());
+        map.put("b", new JButton());
+        new JButton().setToolTipText("");
+        System.out.println(MVEL.eval(
+                "if (a.text!=null) {\n" +
+                        "    b.text = a.text;\n" +
+                        "} else if (a.toolTipText!=null) { \n" +
+                        "    b.text = a.toolTipText;\n" +
+                        "} " +
+                        "return b;"
+                , map
+        ));
+    }
+
+    public void testPass() {
+        Map map = new HashMap();
+        map.put("a", new JButton());
+        map.put("b", new JButton());
+        new JButton().setToolTipText("");
+        System.out.println(MVEL.eval(
+                "if (a.text!=null) {\n" +
+                        "    b.text = a.text;\n" +
+                        "} " +
+                        "if (a.text!=null && a.toolTipText!=null) { \n" +
+                        "    b.text = a.toolTipText;\n" +
+                        "}" +
+                        "return b;"
+                , map
+        ));
+
+        System.out.println(MVEL.eval(
+                "if (a.text!=null) {\n" +
+                        "    b.text = a.text;\n" +
+                        "} else if (a.text!=null && a.toolTipText!=null) { \n" +
+                        "    b.text = a.toolTipText;\n" +
+                        "}"
+                , map
+        ));
     }
 
 }

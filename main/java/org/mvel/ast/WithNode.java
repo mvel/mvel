@@ -60,6 +60,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
         int start = 0;
         String parm = "";
+        int end = -1;
 
         int oper = -1;
         for (int i = 0; i < block.length; i++) {
@@ -79,7 +80,26 @@ public class WithNode extends BlockNode implements NestedStatement {
                     continue;
 
                 case'/':
-                    if (i < block.length && block[i + 1] == '=') {
+                    if (i < block.length && block[i + 1] == '/') {
+                        end = i;
+                        while (i < block.length && block[i] != '\n') i++;
+                        if (parm == null) start = i;
+                    }
+                    else if (i < block.length && block[i + 1] == '*') {
+                        end = i;
+
+                        while (i < block.length) {
+                            switch (block[i++]) {
+                                case'*':
+                                    if (i < block.length) {
+                                        if (block[i] == '/') break;
+                                    }
+                            }
+                        }
+
+                        if (parm == null) start = i;
+                    }
+                    else if (i < block.length && block[i + 1] == '=') {
                         oper = Operator.DIV;
                     }
                     continue;
@@ -102,11 +122,13 @@ public class WithNode extends BlockNode implements NestedStatement {
                     continue;
 
                 case',':
+                    if (end == -1) end = i;
+
                     if (parm == null) {
                         parms.add(new ParmValuePair(
                                 null,
                                 (ExecutableStatement) subCompileExpression(
-                                        createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, i - start), oper)
+                                        createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper)
                                 )
                         ));
 
@@ -117,7 +139,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                         parms.add(new ParmValuePair(
                                 parm,
                                 (ExecutableStatement) subCompileExpression(
-                                        createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, i - start), oper)
+                                        createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper)
                                 )
                         ));
 
@@ -126,15 +148,19 @@ public class WithNode extends BlockNode implements NestedStatement {
                         start = ++i;
                     }
 
+                    end = -1;
+
                     break;
             }
         }
+
+        if (end == -1) end = block.length;
 
         if (parm != null && start != block.length) {
             parms.add(new ParmValuePair(
                     parm,
                     (ExecutableStatement) subCompileExpression(
-                            createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, block.length - start), oper)
+                            createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper)
 
                     )
             ));
