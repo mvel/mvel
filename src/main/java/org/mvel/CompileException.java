@@ -48,19 +48,19 @@ public class CompileException extends RuntimeException {
 
 
     public CompileException(String message, char[] expr, int cursor, Exception e) {
-        super("Failed to compile:\n[Error: " + message + "]\n[Near: \"" + showCodeNearError(expr, cursor) + "\"]", e);
+        super("Failed to compile:\n[Error: " + message + "]\n[Near: { ... " + showCodeNearError(expr, cursor) + " ... } ]", e);
         this.expr = expr;
         this.cursor = cursor;
     }
 
     public CompileException(String message, char[] expr, int cursor) {
-        super("Failed to compile:\n[Error: " + message + "]\n[Near: \"" + showCodeNearError(expr, cursor) + "\"]");
+        super("Failed to compile:\n[Error: " + message + "]\n[Near: { ... " + showCodeNearError(expr, cursor) + " ... } ]");
         this.expr = expr;
         this.cursor = cursor;
     }
 
     public CompileException(String message, char[] expr, int cursor, boolean concatError) {
-        super(concatError ? "Failed to compile:\n[Error: " + message + "]\n[Near: \"" + showCodeNearError(expr, cursor) + "\"]" : message);
+        super(concatError ? "Failed to compile:\n[Error: " + message + "]\n[Near: { ... " + showCodeNearError(expr, cursor) + " ... } ]" : message);
         this.expr = expr;
         this.cursor = cursor;
     }
@@ -86,7 +86,7 @@ public class CompileException extends RuntimeException {
         if (end > expr.length) {
             end = expr.length - 1;
         }
-        return "'" + copyValueOf(expr, start, end - start) + "'";
+        return copyValueOf(expr, start, end - start);
     }
 
 
