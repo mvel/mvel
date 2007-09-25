@@ -15,6 +15,7 @@ import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Character.isWhitespace;
 import static java.lang.Float.parseFloat;
+import static java.lang.Runtime.getRuntime;
 import static java.lang.System.arraycopy;
 import static java.lang.System.getProperty;
 import static java.util.Collections.synchronizedMap;
@@ -149,691 +150,697 @@ public class AbstractParser implements Serializable {
      * @return -
      */
     protected ASTNode nextToken() {
-        /**
-         * If the cursor is at the end of the expression, we have nothing more to do:
-         * return null.
-         */
-        if (cursor >= length) {
-            return null;
-        }
-        else if (!splitAccumulator.isEmpty()) {
-            return lastNode = (ASTNode) splitAccumulator.pop();
-        }
+        try {
 
-        int brace, start = cursor;
-
-        /**
-         * Because of parser recursion for sub-expression parsing, we sometimes need to remain
-         * certain field states.  We do not reset for assignments, boolean mode, list creation or
-         * a capture only mode.
-         */
-        fields = fields & (ASTNode.INLINE_COLLECTION | ASTNode.COMPILE_IMMEDIATE);
-
-        boolean capture = false, union = false;
-
-        if (debugSymbols) {
-            if (!lastWasLineLabel) {
-                if (getParserContext().getSourceFile() == null) {
-                    throw new CompileException("unable to produce debugging symbols: source name must be provided.");
-                }
-
-                ParserContext pCtx = getParserContext();
-                line = pCtx.getLineCount();
-
-                skipWhitespaceWithLineAccounting();
-
-                if (!pCtx.isKnownLine(pCtx.getSourceFile(), pCtx.setLineCount(line)) && !pCtx.isBlockSymbols()) {
-                    lastWasLineLabel = true;
-
-                    pCtx.setLineAndOffset(line, cursor);
-                    pCtx.addKnownLine(line);
-
-                    return lastNode = pCtx.setLastLineLabel(new LineLabel(pCtx.getSourceFile(), line));
-                }
+            /**
+             * If the cursor is at the end of the expression, we have nothing more to do:
+             * return null.
+             */
+            if (cursor >= length) {
+                return null;
             }
-            else {
-                lastWasComment = lastWasLineLabel = false;
+            else if (!splitAccumulator.isEmpty()) {
+                return lastNode = (ASTNode) splitAccumulator.pop();
             }
-        }
 
-        /**
-         * Skip any whitespace currently under the starting point.
-         */
-        while (start < length && isWhitespace(expr[start])) start++;
+            int brace, start = cursor;
 
-        /**
-         * From here to the end of the method is the core MVEL parsing code.  Fiddling around here is asking for
-         * trouble unless you really know what you're doing.
-         */
-        for (cursor = start; cursor < length;) {
-            if (isIdentifierPart(expr[cursor])) {
-                /**
-                 * If the current character under the cursor is a valid
-                 * part of an identifier, we keep capturing.
-                 */
-                capture = true;
-                cursor++;
-            }
-            else if (capture) {
-                String t;
-                if (OPERATORS.containsKey(t = new String(expr, start, cursor - start))) {
-                    switch (OPERATORS.get(t)) {
-                        case NEW:
-                            start = cursor + 1;
-                            captureToEOT();
-                            return lastNode = new NewObjectNode(subArray(start, cursor), fields);
+            /**
+             * Because of parser recursion for sub-expression parsing, we sometimes need to remain
+             * certain field states.  We do not reset for assignments, boolean mode, list creation or
+             * a capture only mode.
+             */
+            fields = fields & (ASTNode.INLINE_COLLECTION | ASTNode.COMPILE_IMMEDIATE);
 
-                        case ASSERT:
-                            start = cursor + 1;
-                            captureToEOS();
-                            return lastNode = new AssertNode(subArray(start, cursor--), fields);
+            boolean capture = false, union = false;
 
-                        case RETURN:
-                            start = cursor + 1;
-                            captureToEOS();
-                            return lastNode = new ReturnNode(subArray(start, cursor), fields);
+            if (debugSymbols) {
+                if (!lastWasLineLabel) {
+                    if (getParserContext().getSourceFile() == null) {
+                        throw new CompileException("unable to produce debugging symbols: source name must be provided.");
+                    }
 
-                        case IF:
-                            fields |= ASTNode.BLOCK_IF;
-                            return captureCodeBlock();
+                    ParserContext pCtx = getParserContext();
+                    line = pCtx.getLineCount();
 
-                        case FOREACH:
-                            fields |= ASTNode.BLOCK_FOREACH;
-                            return captureCodeBlock();
+                    skipWhitespaceWithLineAccounting();
 
-                        case WITH:
-                            fields |= ASTNode.BLOCK_WITH;
-                            return captureCodeBlock();
+                    if (!pCtx.isKnownLine(pCtx.getSourceFile(), pCtx.setLineCount(line)) && !pCtx.isBlockSymbols()) {
+                        lastWasLineLabel = true;
 
-                        case IMPORT:
-                            start = cursor + 1;
-                            captureToEOS();
-                            ImportNode importNode = new ImportNode(subArray(start, cursor--), fields);
-                            getParserContext().addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
-                            return importNode;
+                        pCtx.setLineAndOffset(line, cursor);
+                        pCtx.addKnownLine(line);
 
-                        case IMPORT_STATIC:
-                            start = cursor + 1;
-                            captureToEOS();
-                            return lastNode = new StaticImportNode(subArray(start, cursor--), fields);
+                        return lastNode = pCtx.setLastLineLabel(new LineLabel(pCtx.getSourceFile(), line));
                     }
                 }
+                else {
+                    lastWasComment = lastWasLineLabel = false;
+                }
+            }
 
-                /**
-                 * If we *were* capturing a token, and we just hit a non-identifier
-                 * character, we stop and figure out what to do.
-                 */
-                skipWhitespace();
+            /**
+             * Skip any whitespace currently under the starting point.
+             */
+            while (start < length && isWhitespace(expr[start])) start++;
 
-                if (expr[cursor] == '(') {
-                    fields |= ASTNode.METHOD;
-
+            /**
+             * From here to the end of the method is the core MVEL parsing code.  Fiddling around here is asking for
+             * trouble unless you really know what you're doing.
+             */
+            for (cursor = start; cursor < length;) {
+                if (isIdentifierPart(expr[cursor])) {
                     /**
-                     * If the current token is a method call or a constructor, we
-                     * simply capture the entire parenthesized range and allow
-                     * reduction to be dealt with through sub-parsing the property.
+                     * If the current character under the cursor is a valid
+                     * part of an identifier, we keep capturing.
                      */
+                    capture = true;
                     cursor++;
-                    for (brace = 1; cursor < length && brace > 0;) {
-                        switch (expr[cursor++]) {
-                            case'(':
-                                brace++;
-                                break;
-                            case')':
-                                brace--;
-                                break;
+                }
+                else if (capture) {
+                    String t;
+                    if (OPERATORS.containsKey(t = new String(expr, start, cursor - start))) {
+                        switch (OPERATORS.get(t)) {
+                            case NEW:
+                                start = cursor + 1;
+                                captureToEOT();
+                                return lastNode = new NewObjectNode(subArray(start, cursor), fields);
 
-                                /**
-                                 * String literals need to be skipped over or encountering a ')' in a String
-                                 * will cause an explosion.
-                                 */
-                            case'\'':
-                                cursor = captureStringLiteral('\'', expr, cursor, length) + 1;
-                                break;
+                            case ASSERT:
+                                start = cursor + 1;
+                                captureToEOS();
+                                return lastNode = new AssertNode(subArray(start, cursor--), fields);
 
-                            case'"':
-                                cursor = captureStringLiteral('"', expr, cursor, length) + 1;
-                                break;
+                            case RETURN:
+                                start = cursor + 1;
+                                captureToEOS();
+                                return lastNode = new ReturnNode(subArray(start, cursor), fields);
+
+                            case IF:
+                                fields |= ASTNode.BLOCK_IF;
+                                return captureCodeBlock();
+
+                            case FOREACH:
+                                fields |= ASTNode.BLOCK_FOREACH;
+                                return captureCodeBlock();
+
+                            case WITH:
+                                fields |= ASTNode.BLOCK_WITH;
+                                return captureCodeBlock();
+
+                            case IMPORT:
+                                start = cursor + 1;
+                                captureToEOS();
+                                ImportNode importNode = new ImportNode(subArray(start, cursor--), fields);
+                                getParserContext().addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
+                                return importNode;
+
+                            case IMPORT_STATIC:
+                                start = cursor + 1;
+                                captureToEOS();
+                                return lastNode = new StaticImportNode(subArray(start, cursor--), fields);
                         }
                     }
 
                     /**
-                     * If the brace counter is greater than 0, we know we have
-                     * unbalanced braces in the expression.  So we throw a
-                     * optimize error now.
+                     * If we *were* capturing a token, and we just hit a non-identifier
+                     * character, we stop and figure out what to do.
                      */
-                    if (brace > 0)
-                        throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
-                }
+                    skipWhitespace();
 
-                /**
-                 * If we encounter any of the following cases, we are still dealing with
-                 * a contiguous token.
-                 */
-                String name;
-                if (cursor < length) {
-                    switch (expr[cursor]) {
-                        case'+':
-                            switch (lookAhead(1)) {
-                                case'+':
-                                    ASTNode n = new PostFixIncNode(subArray(start, cursor), fields);
-                                    cursor += 2;
-                                    return lastNode = n;
+                    if (cursor != length && expr[cursor] == '(') {
+                        fields |= ASTNode.METHOD;
 
-                                case'=':
-                                    name = new String(expr, start, trimLeft(cursor) - start);
-                                    start = cursor += 2;
-                                    captureToEOS();
-
-                                    if (union) {
-                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, Operator.ADD, t);
-                                    }
-                                    else {
-                                        return lastNode = new AssignmentNode(subArray(start, cursor), fields, Operator.ADD, name);
-                                    }
-                            }
-
-                            break;
-
-                        case'-':
-                            switch (lookAhead(1)) {
-                                case'-':
-                                    ASTNode n = new PostFixDecNode(subArray(start, cursor), fields);
-                                    cursor += 2;
-                                    return lastNode = n;
-
-                                case'=':
-                                    name = new String(expr, start, trimLeft(cursor) - start);
-                                    start = cursor += 2;
-                                    captureToEOS();
-                                    return lastNode = new AssignSub(subArray(start, cursor), fields, name);
-                            }
-                            break;
-
-                        case'*':
-                            if (isAt('=', 1)) {
-                                name = new String(expr, start, trimLeft(cursor) - start);
-                                start = cursor += 2;
-                                captureToEOS();
-                                return lastNode = new AssignMult(subArray(start, cursor), fields, name);
-                            }
-                            break;
-
-                        case'/':
-                            if (isAt('=', 1)) {
-                                name = new String(expr, start, trimLeft(cursor) - start);
-                                start = cursor += 2;
-                                captureToEOS();
-                                return lastNode = new AssignDiv(subArray(start, cursor), fields, name);
-                            }
-                            break;
-
-                        case']':
-                        case'[':
-                            cursor = balancedCapture(expr, cursor, '[') + 1;
-                            continue;
-                        case'.':
-                            union = true;
-                            cursor++;
-                            continue;
-
-                        case'~':
-                            if (isAt('=', 1)) {
-                                char[] stmt = subArray(start, trimLeft(cursor));
-                                start = cursor += 2;
-                                skipWhitespace();
-                                return lastNode = new RegExMatch(stmt, fields, subArray(start, (cursor = balancedCapture(expr, cursor, expr[cursor]) + 1)));
-                            }
-                            break;
-
-                        case'=':
-                            if (isAt('+', 1)) {
-                                name = new String(expr, start, trimLeft(cursor) - start);
-                                start = cursor += 2;
-                                captureToEOS();
-                                return lastNode = new AssignAdd(subArray(start, cursor), fields, name);
-                            }
-
-                            if (greedy && !isAt('=', 1)) {
-                                cursor++;
-
-                                fields |= ASTNode.ASSIGN;
-
-                                skipWhitespace();
-                                captureToEOS();
-
-                                if (union) {
-                                    return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields);
-                                }
-                                else if (lastWasIdentifier) {
-
-                                    /**
-                                     * Check for typing information.
-                                     */
-                                    if (lastNode.getLiteralValue() instanceof String) {
-                                        if (getParserContext().hasImport((String) lastNode.getLiteralValue())) {
-                                            lastNode.setLiteralValue(getParserContext().getImport((String) lastNode.getLiteralValue()));
-                                            lastNode.setAsLiteral();
-                                            lastNode.discard();
-                                        }
-                                        else if (stk != null && stk.peek() instanceof Class) {
-                                            lastNode.setLiteralValue(stk.pop());
-                                            lastNode.setAsLiteral();
-                                            lastNode.discard();
-                                        }
-                                        else {
-                                            try {
-                                                /**
-                                                 *  take a stab in the dark and try and load the class
-                                                 */
-                                                lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
-                                                lastNode.setAsLiteral();
-                                                lastNode.discard();
-                                            }
-                                            catch (ClassNotFoundException e) {
-                                                /**
-                                                 * Just fail through.
-                                                 */
-                                            }
-                                        }
-                                    }
-
-                                    if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
-                                        lastNode.discard();
-
-                                        captureToEOS();
-                                        return new TypedVarNode(subArray(start, cursor), fields, (Class)
-                                                lastNode.getLiteralValue());
-                                    }
-
-                                    throw new ParseException("unknown class: " + lastNode.getLiteralValue());
-                                }
-                                else {
-                                    return lastNode = new AssignmentNode(subArray(start, cursor), fields);
-                                }
-                            }
-                    }
-                }
-
-                /**
-                 * Produce the token.
-                 */
-                trimWhitespace();
-
-                return createPropertyToken(start, cursor);
-            }
-            else
-                switch (expr[cursor]) {
-                    case'@': {
-                        start++;
-                        captureToEOT();
-
-                        String interceptorName = new String(expr, start, cursor - start);
-
-                        if (getParserContext().getInterceptors() == null || !getParserContext().getInterceptors().
-                                containsKey(interceptorName)) {
-                            throw new CompileException("reference to undefined interceptor: " + interceptorName, expr, cursor);
-                        }
-
-                        return lastNode = new InterceptorWrapper(getParserContext().getInterceptors().get(interceptorName), nextToken());
-                    }
-
-                    case'=':
-                        return createToken(expr, start, (cursor += 2), fields);
-
-                    case'-':
-                        if (isAt('-', 1)) {
-                            start = cursor += 2;
-                            captureToEOT();
-                            return lastNode = new PreFixDecNode(subArray(start, cursor), fields);
-                        }
-                        else if ((cursor > 0 && !isWhitespace(lookBehind(1))) || !isDigit(lookAhead(1))) {
-                            return createToken(expr, start, cursor++ + 1, fields);
-                        }
-                        else if ((cursor - 1) < 0 || (!isDigit(lookBehind(1))) && isDigit(lookAhead(1))) {
-                            cursor++;
-                            break;
-                        }
-
-                    case'+':
-                        if (isAt('+', 1)) {
-                            start = cursor += 2;
-                            captureToEOT();
-                            return lastNode = new PreFixIncNode(subArray(start, cursor), fields);
-                        }
-                        return createToken(expr, start, cursor++ + 1, fields);
-
-                    case'*':
-                        if (isAt('*', 1)) {
-                            cursor++;
-                        }
-                        return createToken(expr, start, cursor++ + 1, fields);
-
-                    case';':
+                        /**
+                         * If the current token is a method call or a constructor, we
+                         * simply capture the entire parenthesized range and allow
+                         * reduction to be dealt with through sub-parsing the property.
+                         */
                         cursor++;
-                        lastWasIdentifier = false;
-                        return lastNode = new EndOfStatement();
-
-                    case'#':
-                    case'/':
-                        if (isAt(expr[cursor], 1)) {
-                            /**
-                             * Handle single line comments.
-                             */
-                            while (cursor < length && expr[cursor] != '\n') cursor++;
-
-                            if (debugSymbols) {
-                                line = getParserContext().getLineCount();
-
-                                skipWhitespaceWithLineAccounting();
-
-                                if (lastNode instanceof LineLabel) {
-                                    getParserContext().getLastLineLabel().setLineNumber(line);
-                                    getParserContext().addKnownLine(line);
-                                }
-
-                                lastWasComment = true;
-
-                                getParserContext().setLineCount(line);
-                            }
-                            else if (cursor < length) {
-                                skipWhitespace();
-                            }
-
-                            if ((start = cursor) >= length) return null;
-
-                            continue;
-                        }
-                        else if (expr[cursor] == '/' && isAt('*', 1)) {
-                            /**
-                             * Handle multi-line comments.
-                             */
-                            int len = length - 1;
-
-                            /**
-                             * This probably seems highly redundant, but sub-compilations within the same
-                             * source will spawn a new compiler, and we need to sync this with the
-                             * parser context;
-                             */
-                            if (debugSymbols) {
-                                line = getParserContext().getLineCount();
-                            }
-
-                            while (true) {
-                                cursor++;
-                                /**
-                                 * Since multi-line comments may cross lines, we must keep track of any line-break
-                                 * we encounter.
-                                 */
-                                if (debugSymbols) {
-                                    skipWhitespaceWithLineAccounting();
-                                }
-
-                                if (cursor == len) {
-                                    throw new CompileException("unterminated block comment", expr, cursor);
-                                }
-                                if (expr[cursor] == '*' && isAt('/', 1)) {
-                                    if ((cursor += 2) >= length) return null;
-                                    skipWhitespaceWithLineAccounting();
-                                    start = cursor;
-                                    break;
-                                }
-                            }
-
-                            if (debugSymbols) {
-                                getParserContext().setLineCount(line);
-
-                                if (lastNode instanceof LineLabel) {
-                                    getParserContext().getLastLineLabel().setLineNumber(line);
-                                    getParserContext().addKnownLine(line);
-                                }
-
-                                lastWasComment = true;
-                            }
-
-                            continue;
-                        }
-
-                    case'?':
-                    case':':
-                    case'^':
-                    case'%': {
-                        return createToken(expr, start, cursor++ + 1, fields);
-                    }
-
-                    case'(': {
-                        cursor++;
-
-                        boolean singleToken = true;
-                        boolean lastWS = false;
-
-                        skipWhitespace();
-                        for (brace = 1; cursor < length && brace > 0; cursor++) {
-                            switch (expr[cursor]) {
+                        for (brace = 1; cursor < length && brace > 0;) {
+                            switch (expr[cursor++]) {
                                 case'(':
                                     brace++;
                                     break;
                                 case')':
                                     brace--;
                                     break;
+
+                                    /**
+                                     * String literals need to be skipped over or encountering a ')' in a String
+                                     * will cause an explosion.
+                                     */
                                 case'\'':
-                                    cursor = captureStringLiteral('\'', expr, cursor, length);
-                                    break;
-                                case'"':
-                                    cursor = captureStringLiteral('"', expr, cursor, length);
+                                    cursor = captureStringLiteral('\'', expr, cursor, length) + 1;
                                     break;
 
-                                case'i':
-                                    if (isAt('n', 1) && isWhitespace(lookAhead(2))) {
-                                        fields |= ASTNode.FOLD;
-                                        for (int level = brace; cursor < length; cursor++) {
-                                            switch (expr[cursor]) {
-                                                case'(':
-                                                    brace++;
-                                                    break;
-                                                case')':
-                                                    if (--brace < level) {
-                                                        if (lookAhead(1) == '.') {
-                                                            ASTNode node = createToken(expr, trimRight(start + 1), (start = cursor++), ASTNode.FOLD);
-                                                            captureToEOT();
-                                                            return lastNode = new Union(expr, trimRight(start + 2), cursor, fields, node);
-                                                        }
-                                                        else {
-                                                            return createToken(expr, trimRight(start + 1), cursor++, ASTNode.FOLD);
-                                                        }
-                                                    }
-                                                    break;
-                                                case'\'':
-                                                    cursor = captureStringLiteral('\'', expr, cursor, length);
-                                                    break;
-                                                case'"':
-                                                    cursor = captureStringLiteral('\'', expr, cursor, length);
-                                                    break;
+                                case'"':
+                                    cursor = captureStringLiteral('"', expr, cursor, length) + 1;
+                                    break;
+                            }
+                        }
+
+                        /**
+                         * If the brace counter is greater than 0, we know we have
+                         * unbalanced braces in the expression.  So we throw a
+                         * optimize error now.
+                         */
+                        if (brace > 0)
+                            throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
+                    }
+
+                    /**
+                     * If we encounter any of the following cases, we are still dealing with
+                     * a contiguous token.
+                     */
+                    String name;
+                    if (cursor < length) {
+                        switch (expr[cursor]) {
+                            case'+':
+                                switch (lookAhead(1)) {
+                                    case'+':
+                                        ASTNode n = new PostFixIncNode(subArray(start, cursor), fields);
+                                        cursor += 2;
+                                        return lastNode = n;
+
+                                    case'=':
+                                        name = new String(expr, start, trimLeft(cursor) - start);
+                                        start = cursor += 2;
+                                        captureToEOS();
+
+                                        if (union) {
+                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, Operator.ADD, t);
+                                        }
+                                        else {
+                                            return lastNode = new AssignmentNode(subArray(start, cursor), fields, Operator.ADD, name);
+                                        }
+                                }
+
+                                break;
+
+                            case'-':
+                                switch (lookAhead(1)) {
+                                    case'-':
+                                        ASTNode n = new PostFixDecNode(subArray(start, cursor), fields);
+                                        cursor += 2;
+                                        return lastNode = n;
+
+                                    case'=':
+                                        name = new String(expr, start, trimLeft(cursor) - start);
+                                        start = cursor += 2;
+                                        captureToEOS();
+                                        return lastNode = new AssignSub(subArray(start, cursor), fields, name);
+                                }
+                                break;
+
+                            case'*':
+                                if (isAt('=', 1)) {
+                                    name = new String(expr, start, trimLeft(cursor) - start);
+                                    start = cursor += 2;
+                                    captureToEOS();
+                                    return lastNode = new AssignMult(subArray(start, cursor), fields, name);
+                                }
+                                break;
+
+                            case'/':
+                                if (isAt('=', 1)) {
+                                    name = new String(expr, start, trimLeft(cursor) - start);
+                                    start = cursor += 2;
+                                    captureToEOS();
+                                    return lastNode = new AssignDiv(subArray(start, cursor), fields, name);
+                                }
+                                break;
+
+                            case']':
+                            case'[':
+                                cursor = balancedCapture(expr, cursor, '[') + 1;
+                                continue;
+                            case'.':
+                                union = true;
+                                cursor++;
+                                continue;
+
+                            case'~':
+                                if (isAt('=', 1)) {
+                                    char[] stmt = subArray(start, trimLeft(cursor));
+                                    start = cursor += 2;
+                                    skipWhitespace();
+                                    return lastNode = new RegExMatch(stmt, fields, subArray(start, (cursor = balancedCapture(expr, cursor, expr[cursor]) + 1)));
+                                }
+                                break;
+
+                            case'=':
+                                if (isAt('+', 1)) {
+                                    name = new String(expr, start, trimLeft(cursor) - start);
+                                    start = cursor += 2;
+                                    captureToEOS();
+                                    return lastNode = new AssignAdd(subArray(start, cursor), fields, name);
+                                }
+
+                                if (greedy && !isAt('=', 1)) {
+                                    cursor++;
+
+                                    fields |= ASTNode.ASSIGN;
+
+                                    skipWhitespace();
+                                    captureToEOS();
+
+                                    if (union) {
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields);
+                                    }
+                                    else if (lastWasIdentifier) {
+
+                                        /**
+                                         * Check for typing information.
+                                         */
+                                        if (lastNode.getLiteralValue() instanceof String) {
+                                            if (getParserContext().hasImport((String) lastNode.getLiteralValue())) {
+                                                lastNode.setLiteralValue(getParserContext().getImport((String) lastNode.getLiteralValue()));
+                                                lastNode.setAsLiteral();
+                                                lastNode.discard();
+                                            }
+                                            else if (stk != null && stk.peek() instanceof Class) {
+                                                lastNode.setLiteralValue(stk.pop());
+                                                lastNode.setAsLiteral();
+                                                lastNode.discard();
+                                            }
+                                            else {
+                                                try {
+                                                    /**
+                                                     *  take a stab in the dark and try and load the class
+                                                     */
+                                                    lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
+                                                    lastNode.setAsLiteral();
+                                                    lastNode.discard();
+                                                }
+                                                catch (ClassNotFoundException e) {
+                                                    /**
+                                                     * Just fail through.
+                                                     */
+                                                }
                                             }
                                         }
 
+                                        if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
+                                            lastNode.discard();
 
-                                    }
-                                    break;
+                                            captureToEOS();
+                                            return new TypedVarNode(subArray(start, cursor), fields, (Class)
+                                                    lastNode.getLiteralValue());
+                                        }
 
-                                default:
-                                    /**
-                                     * Check to see if we should disqualify this current token as a potential
-                                     * type-cast candidate.
-                                     */
-                                    if (lastWS || !isIdentifierPart(expr[cursor])) {
-                                        singleToken = false;
+                                        throw new ParseException("unknown class: " + lastNode.getLiteralValue());
                                     }
-                                    else if (isWhitespace(expr[cursor])) {
-                                        lastWS = true;
-                                        skipWhitespace();
-                                        cursor--;
+                                    else {
+                                        return lastNode = new AssignmentNode(subArray(start, cursor), fields);
                                     }
+                                }
+                        }
+                    }
+
+                    /**
+                     * Produce the token.
+                     */
+                    trimWhitespace();
+
+                    return createPropertyToken(start, cursor);
+                }
+                else
+                    switch (expr[cursor]) {
+                        case'@': {
+                            start++;
+                            captureToEOT();
+
+                            String interceptorName = new String(expr, start, cursor - start);
+
+                            if (getParserContext().getInterceptors() == null || !getParserContext().getInterceptors().
+                                    containsKey(interceptorName)) {
+                                throw new CompileException("reference to undefined interceptor: " + interceptorName, expr, cursor);
                             }
+
+                            return lastNode = new InterceptorWrapper(getParserContext().getInterceptors().get(interceptorName), nextToken());
                         }
 
-                        if (brace > 0) {
-                            throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
+                        case'=':
+                            return createToken(expr, start, (cursor += 2), fields);
+
+                        case'-':
+                            if (isAt('-', 1)) {
+                                start = cursor += 2;
+                                captureToEOT();
+                                return lastNode = new PreFixDecNode(subArray(start, cursor), fields);
+                            }
+                            else if ((cursor > 0 && !isWhitespace(lookBehind(1))) || !isDigit(lookAhead(1))) {
+                                return createToken(expr, start, cursor++ + 1, fields);
+                            }
+                            else if ((cursor - 1) < 0 || (!isDigit(lookBehind(1))) && isDigit(lookAhead(1))) {
+                                cursor++;
+                                break;
+                            }
+
+                        case'+':
+                            if (isAt('+', 1)) {
+                                start = cursor += 2;
+                                captureToEOT();
+                                return lastNode = new PreFixIncNode(subArray(start, cursor), fields);
+                            }
+                            return createToken(expr, start, cursor++ + 1, fields);
+
+                        case'*':
+                            if (isAt('*', 1)) {
+                                cursor++;
+                            }
+                            return createToken(expr, start, cursor++ + 1, fields);
+
+                        case';':
+                            cursor++;
+                            lastWasIdentifier = false;
+                            return lastNode = new EndOfStatement();
+
+                        case'#':
+                        case'/':
+                            if (isAt(expr[cursor], 1)) {
+                                /**
+                                 * Handle single line comments.
+                                 */
+                                while (cursor < length && expr[cursor] != '\n') cursor++;
+
+                                if (debugSymbols) {
+                                    line = getParserContext().getLineCount();
+
+                                    skipWhitespaceWithLineAccounting();
+
+                                    if (lastNode instanceof LineLabel) {
+                                        getParserContext().getLastLineLabel().setLineNumber(line);
+                                        getParserContext().addKnownLine(line);
+                                    }
+
+                                    lastWasComment = true;
+
+                                    getParserContext().setLineCount(line);
+                                }
+                                else if (cursor < length) {
+                                    skipWhitespace();
+                                }
+
+                                if ((start = cursor) >= length) return null;
+
+                                continue;
+                            }
+                            else if (expr[cursor] == '/' && isAt('*', 1)) {
+                                /**
+                                 * Handle multi-line comments.
+                                 */
+                                int len = length - 1;
+
+                                /**
+                                 * This probably seems highly redundant, but sub-compilations within the same
+                                 * source will spawn a new compiler, and we need to sync this with the
+                                 * parser context;
+                                 */
+                                if (debugSymbols) {
+                                    line = getParserContext().getLineCount();
+                                }
+
+                                while (true) {
+                                    cursor++;
+                                    /**
+                                     * Since multi-line comments may cross lines, we must keep track of any line-break
+                                     * we encounter.
+                                     */
+                                    if (debugSymbols) {
+                                        skipWhitespaceWithLineAccounting();
+                                    }
+
+                                    if (cursor == len) {
+                                        throw new CompileException("unterminated block comment", expr, cursor);
+                                    }
+                                    if (expr[cursor] == '*' && isAt('/', 1)) {
+                                        if ((cursor += 2) >= length) return null;
+                                        skipWhitespaceWithLineAccounting();
+                                        start = cursor;
+                                        break;
+                                    }
+                                }
+
+                                if (debugSymbols) {
+                                    getParserContext().setLineCount(line);
+
+                                    if (lastNode instanceof LineLabel) {
+                                        getParserContext().getLastLineLabel().setLineNumber(line);
+                                        getParserContext().addKnownLine(line);
+                                    }
+
+                                    lastWasComment = true;
+                                }
+
+                                continue;
+                            }
+
+                        case'?':
+                        case':':
+                        case'^':
+                        case'%': {
+                            return createToken(expr, start, cursor++ + 1, fields);
                         }
 
-                        char[] _subset = null;
-                        if (singleToken) {
-                            int st;
-                            String tokenStr = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st));
+                        case'(': {
+                            cursor++;
 
-                            if (getParserContext().hasImport(tokenStr)) {
-                                start = cursor;
-                                captureToEOS();
-                                return lastNode = new TypeCast(expr, start, cursor, fields, getParserContext().getImport(tokenStr));
+                            boolean singleToken = true;
+                            boolean lastWS = false;
+
+                            skipWhitespace();
+                            for (brace = 1; cursor < length && brace > 0; cursor++) {
+                                switch (expr[cursor]) {
+                                    case'(':
+                                        brace++;
+                                        break;
+                                    case')':
+                                        brace--;
+                                        break;
+                                    case'\'':
+                                        cursor = captureStringLiteral('\'', expr, cursor, length);
+                                        break;
+                                    case'"':
+                                        cursor = captureStringLiteral('"', expr, cursor, length);
+                                        break;
+
+                                    case'i':
+                                        if (isAt('n', 1) && isWhitespace(lookAhead(2))) {
+                                            fields |= ASTNode.FOLD;
+                                            for (int level = brace; cursor < length; cursor++) {
+                                                switch (expr[cursor]) {
+                                                    case'(':
+                                                        brace++;
+                                                        break;
+                                                    case')':
+                                                        if (--brace < level) {
+                                                            if (lookAhead(1) == '.') {
+                                                                ASTNode node = createToken(expr, trimRight(start + 1), (start = cursor++), ASTNode.FOLD);
+                                                                captureToEOT();
+                                                                return lastNode = new Union(expr, trimRight(start + 2), cursor, fields, node);
+                                                            }
+                                                            else {
+                                                                return createToken(expr, trimRight(start + 1), cursor++, ASTNode.FOLD);
+                                                            }
+                                                        }
+                                                        break;
+                                                    case'\'':
+                                                        cursor = captureStringLiteral('\'', expr, cursor, length);
+                                                        break;
+                                                    case'"':
+                                                        cursor = captureStringLiteral('\'', expr, cursor, length);
+                                                        break;
+                                                }
+                                            }
+
+
+                                        }
+                                        break;
+
+                                    default:
+                                        /**
+                                         * Check to see if we should disqualify this current token as a potential
+                                         * type-cast candidate.
+                                         */
+                                        if (lastWS || !isIdentifierPart(expr[cursor])) {
+                                            singleToken = false;
+                                        }
+                                        else if (isWhitespace(expr[cursor])) {
+                                            lastWS = true;
+                                            skipWhitespace();
+                                            cursor--;
+                                        }
+                                }
+                            }
+
+                            if (brace > 0) {
+                                throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
+                            }
+
+                            char[] _subset = null;
+                            if (singleToken) {
+                                int st;
+                                String tokenStr = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st));
+
+                                if (getParserContext().hasImport(tokenStr)) {
+                                    start = cursor;
+                                    captureToEOS();
+                                    return lastNode = new TypeCast(expr, start, cursor, fields, getParserContext().getImport(tokenStr));
+                                }
+                                else {
+                                    try {
+                                        /**
+                                         *
+                                         *  take a stab in the dark and try and load the class
+                                         */
+                                        int _start = cursor;
+                                        captureToEOS();
+                                        return lastNode = new TypeCast(expr, _start, cursor, fields, createClass(tokenStr));
+
+                                    }
+                                    catch (ClassNotFoundException e) {
+                                        /**
+                                         * Just fail through.
+                                         */
+                                    }
+                                }
+                            }
+
+                            if (_subset != null) {
+                                return handleUnion(new Substatement(_subset, fields));
                             }
                             else {
-                                try {
-                                    /**
-                                     *
-                                     *  take a stab in the dark and try and load the class
-                                     */
-                                    int _start = cursor;
-                                    captureToEOS();
-                                    return lastNode = new TypeCast(expr, _start, cursor, fields, createClass(tokenStr));
-
-                                }
-                                catch (ClassNotFoundException e) {
-                                    /**
-                                     * Just fail through.
-                                     */
-                                }
+                                return handleUnion(new Substatement(subset(expr, start = trimRight(start + 1), trimLeft(cursor - 1) - start), fields));
                             }
                         }
 
-                        if (_subset != null) {
-                            return handleUnion(new Substatement(_subset, fields));
-                        }
-                        else {
-                            return handleUnion(new Substatement(subset(expr, start = trimRight(start + 1), trimLeft(cursor - 1) - start), fields));
-                        }
-                    }
-
-                    case'}':
-                    case']':
-                    case')': {
-                        throw new ParseException("unbalanced braces", expr, cursor);
-                    }
-
-                    case'>': {
-                        if (expr[cursor + 1] == '>') {
-                            if (expr[cursor += 2] == '>') cursor++;
-                            return createToken(expr, start, cursor, fields);
-                        }
-                        else if (expr[cursor + 1] == '=') {
-                            return createToken(expr, start, cursor += 2, fields);
-                        }
-                        else {
-                            return createToken(expr, start, ++cursor, fields);
-                        }
-                    }
-
-                    case'<': {
-                        if (expr[++cursor] == '<') {
-                            if (expr[++cursor] == '<') cursor++;
-                            return createToken(expr, start, cursor, fields);
-                        }
-                        else if (expr[cursor] == '=') {
-                            return createToken(expr, start, ++cursor, fields);
-                        }
-                        else {
-                            return createToken(expr, start, cursor, fields);
-                        }
-                    }
-
-                    case'\'':
-                    case'"':
-                        cursor = captureStringLiteral(expr[cursor], expr, cursor, length);
-
-                        lastNode = new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
-
-                        if (tokenContinues()) {
-                            return handleUnion(lastNode);
+                        case'}':
+                        case']':
+                        case')': {
+                            throw new ParseException("unbalanced braces", expr, cursor);
                         }
 
-                        return lastNode;
-
-
-                    case'&': {
-                        if (expr[cursor++ + 1] == '&') {
-                            return createToken(expr, start, ++cursor, fields);
+                        case'>': {
+                            if (expr[cursor + 1] == '>') {
+                                if (expr[cursor += 2] == '>') cursor++;
+                                return createToken(expr, start, cursor, fields);
+                            }
+                            else if (expr[cursor + 1] == '=') {
+                                return createToken(expr, start, cursor += 2, fields);
+                            }
+                            else {
+                                return createToken(expr, start, ++cursor, fields);
+                            }
                         }
-                        else {
-                            return createToken(expr, start, cursor, fields);
-                        }
-                    }
 
-                    case'|': {
-                        if (expr[cursor++ + 1] == '|') {
-                            return createToken(expr, start, ++cursor, fields);
+                        case'<': {
+                            if (expr[++cursor] == '<') {
+                                if (expr[++cursor] == '<') cursor++;
+                                return createToken(expr, start, cursor, fields);
+                            }
+                            else if (expr[cursor] == '=') {
+                                return createToken(expr, start, ++cursor, fields);
+                            }
+                            else {
+                                return createToken(expr, start, cursor, fields);
+                            }
                         }
-                        else {
-                            return createToken(expr, start, cursor, fields);
+
+                        case'\'':
+                        case'"':
+                            cursor = captureStringLiteral(expr[cursor], expr, cursor, length);
+
+                            lastNode = new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
+
+                            if (tokenContinues()) {
+                                return handleUnion(lastNode);
+                            }
+
+                            return lastNode;
+
+
+                        case'&': {
+                            if (expr[cursor++ + 1] == '&') {
+                                return createToken(expr, start, ++cursor, fields);
+                            }
+                            else {
+                                return createToken(expr, start, cursor, fields);
+                            }
                         }
-                    }
 
-                    case'~':
-                        if ((cursor - 1 < 0 || !isIdentifierPart(lookBehind(1)))
-                                && isDigit(expr[cursor + 1])) {
+                        case'|': {
+                            if (expr[cursor++ + 1] == '|') {
+                                return createToken(expr, start, ++cursor, fields);
+                            }
+                            else {
+                                return createToken(expr, start, cursor, fields);
+                            }
+                        }
 
-                            fields |= ASTNode.INVERT;
-                            start++;
+                        case'~':
+                            if ((cursor - 1 < 0 || !isIdentifierPart(lookBehind(1)))
+                                    && isDigit(expr[cursor + 1])) {
+
+                                fields |= ASTNode.INVERT;
+                                start++;
+                                cursor++;
+                                break;
+                            }
+                            else if (expr[cursor + 1] == '(') {
+                                fields |= ASTNode.INVERT;
+                                start = ++cursor;
+                                continue;
+                            }
+                            else {
+                                if (expr[cursor + 1] == '=') cursor++;
+                                return createToken(expr, start, ++cursor, fields);
+                            }
+
+                        case'!': {
+                            if (isIdentifierPart(expr[++cursor]) || expr[cursor] == '(') {
+                                start = cursor;
+                                fields |= ASTNode.NEGATION;
+                                continue;
+                            }
+                            else if (expr[cursor] != '=')
+                                throw new CompileException("unexpected operator '!'", expr, cursor, null);
+                            else {
+                                return createToken(expr, start, ++cursor, fields);
+                            }
+                        }
+
+                        case'[':
+                        case'{':
+                            if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
+                                if (cursor >= length) cursor--;
+                                throw new CompileException("unbalanced brace: in inline map/list/array creation", expr, cursor);
+                            }
+
                             cursor++;
-                            break;
-                        }
-                        else if (expr[cursor + 1] == '(') {
-                            fields |= ASTNode.INVERT;
-                            start = ++cursor;
-                            continue;
-                        }
-                        else {
-                            if (expr[cursor + 1] == '=') cursor++;
-                            return createToken(expr, start, ++cursor, fields);
-                        }
 
-                    case'!': {
-                        if (isIdentifierPart(expr[++cursor]) || expr[cursor] == '(') {
-                            start = cursor;
-                            fields |= ASTNode.NEGATION;
-                            continue;
-                        }
-                        else if (expr[cursor] != '=')
-                            throw new CompileException("unexpected operator '!'", expr, cursor, null);
-                        else {
-                            return createToken(expr, start, ++cursor, fields);
-                        }
+                            if (tokenContinues()) {
+                                //   if (lookAhead(1) == '.') {
+                                InlineCollectionNode n = new InlineCollectionNode(expr, start, start = cursor, fields);
+                                captureToEOT();
+                                return lastNode = new Union(expr, start + 1, cursor, fields, n);
+                            }
+                            else {
+                                return lastNode = new InlineCollectionNode(expr, start, cursor, fields);
+                            }
+
+                        default:
+                            cursor++;
                     }
+            }
 
-                    case'[':
-                    case'{':
-                        if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
-                            if (cursor >= length) cursor--;
-                            throw new CompileException("unbalanced brace: in inline map/list/array creation", expr, cursor);
-                        }
-
-                        cursor++;
-
-                        if (tokenContinues()) {
-                            //   if (lookAhead(1) == '.') {
-                            InlineCollectionNode n = new InlineCollectionNode(expr, start, start = cursor, fields);
-                            captureToEOT();
-                            return lastNode = new Union(expr, start + 1, cursor, fields, n);
-                        }
-                        else {
-                            return lastNode = new InlineCollectionNode(expr, start, cursor, fields);
-                        }
-
-                    default:
-                        cursor++;
-                }
+            if (start == cursor) return null;
+            return createPropertyToken(start, cursor);
         }
-
-        if (start == cursor) return null;
-        return createPropertyToken(start, cursor);
+        catch (CompileException e) {
+            throw new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0);
+        }
     }
 
     protected ASTNode handleUnion(ASTNode node) {
@@ -865,6 +872,8 @@ public class AbstractParser implements Serializable {
     }
 
     private char[] subArray(final int start, final int end) {
+        if (start >= end) return new char[0];
+
         char[] newA = new char[end - start];
         arraycopy(expr, start, newA, 0, newA.length);
         return newA;
@@ -984,9 +993,7 @@ public class AbstractParser implements Serializable {
                 startCond++;
                 cursor++;
 
-                line = getParserContext().getLineCount();
-                line += cap[1];
-                getParserContext().setLineCount(line);
+                getParserContext().setLineCount(line = getParserContext().getLineCount() + cap[1]);
             }
             else {
                 endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
@@ -1014,9 +1021,7 @@ public class AbstractParser implements Serializable {
 
                 blockEnd = cursor = cap[0];
 
-                line = getParserContext().getLineCount();
-                line += cap[1];
-                getParserContext().setLineCount(line);
+                getParserContext().setLineCount((line = getParserContext().getLineCount() + cap[1]));
             }
             else if ((blockEnd = cursor = balancedCapture(expr, cursor, '{')) == -1) {
                 throw new CompileException("unbalanced braces { }", expr, cursor);
@@ -1265,7 +1270,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected static ParserContext contextControl(int operation, ParserContext pCtx, AbstractParser parser) {
-        synchronized (Runtime.getRuntime()) {
+        synchronized (getRuntime()) {
             if (parserContext == null) parserContext = new ThreadLocal<ParserContext>();
 
             switch (operation) {

@@ -676,7 +676,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             throw e;
         }
         catch (Exception e) {
-            throw new CompileException("could not create constructor", e);
+            throw new CompileException("could not create constructor: " + e.getMessage(), e);
         }
     }
 

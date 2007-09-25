@@ -313,7 +313,7 @@ public class ASTNode implements Cloneable, Serializable {
                     }
                 }
 
-                throw new UnresolveablePropertyException(this);
+                throw new CompileException("can not resolve identifier: " + new String(name));
             }
         }
 
