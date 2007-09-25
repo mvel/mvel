@@ -106,7 +106,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                  * If we are at the beginning of a statement, then we immediately push the first token
                  * onto the stack.
                  */
-                if (stk.size() == 0) {
+                if (stk.isEmpty()) {
                     stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
                 }
 

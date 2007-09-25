@@ -217,11 +217,10 @@ public abstract class AbstractTest extends TestCase {
             }
 
             if (!first.equals(third)) {
-                System.out.println(failErrors.toString());
-
+                if (failErrors != null) System.out.println(failErrors.toString());
 
                 throw new AssertionError("Different result from test 1 and 3 (Compiled to Interpreted) [first: " +
-                        String.valueOf(first) + " (" + first.getClass().getName() + "); third: " + String.valueOf(third) + " (" + (third != null ? third.getClass().getName() : "null") + ")]");
+                        String.valueOf(first) + " (" + (first != null ? first.getClass().getName() : null) + "); third: " + String.valueOf(third) + " (" + (third != null ? third.getClass().getName() : "null") + ")]");
             }
         }
 
