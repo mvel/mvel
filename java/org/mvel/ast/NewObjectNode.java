@@ -12,6 +12,7 @@ import org.mvel.util.ArrayTools;
 import static org.mvel.util.ArrayTools.findFirst;
 
 import static java.lang.System.arraycopy;
+import static java.lang.Thread.currentThread;
 
 /**
  * @author Christopher Brock
@@ -32,11 +33,10 @@ public class NewObjectNode extends ASTNode {
             }
             else {
                 try {
-                    egressType = Thread.currentThread().getContextClassLoader().loadClass(className);
-                    //        egressType = Class.forName(className);
+                    egressType = currentThread().getContextClassLoader().loadClass(className);
                 }
                 catch (ClassNotFoundException e) {
-                    //           throw new CompileException("class not found: " + name, e);
+                    // do nothing.
                 }
             }
 
