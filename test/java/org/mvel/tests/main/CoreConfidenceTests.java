@@ -2406,18 +2406,19 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testFail() {
+
         Map map = new HashMap();
         map.put("a", new JButton());
         map.put("b", new JButton());
         new JButton().setToolTipText("");
-        System.out.println(eval(
+        System.out.println(test(
                 "if (a.text!=null) {\n" +
                         "    b.text = a.text;\n" +
                         "} else if (a.toolTipText!=null) { \n" +
                         "    b.text = a.toolTipText;\n" +
                         "} " +
                         "return b;"
-                , map
+                , null, map
         ));
     }
 
@@ -2426,24 +2427,25 @@ public class CoreConfidenceTests extends AbstractTest {
         map.put("a", new JButton());
         map.put("b", new JButton());
         new JButton().setToolTipText("");
-        System.out.println(eval(
+        System.out.println(test(
                 "if (a.text!=null) {\n" +
                         "    b.text = a.text;\n" +
                         "} " +
                         "if (a.text!=null && a.toolTipText!=null) { \n" +
-                        "    b.text = a.toolTipText;Å\n" +
+                        "    b.text = a.toolTipText;\n" +
                         "}" +
                         "return b;"
-                , map
+                , null, map
         ));
 
-        System.out.println(eval(
+
+        System.out.println(test(
                 "if (a.text!=null) {\n" +
                         "    b.text = a.text;\n" +
                         "} else if (a.text!=null && a.toolTipText!=null) { \n" +
                         "    b.text = a.toolTipText;\n" +
                         "}"
-                , map
+                , null, map
         ));
     }
 
