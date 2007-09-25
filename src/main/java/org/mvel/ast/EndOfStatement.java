@@ -2,6 +2,7 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.Operator;
+import org.mvel.integration.VariableResolverFactory;
 
 /**
  * @author Christopher Brock
@@ -18,6 +19,14 @@ public class EndOfStatement extends ASTNode {
         return true;
     }
 
+
+    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        return null;
+    }
+
+    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        return null;
+    }
 
     public Integer getOperator() {
         return Operator.END_OF_STMT;

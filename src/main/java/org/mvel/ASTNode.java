@@ -299,7 +299,7 @@ public class ASTNode implements Cloneable, Serializable {
             }
             else {
                 if (isOperator()) {
-                    throw new CompileException("incomplete statement");
+                    throw new CompileException("incomplete statement: " + new String(name));
                 }
                 else {
                     int mBegin = findFirst('(', name);
