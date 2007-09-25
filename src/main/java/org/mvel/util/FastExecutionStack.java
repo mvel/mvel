@@ -13,7 +13,6 @@ public class FastExecutionStack implements Stack {
     }
 
     public void push(Object obj) {
-        System.out.println("PUSH <<" + obj + ">>");
         stack[++size] = obj;
     }
 

@@ -568,7 +568,7 @@ public class CoreConfidenceTests extends AbstractTest {
         VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
         factory.createVariable("this", map);
 
-        assertEquals(true, MVEL.eval("this.foo == 'bar'", map, factory));
+        assertEquals(true, eval("this.foo == 'bar'", map, factory));
     }
 
     // compiled - reflective
@@ -2028,15 +2028,15 @@ public class CoreConfidenceTests extends AbstractTest {
         Context ctx = new Context();
         ctx.setBean(new Bean());
         Map<String, Object> vars = new HashMap<String, Object>();
-        System.out.println("bean.today: " + MVEL.eval("bean.today", ctx, vars));
-        System.out.println("formatDate(bean.today): " + MVEL.eval("formatDate(bean.today)", ctx, vars));
+        System.out.println("bean.today: " + eval("bean.today", ctx, vars));
+        System.out.println("formatDate(bean.today): " + eval("formatDate(bean.today)", ctx, vars));
         //calling method with string param with null parameter works
-        System.out.println("formatString(bean.nullString): " + MVEL.eval("formatString(bean.nullString)", ctx, vars));
-        System.out.println("bean.myDate = bean.nullDate: " + MVEL.eval("bean.myDate = bean.nullDate; return bean.nullDate;", ctx, vars));
+        System.out.println("formatString(bean.nullString): " + eval("formatString(bean.nullString)", ctx, vars));
+        System.out.println("bean.myDate = bean.nullDate: " + eval("bean.myDate = bean.nullDate; return bean.nullDate;", ctx, vars));
         //calling method with Date param with null parameter fails
-        System.out.println("formatDate(bean.myDate): " + MVEL.eval("formatDate(bean.myDate)", ctx, vars));
+        System.out.println("formatDate(bean.myDate): " + eval("formatDate(bean.myDate)", ctx, vars));
         //same here
-        System.out.println(MVEL.eval("formatDate(bean.nullDate)", ctx, vars));
+        System.out.println(eval("formatDate(bean.nullDate)", ctx, vars));
     }
 
     /**
@@ -2062,7 +2062,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testStaticNested() {
-        assertEquals(1, MVEL.eval("org.mvel.tests.main.AbstractTest$Message.GOODBYE", new HashMap()));
+        assertEquals(1, eval("org.mvel.tests.main.AbstractTest$Message.GOODBYE", new HashMap()));
     }
 
     public void testStaticNestedWithImport() {
@@ -2370,7 +2370,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Map variableMap = new HashMap();
         variableMap.put("elements", elements);
 
-        MVEL.eval(
+        eval(
                 "results = new java.util.ArrayList(); foreach (element : elements) { if( {5} contains element.targetValue.intValue()) { results.add(element); } }; results",
                 variableMap);
     }
@@ -2390,14 +2390,14 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testFailing() {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("os", "windows");
-        assertTrue((Boolean) MVEL.eval("os ~= 'windows|unix'", map));
+        assertTrue((Boolean) eval("os ~= 'windows|unix'", map));
     }
 
     public void testSuccess() {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("os", "windows");
-        assertTrue((Boolean) MVEL.eval("'windows' ~= 'windows|unix'", map));
-        assertFalse((Boolean) MVEL.eval("time ~= 'windows|unix'", new java.util.Date()));
+        assertTrue((Boolean) eval("'windows' ~= 'windows|unix'", map));
+        assertFalse((Boolean) eval("time ~= 'windows|unix'", new java.util.Date()));
     }
 
 
@@ -2410,7 +2410,7 @@ public class CoreConfidenceTests extends AbstractTest {
         map.put("a", new JButton());
         map.put("b", new JButton());
         new JButton().setToolTipText("");
-        System.out.println(MVEL.eval(
+        System.out.println(eval(
                 "if (a.text!=null) {\n" +
                         "    b.text = a.text;\n" +
                         "} else if (a.toolTipText!=null) { \n" +
@@ -2426,18 +2426,18 @@ public class CoreConfidenceTests extends AbstractTest {
         map.put("a", new JButton());
         map.put("b", new JButton());
         new JButton().setToolTipText("");
-        System.out.println(MVEL.eval(
+        System.out.println(eval(
                 "if (a.text!=null) {\n" +
                         "    b.text = a.text;\n" +
                         "} " +
                         "if (a.text!=null && a.toolTipText!=null) { \n" +
-                        "    b.text = a.toolTipText;\n" +
+                        "    b.text = a.toolTipText;Å\n" +
                         "}" +
                         "return b;"
                 , map
         ));
 
-        System.out.println(MVEL.eval(
+        System.out.println(eval(
                 "if (a.text!=null) {\n" +
                         "    b.text = a.text;\n" +
                         "} else if (a.text!=null && a.toolTipText!=null) { \n" +
