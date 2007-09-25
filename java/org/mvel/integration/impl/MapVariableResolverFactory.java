@@ -31,13 +31,13 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     /**
      * Holds the instance of the variables.
      */
-    protected Map<String, Object> variables;
+    protected Map<String, ? extends Object> variables;
 
     //   private VariableResolverFactory nextFactory;
 
     private boolean cachingSafe = false;
 
-    public MapVariableResolverFactory(Map<String, Object> variables) {
+    public MapVariableResolverFactory(Map<String, ? extends Object> variables) {
         this.variables = variables;
     }
 
