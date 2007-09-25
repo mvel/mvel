@@ -5,7 +5,7 @@ public class ExecutionStack implements Stack {
     private int size = 0;
 
     public boolean isEmpty() {
-        return element == null;
+        return size == 0;
     }
 
     public void add(Object o) {
