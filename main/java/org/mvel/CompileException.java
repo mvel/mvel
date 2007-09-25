@@ -20,8 +20,8 @@
 package org.mvel;
 
 import static java.lang.String.copyValueOf;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CompileException extends RuntimeException {
     private char[] expr;
@@ -55,6 +55,12 @@ public class CompileException extends RuntimeException {
 
     public CompileException(String message, char[] expr, int cursor) {
         super("Failed to compile:\n[Error: " + message + "]\n[Near: \"" + showCodeNearError(expr, cursor) + "\"]");
+        this.expr = expr;
+        this.cursor = cursor;
+    }
+
+    public CompileException(String message, char[] expr, int cursor, boolean concatError) {
+        super(concatError ? "Failed to compile:\n[Error: " + message + "]\n[Near: \"" + showCodeNearError(expr, cursor) + "\"]" : message);
         this.expr = expr;
         this.cursor = cursor;
     }
