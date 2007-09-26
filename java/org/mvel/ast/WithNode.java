@@ -154,7 +154,7 @@ public class WithNode extends BlockNode implements NestedStatement {
             }
         }
 
-        if (end == -1) end = block.length;
+        end = block.length;
 
         if (parm != null && start != block.length) {
             parms.add(new ParmValuePair(
