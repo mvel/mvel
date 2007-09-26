@@ -2449,6 +2449,17 @@ public class CoreConfidenceTests extends AbstractTest {
         ));
     }
 
+    public void testCommentsInWith() {
+        HashMap map = new HashMap();
+        map.put("f", new JFrame());
+        System.out.println(MVEL.eval(
+                "with (f) {\n" +
+                        "title = 'blah', // setting title\n" +
+                        "alwaysOnTop = false \n" +
+                        "}", map
+        ));
+    }
+
 }
 
 
