@@ -106,7 +106,7 @@ public class ParserPerformanceTests extends TestCase {
 
     public void testOgnl() throws OgnlException {
         Object o = Ognl.parseExpression("hour");
-        for (int i = 0; i < COUNT; i++) {
+        for (int i = 0; i < COUNT; i++) {                             
             assert "60".equals(Ognl.getValue(o, map));
         }
     }
