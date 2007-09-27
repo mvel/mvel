@@ -2,7 +2,7 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
-import org.mvel.MVEL;
+import static org.mvel.MVEL.eval;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
@@ -45,9 +45,8 @@ public class TypedVarNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        Object o = MVEL.eval(stmt, thisValue, factory);
-        finalLocalVariableFactory(factory).createVariable(name, o, egressType);
-        return o;
+        finalLocalVariableFactory(factory).createVariable(name, ctx = eval(stmt, thisValue, factory), egressType);
+        return ctx;
     }
 
 
