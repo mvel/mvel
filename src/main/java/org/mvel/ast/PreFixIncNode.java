@@ -19,9 +19,8 @@ public class PreFixIncNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver vResolver = factory.getVariableResolver(name);
-        Object o;
-        vResolver.setValue(o = doOperations(vResolver.getValue(), Operator.ADD, 1));
-        return o;
+        vResolver.setValue(ctx = doOperations(vResolver.getValue(), Operator.ADD, 1));
+        return ctx;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
