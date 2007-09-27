@@ -342,9 +342,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return this.thisRef;
         }
         else if (LITERALS.containsKey(property)) {
-            Object literal = LITERALS.get(property);
-            addAccessorNode(new StaticReferenceAccessor(literal));
-            return literal;
+            addAccessorNode(new StaticReferenceAccessor(ctx = LITERALS.get(property)));
+            return ctx;
         }
         else {
             Object tryStaticMethodRef = tryStaticAccess();
@@ -650,9 +649,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         CollectionParser parser = new CollectionParser();
-        Object o = ((List) parser.parseCollection(property)).get(0);
+        ctx = ((List) parser.parseCollection(property)).get(0);
 
-        Accessor root = _getAccessor(o);
+        Accessor root = _getAccessor(ctx);
         int end = parser.getCursor() + 2;
 
         if (end < property.length) {
@@ -668,9 +667,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.length = (this.expr = property).length;
         this.cursor = 0;
         try {
-            Accessor contructor = compileConstructor(property, ctx, factory);
+            //   Accessor contructor = compileConstructor(property, ctx, factory);
             //       val = contructor.getValue(property, thisRef, factory);
-            return contructor;
+            return compileConstructor(property, ctx, factory);
         }
         catch (CompileException e) {
             throw e;
