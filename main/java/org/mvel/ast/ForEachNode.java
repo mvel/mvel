@@ -23,7 +23,7 @@ public class ForEachNode extends BlockNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        Object ret = null;
+        //   Object ret = null;
 
         ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver(item);
         ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, new DefaultLocalVariableResolverFactory(factory));
@@ -33,30 +33,33 @@ public class ForEachNode extends BlockNode {
         if (iterCond instanceof Iterable) {
             for (Object o : (Iterable) iterCond) {
                 itemR.setValue(o);
-                ret = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                compiledBlock.getValue(ctx, thisValue, itemFactory);
             }
         }
         else if (iterCond instanceof Object[]) {
             for (Object o : (Object[]) iterCond) {
                 itemR.setValue(o);
-                ret = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                compiledBlock.getValue(ctx, thisValue, itemFactory);
             }
         }
         else if (iterCond instanceof CharSequence) {
             for (Object o : iterCond.toString().toCharArray()) {
                 itemR.setValue(o);
-                ret = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                compiledBlock.getValue(ctx, thisValue, itemFactory);
             }
         }
         else if (iterCond instanceof Integer) {
             int max = (Integer) iterCond + 1;
             for (int i = 1; i != max; i++) {
                 itemR.setValue(i);
-                ret = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                compiledBlock.getValue(ctx, thisValue, itemFactory);
             }
         }
+        else {
+            throw new CompileException("non-iterable type: " + iterCond.getClass().getName());
+        }
 
-        return ret == null ? null : ret;
+        return null;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -72,8 +75,8 @@ public class ForEachNode extends BlockNode {
 
         item = new String(condition, 0, cursor).trim();
 
-        cursor++;
+        //  cursor++;
 
-        this.condition = (ExecutableStatement) subCompileExpression(subset(condition, cursor));
+        this.condition = (ExecutableStatement) subCompileExpression(subset(condition, ++cursor));
     }
 }
