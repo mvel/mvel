@@ -264,7 +264,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw new PropertyAccessException(new String(expr), e);
         }
         catch (PropertyAccessException e) {
-            throw new PropertyAccessException(new String(expr), e);
+            //    throw new PropertyAccessException(e.getMessage(), e);
+            throw new CompileException(e.getMessage(), e);
         }
         catch (CompileException e) {
             throw e;
@@ -276,7 +277,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw e;
         }
         catch (Exception e) {
-            throw new PropertyAccessException(new String(expr), e);
+            //  throw new PropertyAccessException(new String(expr), e);
+            throw new CompileException(e.getMessage(), e);
         }
     }
 

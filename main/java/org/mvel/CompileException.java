@@ -19,6 +19,7 @@
 
 package org.mvel;
 
+import static java.lang.Character.isWhitespace;
 import static java.lang.String.copyValueOf;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,12 +81,18 @@ public class CompileException extends RuntimeException {
         int start = cursor - 10;
         int end = (cursor + 20);
 
+        if (end > expr.length) {
+            end = expr.length - 1;
+            start -= 20;
+        }
+
         if (start < 0) {
             start = 0;
         }
-        if (end > expr.length) {
-            end = expr.length - 1;
-        }
+
+        while (start < end && isWhitespace(expr[start])) start++;
+        //   while (end > start && isWhitespace(expr[end])) end--;
+
         return copyValueOf(expr, start, end - start);
     }
 
