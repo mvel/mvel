@@ -45,10 +45,8 @@ public class AssignmentNode extends ASTNode implements Assignment {
                 this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt)).getKnownEgressType();
             }
 
-            if (col = ((endOfName = findFirst('[',  indexTarget = this.name.toCharArray())) > 0)) {
-                this.fields |= COLLECTION;
-
-                if ((fields & COMPILE_IMMEDIATE) != 0) {
+            if (col = ((endOfName = findFirst('[', indexTarget = this.name.toCharArray())) > 0)) {
+                if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
                     setExpr = (CompiledSetExpression) compileSetExpression(indexTarget);
                 }
 
@@ -70,38 +68,38 @@ public class AssignmentNode extends ASTNode implements Assignment {
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (setExpr == null) {
             setExpr = (CompiledSetExpression) compileSetExpression(indexTarget);
-      //      statement = (ExecutableStatement) subCompileExpression(stmt);
+            //      statement = (ExecutableStatement) subCompileExpression(stmt);
         }
 
-        Object o;
+        //   Object o;
 
         if (col) {
-            setExpr.setValue(ctx, factory, o = statement.getValue(ctx, thisValue, factory));
+            setExpr.setValue(ctx, factory, ctx = statement.getValue(ctx, thisValue, factory));
         }
         else if (statement != null) {
-            finalLocalVariableFactory(factory).createVariable(name, o = statement.getValue(ctx, thisValue, factory));
+            finalLocalVariableFactory(factory).createVariable(name, ctx = statement.getValue(ctx, thisValue, factory));
         }
         else {
             factory.createVariable(name, null);
             return Void.class;
         }
 
-        return o;
+        return ctx;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        Object o;
+        //   Object o;
 
         checkNameSafety(name);
 
         if (col) {
-            MVEL.setProperty(factory.getVariableResolver(name).getValue(), new String(index), o = MVEL.eval(stmt, ctx, factory));
+            MVEL.setProperty(factory.getVariableResolver(name).getValue(), new String(index), ctx = MVEL.eval(stmt, ctx, factory));
         }
         else {
-            finalLocalVariableFactory(factory).createVariable(name, o = MVEL.eval(stmt, ctx, factory));
+            finalLocalVariableFactory(factory).createVariable(name, ctx = MVEL.eval(stmt, ctx, factory));
         }
 
-        return o;
+        return ctx;
     }
 
 

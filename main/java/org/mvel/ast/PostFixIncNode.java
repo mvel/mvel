@@ -19,9 +19,8 @@ public class PostFixIncNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver vResolver = factory.getVariableResolver(name);
-        Object o = vResolver.getValue();
-        vResolver.setValue(doOperations(o, Operator.ADD, 1));
-        return o;
+        vResolver.setValue(doOperations(ctx = vResolver.getValue(), Operator.ADD, 1));
+        return ctx;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {

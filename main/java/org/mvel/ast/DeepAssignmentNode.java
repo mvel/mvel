@@ -60,15 +60,15 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
             set = (CompiledSetExpression) compileSetExpression(property.toCharArray());
         }
 
-        Object val;
-        set.setValue(ctx, factory, val = statement.getValue(ctx, thisValue, factory));
-        return val;
+        //    Object val;
+        set.setValue(ctx, factory, ctx = statement.getValue(ctx, thisValue, factory));
+        return ctx;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        Object val;
-        set(ctx, factory, property, val = eval(stmt, ctx, factory));
-        return val;
+        //  Object val;
+        set(ctx, factory, property, ctx = eval(stmt, ctx, factory));
+        return ctx;
     }
 
     public String getAssignmentVar() {

@@ -2,7 +2,7 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
-import org.mvel.MVEL;
+import static org.mvel.MVEL.eval;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
 
@@ -43,8 +43,8 @@ public class IfNode extends ASTNode implements NestedStatement {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if ((Boolean) MVEL.eval(name, ctx, factory)) {
-            return MVEL.eval(block, ctx, factory);
+        if ((Boolean) eval(name, ctx, factory)) {
+            return eval(block, ctx, factory);
         }
         else if (elseIf != null) {
             return elseIf.getReducedValue(ctx, thisValue, factory);

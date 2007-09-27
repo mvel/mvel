@@ -4,9 +4,9 @@ import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
 import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
-import org.mvel.util.ParseTools;
 
 /**
  * @author Christopher Brock
@@ -40,10 +40,8 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (statement == null) statement = (ExecutableStatement) ParseTools.subCompileExpression(stmt);
-
-        Object o = statement.getValue(ctx, thisValue, factory);
-        finalLocalVariableFactory(factory).createVariable(name, o, egressType);
-        return o;
+        finalLocalVariableFactory(factory).createVariable(name, ctx = statement.getValue(ctx, thisValue, factory), egressType);
+        return ctx;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
