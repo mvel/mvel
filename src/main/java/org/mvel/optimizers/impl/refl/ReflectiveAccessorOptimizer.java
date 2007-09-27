@@ -282,7 +282,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             throw new PropertyAccessException(new String(expr), e);
         }
         catch (PropertyAccessException e) {
-            throw new PropertyAccessException(new String(expr), e);
+            throw new CompileException(e.getMessage(), e);
         }
         catch (CompileException e) {
             throw e;
@@ -291,7 +291,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             throw new PropertyAccessException(new String(expr), e);
         }
         catch (Exception e) {
-            throw new PropertyAccessException(new String(expr), e);
+            throw new CompileException(e.getMessage(), e);
         }
     }
 

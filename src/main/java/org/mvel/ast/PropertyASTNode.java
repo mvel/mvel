@@ -75,7 +75,7 @@ public class PropertyASTNode extends ASTNode {
                     try {
                         return (wrappedNode = new ContextDeepPropertyNode(name, fields)).getReducedValueAccelerated(ctx, thisValue, factory);
                     }
-                    catch (PropertyAccessException e) {
+                    catch (CompileException e) {
                         /**
                          * No luck. Make a last-ditch effort to resolve this as a static-class reference.
                          */
