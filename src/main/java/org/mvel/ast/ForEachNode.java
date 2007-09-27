@@ -4,6 +4,7 @@ import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
+import org.mvel.integration.impl.ItemResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
 import static org.mvel.util.ParseTools.subset;
 
@@ -29,19 +30,23 @@ public class ForEachNode extends BlockNode {
         VariableResolverFactory local = new DefaultLocalVariableResolverFactory(locals);
 
         Object ret = null;
-
         Object iterCond = condition.getValue(ctx, thisValue, local.setNextFactory(factory));
+
+        ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver(item);
+        ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, local);
 
         if (iterCond instanceof Iterable) {
             for (Object o : (Iterable) iterCond) {
-                locals.put(item, o);
-                ret = compiledBlock.getValue(ctx, thisValue, local);
+                // locals.put(item, o);
+                itemR.setValue(o);
+                ret = compiledBlock.getValue(ctx, thisValue, itemFactory);
             }
         }
         else if (iterCond instanceof Object[]) {
             for (Object o : (Object[]) iterCond) {
-                locals.put(item, o);
-                ret = compiledBlock.getValue(ctx, thisValue, local);
+                // locals.put(item, o);
+                itemR.setValue(o);
+                ret = compiledBlock.getValue(ctx, thisValue, itemFactory);
             }
         }
 
