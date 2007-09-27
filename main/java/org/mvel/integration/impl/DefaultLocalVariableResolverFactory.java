@@ -21,4 +21,9 @@ public class DefaultLocalVariableResolverFactory extends MapVariableResolverFact
     public DefaultLocalVariableResolverFactory(Map<String, Object> variables, boolean cachingSafe) {
         super(variables, cachingSafe);
     }
+
+
+    public DefaultLocalVariableResolverFactory(VariableResolverFactory nextFactory) {
+        super(new HashMap<String, Object>(), nextFactory);
+    }
 }

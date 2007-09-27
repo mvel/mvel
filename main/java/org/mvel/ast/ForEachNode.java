@@ -8,9 +8,6 @@ import org.mvel.integration.impl.ItemResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
 import static org.mvel.util.ParseTools.subset;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author Christopher Brock
  */
@@ -26,31 +23,26 @@ public class ForEachNode extends BlockNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        Map<String, Object> locals = new HashMap<String, Object>();
-        VariableResolverFactory local = new DefaultLocalVariableResolverFactory(locals);
-
         Object ret = null;
-        Object iterCond = condition.getValue(ctx, thisValue, local.setNextFactory(factory));
-
         ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver(item);
-        ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, local);
+        ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, new DefaultLocalVariableResolverFactory(factory));
+
+        Object iterCond = condition.getValue(ctx, thisValue, factory);
 
         if (iterCond instanceof Iterable) {
             for (Object o : (Iterable) iterCond) {
-                // locals.put(item, o);
                 itemR.setValue(o);
                 ret = compiledBlock.getValue(ctx, thisValue, itemFactory);
             }
         }
         else if (iterCond instanceof Object[]) {
             for (Object o : (Object[]) iterCond) {
-                // locals.put(item, o);
                 itemR.setValue(o);
                 ret = compiledBlock.getValue(ctx, thisValue, itemFactory);
             }
         }
 
-        return ret == null ? Void.class : ret;
+        return ret == null ? null : ret;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
