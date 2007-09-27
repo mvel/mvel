@@ -4,7 +4,7 @@ import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.eval;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.subCompileExpression;
 
 import static java.lang.String.valueOf;
 import static java.util.regex.Pattern.compile;
@@ -19,8 +19,8 @@ public class RegExMatch extends ASTNode {
         this.pattern = pattern;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            this.stmt = (ExecutableStatement) ParseTools.subCompileExpression(expr);
-            this.patternStmt = (ExecutableStatement) ParseTools.subCompileExpression(pattern);
+            this.stmt = (ExecutableStatement) subCompileExpression(expr);
+            this.patternStmt = (ExecutableStatement) subCompileExpression(pattern);
         }
     }
 
