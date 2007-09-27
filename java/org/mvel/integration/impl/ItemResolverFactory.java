@@ -77,7 +77,6 @@ public class ItemResolverFactory extends BaseVariableResolverFactory {
 
         public void setValue(Object value) {
             this.value = value;
-            //   if ((this.value = value) != null) { type = value.getClass(); }
         }
     }
 }
