@@ -3,6 +3,7 @@ package org.mvel.ast;
 import org.mvel.ASTNode;
 import org.mvel.Accessor;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.optimizers.AccessorOptimizer;
 import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.subset;
@@ -28,10 +29,12 @@ public class StaticMethodNode extends ASTNode {
         }
         catch (NullPointerException e) {
             if (accessor == null) {
-                Method m = (Method) factory.getVariableResolver(method).getValue();
-                declaringClass = m.getDeclaringClass();
-                accessor = getThreadAccessorOptimizer().optimizeAccessor(name, declaringClass, thisValue, factory, false);
-                return valRet(accessor.getValue(declaringClass, thisValue, factory));
+                AccessorOptimizer aO = getThreadAccessorOptimizer();
+
+                accessor = aO.optimizeAccessor(name, declaringClass =
+                        ((Method) factory.getVariableResolver(method).getValue()).getDeclaringClass(), thisValue, factory, false);
+
+                return valRet(aO.getResultOptPass());
             }
             else {
                 throw e;
