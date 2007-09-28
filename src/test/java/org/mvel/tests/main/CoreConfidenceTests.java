@@ -2369,7 +2369,6 @@ public class CoreConfidenceTests extends AbstractTest {
         elements.add(new TargetClass());
         Map variableMap = new HashMap();
         variableMap.put("elements", elements);
-
         eval(
                 "results = new java.util.ArrayList(); foreach (element : elements) { if( {5} contains element.targetValue.intValue()) { results.add(element); } }; results",
                 variableMap);
@@ -2458,6 +2457,22 @@ public class CoreConfidenceTests extends AbstractTest {
                         "alwaysOnTop = false \n" +
                         "}", map
         ));
+    }
+
+
+    public void testStaticWithExplicitParam() {
+        PojoStatic pojo = new PojoStatic("10");
+        MVEL.eval("org.mvel.tests.main.res.AStatic.Process('10')", pojo, new HashMap());
+    }
+
+    public void testSimpleExpression() {
+        PojoStatic pojo = new PojoStatic("10");
+        MVEL.eval("value!= null", pojo, new HashMap());
+    }
+
+    public void testStaticWithExpressionParam() {
+        PojoStatic pojo = new PojoStatic("10");
+        MVEL.eval("org.mvel.tests.main.res.AStatic.Process(value)", pojo, new HashMap());
     }
 
 }
