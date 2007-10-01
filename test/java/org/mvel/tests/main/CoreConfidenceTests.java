@@ -2451,7 +2451,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testCommentsInWith() {
         HashMap map = new HashMap();
         map.put("f", new JFrame());
-        System.out.println(MVEL.eval(
+        System.out.println(eval(
                 "with (f) {\n" +
                         "title = 'blah', // setting title\n" +
                         "alwaysOnTop = false \n" +
@@ -2462,17 +2462,17 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testStaticWithExplicitParam() {
         PojoStatic pojo = new PojoStatic("10");
-        MVEL.eval("org.mvel.tests.main.res.AStatic.Process('10')", pojo, new HashMap());
+        eval("org.mvel.tests.main.res.AStatic.Process('10')", pojo, new HashMap());
     }
 
     public void testSimpleExpression() {
         PojoStatic pojo = new PojoStatic("10");
-        MVEL.eval("value!= null", pojo, new HashMap());
+        eval("value!= null", pojo, new HashMap());
     }
 
     public void testStaticWithExpressionParam() {
         PojoStatic pojo = new PojoStatic("10");
-        MVEL.eval("org.mvel.tests.main.res.AStatic.Process(value.getClass().getName().toString())", pojo, new HashMap());
+        assertEquals("java.lang.String", eval("org.mvel.tests.main.res.AStatic.Process(value.getClass().getName().toString())", pojo));
     }
 
 }
