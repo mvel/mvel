@@ -364,7 +364,7 @@ public class ASTNode implements Cloneable, Serializable {
             for (int i = last - 1; i > 0; i--) {
                 switch (name[i]) {
                     case'.':
-                        if (!meth) {
+                        if (depth == 0 && !meth) {
                             try {
                                 return get(new String(name, last, name.length - last),
                                         currentThread().getContextClassLoader().loadClass(new String(name, 0, last)), factory, thisRef);
@@ -378,11 +378,10 @@ public class ASTNode implements Cloneable, Serializable {
                         last = i;
                         break;
                     case')':
-                        if (depth++ == 0)
-                            meth = true;
+                        depth++;
                         break;
                     case'(':
-                        depth--;
+                        if (--depth == 0) meth = true;
                         break;
                 }
             }
