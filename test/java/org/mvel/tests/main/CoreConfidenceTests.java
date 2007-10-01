@@ -2472,7 +2472,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testStaticWithExpressionParam() {
         PojoStatic pojo = new PojoStatic("10");
-        MVEL.eval("org.mvel.tests.main.res.AStatic.Process(value)", pojo, new HashMap());
+        MVEL.eval("org.mvel.tests.main.res.AStatic.Process(value.getClass().getName().toString())", pojo, new HashMap());
     }
 
 }
