@@ -3,6 +3,7 @@ package org.mvel.ast;
 import org.mvel.ASTNode;
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
+import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
 
@@ -14,7 +15,10 @@ public class AssertNode extends ASTNode {
 
     public AssertNode(char[] expr, int fields) {
         super(expr, fields);
-        assertion = (ExecutableStatement) ParseTools.subCompileExpression(expr);
+
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            assertion = (ExecutableStatement) ParseTools.subCompileExpression(expr);
+        }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -29,6 +33,14 @@ public class AssertNode extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
+        try {
+            Boolean bool = (Boolean) MVEL.eval(this.name, ctx, factory);
+            if (!bool) throw new AssertionError("assertion failed in expression: " + new String(this.name));
+            return bool;
+        }
+        catch (ClassCastException e) {
+            throw new CompileException("assertion does not contain a boolean statement");
+        }
+        //   return getReducedValueAccelerated(ctx, thisValue, factory);
     }
 }
