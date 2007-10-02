@@ -206,6 +206,4 @@ public class WithNode extends BlockNode implements NestedStatement {
             this.statement = statement;
         }
     }
-
-
 }
