@@ -3,6 +3,10 @@ package org.mvel.util;
 
 import org.mvel.DataTypes;
 
+import static java.lang.Double.parseDouble;
+import static java.lang.Float.parseFloat;
+import static java.lang.Integer.parseInt;
+import static java.lang.Long.parseLong;
 import static java.lang.String.valueOf;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -35,13 +39,13 @@ public class PropertyTools {
 
 
     public static Method getSetter(Class clazz, String property) {
-        String setter = ReflectionUtil.getSetter(property);
+        property = ReflectionUtil.getSetter(property);
 
         for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) == 0
                     && meth.getParameterTypes().length != 0) continue;
 
-            if (setter.equals(meth.getName())) {
+            if (property.equals(meth.getName())) {
                 return meth;
             }
         }
@@ -62,15 +66,15 @@ public class PropertyTools {
     }
 
     public static Method getGetter(Class clazz, String property) {
-        String get = ReflectionUtil.getGetter(property);
         String isGet = ReflectionUtil.getIsGetter(property);
+        property = ReflectionUtil.getGetter(property);
 
         for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) == 0
                     || meth.getParameterTypes().length != 0
                     ) {
             }
-            else if (get.equals(meth.getName()) ||
+            else if (property.equals(meth.getName()) ||
                     isGet.equals(meth.getName())) {
                 return meth;
             }
@@ -174,13 +178,13 @@ public class PropertyTools {
     public static Object handleNumericConversion(final char[] val) {
         switch (numericTest(val)) {
             case DataTypes.FLOAT:
-                return Float.parseFloat(new String(val));
+                return parseFloat(new String(val));
             case DataTypes.INTEGER:
-                return Integer.parseInt(new String(val));
+                return parseInt(new String(val));
             case DataTypes.LONG:
-                return Long.parseLong(new String(val));
+                return parseLong(new String(val));
             case DataTypes.DOUBLE:
-                return Double.parseDouble(new String(val));
+                return parseDouble(new String(val));
             case DataTypes.BIG_DECIMAL:
                 // @todo: new String() only needed for jdk1.4, remove when we move to jdk1.5
                 return new BigDecimal(new String(val));
