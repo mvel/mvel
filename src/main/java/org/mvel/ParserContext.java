@@ -93,7 +93,7 @@ public class ParserContext implements Serializable {
     }
 
     public void setLineAndOffset(int lineCount, int lineOffset) {
-        this.lineCount = lineCount;
+        addKnownLine(this.lineCount = lineCount);
         this.lineOffset = lineOffset;
     }
 

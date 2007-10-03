@@ -15,11 +15,6 @@ public class VariableDeepPropertyNode extends ASTNode {
 
     public VariableDeepPropertyNode(char[] expr, int fields) {
         super(expr, fields);
-
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-
-        }
-
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
