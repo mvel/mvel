@@ -1,5 +1,6 @@
 package org.mvel.util;
 
+import static java.lang.System.arraycopy;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -11,7 +12,6 @@ import static java.util.regex.Pattern.compile;
  * Utilities for working with reflection.
  */
 public class ReflectionUtil {
-
     /**
      * This new method 'slightly' outperforms the old method, it was
      * essentially a perfect example of me wasting my time and a
@@ -57,7 +57,7 @@ public class ReflectionUtil {
             chars[3] = (c[0]);
         }
 
-        System.arraycopy(c, 1, chars, 4, c.length - 1);
+        arraycopy(c, 1, chars, 4, c.length - 1);
 
         return new String(chars);
     }
@@ -77,7 +77,7 @@ public class ReflectionUtil {
             chars[2] = c[0];
         }
 
-        System.arraycopy(c, 1, chars, 3, c.length - 1);
+        arraycopy(c, 1, chars, 3, c.length - 1);
 
         return new String(chars);
     }
@@ -149,5 +149,4 @@ public class ReflectionUtil {
         for (Field fld : cls.getFields()) allFields.add(fld);
         return allFields;
     }
-
 }
