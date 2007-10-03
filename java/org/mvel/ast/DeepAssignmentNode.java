@@ -26,11 +26,9 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         int mark;
 
         if (operation != -1) {
-            this.property = name.trim();
-
             this.egressType = ((ExecutableStatement) (statement =
                     (ExecutableStatement) subCompileExpression(stmt =
-                            createShortFormOperativeAssignment(property, expr, operation)))).getKnownEgressType();
+                            createShortFormOperativeAssignment(this.property = name.trim(), expr, operation)))).getKnownEgressType();
 
         }
         else if ((mark = find(expr, '=')) != -1) {

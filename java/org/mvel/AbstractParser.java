@@ -187,10 +187,7 @@ public class AbstractParser implements Serializable {
 
                     if (!pCtx.isKnownLine(pCtx.getSourceFile(), pCtx.setLineCount(line)) && !pCtx.isBlockSymbols()) {
                         lastWasLineLabel = true;
-
                         pCtx.setLineAndOffset(line, cursor);
-                        pCtx.addKnownLine(line);
-
                         return lastNode = pCtx.setLastLineLabel(new LineLabel(pCtx.getSourceFile(), line));
                     }
                 }
@@ -400,13 +397,11 @@ public class AbstractParser implements Serializable {
                                 if (greedy && !isAt('=', 1)) {
                                     cursor++;
 
-                                    fields |= ASTNode.ASSIGN;
-
                                     skipWhitespace();
                                     captureToEOS();
 
                                     if (union) {
-                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields);
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields | ASTNode.ASSIGN);
                                     }
                                     else if (lastWasIdentifier) {
 
@@ -445,14 +440,14 @@ public class AbstractParser implements Serializable {
                                             lastNode.discard();
 
                                             captureToEOS();
-                                            return new TypedVarNode(subArray(start, cursor), fields, (Class)
+                                            return new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
                                                     lastNode.getLiteralValue());
                                         }
 
                                         throw new ParseException("unknown class: " + lastNode.getLiteralValue());
                                     }
                                     else {
-                                        return lastNode = new AssignmentNode(subArray(start, cursor), fields);
+                                        return lastNode = new AssignmentNode(subArray(start, cursor), fields | ASTNode.ASSIGN);
                                     }
                                 }
                         }
@@ -851,6 +846,10 @@ public class AbstractParser implements Serializable {
                 captureToEOT();
                 return lastNode = new Union(expr, union, cursor, fields, node);
             }
+            else if (expr[cursor] == '[') {
+                captureToEOT();
+                return lastNode = new Union(expr, cursor, cursor, fields, node);
+            }
         }
         return lastNode = node;
     }
@@ -1071,11 +1070,11 @@ public class AbstractParser implements Serializable {
 
     protected boolean tokenContinues() {
         if (cursor >= length) return false;
-        else if (expr[cursor] == '.') return true;
+        else if (expr[cursor] == '.' || expr[cursor] == '[') return true;
         else if (isWhitespace(expr[cursor])) {
             int markCurrent = cursor;
             skipWhitespace();
-            if (cursor < length && expr[cursor] == '.') return true;
+            if (cursor < length && (expr[cursor] == '.' || expr[cursor] == '[')) return true;
             cursor = markCurrent;
         }
         return false;
