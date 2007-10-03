@@ -482,8 +482,8 @@ public class PropertyAccessor {
         if (!scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
-        String ex = new String(property, start, cursor++ - start);
-        item = eval(ex, ctx, variableFactory);
+        // String ex = new String(property, start, cursor++ - start);
+        item = eval(new String(property, start, cursor++ - start), ctx, variableFactory);
 
         if (ctx instanceof Map) {
             return ((Map) ctx).get(item);
@@ -618,8 +618,9 @@ public class PropertyAccessor {
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
-            for (int i = 0; i < args.length; i++)
+            for (int i = 0; i < args.length; i++) {
                 args[i] = convert(args[i], parameterTypes[i]);
+            }
 
             /**
              * Invoke the target method and return the response.

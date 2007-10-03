@@ -380,8 +380,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKEVIRTUAL " + member.getName() + ":" + returnType);
                 mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(member.getDeclaringClass()), member.getName(),
                         getMethodDescriptor((Method) member));
-
-
             }
             catch (IllegalAccessException e) {
                 Method iFaceMeth = determineActualTargetMethod((Method) member);
@@ -444,7 +442,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                     return ((Field) ts).get(null);
                 }
-
             }
             else if (ctx instanceof Class) {
                 /**
