@@ -351,7 +351,7 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case'*':
-                                if (isAt('=', 1)) {
+                                if (isNext('=')) {
                                     name = new String(expr, start, trimLeft(cursor) - start);
                                     start = cursor += 2;
                                     captureToEOS();
@@ -360,7 +360,7 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case'/':
-                                if (isAt('=', 1)) {
+                                if (isNext('=')) {
                                     name = new String(expr, start, trimLeft(cursor) - start);
                                     start = cursor += 2;
                                     captureToEOS();
@@ -378,7 +378,7 @@ public class AbstractParser implements Serializable {
                                 continue;
 
                             case'~':
-                                if (isAt('=', 1)) {
+                                if (isNext('=')) {
                                     char[] stmt = subArray(start, trimLeft(cursor));
                                     start = cursor += 2;
                                     skipWhitespace();
@@ -387,14 +387,14 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case'=':
-                                if (isAt('+', 1)) {
+                                if (isNext('+')) {
                                     name = new String(expr, start, trimLeft(cursor) - start);
                                     start = cursor += 2;
                                     captureToEOS();
                                     return lastNode = new AssignAdd(subArray(start, cursor), fields, name);
                                 }
 
-                                if (greedy && !isAt('=', 1)) {
+                                if (greedy && !isNext('=')) {
                                     cursor++;
 
                                     skipWhitespace();
@@ -480,21 +480,21 @@ public class AbstractParser implements Serializable {
                             return createToken(expr, start, (cursor += 2), fields);
 
                         case'-':
-                            if (isAt('-', 1)) {
+                            if (isNext('-')) {
                                 start = cursor += 2;
                                 captureToEOT();
                                 return lastNode = new PreFixDecNode(subArray(start, cursor), fields);
                             }
-                            else if ((cursor > 0 && !isWhitespace(lookBehind(1))) || !isDigit(lookAhead(1))) {
+                            else if ((cursor > 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead(1))) {
                                 return createToken(expr, start, cursor++ + 1, fields);
                             }
-                            else if ((cursor - 1) < 0 || (!isDigit(lookBehind(1))) && isDigit(lookAhead(1))) {
+                            else if ((cursor - 1) < 0 || (!isDigit(lookBehind())) && isDigit(lookAhead(1))) {
                                 cursor++;
                                 break;
                             }
 
                         case'+':
-                            if (isAt('+', 1)) {
+                            if (isNext('+')) {
                                 start = cursor += 2;
                                 captureToEOT();
                                 return lastNode = new PreFixIncNode(subArray(start, cursor), fields);
@@ -502,7 +502,7 @@ public class AbstractParser implements Serializable {
                             return createToken(expr, start, cursor++ + 1, fields);
 
                         case'*':
-                            if (isAt('*', 1)) {
+                            if (isNext('*')) {
                                 cursor++;
                             }
                             return createToken(expr, start, cursor++ + 1, fields);
@@ -514,7 +514,7 @@ public class AbstractParser implements Serializable {
 
                         case'#':
                         case'/':
-                            if (isAt(expr[cursor], 1)) {
+                            if (isNext(expr[cursor])) {
                                 /**
                                  * Handle single line comments.
                                  */
@@ -542,7 +542,7 @@ public class AbstractParser implements Serializable {
 
                                 continue;
                             }
-                            else if (expr[cursor] == '/' && isAt('*', 1)) {
+                            else if (expr[cursor] == '/' && isNext('*')) {
                                 /**
                                  * Handle multi-line comments.
                                  */
@@ -570,7 +570,7 @@ public class AbstractParser implements Serializable {
                                     if (cursor == len) {
                                         throw new CompileException("unterminated block comment", expr, cursor);
                                     }
-                                    if (expr[cursor] == '*' && isAt('/', 1)) {
+                                    if (expr[cursor] == '*' && isNext('/')) {
                                         if ((cursor += 2) >= length) return null;
                                         skipWhitespaceWithLineAccounting();
                                         start = cursor;
@@ -622,7 +622,7 @@ public class AbstractParser implements Serializable {
                                         break;
 
                                     case'i':
-                                        if (isAt('n', 1) && isWhitespace(lookAhead(2))) {
+                                        if (isNext('n') && isWhitespace(lookAhead(2))) {
                                             fields |= ASTNode.FOLD;
                                             for (int level = brace; cursor < length; cursor++) {
                                                 switch (expr[cursor]) {
@@ -745,12 +745,15 @@ public class AbstractParser implements Serializable {
 
                         case'\'':
                         case'"':
-                            cursor = captureStringLiteral(expr[cursor], expr, cursor, length);
+                            lastNode = new LiteralNode(
+                                    handleStringEscapes(
+                                            subset(expr, start + 1, (cursor = captureStringLiteral(expr[cursor], expr, cursor, length)) - start - 1))
+                                    , String.class);
 
-                            lastNode = new LiteralNode(handleStringEscapes(subset(expr, start + 1, cursor++ - start - 1)), String.class);
+                            cursor++;
 
                             if (tokenContinues()) {
-                                return handleUnion(lastNode);
+                                return lastNode = handleUnion(lastNode);
                             }
 
                             return lastNode;
@@ -775,7 +778,7 @@ public class AbstractParser implements Serializable {
                         }
 
                         case'~':
-                            if ((cursor - 1 < 0 || !isIdentifierPart(lookBehind(1)))
+                            if ((cursor - 1 < 0 || !isIdentifierPart(lookBehind()))
                                     && isDigit(expr[cursor + 1])) {
 
                                 fields |= ASTNode.INVERT;
@@ -1217,11 +1220,21 @@ public class AbstractParser implements Serializable {
         return LITERALS.containsKey(name) || OPERATORS.containsKey(name);
     }
 
+    protected char lookBehind() {
+        if (cursor == 0) return 0;
+        return expr[cursor - 1];
+    }
+
     protected char lookBehind(int range) {
         if ((cursor - range) <= 0) return 0;
         else {
             return expr[cursor - range];
         }
+    }
+
+    protected char lookAhead() {
+        if (cursor < length) return expr[cursor + 1];
+        return 0;
     }
 
     protected char lookAhead(int range) {
@@ -1239,6 +1252,10 @@ public class AbstractParser implements Serializable {
 
     protected boolean isRemain(int range) {
         return (cursor + range) < length;
+    }
+
+    protected boolean isNext(char c) {
+        return lookAhead() == c;
     }
 
     protected boolean isAt(char c, int range) {
