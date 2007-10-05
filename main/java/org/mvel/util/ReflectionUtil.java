@@ -2,11 +2,8 @@ package org.mvel.util;
 
 import static java.lang.System.arraycopy;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Pattern;
-import static java.util.regex.Pattern.compile;
 
 /**
  * Utilities for working with reflection.
@@ -71,7 +68,7 @@ public class ReflectionUtil {
         chars[1] = 's';
 
         if (s.charAt(0) > 'Z') {
-            chars[2] = (char) (s.charAt(0) - ('z' - 'Z'));
+            chars[2] = (char) (c[0] - ('z' - 'Z'));
         }
         else {
             chars[2] = c[0];
@@ -85,7 +82,7 @@ public class ReflectionUtil {
     private static String parameterizeClassName(String s) {
         char[] chars = s.toCharArray();
         if (s.charAt(0) < 'a') {
-            chars[0] = (char) (s.charAt(0) + ('z' - 'Z'));
+            chars[0] = (char) (chars[0] + ('z' - 'Z'));
         }
 
         return new String(chars);
@@ -123,13 +120,6 @@ public class ReflectionUtil {
 
             return new String(chars);
         }
-    }
-
-    private static final Pattern GETTER_PATTERN = compile("^compileAccessor.+");
-
-    public static boolean isAccessor(Method method) {
-        return method != null && GETTER_PATTERN.matcher(method.getName()).matches()
-                && method.getReturnType() != null;
     }
 
     public static boolean isAssignable(Object instance, Class interfaceClass) {
