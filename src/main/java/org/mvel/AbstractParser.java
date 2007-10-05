@@ -314,7 +314,7 @@ public class AbstractParser implements Serializable {
                     if (cursor < length) {
                         switch (expr[cursor]) {
                             case'+':
-                                switch (lookAhead(1)) {
+                                switch (lookAhead()) {
                                     case'+':
                                         ASTNode n = new PostFixIncNode(subArray(start, cursor), fields);
                                         cursor += 2;
@@ -336,7 +336,7 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case'-':
-                                switch (lookAhead(1)) {
+                                switch (lookAhead()) {
                                     case'-':
                                         ASTNode n = new PostFixDecNode(subArray(start, cursor), fields);
                                         cursor += 2;
@@ -485,10 +485,10 @@ public class AbstractParser implements Serializable {
                                 captureToEOT();
                                 return lastNode = new PreFixDecNode(subArray(start, cursor), fields);
                             }
-                            else if ((cursor > 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead(1))) {
+                            else if ((cursor > 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
                                 return createToken(expr, start, cursor++ + 1, fields);
                             }
-                            else if ((cursor - 1) < 0 || (!isDigit(lookBehind())) && isDigit(lookAhead(1))) {
+                            else if ((cursor - 1) < 0 || (!isDigit(lookBehind())) && isDigit(lookAhead())) {
                                 cursor++;
                                 break;
                             }
@@ -631,7 +631,7 @@ public class AbstractParser implements Serializable {
                                                         break;
                                                     case')':
                                                         if (--brace < level) {
-                                                            if (lookAhead(1) == '.') {
+                                                            if (lookAhead() == '.') {
                                                                 ASTNode node = createToken(expr, trimRight(start + 1), (start = cursor++), ASTNode.FOLD);
                                                                 captureToEOT();
                                                                 return lastNode = new Union(expr, trimRight(start + 2), cursor, fields, node);
