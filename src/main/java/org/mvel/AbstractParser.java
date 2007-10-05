@@ -316,9 +316,9 @@ public class AbstractParser implements Serializable {
                             case'+':
                                 switch (lookAhead()) {
                                     case'+':
-                                        ASTNode n = new PostFixIncNode(subArray(start, cursor), fields);
+                                        lastNode = new PostFixIncNode(subArray(start, cursor), fields);
                                         cursor += 2;
-                                        return lastNode = n;
+                                        return lastNode;
 
                                     case'=':
                                         name = new String(expr, start, trimLeft(cursor) - start);
@@ -338,9 +338,9 @@ public class AbstractParser implements Serializable {
                             case'-':
                                 switch (lookAhead()) {
                                     case'-':
-                                        ASTNode n = new PostFixDecNode(subArray(start, cursor), fields);
+                                        lastNode = new PostFixDecNode(subArray(start, cursor), fields);
                                         cursor += 2;
-                                        return lastNode = n;
+                                        return lastNode;
 
                                     case'=':
                                         name = new String(expr, start, trimLeft(cursor) - start);
@@ -632,9 +632,9 @@ public class AbstractParser implements Serializable {
                                                     case')':
                                                         if (--brace < level) {
                                                             if (lookAhead() == '.') {
-                                                                ASTNode node = createToken(expr, trimRight(start + 1), (start = cursor++), ASTNode.FOLD);
+                                                                lastNode = createToken(expr, trimRight(start + 1), (start = cursor++), ASTNode.FOLD);
                                                                 captureToEOT();
-                                                                return lastNode = new Union(expr, trimRight(start + 2), cursor, fields, node);
+                                                                return lastNode = new Union(expr, trimRight(start + 2), cursor, fields, lastNode);
                                                             }
                                                             else {
                                                                 return createToken(expr, trimRight(start + 1), cursor++, ASTNode.FOLD);
@@ -820,9 +820,9 @@ public class AbstractParser implements Serializable {
 
                             if (tokenContinues()) {
                                 //   if (lookAhead(1) == '.') {
-                                InlineCollectionNode n = new InlineCollectionNode(expr, start, start = cursor, fields);
+                                lastNode = new InlineCollectionNode(expr, start, start = cursor, fields);
                                 captureToEOT();
-                                return lastNode = new Union(expr, start + 1, cursor, fields, n);
+                                return lastNode = new Union(expr, start + 1, cursor, fields, lastNode);
                             }
                             else {
                                 return lastNode = new InlineCollectionNode(expr, start, cursor, fields);
@@ -868,9 +868,8 @@ public class AbstractParser implements Serializable {
      * @return -
      */
     private ASTNode createToken(final char[] expr, final int start, final int end, int fields) {
-        ASTNode tk = new ASTNode(expr, start, end, fields);
-        lastWasIdentifier = tk.isIdentifier();
-        return lastNode = tk;
+        lastWasIdentifier = (lastNode = new ASTNode(expr, start, end, fields)).isIdentifier();
+        return lastNode;
     }
 
     private char[] subArray(final int start, final int end) {
@@ -902,10 +901,8 @@ public class AbstractParser implements Serializable {
                     return lastNode = new LiteralNode(getParserContext().getImport(iStr), Class.class);
                 }
 
-
-                ASTNode node = new ASTNode(_subset, 0, _subset.length, fields);
-                lastWasIdentifier = node.isIdentifier();
-                return lastNode = node;
+                lastWasIdentifier = (lastNode = new ASTNode(_subset, 0, _subset.length, fields)).isIdentifier();
+                return lastNode;
             }
         }
         else if ((fields & ASTNode.METHOD) != 0) {
