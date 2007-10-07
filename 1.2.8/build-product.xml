@@ -1,0 +1,132 @@
+<project name="MVEL" default="release" basedir=".">
+    <description>
+        MVFLEX Expression Language
+    </description>
+
+    <property name="version" value="1.2.7"/>
+
+    <property name="src" location="src"/>
+    <property name="build" location="build"/>
+    <property name="dist" location="dist"/>
+
+    <property name="deploy_to" location="..\mvflex\lib\"/>
+
+    <target name="init">
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <!-- Create the build directory structure used by optimize -->
+        <mkdir dir="${build}"/>
+    </target>
+
+    <target name="compile" depends="init"
+            description="compile the source ">
+        <!-- Compile the java code from ${src} into ${build} debuglevel="vars,lines,source" -->
+        <javac source="1.5" srcdir="${src}" destdir="${build}" optimize="true" debug="on"
+               debuglevel="vars,lines,source">
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <target name="compile-nodebug" depends="init"
+            description="compile the source ">
+        <javac source="1.5" srcdir="${src}" destdir="${build}" optimize="true" debug="off">
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <path id="classpath">
+        <pathelement location="${build}"/>
+        <fileset dir="lib">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="el-tests">
+        <junit fork="yes" haltonfailure="yes">
+            <test name="org.mvel.tests.main.CoreConfidenceTests"/>
+            <formatter type="plain" usefile="false"/>
+            <classpath refid="classpath"/>
+        </junit>
+    </target>
+
+    <target name="deploy" depends="release">
+        <copy file="mvel-${version}-java${java.version}.jar" tofile="${deploy_to}/mvel.jar"/>
+    </target>
+
+    <target name="jar" depends="clean,compile,el-tests">
+        <delete file="mvel.jar"/>
+
+        <jar jarfile="mvel.jar" basedir="build">
+            <manifest>
+                <attribute name="Built-By" value="Mike Brock"/>
+                <attribute name="Main-Class" value="org.mvel.MVELSH"/>
+
+                <section name="org.mvel">
+                    <attribute name="Sealed" value="false"/>
+                    <attribute name="Specification-Title" value="MVEL"/>
+                    <attribute name="Specification-Version" value="${version}"/>
+                    <attribute name="Implementation-Version" value="${version} ${TODAY}"/>
+                    <attribute name="Implementation-Vendor" value="Mike Brock"/>
+                    <attribute name="Main-Class" value="org.mvel.MVELSH"/>
+                </section>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="release" depends="jar"
+            description="generate the distribution">
+
+        <delete dir="distrib/${version}"/>
+        <mkdir dir="distrib/${version}/"/>
+
+        <copy todir="distrib/${version}" file="README.TXT"/>
+        <copy todir="distrib/${version}" file="ASM-LICENSE.txt"/>
+        <copy todir="distrib/${version}" file="LICENSE.txt"/>
+        <copy todir="distrib/${version}" file="mvel.jar"/>
+
+
+        <mkdir dir="distrib/${version}/lib/"/>
+
+        <copy todir="distrib/${version}/lib/" file="lib/asm.jar"/>
+
+        <zip zipfile="distrib/mvel-${version}-java${java.version}.zip" basedir="distrib/${version}/"/>
+
+        <echo message="ALL DONE!"/>
+
+        <delete dir="build"/>
+    </target>
+
+    <target name="release-no-debugging" depends="clean,compile-nodebug,el-tests"
+            description="generate the distribution">
+        <!-- Create the distribution directory -->
+
+        <mkdir dir="build"/>
+        <copy todir="build/">
+            <fileset dir="${build}"/>
+        </copy>
+
+        <delete file="mvel-${version}-java${java.version}-nd.jar"/>
+
+        <jar jarfile="mvel-${version}-java${java.version}-nd.jar" basedir="build">
+            <manifest>
+                <attribute name="Built-By" value="Mike Brock"/>
+                <attribute name="Main-Class" value="org.mvel.MVELSH"/>
+
+                <section name="org.mvel">
+                    <attribute name="Sealed" value="true"/>
+                    <attribute name="Specification-Title" value="MVEL"/>
+                    <attribute name="Specification-Version" value="${version}"/>
+                    <attribute name="Implementation-Version" value="${version} ${TODAY}"/>
+                    <attribute name="Implementation-Vendor" value="Mike Brock"/>
+                </section>
+            </manifest>
+        </jar>
+        <delete dir="build"/>
+    </target>
+
+    <target name="clean"
+            description="clean up">
+        <delete dir="${build}"/>
+        <delete dir="${dist}"/>
+    </target>
+</project>
