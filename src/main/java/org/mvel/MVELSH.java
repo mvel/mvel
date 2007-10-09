@@ -60,9 +60,7 @@ public class MVELSH {
                 }
                 else if ("echo;".equals(in)) {
                     output = !output;
-
                     System.out.println("OUTPUT ECHO: " + (output ? "ON" : "OFF"));
-
                     continue;
                 }
                 else if ("template;".equals(in)) {

@@ -4,14 +4,20 @@ import junit.framework.TestCase;
 import org.mvel.CompiledExpression;
 import org.mvel.ExpressionCompiler;
 import org.mvel.MVEL;
+import static org.mvel.MVEL.compileExpression;
+import static org.mvel.MVEL.executeExpression;
 import org.mvel.ParserContext;
-import org.mvel.debug.DebugTools;
+import static org.mvel.debug.DebugTools.decompile;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.optimizers.OptimizerFactory;
+import static org.mvel.optimizers.OptimizerFactory.setDefaultOptimizer;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.StringAppender;
 
 import java.io.*;
+import static java.lang.Integer.parseInt;
+import static java.lang.String.valueOf;
+import static java.lang.System.currentTimeMillis;
+import static java.lang.System.getProperty;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
@@ -75,8 +81,8 @@ public abstract class AbstractTest extends TestCase {
         if (Boolean.getBoolean("mvel.tests.quick")) {
             threads = new Thread[1];
         }
-        else if (System.getProperty("mvel.tests.threadcount") != null) {
-            threads = new Thread[Integer.parseInt(System.getProperty("mvel.tests.threadcount"))];
+        else if (getProperty("mvel.tests.threadcount") != null) {
+            threads = new Thread[parseInt(getProperty("mvel.tests.threadcount"))];
         }
         else {
             threads = new Thread[5];
@@ -84,7 +90,7 @@ public abstract class AbstractTest extends TestCase {
 
         final AbstractTest aTest = this;
         final LinkedList<Object> results = new LinkedList<Object>();
-        long time = System.currentTimeMillis();
+        long time = currentTimeMillis();
 
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new Thread() {
@@ -114,7 +120,7 @@ public abstract class AbstractTest extends TestCase {
 
         // analyze results
 
-        System.out.println("[test] finished in: " + (System.currentTimeMillis() - time) + "ms (execution count: " + (threads.length * 8) + " [mixed modes])");
+        System.out.println("[test] finished in: " + (currentTimeMillis() - time) + "ms (execution count: " + (threads.length * 8) + " [mixed modes])");
         System.out.print("[test] analyzing results ... ");
 
         Object last = results.getFirst();
@@ -128,7 +134,7 @@ public abstract class AbstractTest extends TestCase {
                         if (a1.length == a2.length) {
                             for (int i = 0; i < a1.length; i++) {
                                 if (!a1[i].equals(a2[i])) {
-                                    throw new AssertionError("differing result in multi-thread test (first array has: " + String.valueOf(last) + "; second has: " + String.valueOf(o) + ")");
+                                    throw new AssertionError("differing result in multi-thread test (first array has: " + valueOf(last) + "; second has: " + valueOf(o) + ")");
                                 }
                             }
                         }
@@ -137,7 +143,7 @@ public abstract class AbstractTest extends TestCase {
                         }
                     }
                     else {
-                        throw new AssertionError("differing result in multi-thread test (last was: " + String.valueOf(last) + "; current is: " + String.valueOf(o) + ")");
+                        throw new AssertionError("differing result in multi-thread test (last was: " + valueOf(last) + "; current is: " + valueOf(o) + ")");
                     }
                 }
                 last = o;
@@ -164,10 +170,10 @@ public abstract class AbstractTest extends TestCase {
 
         if (!Boolean.getBoolean("mvel.disable.jit")) {
 
-            OptimizerFactory.setDefaultOptimizer("ASM");
+            setDefaultOptimizer("ASM");
 
             try {
-                first = MVEL.executeExpression(compiled, base, map);
+                first = executeExpression(compiled, base, map);
 
             }
             catch (Exception e) {
@@ -181,7 +187,7 @@ public abstract class AbstractTest extends TestCase {
             }
 
             try {
-                second = MVEL.executeExpression(compiled, base, map);
+                second = executeExpression(compiled, base, map);
             }
             catch (Exception e) {
                 if (failErrors == null) failErrors = new StringAppender();
@@ -213,22 +219,22 @@ public abstract class AbstractTest extends TestCase {
                 System.out.println(failErrors.toString());
 
                 throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run / JIT) [first: "
-                        + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
+                        + valueOf(first) + "; second: " + valueOf(second) + "]");
             }
 
             if (!first.equals(third)) {
                 if (failErrors != null) System.out.println(failErrors.toString());
 
                 throw new AssertionError("Different result from test 1 and 3 (Compiled to Interpreted) [first: " +
-                        String.valueOf(first) + " (" + (first != null ? first.getClass().getName() : null) + "); third: " + String.valueOf(third) + " (" + (third != null ? third.getClass().getName() : "null") + ")]");
+                        valueOf(first) + " (" + (first != null ? first.getClass().getName() : null) + "); third: " + valueOf(third) + " (" + (third != null ? third.getClass().getName() : "null") + ")]");
             }
         }
 
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        Serializable compiled2 = MVEL.compileExpression(ex);
+        setDefaultOptimizer("reflective");
+        Serializable compiled2 = compileExpression(ex);
 
         try {
-            fourth = MVEL.executeExpression(compiled2, base, map);
+            fourth = executeExpression(compiled2, base, map);
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -241,7 +247,7 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            fifth = MVEL.executeExpression(compiled2, base, map);
+            fifth = executeExpression(compiled2, base, map);
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -256,7 +262,7 @@ public abstract class AbstractTest extends TestCase {
         if (fourth != null && !fourth.getClass().isArray()) {
             if (!fourth.equals(fifth)) {
                 throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-                        + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
+                        + valueOf(first) + "; second: " + valueOf(second) + "]");
             }
         }
 
@@ -268,7 +274,7 @@ public abstract class AbstractTest extends TestCase {
         CompiledExpression compiledD = debuggingCompiler.compile(ctx);
 
         try {
-            sixth = MVEL.executeExpression(compiledD, base, map);
+            sixth = executeExpression(compiledD, base, map);
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -284,20 +290,20 @@ public abstract class AbstractTest extends TestCase {
         if (sixth != null && !sixth.getClass().isArray()) {
             if (!fifth.equals(sixth)) {
                 System.out.println("Payload 1 -- No Symbols: ");
-                System.out.println(DebugTools.decompile(compiled));
+                System.out.println(decompile(compiled));
                 System.out.println();
 
                 System.out.println("Payload 2 -- With Symbols: ");
-                System.out.println(DebugTools.decompile(compiledD));
+                System.out.println(decompile(compiledD));
                 System.out.println();
 
                 throw new AssertionError("Different result from test 5 and 6 (Compiled to Compiled+DebuggingSymbols) [first: "
-                        + String.valueOf(fifth) + "; second: " + String.valueOf(sixth) + "]");
+                        + valueOf(fifth) + "; second: " + valueOf(sixth) + "]");
             }
         }
 
         try {
-            seventh = MVEL.executeExpression(compiledD, base, map);
+            seventh = executeExpression(compiledD, base, map);
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -312,12 +318,12 @@ public abstract class AbstractTest extends TestCase {
         if (seventh != null && !seventh.getClass().isArray()) {
             if (!seventh.equals(sixth)) {
                 throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-                        + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
+                        + valueOf(first) + "; second: " + valueOf(second) + "]");
             }
         }
 
         try {
-            eighth = MVEL.executeExpression(serializationTest(compiledD), base, new MapVariableResolverFactory(map));
+            eighth = executeExpression(serializationTest(compiledD), base, new MapVariableResolverFactory(map));
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -332,13 +338,13 @@ public abstract class AbstractTest extends TestCase {
         if (eighth != null && !eighth.getClass().isArray()) {
             if (!eighth.equals(seventh)) {
                 throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-                        + String.valueOf(first) + "; second: " + String.valueOf(second) + "]");
+                        + valueOf(first) + "; second: " + valueOf(second) + "]");
             }
         }
 
 
         if (failErrors != null) {
-            System.out.println(DebugTools.decompile(compiledD));
+            System.out.println(decompile(compiledD));
             throw new AssertionError("Detailed Failure Report:\n" + failErrors.toString());
         }
 
@@ -346,7 +352,7 @@ public abstract class AbstractTest extends TestCase {
     }
 
     protected static Object serializationTest(Serializable s) throws Exception {
-        File file = new File("./mvel_ser_test" + System.currentTimeMillis() + Math.round(Math.random() * 1000) + ".tmp");
+        File file = new File("./mvel_ser_test" + currentTimeMillis() + Math.round(Math.random() * 1000) + ".tmp");
         InputStream inputStream = null;
         ObjectInputStream objectIn = null;
         try {
