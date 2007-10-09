@@ -45,50 +45,50 @@ public class MVELSH {
 
         long time;
 
+        System.out.println("Welcome to MVEL!");
         while (true) {
             try {
                 System.out.print("mvel$ ");
-                in = new BufferedReader(new InputStreamReader(System.in)).readLine();
-
-                if (in.length() == 0) continue;
+                
+                if ((in = new BufferedReader(new InputStreamReader(System.in)).readLine()).length() == 0) continue;
 
                 if ("quit;".equals(in) || "exit;".equals(in)) return;
-                if ("stacktrace;".equals(in)) {
+                else if ("stacktrace;".equals(in)) {
                     stacktrace = !stacktrace;
                     System.out.println("STACKTRACES: " + (stacktrace ? "ON" : "OFF"));
                     continue;
                 }
-
-                if ("echo;".equals(in)) {
+                else if ("echo;".equals(in)) {
                     output = !output;
 
                     System.out.println("OUTPUT ECHO: " + (output ? "ON" : "OFF"));
 
                     continue;
                 }
-
-                if ("template;".equals(in)) {
+                else if ("template;".equals(in)) {
                     template = !template;
                     System.out.println("TEMPLATE INTERPRETER: " + (template ? "ON" : "OFF"));
                     continue;
                 }
-
-                if ("exectime;".equals(in)) {
+                else if ("exectime;".equals(in)) {
                     showExecTime = !showExecTime;
                     System.out.println("SHOW EXEC TIME: " + (showExecTime ? "ON " : "OFF"));
                     continue;
                 }
-                if ("benchmark;".equals(in)) {
+                else if ("benchmark;".equals(in)) {
                     benchmarkMode = !benchmarkMode;
                     showExecTime = true;
                     System.out.println("MVELSH BENCHMARK MODE: " + (benchmarkMode ? "ON" : "OFF"));
                     continue;
                 }
-                if ("clear;".equals(in)) {
+                else if ("clear;".equals(in)) {
                     map.clear();
                     System.out.println("CLEARED VARIABLES.");
                     continue;
                 }
+                else
+
+
                 if ("help;".equals(in)) {
                     showHelp();
                     continue;
