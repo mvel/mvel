@@ -22,6 +22,7 @@ import org.mvel.CompileException;
 import org.mvel.optimizers.impl.asm.ASMAccessorOptimizer;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 
+import static java.lang.Thread.currentThread;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public class OptimizerFactory {
          * By default, activate the JIT if ASM is present in the classpath
          */
         try {
-            Thread.currentThread().getContextClassLoader().loadClass("org.mvel.asm.ClassWriter");
+            currentThread().getContextClassLoader().loadClass("org.mvel.asm.ClassWriter");
             accessorCompilers.put("ASM", new ASMAccessorOptimizer());
         }
 
