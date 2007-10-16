@@ -2475,6 +2475,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("java.lang.String", eval("org.mvel.tests.main.res.AStatic.Process(value.getClass().getName().toString())", pojo));
     }
 
+
 }
 
 

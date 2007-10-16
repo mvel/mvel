@@ -363,8 +363,9 @@ public class ParseTools {
             CLASS_RESOLVER_CACHE.put(classLoader, new WeakHashMap<String, Class>(10));
         }
 
-        if (CLASS_RESOLVER_CACHE.get(classLoader).containsKey(className))
+        if (CLASS_RESOLVER_CACHE.get(classLoader).containsKey(className)) {
             return CLASS_RESOLVER_CACHE.get(classLoader).get(className);
+        }
         else {
             Class cls = currentThread().getContextClassLoader().loadClass(className);
             CLASS_RESOLVER_CACHE.get(classLoader).put(className, cls);
