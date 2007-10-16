@@ -341,11 +341,11 @@ public class ParseTools {
             RESOLVED_CONST_CACHE.get(cls).put(hash, bestCandidate);
         }
 
+
         return bestCandidate;
     }
 
-    private static Map<String, Class> CLASS_RESOLVER_CACHE = new WeakHashMap<String, Class>(10);
-
+    private static Map<ClassLoader, Map<String, Class>> CLASS_RESOLVER_CACHE = new WeakHashMap<ClassLoader, Map<String, Class>>(1, 1.0f);
     private static Map<Class, Constructor[]> CLASS_CONSTRUCTOR_CACHE = new WeakHashMap<Class, Constructor[]>(10);
 
     public static Class createClassSafe(String className) {
@@ -358,11 +358,16 @@ public class ParseTools {
     }
 
     public static Class createClass(String className) throws ClassNotFoundException {
-        if (CLASS_RESOLVER_CACHE.containsKey(className))
-            return CLASS_RESOLVER_CACHE.get(className);
+        ClassLoader classLoader = currentThread().getContextClassLoader();
+        if (!CLASS_RESOLVER_CACHE.containsKey(classLoader)) {
+            CLASS_RESOLVER_CACHE.put(classLoader, new WeakHashMap<String, Class>(10));
+        }
+
+        if (CLASS_RESOLVER_CACHE.get(classLoader).containsKey(className))
+            return CLASS_RESOLVER_CACHE.get(classLoader).get(className);
         else {
             Class cls = currentThread().getContextClassLoader().loadClass(className);
-            CLASS_RESOLVER_CACHE.put(className, cls);
+            CLASS_RESOLVER_CACHE.get(classLoader).put(className, cls);
             return cls;
         }
     }
