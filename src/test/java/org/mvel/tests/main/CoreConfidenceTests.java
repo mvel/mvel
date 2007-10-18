@@ -2476,6 +2476,10 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
+    public void testStringIndex() {
+        assertEquals(true, test("a = 'foobar'; a[4] == 'a'"));
+    }
+
 }
 
 

@@ -1,5 +1,6 @@
 package org.mvel.conversion;
 
+import org.mvel.BlankLiteral;
 import org.mvel.ConversionHandler;
 
 import static java.lang.String.valueOf;
@@ -11,6 +12,6 @@ public class StringCH implements ConversionHandler {
 
 
     public boolean canConvertFrom(Class cls) {
-        return true;
+        return cls != BlankLiteral.class;
     }
 }
