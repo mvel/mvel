@@ -3,8 +3,10 @@ package org.mvel.ast;
 import org.mvel.ASTNode;
 import org.mvel.Accessor;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.optimizers.AccessorOptimizer;
+import org.mvel.optimizers.OptimizerFactory;
+import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
+import static org.mvel.optimizers.OptimizerFactory.getAccessorCompiler;
 
 /**
  * @author Christopher Brock
@@ -46,6 +48,6 @@ public class InlineCollectionNode extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
+        return getAccessorCompiler(SAFE_REFLECTIVE).optimizeCollection(name, ctx, thisValue, factory).getValue(ctx, thisValue, factory);
     }
 }

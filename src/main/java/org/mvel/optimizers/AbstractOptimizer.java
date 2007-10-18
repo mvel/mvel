@@ -4,6 +4,7 @@ import org.mvel.AbstractParser;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import static java.lang.Character.isWhitespace;
+import static java.lang.Thread.currentThread;
 
 /**
  * @author Christopher Brock
@@ -33,16 +34,16 @@ public class AbstractOptimizer extends AbstractParser {
             int last = length;
             for (int i = length - 1; i > 0; i--) {
                 switch (expr[i]) {
-                    case'.':
+                    case '.':
                         if (!meth) {
                             try {
                                 cursor = last;
-                                return Thread.currentThread().getContextClassLoader().loadClass(new String(expr, 0, last));
+                                return currentThread().getContextClassLoader().loadClass(new String(expr, 0, last));
                             }
                             catch (ClassNotFoundException e) {
                                 // return a field instead
 
-                                return Thread.currentThread().getContextClassLoader().loadClass(new String(expr, 0, i))
+                                return currentThread().getContextClassLoader().loadClass(new String(expr, 0, i))
                                         .getField(new String(expr, i + 1, expr.length - i - 1));
                             }
                         }
@@ -50,15 +51,15 @@ public class AbstractOptimizer extends AbstractParser {
                         meth = false;
                         last = i;
                         break;
-                    case')':
+                    case ')':
                         if (depth++ == 0)
                             meth = true;
                         break;
-                    case'(':
+                    case '(':
                         depth--;
                         break;
 
-                    case'\'':
+                    case '\'':
                         while (--i > 0) {
                             if (expr[i] == '\'' && expr[i - 1] != '\\') {
                                 break;
@@ -66,7 +67,7 @@ public class AbstractOptimizer extends AbstractParser {
                         }
                         break;
 
-                    case'"':
+                    case '"':
                         while (--i > 0) {
                             if (expr[i] == '"' && expr[i - 1] != '\\') {
                                 break;
@@ -87,9 +88,9 @@ public class AbstractOptimizer extends AbstractParser {
         skipWhitespace();
 
         switch (expr[start = cursor]) {
-            case'[':
+            case '[':
                 return COL;
-            case'.':
+            case '.':
                 skipWhitespace();
                 cursor = ++start;
 
@@ -101,9 +102,9 @@ public class AbstractOptimizer extends AbstractParser {
         if (cursor < length) {
             skipWhitespace();
             switch (expr[cursor]) {
-                case'[':
+                case '[':
                     return COL;
-                case'(':
+                case '(':
                     return METH;
                 default:
                     return 0;
