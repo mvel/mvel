@@ -353,25 +353,6 @@ public class PropertyTools {
             cur1++;
         }
 
-
-        if (c1.length != c2.length) {
-            cur1--;
-            int offset = comp.length - against.length;
-
-            int cur2 = cur1 - offset;
-
-            while (cur1 > 0 && cur1 < comp.length && cur2 > -1 && cur2 < against.length) {
-                if (comp[cur1] == against[cur2]) {
-                    same++;
-                    cur2++;
-                    cur1++;
-                }
-                else {
-                    cur2 = --cur1 - offset;
-                }
-            }
-        }
-
         return same / baselength;
     }
 
