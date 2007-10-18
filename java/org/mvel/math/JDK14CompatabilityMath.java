@@ -86,6 +86,15 @@ public class JDK14CompatabilityMath implements MathProcessor {
             else if ((type1 == 15 || type2 == 15) && type1 != type2) {
                 return doOperationNonNumeric(convert(val1, Boolean.class), operation, convert(val2, Boolean.class));
             }
+            // Fix for: MVEL-56
+            else if ((type1 == 1 || type2 == 1) && (type1 == 8 || type1 == 16 || type2 == 8 || type2 == 16)) {
+                if (type1 == 1) {
+                    return doOperationNonNumeric(val1, operation, valueOf(val2));
+                }
+                else {
+                    return doOperationNonNumeric(valueOf(val1), operation, val2);
+                }
+            }
         }
         return doOperationNonNumeric(val1, operation, val2);
     }
