@@ -2480,6 +2480,39 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("a = 'foobar'; a[4] == 'a'"));
     }
 
+    /**
+     * MVEL-57 (Submitted by: Rognvald Eaversen) -- Slightly modified by cbrock to include a positive testcase.
+     */
+    public void testMethodInvocationWithCollectionElement() {
+        context = new HashMap();
+        context.put("pojo", new POJO());
+        context.put("number", "1192800637980");
+
+        Object result = MVEL.eval("pojo.function(pojo.dates[0].time)", context);
+        assertEquals(String.valueOf(((POJO) context.get("pojo")).getDates().iterator().next().getTime()), result);
+    }
+
+    public class POJO {
+        private Set<Date> dates = new HashSet<Date>();
+
+        public POJO() {
+            dates.add(new Date());
+        }
+
+        public Set<Date> getDates() {
+            return dates;
+        }
+
+        public void setDates(Set<Date> dates) {
+            this.dates = dates;
+        }
+
+        public String function(long num) {
+            return String.valueOf(num);
+        }
+    }
+
+
 }
 
 
