@@ -20,9 +20,9 @@ package org.mvel;
 
 import static org.mvel.util.PropertyTools.isNumeric;
 
+import java.io.Serializable;
 import static java.lang.String.valueOf;
 import java.util.Collection;
-import java.io.Serializable;
 
 public class BlankLiteral implements Serializable {
     public static final BlankLiteral INSTANCE = new BlankLiteral();
@@ -44,5 +44,9 @@ public class BlankLiteral implements Serializable {
             return ((Object[]) obj).length == 0;
         }
         return false;
+    }
+
+    public String toString() {
+        return "";
     }
 }

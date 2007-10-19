@@ -82,65 +82,28 @@ public class ParseTools {
         if (length == -1)
             length = parm.length;
 
-        int adepth = 0;
-
         int start = offset;
         int i = offset;
         int end = i + length;
 
         for (; i < end; i++) {
             switch (parm[i]) {
-                case'(':
-                    int depth = 1;
-                    while (i++ < length - 1 && depth != 0) {
-                        switch (parm[i]) {
-                            case'(':
-                                depth++;
-                                continue;
-                            case')':
-                                depth--;
-                                continue;
-                            case'\'':
-                                i = captureStringLiteral('\'', parm, i, parm.length);
-                                continue;
-                            case'"':
-                                i = captureStringLiteral('"', parm, i, parm.length);
-
-                        }
-                    }
-                    i--;
+                case '(':
+                case '[':
+                case '{':
+                    i = balancedCapture(parm, i, parm[i]);
                     continue;
 
-                case'[':
-                case'{':
-                    adepth++;
-                    continue;
-
-                case']':
-                case'}':
-                    if (--adepth == 0) {
-                        list.add(new String(parm, start, i - start + 1));
-
-                        while (isWhitespace(parm[i]))
-                            i++;
-
-                        start = i + 1;
-                    }
-                    continue;
-
-                case'\'':
+                case '\'':
                     i = captureStringLiteral('\'', parm, i, parm.length);
                     continue;
 
 
-                case'"':
+                case '"':
                     i = captureStringLiteral('"', parm, i, parm.length);
                     continue;
 
-                case',':
-                    if (adepth != 0)
-                        continue;
-
+                case ',':
                     if (i > start) {
                         while (isWhitespace(parm[start]))
                             start++;
@@ -341,11 +304,11 @@ public class ParseTools {
             RESOLVED_CONST_CACHE.get(cls).put(hash, bestCandidate);
         }
 
+
         return bestCandidate;
     }
 
-    private static Map<String, Class> CLASS_RESOLVER_CACHE = new WeakHashMap<String, Class>(10);
-
+    private static Map<ClassLoader, Map<String, Class>> CLASS_RESOLVER_CACHE = new WeakHashMap<ClassLoader, Map<String, Class>>(1, 1.0f);
     private static Map<Class, Constructor[]> CLASS_CONSTRUCTOR_CACHE = new WeakHashMap<Class, Constructor[]>(10);
 
     public static Class createClassSafe(String className) {
@@ -358,11 +321,17 @@ public class ParseTools {
     }
 
     public static Class createClass(String className) throws ClassNotFoundException {
-        if (CLASS_RESOLVER_CACHE.containsKey(className))
-            return CLASS_RESOLVER_CACHE.get(className);
+        ClassLoader classLoader = currentThread().getContextClassLoader();
+        if (!CLASS_RESOLVER_CACHE.containsKey(classLoader)) {
+            CLASS_RESOLVER_CACHE.put(classLoader, new WeakHashMap<String, Class>(10));
+        }
+
+        if (CLASS_RESOLVER_CACHE.get(classLoader).containsKey(className)) {
+            return CLASS_RESOLVER_CACHE.get(classLoader).get(className);
+        }
         else {
             Class cls = currentThread().getContextClassLoader().loadClass(className);
-            CLASS_RESOLVER_CACHE.put(className, cls);
+            CLASS_RESOLVER_CACHE.get(classLoader).put(className, cls);
             return cls;
         }
     }
@@ -385,10 +354,10 @@ public class ParseTools {
 
         for (int i = 0; i < cs.length; i++) {
             switch (cs[i]) {
-                case'(':
+                case '(':
                     depth++;
                     continue;
-                case')':
+                case ')':
                     if (1 == depth--) {
                         return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i)};
                     }
@@ -401,10 +370,10 @@ public class ParseTools {
         int depth = 0;
         for (int i = 0; i < cs.length; i++) {
             switch (cs[i]) {
-                case'(':
+                case '(':
                     depth++;
                     continue;
-                case')':
+                case ')':
                     if (1 == depth--) {
                         return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i)};
                     }
@@ -540,17 +509,17 @@ public class ParseTools {
 
     public static char handleEscapeSequence(char escapedChar) {
         switch (escapedChar) {
-            case'\\':
+            case '\\':
                 return '\\';
-            case't':
+            case 't':
                 return '\t';
-            case'r':
+            case 'r':
                 return '\r';
-            case'n':
+            case 'n':
                 return '\n';
-            case'\'':
+            case '\'':
                 return '\'';
-            case'"':
+            case '"':
                 return '"';
             default:
                 throw new ParseException("illegal escape sequence: " + escapedChar);
@@ -830,14 +799,14 @@ public class ParseTools {
         int i = 0;
         for (; i < parms.length; i++) {
             switch (parms[i]) {
-                case'=':
+                case '=':
                     //    i++;
                     parmName = new String(parms, start, ++i - start - 1).trim();
                     capture = true;
                     start = i;
                     break;
 
-                case',':
+                case ',':
                     if (capture) {
                         allParms.put(parmName, new String(parms, start, i - start).trim());
                         start = ++i;
@@ -877,13 +846,13 @@ public class ParseTools {
         int depth = 1;
         char term = type;
         switch (type) {
-            case'[':
+            case '[':
                 term = ']';
                 break;
-            case'{':
+            case '{':
                 term = '}';
                 break;
-            case'(':
+            case '(':
                 term = ')';
                 break;
         }
@@ -916,13 +885,13 @@ public class ParseTools {
         int depth = 1;
         char term = type;
         switch (type) {
-            case'[':
+            case '[':
                 term = ']';
                 break;
-            case'{':
+            case '{':
                 term = '}';
                 break;
-            case'(':
+            case '(':
                 term = ')';
                 break;
         }
@@ -940,9 +909,9 @@ public class ParseTools {
             for (start++; start < chars.length; start++) {
                 if (isWhitespace(chars[start])) {
                     switch (chars[start]) {
-                        case'\r':
+                        case '\r':
                             continue;
-                        case'\n':
+                        case '\n':
                             lines++;
                     }
                 }

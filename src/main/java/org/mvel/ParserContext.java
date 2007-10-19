@@ -6,6 +6,7 @@ import org.mvel.util.MethodStub;
 import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.io.Serializable;
+import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -93,7 +94,7 @@ public class ParserContext implements Serializable {
     }
 
     public void setLineAndOffset(int lineCount, int lineOffset) {
-        this.lineCount = lineCount;
+        addKnownLine(this.lineCount = lineCount);
         this.lineOffset = lineOffset;
     }
 
@@ -117,7 +118,7 @@ public class ParserContext implements Serializable {
         Class cls = null;
         for (String pkg : packageImports) {
             try {
-                cls = Thread.currentThread().getContextClassLoader().loadClass(pkg + "." + className);
+                cls = currentThread().getContextClassLoader().loadClass(pkg + "." + className);
                 found++;
             }
             catch (ClassNotFoundException e) {

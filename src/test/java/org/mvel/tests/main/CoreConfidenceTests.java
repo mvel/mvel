@@ -2451,7 +2451,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testCommentsInWith() {
         HashMap map = new HashMap();
         map.put("f", new JFrame());
-        System.out.println(MVEL.eval(
+        System.out.println(eval(
                 "with (f) {\n" +
                         "title = 'blah', // setting title\n" +
                         "alwaysOnTop = false \n" +
@@ -2462,18 +2462,56 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testStaticWithExplicitParam() {
         PojoStatic pojo = new PojoStatic("10");
-        MVEL.eval("org.mvel.tests.main.res.AStatic.Process('10')", pojo, new HashMap());
+        eval("org.mvel.tests.main.res.AStatic.Process('10')", pojo, new HashMap());
     }
 
     public void testSimpleExpression() {
         PojoStatic pojo = new PojoStatic("10");
-        MVEL.eval("value!= null", pojo, new HashMap());
+        eval("value!= null", pojo, new HashMap());
     }
 
     public void testStaticWithExpressionParam() {
         PojoStatic pojo = new PojoStatic("10");
-        MVEL.eval("org.mvel.tests.main.res.AStatic.Process(value)", pojo, new HashMap());
+        assertEquals("java.lang.String", eval("org.mvel.tests.main.res.AStatic.Process(value.getClass().getName().toString())", pojo));
     }
+
+
+    public void testStringIndex() {
+        assertEquals(true, test("a = 'foobar'; a[4] == 'a'"));
+    }
+
+    /**
+     * MVEL-57 (Submitted by: Rognvald Eaversen) -- Slightly modified by cbrock to include a positive testcase.
+     */
+    public void testMethodInvocationWithCollectionElement() {
+        context = new HashMap();
+        context.put("pojo", new POJO());
+        context.put("number", "1192800637980");
+
+        Object result = MVEL.eval("pojo.function(pojo.dates[0].time)", context);
+        assertEquals(String.valueOf(((POJO) context.get("pojo")).getDates().iterator().next().getTime()), result);
+    }
+
+    public class POJO {
+        private Set<Date> dates = new HashSet<Date>();
+
+        public POJO() {
+            dates.add(new Date());
+        }
+
+        public Set<Date> getDates() {
+            return dates;
+        }
+
+        public void setDates(Set<Date> dates) {
+            this.dates = dates;
+        }
+
+        public String function(long num) {
+            return String.valueOf(num);
+        }
+    }
+
 
 }
 

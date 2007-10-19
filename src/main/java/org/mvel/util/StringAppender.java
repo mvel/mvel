@@ -87,10 +87,10 @@ public class StringAppender implements CharSequence {
         System.arraycopy(str, 0, newArray, 0, size);
         str = newArray;
     }
-    
+
     public char[] getChars(int start, int count) {
         char[] chars = new char[count];
-        System.arraycopy( str, start, chars, 0, count );
+        System.arraycopy(str, start, chars, 0, count);
         return chars;
     }
 
@@ -107,6 +107,17 @@ public class StringAppender implements CharSequence {
     }
 
 
+    public void getChars(int start, int count, char[] target, int offset) {
+        int delta = offset;
+        for (int i = start; i < count; i++) {
+            target[delta++] = str[i];
+        }
+    }
+
+    public void reset() {
+        size = 0;
+    }
+
     public char charAt(int index) {
         return str[index];
     }
@@ -114,5 +125,7 @@ public class StringAppender implements CharSequence {
     public CharSequence subSequence(int start, int end) {
         return new String(str, start, (end - start));
     }
+
+
 }
 

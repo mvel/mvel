@@ -2,6 +2,7 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.Accessor;
+import org.mvel.PropertyAccessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
@@ -14,11 +15,6 @@ public class VariableDeepPropertyNode extends ASTNode {
 
     public VariableDeepPropertyNode(char[] expr, int fields) {
         super(expr, fields);
-
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-
-        }
-
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -39,6 +35,6 @@ public class VariableDeepPropertyNode extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
+        return valRet(PropertyAccessor.get(name, ctx, factory, thisValue));
     }
 }

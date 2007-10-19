@@ -4,7 +4,6 @@ import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.eval;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
 
@@ -23,12 +22,13 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
         int assignStart;
         if ((assignStart = find(expr, '=')) != -1) {
-            fields |= ASSIGN;
             checkNameSafety(name = new String(expr, 0, assignStart).trim());
-            stmt = subset(expr, assignStart + 1);
 
-            if ((fields & COMPILE_IMMEDIATE) != 0) {
-                statement = (ExecutableStatement) ParseTools.subCompileExpression(stmt);
+            if (((fields |= ASSIGN) & COMPILE_IMMEDIATE) != 0) {
+                statement = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1));
+            }
+            else {
+                stmt = subset(expr, assignStart + 1);
             }
         }
         else {
@@ -39,7 +39,7 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (statement == null) statement = (ExecutableStatement) ParseTools.subCompileExpression(stmt);
+        if (statement == null) statement = (ExecutableStatement) subCompileExpression(stmt);
         finalLocalVariableFactory(factory).createVariable(name, ctx = statement.getValue(ctx, thisValue, factory), egressType);
         return ctx;
     }
