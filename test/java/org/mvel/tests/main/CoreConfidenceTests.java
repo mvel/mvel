@@ -1,7 +1,6 @@
 package org.mvel.tests.main;
 
 import org.mvel.*;
-
 import static org.mvel.MVEL.*;
 import org.mvel.ast.WithNode;
 import org.mvel.debug.DebugTools;
@@ -2461,7 +2460,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
-    
     public void testStaticWithExplicitParam() {
         PojoStatic pojo = new PojoStatic("10");
         eval("org.mvel.tests.main.res.AStatic.Process('10')", pojo, new HashMap());
@@ -2493,51 +2491,55 @@ public class CoreConfidenceTests extends AbstractTest {
         Object result = MVEL.eval("pojo.function(pojo.dates[0].time)", context);
         assertEquals(String.valueOf(((POJO) context.get("pojo")).getDates().iterator().next().getTime()), result);
     }
-    
+
     public void testNestedWithInList() {
         Recipient recipient1 = new Recipient();
-        recipient1.setName( "userName1" );
-        recipient1.setEmail( "user1@domain.com" );        
+        recipient1.setName("userName1");
+        recipient1.setEmail("user1@domain.com");
 
         Recipient recipient2 = new Recipient();
-        recipient2.setName( "userName2" );
-        recipient2.setEmail( "user2@domain.com" );        
-        
+        recipient2.setName("userName2");
+        recipient2.setEmail("user2@domain.com");
+
         List list = new ArrayList();
-        list.add( recipient1 );
-        list.add( recipient2 );
-        
-        String text = 
-        "array = [" +
-        "with ( new Recipient() ) {name = 'userName1', email = 'user1@domain.com' }," + 
-        "with ( new Recipient() ) {name = 'userName2', email = 'user2@domain.com' }];\n";
-        
+        list.add(recipient1);
+        list.add(recipient2);
+
+        String text =
+                "array = [" +
+                        "(with ( new Recipient() ) {name = 'userName1', email = 'user1@domain.com' })," +
+                        "(with ( new Recipient() ) {name = 'userName2', email = 'user2@domain.com' })];\n";
+
         ParserContext context = new ParserContext();
         context = new ParserContext();
-        context.addImport( Recipient.class );
+        context.addImport(Recipient.class);
 
-        ExpressionCompiler compiler = new ExpressionCompiler( text );
-        Serializable execution = compiler.compile( context );
-        List result = (List)  MVEL.executeExpression( execution );
-        assertEquals(list, result );              
-    }    
-    
+        ExpressionCompiler compiler = new ExpressionCompiler(text);
+        Serializable execution = compiler.compile(context);
+        List result = (List) MVEL.executeExpression(execution);
+        assertEquals(list, result);
+    }
+
     public static class Recipient {
         private String name;
         private String email;
-        
+
         public String getName() {
             return name;
         }
+
         public void setName(String name) {
             this.name = name;
         }
+
         public String getEmail() {
             return email;
         }
+
         public void setEmail(String email) {
             this.email = email;
         }
+
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -2546,54 +2548,57 @@ public class CoreConfidenceTests extends AbstractTest {
             result = prime * result + ((name == null) ? 0 : name.hashCode());
             return result;
         }
+
         @Override
         public boolean equals(Object obj) {
-            if ( this == obj ) return true;
-            if ( obj == null ) return false;
-            if ( getClass() != obj.getClass() ) return false;
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
             final Recipient other = (Recipient) obj;
-            if ( email == null ) {
-                if ( other.email != null ) return false;
-            } else if ( !email.equals( other.email ) ) return false;
-            if ( name == null ) {
-                if ( other.name != null ) return false;
-            } else if ( !name.equals( other.name ) ) return false;
+            if (email == null) {
+                if (other.email != null) return false;
+            }
+            else if (!email.equals(other.email)) return false;
+            if (name == null) {
+                if (other.name != null) return false;
+            }
+            else if (!name.equals(other.name)) return false;
             return true;
         }
-        
-        
+
+
     }
-    
+
     public static class Recipients {
         private List<Recipient> list = Collections.EMPTY_LIST;
-         
-         public void setRecipients(List<Recipient> recipients) {
-             this.list = recipients;
-         }
-         
-         public boolean addRecipient(Recipient recipient) {
-             if ( list == Collections.EMPTY_LIST ) {
-                 this.list = new ArrayList<Recipient>();
-             }
-             
-             if ( !this.list.contains( recipient ) ) {
-                 this.list.add( recipient );
-                 return true;
-             }
-             return false;
-         }
-         
-         public boolean removeRecipient(Recipient recipient) {
-             return this.list.remove( recipient );
-         }
-         
-         public List<Recipient> getRecipients() {
-             return this.list;
-         }
-         
-         public Recipient[] toArray() {
-             return (Recipient[]) list.toArray( new Recipient[list.size()] );
-         }
+
+        public void setRecipients(List<Recipient> recipients) {
+            this.list = recipients;
+        }
+
+        public boolean addRecipient(Recipient recipient) {
+            if (list == Collections.EMPTY_LIST) {
+                this.list = new ArrayList<Recipient>();
+            }
+
+            if (!this.list.contains(recipient)) {
+                this.list.add(recipient);
+                return true;
+            }
+            return false;
+        }
+
+        public boolean removeRecipient(Recipient recipient) {
+            return this.list.remove(recipient);
+        }
+
+        public List<Recipient> getRecipients() {
+            return this.list;
+        }
+
+        public Recipient[] toArray() {
+            return (Recipient[]) list.toArray(new Recipient[list.size()]);
+        }
 
         @Override
         public int hashCode() {
@@ -2605,34 +2610,40 @@ public class CoreConfidenceTests extends AbstractTest {
 
         @Override
         public boolean equals(Object obj) {
-            if ( this == obj ) return true;
-            if ( obj == null ) return false;
-            if ( getClass() != obj.getClass() ) return false;
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
             final Recipients other = (Recipients) obj;
-            if ( list == null ) {
-                if ( other.list != null ) return false;
-            } else if ( !list.equals( other.list ) ) return false;
+            if (list == null) {
+                if (other.list != null) return false;
+            }
+            else if (!list.equals(other.list)) return false;
             return true;
         }
-         
-         
-     }
-    
+
+
+    }
+
     public class EmailMessage {
         private Recipients recipients;
         private String from;
+
         public Recipients getRecipients() {
             return recipients;
         }
+
         public void setRecipients(Recipients recipients) {
             this.recipients = recipients;
         }
+
         public String getFrom() {
             return from;
         }
+
         public void setFrom(String from) {
             this.from = from;
         }
+
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -2641,25 +2652,27 @@ public class CoreConfidenceTests extends AbstractTest {
             result = prime * result + ((recipients == null) ? 0 : recipients.hashCode());
             return result;
         }
+
         @Override
         public boolean equals(Object obj) {
-            if ( this == obj ) return true;
-            if ( obj == null ) return false;
-            if ( getClass() != obj.getClass() ) return false;
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
             final EmailMessage other = (EmailMessage) obj;
-            if ( from == null ) {
-                if ( other.from != null ) return false;
-            } else if ( !from.equals( other.from ) ) return false;
-            if ( recipients == null ) {
-                if ( other.recipients != null ) return false;
-            } else if ( !recipients.equals( other.recipients ) ) return false;
+            if (from == null) {
+                if (other.from != null) return false;
+            }
+            else if (!from.equals(other.from)) return false;
+            if (recipients == null) {
+                if (other.recipients != null) return false;
+            }
+            else if (!recipients.equals(other.recipients)) return false;
             return true;
         }
-        
-        
+
+
     }
-    
-    
+
 
     public class POJO {
         private Set<Date> dates = new HashSet<Date>();

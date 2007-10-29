@@ -74,12 +74,12 @@ public class CollectionParser {
 
         for (; cursor < length; cursor++) {
             switch (property[cursor]) {
-                case'{':
+                case '{':
                     if (newType == -1) {
                         newType = ARRAY;
                     }
 
-                case'[':
+                case '[':
                     if (newType == -1) {
                         newType = LIST;
                     }
@@ -103,15 +103,21 @@ public class CollectionParser {
 
                     continue;
 
-                case'\"':
-                case'\'':
+                case '(':
+                    if ((cursor = balancedCapture(property, start = cursor, property[start])) == -1) {
+                        throw new RuntimeException("unbalanced braces inside inline collection");
+                    }
+                    break;
+
+                case '\"':
+                case '\'':
                     if ((cursor = balancedCapture(property, start = cursor, property[start])) == -1) {
                         throw new RuntimeException("unterminated string literal starting at index " + start + " {" + property[start] + "}: " + new String(property));
                     }
 
                     break;
 
-                case',':
+                case ',':
                     if (type != MAP) {
                         list.add(new String(property, start, cursor - start));
                     }
@@ -123,7 +129,7 @@ public class CollectionParser {
 
                     break;
 
-                case':':
+                case ':':
                     if (type != MAP) {
                         map = new HashMap<Object, Object>();
                         type = MAP;

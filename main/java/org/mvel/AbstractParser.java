@@ -986,6 +986,7 @@ public class AbstractParser implements Serializable {
         if (cond) {
             if (debugSymbols) {
                 int[] cap = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(');
+
                 endCond = cursor = cap[0];
 
                 startCond++;
