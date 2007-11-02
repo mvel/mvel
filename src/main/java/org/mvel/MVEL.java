@@ -202,8 +202,13 @@ public class MVEL {
 
 
     public static Object executeExpression(Object compiledExpression) {
-        return ((ExecutableStatement) compiledExpression).getValue(null, null);
-    }
+        try {
+            return ((ExecutableStatement) compiledExpression).getValue(null, null);
+        }
+        catch (EndWithValue e) {
+            return handleParserEgress(e.getValue(), false);
+        }
+    }                                 
 
     /**
      * Executes a compiled expression.
