@@ -117,7 +117,7 @@ public class ASTNode implements Cloneable, Serializable {
 
     public void setEgressType(Class egressType) {
         this.egressType = egressType;
-    }
+    }                                                                          
 
     protected String getAbsoluteRemainder() {
         return (fields & COLLECTION) != 0 ? new String(name, endOfName, name.length - endOfName)
