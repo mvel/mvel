@@ -425,6 +425,11 @@ public class TemplateInterpreter {
                     }
                     case FOREACH: {
                         ForeachContext foreachContext = (ForeachContext) currNode.getRegister();
+
+                        if (tokens == null) {
+                            tokens = new HashMap();
+                        }
+
                         if (foreachContext.getItererators() == null) {
                             try {
                                 String[] lists = getForEachSegment(currNode).split(",");
@@ -459,6 +464,7 @@ public class TemplateInterpreter {
 
                             //noinspection unchecked
                             for (int i = 0; i < iters.length; i++) {
+
                                 //noinspection unchecked
                                 tokens.put(alias[i], iters[i].next());
                             }
@@ -615,10 +621,10 @@ public class TemplateInterpreter {
         int end = start;
         while (depth > 0) {
             switch (expression[++end]) {
-                case'}':
+                case '}':
                     depth--;
                     break;
-                case'{':
+                case '{':
                     depth++;
                     break;
             }
