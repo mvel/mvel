@@ -2256,19 +2256,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(false, test("(_abc = (_xyz = 'someString'.hashCode()) + 1); _abc == _xyz"));
     }
 
-//    public void testSwing() {
-//        test("import javax.swing.JFrame;\n" +
-//                "import javax.swing.JLabel;\n" +
-//                "\n" +
-//                "with (frame = new JFrame()) {\n" +
-//                "    title = \"My Swing Frame\",\n" +
-//                "    resizable = true\n" +
-//                "}\n" +
-//                "\n" +
-//                "frame.contentPane.add(new JLabel(\"My Label\"));\n" +
-//                "frame.pack();\n" +
-//                "frame.visible = true;");
-//    }
 
     /**
      * Submitted by: Guerry Semones
@@ -2511,7 +2498,6 @@ public class CoreConfidenceTests extends AbstractTest {
                         "(with ( new Recipient() ) {name = 'userName2', email = 'user2@domain.com' })];\n";
 
         ParserContext context = new ParserContext();
-        context = new ParserContext();
         context.addImport(Recipient.class);
 
         ExpressionCompiler compiler = new ExpressionCompiler(text);
@@ -2519,19 +2505,19 @@ public class CoreConfidenceTests extends AbstractTest {
         List result = (List) MVEL.executeExpression(execution);
         assertEquals(list, result);
     }
-    
+
     public void testNestedInMethod() {
         Recipient recipient1 = new Recipient();
         recipient1.setName("userName1");
         recipient1.setEmail("user1@domain.com");
-        
+
         Recipients recipients = new Recipients();
-        recipients.addRecipient( recipient1 );
-        
+        recipients.addRecipient(recipient1);
+
         String text =
                 "recipients = new Recipients();\n" +
-                 "recipients.addRecipient( (with ( new Recipient() ) {name = 'userName1', email = 'user1@domain.com' }) );\n" +
-                 "return recipients;\n";
+                        "recipients.addRecipient( (with ( new Recipient() ) {name = 'userName1', email = 'user1@domain.com' }) );\n" +
+                        "return recipients;\n";
 
         ParserContext context = new ParserContext();
         context = new ParserContext();
@@ -2542,7 +2528,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Serializable execution = compiler.compile(context);
         Recipients result = (Recipients) MVEL.executeExpression(execution);
         assertEquals(recipients, result);
-    }    
+    }
 
     public static class Recipient {
         private String name;

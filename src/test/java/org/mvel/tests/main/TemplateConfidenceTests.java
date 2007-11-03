@@ -1,22 +1,17 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-import junit.framework.TestCase;
-import org.mvel.MVEL;
 import org.mvel.MVELTemplateRegistry;
 import org.mvel.TemplateInterpreter;
 import org.mvel.TemplateRegistry;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
-import org.mvel.tests.main.res.PDFFieldUtil;
-import org.mvel.util.FastList;
 
-import java.io.Serializable;
 import java.io.StringReader;
-import java.math.BigInteger;
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TemplateConfidenceTests extends TestCase {
@@ -56,7 +51,7 @@ public class TemplateConfidenceTests extends TestCase {
                     }
                 });
     }
-    
+
     public void testPassThru2() {
         assertEquals("foo@bar.com", TemplateInterpreter.eval("foo@bar.com", map));
     }
@@ -68,7 +63,7 @@ public class TemplateConfidenceTests extends TestCase {
     public void testSimpleProperty() {
         assertEquals("dog", parse("@{foo.bar.name}"));
     }
-    
+
     public void testBooleanOperator() {
         assertEquals(true, parse("@{foo.bar.woof == true}"));
     }
@@ -83,8 +78,8 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testNETextComparison() {
         assertEquals(true, parse("@{foo.bar.name != 'foo'}"));
-    }    
-    
+    }
+
     public void testChor() {
         assertEquals("cat", parse("@{a or b or c}"));
     }
@@ -103,8 +98,8 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testMath() {
         assertEquals(188.4f, parse("@{pi * hour}"));
-    }    
-    
+    }
+
     public void testTemplating() {
         assertEquals("dogDOGGIE133.5", parse("@{foo.bar.name}DOGGIE@{hour*2.225+1-1}"));
     }
@@ -112,8 +107,8 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testComplexAnd() {
         assertEquals(true, parse("@{(pi * hour) > 0 && foo.happy() == 'happyBar'}"));
-    }    
-    
+    }
+
     public void testModulus() {
         assertEquals(38392 % 2,
                 parse("@{38392 % 2}"));
@@ -149,8 +144,8 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testMethodAccess6() {
         assertEquals(false, parse("@{!foo.bar.isWoof()}"));
-    }    
-    
+    }
+
     public void testNegation() {
         assertEquals(true, parse("@{!fun && !fun}"));
     }
@@ -169,12 +164,12 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testMultiStatement() {
         assertEquals(true, parse("@{populate(); barfoo == 'sarah'}"));
-    }    
-    
+    }
+
     public void testAssignment2() {
         assertEquals("sarah", parse("@{populate(); blahfoo = barfoo}"));
-    }    
-    
+    }
+
     public void testOr() {
         assertEquals(true, parse("@{fun || true}"));
     }
@@ -265,14 +260,14 @@ public class TemplateConfidenceTests extends TestCase {
         for (int i = 0; i < 100; i++) {
             testMultiCollectionWithMultipleCharSeperatorControlLoop();
         }
-    }    
+    }
 
     public static interface TestInterface {
         public String getName();
 
         public boolean isFoo();
     }
-    
+
     public void testControlLoop2() {
         assertEquals("HappyHappy!JoyJoy!",
                 parse(
@@ -289,8 +284,8 @@ public class TemplateConfidenceTests extends TestCase {
                                 "@{item}" +
                                 "@end{}"
                 ));
-    }    
-    
+    }
+
     public void testIfStatement() {
         assertEquals("sarah", parse("@if{'fun' == 'fun'}sarah@end{}"));
     }
@@ -317,8 +312,8 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testBlank2() {
         assertEquals(true, parse("@{BWAH == empty}"));
-    }    
-    
+    }
+
     public void testTernary() {
         assertEquals("foobie", parse("@{zero==0?'foobie':zero}"));
     }
@@ -333,12 +328,12 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testTernary4() {
         assertEquals("no", parse("@{ackbar ? 'yes' : 'no'}"));
-    }    
-    
+    }
+
     public void testStrAppend() {
         assertEquals("foobarcar", parse("@{'foo' + 'bar' + 'car'}"));
-    }    
-    
+    }
+
     public void testStrAppend2() {
         assertEquals("foobarcar1", parse("@{'foobar' + 'car' + 1}"));
     }
@@ -349,8 +344,8 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testInstanceCheck2() {
         assertEquals(false, parse("@{pi is 'java.lang.Integer'}"));
-    }    
-    
+    }
+
     public void testBitwiseOr1() {
         assertEquals(6, parse("@{2 | 4}"));
     }
@@ -377,8 +372,8 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testShiftRight() {
         assertEquals(128, parse("@{256 >> 1}"));
-    }    
-    
+    }
+
     public void testXOR() {
         assertEquals(3, parse("@{1 ^ 2}"));
     }
@@ -401,12 +396,12 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testContains5() {
         assertEquals(true, parse("@{!(sentence contains 'mike')}"));
-    }    
-    
+    }
+
     public void testTokenMethodAccess() {
         assertEquals(String.class, parse("@{a = 'foo'; a.getClass()}"));
-    }    
-    
+    }
+
     public void testArrayCreationWithLength() {
         assertEquals(2, parse("@{Array.getLength({'foo', 'bar'})}"));
     }
@@ -421,8 +416,8 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testProjectionSupport2() {
         assertEquals(3, parse("@{(name in things).size()}"));
-    }    
-    
+    }
+
     public void testObjectInstantiation() {
         assertEquals("foobie", parse("@{new java.lang.String('foobie')}"));
     }
@@ -433,12 +428,12 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testObjectInstantiation2() {
         parse("@{new String() is String}");
-    }    
-    
+    }
+
     public void testArrayCoercion() {
         assertEquals("gonk", parse("@{funMethod( {'gonk', 'foo'} )}"));
-    }    
-    
+    }
+
     public void testMapAccess() {
         assertEquals("dog", parse("@{funMap['foo'].bar.name}"));
     }
@@ -507,6 +502,85 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testStringEscaping2() {
         assertEquals("MVEL's Parser is Fast", parse("@{'MVEL\\'s Parser is Fast'}"));
+    }
+
+
+    public void testIteration1() {
+        List<String> list = new ArrayList<String>();
+        list.add("a1");
+        list.add("a2");
+        list.add("a3");
+
+        String template = "@foreach{list}a@end{}";
+        Map map = new HashMap();
+        map.put("list", list);
+        String r = TemplateInterpreter.evalToString(template, map);
+        System.out.println("r: " + r);
+        assertEquals("aaa", r);
+    }
+
+
+    public void testIteration2() {
+        Folder f1 = new Folder("f1", null);
+
+        String template = "@{name} @foreach{children}a@end{}";
+        String r = TemplateInterpreter.evalToString(template, f1);
+        System.out.println("r: " + r);
+    }
+
+    public void testIteration3() {
+        Folder f = new Folder("a1", null);
+        List<Page> list = f.getChildren();
+
+        String template = "@foreach{list}a@end{}";
+        Map map = new HashMap();
+        map.put("list", list);
+        String r = TemplateInterpreter.evalToString(template, map);
+        System.out.println("r: " + r);
+        assertEquals("aaa", r);
+    }
+
+    public void testIteration4() {
+        Folder f = new Folder("a1", null);
+
+        String template = "@foreach{f.children}a@end{}";
+        Map map = new HashMap();
+        map.put("f", f);
+        String r = TemplateInterpreter.evalToString(template, map);
+        System.out.println("r: " + r);
+        assertEquals("aaa", r);
+    }
+
+    class Page {
+        String name;
+        Folder parent;
+
+        Page(String name, Folder parent) {
+            this.name = name;
+            this.parent = parent;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public TemplateConfidenceTests.Folder getParent() {
+            return parent;
+        }
+    }
+
+    class Folder extends Page {
+        Folder(String name, Folder parent) {
+            super(name, parent);
+        }
+
+        public List<Page> getChildren() {
+            List<Page> list = new ArrayList<Page>();
+            list.add(new Page("a1", this));
+            list.add(new Page("a2", this));
+            list.add(new Page("a3", this));
+            return list;
+        }
     }
 
 
