@@ -29,7 +29,6 @@ import org.mvel.util.StringAppender;
 
 import java.io.*;
 import static java.lang.String.valueOf;
-import static java.lang.System.arraycopy;
 import java.nio.ByteBuffer;
 import static java.nio.ByteBuffer.allocateDirect;
 import java.nio.channels.ReadableByteChannel;
@@ -359,7 +358,9 @@ public class TemplateInterpreter {
                     //noinspection unchecked
                     if (CACHE_DISABLE || !cacheAggressively) {
                         char[] seg = new char[expression.length - 3];
-                        arraycopy(expression, 2, seg, 0, seg.length);
+                        //      arraycopy(expression, 2, seg, 0, seg.length);
+                        for (int i = 0; i < seg.length; i++)
+                            seg[i] = expression[i + 2];
 
                         return MVEL.eval(seg, ctx, tokens);
                     }
@@ -607,7 +608,12 @@ public class TemplateInterpreter {
 
     private char[] getSegment(Node n) {
         char[] ca = new char[n.getLength()];
-        arraycopy(expression, n.getStartPos(), ca, 0, ca.length);
+        //arraycopy(expression, n.getStartPos(), ca, 0, ca.length);
+
+        int o0 = n.getStartPos();
+        for (int i = 0; i < ca.length; i++)
+            ca[i] = expression[i + o0];
+
         return ca;
     }
 
@@ -630,8 +636,14 @@ public class TemplateInterpreter {
             }
         }
 
+//        char[] ca = new char[end - start];
+//        arraycopy(expression, start, ca, 0, ca.length);
+//        return ca;
+
         char[] ca = new char[end - start];
-        arraycopy(expression, start, ca, 0, ca.length);
+        for (int i = 0; i < ca.length; i++)
+            ca[i] = expression[i + start];
+
         return ca;
     }
 
