@@ -633,6 +633,7 @@ public class TemplateInterpreter {
         char[] ca = new char[end - start];
         arraycopy(expression, start, ca, 0, ca.length);
         return ca;
+        
     }
 
     private String getForEachSegment(Node n) {
