@@ -16,7 +16,6 @@ import static java.lang.Boolean.TRUE;
 import static java.lang.Character.isWhitespace;
 import static java.lang.Float.parseFloat;
 import static java.lang.Runtime.getRuntime;
-import static java.lang.System.arraycopy;
 import static java.lang.System.getProperty;
 import static java.util.Collections.synchronizedMap;
 import java.util.HashMap;
@@ -875,7 +874,10 @@ public class AbstractParser implements Serializable {
         if (start >= end) return new char[0];
 
         char[] newA = new char[end - start];
-        arraycopy(expr, start, newA, 0, newA.length);
+        //     arraycopy(expr, start, newA, 0, newA.length);
+        for (int i = 0; i < newA.length; i++)
+            newA[i] = expr[i + start];
+
         return newA;
     }
 
@@ -1194,7 +1196,9 @@ public class AbstractParser implements Serializable {
                 while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
 
                 char[] e = new char[length];
-                arraycopy(this.expr, 0, e, 0, length);
+                //arraycopy(this.expr, 0, e, 0, length);
+                for (int i = 0; i < e.length; i++)
+                    e[i] = expr[i];
 
                 EX_PRECACHE.put(expression, e);
             }
