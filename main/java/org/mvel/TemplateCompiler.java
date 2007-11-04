@@ -58,7 +58,7 @@ public class TemplateCompiler {
         Node ex;
         int node = 0;
         for (; cursor < length; cursor++) {
-            if ( expressionArray[cursor] == '@') {
+            if (expressionArray[cursor] == '@') {
                 if (literalRange != 0) {
                     aList.add(new Node(node++, LITERAL, cursor - literalRange, literalRange, node));
                     literalRange = 0;
@@ -111,7 +111,7 @@ public class TemplateCompiler {
                     int capture = -1;
                     for (int i = 0; i < exStr.length; i++) {
                         switch (exStr[i]) {
-                            case' ':
+                            case ' ':
                                 if (capture == -1 && ((i + 3) < exStr.length)
                                         && exStr[i + 1] == 'a' && exStr[i + 2] == 's'
                                         && exStr[i + 3] == ' ') {
@@ -163,7 +163,12 @@ public class TemplateCompiler {
 
         aList.add(new Node(node, TERMINUS));
 
-        arraycopy(aList.toArray(), 0, expressions = new Node[aList.size()], 0, expressions.length);
+        //  arraycopy(aList.toArray(), 0, expressions = new Node[aList.size()], 0, expressions.length);
+
+        expressions = new Node[aList.size()];
+        for (int i = 0; i < expressions.length; i++)
+            expressions[i] = aList.get(i);
+
         ArrayList<Node> stk = new ArrayList<Node>(10);
 
         for (int i = 0; i < expressions.length; i++) {
@@ -406,10 +411,10 @@ public class TemplateCompiler {
 //                        depth++;
 //                    }
 //                    break;
-                case'}':
+                case '}':
                     depth--;
                     break;
-                case'{':
+                case '{':
                     depth++;
                     break;
             }

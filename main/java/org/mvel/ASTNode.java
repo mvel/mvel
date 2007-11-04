@@ -31,7 +31,6 @@ import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
 
 import java.io.Serializable;
-import static java.lang.System.arraycopy;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
 
@@ -90,7 +89,10 @@ public class ASTNode implements Cloneable, Serializable {
         this.fields = fields;
 
         char[] name = new char[end - (this.cursorPosition = start)];
-        arraycopy(expr, start, name, 0, end - start);
+        for (int i = 0; i < name.length; i++)
+            name[i] = expr[i + start];
+
+        //     arraycopy(expr, start, name, 0, end - start);
         setName(name);
     }
 
@@ -117,7 +119,7 @@ public class ASTNode implements Cloneable, Serializable {
 
     public void setEgressType(Class egressType) {
         this.egressType = egressType;
-    }                                                                          
+    }
 
     protected String getAbsoluteRemainder() {
         return (fields & COLLECTION) != 0 ? new String(name, endOfName, name.length - endOfName)
@@ -363,7 +365,7 @@ public class ASTNode implements Cloneable, Serializable {
             int last = name.length;
             for (int i = last - 1; i > 0; i--) {
                 switch (name[i]) {
-                    case'.':
+                    case '.':
                         if (depth == 0 && !meth) {
                             try {
                                 return get(new String(name, last, name.length - last),
@@ -377,10 +379,10 @@ public class ASTNode implements Cloneable, Serializable {
                         meth = false;
                         last = i;
                         break;
-                    case')':
+                    case ')':
                         depth++;
                         break;
-                    case'(':
+                    case '(':
                         if (--depth == 0) meth = true;
                         break;
                 }

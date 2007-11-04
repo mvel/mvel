@@ -11,7 +11,6 @@ import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import org.mvel.util.ArrayTools;
 import static org.mvel.util.ArrayTools.findFirst;
 
-import static java.lang.System.arraycopy;
 import static java.lang.Thread.currentThread;
 
 /**
@@ -52,13 +51,30 @@ public class NewObjectNode extends ASTNode {
 
         if (className.indexOf('.') == -1) {
             int idx = ArrayTools.findFirst('(', name);
+
+            char[] fqcn = FQCN.toCharArray();
+
             if (idx == -1) {
-                arraycopy(FQCN.toCharArray(), 0, this.name = new char[idx = FQCN.length()], 0, idx);
+                //      arraycopy(FQCN.toCharArray(), 0, this.name = new char[idx = FQCN.length()], 0, idx);
+                this.name = new char[idx = fqcn.length];
+                for (int i = 0; i < idx; i++) {
+                    this.name[i] = fqcn[i];
+                }
+
             }
             else {
-                char[] newName = new char[FQCN.length() + (name.length - idx)];
-                arraycopy(FQCN.toCharArray(), 0, newName, 0, FQCN.length());
-                arraycopy(name, idx, newName, FQCN.length(), (name.length - idx));
+                char[] newName = new char[fqcn.length + (name.length - idx)];
+//                arraycopy(FQCN.toCharArray(), 0, newName, 0, FQCN.length());
+//                arraycopy(name, idx, newName, FQCN.length(), (name.length - idx));
+
+                for (int i = 0; i < fqcn.length; i++)
+                    newName[i] = fqcn[i];
+
+                int i0 = name.length - idx;
+                int i1 = fqcn.length;
+                for (int i = 0; i < i0; i++)
+                    newName[i + i1] = name[i + idx];
+
                 this.name = newName;
             }
             updateClassName();
