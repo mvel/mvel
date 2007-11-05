@@ -53,8 +53,6 @@ public class NewObjectNode extends ASTNode {
 
             if (egressType != null) {
                 rewriteClassReferenceToFQCN(fields);
-
-
                 if (arraySize != null) {
                     try {
                         egressType = currentThread().getContextClassLoader()
@@ -258,7 +256,6 @@ public class NewObjectNode extends ASTNode {
             }
         }
         catch (ClassNotFoundException e) {
-            e.printStackTrace();
             throw new CompileException("unable to resolve class: " + e.getMessage());
         }
         catch (NoSuchMethodException e) {
