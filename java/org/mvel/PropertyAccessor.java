@@ -395,10 +395,14 @@ public class PropertyAccessor {
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
-        if (first && variableFactory != null && variableFactory.isResolveable(property)) {
-            return variableFactory.getVariableResolver(property).getValue();
+        if (first) {
+            if ("this".equals(property)) {
+                return this.thisReference;
+            }
+            else if (variableFactory != null && variableFactory.isResolveable(property)) {
+                return variableFactory.getVariableResolver(property).getValue();
+            }
         }
-
 
         Class cls;
         Member member = checkReadCache(cls = (ctx instanceof Class ? ((Class) ctx) : ctx.getClass()), property.hashCode());
@@ -430,8 +434,8 @@ public class PropertyAccessor {
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
             return ((Map) ctx).get(property);
         }
-        else if ("this".equals(property)) {
-            return this.thisReference;
+        else if ("length".equals(property) && ctx.getClass().isArray()) {
+            return Array.getLength(ctx);
         }
         else if (ctx instanceof Class) {
             Class c = (Class) ctx;
@@ -441,6 +445,7 @@ public class PropertyAccessor {
                 }
             }
         }
+
         throw new PropertyAccessException("could not access property (" + property + ")");
     }
 
