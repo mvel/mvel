@@ -308,9 +308,15 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
-        if (first && variableFactory != null && variableFactory.isResolveable(property)) {
-            addAccessorNode(new VariableAccessor(property, variableFactory));
-            return variableFactory.getVariableResolver(property).getValue();
+        if (first) {
+            if ("this".equals(property)) {
+                addAccessorNode(new ThisValueAccessor());
+                return this.thisRef;
+            }
+            else if (variableFactory != null && variableFactory.isResolveable(property)) {
+                addAccessorNode(new VariableAccessor(property, variableFactory));
+                return variableFactory.getVariableResolver(property).getValue();
+            }
         }
 
         //noinspection unchecked
@@ -339,9 +345,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             addAccessorNode(new MapAccessor(property));
             return ((Map) ctx).get(property);
         }
-        else if ("this".equals(property)) {
-            addAccessorNode(new ThisValueAccessor());
-            return this.thisRef;
+
+        else if ("length".equals(property) && ctx.getClass().isArray()) {
+            addAccessorNode(new ArrayLength());
+            return Array.getLength(ctx);
         }
         else if (LITERALS.containsKey(property)) {
             addAccessorNode(new StaticReferenceAccessor(ctx = LITERALS.get(property)));
