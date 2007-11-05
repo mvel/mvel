@@ -2,6 +2,8 @@ package org.mvel.ast;
 
 import org.mvel.*;
 import static org.mvel.AbstractParser.getCurrentThreadParserContext;
+import static org.mvel.DataConversion.convert;
+import static org.mvel.MVEL.eval;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
@@ -80,8 +82,6 @@ public class NewObjectNode extends ASTNode {
                 this.name = new char[idx = fqcn.length];
                 for (int i = 0; i < idx; i++)
                     this.name[i] = fqcn[i];
-
-
             }
             else {
                 char[] newName = new char[fqcn.length + (name.length - idx)];
@@ -133,7 +133,7 @@ public class NewObjectNode extends ASTNode {
                 if ((fields & COMPILE_IMMEDIATE) != 0) {
                     compiledArraySize = new ExecutableStatement[arraySize.length];
                     for (int i = 0; i < compiledArraySize.length; i++)
-                        compiledArraySize[i] = (ExecutableStatement) ParseTools.subCompileExpression(arraySize[i].value);
+                        compiledArraySize[i] = (ExecutableStatement) subCompileExpression(arraySize[i].value);
                 }
 
                 return;
@@ -209,7 +209,7 @@ public class NewObjectNode extends ASTNode {
 
                 int[] s = new int[arraySize.length];
                 for (int i = 0; i < s.length; i++) {
-                    s[i] = DataConversion.convert(MVEL.eval(arraySize[i].value, ctx, factory), Integer.class);
+                    s[i] = convert(eval(arraySize[i].value, ctx, factory), Integer.class);
                 }
 
                 return Array.newInstance(cls, s);
@@ -223,7 +223,7 @@ public class NewObjectNode extends ASTNode {
 
                     Object[] parms = new Object[constructorParms.length];
                     for (int i = 0; i < constructorParms.length; i++) {
-                        parms[i] = MVEL.eval(constructorParms[i], ctx, factory);
+                        parms[i] = eval(constructorParms[i], ctx, factory);
                     }
 
                     Constructor cns = getBestConstructorCanadidate(parms, cls);
@@ -233,7 +233,7 @@ public class NewObjectNode extends ASTNode {
 
                     for (int i = 0; i < parms.length; i++) {
                         //noinspection unchecked
-                        parms[i] = DataConversion.convert(parms[i], cns.getParameterTypes()[i]);
+                        parms[i] = convert(parms[i], cns.getParameterTypes()[i]);
                     }
 
                     if (cnsRes.length > 1) {
@@ -294,7 +294,7 @@ public class NewObjectNode extends ASTNode {
         public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
             int[] s = new int[sizes.length];
             for (int i = 0; i < s.length; i++) {
-                s[i] = DataConversion.convert(sizes[i].getValue(ctx, elCtx, variableFactory), Integer.class);
+                s[i] = convert(sizes[i].getValue(ctx, elCtx, variableFactory), Integer.class);
             }
 
             return Array.newInstance(arrayType, s);
