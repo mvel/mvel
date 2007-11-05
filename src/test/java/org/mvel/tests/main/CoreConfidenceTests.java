@@ -838,7 +838,7 @@ public class CoreConfidenceTests extends AbstractTest {
      */
     public void testCreationOfSet() {
         assertEquals("foo bar foo bar",
-                test("set = new java.util.HashSet(); " +
+                test("set = new java.util.LinkedHashSet(); " +
                         "set.add('foo');" +
                         "set.add('bar');" +
                         "output = '';" +
