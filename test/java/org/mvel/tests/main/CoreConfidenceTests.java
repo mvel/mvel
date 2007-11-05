@@ -2479,6 +2479,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("foo", test("xStr = new String[5][5]; xStr[4][0] = 'foo'; xStr[4][0]"));
     }
 
+    public void testArrayConstructionSupport4() {
+        assertEquals(10, test("xStr = new String[5][10]; xStr[4][0] = 'foo'; xStr[4].length"));
+    }
+
 
     /**
      * MVEL-57 (Submitted by: Rognvald Eaversen) -- Slightly modified by cbrock to include a positive testcase.
