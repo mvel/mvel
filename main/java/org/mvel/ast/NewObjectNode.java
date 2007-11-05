@@ -1,29 +1,37 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
+import org.mvel.*;
 import static org.mvel.AbstractParser.getCurrentThreadParserContext;
-import org.mvel.Accessor;
-import org.mvel.CompileException;
-import org.mvel.ParserContext;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import org.mvel.util.ArrayTools;
 import static org.mvel.util.ArrayTools.findFirst;
+import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.*;
 
+import static java.lang.Character.isWhitespace;
 import static java.lang.Thread.currentThread;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  * @author Christopher Brock
  */
+@SuppressWarnings({"ManualArrayCopy"})
 public class NewObjectNode extends ASTNode {
     private transient Accessor newObjectOptimizer;
     private String className;
 
+    private ArraySize[] arraySize;
+    private CompiledExpression[] compiledArraySize;
+
     public NewObjectNode(char[] expr, int fields) {
         super(expr, fields);
 
-        updateClassName();
+        updateClassName(fields);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             ParserContext pCtx = getCurrentThreadParserContext();
@@ -40,13 +48,25 @@ public class NewObjectNode extends ASTNode {
             }
 
             if (egressType != null) {
-                rewriteClassReferenceToFQCN();
+                rewriteClassReferenceToFQCN(fields);
+
+
+                if (arraySize != null) {
+                    try {
+                        egressType = currentThread().getContextClassLoader()
+                                .loadClass(repeatChar('[', arraySize.length) + "L" + egressType.getName() + ";");
+                    }
+                    catch (Exception e) {
+                        // for now, don't handle this.
+                    }
+                }
             }
+
         }
 
     }
 
-    private void rewriteClassReferenceToFQCN() {
+    private void rewriteClassReferenceToFQCN(int fields) {
         String FQCN = egressType.getName();
 
         if (className.indexOf('.') == -1) {
@@ -55,17 +75,14 @@ public class NewObjectNode extends ASTNode {
             char[] fqcn = FQCN.toCharArray();
 
             if (idx == -1) {
-                //      arraycopy(FQCN.toCharArray(), 0, this.name = new char[idx = FQCN.length()], 0, idx);
                 this.name = new char[idx = fqcn.length];
-                for (int i = 0; i < idx; i++) {
+                for (int i = 0; i < idx; i++)
                     this.name[i] = fqcn[i];
-                }
+
 
             }
             else {
                 char[] newName = new char[fqcn.length + (name.length - idx)];
-//                arraycopy(FQCN.toCharArray(), 0, newName, 0, FQCN.length());
-//                arraycopy(name, idx, newName, FQCN.length(), (name.length - idx));
 
                 for (int i = 0; i < fqcn.length; i++)
                     newName[i] = fqcn[i];
@@ -77,17 +94,53 @@ public class NewObjectNode extends ASTNode {
 
                 this.name = newName;
             }
-            updateClassName();
+            updateClassName(fields);
         }
     }
 
-    private void updateClassName() {
+    private void updateClassName(int fields) {
         int endRange = findFirst('(', name);
         if (endRange == -1) {
+            if ((endRange = findFirst('[', name)) != -1) {
+                className = new String(name, 0, endRange);
+                int to;
+
+                LinkedList<char[]> sizes = new LinkedList<char[]>();
+
+                while (endRange < name.length) {
+                    while (endRange < name.length && isWhitespace(name[endRange])) endRange++;
+
+                    if (endRange == name.length) break;
+
+                    if (name[endRange] != '[')
+                        throw new CompileException("unexpected token in contstructor", name, endRange);
+
+                    if ((to = balancedCapture(name, endRange, '[')) == -1)
+                        throw new CompileException("unbalanced brace '['", name, endRange);
+
+                    sizes.add(ParseTools.subset(name, ++endRange, to - endRange));
+                    endRange = to + 1;
+                }
+
+                Iterator<char[]> iter = sizes.iterator();
+                arraySize = new ArraySize[sizes.size()];
+                for (int i = 0; i < arraySize.length; i++)
+                    arraySize[i] = new ArraySize(iter.next());
+
+
+                if ((fields & COMPILE_IMMEDIATE) != 0) {
+                    compiledArraySize = new CompiledExpression[arraySize.length];
+                    for (int i = 0; i < compiledArraySize.length; i++)
+                        compiledArraySize[i] = (CompiledExpression) ParseTools.subCompileExpression(arraySize[i].value);
+                }
+
+                return;
+            }
+
             className = new String(name);
         }
         else {
-            className = new String(name, 0, findFirst('(', name));
+            className = new String(name, 0, endRange);
         }
 
     }
@@ -103,12 +156,28 @@ public class NewObjectNode extends ASTNode {
                 if (factory != null && factory.isResolveable(className)) {
                     try {
                         egressType = (Class) factory.getVariableResolver(className).getValue();
-                        rewriteClassReferenceToFQCN();
+                        rewriteClassReferenceToFQCN(COMPILE_IMMEDIATE);
+
+                        if (arraySize != null) {
+                            try {
+                                egressType = currentThread().getContextClassLoader()
+                                        .loadClass(repeatChar('[', arraySize.length) + "L" + egressType.getName() + ";");
+                            }
+                            catch (Exception e) {
+                                // for now, don't handle this.
+                            }
+                        }
+
                     }
                     catch (ClassCastException e) {
                         throw new CompileException("cannot construct object: " + className + " is not a class reference", e);
                     }
                 }
+            }
+
+            if (arraySize != null) {
+                return (newObjectOptimizer = new NewObjectArray(egressType.getComponentType(), compiledArraySize))
+                        .getValue(ctx, thisValue, factory);
             }
 
 
@@ -128,12 +197,109 @@ public class NewObjectNode extends ASTNode {
         return newObjectOptimizer.getValue(ctx, thisValue, factory);
     }
 
+    private static final Class[] EMPTYCLS = new Class[0];
+
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
+
+        try {
+            if (arraySize != null) {
+                Class cls = findClass(factory, className);
+
+                int[] s = new int[arraySize.length];
+                for (int i = 0; i < s.length; i++) {
+                    s[i] = DataConversion.convert(MVEL.eval(arraySize[i].value, ctx, factory), Integer.class);
+                }
+
+                return Array.newInstance(cls, s);
+            }
+            else {
+                String[] cnsRes = captureContructorAndResidual(name);
+                String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
+
+                if (constructorParms != null) {
+                    Class cls = findClass(factory, new String(subset(name, 0, findFirst('(', name))));
+
+                    Object[] parms = new Object[constructorParms.length];
+                    for (int i = 0; i < constructorParms.length; i++) {
+                        parms[i] = MVEL.eval(constructorParms[i], ctx, factory);
+                    }
+
+                    Constructor cns = getBestConstructorCanadidate(parms, cls);
+
+                    if (cns == null)
+                        throw new CompileException("unable to find constructor for: " + cls.getName());
+
+                    for (int i = 0; i < parms.length; i++) {
+                        //noinspection unchecked
+                        parms[i] = DataConversion.convert(parms[i], cns.getParameterTypes()[i]);
+                    }
+
+                    if (cnsRes.length > 1) {
+                        return PropertyAccessor.get(cnsRes[1], cns.newInstance(parms), factory, thisValue);
+                    }
+                    else {
+                        return cns.newInstance(parms);
+                    }
+                }
+
+                else {
+                    Constructor<?> cns = currentThread().getContextClassLoader()
+                            .loadClass(new String(name)).getConstructor(EMPTYCLS);
+
+                    if (cnsRes.length > 1) {
+                        return PropertyAccessor.get(cnsRes[1], cns.newInstance(), factory, thisValue);
+                    }
+                    else {
+                        return cns.newInstance();
+                    }
+                }
+            }
+        }
+        catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            throw new CompileException("unable to resolve class: " + e.getMessage());
+        }
+        catch (NoSuchMethodException e) {
+            throw new CompileException("cannot resolve constructor: " + e.getMessage());
+        }
+        catch (Exception e) {
+            throw new CompileException("could not instantiate class: " + e.getMessage());
+        }
     }
 
 
     public Accessor getNewObjectOptimizer() {
         return newObjectOptimizer;
+    }
+
+    public static class ArraySize {
+        public ArraySize(char[] value) {
+            this.value = value;
+        }
+
+        public char[] value;
+    }
+
+    public static class NewObjectArray implements Accessor {
+        private CompiledExpression[] sizes;
+        private Class arrayType;
+
+        public NewObjectArray(Class arrayType, CompiledExpression[] sizes) {
+            this.arrayType = arrayType;
+            this.sizes = sizes;
+        }
+
+        public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+            int[] s = new int[sizes.length];
+            for (int i = 0; i < s.length; i++) {
+                s[i] = DataConversion.convert(sizes[i].getValue(ctx, elCtx, variableFactory), Integer.class);
+            }
+
+            return Array.newInstance(arrayType, s);
+        }
+
+        public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+            return null;
+        }
     }
 }
