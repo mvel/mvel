@@ -9,7 +9,9 @@ import org.mvel.util.ArrayTools;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
+import static org.mvel.util.PropertyTools.getBaseComponentType;
 
+import java.io.Serializable;
 import static java.lang.Character.isWhitespace;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Array;
@@ -26,7 +28,7 @@ public class NewObjectNode extends ASTNode {
     private String className;
 
     private ArraySize[] arraySize;
-    private CompiledExpression[] compiledArraySize;
+    private ExecutableStatement[] compiledArraySize;
 
     public NewObjectNode(char[] expr, int fields) {
         super(expr, fields);
@@ -129,9 +131,9 @@ public class NewObjectNode extends ASTNode {
 
 
                 if ((fields & COMPILE_IMMEDIATE) != 0) {
-                    compiledArraySize = new CompiledExpression[arraySize.length];
+                    compiledArraySize = new ExecutableStatement[arraySize.length];
                     for (int i = 0; i < compiledArraySize.length; i++)
-                        compiledArraySize[i] = (CompiledExpression) ParseTools.subCompileExpression(arraySize[i].value);
+                        compiledArraySize[i] = (ExecutableStatement) ParseTools.subCompileExpression(arraySize[i].value);
                 }
 
                 return;
@@ -176,7 +178,7 @@ public class NewObjectNode extends ASTNode {
             }
 
             if (arraySize != null) {
-                return (newObjectOptimizer = new NewObjectArray(egressType.getComponentType(), compiledArraySize))
+                return (newObjectOptimizer = new NewObjectArray(getBaseComponentType(egressType.getComponentType()), compiledArraySize))
                         .getValue(ctx, thisValue, factory);
             }
 
@@ -272,7 +274,7 @@ public class NewObjectNode extends ASTNode {
         return newObjectOptimizer;
     }
 
-    public static class ArraySize {
+    public static class ArraySize implements Serializable {
         public ArraySize(char[] value) {
             this.value = value;
         }
@@ -280,11 +282,11 @@ public class NewObjectNode extends ASTNode {
         public char[] value;
     }
 
-    public static class NewObjectArray implements Accessor {
-        private CompiledExpression[] sizes;
+    public static class NewObjectArray implements Accessor, Serializable {
+        private ExecutableStatement[] sizes;
         private Class arrayType;
 
-        public NewObjectArray(Class arrayType, CompiledExpression[] sizes) {
+        public NewObjectArray(Class arrayType, ExecutableStatement[] sizes) {
             this.arrayType = arrayType;
             this.sizes = sizes;
         }

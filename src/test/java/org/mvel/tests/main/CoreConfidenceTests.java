@@ -1,36 +1,7 @@
 package org.mvel.tests.main;
 
-import static java.lang.System.currentTimeMillis;
-import static org.mvel.MVEL.compileExpression;
-import static org.mvel.MVEL.eval;
-import static org.mvel.MVEL.evalToBoolean;
-import static org.mvel.MVEL.executeExpression;
-import static org.mvel.MVEL.parseMacros;
-
-import java.awt.Dimension;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-
-import org.mvel.ASTNode;
-import org.mvel.CompileException;
-import org.mvel.CompiledExpression;
-import org.mvel.ExpressionCompiler;
-import org.mvel.MVEL;
-import org.mvel.MVELRuntime;
-import org.mvel.Macro;
-import org.mvel.ParserContext;
-import org.mvel.PropertyAccessor;
+import org.mvel.*;
+import static org.mvel.MVEL.*;
 import org.mvel.ast.WithNode;
 import org.mvel.debug.DebugTools;
 import org.mvel.debug.Debugger;
@@ -43,18 +14,15 @@ import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
-import org.mvel.tests.main.res.Bar;
-import org.mvel.tests.main.res.Base;
-import org.mvel.tests.main.res.Cheese;
-import org.mvel.tests.main.res.DefaultKnowledgeHelper;
-import org.mvel.tests.main.res.Foo;
-import org.mvel.tests.main.res.KnowledgeHelper;
-import org.mvel.tests.main.res.PojoStatic;
-import org.mvel.tests.main.res.RuleBase;
-import org.mvel.tests.main.res.RuleBaseImpl;
-import org.mvel.tests.main.res.WorkingMemory;
-import org.mvel.tests.main.res.WorkingMemoryImpl;
+import org.mvel.tests.main.res.*;
 import org.mvel.util.MethodStub;
+
+import javax.swing.*;
+import java.awt.*;
+import java.io.Serializable;
+import static java.lang.System.currentTimeMillis;
+import java.util.*;
+import java.util.List;
 
 public class CoreConfidenceTests extends AbstractTest {
 
@@ -2499,6 +2467,19 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("a = 'foobar'; a[4] == 'a'"));
     }
 
+    public void testArrayConstructionSupport1() {
+        assertTrue(test("new String[5]") instanceof String[]);
+    }
+
+    public void testArrayConstructionSupport2() {
+        assertTrue((Boolean) test("xStr = new String[5]; xStr.size() == 5"));
+    }
+
+    public void testArrayConstructionSupport3() {
+        assertEquals("foo", test("xStr = new String[5][5]; xStr[4][0] = 'foo'; xStr[4][0]"));
+    }
+
+
     /**
      * MVEL-57 (Submitted by: Rognvald Eaversen) -- Slightly modified by cbrock to include a positive testcase.
      */
@@ -2561,26 +2542,26 @@ public class CoreConfidenceTests extends AbstractTest {
         Recipients result = (Recipients) MVEL.executeExpression(execution);
         assertEquals(recipients, result);
     }
-    
+
     public void testNestedWithInComplexGraph() {
         Recipients recipients = new Recipients();
-        
+
         Recipient recipient1 = new Recipient();
-        recipient1.setName( "user1" );
-        recipient1.setEmail( "user1@domain.com" );       
-        recipients.addRecipient( recipient1 );
-        
+        recipient1.setName("user1");
+        recipient1.setEmail("user1@domain.com");
+        recipients.addRecipient(recipient1);
+
         Recipient recipient2 = new Recipient();
-        recipient2.setName( "user2" );
-        recipient2.setEmail( "user2@domain.com" );     
-        recipients.addRecipient( recipient2 );
-        
+        recipient2.setName("user2");
+        recipient2.setEmail("user2@domain.com");
+        recipients.addRecipient(recipient2);
+
         EmailMessage msg = new EmailMessage();
-        msg.setRecipients( recipients );
-        msg.setFrom( "from@domain.com" );
-        
+        msg.setRecipients(recipients);
+        msg.setFrom("from@domain.com");
+
         String text = "(with ( new EmailMessage() ) { recipients = (with (new Recipients()) { recipients = [(with ( new Recipient() ) {name = 'user1', email = 'user1@domain.com'}), (with ( new Recipient() ) {name = 'user2', email = 'user2@domain.com'}) ] }), " +
-                      " from = 'from@domain.com' } )";
+                " from = 'from@domain.com' } )";
         ParserContext context = new ParserContext();
         context = new ParserContext();
         context.addImport(Recipient.class);
@@ -2591,7 +2572,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Serializable execution = compiler.compile(context);
         EmailMessage result = (EmailMessage) MVEL.executeExpression(execution);
         assertEquals(msg, result);
-        
+
     }
 
     public static class Recipient {
@@ -2701,9 +2682,9 @@ public class CoreConfidenceTests extends AbstractTest {
     public static class EmailMessage {
         private Recipients recipients;
         private String from;
-        
+
         public EmailMessage() {
-            
+
         }
 
         public Recipients getRecipients() {

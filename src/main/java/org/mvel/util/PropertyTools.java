@@ -363,4 +363,12 @@ public class PropertyTools {
         return -1;
     }
 
+    public static Class getBaseComponentType(Class cls) {
+        while (cls.isArray()) {
+            cls = cls.getComponentType();
+        }
+        return cls;
+    }
+
+
 }

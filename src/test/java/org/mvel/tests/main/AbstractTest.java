@@ -133,7 +133,10 @@ public abstract class AbstractTest extends TestCase {
 
                         if (a1.length == a2.length) {
                             for (int i = 0; i < a1.length; i++) {
-                                if (!a1[i].equals(a2[i])) {
+                                if (a1[i] == null && a2[i] == null) {
+                                    continue;
+                                }
+                                else if (!a1[i].equals(a2[i])) {
                                     throw new AssertionError("differing result in multi-thread test (first array has: " + valueOf(last) + "; second has: " + valueOf(o) + ")");
                                 }
                             }
