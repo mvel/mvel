@@ -4,6 +4,7 @@ import org.mvel.ConversionException;
 import org.mvel.ConversionHandler;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
+import static org.mvel.util.PropertyTools.getBaseComponentType;
 
 import static java.lang.reflect.Array.newInstance;
 import static java.lang.reflect.Array.set;
@@ -53,19 +54,19 @@ public class PrimArrayHandler implements ConversionHandler {
      * @return
      */
     private static Object handleLooseTypeConversion(Class sourceType, Object[] input, Class targetType) {
-        Class targType = targetType.getComponentType();
+        Class targType = getBaseComponentType(targetType);
 
         Object target = newInstance(targType, input.length);
 
         if (input.length > 0
-                && canConvert(targetType.getComponentType(), sourceType.getComponentType())) {
+                && canConvert(targetType.getComponentType(), getBaseComponentType(sourceType))) {
             for (int i = 0; i < input.length; i++) {
                 set(target, i, convert(input[i], targType));
             }
         }
         else {
             throw new ConversionException("cannot convert to type: "
-                    + targetType.getComponentType().getName() + "[] from " + sourceType.getComponentType().getName());
+                    + targetType.getComponentType().getName() + "[] from " + getBaseComponentType(sourceType).getName());
         }
 
         return target;

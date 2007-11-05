@@ -31,6 +31,7 @@ import org.mvel.optimizers.impl.refl.collection.ListCreator;
 import org.mvel.optimizers.impl.refl.collection.MapCreator;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
+import static org.mvel.util.PropertyTools.getBaseComponentType;
 import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
 
 import static java.lang.Integer.parseInt;
@@ -124,11 +125,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         int split = -1;
         for (int i = property.length - 1; i != 0; i--) {
             switch (property[i]) {
-                case'[':
+                case '[':
                     split = i;
                     col = true;
                     break;
-                case'.':
+                case '.':
                     split = i;
                     break;
             }
@@ -177,8 +178,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), value);
                     return new SetAccessor(rootAccessor, new ListAccessorNest(ex));
                 }
-                else if (ctx instanceof Object[]) {
-                    ((Object[]) ctx)[eval(ex, ctx, variableFactory, Integer.class)] = value;
+                else if (ctx.getClass().isArray()) {
+                    //noinspection unchecked
+                    Array.set(ctx, eval(ex, ctx, variableFactory, Integer.class), DataConversion.convert(value, getBaseComponentType(ctx.getClass())));
                     return new SetAccessor(rootAccessor, new ArrayAccessorNest(ex));
                 }
                 else {

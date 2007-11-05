@@ -375,7 +375,7 @@ public class ParseTools {
                     continue;
                 case ')':
                     if (1 == depth--) {
-                        return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i)};
+                        return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i).trim()};
                     }
             }
         }
