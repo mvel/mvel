@@ -330,7 +330,17 @@ public class ParseTools {
             return CLASS_RESOLVER_CACHE.get(classLoader).get(className);
         }
         else {
-            Class cls = currentThread().getContextClassLoader().loadClass(className);
+            Class cls;
+            try {
+                cls = currentThread().getContextClassLoader().loadClass(className);
+            }
+            catch (ClassNotFoundException e) {
+                /**
+                 * Now try the system classloader.
+                 */
+                cls = Class.forName(className);    
+            }
+
             CLASS_RESOLVER_CACHE.get(classLoader).put(className, cls);
             return cls;
         }

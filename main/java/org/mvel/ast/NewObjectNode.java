@@ -11,6 +11,7 @@ import org.mvel.util.ArrayTools;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
+import static org.mvel.util.ParseTools.findClass;
 import static org.mvel.util.PropertyTools.getBaseComponentType;
 
 import java.io.Serializable;
@@ -55,10 +56,10 @@ public class NewObjectNode extends ASTNode {
                 rewriteClassReferenceToFQCN(fields);
                 if (arraySize != null) {
                     try {
-                        egressType = currentThread().getContextClassLoader()
-                                .loadClass(repeatChar('[', arraySize.length) + "L" + egressType.getName() + ";");
+                        egressType = findClass(null, repeatChar('[', arraySize.length) + "L" + egressType.getName() + ";");
                     }
                     catch (Exception e) {
+                        e.printStackTrace();
                         // for now, don't handle this.
                     }
                 }
@@ -160,8 +161,7 @@ public class NewObjectNode extends ASTNode {
 
                         if (arraySize != null) {
                             try {
-                                egressType = currentThread().getContextClassLoader()
-                                        .loadClass(repeatChar('[', arraySize.length) + "L" + egressType.getName() + ";");
+                                egressType = findClass(factory, repeatChar('[', arraySize.length) + "L" + egressType.getName() + ";");
                             }
                             catch (Exception e) {
                                 // for now, don't handle this.
@@ -174,6 +174,8 @@ public class NewObjectNode extends ASTNode {
                     }
                 }
             }
+
+            Class cls = Class[].class;
 
             if (arraySize != null) {
                 return (newObjectOptimizer = new NewObjectArray(getBaseComponentType(egressType.getComponentType()), compiledArraySize))
