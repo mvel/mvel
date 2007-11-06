@@ -714,6 +714,9 @@ public class ParseTools {
         if (Character.class == cls)
             return DataTypes.W_CHAR;
 
+        if (BlankLiteral.class == cls)
+            return DataTypes.EMPTY;
+
 
         return DataTypes.OBJECT;
     }
