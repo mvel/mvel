@@ -189,9 +189,10 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 stk.push(holdOverRegister);
             }
         }
-        catch (CompileException e) {
-            throw new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0);
-        }
+//        catch (CompileException e) {
+//            throw e;
+//         //   throw new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0);
+//        }
         catch (NullPointerException e) {
             if (tk != null && tk.isOperator() && cursor >= length) {
                 throw new CompileException("incomplete statement: "

@@ -2758,6 +2758,12 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testSubEvaluation() {
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("EV_BER_BER_NR", "12345");
+        map.put("EV_BER_BER_PRIV", Boolean.FALSE);
+        System.out.println(MVEL.evalToString("EV_BER_BER_NR + ((EV_BER_BER_PRIV != empty && EV_BER_BER_PRIV == true) ? \"/PRIVAT\" : '')", map));
+    }
 
 }
 
