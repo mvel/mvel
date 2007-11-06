@@ -47,4 +47,9 @@ public class UtilsTests extends TestCase {
 //            testStringBuilder();
 //        }
 //    }
+
+
+    public static void main(String[] args) throws Exception {
+        Class.forName("[Ljava.lang.String;");
+    }
 }

@@ -32,7 +32,7 @@ import java.util.*;
  * This class contains much of the actual parsing code used by the core parser.
  */
 @SuppressWarnings({"ManualArrayCopy"})
-public class ParseTools {
+public class loaParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
     public static final MathProcessor MATH_PROCESSOR;
     public static final boolean JDK_14_COMPATIBILITY;
@@ -330,7 +330,17 @@ public class ParseTools {
             return CLASS_RESOLVER_CACHE.get(classLoader).get(className);
         }
         else {
-            Class cls = currentThread().getContextClassLoader().loadClass(className);
+            Class cls;
+            try {
+                cls = currentThread().getContextClassLoader().loadClass(className);
+            }
+            catch (ClassNotFoundException e) {
+                /**
+                 * Now try the system classloader.
+                 */
+                cls = Class.forName(className);    
+            }
+
             CLASS_RESOLVER_CACHE.get(classLoader).put(className, cls);
             return cls;
         }
