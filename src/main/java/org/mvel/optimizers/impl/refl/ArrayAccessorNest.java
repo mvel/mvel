@@ -5,6 +5,9 @@ import static org.mvel.DataConversion.convert;
 import org.mvel.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
+import static org.mvel.util.PropertyTools.getBaseComponentType;
+
+import java.lang.reflect.Array;
 
 public class ArrayAccessorNest implements AccessorNode {
     private AccessorNode nextNode;
@@ -33,7 +36,9 @@ public class ArrayAccessorNest implements AccessorNode {
 
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return ((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, variableFactory)] = convert(value, ctx.getClass().getComponentType());
+        Object o = convert(value, getBaseComponentType(ctx.getClass()));
+        Array.set(ctx, (Integer) index.getValue(ctx, elCtx, variableFactory), o);
+        return o;
     }
 
     public ExecutableStatement getIndex() {

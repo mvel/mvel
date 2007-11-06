@@ -30,11 +30,8 @@ import org.mvel.util.StringAppender;
 
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Character.isWhitespace;
+import java.lang.reflect.*;
 import static java.lang.reflect.Array.getLength;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
 import java.util.*;
 import static java.util.Collections.synchronizedMap;
 
@@ -226,8 +223,10 @@ public class PropertyAccessor {
                     //noinspection unchecked
                     ((List) curr).set(eval(ex, this.ctx, this.variableFactory, Integer.class), value);
                 }
-                else if (curr instanceof Object[]) {
-                    ((Object[]) curr)[eval(ex, this.ctx, this.variableFactory, Integer.class)] = convert(value, ctx.getClass().getComponentType());
+                else if (curr.getClass().isArray()) {
+                    Array.set(curr, eval(ex, this.ctx, this.variableFactory, Integer.class), convert(value, getBaseComponentType(curr.getClass())));
+
+                    //           ((Object[]) curr)[eval(ex, this.ctx, this.variableFactory, Integer.class)] = convert(value, ctx.getClass().getComponentType());
                 }
 
                 else {
@@ -293,11 +292,14 @@ public class PropertyAccessor {
 
     private int nextToken() {
         switch (property[start = cursor]) {
-            case'[':
+            case '[':
                 return COL;
-            case'.':
-                cursor = ++start;
+            case '.':
+                ++cursor;
         }
+
+        while (cursor < length && isWhitespace(property[cursor])) cursor++;
+        start = cursor;
 
         //noinspection StatementWithEmptyBody
         while (++cursor < length && isJavaIdentifierPart(property[cursor])) ;
@@ -305,9 +307,9 @@ public class PropertyAccessor {
         if (cursor < length) {
             while (isWhitespace(property[cursor])) cursor++;
             switch (property[cursor]) {
-                case'[':
+                case '[':
                     return COL;
-                case'(':
+                case '(':
                     return METH;
                 default:
                     return 0;
@@ -393,10 +395,14 @@ public class PropertyAccessor {
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
-        if (first && variableFactory != null && variableFactory.isResolveable(property)) {
-            return variableFactory.getVariableResolver(property).getValue();
+        if (first) {
+            if ("this".equals(property)) {
+                return this.thisReference;
+            }
+            else if (variableFactory != null && variableFactory.isResolveable(property)) {
+                return variableFactory.getVariableResolver(property).getValue();
+            }
         }
-
 
         Class cls;
         Member member = checkReadCache(cls = (ctx instanceof Class ? ((Class) ctx) : ctx.getClass()), property.hashCode());
@@ -428,8 +434,8 @@ public class PropertyAccessor {
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
             return ((Map) ctx).get(property);
         }
-        else if ("this".equals(property)) {
-            return this.thisReference;
+        else if ("length".equals(property) && ctx.getClass().isArray()) {
+            return Array.getLength(ctx);
         }
         else if (ctx instanceof Class) {
             Class c = (Class) ctx;
@@ -439,6 +445,7 @@ public class PropertyAccessor {
                 }
             }
         }
+
         throw new PropertyAccessException("could not access property (" + property + ")");
     }
 

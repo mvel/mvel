@@ -31,6 +31,7 @@ import java.util.*;
 /**
  * This class contains much of the actual parsing code used by the core parser.
  */
+@SuppressWarnings({"ManualArrayCopy"})
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
     public static final MathProcessor MATH_PROCESSOR;
@@ -374,7 +375,7 @@ public class ParseTools {
                     continue;
                 case ')':
                     if (1 == depth--) {
-                        return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i)};
+                        return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i).trim()};
                     }
             }
         }
@@ -646,13 +647,23 @@ public class ParseTools {
 
     public static char[] subset(char[] array, int start, int length) {
         char[] newArray = new char[length];
-        arraycopy(array, start, newArray, 0, length);
+        //  arraycopy(array, start, newArray, 0, length);
+
+        for (int i = 0; i < newArray.length; i++) {
+            newArray[i] = array[i + start];
+        }
+
         return newArray;
     }
 
     public static char[] subset(char[] array, int start) {
         char[] newArray = new char[array.length - start];
-        arraycopy(array, start, newArray, 0, newArray.length);
+        //    arraycopy(array, start, newArray, 0, newArray.length);
+
+        for (int i = 0; i < newArray.length; i++) {
+            newArray[i] = array[i + start];
+        }
+
         return newArray;
     }
 
@@ -702,6 +713,9 @@ public class ParseTools {
             return DataTypes.W_BYTE;
         if (Character.class == cls)
             return DataTypes.W_CHAR;
+
+        if (BlankLiteral.class == cls)
+            return DataTypes.EMPTY;
 
 
         return DataTypes.OBJECT;
@@ -1038,5 +1052,13 @@ public class ParseTools {
         }
 
         return compiled;
+    }
+
+    public static String repeatChar(char c, int times) {
+        char[] n = new char[times];
+        for (int i = 0; i < times; i++) {
+            n[i] = c;
+        }
+        return new String(n);
     }
 }

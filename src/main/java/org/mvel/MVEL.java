@@ -119,6 +119,7 @@ public class MVEL {
 
     @SuppressWarnings({"unchecked"})
     public static Object eval(String expression, Map tokens) {
+        System.out.println("eval<<" + expression + ">>");
         return new MVELInterpretedRuntime(expression, null, tokens).parse();
     }
 
@@ -208,7 +209,7 @@ public class MVEL {
         catch (EndWithValue e) {
             return handleParserEgress(e.getValue(), false);
         }
-    }                                 
+    }
 
     /**
      * Executes a compiled expression.

@@ -4,6 +4,7 @@ import org.mvel.CompileException;
 import org.mvel.ConversionException;
 import static org.mvel.DataConversion.convert;
 import org.mvel.DataTypes;
+import static org.mvel.DataTypes.EMPTY;
 import static org.mvel.Operator.*;
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
@@ -83,7 +84,8 @@ public class IEEEFloatingPointMath implements MathProcessor {
             else if ((type1 > 99 && (type2 > 99)) || (isNumber(val1) && isNumber(val2))) {
                 return doBigDecimalArithmetic(getBigDecimalFromType(val1, type1), operation, getBigDecimalFromType(val2, type2));
             }
-            else if (operation != ADD && (type1 == 15 || type2 == 15) && type1 != type2) {
+            else
+            if (operation != ADD && (type1 == 15 || type2 == 15) && type1 != type2 && type1 != EMPTY && type2 != EMPTY) {
                 return doOperationNonNumeric(convert(val1, Boolean.class), operation, convert(val2, Boolean.class));
             }
             // Fix for: MVEL-56

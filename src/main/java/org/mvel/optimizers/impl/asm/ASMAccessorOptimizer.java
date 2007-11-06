@@ -90,7 +90,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private Class returnType;
 
-    @SuppressWarnings({"StringBufferField"}) private StringAppender buildLog;
+    @SuppressWarnings({"StringBufferField"})
+    private StringAppender buildLog;
 
     public ASMAccessorOptimizer() {
         //do this to confirm we're running the correct version
@@ -409,11 +410,20 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
             return ((Map) ctx).get(property);
         }
-        else if ("this".equals(property)) {
+        else if (first && "this".equals(property)) {
             debug("ALOAD 2");
             mv.visitVarInsn(ALOAD, 2); // load the thisRef value.
 
             return this.thisRef;
+        }
+        else if ("length".equals(property) && ctx.getClass().isArray()) {
+            anyArrayCheck(ctx.getClass());
+
+            debug("ARRAYLENGTH");
+            mv.visitInsn(ARRAYLENGTH);
+
+            wrapPrimitive(int.class);
+            return getLength(ctx);
         }
         else if (LITERALS.containsKey(property)) {
             Object lit = LITERALS.get(property);

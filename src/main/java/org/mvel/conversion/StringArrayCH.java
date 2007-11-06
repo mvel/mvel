@@ -1,6 +1,5 @@
 package org.mvel.conversion;
 
-import org.mvel.ConversionException;
 import org.mvel.ConversionHandler;
 
 import java.util.HashMap;
@@ -12,9 +11,22 @@ public class StringArrayCH implements ConversionHandler {
 
 
     public Object convertFrom(Object in) {
-        if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
-                + in.getClass().getName() + " to: " + Boolean.class.getName());
-        return CNV.get(in.getClass()).convert(in);
+
+        if (in.getClass().isArray()) {
+
+            Object[] old = (Object[]) in;
+            String[] n = new String[old.length];
+            for (int i = 0; i < old.length; i++) {
+                n[i] = String.valueOf(old[i]);
+            }
+
+            return n;
+        }
+        else {
+            return new String[]{String.valueOf(in)};
+        }
+
+        //    return CNV.get(in.getClass()).convert(in);
     }
 
 
