@@ -211,15 +211,29 @@ public class ParseTools {
         return bestCandidate;
     }
 
+    public static Method getExactMatch(String name, Class[] args, Class returnType, Class cls) {
+        for (Method meth : cls.getMethods()) {
+            if (name.equals(meth.getName()) && returnType == meth.getReturnType()) {
+                Class[] parameterTypes = meth.getParameterTypes();
+                for (int i = 0; i < parameterTypes.length; i++) {
+                    if (parameterTypes[i] != args[i]) return null;
+                }
+                return meth;
+            }
+        }
+        return null;
+    }
+
     public static Method getWidenedTarget(Method method) {
         Class cls = method.getDeclaringClass();
         Method m = method;
         Class[] args = method.getParameterTypes();
         String name = method.getName();
+        Class rt = m.getReturnType();
 
         do {
             for (Class iface : cls.getInterfaces()) {
-                if ((m = getBestCandidate(args, name, iface.getMethods())) != null && m.getDeclaringClass().getSuperclass() != null) {
+                if ((m = getExactMatch(name, args, rt, iface)) != null && m.getDeclaringClass().getSuperclass() != null) {
                     cls = m.getDeclaringClass();
                 }
             }
@@ -338,7 +352,7 @@ public class ParseTools {
                 /**
                  * Now try the system classloader.
                  */
-                cls = Class.forName(className);    
+                cls = Class.forName(className);
             }
 
             CLASS_RESOLVER_CACHE.get(classLoader).put(className, cls);
