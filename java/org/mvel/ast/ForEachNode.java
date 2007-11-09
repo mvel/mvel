@@ -2,6 +2,7 @@ package org.mvel.ast;
 
 import org.mvel.CompileException;
 import org.mvel.ExecutableStatement;
+import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.ItemResolverFactory;
@@ -13,6 +14,8 @@ import static org.mvel.util.ParseTools.subset;
  */
 public class ForEachNode extends BlockNode {
     protected String item;
+
+    private char[] cond;
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
 
@@ -63,7 +66,43 @@ public class ForEachNode extends BlockNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
+//        return getReducedValueAccelerated(ctx, thisValue, factory);
+
+        ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver(item);
+        ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, new DefaultLocalVariableResolverFactory(factory));
+
+        Object iterCond = MVEL.eval(cond, thisValue, factory);
+
+        if (iterCond instanceof Iterable) {
+            for (Object o : (Iterable) iterCond) {
+                itemR.setValue(o);
+                compiledBlock.getValue(ctx, thisValue, itemFactory);
+            }
+        }
+        else if (iterCond instanceof Object[]) {
+            for (Object o : (Object[]) iterCond) {
+                itemR.setValue(o);
+                compiledBlock.getValue(ctx, thisValue, itemFactory);
+            }
+        }
+        else if (iterCond instanceof CharSequence) {
+            for (Object o : iterCond.toString().toCharArray()) {
+                itemR.setValue(o);
+                compiledBlock.getValue(ctx, thisValue, itemFactory);
+            }
+        }
+        else if (iterCond instanceof Integer) {
+            int max = (Integer) iterCond + 1;
+            for (int i = 1; i != max; i++) {
+                itemR.setValue(i);
+                compiledBlock.getValue(ctx, thisValue, itemFactory);
+            }
+        }
+        else {
+            throw new CompileException("non-iterable type: " + iterCond.getClass().getName());
+        }
+
+        return null;
     }
 
     private void handleCond(char[] condition) {
@@ -77,6 +116,6 @@ public class ForEachNode extends BlockNode {
 
         //  cursor++;
 
-        this.condition = (ExecutableStatement) subCompileExpression(subset(condition, ++cursor));
+        this.condition = (ExecutableStatement) subCompileExpression(this.cond = subset(condition, ++cursor));
     }
 }
