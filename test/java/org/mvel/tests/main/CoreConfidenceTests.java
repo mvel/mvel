@@ -2775,7 +2775,7 @@ public class CoreConfidenceTests extends AbstractTest {
         map.put("vecA", vectorA);
         map.put("vecB", vectorB);
 
-        test("vecB.add(vecA.remove(0)); vecA.add('Foo');", null, map);
+        MVEL.eval("vecB.add(vecA.remove(0)); vecA.add('Foo');", null, map);
 
         assertEquals("Foo", vectorB.get(0));
     }
