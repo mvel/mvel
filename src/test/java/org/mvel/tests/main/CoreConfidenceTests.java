@@ -2765,6 +2765,21 @@ public class CoreConfidenceTests extends AbstractTest {
         System.out.println(MVEL.evalToString("EV_BER_BER_NR + ((EV_BER_BER_PRIV != empty && EV_BER_BER_PRIV == true) ? \"/PRIVAT\" : '')", map));
     }
 
+    public void testNestedMethod1() {
+        Vector vectorA = new Vector();
+        Vector vectorB = new Vector();
+
+        vectorA.add("Foo");
+
+        Map map = new HashMap();
+        map.put("vecA", vectorA);
+        map.put("vecB", vectorB);
+
+        test("vecB.add(vecA.remove(0)); vecA.add('Foo');", null, map);
+
+        assertEquals("Foo", vectorB.get(0));
+    }
+
 }
 
 
