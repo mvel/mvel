@@ -259,18 +259,18 @@ public class PropertyTools {
 
     public static boolean isNumber(final String val) {
         int len = val.length();
-        char[] a = val.toCharArray();
+        //  char[] a = val.toCharArray();
         char c;
         int i = 0;
         if (len > 1) {
-            if (a[0] == '-') i++;
-            else if (a[0] == '~') {
+            if (val.charAt(0) == '-') i++;
+            else if (val.charAt(0) == '~') {
                 i++;
-                if (a[1] == '-') i++;
+                if (val.charAt(1) == '-') i++;
             }
         }
         for (; i < len; i++) {
-            if (!isDigit(c = a[i]) && c != '.') return false;
+            if (!isDigit(c = val.charAt(i)) && c != '.') return false;
         }
 
         return len > 0;
