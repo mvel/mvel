@@ -66,7 +66,6 @@ public class ForEachNode extends BlockNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-//        return getReducedValueAccelerated(ctx, thisValue, factory);
 
         ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver(item);
         ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, new DefaultLocalVariableResolverFactory(factory));
@@ -113,8 +112,6 @@ public class ForEachNode extends BlockNode {
             throw new CompileException("expected : in foreach");
 
         item = new String(condition, 0, cursor).trim();
-
-        //  cursor++;
 
         this.condition = (ExecutableStatement) subCompileExpression(this.cond = subset(condition, ++cursor));
     }

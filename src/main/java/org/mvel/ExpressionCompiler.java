@@ -109,7 +109,7 @@ public class ExpressionCompiler extends AbstractParser {
                             /**
                              * Reduce the token now.
                              */
-                            reduceTrinary();
+                            reduce();
 
                             firstLA = true;
 
@@ -129,7 +129,7 @@ public class ExpressionCompiler extends AbstractParser {
                                         && tkLA2.isLiteral()) {
 
                                     stk.push(tkLA2.getLiteralValue(), tkOp2.getLiteralValue());
-                                    reduceTrinary();
+                                    reduce();
                                     firstLA = false;
                                 }
                                 else {
@@ -240,7 +240,7 @@ public class ExpressionCompiler extends AbstractParser {
      * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
      * current state against 2 downrange structures (usually an op and a val).
      */
-    private void reduceTrinary() {
+    private void reduce() {
         Object v1 = null, v2 = null;
         Integer operator;
         try {
@@ -362,7 +362,7 @@ public class ExpressionCompiler extends AbstractParser {
                 if (tk != null) {
                     stk.push(v1, nextToken(), tk.getOperator());
 
-                    reduceTrinary();
+                    reduce();
                     return;
                 }
             }
@@ -418,10 +418,6 @@ public class ExpressionCompiler extends AbstractParser {
     public String getExpression() {
         return new String(expr);
     }
-
-//    private void setParserContext(ParserContext pCtx) {
-//        this.pCtx = pCtx;
-//    }
 
     public ParserContext getParserContextState() {
         return pCtx;

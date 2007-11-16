@@ -64,7 +64,6 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         }
     }
 
-
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
         VariableResolver vr = getVariableResolver(name);
         if (vr != null && vr.getType() != null) {
@@ -76,14 +75,6 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
             return vr;
         }
     }
-
-//    public VariableResolverFactory getNextFactory() {
-//        return nextFactory;
-//    }
-//
-//    public VariableResolverFactory setNextFactory(VariableResolverFactory resolverFactory) {
-//        return nextFactory = resolverFactory;
-//    }
 
     public VariableResolver getVariableResolver(String name) {
         if (variables.containsKey(name)) {

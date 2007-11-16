@@ -99,7 +99,7 @@ public class AbstractOptimizer extends AbstractParser {
         //noinspection StatementWithEmptyBody
         while (++cursor < length && isIdentifierPart(expr[cursor])) ;
 
-        if (cursor < length) {
+        if (cursor != length) {
             skipWhitespace();
             switch (expr[cursor]) {
                 case '[':
@@ -110,6 +110,7 @@ public class AbstractOptimizer extends AbstractParser {
                     return 0;
             }
         }
+
         return 0;
     }
 
@@ -123,11 +124,11 @@ public class AbstractOptimizer extends AbstractParser {
     protected void whiteSpaceSkip() {
         if (cursor < length)
             //noinspection StatementWithEmptyBody
-            while (isWhitespace(expr[cursor]) && ++cursor < length) ;
+            while (isWhitespace(expr[cursor]) && ++cursor != length) ;
     }
 
     protected boolean scanTo(char c) {
-        for (; cursor < length; cursor++) {
+        for (; cursor != length; cursor++) {
             if (expr[cursor] == c) {
                 return true;
             }
@@ -137,7 +138,7 @@ public class AbstractOptimizer extends AbstractParser {
 
     protected int containsStringLiteralTermination() {
         int pos = cursor;
-        for (pos--; pos > 0; pos--) {
+        for (pos--; pos != 0; pos--) {
             if (expr[pos] == '\'' || expr[pos] == '"') return pos;
             else if (!isWhitespace(expr[pos])) return pos;
         }
