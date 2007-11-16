@@ -198,13 +198,13 @@ public class AbstractParser implements Serializable {
             /**
              * Skip any whitespace currently under the starting point.
              */
-            while (start < length && isWhitespace(expr[start])) start++;
+            while (start != length && isWhitespace(expr[start])) start++;
 
             /**
              * From here to the end of the method is the core MVEL parsing code.  Fiddling around here is asking for
              * trouble unless you really know what you're doing.
              */
-            for (cursor = start; cursor < length;) {
+            for (cursor = start; cursor != length;) {
                 if (isIdentifierPart(expr[cursor])) {
                     /**
                      * If the current character under the cursor is a valid
@@ -310,7 +310,7 @@ public class AbstractParser implements Serializable {
                      * a contiguous token.
                      */
                     String name;
-                    if (cursor < length) {
+                    if (cursor != length) {
                         switch (expr[cursor]) {
                             case '+':
                                 switch (lookAhead()) {
@@ -483,10 +483,10 @@ public class AbstractParser implements Serializable {
                                 captureToEOT();
                                 return lastNode = new PreFixDecNode(subArray(start, cursor), fields);
                             }
-                            else if ((cursor > 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
+                            else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
                                 return createToken(expr, start, cursor++ + 1, fields);
                             }
-                            else if ((cursor - 1) < 0 || (!isDigit(lookBehind())) && isDigit(lookAhead())) {
+                            else if ((cursor - 1) != 0 || (!isDigit(lookBehind())) && isDigit(lookAhead())) {
                                 cursor++;
                                 break;
                             }
@@ -516,7 +516,7 @@ public class AbstractParser implements Serializable {
                                 /**
                                  * Handle single line comments.
                                  */
-                                while (cursor < length && expr[cursor] != '\n') cursor++;
+                                while (cursor != length && expr[cursor] != '\n') cursor++;
 
                                 if (debugSymbols) {
                                     line = getParserContext().getLineCount();
@@ -532,7 +532,7 @@ public class AbstractParser implements Serializable {
 
                                     getParserContext().setLineCount(line);
                                 }
-                                else if (cursor < length) {
+                                else if (cursor != length) {
                                     skipWhitespace();
                                 }
 
@@ -604,7 +604,7 @@ public class AbstractParser implements Serializable {
                             boolean lastWS = false;
 
                             skipWhitespace();
-                            for (brace = 1; cursor < length && brace > 0; cursor++) {
+                            for (brace = 1; cursor != length && brace > 0; cursor++) {
                                 switch (expr[cursor]) {
                                     case '(':
                                         brace++;
@@ -622,13 +622,13 @@ public class AbstractParser implements Serializable {
                                     case 'i':
                                         if (isNext('n') && isWhitespace(lookAhead(2))) {
                                             fields |= ASTNode.FOLD;
-                                            for (int level = brace; cursor < length; cursor++) {
+                                            for (int level = brace; cursor != length; cursor++) {
                                                 switch (expr[cursor]) {
                                                     case '(':
                                                         brace++;
                                                         break;
                                                     case ')':
-                                                        if (--brace < level) {
+                                                        if (--brace != level) {
                                                             if (lookAhead() == '.') {
                                                                 lastNode = createToken(expr, trimRight(start + 1), (start = cursor++), ASTNode.FOLD);
                                                                 captureToEOT();
@@ -840,7 +840,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected ASTNode handleUnion(ASTNode node) {
-        if (cursor < length) {
+        if (cursor != length) {
             skipWhitespace();
             if (expr[cursor] == '.') {
                 int union = cursor + 1;
@@ -875,7 +875,7 @@ public class AbstractParser implements Serializable {
 
         char[] newA = new char[end - start];
         //     arraycopy(expr, start, newA, 0, newA.length);
-        for (int i = 0; i < newA.length; i++)
+        for (int i = 0; i != newA.length; i++)
             newA[i] = expr[i + start];
 
         return newA;
@@ -960,7 +960,7 @@ public class AbstractParser implements Serializable {
 
                 if (first == null) first = tk;
 
-                if (cursor < length && expr[cursor] != ';') {
+                if (cursor != length && expr[cursor] != ';') {
                     cursor++;
                 }
             }
@@ -1076,20 +1076,20 @@ public class AbstractParser implements Serializable {
         else if (isWhitespace(expr[cursor])) {
             int markCurrent = cursor;
             skipWhitespace();
-            if (cursor < length && (expr[cursor] == '.' || expr[cursor] == '[')) return true;
+            if (cursor != length && (expr[cursor] == '.' || expr[cursor] == '[')) return true;
             cursor = markCurrent;
         }
         return false;
     }
 
     protected void captureToEOS() {
-        while (cursor < length && expr[cursor] != ';') {
+        while (cursor != length && expr[cursor] != ';') {
             cursor++;
         }
     }
 
     protected void captureToEOLorOF() {
-        while (cursor < length && (expr[cursor] != '\n' && expr[cursor] != '\r' && expr[cursor] != ';')) {
+        while (cursor != length && (expr[cursor] != '\n' && expr[cursor] != '\r' && expr[cursor] != ';')) {
             cursor++;
         }
     }
@@ -1097,7 +1097,7 @@ public class AbstractParser implements Serializable {
 
     protected void captureToEOT() {
         skipWhitespace();
-        while (++cursor < length) {
+        while (++cursor != length) {
             switch (expr[cursor]) {
                 case '(':
                 case '[':
@@ -1122,7 +1122,7 @@ public class AbstractParser implements Serializable {
                         skipWhitespace();
 
                         if (expr[cursor] == '.') {
-                            if (cursor < length) cursor++;
+                            if (cursor != length) cursor++;
                             skipWhitespace();
                             break;
                         }
@@ -1141,16 +1141,16 @@ public class AbstractParser implements Serializable {
     }
 
     protected int trimRight(int pos) {
-        while (pos < length && isWhitespace(expr[pos])) pos++;
+        while (pos != length && isWhitespace(expr[pos])) pos++;
         return pos;
     }
 
     protected void skipWhitespace() {
-        while (cursor < length && isWhitespace(expr[cursor])) cursor++;
+        while (cursor != length && isWhitespace(expr[cursor])) cursor++;
     }
 
     protected void skipWhitespaceWithLineAccounting() {
-        while (cursor < length && isWhitespace(expr[cursor])) {
+        while (cursor != length && isWhitespace(expr[cursor])) {
             switch (expr[cursor]) {
                 case '\r':
                     cursor++;
@@ -1165,7 +1165,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected void skipToNextTokenJunction() {
-        while (cursor < length) {
+        while (cursor != length) {
             switch (expr[cursor]) {
                 case '{':
                 case '(':
@@ -1197,7 +1197,7 @@ public class AbstractParser implements Serializable {
 
                 char[] e = new char[length];
                 //arraycopy(this.expr, 0, e, 0, length);
-                for (int i = 0; i < e.length; i++)
+                for (int i = 0; i != e.length; i++)
                     e[i] = expr[i];
 
                 EX_PRECACHE.put(expression, e);
@@ -1234,7 +1234,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected char lookAhead() {
-        if (cursor < length) return expr[cursor + 1];
+        if (cursor != length) return expr[cursor + 1];
         return 0;
     }
 
@@ -1247,12 +1247,12 @@ public class AbstractParser implements Serializable {
 
     protected boolean isStatementManuallyTerminated() {
         int c = cursor;
-        while (c < length && isWhitespace(expr[c])) c++;
-        return (c < length && expr[c] == ';');
+        while (c != length && isWhitespace(expr[c])) c++;
+        return (c != length && expr[c] == ';');
     }
 
     protected boolean isRemain(int range) {
-        return (cursor + range) < length;
+        return (cursor + range) != length;
     }
 
     protected boolean isNext(char c) {

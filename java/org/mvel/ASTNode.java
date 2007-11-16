@@ -51,12 +51,11 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int THISREF = 1 << 14;
     public static final int INLINE_COLLECTION = 1 << 15;
     public static final int STR_LITERAL = 1 << 16;
-    // public static final int BLOCK = 1 << 17;
+
     public static final int BLOCK_IF = 1 << 18;
     public static final int BLOCK_FOREACH = 1 << 19;
     public static final int BLOCK_WITH = 1 << 20;
-    //public static final int TYPED = 1 << 21;
-    //public static final int RETURN = 1 << 22;
+
     public static final int INTEGER32 = 1 << 23;
 
     protected int firstUnion;
@@ -92,7 +91,6 @@ public class ASTNode implements Cloneable, Serializable {
         for (int i = 0; i < name.length; i++)
             name[i] = expr[i + start];
 
-        //     arraycopy(expr, start, name, 0, end - start);
         setName(name);
     }
 

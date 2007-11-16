@@ -182,7 +182,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 
-                reduceTrinary();
+                reduce();
             }
 
             if (holdOverRegister != null) {
@@ -214,7 +214,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
      * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
      * current state against 2 downrange structures (usually an op and a val).
      */
-    private void reduceTrinary() {
+    private void reduce() {
         Object v1 = null, v2 = null;
         Integer operator;
         try {
@@ -330,7 +330,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 if (tk != null) {
                     stk.push(v1, nextToken(), tk.getOperator());
 
-                    reduceTrinary();
+                    reduce();
                     return;
                 }
             }
