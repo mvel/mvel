@@ -273,7 +273,7 @@ public class AbstractParser implements Serializable {
                          * reduction to be dealt with through sub-parsing the property.
                          */
                         cursor++;
-                        for (brace = 1; cursor < length && brace > 0;) {
+                        for (brace = 1; cursor != length && brace != 0;) {
                             switch (expr[cursor++]) {
                                 case '(':
                                     brace++;
@@ -301,7 +301,7 @@ public class AbstractParser implements Serializable {
                          * unbalanced braces in the expression.  So we throw a
                          * optimize error now.
                          */
-                        if (brace > 0)
+                        if (brace != 0)
                             throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
                     }
 
@@ -604,7 +604,7 @@ public class AbstractParser implements Serializable {
                             boolean lastWS = false;
 
                             skipWhitespace();
-                            for (brace = 1; cursor != length && brace > 0; cursor++) {
+                            for (brace = 1; cursor != length && brace != 0; cursor++) {
                                 switch (expr[cursor]) {
                                     case '(':
                                         brace++;
@@ -668,7 +668,7 @@ public class AbstractParser implements Serializable {
                                 }
                             }
 
-                            if (brace > 0) {
+                            if (brace != 0) {
                                 throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
                             }
 
@@ -776,7 +776,7 @@ public class AbstractParser implements Serializable {
                         }
 
                         case '~':
-                            if ((cursor - 1 < 0 || !isIdentifierPart(lookBehind()))
+                            if ((cursor - 1 != 0 || !isIdentifierPart(lookBehind()))
                                     && isDigit(expr[cursor + 1])) {
 
                                 fields |= ASTNode.INVERT;
@@ -1136,7 +1136,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected int trimLeft(int pos) {
-        while (pos > 0 && isWhitespace(expr[pos - 1])) pos--;
+        while (pos != 0 && isWhitespace(expr[pos - 1])) pos--;
         return pos;
     }
 
@@ -1178,7 +1178,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected void trimWhitespace() {
-        while (cursor > 0 && isWhitespace(expr[cursor - 1])) cursor--;
+        while (cursor != 0 && isWhitespace(expr[cursor - 1])) cursor--;
     }
 
     protected ASTNode captureTokenToEOS() {
