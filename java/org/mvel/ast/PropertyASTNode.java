@@ -7,6 +7,7 @@ import org.mvel.util.ThisLiteral;
 /**
  * @author Christopher Brock
  */
+@SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class PropertyASTNode extends ASTNode {
     private transient ASTNode wrappedNode;
 

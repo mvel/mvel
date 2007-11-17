@@ -17,6 +17,7 @@ import static java.lang.Character.isWhitespace;
 import static java.lang.Float.parseFloat;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
+import static java.lang.Thread.currentThread;
 import static java.util.Collections.synchronizedMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +46,7 @@ public class AbstractParser implements Serializable {
     private static Map<String, char[]> EX_PRECACHE;
 
     public static final Map<String, Object> LITERALS =
-            new HashMap<String, Object>(35, 0.4f);
+            new HashMap<String, Object>(35 * 2, 0.4f);
 
     public static final Map<String, Integer> OPERATORS =
             new HashMap<String, Integer>(25 * 2, 0.4f);
@@ -117,7 +118,7 @@ public class AbstractParser implements Serializable {
 
         if (parseFloat(getProperty("java.version").substring(0, 2)) >= 1.5) {
             try {
-                LITERALS.put("StringBuilder", Thread.currentThread().getContextClassLoader().loadClass("java.lang.StringBuilder"));
+                LITERALS.put("StringBuilder", currentThread().getContextClassLoader().loadClass("java.lang.StringBuilder"));
             }
             catch (Exception e) {
                 throw new RuntimeException("cannot resolve a built-in literal", e);
@@ -647,8 +648,6 @@ public class AbstractParser implements Serializable {
                                                         break;
                                                 }
                                             }
-
-
                                         }
                                         break;
 
@@ -874,7 +873,6 @@ public class AbstractParser implements Serializable {
         if (start >= end) return new char[0];
 
         char[] newA = new char[end - start];
-        //     arraycopy(expr, start, newA, 0, newA.length);
         for (int i = 0; i != newA.length; i++)
             newA[i] = expr[i + start];
 
