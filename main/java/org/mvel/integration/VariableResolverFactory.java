@@ -20,6 +20,11 @@ package org.mvel.integration;
 
 import java.util.Set;
 
+/**
+ * A VariableResolverFactory is the primary integration point for tying in external variables.  The factory is
+ * responsible for returing {@link org.mvel.integration.VariableResolver}'s to the MVEL runtime.  Factories are
+ * also structured in a chain to maintain locality-of-reference.
+ */
 public interface VariableResolverFactory {
     /**
      * Creates a new variable.  This probably doesn't need to be implemented in most scenarios.  This is
@@ -32,6 +37,15 @@ public interface VariableResolverFactory {
     public VariableResolver createVariable(String name, Object value);
 
 
+    /**
+     * Creates a new variable, and assigns a static type. It is expected the underlying factory and resolver
+     * will enforce this.
+     *
+     * @param name  - name of the variable being created
+     * @param value - value of the variable
+     * @param type  - the static type
+     * @return instance of the variable resolver associated with the variable
+     */
     public VariableResolver createVariable(String name, Object value, Class<?> type);
 
     /**
@@ -87,6 +101,7 @@ public interface VariableResolverFactory {
     /**
      * Return a list of known variables inside the factory.  This method should not recurse into other factories.
      * But rather return only the variables living inside this factory.
+     *
      * @return
      */
     public Set<String> getKnownVariables();

@@ -26,7 +26,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Use this class to extend you own VariableResolverFactories.
+ * Use this class to extend you own VariableResolverFactories. It contains most of the baseline implementation needed
+ * for the vast majority of integration needs.
  */
 public abstract class BaseVariableResolverFactory implements VariableResolverFactory {
     protected Map<String, VariableResolver> variableResolvers;

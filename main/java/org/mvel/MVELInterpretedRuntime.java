@@ -189,10 +189,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 stk.push(holdOverRegister);
             }
         }
-//        catch (CompileException e) {
-//            throw e;
-//         //   throw new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0);
-//        }
+
         catch (NullPointerException e) {
             if (tk != null && tk.isOperator() && cursor >= length) {
                 throw new CompileException("incomplete statement: "
@@ -460,15 +457,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
         setExpression(expression);
         this.ctx = ctx;
     }
-
-//    private void chainFactory(VariableResolverFactory factory) {
-//        VariableResolverFactory vrf = variableFactory;
-//        while (vrf.getNextFactory() != null) {
-//            vrf = vrf.getNextFactory();
-//        }
-//        vrf.setNextFactory(factory);
-//    }
-
 
     protected boolean hasImport(String name) {
         if (getParserContext().hasImport(name)) {
