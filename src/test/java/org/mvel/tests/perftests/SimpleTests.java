@@ -36,15 +36,19 @@ public class SimpleTests {
         PrintStream ps = System.out;
 
         System.setOut(new PrintStream(new NullOutputStream()));
+        System.setErr(new PrintStream(new NullOutputStream()));
 
         testSuite.run(result);
+        long time;
 
-        long time = System.currentTimeMillis();
-        testSuite.run(result);
+        for (int i = 0; i < 100; i++) {
+            time = System.currentTimeMillis();
+            testSuite.run(result);
+            ps.println("Result: " + (System.currentTimeMillis() - time));
+        }
 
         System.setOut(ps);
 
-        System.out.println("Result: " + (System.currentTimeMillis() - time));
 
     }
 
