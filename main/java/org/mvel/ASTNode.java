@@ -265,10 +265,8 @@ public class ASTNode implements Cloneable, Serializable {
                      * Since this clearly is a class literal, we change the nature of theis node to
                      * make it a literal to prevent re-evaluation.
                      */
-                    literal = valRet(literal);
                     fields |= LITERAL;
-
-                    return literal;
+                    return literal = valRet(literal);
                 }
             }
         }
@@ -438,10 +436,8 @@ public class ASTNode implements Cloneable, Serializable {
             return;
         }
         else if (isNumber(name)) {
-            fields |= NUMERIC | LITERAL | IDENTIFIER;
             egressType = (literal = handleNumericConversion(name)).getClass();
-
-            if ((fields & INVERT) != 0) {
+            if (((fields |= NUMERIC | LITERAL | IDENTIFIER) & INVERT) != 0) {
                 try {
                     literal = ~((Integer) literal);
                 }
