@@ -234,16 +234,13 @@ public class AbstractParser implements Serializable {
                                 return lastNode = new ReturnNode(subArray(start, cursor), fields);
 
                             case IF:
-                                fields |= ASTNode.BLOCK_IF;
-                                return captureCodeBlock();
+                                return captureCodeBlock(ASTNode.BLOCK_IF);
 
                             case FOREACH:
-                                fields |= ASTNode.BLOCK_FOREACH;
-                                return captureCodeBlock();
+                                return captureCodeBlock(ASTNode.BLOCK_FOREACH);
 
                             case WITH:
-                                fields |= ASTNode.BLOCK_WITH;
-                                return captureCodeBlock();
+                                return captureCodeBlock(ASTNode.BLOCK_WITH);
 
                             case IMPORT:
                                 start = cursor + 1;
@@ -259,12 +256,13 @@ public class AbstractParser implements Serializable {
                         }
                     }
 
+
+                    skipWhitespace();
+
                     /**
                      * If we *were* capturing a token, and we just hit a non-identifier
                      * character, we stop and figure out what to do.
                      */
-                    skipWhitespace();
-
                     if (cursor != length && expr[cursor] == '(') {
                         fields |= ASTNode.METHOD;
 
@@ -284,7 +282,7 @@ public class AbstractParser implements Serializable {
                                     break;
 
                                     /**
-                                     * String literals need to be skipped over or encountering a ')' in a String
+                                     * String literals need to be skipped over, or encountering a ')' in a String
                                      * will cause an explosion.
                                      */
                                 case '\'':
@@ -912,7 +910,7 @@ public class AbstractParser implements Serializable {
     }
 
     private ASTNode createBlockToken(final int condStart,
-                                     final int condEnd, final int blockStart, final int blockEnd) {
+                                     final int condEnd, final int blockStart, final int blockEnd, int type) {
 
         lastWasIdentifier = false;
 
@@ -922,63 +920,63 @@ public class AbstractParser implements Serializable {
             splitAccumulator.add(new EndOfStatement());
         }
 
-        if (isFlag(ASTNode.BLOCK_IF)) {
-            return new IfNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
-        }
-        else if (isFlag(ASTNode.BLOCK_FOREACH)) {
-            return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
-        }
-        // DONT'T REMOVE THIS COMMENT!
-        //       else if (isFlag(ASTNode.BLOCK_WITH)) {
-        else {
-            return new WithNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+        switch (type) {
+            case ASTNode.BLOCK_IF:
+                return new IfNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+            case ASTNode.BLOCK_FOREACH:
+                return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+            default:
+                return new WithNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
     }
 
-    private ASTNode captureCodeBlock() {
+    private ASTNode captureCodeBlock(int type) {
         boolean cond = true;
 
         ASTNode first = null;
         ASTNode tk = null;
 
-        if (isFlag(ASTNode.BLOCK_IF)) {
-            do {
-                if (tk != null) {
-                    skipToNextTokenJunction();
+        switch (type) {
+            case ASTNode.BLOCK_IF: {
+                do {
+                    if (tk != null) {
+                        skipToNextTokenJunction();
+                        skipWhitespace();
+
+                        cond = expr[cursor] != '{' && expr[cursor] == 'i' && expr[++cursor] == 'f'
+                                && (isWhitespace(expr[++cursor]) || expr[cursor] == '(');
+                    }
+
+                    if (((IfNode) (tk = _captureBlock(tk, expr, cond, type))).getElseBlock() != null) {
+                        cursor++;
+                        return first;
+                    }
+
+                    if (first == null) first = tk;
+
+                    if (cursor != length && expr[cursor] != ';') {
+                        cursor++;
+                    }
+                }
+                while (blockContinues());
+                return first;
+            }
+
+            default: // either BLOCK_WITH or BLOCK_FOREACH
+
+                skipToNextTokenJunction();
+                if (debugSymbols) {
+                    skipWhitespaceWithLineAccounting();
+                }
+                else {
                     skipWhitespace();
-
-                    cond = expr[cursor] != '{' && expr[cursor] == 'i' && expr[++cursor] == 'f'
-                            && (isWhitespace(expr[++cursor]) || expr[cursor] == '(');
                 }
-
-                if (((IfNode) (tk = _captureBlock(tk, expr, cond))).getElseBlock() != null) {
-                    cursor++;
-                    return first;
-                }
-
-                if (first == null) first = tk;
-
-                if (cursor != length && expr[cursor] != ';') {
-                    cursor++;
-                }
-            }
-            while (blockContinues());
-        }
-        else if (isFlag(ASTNode.BLOCK_FOREACH) || isFlag(ASTNode.BLOCK_WITH)) {
-            skipToNextTokenJunction();
-            if (debugSymbols) {
-                skipWhitespaceWithLineAccounting();
-            }
-            else {
-                skipWhitespace();
-            }
-            return _captureBlock(null, expr, true);
+                return _captureBlock(null, expr, true, type);
         }
 
-        return first;
     }
 
-    private ASTNode _captureBlock(ASTNode node, final char[] expr, boolean cond) {
+    private ASTNode _captureBlock(ASTNode node, final char[] expr, boolean cond, int type) {
         skipWhitespace();
         int startCond = 0;
         int endCond = 0;
@@ -1033,7 +1031,7 @@ public class AbstractParser implements Serializable {
             blockEnd = cursor + 1;
         }
 
-        if (isFlag(ASTNode.BLOCK_IF)) {
+        if (type == ASTNode.BLOCK_IF) {
             IfNode ifNode = (IfNode) node;
 
             if (node != null) {
@@ -1042,18 +1040,17 @@ public class AbstractParser implements Serializable {
                 }
                 else {
                     return ifNode.setElseIf((IfNode) createBlockToken(startCond, endCond, trimRight(blockStart + 1),
-                            trimLeft(blockEnd)));
+                            trimLeft(blockEnd), type));
                 }
             }
             else {
-                return createBlockToken(startCond, endCond, blockStart + 1,
-                        blockEnd);
+                return createBlockToken(startCond, endCond, blockStart + 1, blockEnd, type);
             }
         }
         // DON"T REMOVE THIS COMMENT!
         // else if (isFlag(ASTNode.BLOCK_FOREACH) || isFlag(ASTNode.BLOCK_WITH)) {
         else {
-            return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd));
+            return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd), type);
         }
     }
 
@@ -1150,12 +1147,10 @@ public class AbstractParser implements Serializable {
     protected void skipWhitespaceWithLineAccounting() {
         while (cursor != length && isWhitespace(expr[cursor])) {
             switch (expr[cursor]) {
+                case '\n':
+                    line++;
                 case '\r':
                     cursor++;
-                    continue;
-                case '\n':
-                    cursor++;
-                    line++;
                     continue;
             }
             cursor++;
