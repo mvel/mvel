@@ -84,6 +84,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private Object val;
     private int stacksize = 1;
+    private int maxlocals = 1;
     private long time;
 
     private ArrayList<ExecutableStatement> compiledInputs;
@@ -179,7 +180,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
         debug("\n{METHOD STATS (maxstack=" + stacksize + ")}\n");
-        mv.visitMaxs(stacksize, 1);
+        mv.visitMaxs(stacksize, maxlocals);
 
         mv.visitEnd();
 
@@ -1403,39 +1404,39 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    private void writeOutLiteral(Object lit) {
-        if (lit instanceof Integer) {
-            intPush((Integer) lit);
-            return;
-        }
-
-
-        debug("LDC " + lit);
-        if (lit instanceof String) {
-            mv.visitLdcInsn(lit);
-        }
-        else if (lit instanceof Long) {
-            mv.visitLdcInsn(lit);
-        }
-        else if (lit instanceof Float) {
-            mv.visitLdcInsn(lit);
-        }
-        else if (lit instanceof Double) {
-            mv.visitLdcInsn(lit);
-        }
-        else if (lit instanceof Short) {
-            mv.visitLdcInsn(lit);
-        }
-        else if (lit instanceof Character) {
-            mv.visitLdcInsn(lit);
-        }
-        else if (lit instanceof Boolean) {
-            mv.visitLdcInsn(lit);
-        }
-        else if (lit instanceof Byte) {
-            mv.visitLdcInsn(lit);
-        }
-    }
+//    private void writeOutLiteral(Object lit) {
+//        if (lit instanceof Integer) {
+//            intPush((Integer) lit);
+//            return;
+//        }
+//
+//
+//        debug("LDC " + lit);
+//        if (lit instanceof String) {
+//            mv.visitLdcInsn(lit);
+//        }
+//        else if (lit instanceof Long) {
+//            mv.visitLdcInsn(lit);
+//        }
+//        else if (lit instanceof Float) {
+//            mv.visitLdcInsn(lit);
+//        }
+//        else if (lit instanceof Double) {
+//            mv.visitLdcInsn(lit);
+//        }
+//        else if (lit instanceof Short) {
+//            mv.visitLdcInsn(lit);
+//        }
+//        else if (lit instanceof Character) {
+//            mv.visitLdcInsn(lit);
+//        }
+//        else if (lit instanceof Boolean) {
+//            mv.visitLdcInsn(lit);
+//        }
+//        else if (lit instanceof Byte) {
+//            mv.visitLdcInsn(lit);
+//        }
+//    }
 
 
     private void ldcClassConstant(Class cls) {
@@ -1505,17 +1506,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         debug("}");
     }
 
-    private int cnum = 3;
-    private int lastCnum = 0;
-
     private static final int ARRAY = 0;
     private static final int LIST = 1;
     private static final int MAP = 2;
     private static final int VAL = 3;
 
 
-    private int _getAccessor(Object o, int type, int register, int index) {
-        int c;
+    private int _getAccessor(Object o, int type) {
+        int c = 0;
 
         if (o instanceof List) {
             debug("NEW " + LIST_IMPL);
@@ -1524,19 +1522,20 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("DUP");
             mv.visitInsn(DUP);
 
+            debug("DUP");
+            mv.visitInsn(DUP);
+
+            stacksize += 2;
+
             intPush(((List) o).size());
             debug("INVOKESPECIAL " + LIST_IMPL + ".<init>");
             mv.visitMethodInsn(INVOKESPECIAL, LIST_IMPL, "<init>", "(I)V");
-            debug("ASTORE " + (cnum + 1));
-            mv.visitVarInsn(ASTORE, c = ++cnum);
+
 
             for (Object item : (List) o) {
-                if (_getAccessor(item, LIST, c, 0) != VAL) {
-                    debug("ALOAD " + c);
-                    mv.visitVarInsn(ALOAD, c);
-
-                    debug("ALOAD " + lastCnum);
-                    mv.visitVarInsn(ALOAD, lastCnum);
+                if (_getAccessor(item, LIST) != VAL) {
+                    debug("POP");
+                    mv.visitInsn(POP);
                 }
 
                 debug("INVOKEINTERFACE java/util/List.add");
@@ -1544,9 +1543,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 debug("POP");
                 mv.visitInsn(POP);
+
+                debug("DUP");
+                mv.visitInsn(DUP);
             }
 
-            lastCnum = c;
             return LIST;
         }
         else if (o instanceof Map) {
@@ -1556,38 +1557,39 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("DUP");
             mv.visitInsn(DUP);
 
+            debug("DUP");
+            mv.visitInsn(DUP);
+
+            stacksize += 2;
+
             intPush(((Map) o).size());
 
             debug("INVOKESPECIAL " + MAP_IMPL + ".<init>");
             mv.visitMethodInsn(INVOKESPECIAL, MAP_IMPL, "<init>", "(I)V");
 
-            debug("ASTORE " + (cnum + 1));
-            mv.visitVarInsn(ASTORE, c = ++cnum);
-
-            int firstParm;
-
             for (Object item : ((Map) o).keySet()) {
-                _getAccessor(item, MAP, c, 0);
-                firstParm = lastCnum;
+                mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 
-                _getAccessor(((Map) o).get(item), MAP, c, 0);
-                debug("ALOAD " + c);
-                mv.visitVarInsn(ALOAD, c);
-
-                debug("ALOAD " + firstParm + " (" + ((Map) o).get(item) + ")");
-                mv.visitVarInsn(ALOAD, firstParm);
-
-                debug("ALOAD " + lastCnum + " (" + item + ")");
-                mv.visitVarInsn(ALOAD, lastCnum);
+                if (_getAccessor(item, MAP) != VAL) {
+                    debug("POP");
+                    mv.visitInsn(POP);
+                }
+                if (_getAccessor(((Map) o).get(item), MAP) != VAL) {
+                    debug("POP");
+                    mv.visitInsn(POP);
+                }
 
                 debug("INVOKEINTERFACE java/util/Map.put");
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
                 debug("POP");
                 mv.visitInsn(POP);
+
+                debug("DUP");
+                mv.visitInsn(DUP);
+
             }
 
-            lastCnum = c;
             return MAP;
         }
         else if (o instanceof Object[]) {
@@ -1596,25 +1598,29 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("ANEWARRAY (" + o.hashCode() + ")");
             mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
 
-            debug("ASTORE " + (cnum + 1));
-            mv.visitVarInsn(ASTORE, c = ++cnum);
+            debug("DUP");
+            mv.visitInsn(DUP);
+
+            stacksize++;
 
             int i = 0;
             for (Object item : (Object[]) o) {
-                if (_getAccessor(item, ARRAY, c, i) != VAL) {
-                    debug("ALOAD " + c);
-                    mv.visitVarInsn(ALOAD, c);
-                    intPush(i);
-                    debug("ALOAD + " + lastCnum);
-                    mv.visitVarInsn(ALOAD, lastCnum);
+                intPush(i);
+
+                if (_getAccessor(item, ARRAY) != VAL) {
+                    debug("POP");
+                    mv.visitInsn(POP);
                 }
 
                 debug("AASTORE (" + o.hashCode() + ")");
                 mv.visitInsn(AASTORE);
+
+                debug("DUP");
+                mv.visitInsn(DUP);
+
                 i++;
             }
 
-            lastCnum = c;
             return ARRAY;
         }
         else {
@@ -1622,14 +1628,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             switch (type) {
                 case ARRAY:
-                    debug("ALOAD " + register);
-                    mv.visitVarInsn(ALOAD, register);
-                    intPush(index);
+                    //      intPush(index);
                     break;
 
                 case LIST:
-                    debug("ALOAD " + register);
-                    mv.visitVarInsn(ALOAD, register);
                     break;
             }
 
@@ -1656,15 +1658,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
             }
 
-            switch (type) {
-                case MAP:
-                    debug("ASTORE " + (cnum + 1) + "(" + o + ")");
-                    mv.visitVarInsn(ASTORE, lastCnum = ++cnum);
-            }
 
             return VAL;
 
         }
+    }
+
+    private void addPrintOut(String text) {
+        mv.visitFieldInsn(GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+        mv.visitLdcInsn(text);
+        mv.visitMethodInsn(INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V");
     }
 
 
@@ -1682,10 +1685,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         _initJIT();
 
-        _getAccessor(o, LIST, 0, 0);
+        _getAccessor(o, LIST);
 
-        debug("ALOAD 4");
-        mv.visitVarInsn(ALOAD, 4);
+//        debug("ALOAD 4");
+//        mv.visitVarInsn(ALOAD, 4);
 
         _finishJIT();
 

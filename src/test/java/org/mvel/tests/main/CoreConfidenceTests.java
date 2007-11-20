@@ -474,6 +474,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(3, test("{1,2,3}.size()"));
     }
 
+    public void testSimpleListCreation() {
+        test("['foo', 'bar', 'foobar', 'FOOBAR']");
+    }
+
 
     public void testStaticMethodFromLiteral() {
         assertEquals(String.class.getName(), test("String.valueOf(Class.forName('java.lang.String').getName())"));
@@ -2391,6 +2395,23 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("footrue", test("\"foo\" + true"));
     }
 
+    public void testAssignPlus() {
+        assertEquals(10, test("xx0 = 5; xx0 += 4; xx0 + 1"));
+    }
+
+    public void testAssignDiv() {
+        assertEquals(2, test("xx0 = 20; xx0 /= 10; xx0"));
+    }
+
+    public void testAssignMult() {
+        assertEquals(36, test("xx0 = 6; xx0 *= 6; xx0"));
+    }
+
+    public void testAssignSub() {
+        assertEquals(11, test("xx0 = 15; xx0 -= 4; xx0"));
+    }
+
+
     public void testFail() {
 
         Map map = new HashMap();
@@ -2762,7 +2783,11 @@ public class CoreConfidenceTests extends AbstractTest {
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("EV_BER_BER_NR", "12345");
         map.put("EV_BER_BER_PRIV", Boolean.FALSE);
-        System.out.println(MVEL.evalToString("EV_BER_BER_NR + ((EV_BER_BER_PRIV != empty && EV_BER_BER_PRIV == true) ? \"/PRIVAT\" : '')", map));
+
+        assertEquals("12345", test("EV_BER_BER_NR + ((EV_BER_BER_PRIV != empty && EV_BER_BER_PRIV == true) ? \"/PRIVAT\" : '')", null, map));
+
+        map.put("EV_BER_BER_PRIV", Boolean.TRUE);
+        assertEquals("12345/PRIVAT", test("EV_BER_BER_NR + ((EV_BER_BER_PRIV != empty && EV_BER_BER_PRIV == true) ? \"/PRIVAT\" : '')", null, map));
     }
 
     public void testNestedMethod1() {
@@ -2775,7 +2800,7 @@ public class CoreConfidenceTests extends AbstractTest {
         map.put("vecA", vectorA);
         map.put("vecB", vectorB);
 
-        MVEL.eval("vecB.add(vecA.remove(0)); vecA.add('Foo');", null, map);
+        test("vecB.add(vecA.remove(0)); vecA.add('Foo');", null, map);
 
         assertEquals("Foo", vectorB.get(0));
     }
@@ -2783,14 +2808,16 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testNegativeArraySizeBug() throws Exception {
         String expressionString1 = "results = new java.util.ArrayList(); foreach (element : elements) { if( ( {30, 214, 158, 31, 95, 223, 213, 86, 159, 34, 32, 96, 224, 160, 85, 201, 29, 157, 100, 146, 82, 203, 194, 145, 140, 81, 27, 166, 212, 38, 28, 94, 168, 23, 87, 150, 35, 149, 193, 33, 132, 206, 93, 196, 24, 88, 195, 36, 26, 154, 167, 108, 204, 74, 46, 25, 153, 202, 79, 207, 143, 43, 16, 80, 198, 208, 144, 41, 97, 142, 83, 18, 162, 103, 155, 98, 44, 17, 205, 77, 156, 141, 165, 102, 84, 37, 101, 222, 40, 104, 99, 177, 182, 22, 180, 21, 137, 221, 179, 78, 42, 178, 19, 183, 139, 218, 219, 39, 220, 20, 184, 217, 138, 62, 190, 171, 123, 113, 59, 118, 225, 124, 169, 60, 117, 1} contains element.attribute ) ) { results.add(element); } }; results";
         String expressionString2 = "results = new java.util.ArrayList(); foreach (element : elements) { if( ( {30, 214, 158, 31, 95, 223, 213, 86, 159, 34, 32, 96, 224, 160, 85, 201, 29, 157, 100, 146, 82, 203, 194, 145, 140, 81, 27, 166, 212, 38, 28, 94, 168, 23, 87, 150, 35, 149, 193, 33, 132, 206, 93, 196, 24, 88, 195, 36, 26, 154, 167, 108, 204, 74, 46, 25, 153, 202, 79, 207, 143, 43, 16, 80, 198, 208, 144, 41, 97, 142, 83, 18, 162, 103, 155, 98, 44, 17, 205, 77, 156, 141, 165, 102, 84, 37, 101, 222, 40, 104, 99, 177, 182, 22, 180, 21, 137, 221, 179, 78, 42, 178, 19, 183, 139, 218, 219, 39, 220, 20, 184, 217, 138, 62, 190, 171, 123, 113, 59, 118, 225, 124, 169, 60, 117, 1, 61, 189, 122, 68, 58, 119, 63, 226, 3, 172} contains element.attribute ) ) { results.add(element); } }; results";
-        Target target = new Target(1);
+
         List<Target> targets = new ArrayList<Target>();
-        targets.add(target);
+        targets.add(new Target(1));
+        targets.add(new Target(999));
 
         Map vars = new HashMap();
         vars.put("elements", targets);
-        List<Target> filteredList = (List<Target>) MVEL.eval(expressionString2,
-                vars);
+
+        assertEquals(1, ((List) test(expressionString1, null, vars)).size());
+        assertEquals(1, ((List) test(expressionString2, null, vars)).size());
     }
 
     public static final class Target {
