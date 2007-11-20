@@ -18,7 +18,6 @@ public class InlineCollectionNode extends ASTNode {
         super(expr, start, end, fields | INLINE_COLLECTION);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            //   AccessorOptimizer ao = OptimizerFactory.getAccessorCompiler(OptimizerFactory.SAFE_REFLECTIVE);
             AccessorOptimizer ao = OptimizerFactory.getDefaultAccessorCompiler();
             accessor = ao.optimizeCollection(name, null, null, null);
             egressType = ao.getEgressType();
