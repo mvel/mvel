@@ -360,6 +360,7 @@ public abstract class AbstractTest extends TestCase {
         ObjectInputStream objectIn = null;
         try {
             file.createNewFile();
+            file.deleteOnExit();
 
             FileOutputStream fileStream = new FileOutputStream(file);
             ObjectOutputStream objectOut = new ObjectOutputStream(new BufferedOutputStream(fileStream));
@@ -378,7 +379,7 @@ public abstract class AbstractTest extends TestCase {
         finally {
             if (inputStream != null) inputStream.close();
             if (objectIn != null) objectIn.close();
-            file.delete();
+            // file.delete();
         }
 
     }
