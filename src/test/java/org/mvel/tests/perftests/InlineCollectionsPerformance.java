@@ -15,17 +15,18 @@ public class InlineCollectionsPerformance {
         for (int i = 0; i < 4; i++) {
             time = System.currentTimeMillis();
             testJavaList();
-            System.out.println("Java:" + (System.currentTimeMillis() - time));
+            System.out.println("Java: " + (System.currentTimeMillis() - time));
 
             time = System.currentTimeMillis();
             testJavaList();
             System.out.println("MVEL: " + (System.currentTimeMillis() - time));
+            System.out.println();
         }
 
     }
 
     public static void testMVELList() {
-        Serializable s = MVEL.compileExpression("['Foo', 'Bar','Foo', 'Bar','Foo', 'Bar','Foo', 'Bar','Foo', 'Bar']");
+        Serializable s = MVEL.compileExpression("['Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar']");
         for (int i = 0; i < COUNT; i++) {
             MVEL.executeExpression(s);
         }
