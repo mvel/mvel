@@ -530,7 +530,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         debug("{collection token:<<" + tk + ">>}");
 
         boolean literal = false;
-        ExecutableStatement compiled = (ExecutableStatement) ParseTools.subCompileExpression(tk);
+        ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk);
         Object item;
 
         if (compiled instanceof ExecutableLiteral) {
@@ -724,7 +724,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             preConvArgs = new Object[es.length];
 
             for (int i = 0; i < subtokens.length; i++) {
-                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) ParseTools.subCompileExpression(subtokens[i])).getValue(this.ctx, this.thisRef, variableFactory);
+                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i])).getValue(this.ctx, this.thisRef, variableFactory);
             }
         }
 
@@ -1512,9 +1512,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private static final int VAL = 3;
 
 
-    private int _getAccessor(Object o, int type) {
-        int c = 0;
-
+    private int _getAccessor(Object o) {
         if (o instanceof List) {
             debug("NEW " + LIST_IMPL);
             mv.visitTypeInsn(NEW, LIST_IMPL);
@@ -1533,7 +1531,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
 
             for (Object item : (List) o) {
-                if (_getAccessor(item, LIST) != VAL) {
+                if (_getAccessor(item) != VAL) {
                     debug("POP");
                     mv.visitInsn(POP);
                 }
@@ -1570,11 +1568,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             for (Object item : ((Map) o).keySet()) {
                 mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 
-                if (_getAccessor(item, MAP) != VAL) {
+                if (_getAccessor(item) != VAL) {
                     debug("POP");
                     mv.visitInsn(POP);
                 }
-                if (_getAccessor(((Map) o).get(item), MAP) != VAL) {
+                if (_getAccessor(((Map) o).get(item)) != VAL) {
                     debug("POP");
                     mv.visitInsn(POP);
                 }
@@ -1607,7 +1605,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             for (Object item : (Object[]) o) {
                 intPush(i);
 
-                if (_getAccessor(item, ARRAY) != VAL) {
+                if (_getAccessor(item) != VAL) {
                     debug("POP");
                     mv.visitInsn(POP);
                 }
@@ -1624,44 +1622,36 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return ARRAY;
         }
         else {
-            ExecutableStatement stmt = (ExecutableStatement) ParseTools.subCompileExpression((String) o);
-
-            switch (type) {
-                case ARRAY:
-                    //      intPush(index);
-                    break;
-
-                case LIST:
-                    break;
-            }
-
-            if (stmt instanceof ExecutableLiteral) {
-                writeOutLiteralWrapped(((ExecutableLiteral) stmt).getLiteral());
-            }
-            else {
-                compiledInputs.add(stmt);
-
-                debug("ALOAD 0");
-                mv.visitVarInsn(ALOAD, 0);
-
-                debug("GETFIELD p" + (compiledInputs.size() - 1));
-                mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/ExecutableStatement;");
-
-                debug("ALOAD 2");
-                mv.visitVarInsn(ALOAD, 2);
-
-                debug("ALOAD 3");
-                mv.visitVarInsn(ALOAD, 3);
-
-                debug("INVOKEINTERFACE ExecutableStatement.getValue");
-                mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(ExecutableStatement.class), "getValue",
-                        "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
-            }
-
-
+            writeLiteralOrSubexpression(subCompileExpression((String) o));
             return VAL;
-
         }
+    }
+
+    private void writeLiteralOrSubexpression(Object stmt) {
+        if (stmt instanceof ExecutableLiteral) {
+            writeOutLiteralWrapped(((ExecutableLiteral) stmt).getLiteral());
+        }
+        else {
+            compiledInputs.add((ExecutableStatement) stmt);
+
+            debug("ALOAD 0");
+            mv.visitVarInsn(ALOAD, 0);
+
+            debug("GETFIELD p" + (compiledInputs.size() - 1));
+            mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/ExecutableStatement;");
+
+            debug("ALOAD 2");
+            mv.visitVarInsn(ALOAD, 2);
+
+            debug("ALOAD 3");
+            mv.visitVarInsn(ALOAD, 3);
+
+            debug("INVOKEINTERFACE ExecutableStatement.getValue");
+            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(ExecutableStatement.class), "getValue",
+                    "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+        }
+
+
     }
 
     private void addPrintOut(String text) {
@@ -1685,10 +1675,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         _initJIT();
 
-        _getAccessor(o, LIST);
-
-//        debug("ALOAD 4");
-//        mv.visitVarInsn(ALOAD, 4);
+        _getAccessor(o);
 
         _finishJIT();
 
@@ -1767,7 +1754,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         try {
             if (constructorParms != null) {
                 for (String constructorParm : constructorParms) {
-                    compiledInputs.add((ExecutableStatement) ParseTools.subCompileExpression(constructorParm));
+                    compiledInputs.add((ExecutableStatement) subCompileExpression(constructorParm));
                 }
 
                 String s = new String(subset(property, 0, findFirst('(', property)));
