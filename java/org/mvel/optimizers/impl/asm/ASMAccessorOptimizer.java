@@ -1338,8 +1338,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return;
         }
 
-        literal = false;
-
         debug("LDC " + lit);
         if (lit instanceof String) {
             mv.visitLdcInsn(lit);
@@ -1617,6 +1615,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return type;
         }
         else {
+            literal = false;
+
             compiledInputs.add((ExecutableStatement) stmt);
 
             debug("ALOAD 0");
