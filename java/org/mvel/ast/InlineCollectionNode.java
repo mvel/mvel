@@ -1,7 +1,6 @@
 package org.mvel.ast;
 
 import org.mvel.ASTNode;
-import org.mvel.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
@@ -12,7 +11,7 @@ import static org.mvel.optimizers.OptimizerFactory.getAccessorCompiler;
  * @author Christopher Brock
  */
 public class InlineCollectionNode extends ASTNode {
-    private transient Accessor accessor;
+    //   private transient Accessor accessor;
 
     public InlineCollectionNode(char[] expr, int start, int end, int fields) {
         super(expr, start, end, fields | INLINE_COLLECTION);
