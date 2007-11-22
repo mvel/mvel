@@ -1,12 +1,13 @@
 package org.mvel.tests.perftests;
 
+import ognl.Node;
+import ognl.Ognl;
+import ognl.OgnlContext;
 import org.mvel.ExecutableAccessor;
 import org.mvel.MVEL;
-import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.util.FastList;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 
 public class InlineCollectionsPerformance {
@@ -22,6 +23,10 @@ public class InlineCollectionsPerformance {
 //
 
             time = System.currentTimeMillis();
+            testOGNLList();
+            System.out.println("OGNL2.7 : " + (System.currentTimeMillis() - time));
+
+            time = System.currentTimeMillis();
             testMVELList();
             System.out.println("MVEL    : " + (System.currentTimeMillis() - time));
             System.out.println();
@@ -30,17 +35,32 @@ public class InlineCollectionsPerformance {
     }
 
     public static void testMVELList() {
-        Map vals = new HashMap();
-        vals.put("a", "BARFOO");
 
-        MapVariableResolverFactory mvr = new MapVariableResolverFactory(vals);
-        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("['Foo':'Bar',a:'Bar','Foo1':'Bar','Foo2':'Bar','Foo3':'Bar']");
-        Map map;
-        s.getNode().getReducedValueAccelerated(null, null, mvr);
+        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("['Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar']");
+        List list;
+        s.getNode().getReducedValueAccelerated(null, null, null);
         for (int i = 0; i < COUNT; i++) {
-            map = (Map) s.getNode().getAccessor().getValue(null, null, mvr);
+            list = (List) s.getNode().getAccessor().getValue(null, null, null);
 
-            assert "Bar".equals(map.get("BARFOO")) && map.size() == 5;
+            assert "Foo".equals(list.get(0)) && "Foo".equals(list.get(2)) && list.size() == 10;
+        }
+    }
+
+    public static void testOGNLList() {
+        OgnlContext context = (OgnlContext) Ognl.createDefaultContext(null);
+        Node node;
+        try {
+            node = Ognl.compileExpression(context, null, "{'Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar'}");
+        }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        List list;
+        for (int i = 0; i < COUNT; i++) {
+            list = (List) node.getAccessor().get(null, null);
+
+            assert "Foo".equals(list.get(0)) && "Foo".equals(list.get(2)) && list.size() == 10;
         }
     }
 
