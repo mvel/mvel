@@ -1491,7 +1491,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("DUP");
             mv.visitInsn(DUP);
 
-            stacksize += 2;
+            //      stacksize += 2;
 
             intPush(((List) o).size());
             debug("INVOKESPECIAL " + LIST_IMPL + ".<init>");
@@ -1526,7 +1526,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("DUP");
             mv.visitInsn(DUP);
 
-            stacksize += 2;
+            //     stacksize += 2;
 
             intPush(((Map) o).size());
 
@@ -1567,7 +1567,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("DUP");
             mv.visitInsn(DUP);
 
-            stacksize++;
+            //      stacksize++;
 
             int i = 0;
             for (Object item : (Object[]) o) {
