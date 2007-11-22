@@ -27,6 +27,6 @@ public class CachedListAccessor implements Accessor {
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 }
