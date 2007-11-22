@@ -4,7 +4,6 @@ import org.mvel.*;
 import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel.AbstractParser.isReservedWord;
 import static org.mvel.DataConversion.canConvert;
-import org.mvel.ast.InlineCollectionNode;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
@@ -1071,9 +1070,8 @@ public class ParseTools {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
             }
-            if (tk.isIdentifier() || tk instanceof InlineCollectionNode) {
-                return new ExecutableAccessor(tk, false);
-            }
+            return new ExecutableAccessor(tk, false);
+
         }
 
         return compiled;

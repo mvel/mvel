@@ -79,6 +79,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private boolean first = true;
     private boolean deferFinish = false;
+    private boolean literal = false;
 
     private String className;
     private ClassWriter cw;
@@ -1337,6 +1338,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return;
         }
 
+        literal = false;
 
         debug("LDC " + lit);
         if (lit instanceof String) {
@@ -1666,7 +1668,19 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         _initJIT();
 
-        _getAccessor(o);
+        literal = true;
+
+        switch (_getAccessor(o)) {
+            case LIST:
+                this.returnType = List.class;
+                break;
+            case MAP:
+                this.returnType = Map.class;
+                break;
+            case ARRAY:
+                this.returnType = Object[].class;
+                break;
+        }
 
         _finishJIT();
 
@@ -1880,5 +1894,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 // --
             }
         }
+    }
+
+    public boolean isLiteralOnly() {
+        return literal;
     }
 }

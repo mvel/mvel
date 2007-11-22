@@ -56,6 +56,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     private static final Class[] EMPTYCLS = new Class[0];
 
     private boolean first = true;
+    private boolean literal = false;
 
     private static final Map<Integer, Accessor> REFLECTIVE_ACCESSOR_CACHE =
             new WeakHashMap<Integer, Accessor>();
@@ -807,4 +808,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         return returnType;
     }
 
+    public boolean isLiteralOnly() {
+        return literal;
+    }
 }

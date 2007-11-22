@@ -36,4 +36,6 @@ public interface AccessorOptimizer {
     public Object getResultOptPass();
 
     public Class getEgressType();
+
+    public boolean isLiteralOnly();
 }
