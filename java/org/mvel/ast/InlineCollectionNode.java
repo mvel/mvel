@@ -14,16 +14,9 @@ import java.util.List;
  * @author Christopher Brock
  */
 public class InlineCollectionNode extends ASTNode {
-    //   private transient Accessor accessor;
-
     public InlineCollectionNode(char[] expr, int start, int end, int fields) {
         super(expr, start, end, fields | INLINE_COLLECTION);
-
-//        if ((fields & COMPILE_IMMEDIATE) != 0) {
-//
-//        }
     }
-
 
     public InlineCollectionNode(char[] expr, int fields) {
         super(expr, fields);
@@ -37,12 +30,11 @@ public class InlineCollectionNode extends ASTNode {
             if (accessor == null) {
                 AccessorOptimizer ao = OptimizerFactory.getDefaultAccessorCompiler();
                 accessor = ao.optimizeCollection(name, ctx, thisValue, factory);
-
                 egressType = ao.getEgressType();
 
                 if (ao.isLiteralOnly()) {
                     if (egressType == List.class) {
-                        List v = (List) accessor.getValue(ctx, thisValue, factory);
+                        List v = (List) accessor.getValue(null, null, null);
                         accessor = new CachedListAccessor(v);
                         return v;
                     }

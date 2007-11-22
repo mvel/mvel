@@ -2,8 +2,8 @@ package org.mvel.ast.cache;
 
 import org.mvel.Accessor;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.FastList;
 
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -14,7 +14,6 @@ public class CachedListAccessor implements Accessor {
         cached = new Object[toCache.size()];
         for (int i = 0; i < cached.length; i++)
             cached[i] = toCache.get(i);
-
     }
 
     public CachedListAccessor(Object[] cached) {
@@ -22,8 +21,10 @@ public class CachedListAccessor implements Accessor {
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        return Arrays.asList(cached);
+        // return Arrays.asList(cached);
 
+
+        return new FastList(cached);
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
