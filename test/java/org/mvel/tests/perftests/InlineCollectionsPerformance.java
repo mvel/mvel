@@ -45,29 +45,29 @@ public class InlineCollectionsPerformance {
 //        }
 //    }
 
-    public static void testMVELList() {
-
-        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("{'Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar'}");
-        Object[] list;
-        s.getNode().getReducedValueAccelerated(null, null, null);
-        for (int i = 0; i < COUNT; i++) {
-            list = (Object[]) s.getNode().getAccessor().getValue(null, null, null);
-
-            //     assert "Foo".equals(list.get(0)) && "Foo".equals(list.get(2)) && list.size() == 10;
-        }
-    }
-
 //    public static void testMVELList() {
 //
-//        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("['Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar']");
-//        List list;
+//        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("{'Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar'}");
+//        Object[] list;
 //        s.getNode().getReducedValueAccelerated(null, null, null);
 //        for (int i = 0; i < COUNT; i++) {
-//            list = (List) s.getNode().getAccessor().getValue(null, null, null);
+//            list = (Object[]) s.getNode().getAccessor().getValue(null, null, null);
 //
-//            assert "Foo".equals(list.get(0)) && "Foo".equals(list.get(2)) && list.size() == 10;
+//            //     assert "Foo".equals(list.get(0)) && "Foo".equals(list.get(2)) && list.size() == 10;
 //        }
 //    }
+
+    public static void testMVELList() {
+
+        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("['Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar']");
+        List list;
+        s.getNode().getReducedValueAccelerated(null, null, null);
+        for (int i = 0; i < COUNT; i++) {
+            list = (List) s.getNode().getAccessor().getValue(null, null, null);
+
+            assert "Foo".equals(list.get(0)) && "Foo".equals(list.get(2)) && list.size() == 10;
+        }
+    }
 
     public static void testOGNLList() {
         OgnlContext context = (OgnlContext) Ognl.createDefaultContext(null);
