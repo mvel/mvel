@@ -48,6 +48,8 @@ import java.util.Map;
 /**
  * Implementation of the MVEL Just-in-Time (JIT) compiler for Property Accessors using the ASM bytecode
  * engineering library.
+ * <p/>
+ * TODO: This class needs serious re-factoring.
  */
 public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
     private static final String MAP_IMPL = "java/util/HashMap";
@@ -529,18 +531,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         debug("{collection token:<<" + tk + ">>}");
 
-        boolean literal = false;
         ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk);
-        Object item;
-
-        if (compiled instanceof ExecutableLiteral) {
-            literal = true;
-            item = ((ExecutableLiteral) compiled).getLiteral();
-        }
-        else {
-            item = compiled.getValue(ctx, variableFactory);
-            compiledInputs.add(compiled);
-        }
+        Object item = compiled.getValue(ctx, variableFactory);
 
         ++cursor;
 
@@ -558,12 +550,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return ((Map) ctx).get(item);
             }
             else {
-                if (!literal) {
-                    valueFromSubExpression();
-                }
-                else {
-                    writeOutLiteralWrapped(item);
-                }
+                writeLiteralOrSubexpression(compiled);
 
                 debug("INVOKEINTERFACE: get");
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
@@ -584,12 +571,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return ((List) ctx).get((Integer) item);
             }
             else {
-                if (!literal) {
-                    valueFromSubExpression();
-                }
-                else {
-                    writeOutLiteralWrapped(item);
-                }
+                writeLiteralOrSubexpression(compiled);
 
                 debug("INVOKEINTERFACE: java/util/List.get");
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
@@ -612,14 +594,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return ((Object[]) ctx)[(Integer) item];
             }
             else {
-                if (!literal) {
-                    valueFromSubExpression();
-                }
-                else {
-                    writeOutLiteralWrapped(item);
-                }
-
-                dataConversion(Integer.class);
+                writeLiteralOrSubexpression(compiled, Integer.class);
                 unwrapPrimitive(int.class);
 
                 debug("AALOAD");
@@ -644,14 +619,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return ((CharSequence) ctx).charAt((Integer) item);
             }
             else {
-                if (!literal) {
-                    valueFromSubExpression();
-                }
-                else {
-                    writeOutLiteralWrapped(item);
-                }
-
-                dataConversion(Integer.class);
+                writeLiteralOrSubexpression(compiled, Integer.class);
                 unwrapPrimitive(int.class);
 
                 debug("INVOKEINTERFACE java/lang/CharSequence.charAt");
@@ -999,18 +967,18 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    private void valueFromSubExpression() {
-        debug("ALOAD 0");
-        mv.visitVarInsn(ALOAD, 0);
-        debug("GETFIELD p" + (compiledInputs.size() - 1));
-        mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/ExecutableStatement;");
-        debug("ALOAD 1");
-        mv.visitVarInsn(ALOAD, 1);
-        debug("ALOAD 3");
-        mv.visitVarInsn(ALOAD, 3);
-        debug("INVOKEINTERFACE org/mvel/ExecutableStatement.getValue");
-        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/ExecutableStatement", "getValue", "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
-    }
+//    private void valueFromSubExpression() {
+//        debug("ALOAD 0");
+//        mv.visitVarInsn(ALOAD, 0);
+//        debug("GETFIELD p" + (compiledInputs.size() - 1));
+//        mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/ExecutableStatement;");
+//        debug("ALOAD 1");
+//        mv.visitVarInsn(ALOAD, 1);
+//        debug("ALOAD 3");
+//        mv.visitVarInsn(ALOAD, 3);
+//        debug("INVOKEINTERFACE org/mvel/ExecutableStatement.getValue");
+//        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/ExecutableStatement", "getValue", "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+//    }
 
     private void dataConversion(Class target) {
         ldcClassConstant(target);
@@ -1627,9 +1595,24 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    private void writeLiteralOrSubexpression(Object stmt) {
+    private Class writeLiteralOrSubexpression(Object stmt) {
+        return writeLiteralOrSubexpression(stmt, null);
+    }
+
+
+    private Class writeLiteralOrSubexpression(Object stmt, Class desiredTarget) {
         if (stmt instanceof ExecutableLiteral) {
-            writeOutLiteralWrapped(((ExecutableLiteral) stmt).getLiteral());
+            Class type = ((ExecutableLiteral) stmt).getLiteral().getClass();
+
+            if (desiredTarget != null && type != desiredTarget) {
+                dataConversion(desiredTarget);
+                writeOutLiteralWrapped(convert(((ExecutableLiteral) stmt).getLiteral(), desiredTarget));
+            }
+            else {
+                writeOutLiteralWrapped(((ExecutableLiteral) stmt).getLiteral());
+            }
+
+            return type;
         }
         else {
             compiledInputs.add((ExecutableStatement) stmt);
@@ -1649,6 +1632,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("INVOKEINTERFACE ExecutableStatement.getValue");
             mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(ExecutableStatement.class), "getValue",
                     "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+
+            Class type = ((ExecutableStatement) stmt).getKnownEgressType();
+
+            if (desiredTarget != null && type != desiredTarget) {
+                dataConversion(desiredTarget);
+            }
+
+            return type;
         }
 
 
