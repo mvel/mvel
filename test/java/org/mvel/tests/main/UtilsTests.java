@@ -1,7 +1,7 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-//import org.mvel.util.FastMap;
+import org.mvel.util.FastList;
 import org.mvel.util.StringAppender;
 
 public class UtilsTests extends TestCase {
@@ -22,7 +22,20 @@ public class UtilsTests extends TestCase {
                         .append("resources/productimages/").toString());
     }
 
-  
+    public void testFastList1() {
+        FastList list = new FastList(3);
+        list.add("One");
+        list.add("Two");
+        list.add("Three");
+
+        list.add(1, "Four");
+
+
+        for (Object o : list) {
+            System.out.println(o);
+        }
+
+    }
 
 //    public void testMainPerf() {
 //        for (int i = 0; i < 1000000; i++) {

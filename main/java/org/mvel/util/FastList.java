@@ -5,9 +5,11 @@ import org.mvel.ImmutableElementException;
 import java.util.*;
 
 public class FastList extends AbstractList {
-    private final Object[] elements;
+    private Object[] elements;
     private int size = 0;
 
+    //    private float threshold = 1.0f;
+    private boolean updated = false;
 
     public FastList(int size) {
         elements = new Object[size];
@@ -27,7 +29,7 @@ public class FastList extends AbstractList {
 
     public boolean add(Object o) {
         if (size == elements.length) {
-            throw new ImmutableElementException("cannot add elements to immutable list");
+            increaseSize(elements.length * 2);
         }
 
         elements[size++] = o;
@@ -35,15 +37,31 @@ public class FastList extends AbstractList {
     }
 
     public Object set(int i, Object o) {
-        throw new ImmutableElementException("cannot change elements in immutable list");
+        if (!updated) copyArray();
+        Object old = elements[i];
+        elements[i] = o;
+        return old;
     }
 
     public void add(int i, Object o) {
-        throw new ImmutableElementException("cannot change elements in immutable list");
+        if (size == elements.length) {
+            increaseSize(elements.length * 2);
+        }
+
+        for (int c = size; c != i; c--) {
+            elements[c] = elements[c - 1];
+        }
+        elements[i] = o;
+        size++;
     }
 
     public Object remove(int i) {
-        throw new ImmutableElementException("cannot change elements in immutable list");
+        Object old = elements[i];
+        for (int c = i + 1; c != size; c--) {
+            elements[c - 1] = elements[c];
+        }
+        size--;
+        return old;
     }
 
     public int indexOf(Object o) {
@@ -63,11 +81,23 @@ public class FastList extends AbstractList {
     }
 
     public void clear() {
-        throw new ImmutableElementException("cannot change elements in immutable list");
+        elements = new Object[0];
     }
 
     public boolean addAll(int i, Collection collection) {
-        throw new ImmutableElementException("cannot change elements in immutable list");
+        int offset = collection.size();
+        ensureCapacity(offset);
+
+        for (int c = i; c != (i + offset); c++) {
+            elements[c + offset + 1] = elements[c];
+        }
+
+        int c = 0;
+        for (Object o : collection) {
+            elements[offset + c] = o;
+        }
+
+        return true;
     }
 
     public Iterator iterator() {
@@ -111,7 +141,7 @@ public class FastList extends AbstractList {
     }
 
     protected void removeRange(int i, int i1) {
-        throw new ImmutableElementException("cannot change elements in immutable list");
+        throw new RuntimeException("not implemented");
     }
 
     public boolean isEmpty() {
@@ -123,32 +153,52 @@ public class FastList extends AbstractList {
     }
 
     public Object[] toArray() {
-        return super.toArray();    //To change body of overridden methods use File | Settings | File Templates.
+        if (!updated) copyArray();
+        return elements;
     }
 
     public Object[] toArray(Object[] objects) {
-        return super.toArray(objects);    //To change body of overridden methods use File | Settings | File Templates.
+        throw new RuntimeException("not implemented");
     }
 
     public boolean remove(Object o) {
-        throw new ImmutableElementException("cannot change elements in immutable list");
+        throw new RuntimeException("not implemented");
     }
 
     public boolean containsAll(Collection collection) {
-        return super.containsAll(collection);    //To change body of overridden methods use File | Settings | File Templates.
+        throw new RuntimeException("not implemented");
     }
 
     public boolean addAll(Collection collection) {
-        throw new ImmutableElementException("cannot change elements in immutable list");
+        return addAll(size, collection);
     }
 
     public boolean removeAll(Collection collection) {
-        throw new ImmutableElementException("cannot change elements in immutable list");
+        throw new RuntimeException("not implemented");
     }
 
     public boolean retainAll(Collection collection) {
-        throw new ImmutableElementException("cannot change elements in immutable list");
+        throw new RuntimeException("not implemented");
     }
+
+    private void ensureCapacity(int additional) {
+        if ((size + additional) > elements.length) increaseSize((size + additional) * 2);
+    }
+
+    private void copyArray() {
+        increaseSize(elements.length);
+    }
+
+    private void increaseSize(int newSize) {
+        Object[] newElements = new Object[newSize];
+        for (int i = 0; i < elements.length; i++)
+            newElements[i] = elements[i];
+
+        elements = newElements;
+
+        updated = true;
+    }
+
 
     public String toString() {
         return super.toString();    //To change body of overridden methods use File | Settings | File Templates.
