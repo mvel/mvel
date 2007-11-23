@@ -99,13 +99,15 @@ public class PropertyASTNode extends ASTNode {
                     /**
                      * This is probably an indexed property.
                      */
-                    wrappedNode = new VariableDeepPropertyNode(name, fields);
+                    return (wrappedNode = new VariableDeepPropertyNode(name, fields))
+                            .getReducedValueAccelerated(ctx, thisValue, factory);
                 }
                 else {
-                    wrappedNode = new VarPropertyNode(name, fields, s);
+                    return (wrappedNode = new VarPropertyNode(name, fields, s))
+                            .getReducedValueAccelerated(ctx, thisValue, factory);
                 }
 
-                return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
+                //     return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
             }
             else if (ctx != null) {
                 /**
