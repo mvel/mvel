@@ -117,7 +117,7 @@ public class PropertyASTNode extends ASTNode {
                 }
                 catch (RuntimeException e) {
                     e.printStackTrace();
-                    throw new UnresolveablePropertyException(this);
+                    throw new UnresolveablePropertyException(this, e);
                 }
             }
             else {
