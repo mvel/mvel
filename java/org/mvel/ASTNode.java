@@ -293,7 +293,7 @@ public class ASTNode implements Cloneable, Serializable {
                 }
                 catch (RuntimeException e) {
                     e.printStackTrace();
-                    throw new UnresolveablePropertyException(this);
+                    throw new UnresolveablePropertyException(this, e);
                 }
             }
             else {

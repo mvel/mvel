@@ -22,7 +22,10 @@ import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.isAdvancedDebugging;
-import org.mvel.asm.*;
+import org.mvel.asm.ClassWriter;
+import org.mvel.asm.Label;
+import org.mvel.asm.MethodVisitor;
+import org.mvel.asm.Opcodes;
 import static org.mvel.asm.Opcodes.*;
 import static org.mvel.asm.Type.*;
 import org.mvel.ast.LiteralNode;
@@ -51,6 +54,7 @@ import java.util.Map;
  * <p/>
  * TODO: This class needs serious re-factoring.
  */
+@SuppressWarnings({"TypeParameterExplicitlyExtendsObject", "unchecked", "UnusedDeclaration"})
 public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
     private static final String MAP_IMPL = "java/util/HashMap";
     private static final String LIST_IMPL = "org/mvel/util/FastList";
@@ -667,9 +671,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         int st = cursor;
 
-        cursor = ParseTools.balancedCapture(expr, cursor, '(');
-
-        String tk = (cursor - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
+        String tk = ((cursor = ParseTools.balancedCapture(expr, cursor, '(')) - st) > 1 ?
+                new String(expr, st + 1, cursor - st - 1) : "";
 
         cursor++;
 
@@ -771,7 +774,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw new CompileException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
-            m = ParseTools.getWidenedTarget(m);
+            m = getWidenedTarget(m);
 
             if (es != null) {
                 ExecutableStatement cExpr;
@@ -968,25 +971,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-//    private void valueFromSubExpression() {
-//        debug("ALOAD 0");
-//        mv.visitVarInsn(ALOAD, 0);
-//        debug("GETFIELD p" + (compiledInputs.size() - 1));
-//        mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/ExecutableStatement;");
-//        debug("ALOAD 1");
-//        mv.visitVarInsn(ALOAD, 1);
-//        debug("ALOAD 3");
-//        mv.visitVarInsn(ALOAD, 3);
-//        debug("INVOKEINTERFACE org/mvel/ExecutableStatement.getValue");
-//        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/ExecutableStatement", "getValue", "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
-//    }
-
     private void dataConversion(Class target) {
         ldcClassConstant(target);
         debug("INVOKESTATIC org/mvel/DataConversion.convert");
         mv.visitMethodInsn(INVOKESTATIC, "org/mvel/DataConversion", "convert", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
     }
-
 
     private static final ClassLoader classLoader;
     private static final Method defineClass;
@@ -1441,8 +1430,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         for (int i = 0; i < size; i++) {
             debug("ACC_PRIVATE p" + i);
-            FieldVisitor fv = cw.visitField(ACC_PRIVATE, "p" + i, "Lorg/mvel/ExecutableStatement;", null, null);
-            fv.visitEnd();
+            //FieldVisitor fv =
+            cw.visitField(ACC_PRIVATE, "p" + i, "Lorg/mvel/ExecutableStatement;", null, null).visitEnd();
+            // fv.visitEnd();
 
             constSig.append("Lorg/mvel/ExecutableStatement;");
         }
@@ -1491,8 +1481,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("DUP");
             mv.visitInsn(DUP);
 
-            //      stacksize += 2;
-
             intPush(((List) o).size());
             debug("INVOKESPECIAL " + LIST_IMPL + ".<init>");
             mv.visitMethodInsn(INVOKESPECIAL, LIST_IMPL, "<init>", "(I)V");
@@ -1526,8 +1514,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("DUP");
             mv.visitInsn(DUP);
 
-            //     stacksize += 2;
-
             intPush(((Map) o).size());
 
             debug("INVOKESPECIAL " + MAP_IMPL + ".<init>");
@@ -1553,7 +1539,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 debug("DUP");
                 mv.visitInsn(DUP);
-
             }
 
             return MAP;
@@ -1566,8 +1551,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             debug("DUP");
             mv.visitInsn(DUP);
-
-            //      stacksize++;
 
             int i = 0;
             for (Object item : (Object[]) o) {
@@ -1762,16 +1745,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     compiledInputs.add((ExecutableStatement) subCompileExpression(constructorParm));
                 }
 
-                String s = new String(subset(property, 0, findFirst('(', property)));
-
-                Class cls = findClass(factory, s);
+                Class cls = findClass(factory, new String(subset(property, 0, findFirst('(', property))));
 
                 debug("NEW " + getInternalName(cls));
                 mv.visitTypeInsn(NEW, getInternalName(cls));
                 debug("DUP");
                 mv.visitInsn(DUP);
-
-                //inputs = constructorParms.length;
 
                 Object[] parms = new Object[constructorParms.length];
 
