@@ -2,13 +2,11 @@ package org.mvel.tests.perftests;
 
 // import ognl.Ognl;
 
-import org.apache.commons.el.ExpressionEvaluatorImpl;
+
 import org.mvel.MVEL;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
 
-import javax.servlet.jsp.el.Expression;
-import javax.servlet.jsp.el.VariableResolver;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.currentTimeMillis;
 import java.math.BigDecimal;
@@ -449,40 +447,39 @@ public class ELComparisons implements Runnable {
 //
             total = 0;
 
-
-            if ((testFlags & RUN_COMMONS_EL) != 0 && ((exFlags & RUN_COMMONS_EL) != 0)) {
-                VariableResolver vars = new JSPMapVariableResolver(variables);
-
-                String commonsEx = "${" + expression + "}";
-
-                try {
-                    for (int i = 0; i < count; i++) {
-                        new ExpressionEvaluatorImpl(true).parseExpression(commonsEx, Object.class, null).evaluate(vars);
-                    }
-
-                    //            System.gc();
-
-                    time = currentTimeMillis();
-                    mem = Runtime.getRuntime().freeMemory();
-                    for (int reps = 0; reps < TESTITER; reps++) {
-                        for (int i = 0; i < count; i++) {
-                            new ExpressionEvaluatorImpl(true).parseExpression(commonsEx, Object.class, null).evaluate(vars);
-                        }
-
-                        if (reps == 0) res[0] = total += currentTimeMillis() - time;
-                        else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
-                    }
-
-                    if (!silent)
-                        System.out.println("(CommonsEL)          : " + new BigDecimal(((currentTimeMillis() - time))).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
-                                + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
-
-                }
-                catch (Exception e) {
-                    if (!silent)
-                        System.out.println("(CommonsEL)          : <<COULD NOT EXECUTE>>");
-                }
-            }
+//            if ((testFlags & RUN_COMMONS_EL) != 0 && ((exFlags & RUN_COMMONS_EL) != 0)) {
+//                VariableResolver vars = new JSPMapVariableResolver(variables);
+//
+//                String commonsEx = "${" + expression + "}";
+//
+//                try {
+//                    for (int i = 0; i < count; i++) {
+//                        new ExpressionEvaluatorImpl(true).parseExpression(commonsEx, Object.class, null).evaluate(vars);
+//                    }
+//
+//                    //            System.gc();
+//
+//                    time = currentTimeMillis();
+//                    mem = Runtime.getRuntime().freeMemory();
+//                    for (int reps = 0; reps < TESTITER; reps++) {
+//                        for (int i = 0; i < count; i++) {
+//                            new ExpressionEvaluatorImpl(true).parseExpression(commonsEx, Object.class, null).evaluate(vars);
+//                        }
+//
+//                        if (reps == 0) res[0] = total += currentTimeMillis() - time;
+//                        else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
+//                    }
+//
+//                    if (!silent)
+//                        System.out.println("(CommonsEL)          : " + new BigDecimal(((currentTimeMillis() - time))).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+//                                + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
+//
+//                }
+//                catch (Exception e) {
+//                    if (!silent)
+//                        System.out.println("(CommonsEL)          : <<COULD NOT EXECUTE>>");
+//                }
+//            }
 
             synchronized (this) {
                 commonElTotal += total;
@@ -491,7 +488,7 @@ public class ELComparisons implements Runnable {
         }
 
         if ((testFlags & COMPILED) != 0) {
-            runTestCompiled(name, test.getOgnlCompiled(), test.getMvelCompiled(), test.getGroovyCompiled(), test.getElCompiled(), count, exFlags);
+            //        runTestCompiled(name, test.getOgnlCompiled(), test.getMvelCompiled(), test.getGroovyCompiled(), test.getElCompiled(), count, exFlags);
         }
 
         total = 0;
@@ -537,89 +534,89 @@ public class ELComparisons implements Runnable {
             System.out.println("------------------------------------------------");
     }
 
-    public void runTestCompiled(String name, Object compiledOgnl, Object compiledMvel, Object compiledGroovy, Expression compiledEl, int count, int exFlags) throws Exception {
-
-        long time;
-        long mem;
-        long total = 0;
-        long[] res = new long[TESTITER];
-
-
-        if (!silent)
-            System.out.println("Compiled Results     :");
-
-
-        if ((testFlags & RUN_OGNL) != 0 && ((exFlags & RUN_OGNL) != 0)) {
-            try {
-                for (int i = 0; i < count; i++) {
-                    //            Ognl.getValue(compiledOgnl, baseClass);
-                }
-
-                time = currentTimeMillis();
-                mem = Runtime.getRuntime().freeMemory();
-
-                for (int reps = 0; reps < TESTITER; reps++) {
-                    for (int i = 0; i < count; i++) {
-                        //              Ognl.getValue(compiledOgnl, baseClass);
-                    }
-
-                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
-                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
-                }
-
-                if (!silent)
-                    System.out.println("(OGNL Compiled)      : " + new BigDecimal(currentTimeMillis() - time).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
-                            + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
-            }
-            catch (Exception e) {
-
-                if (!silent)
-                    System.out.println("(OGNL)               : <<COULD NOT EXECUTE>>");
-            }
-        }
-
-        synchronized (this) {
-            ognlTotal += total;
-        }
-
-        total = 0;
-
-        if ((testFlags & RUN_MVEL) != 0 && ((exFlags & RUN_MVEL)) != 0) {
-
-            try {
-                for (int i = 0; i < count; i++) {
-                    MVEL.executeExpression(compiledMvel, baseClass);
-                }
-
-                time = currentTimeMillis();
-                mem = Runtime.getRuntime().freeMemory();
-
-                for (int reps = 0; reps < TESTITER; reps++) {
-                    for (int i = 0; i < count; i++) {
-                        MVEL.executeExpression(compiledMvel, baseClass);
-                    }
-
-                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
-                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
-                }
-
-                if (!silent)
-                    System.out.println("(MVEL Compiled)      : " + new BigDecimal(currentTimeMillis() - time).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
-                            + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
-            }
-            catch (Exception e) {
-
-                if (!silent)
-                    System.out.println("(MVEL)               : <<COULD NOT EXECUTE>>");
-            }
-
-
-            synchronized (this) {
-                mvelTotal += total;
-            }
-
-            total = 0;
-        }
+//    public void runTestCompiled(String name, Object compiledOgnl, Object compiledMvel, Object compiledGroovy, Expression compiledEl, int count, int exFlags) throws Exception {
+//
+//        long time;
+//        long mem;
+//        long total = 0;
+//        long[] res = new long[TESTITER];
+//
+//
+//        if (!silent)
+//            System.out.println("Compiled Results     :");
+//
+//
+//        if ((testFlags & RUN_OGNL) != 0 && ((exFlags & RUN_OGNL) != 0)) {
+//            try {
+//                for (int i = 0; i < count; i++) {
+//                    //            Ognl.getValue(compiledOgnl, baseClass);
+//                }
+//
+//                time = currentTimeMillis();
+//                mem = Runtime.getRuntime().freeMemory();
+//
+//                for (int reps = 0; reps < TESTITER; reps++) {
+//                    for (int i = 0; i < count; i++) {
+//                        //              Ognl.getValue(compiledOgnl, baseClass);
+//                    }
+//
+//                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
+//                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
+//                }
+//
+//                if (!silent)
+//                    System.out.println("(OGNL Compiled)      : " + new BigDecimal(currentTimeMillis() - time).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+//                            + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
+//            }
+//            catch (Exception e) {
+//
+//                if (!silent)
+//                    System.out.println("(OGNL)               : <<COULD NOT EXECUTE>>");
+//            }
+//        }
+//
+//        synchronized (this) {
+//            ognlTotal += total;
+//        }
+//
+//        total = 0;
+//
+//        if ((testFlags & RUN_MVEL) != 0 && ((exFlags & RUN_MVEL)) != 0) {
+//
+//            try {
+//                for (int i = 0; i < count; i++) {
+//                    MVEL.executeExpression(compiledMvel, baseClass);
+//                }
+//
+//                time = currentTimeMillis();
+//                mem = Runtime.getRuntime().freeMemory();
+//
+//                for (int reps = 0; reps < TESTITER; reps++) {
+//                    for (int i = 0; i < count; i++) {
+//                        MVEL.executeExpression(compiledMvel, baseClass);
+//                    }
+//
+//                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
+//                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
+//                }
+//
+//                if (!silent)
+//                    System.out.println("(MVEL Compiled)      : " + new BigDecimal(currentTimeMillis() - time).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+//                            + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
+//            }
+//            catch (Exception e) {
+//
+//                if (!silent)
+//                    System.out.println("(MVEL)               : <<COULD NOT EXECUTE>>");
+//            }
+//
+//
+//            synchronized (this) {
+//                mvelTotal += total;
+//            }
+//
+//            total = 0;
+//        }
 
 //        total = 0;
 //
@@ -675,40 +672,40 @@ public class ELComparisons implements Runnable {
 //        }
 //
 
-        if ((testFlags & RUN_COMMONS_EL) != 0 && ((exFlags & RUN_COMMONS_EL) != 0)) {
-            VariableResolver vars = new JSPMapVariableResolver(variables);
-            try {
-                for (int i = 0; i < count; i++) {
-                    compiledEl.evaluate(vars);
-                }
-
-                time = currentTimeMillis();
-                mem = Runtime.getRuntime().freeMemory();
-                for (int reps = 0; reps < TESTITER; reps++) {
-                    for (int i = 0; i < count; i++) {
-                        compiledEl.evaluate(vars);
-                    }
-
-                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
-                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
-                }
-
-                if (!silent)
-                    System.out.println("(CommonsEL Compiled) : " + new BigDecimal(((currentTimeMillis() - time))).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
-                            + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
-
-            }
-            catch (Exception e) {
-                if (!silent)
-                    System.out.println("(CommonsEL Compiled) : <<COULD NOT EXECUTE>>");
-            }
-        }
-
-        synchronized (this) {
-            commonElTotal += total;
-        }
-
-    }
+//        if ((testFlags & RUN_COMMONS_EL) != 0 && ((exFlags & RUN_COMMONS_EL) != 0)) {
+//            VariableResolver vars = new JSPMapVariableResolver(variables);
+//            try {
+//                for (int i = 0; i < count; i++) {
+//                    compiledEl.evaluate(vars);
+//                }
+//
+//                time = currentTimeMillis();
+//                mem = Runtime.getRuntime().freeMemory();
+//                for (int reps = 0; reps < TESTITER; reps++) {
+//                    for (int i = 0; i < count; i++) {
+//                        compiledEl.evaluate(vars);
+//                    }
+//
+//                    if (reps == 0) res[0] = total += currentTimeMillis() - time;
+//                    else res[reps] = (total * -1) + (total += currentTimeMillis() - time - total);
+//                }
+//
+//                if (!silent)
+//                    System.out.println("(CommonsEL Compiled) : " + new BigDecimal(((currentTimeMillis() - time))).divide(new BigDecimal(TESTITER), 2, RoundingMode.HALF_UP)
+//                            + "ms avg.  (mem delta: " + ((Runtime.getRuntime().freeMemory() - mem) / 1024) + "kb) " + resultsToString(res));
+//
+//            }
+//            catch (Exception e) {
+//                if (!silent)
+//                    System.out.println("(CommonsEL Compiled) : <<COULD NOT EXECUTE>>");
+//            }
+//        }
+//
+//        synchronized (this) {
+//            commonElTotal += total;
+//        }
+//
+//    }
 
     private static String resultsToString(long[] res) {
         StringBuffer sbuf = new StringBuffer("[");
