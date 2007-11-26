@@ -1,8 +1,6 @@
 package org.mvel.tests.perftests;
 
 import junit.framework.TestCase;
-import ognl.Ognl;
-import ognl.OgnlException;
 import org.mvel.MVEL;
 import org.mvel.TemplateInterpreter;
 import org.mvel.tests.main.res.Bar;
@@ -104,20 +102,20 @@ public class ParserPerformanceTests extends TestCase {
         }
     }
 
-    public void testOgnl() throws OgnlException {
-        Object o = Ognl.parseExpression("hour");
-        for (int i = 0; i < COUNT; i++) {
-            assert "60".equals(Ognl.getValue(o, map));
-        }
-    }
+//    public void testOgnl() throws OgnlException {
+////        Object o = Ognl.parseExpression("hour");
+////        for (int i = 0; i < COUNT; i++) {
+////            assert "60".equals(Ognl.getValue(o, map));
+////        }
+//    }
 
-    public void testOgnl2() throws OgnlException {
-        testOgnl();
-    }
-
-    public void testOgnl3() throws OgnlException {
-        testOgnl();
-    }
+//    public void testOgnl2() throws OgnlException {
+//        testOgnl();
+//    }
+//
+//    public void testOgnl3() throws OgnlException {
+//        testOgnl();
+//    }
 
 
     public void testObjectCreation() {
