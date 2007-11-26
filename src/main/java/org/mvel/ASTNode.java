@@ -56,6 +56,7 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int BLOCK_IF = 1 << 18;
     public static final int BLOCK_FOREACH = 1 << 19;
     public static final int BLOCK_WITH = 1 << 20;
+    public static final int BLOCK_WHILE = 1 << 21;
 
     public static final int INTEGER32 = 1 << 23;
 

@@ -1,12 +1,5 @@
 package org.mvel.tests.main.res;
 
-/**
- * Created by IntelliJ IDEA.
- * User: christopherbrock
- * Date: Sep 28, 2007
- * Time: 11:53:07 AM
- * To change this template use File | Settings | File Templates.
- */
 public class PojoStatic {
     private String value;
 

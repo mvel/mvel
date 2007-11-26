@@ -30,4 +30,6 @@ public interface DataTypes {
     public static final int BIG_INTEGER = 111;
 
     public static final int EMPTY = 200;
+
+    public static final int UNIT = 300;
 }

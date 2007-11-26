@@ -22,9 +22,9 @@ public class InlineCollectionsPerformance {
 //            System.out.println("Java    : " + (System.currentTimeMillis() - time));
 //
 
-//            time = System.currentTimeMillis();
-//            testOGNLList();
-//            System.out.println("OGNL2.7 : " + (System.currentTimeMillis() - time));
+            time = System.currentTimeMillis();
+            testOGNLList();
+            System.out.println("OGNL2.7 : " + (System.currentTimeMillis() - time));
 
             time = System.currentTimeMillis();
             testMVELList();
