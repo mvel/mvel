@@ -125,6 +125,8 @@ public class AbstractParser implements Serializable {
             }
         }
 
+        //LITERALS.putAll(Units.MEASUREMENTS_ALL);
+
         _loadLanguageFeaturesByLevel(5);
     }
 
@@ -238,6 +240,9 @@ public class AbstractParser implements Serializable {
 
                             case FOREACH:
                                 return captureCodeBlock(ASTNode.BLOCK_FOREACH);
+
+                            case WHILE:
+                                return captureCodeBlock(ASTNode.BLOCK_WHILE);
 
                             case WITH:
                                 return captureCodeBlock(ASTNode.BLOCK_WITH);
@@ -925,6 +930,8 @@ public class AbstractParser implements Serializable {
                 return new IfNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
             case ASTNode.BLOCK_FOREACH:
                 return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+            case ASTNode.BLOCK_WHILE:
+                return new WhileNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
             default:
                 return new WithNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }

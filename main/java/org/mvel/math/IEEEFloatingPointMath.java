@@ -6,6 +6,7 @@ import static org.mvel.DataConversion.convert;
 import org.mvel.DataTypes;
 import static org.mvel.DataTypes.EMPTY;
 import static org.mvel.Operator.*;
+import org.mvel.Unit;
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
 
@@ -268,6 +269,10 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((Long) val1).longValue() != ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
                 }
 
+            case DataTypes.UNIT:
+                val2 = ((Unit) val1).convertFrom(val2);
+                val1 = ((Unit) val1).getValue();
+
             case DataTypes.DOUBLE:
             case DataTypes.W_DOUBLE:
                 switch (operation) {
@@ -396,6 +401,8 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 return new BigDecimal((Character) in);
             case DataTypes.W_BOOLEAN:
                 return BigDecimal.valueOf(((Boolean) in) ? 1 : 0);
+            case DataTypes.UNIT:
+                return new BigDecimal(((Unit) in).getValue());
 
         }
 
