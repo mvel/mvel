@@ -742,6 +742,9 @@ public class ParseTools {
             return DataTypes.EMPTY;
 
 
+        if (Unit.class.isAssignableFrom(cls))
+            return DataTypes.UNIT;
+
         return DataTypes.OBJECT;
     }
 
