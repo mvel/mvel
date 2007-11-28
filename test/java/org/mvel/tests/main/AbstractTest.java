@@ -29,6 +29,9 @@ public abstract class AbstractTest extends TestCase {
     protected Base base;
     protected DerivedClass derived;
 
+
+    private boolean silentTests = Boolean.getBoolean("mvel.tests.silent");
+
     public void testNothing() {
         // to satify Eclipse and Surefire.
     }
@@ -100,9 +103,11 @@ public abstract class AbstractTest extends TestCase {
             };
         }
 
-        System.out.println("\n[test] begin test for:\n----------------------");
-        System.out.println(ex);
-        System.out.println("----------------------");
+        if (!silentTests) {
+            System.out.println("\n[test] begin test for:\n----------------------");
+            System.out.println(ex);
+            System.out.println("----------------------");
+        }
 
         for (Thread thread1 : threads) {
             thread1.setPriority(Thread.MIN_PRIORITY);
@@ -120,8 +125,10 @@ public abstract class AbstractTest extends TestCase {
 
         // analyze results
 
-        System.out.println("[test] finished in: " + (currentTimeMillis() - time) + "ms (execution count: " + (threads.length * 8) + " [mixed modes])");
-        System.out.print("[test] analyzing results ... ");
+        if (!silentTests) {
+            System.out.println("[test] finished in: " + (currentTimeMillis() - time) + "ms (execution count: " + (threads.length * 8) + " [mixed modes])");
+            System.out.print("[test] analyzing results ... ");
+        }
 
         Object last = results.getFirst();
         if (last != null)
@@ -152,8 +159,9 @@ public abstract class AbstractTest extends TestCase {
                 last = o;
             }
 
-        System.out.println("good!");
-
+        if (!silentTests) {
+            System.out.println("good!");
+        }
         return last;
     }
 
