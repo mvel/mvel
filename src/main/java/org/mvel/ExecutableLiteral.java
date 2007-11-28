@@ -1,12 +1,13 @@
 package org.mvel;
 
+import org.mvel.ast.Safe;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
 
 /**
  * @author Christopher Brock
  */
-public class ExecutableLiteral implements ExecutableStatement {
+public class ExecutableLiteral implements ExecutableStatement, Safe {
     private Object literal;
     private int integer32;
     private boolean intOptimized;

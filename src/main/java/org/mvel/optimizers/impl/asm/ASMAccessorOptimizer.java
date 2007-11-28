@@ -28,6 +28,7 @@ import org.mvel.asm.MethodVisitor;
 import org.mvel.asm.Opcodes;
 import static org.mvel.asm.Opcodes.*;
 import static org.mvel.asm.Type.*;
+import org.mvel.ast.Function;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.PropertyASTNode;
 import org.mvel.integration.VariableResolverFactory;
@@ -307,21 +308,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (first) {
             if (variableFactory != null && variableFactory.isResolveable(property)) {
                 try {
-                    debug("ALOAD 3");
-                    mv.visitVarInsn(ALOAD, 3);
-
-                    debug("LDC :" + property);
-                    mv.visitLdcInsn(property);
-
-                    debug("INVOKEINTERFACE org/mvel/integration/VariableResolverFactory.getVariableResolver");
-                    mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolverFactory",
-                            "getVariableResolver", "(Ljava/lang/String;)Lorg/mvel/integration/VariableResolver;");
-
-                    debug("INVOKEINTERFACE org/mvel/integration/VariableResolver.getValue");
-                    mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolver",
-                            "getValue", "()Ljava/lang/Object;");
-
-                    returnType = Object.class;
+                    loadVariableByName(property);
                 }
                 catch (Exception e) {
                     throw new OptimizationFailure("critical error in JIT", e);
@@ -656,6 +643,29 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             else if (ptr instanceof MethodStub) {
                 ctx = ((MethodStub) ptr).getClassReference();
                 name = ((MethodStub) ptr).getMethodName();
+            }
+            else if (ptr instanceof Function) {
+                int st = cursor;
+                String tk = ((cursor = ParseTools.balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
+                cursor++;
+
+                loadVariableByName(name);
+
+                debug("ALOAD 1");
+                mv.visitVarInsn(ALOAD, 1);
+
+                debug("ALOAD 2");
+                mv.visitVarInsn(ALOAD, 2);
+
+                debug("ALOAD 3");
+                mv.visitVarInsn(ALOAD, 3);
+
+                debug("INVOKEVIRTUAL Function.call");
+                mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(Function.class), "call",
+                        "(Ljava/lang/Object;Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+
+
+                return ((Function) ptr).call(ctx, thisRef, variableFactory);
             }
             else {
                 throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
@@ -1359,6 +1369,24 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             mv.visitLdcInsn(lit);
             wrapPrimitive(byte.class);
         }
+    }
+
+    private void loadVariableByName(String name) {
+        debug("ALOAD 3");
+        mv.visitVarInsn(ALOAD, 3);
+
+        debug("LDC :" + name);
+        mv.visitLdcInsn(name);
+
+        debug("INVOKEINTERFACE org/mvel/integration/VariableResolverFactory.getVariableResolver");
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolverFactory",
+                "getVariableResolver", "(Ljava/lang/String;)Lorg/mvel/integration/VariableResolver;");
+
+        debug("INVOKEINTERFACE org/mvel/integration/VariableResolver.getValue");
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolver",
+                "getValue", "()Ljava/lang/Object;");
+
+        returnType = Object.class;
     }
 
 //    private void writeOutLiteral(Object lit) {

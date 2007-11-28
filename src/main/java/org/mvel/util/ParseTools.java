@@ -6,10 +6,7 @@ import static org.mvel.AbstractParser.isReservedWord;
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.integration.impl.ClassImportResolverFactory;
-import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
-import org.mvel.integration.impl.LocalVariableResolverFactory;
-import org.mvel.integration.impl.StaticMethodImportResolverFactory;
+import org.mvel.integration.impl.*;
 import org.mvel.math.MathProcessor;
 
 import java.io.File;
@@ -603,6 +600,25 @@ public class ParseTools {
         }
     }
 
+
+    public static TypeInjectionResolverFactoryImpl findTypeInjectionResolverFactory(VariableResolverFactory factory) {
+        VariableResolverFactory v = factory;
+        while (v != null) {
+            if (v instanceof TypeInjectionResolverFactoryImpl) {
+                return (TypeInjectionResolverFactoryImpl) v;
+            }
+            v = v.getNextFactory();
+        }
+
+        if (factory == null) {
+            throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
+        }
+        else {
+            return ResolverTools.insertFactory(factory, new TypeInjectionResolverFactoryImpl());
+        }
+    }
+
+
     public static ClassImportResolverFactory findClassImportResolverFactory(VariableResolverFactory factory) {
         VariableResolverFactory v = factory;
         while (v != null) {
@@ -1073,7 +1089,7 @@ public class ParseTools {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
             }
-            return new ExecutableAccessor(tk, false);
+            return tk.canSerializeAccessor() ? new ExecutableAccessorSafe(tk, false) : new ExecutableAccessor(tk, false);
 
         }
 

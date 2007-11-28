@@ -177,7 +177,7 @@ public abstract class AbstractTest extends TestCase {
         Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null,
                 eighth = null;
 
-        //  System.out.println(DebugTools.decompile((Serializable) compiled));
+        //      System.out.println(DebugTools.decompile((Serializable) compiled));
 
         if (!Boolean.getBoolean("mvel.disable.jit")) {
 
@@ -227,6 +227,8 @@ public abstract class AbstractTest extends TestCase {
 
         if (first != null && !first.getClass().isArray()) {
             if (!first.equals(second)) {
+                if (failErrors == null) failErrors = new StringAppender();
+
                 System.out.println(failErrors.toString());
 
                 throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run / JIT) [first: "
@@ -273,7 +275,7 @@ public abstract class AbstractTest extends TestCase {
         if (fourth != null && !fourth.getClass().isArray()) {
             if (!fourth.equals(fifth)) {
                 throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-                        + valueOf(first) + "; second: " + valueOf(second) + "]");
+                        + valueOf(fourth) + "; second: " + valueOf(fifth) + "]");
             }
         }
 
@@ -334,7 +336,8 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            eighth = executeExpression(serializationTest(compiledD), base, new MapVariableResolverFactory(map));
+            Object expr = serializationTest(compiledD);
+            eighth = executeExpression(expr, base, new MapVariableResolverFactory(map));
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -348,8 +351,8 @@ public abstract class AbstractTest extends TestCase {
 
         if (eighth != null && !eighth.getClass().isArray()) {
             if (!eighth.equals(seventh)) {
-                throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-                        + valueOf(first) + "; second: " + valueOf(second) + "]");
+                throw new AssertionError("Different result from test 7 and 8 (Reflective / De-Serialized) [first: "
+                        + valueOf(seventh) + "; second: " + valueOf(eighth) + "]");
             }
         }
 

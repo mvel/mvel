@@ -21,6 +21,7 @@ package org.mvel;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.eval;
+import org.mvel.ast.Function;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.MethodStub;
 import org.mvel.util.ParseTools;
@@ -537,6 +538,20 @@ public class PropertyAccessor {
             else if (ptr instanceof MethodStub) {
                 ctx = ((MethodStub) ptr).getClassReference();
                 name = ((MethodStub) ptr).getMethodName();
+            }
+            else if (ptr instanceof Function) {
+                int st = cursor;
+                String tk = ((cursor = balancedCapture(property, cursor, '(')) - st) > 1 ?
+                        new String(property, st + 1, cursor - st - 1) : "";
+
+                cursor++;
+
+                try {
+                    return ((Function) ptr).call(ctx, thisReference, variableFactory);
+                }
+                catch (EndWithValue end) {
+                    return end.getValue();
+                }
             }
             else {
                 throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "

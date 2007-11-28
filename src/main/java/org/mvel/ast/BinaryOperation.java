@@ -18,6 +18,7 @@ public class BinaryOperation extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return doOperations(left.getReducedValueAccelerated(ctx, thisValue, factory), operation, right.getReducedValueAccelerated(ctx, thisValue, factory));
+
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {

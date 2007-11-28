@@ -1,5 +1,6 @@
 package org.mvel;
 
+import org.mvel.ast.Function;
 import org.mvel.ast.LineLabel;
 import org.mvel.integration.Interceptor;
 import org.mvel.util.MethodStub;
@@ -27,6 +28,7 @@ public class ParserContext implements Serializable {
 
     private Map<String, Class> variables;
     private Map<String, Class> inputs;
+    private Map<String, Function> globalFunctions;
 
     private List<ErrorDetail> errorList;
 
@@ -349,6 +351,27 @@ public class ParserContext implements Serializable {
         return (imports != null && imports.size() != 0) || (packageImports != null && packageImports.size() != 0);
     }
 
+    public void declareFunction(Function function) {
+        if (globalFunctions == null) globalFunctions = new HashMap<String, Function>();
+        globalFunctions.put(function.getName(), function);
+    }
+
+    public Function getFunction(String name) {
+        if (globalFunctions == null) return null;
+        return globalFunctions.get(name);
+    }
+
+    public Map getFunctions() {
+        return globalFunctions;
+    }
+
+    public boolean hasFunction(String name) {
+        return globalFunctions != null && globalFunctions.containsKey(name);
+    }
+
+    public boolean hasFunction() {
+        return globalFunctions != null && globalFunctions.size() != 0;
+    }
 
     public boolean isBlockSymbols() {
         return blockSymbols;

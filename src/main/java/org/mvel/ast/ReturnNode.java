@@ -11,17 +11,16 @@ import static org.mvel.util.ParseTools.subCompileExpression;
  * @author Christopher Brock
  */
 public class ReturnNode extends ASTNode {
-
-    private transient Accessor accessor;
-
     public ReturnNode(char[] expr, int fields) {
         super(expr, fields);
-        accessor = (Accessor) subCompileExpression(expr);
+        setAccessor((Accessor) subCompileExpression(expr));
     }
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (accessor == null) accessor = (Accessor) subCompileExpression(this.name);
+        if (accessor == null) {
+            setAccessor((Accessor) subCompileExpression(this.name));
+        }
         throw new EndWithValue(accessor.getValue(ctx, thisValue, factory));
     }
 

@@ -258,6 +258,13 @@ public class AbstractParser implements Serializable {
                                 start = cursor + 1;
                                 captureToEOS();
                                 return lastNode = new StaticImportNode(subArray(start, cursor--), fields);
+
+                            case FUNCTION:
+                                Function function = (Function) captureCodeBlock(FUNCTION);
+                                //             getParserContext().declareFunction(function);
+                                capture = false;
+                                start = cursor + 1;
+                                return function;
                         }
                     }
 
@@ -908,6 +915,18 @@ public class AbstractParser implements Serializable {
             }
         }
         else if ((fields & ASTNode.METHOD) != 0) {
+//            if (hasParserContext() && getParserContext().hasFunction()) {
+//                int chop = start;
+//                while (chop != length && expr[chop] != '(') {
+//                    chop++;
+//                }
+//                String name = new String(expr, start, chop - start);
+//
+//                if (getParserContext().hasFunction(name)) {
+//                    return lastNode = new FunctionCall(getParserContext().getFunction(name), null);
+//                }
+//            }
+
             return lastNode = new ASTNode(expr, start, end, fields);
         }
 
@@ -988,7 +1007,58 @@ public class AbstractParser implements Serializable {
         int startCond = 0;
         int endCond = 0;
 
-        if (cond) {
+        int blockStart;
+        int blockEnd;
+
+        /**
+         * Functions are a special case we handle differently from the rest of block parsing
+         */
+        if (type == FUNCTION) {
+
+            int start = cursor;
+
+            while (cursor != length && expr[cursor] != '(') cursor++;
+
+            if (cursor == length) {
+                throw new CompileException("expected '('", expr, start);
+            }
+
+            String functionName = new String(expr, start, (startCond = cursor) - start);
+
+            endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
+            startCond++;
+            cursor++;
+
+            skipWhitespace();
+
+            if (cursor >= length) {
+                throw new CompileException("unbalanced braces", expr, cursor);
+            }
+            else if (expr[cursor] == '{') {
+                blockStart = cursor;
+
+                if ((blockEnd = cursor = balancedCapture(expr, cursor, '{')) == -1) {
+                    throw new CompileException("unbalanced braces { }", expr, cursor);
+                }
+            }
+            else {
+                blockStart = cursor - 1;
+                captureToEOLorOF();
+                blockEnd = cursor + 1;
+            }
+
+            blockStart = trimRight(blockStart + 1);
+            blockEnd = trimLeft(blockEnd);
+
+            cursor++;
+
+            if (!isStatementManuallyTerminated()) {
+                splitAccumulator.add(new EndOfStatement());
+            }
+
+            return new Function(functionName, subArray(startCond, endCond), subArray(blockStart, blockEnd));
+        }
+        else if (cond) {
             if (debugSymbols) {
                 int[] cap = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(');
 
@@ -1006,8 +1076,6 @@ public class AbstractParser implements Serializable {
             }
         }
 
-        int blockStart;
-        int blockEnd;
 
         skipWhitespace();
 
@@ -1263,6 +1331,10 @@ public class AbstractParser implements Serializable {
         return lookAhead(range) == c;
     }
 
+    protected boolean hasParserContext() {
+        return parserContext != null && parserContext.get() != null;
+    }
+
     protected ParserContext getParserContext() {
         if (parserContext == null || parserContext.get() == null) {
             newContext();
@@ -1364,6 +1436,7 @@ public class AbstractParser implements Serializable {
                 OPERATORS.put("else", ELSE);
                 OPERATORS.put("?", Operator.TERNARY);
                 OPERATORS.put("switch", SWITCH);
+                OPERATORS.put("function", FUNCTION);
 
             case 4: // assignment
                 OPERATORS.put("=", Operator.ASSIGN);

@@ -73,6 +73,7 @@ public class ASTNode implements Cloneable, Serializable {
 
     // don't serialize this.
     protected transient Accessor accessor;
+    protected Accessor safeAccessor;
 
     protected int cursorPosition;
     public ASTNode nextASTNode;
@@ -175,19 +176,18 @@ public class ASTNode implements Cloneable, Serializable {
             return valRet(accessor.getValue(ctx, thisValue, factory));
         }
         catch (NullPointerException e) {
-            //todo: FIX JIT, so we don't have to force safe reflective mode.
             AccessorOptimizer optimizer;
             Object retVal = null;
 
             if ((fields & FOLD) != 0) {
-                retVal = (accessor = (optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeFold(name, ctx, thisValue, factory)).getValue(ctx, thisValue, factory);
+                retVal = (setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeFold(name, ctx, thisValue, factory)).getValue(ctx, thisValue, factory));
             }
             else {
                 try {
-                    accessor = (optimizer = getThreadAccessorOptimizer()).optimizeAccessor(name, ctx, thisValue, factory, true);
+                    setAccessor((optimizer = getThreadAccessorOptimizer()).optimizeAccessor(name, ctx, thisValue, factory, true));
                 }
                 catch (OptimizationNotSupported ne) {
-                    accessor = (optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeAccessor(name, ctx, thisValue, factory, true);
+                    setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeAccessor(name, ctx, thisValue, factory, true));
                 }
             }
 
@@ -481,8 +481,9 @@ public class ASTNode implements Cloneable, Serializable {
 
     }
 
-    public void setAccessor(Accessor accessor) {
-        this.accessor = accessor;
+    public Accessor setAccessor(Accessor accessor) {
+
+        return this.accessor = accessor;
     }
 
     public boolean isIdentifier() {
@@ -566,6 +567,11 @@ public class ASTNode implements Cloneable, Serializable {
     public Accessor getAccessor() {
         return accessor;
     }
+
+    public boolean canSerializeAccessor() {
+        return safeAccessor != null;
+    }
+
 }
 
 

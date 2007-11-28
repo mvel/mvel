@@ -2832,6 +2832,26 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+
+    public void testFunctionDefAndCall() {
+        assertEquals("Foobar",
+                test("function heyFoo() { return 'Foobar'; };\n" +
+                        "return heyFoo() + heyFoo();"));
+    }
+
+    public void testFunctionDefAndCall2() {
+        ExpressionCompiler compiler = new ExpressionCompiler("function heyFoo() { return 'Foobar'; };\n" +
+                "return heyFoo() + heyFoo();");
+
+        Serializable s = compiler.compile();
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+
+        assertEquals("FoobarFoobar", MVEL.executeExpression(s, new HashMap()));
+
+        assertEquals("FoobarFoobar", MVEL.executeExpression(s, new HashMap()));
+    }
+
 }
 
 

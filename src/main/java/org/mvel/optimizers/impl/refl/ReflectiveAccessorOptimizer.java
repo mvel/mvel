@@ -22,6 +22,7 @@ package org.mvel.optimizers.impl.refl;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.MVEL.eval;
+import org.mvel.ast.Function;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
@@ -272,8 +273,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             val = curr;
-
             return rootNode;
+
         }
         catch (InvocationTargetException e) {
             throw new PropertyAccessException(new String(expr), e);
@@ -491,6 +492,23 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             else if (ptr instanceof MethodStub) {
                 ctx = ((MethodStub) ptr).getClassReference();
                 name = ((MethodStub) ptr).getMethodName();
+            }
+            else if (ptr instanceof Function) {
+                int st = cursor;
+
+                String tk = ((cursor = ParseTools.balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
+
+                cursor++;
+
+                addAccessorNode(new FunctionAccessor((Function) ptr));
+
+                //    try {
+                return ((Function) ptr).call(ctx, thisRef, variableFactory);
+//                }
+//                catch (EndWithValue end) {
+//                    return end.getValue();
+//                }
+
             }
             else {
                 throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
