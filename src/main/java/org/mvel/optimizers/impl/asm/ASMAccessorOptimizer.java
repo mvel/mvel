@@ -46,6 +46,7 @@ import static java.lang.System.getProperty;
 import static java.lang.reflect.Array.getLength;
 import java.lang.reflect.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -634,61 +635,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throws IllegalAccessException, InvocationTargetException {
         debug("\n  **  {method: " + name + "}");
 
-        if (first && variableFactory != null && variableFactory.isResolveable(name)) {
-            Object ptr = variableFactory.getVariableResolver(name).getValue();
-            if (ptr instanceof Method) {
-                ctx = ((Method) ptr).getDeclaringClass();
-                name = ((Method) ptr).getName();
-            }
-            else if (ptr instanceof MethodStub) {
-                ctx = ((MethodStub) ptr).getClassReference();
-                name = ((MethodStub) ptr).getMethodName();
-            }
-            else if (ptr instanceof Function) {
-                int st = cursor;
-                String tk = ((cursor = ParseTools.balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
-                cursor++;
-
-                loadVariableByName(name);
-
-                debug("ALOAD 1");
-                mv.visitVarInsn(ALOAD, 1);
-
-                debug("ALOAD 2");
-                mv.visitVarInsn(ALOAD, 2);
-
-                debug("ALOAD 3");
-                mv.visitVarInsn(ALOAD, 3);
-
-                debug("INVOKEVIRTUAL Function.call");
-                mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(Function.class), "call",
-                        "(Ljava/lang/Object;Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
-
-
-                return ((Function) ptr).call(ctx, thisRef, variableFactory);
-            }
-            else {
-                throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
-                        + name + " (reference is type: " + (ctx != null ? ctx.getClass().getName() : null) + ")");
-            }
-
-            first = false;
-        }
-        else if (returnType != null && returnType.isPrimitive()) {
-            //noinspection unchecked
-            wrapPrimitive(returnType);
-        }
-
         int st = cursor;
-
         String tk = ((cursor = ParseTools.balancedCapture(expr, cursor, '(')) - st) > 1 ?
                 new String(expr, st + 1, cursor - st - 1) : "";
-
         cursor++;
 
         Object[] preConvArgs;
         Object[] args;
-        Accessor[] es;
+        ExecutableStatement[] es;
 
         if (tk.length() == 0) {
             //noinspection ZeroLengthArrayAllocation
@@ -708,6 +662,57 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             for (int i = 0; i < subtokens.length; i++) {
                 preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i])).getValue(this.ctx, this.thisRef, variableFactory);
             }
+        }
+
+        if (first && variableFactory != null && variableFactory.isResolveable(name)) {
+            Object ptr = variableFactory.getVariableResolver(name).getValue();
+            if (ptr instanceof Method) {
+                ctx = ((Method) ptr).getDeclaringClass();
+                name = ((Method) ptr).getName();
+            }
+            else if (ptr instanceof MethodStub) {
+                ctx = ((MethodStub) ptr).getClassReference();
+                name = ((MethodStub) ptr).getMethodName();
+            }
+            else if (ptr instanceof Function) {
+
+                if (es.length != 0) {
+                    compiledInputs.addAll(Arrays.asList(es));
+                }
+
+                loadVariableByName(name);
+
+                checkcast(Function.class);
+
+                debug("ALOAD 1");
+                mv.visitVarInsn(ALOAD, 1);
+
+                debug("ALOAD 2");
+                mv.visitVarInsn(ALOAD, 2);
+
+                debug("ALOAD 3");
+                mv.visitVarInsn(ALOAD, 3);
+
+                debug("INVOKEVIRTUAL Function.call");
+                mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(Function.class), "call",
+                        "(Ljava/lang/Object;Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+
+                for (int i = 0; i < es.length; i++) {
+                    loadField(i);
+                }
+
+                return ((Function) ptr).call(ctx, thisRef, variableFactory, es);
+            }
+            else {
+                throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
+                        + name + " (reference is type: " + (ctx != null ? ctx.getClass().getName() : null) + ")");
+            }
+
+            first = false;
+        }
+        else if (returnType != null && returnType.isPrimitive()) {
+            //noinspection unchecked
+            wrapPrimitive(returnType);
         }
 
 
@@ -1389,6 +1394,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         returnType = Object.class;
     }
 
+    private void loadField(int number) {
+        debug("ALOAD 0");
+        mv.visitVarInsn(ALOAD, 0);
+
+        debug("GETFIELD p" + number);
+        mv.visitFieldInsn(GETFIELD, className, "p" + number, "Lorg/mvel/ExecutableStatement;");
+    }
+
 //    private void writeOutLiteral(Object lit) {
 //        if (lit instanceof Integer) {
 //            intPush((Integer) lit);
@@ -1713,6 +1726,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private void checkcast(Class cls) {
+        debug("CHECKCAST " + getInternalName(cls));
         mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
     }
 

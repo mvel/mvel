@@ -2834,7 +2834,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testFunctionDefAndCall() {
-        assertEquals("Foobar",
+        assertEquals("FoobarFoobar",
                 test("function heyFoo() { return 'Foobar'; };\n" +
                         "return heyFoo() + heyFoo();"));
     }
@@ -2848,8 +2848,15 @@ public class CoreConfidenceTests extends AbstractTest {
         OptimizerFactory.setDefaultOptimizer("reflective");
 
         assertEquals("FoobarFoobar", MVEL.executeExpression(s, new HashMap()));
-
         assertEquals("FoobarFoobar", MVEL.executeExpression(s, new HashMap()));
+    }
+
+    public void testFunctionDefAndCall3() {
+        assertEquals("FOOBAR", test("function testFunction() { a = 'foo'; b = 'bar'; a + b; }; testFunction().toUpperCase();  "));
+    }
+
+    public void testFunctionDefAndCall4() {
+        assertEquals("barfoo", test("function testFunction(input) { return input; }; testFunction('barfoo');"));
     }
 
 }

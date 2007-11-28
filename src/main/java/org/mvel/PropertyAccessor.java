@@ -529,38 +529,6 @@ public class PropertyAccessor {
      */
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name) throws Exception {
-        if (first && variableFactory != null && variableFactory.isResolveable(name)) {
-            Object ptr = variableFactory.getVariableResolver(name).getValue();
-            if (ptr instanceof Method) {
-                ctx = ((Method) ptr).getDeclaringClass();
-                name = ((Method) ptr).getName();
-            }
-            else if (ptr instanceof MethodStub) {
-                ctx = ((MethodStub) ptr).getClassReference();
-                name = ((MethodStub) ptr).getMethodName();
-            }
-            else if (ptr instanceof Function) {
-                int st = cursor;
-                String tk = ((cursor = balancedCapture(property, cursor, '(')) - st) > 1 ?
-                        new String(property, st + 1, cursor - st - 1) : "";
-
-                cursor++;
-
-                try {
-                    return ((Function) ptr).call(ctx, thisReference, variableFactory);
-                }
-                catch (EndWithValue end) {
-                    return end.getValue();
-                }
-            }
-            else {
-                throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
-                        + name + " (reference is type: " + (ctx != null ? ctx.getClass().getName() : null) + ")");
-            }
-
-            first = false;
-        }
-
         int st = cursor;
         String tk = ((cursor = balancedCapture(property, cursor, '(')) - st) > 1 ?
                 new String(property, st + 1, cursor - st - 1) : "";
@@ -577,6 +545,29 @@ public class PropertyAccessor {
             for (int i = 0; i < subtokens.length; i++) {
                 args[i] = eval(subtokens[i], thisReference, variableFactory);
             }
+        }
+
+        if (first && variableFactory != null && variableFactory.isResolveable(name)) {
+            Object ptr = variableFactory.getVariableResolver(name).getValue();
+            if (ptr instanceof Method) {
+                ctx = ((Method) ptr).getDeclaringClass();
+                name = ((Method) ptr).getName();
+            }
+            else if (ptr instanceof MethodStub) {
+                ctx = ((MethodStub) ptr).getClassReference();
+                name = ((MethodStub) ptr).getMethodName();
+            }
+            else if (ptr instanceof Function) {
+
+
+                return ((Function) ptr).call(ctx, thisReference, variableFactory, args);
+            }
+            else {
+                throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
+                        + name + " (reference is type: " + (ctx != null ? ctx.getClass().getName() : null) + ")");
+            }
+
+            first = false;
         }
 
         /**
