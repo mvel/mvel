@@ -2859,6 +2859,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("barfoo", test("function testFunction(input) { return input; }; testFunction('barfoo');"));
     }
 
+    public void testFunctionDefAndCall5() {
+        assertEquals(10, test("function testFunction(x, y) { return x + y; }; testFunction(7, 3);"));
+    }
+
 }
 
 

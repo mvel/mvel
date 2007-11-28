@@ -676,8 +676,47 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
             else if (ptr instanceof Function) {
 
-                if (es.length != 0) {
+                if (es != null && es.length != 0) {
                     compiledInputs.addAll(Arrays.asList(es));
+
+                    intPush(es.length);
+
+                    debug("ANEWARRAY [" + es.length + "]");
+                    mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+
+                    debug("ASTORE 4");
+                    mv.visitVarInsn(ASTORE, 4);
+
+                    for (int i = 0; i < es.length; i++) {
+                        debug("ALOAD 4");
+                        mv.visitVarInsn(ALOAD, 4);
+                        intPush(i);
+                        loadField(i);
+
+                        debug("ALOAD 1");
+                        mv.visitVarInsn(ALOAD, 1);
+
+                        debug("ALOAD 3");
+                        mv.visitIntInsn(ALOAD, 3);
+
+                        debug("INVOKEINTERFACE ExecutableStatement.getValue");
+                        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/ExecutableStatement", "getValue",
+                                "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+
+                        debug("AASTORE");
+                        mv.visitInsn(AASTORE);
+                    }
+
+                }
+                else {
+                    debug("ACONST_NULL");
+                    mv.visitInsn(ACONST_NULL);
+
+                    debug("CHECKCAST java/lang/Object");
+                    mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
+
+                    debug("ASTORE 4");
+                    mv.visitVarInsn(ASTORE, 4);
                 }
 
                 loadVariableByName(name);
@@ -693,15 +732,26 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("ALOAD 3");
                 mv.visitVarInsn(ALOAD, 3);
 
-                debug("INVOKEVIRTUAL Function.call");
-                mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(Function.class), "call",
-                        "(Ljava/lang/Object;Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+                debug("ALOAD 4");
+                mv.visitVarInsn(ALOAD, 4);
 
-                for (int i = 0; i < es.length; i++) {
-                    loadField(i);
+                debug("INVOKEVIRTUAL Function.call");
+                mv.visitMethodInsn(INVOKEVIRTUAL,
+                        getInternalName(Function.class),
+                        "call",
+                        "(Ljava/lang/Object;Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;[Ljava/lang/Object;)Ljava/lang/Object;");
+
+
+                Object[] parm = null;
+
+                if (es != null) {
+                    parm = new Object[es.length];
+                    for (int i = 0; i < es.length; i++) {
+                        parm[i] = es[i].getValue(ctx, thisRef, variableFactory);
+                    }
                 }
 
-                return ((Function) ptr).call(ctx, thisRef, variableFactory, es);
+                return ((Function) ptr).call(ctx, thisRef, variableFactory, parm);
             }
             else {
                 throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "

@@ -515,7 +515,15 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
             else if (ptr instanceof Function) {
                 addAccessorNode(new FunctionAccessor((Function) ptr, es));
-                return ((Function) ptr).call(ctx, thisRef, variableFactory, null);
+
+                Object[] parm = null;
+                if (es != null) {
+                    parm = new Object[es.length];
+                    for (int i = 0; i < es.length; i++) {
+                        parm[i] = es[i].getValue(ctx, thisRef, variableFactory);
+                    }
+                }
+                return ((Function) ptr).call(ctx, thisRef, variableFactory, parm);
             }
             else {
                 throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "

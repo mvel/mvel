@@ -35,7 +35,7 @@ public class Function extends ASTNode implements Safe {
 
                 int i = 0;
                 for (Object p : parms) {
-                    f.createVariable(parameters[i], p);
+                    f.createVariable(parameters[i++], p);
                 }
 
                 return compiledBlock.getValue(ctx, thisValue, f);
