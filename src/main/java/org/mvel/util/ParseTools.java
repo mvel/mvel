@@ -614,7 +614,7 @@ public class ParseTools {
             throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
         }
         else {
-            return ResolverTools.insertFactory(factory, new TypeInjectionResolverFactoryImpl());
+            return ResolverTools.appendFactory(factory, new TypeInjectionResolverFactoryImpl());
         }
     }
 

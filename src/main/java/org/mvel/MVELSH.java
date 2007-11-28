@@ -23,12 +23,26 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
 public class MVELSH {
     public static void main(String[] args) {
+        if (args.length != 0) {
+            try {
+                MVEL.evalFile(new File(args[0]));
+                return;
+            }
+            catch (IOException e) {
+                System.out.println("ERROR: " + e.getMessage());
+                return;
+            }
+        }
+
+
         Map map;
 
         boolean output = true;
@@ -49,7 +63,7 @@ public class MVELSH {
         while (true) {
             try {
                 System.out.print("mvel$ ");
-                
+
                 if ((in = new BufferedReader(new InputStreamReader(System.in)).readLine()).length() == 0) continue;
 
                 if ("quit;".equals(in) || "exit;".equals(in)) return;
@@ -84,10 +98,7 @@ public class MVELSH {
                     System.out.println("CLEARED VARIABLES.");
                     continue;
                 }
-                else
-
-
-                if ("help;".equals(in)) {
+                else if ("help;".equals(in)) {
                     showHelp();
                     continue;
                 }

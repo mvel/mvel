@@ -19,6 +19,8 @@ import org.mvel.util.MethodStub;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import static java.lang.System.currentTimeMillis;
 import java.util.*;
@@ -2861,6 +2863,10 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testFunctionDefAndCall5() {
         assertEquals(10, test("function testFunction(x, y) { return x + y; }; testFunction(7, 3);"));
+    }
+
+    public void testScriptFromFile() throws IOException {
+        MVEL.evalFile(new File("helloworld.mvel"));
     }
 
 }

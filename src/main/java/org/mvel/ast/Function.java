@@ -15,7 +15,7 @@ public class Function extends ASTNode implements Safe {
     protected String[] parameters;
 
     public Function(String name, char[] parameters, char[] block) {
-        this.name = name;
+        this.name = name.trim();
         this.parameters = ParseTools.parseParameterList(parameters, 0, parameters.length);
         this.compiledBlock = (ExecutableStatement) ParseTools.subCompileExpression(block);
     }

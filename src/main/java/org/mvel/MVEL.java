@@ -28,10 +28,15 @@ import org.mvel.optimizers.impl.refl.GetterAccessor;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.handleParserEgress;
+import org.mvel.util.StringAppender;
 
-import java.io.Serializable;
+import java.io.*;
 import static java.lang.Boolean.getBoolean;
 import static java.lang.String.valueOf;
+import java.nio.ByteBuffer;
+import static java.nio.ByteBuffer.allocateDirect;
+import java.nio.channels.ReadableByteChannel;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MVEL {
@@ -490,6 +495,65 @@ public class MVEL {
             return valueOf(handleParserEgress(end.getValue(), false));
         }
     }
+
+    public static Object evalFile(File file) throws IOException {
+        return _evalFile(file, null, new MapVariableResolverFactory(new HashMap()));
+    }
+
+    public static Object evalFile(File file, Object ctx) throws IOException {
+        return _evalFile(file, ctx, new MapVariableResolverFactory(new HashMap()));
+    }
+
+    public static Object evalFile(File file, Map vars) throws IOException {
+        return evalFile(file, null, vars);
+    }
+
+    public static Object evalFile(File file, Object ctx, Map vars) throws IOException {
+        return _evalFile(file, ctx, new MapVariableResolverFactory(vars));
+    }
+
+    public static Object evalFile(File file, Object ctx, VariableResolverFactory factory) throws IOException {
+        return _evalFile(file, ctx, factory);
+    }
+
+    private static Object _evalFile(File file, Object ctx, VariableResolverFactory factory) throws IOException {
+        if (!file.exists())
+            throw new CompileException("cannot find file: " + file.getName());
+
+        FileInputStream inStream = null;
+        ReadableByteChannel fc = null;
+        try {
+            inStream = new FileInputStream(file);
+            fc = inStream.getChannel();
+            ByteBuffer buf = allocateDirect(10);
+
+            StringAppender sb = new StringAppender((int) file.length());
+
+            int read = 0;
+            while (read >= 0) {
+                buf.rewind();
+                read = fc.read(buf);
+                buf.rewind();
+
+                for (; read > 0; read--) {
+                    sb.append((char) buf.get());
+                }
+            }
+
+            //noinspection unchecked
+            return eval(sb.toChars(), ctx, factory);
+        }
+        catch (FileNotFoundException e) {
+            // this can't be thrown, we check for this explicitly.
+        }
+        finally {
+            if (inStream != null) inStream.close();
+            if (fc != null) fc.close();
+        }
+
+        return null;
+    }
+
 
     /**
      * Evaluate an expression in Boolean-only mode.

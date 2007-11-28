@@ -666,6 +666,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         if (first && variableFactory != null && variableFactory.isResolveable(name)) {
             Object ptr = variableFactory.getVariableResolver(name).getValue();
+
             if (ptr instanceof Method) {
                 ctx = ((Method) ptr).getDeclaringClass();
                 name = ((Method) ptr).getName();

@@ -13,7 +13,7 @@ public class ResolverTools {
      * @param newFactory The new factory
      * @return An instance of the new factory
      */
-    public static VariableResolverFactory appendFactory(VariableResolverFactory root, VariableResolverFactory newFactory) {
+    public static <T extends VariableResolverFactory> T appendFactory(VariableResolverFactory root, T newFactory) {
         VariableResolverFactory vrf = root;
 
         if (vrf.getNextFactory() == null) {
