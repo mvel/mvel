@@ -20,6 +20,7 @@
 package org.mvel;
 
 import static org.mvel.PropertyAccessor.get;
+import org.mvel.ast.Function;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
@@ -305,10 +306,18 @@ public class ASTNode implements Cloneable, Serializable {
                     int mBegin = findFirst('(', name);
                     if (mBegin != -1) {
                         if (factory.isResolveable(s = new String(name, 0, mBegin))) {
-                            Method m = (Method) factory.getVariableResolver(s).getValue();
+                            Object o = factory.getVariableResolver(s).getValue();
 
-                            return valRet(get(m.getName() + new String(name, mBegin, name.length - mBegin),
-                                    m.getDeclaringClass(), factory, thisValue));
+                            if (o instanceof Method) {
+                                Method m = (Method) o;
+                                return valRet(get(m.getName() + new String(name, mBegin, name.length - mBegin),
+                                        m.getDeclaringClass(), factory, thisValue));
+                            }
+                            else {
+                                Function f = (Function) o;
+                                return valRet(get(f.getName() + new String(name, mBegin, name.length - mBegin),
+                                        null, factory, thisValue));
+                            }
                         }
                     }
                 }

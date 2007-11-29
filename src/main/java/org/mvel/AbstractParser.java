@@ -606,7 +606,7 @@ public class AbstractParser implements Serializable {
                                         break;
 
                                     case 'i':
-                                        if (isNext('n') && isWhitespace(lookAhead(2))) {
+                                        if (isNext('n') && isWhitespace(lookAhead(2)) && !isIdentifierPart(lookBehind())) {
                                             fields |= ASTNode.FOLD;
                                             for (int level = brace; cursor != length; cursor++) {
                                                 switch (expr[cursor]) {

@@ -20,6 +20,8 @@ import org.mvel.util.MethodStub;
 import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import static java.lang.System.currentTimeMillis;
 import java.util.*;
@@ -2872,6 +2874,11 @@ public class CoreConfidenceTests extends AbstractTest {
         test("System.out.print(\"Hello : \" + (foo != null ? \"FOO!\" : \"NO FOO\") + \". Bye.\");");
     }
 
+    public void testFunctionsScript1() throws IOException {
+        //  test(new String(ParseTools.loadFromFile(new File("samples/scripts/functions1.mvel"))));
+
+        MVEL.evalFile(new File("samples/scripts/functions1.mvel"));
+    }
 
 }
 

@@ -9,10 +9,7 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.*;
 import org.mvel.math.MathProcessor;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import static java.lang.Character.isWhitespace;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
@@ -22,6 +19,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import static java.nio.ByteBuffer.allocateDirect;
+import java.nio.channels.ReadableByteChannel;
 import java.util.*;
 
 
@@ -1102,5 +1102,43 @@ public class ParseTools {
             n[i] = c;
         }
         return new String(n);
+    }
+
+    public static char[] loadFromFile(File file) throws IOException {
+        if (!file.exists())
+            throw new CompileException("cannot find file: " + file.getName());
+
+        FileInputStream inStream = null;
+        ReadableByteChannel fc = null;
+        try {
+            inStream = new FileInputStream(file);
+            fc = inStream.getChannel();
+            ByteBuffer buf = allocateDirect(10);
+
+            StringAppender sb = new StringAppender((int) file.length());
+
+            int read = 0;
+            while (read >= 0) {
+                buf.rewind();
+                read = fc.read(buf);
+                buf.rewind();
+
+                for (; read > 0; read--) {
+                    sb.append((char) buf.get());
+                }
+            }
+
+            //noinspection unchecked
+            return sb.toChars();
+        }
+        catch (FileNotFoundException e) {
+            // this can't be thrown, we check for this explicitly.
+        }
+        finally {
+            if (inStream != null) inStream.close();
+            if (fc != null) fc.close();
+        }
+
+        return null;
     }
 }
