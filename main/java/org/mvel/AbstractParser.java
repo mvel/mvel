@@ -1332,7 +1332,7 @@ public class AbstractParser implements Serializable {
                 OPERATORS.put("if", IF);
                 OPERATORS.put("else", ELSE);
                 OPERATORS.put("?", Operator.TERNARY);
-                OPERATORS.put("switch", SWITCH);
+             //   OPERATORS.put("switch", SWITCH);
 
             case 4: // assignment
                 OPERATORS.put("=", Operator.ASSIGN);
@@ -1342,9 +1342,9 @@ public class AbstractParser implements Serializable {
 
             case 3: // iteration
                 OPERATORS.put("foreach", FOREACH);
-                OPERATORS.put("while", WHILE);
-                OPERATORS.put("for", FOR);
-                OPERATORS.put("do", DO);
+             //   OPERATORS.put("while", WHILE);
+            //    OPERATORS.put("for", FOR);
+             //   OPERATORS.put("do", DO);
 
             case 2: // multi-statement
                 OPERATORS.put("return", RETURN);
