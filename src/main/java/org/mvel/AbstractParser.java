@@ -284,42 +284,11 @@ public class AbstractParser implements Serializable {
                     if (cursor != length && expr[cursor] == '(') {
                         fields |= ASTNode.METHOD;
 
-                        /**
-                         * If the current token is a method call or a constructor, we
-                         * simply capture the entire parenthesized range and allow
-                         * reduction to be dealt with through sub-parsing the property.
-                         */
-                        cursor++;
-                        for (brace = 1; cursor != length && brace != 0;) {
-                            switch (expr[cursor++]) {
-                                case '(':
-                                    brace++;
-                                    break;
-                                case ')':
-                                    brace--;
-                                    break;
-
-                                    /**
-                                     * String literals need to be skipped over, or encountering a ')' in a String
-                                     * will cause an explosion.
-                                     */
-                                case '\'':
-                                    cursor = captureStringLiteral('\'', expr, cursor, length) + 1;
-                                    break;
-
-                                case '"':
-                                    cursor = captureStringLiteral('"', expr, cursor, length) + 1;
-                                    break;
-                            }
+                        if ((cursor = balancedCapture(expr, cursor, '(')) == -1) {
+                            throw new CompileException("unbalanced braces", expr, cursor);
                         }
 
-                        /**
-                         * If the brace counter is greater than 0, we know we have
-                         * unbalanced braces in the expression.  So we throw a
-                         * optimize error now.
-                         */
-                        if (brace != 0)
-                            throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
+                        cursor++;
                     }
 
                     /**

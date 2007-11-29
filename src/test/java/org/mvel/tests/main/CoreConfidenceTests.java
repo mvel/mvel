@@ -2868,6 +2868,11 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(BufferedReader.class, test("import java.io.*; BufferedReader"));
     }
 
+    public void testStringWithTernaryIf() {
+        test("System.out.print(\"Hello : \" + (foo != null ? \"FOO!\" : \"NO FOO\") + \". Bye.\");");
+    }
+
+
 }
 
 
