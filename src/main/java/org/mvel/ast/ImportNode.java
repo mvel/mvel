@@ -10,21 +10,37 @@ import static org.mvel.util.ParseTools.findClassImportResolverFactory;
  */
 public class ImportNode extends ASTNode {
     private Class importClass;
+    private boolean packageImport;
+    private short offset;
 
     public ImportNode(char[] expr, int fields) {
         super(expr, fields);
 
-        try {
-            this.importClass = Thread.currentThread().getContextClassLoader().loadClass(new String(expr));
+        String name = new String(expr);
+
+        if (name.endsWith(".*")) {
+            packageImport = true;
+            offset = (short) name.lastIndexOf('.');
         }
-        catch (ClassNotFoundException e) {
-            throw new CompileException("class not found: " + new String(expr));
+        else {
+            try {
+                this.importClass = Thread.currentThread().getContextClassLoader().loadClass(new String(expr));
+            }
+            catch (ClassNotFoundException e) {
+                throw new CompileException("class not found: " + new String(expr));
+            }
         }
     }
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return findClassImportResolverFactory(factory).addClass(importClass);
+        if (!packageImport) {
+            return findClassImportResolverFactory(factory).addClass(importClass);
+        }
+        else {
+            findClassImportResolverFactory(factory).addPackageImport(new String(name, 0, (int) offset));
+            return null;
+        }
         //    return importClass;
     }
 
@@ -35,6 +51,18 @@ public class ImportNode extends ASTNode {
 
     public Class getImportClass() {
         return importClass;
+    }
+
+    public boolean isPackageImport() {
+        return packageImport;
+    }
+
+    public void setPackageImport(boolean packageImport) {
+        this.packageImport = packageImport;
+    }
+
+    public String getPackageImport() {
+        return new String(name, 0, offset);
     }
 }
 

@@ -251,7 +251,13 @@ public class AbstractParser implements Serializable {
                                 start = cursor + 1;
                                 captureToEOS();
                                 ImportNode importNode = new ImportNode(subArray(start, cursor--), fields);
-                                getParserContext().addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
+                                if (importNode.isPackageImport()) {
+                                    getParserContext().addPackageImport(importNode.getPackageImport());
+                                    cursor++;
+                                }
+                                else {
+                                    getParserContext().addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
+                                }
                                 return importNode;
 
                             case IMPORT_STATIC:
@@ -844,7 +850,7 @@ public class AbstractParser implements Serializable {
             return createPropertyToken(start, cursor);
         }
         catch (CompileException e) {
-            throw new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0);
+            throw new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0, e);
         }
     }
 

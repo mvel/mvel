@@ -19,12 +19,17 @@
 package org.mvel.integration.impl;
 
 import org.mvel.integration.VariableResolver;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ClassImportResolverFactory extends BaseVariableResolverFactory {
+    private Set<String> packageImports;
+
     public ClassImportResolverFactory() {
         super();
 
@@ -55,7 +60,26 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     }
 
     public boolean isResolveable(String name) {
-        return variableResolvers.containsKey(name) || isNextResolveable(name);
+        if (variableResolvers.containsKey(name) || isNextResolveable(name)) {
+            return true;
+        }
+        else if (packageImports != null) {
+
+            Class loadClass;
+            for (String s : packageImports) {
+
+                try {
+                    loadClass = ParseTools.createClass(s + "." + name);
+
+                    addClass(loadClass);
+                    return true;
+                }
+                catch (ClassNotFoundException e) {
+                    // do nothing;
+                }
+            }
+        }
+        return false;
     }
 
     public void clear() {
@@ -76,5 +100,10 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
         }
 
         return imports;
+    }
+
+    public void addPackageImport(String packageName) {
+        if (packageImports == null) packageImports = new HashSet<String>();
+        packageImports.add(packageName);
     }
 }

@@ -66,6 +66,11 @@ public class CompileException extends RuntimeException {
         this.cursor = cursor;
     }
 
+    public CompileException(String message, char[] expr, int cursor, boolean concatError, Exception e) {
+        super(concatError ? "Failed to compile:\n[Error: " + message + "]\n[Near: { ... " + showCodeNearError(expr, cursor) + " ... } ]" : message, e);
+        this.expr = expr;
+        this.cursor = cursor;
+    }
 
     public CompileException(String message, Throwable cause) {
         super(message, cause);
