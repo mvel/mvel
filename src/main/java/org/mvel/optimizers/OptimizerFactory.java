@@ -32,7 +32,8 @@ public class OptimizerFactory {
     private static String defaultOptimizer = "ASM";
     private static final Map<String, AccessorOptimizer> accessorCompilers = new HashMap<String, AccessorOptimizer>();
 
-    private static ThreadLocal<Class<? extends AccessorOptimizer>> threadOptimizer;
+    private static ThreadLocal<Class<? extends AccessorOptimizer>> threadOptimizer
+            = new ThreadLocal<Class<? extends AccessorOptimizer>>();
 
     static {
         accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveAccessorOptimizer());
@@ -77,9 +78,9 @@ public class OptimizerFactory {
     }
 
     public static AccessorOptimizer getThreadAccessorOptimizer() {
-        if (threadOptimizer == null) {
-            threadOptimizer = new ThreadLocal<Class<? extends AccessorOptimizer>>();
-        }
+//        if (threadOptimizer == null) {
+//            threadOptimizer = new ThreadLocal<Class<? extends AccessorOptimizer>>();
+//        }
         if (threadOptimizer.get() == null) {
             threadOptimizer.set(getDefaultAccessorCompiler().getClass());
         }
@@ -93,9 +94,10 @@ public class OptimizerFactory {
     }
 
     public static void setThreadAccessorOptimizer(Class<? extends AccessorOptimizer> optimizer) {
-        if (threadOptimizer == null) {
-            threadOptimizer = new ThreadLocal<Class<? extends AccessorOptimizer>>();
-        }
+//        if (threadOptimizer == null) {
+//            threadOptimizer = new ThreadLocal<Class<? extends AccessorOptimizer>>();
+//        }
+        if (optimizer == null) throw new RuntimeException("null optimizer");
         threadOptimizer.set(optimizer);
     }
 

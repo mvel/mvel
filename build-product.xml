@@ -3,7 +3,7 @@
         MVFLEX Expression Language
     </description>
 
-    <property name="version" value="2.0alpha0"/>
+    <property name="version" value="2.0prealpha0-dp1"/>
 
     <property name="src" location="src"/>
     <property name="build" location="build"/>

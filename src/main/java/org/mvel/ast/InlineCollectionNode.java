@@ -28,7 +28,7 @@ public class InlineCollectionNode extends ASTNode {
         }
         catch (NullPointerException e) {
             if (accessor == null) {
-                AccessorOptimizer ao = OptimizerFactory.getDefaultAccessorCompiler();
+                AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
                 accessor = ao.optimizeCollection(name, ctx, thisValue, factory);
                 egressType = ao.getEgressType();
 

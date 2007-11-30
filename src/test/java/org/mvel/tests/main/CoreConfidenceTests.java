@@ -16,6 +16,7 @@ import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.MethodStub;
+import org.mvel.util.ParseTools;
 
 import javax.swing.*;
 import java.awt.*;
@@ -2878,6 +2879,25 @@ public class CoreConfidenceTests extends AbstractTest {
         //  test(new String(ParseTools.loadFromFile(new File("samples/scripts/functions1.mvel"))));
 
         MVEL.evalFile(new File("samples/scripts/functions1.mvel"));
+    }
+
+    public void testQuickSortScript1() throws IOException {
+        MVEL.evalFile(new File("samples/scripts/quicksort.mvel"));
+    }
+
+    public void testQuickSortScript2() throws IOException {
+        Object[] sorted = (Object[]) test(new String(ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"))));
+
+        int last = -1;
+        for (Object o : sorted) {
+            if (last == -1) {
+                last = (Integer) o;
+            }
+            else {
+                assertTrue(((Integer) o) > last);
+                last = (Integer) o;
+            }
+        }
     }
 
 }

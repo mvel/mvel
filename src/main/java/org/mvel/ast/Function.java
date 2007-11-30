@@ -5,6 +5,7 @@ import org.mvel.EndWithValue;
 import org.mvel.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
+import org.mvel.integration.impl.FunctionVariableResolverFactory;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.findTypeInjectionResolverFactory;
 
@@ -31,7 +32,7 @@ public class Function extends ASTNode implements Safe {
     public Object call(Object ctx, Object thisValue, VariableResolverFactory factory, Object[] parms) {
         try {
             if (parms != null && parms.length != 0) {
-                VariableResolverFactory f = new DefaultLocalVariableResolverFactory(factory);
+                VariableResolverFactory f = new FunctionVariableResolverFactory(factory);
 
                 int i = 0;
                 for (Object p : parms) {

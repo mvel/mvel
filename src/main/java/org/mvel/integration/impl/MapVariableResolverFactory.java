@@ -100,7 +100,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         return false;
     }
 
-    private void addResolver(String name, VariableResolver vr) {
+    protected void addResolver(String name, VariableResolver vr) {
         if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
         variableResolvers.put(name, vr);
     }

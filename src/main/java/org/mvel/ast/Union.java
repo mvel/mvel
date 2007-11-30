@@ -22,14 +22,14 @@ public class Union extends ASTNode {
         }
         catch (NullPointerException e) {
             if (accessor != null) throw e;
-            AccessorOptimizer o = OptimizerFactory.getDefaultAccessorCompiler();
+            AccessorOptimizer o = OptimizerFactory.getThreadAccessorOptimizer();
             accessor = o.optimizeAccessor(name, main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false);
             return o.getResultOptPass();
         }
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return  PropertyAccessor.get(
+        return PropertyAccessor.get(
                 name,
                 main.getReducedValue(ctx, thisValue, factory), factory, thisValue);
     }

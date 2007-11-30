@@ -7,6 +7,7 @@ import org.mvel.DataTypes;
 import static org.mvel.DataTypes.EMPTY;
 import static org.mvel.Operator.*;
 import org.mvel.Unit;
+import org.mvel.debug.DebugTools;
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
 
@@ -147,7 +148,9 @@ public class IEEEFloatingPointMath implements MathProcessor {
         }
 
         throw new CompileException("could not perform numeric operation on non-numeric types: left-type="
-                + (val1 != null ? val1.getClass().getName() : "null") + "; right-type=" + (val2 != null ? val2.getClass().getName() : "null"));
+                + (val1 != null ? val1.getClass().getName() : "null") + "; right-type="
+                + (val2 != null ? val2.getClass().getName() : "null")
+                + " [vals (" + valueOf(val1) + ", " + valueOf(val2) + ") operation=" + DebugTools.getOperatorName(operation) + " ]");
 
     }
 

@@ -113,7 +113,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     private void setupOptimizers() {
-        OptimizerFactory.setThreadAccessorOptimizer(accessorOptimizer);
+        if (accessorOptimizer != null) OptimizerFactory.setThreadAccessorOptimizer(accessorOptimizer);
         optimized = true;
     }
 

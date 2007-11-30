@@ -533,68 +533,38 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("CHECKCAST java/util/Map");
             mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 
-            if (item instanceof Integer) {
-                intPush((Integer) item);
-                wrapPrimitive(int.class);
-
-                debug("INVOKEINTERFACE: get");
-                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
-
-                return ((Map) ctx).get(item);
+            Class c = writeLiteralOrSubexpression(compiled);
+            if (c != null && c.isPrimitive()) {
+                wrapPrimitive(c);
             }
-            else {
-                writeLiteralOrSubexpression(compiled);
 
-                debug("INVOKEINTERFACE: get");
-                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
+            debug("INVOKEINTERFACE: get");
+            mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 
-                return ((Map) ctx).get(item);
-            }
+            return ((Map) ctx).get(item);
         }
         else if (ctx instanceof List) {
             debug("CHECKCAST java/util/List");
             mv.visitTypeInsn(CHECKCAST, "java/util/List");
 
-            if (item instanceof Integer) {
-                intPush((Integer) item);
+            writeLiteralOrSubexpression(compiled, int.class);
 
-                debug("INVOKEINTERFACE: java/util/List.get");
-                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
+            debug("INVOKEINTERFACE: java/util/List.get");
+            mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
 
-                return ((List) ctx).get((Integer) item);
-            }
-            else {
-                writeLiteralOrSubexpression(compiled);
+            return ((List) ctx).get(convert(item, Integer.class));
 
-                debug("INVOKEINTERFACE: java/util/List.get");
-                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
-
-                dataConversion(Integer.class);
-                unwrapPrimitive(int.class);
-
-                return ((List) ctx).get(convert(item, Integer.class));
-            }
         }
         else if (ctx instanceof Object[]) {
             debug("CHECKCAST [Ljava/lang/Object;");
             mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
-            if (item instanceof Integer) {
-                intPush((Integer) item);
 
-                debug("AALOAD");
-                mv.visitInsn(AALOAD);
+            writeLiteralOrSubexpression(compiled, int.class, item.getClass());
 
-                return ((Object[]) ctx)[(Integer) item];
-            }
-            else {
-                writeLiteralOrSubexpression(compiled, Integer.class);
-                unwrapPrimitive(int.class);
+            debug("AALOAD");
+            mv.visitInsn(AALOAD);
 
-                debug("AALOAD");
-                mv.visitInsn(AALOAD);
-
-                return ((Object[]) ctx)[convert(item, Integer.class)];
-            }
+            return ((Object[]) ctx)[convert(item, Integer.class)];
         }
         else if (ctx instanceof CharSequence) {
 
@@ -1671,15 +1641,28 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private Class writeLiteralOrSubexpression(Object stmt) {
-        return writeLiteralOrSubexpression(stmt, null);
+        return writeLiteralOrSubexpression(stmt, null, null);
+    }
+
+    private Class writeLiteralOrSubexpression(Object stmt, Class desiredTarget) {
+        return writeLiteralOrSubexpression(stmt, desiredTarget, null);
     }
 
 
-    private Class writeLiteralOrSubexpression(Object stmt, Class desiredTarget) {
+    private Class writeLiteralOrSubexpression(Object stmt, Class desiredTarget, Class knownIngressType) {
+
         if (stmt instanceof ExecutableLiteral) {
             Class type = ((ExecutableLiteral) stmt).getLiteral().getClass();
 
-            if (desiredTarget != null && type != desiredTarget) {
+            debug("*** type:" + type + ";desired:" + desiredTarget);
+
+            if (type == Integer.class && desiredTarget == int.class) {
+                intPush(((ExecutableLiteral) stmt).getInteger32());
+                type = int.class;
+            }
+            else if (desiredTarget != null && type != desiredTarget) {
+                debug("*** Converting because desiredType(" + desiredTarget.getClass() + ") is not: " + type);
+
                 dataConversion(desiredTarget);
                 writeOutLiteralWrapped(convert(((ExecutableLiteral) stmt).getLiteral(), desiredTarget));
             }
@@ -1710,10 +1693,23 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(ExecutableStatement.class), "getValue",
                     "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
 
-            Class type = ((ExecutableStatement) stmt).getKnownEgressType();
+            Class type;
+            if (knownIngressType == null) {
+                type = ((ExecutableStatement) stmt).getKnownEgressType();
+            }
+            else {
+                type = knownIngressType;
+            }
 
             if (desiredTarget != null && type != desiredTarget) {
-                dataConversion(desiredTarget);
+                //      dataConversion(desiredTarget);
+                if (desiredTarget.isPrimitive()) {
+                    if (type == null) throw new OptimizationFailure("cannot optimize expression: " + new String(expr) +
+                            ": cannot determine ingress type for primitive output");
+
+                    checkcast(type);
+                    unwrapPrimitive(desiredTarget);
+                }
             }
 
             return type;
