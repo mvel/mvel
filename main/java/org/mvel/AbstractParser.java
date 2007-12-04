@@ -1182,9 +1182,9 @@ public class AbstractParser implements Serializable {
         while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
     }
 
-    private boolean isFlag(int bit) {
-        return (fields & bit) != 0;
-    }
+//    private boolean isFlag(int bit) {
+//        return (fields & bit) != 0;
+//    }
 
     public static boolean isReservedWord(String name) {
         return LITERALS.containsKey(name) || OPERATORS.containsKey(name);

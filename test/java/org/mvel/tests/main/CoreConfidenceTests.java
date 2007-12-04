@@ -2832,6 +2832,15 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testSetExpressions1() {
+        Map<String, Object> myMap = new HashMap<String, Object>();
+        System.out.println("The map is initially: " + myMap);
+        final Serializable fooExpr = MVEL.compileSetExpression("foo");
+        MVEL.executeSetExpression(fooExpr, myMap, "blah");
+        System.out.println("After executing the set expression, the map is: " + myMap);
+        MVEL.executeSetExpression(fooExpr, myMap, "baz");
+        System.out.println("After executing the set expression, the map is: " + myMap);
+    }
 }
 
 
