@@ -232,7 +232,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             else if (ctx instanceof Map) {
                 //noinspection unchecked
                 ((Map) ctx).put(tk, value);
-                return new SetAccessor(rootAccessor, new MapAccessorNest(tk));
+                return new SetAccessor(rootAccessor, new MapAccessor(tk));
 
             }
             else {
