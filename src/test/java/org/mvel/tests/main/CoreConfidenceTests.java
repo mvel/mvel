@@ -2886,7 +2886,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testQuickSortScript2() throws IOException {
-        //     for (int i = 0; i < 100; i++) {
         Object[] sorted = (Object[]) test(new String(ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"))));
 
         int last = -1;
@@ -2899,7 +2898,6 @@ public class CoreConfidenceTests extends AbstractTest {
                 last = (Integer) o;
             }
         }
-        //     }
     }
 
     public void testSetExpressions1() {
