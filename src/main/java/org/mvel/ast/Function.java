@@ -22,11 +22,13 @@ public class Function extends ASTNode implements Safe {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return findTypeInjectionResolverFactory(factory).createVariable(name, this);
+        if (name.length() != 0) findTypeInjectionResolverFactory(factory).createVariable(name, this);
+        return this;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return findTypeInjectionResolverFactory(factory).createVariable(name, this);
+        if (name.length() != 0) findTypeInjectionResolverFactory(factory).createVariable(name, this);
+        return this;
     }
 
     public Object call(Object ctx, Object thisValue, VariableResolverFactory factory, Object[] parms) {

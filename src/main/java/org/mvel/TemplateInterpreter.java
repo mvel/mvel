@@ -189,11 +189,7 @@ public class TemplateInterpreter {
                 nodes = new TemplateCompiler(this).compileExpression();
                 EX_NODE_CACHE.put(expression, cloneAll(nodes));
             }
-
         }
-
-        //    cloneAllNodes();
-
     }
 
     private Node[] cloneAll(Node[] nodes) {

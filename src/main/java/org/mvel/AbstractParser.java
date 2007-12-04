@@ -267,7 +267,6 @@ public class AbstractParser implements Serializable {
 
                             case FUNCTION:
                                 Function function = (Function) captureCodeBlock(FUNCTION);
-                                //             getParserContext().declareFunction(function);
                                 capture = false;
                                 start = cursor + 1;
                                 return function;
@@ -1129,6 +1128,19 @@ public class AbstractParser implements Serializable {
 
     protected void captureToEOS() {
         while (cursor != length && expr[cursor] != ';') {
+            switch (expr[cursor]) {
+                case '(':
+                case '[':
+                case '{':
+                    if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
+                        throw new CompileException("unbalanced braces", expr, cursor);
+                    }
+                    break;
+
+                case ';':
+                    return;
+
+            }
             cursor++;
         }
     }

@@ -2900,6 +2900,11 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testAnonymousFunctionDecl() {
+        assertEquals(3, test("anonFunc = function (a,b) { return a + b; }; anonFunc(1,2)"));
+    }
+
+
     public void testSetExpressions1() {
         Map<String, Object> myMap = new HashMap<String, Object>();
 
