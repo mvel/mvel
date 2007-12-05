@@ -79,7 +79,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
             setExpr.setValue(ctx, factory, ctx = statement.getValue(ctx, thisValue, factory));
         }
         else if (statement != null) {
-            finalLocalVariableFactory(factory, false).createVariable(varName, ctx = statement.getValue(ctx, thisValue, factory));
+            factory.createVariable(varName, ctx = statement.getValue(ctx, thisValue, factory));
         }
         else {
             factory.createVariable(varName, null);
@@ -98,7 +98,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
             MVEL.setProperty(factory.getVariableResolver(varName).getValue(), new String(index), ctx = MVEL.eval(stmt, ctx, factory));
         }
         else {
-            finalLocalVariableFactory(factory, false).createVariable(varName, ctx = MVEL.eval(stmt, ctx, factory));
+            factory.createVariable(varName, ctx = MVEL.eval(stmt, ctx, factory));
         }
 
         return ctx;

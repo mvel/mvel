@@ -211,10 +211,6 @@ public class ExpressionCompiler extends AbstractParser {
         if (verifying) {
             if (tk.isAssignment()) {
                 String varName = ((Assignment) tk).getAssignmentVar();
-//                int c = 0;
-//                while (c < assign.length && assign[c] != '=') c++;
-//
-//                String varName = new String(assign, 0, c++).trim();
 
                 if (isReservedWord(varName)) {
                     addFatalError("invalid assignment - variable name is a reserved keyword: " + varName);
@@ -222,12 +218,10 @@ public class ExpressionCompiler extends AbstractParser {
 
                 new ExpressionCompiler(new String(((Assignment) tk).getExpression()).trim())._compile();
 
-                //      new ExpressionCompiler(new String(assign, c, assign.length - c).trim())._compile();
-
                 pCtx.addVariable(varName, returnType = tk.getEgressType());
             }
             else if (tk.isIdentifier()) {
-                PropertyVerifier propVerifier = new PropertyVerifier(tk.getAbsoluteName().toCharArray(), getParserContext());
+                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
                 returnType = propVerifier.analyze();
 
                 if (propVerifier.isResolvedExternally()) {

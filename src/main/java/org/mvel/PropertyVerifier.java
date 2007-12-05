@@ -64,6 +64,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
     public Class analyze() {
+
         Class ctx = Object.class;
         resolvedExternally = true;
 

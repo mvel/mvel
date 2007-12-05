@@ -40,12 +40,12 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (statement == null) statement = (ExecutableStatement) subCompileExpression(stmt);
-        finalLocalVariableFactory(factory, false).createVariable(name, ctx = statement.getValue(ctx, thisValue, factory), egressType);
+        factory.createVariable(name, ctx = statement.getValue(ctx, thisValue, factory), egressType);
         return ctx;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        finalLocalVariableFactory(factory, false).createVariable(name, ctx = eval(stmt, thisValue, factory), egressType);
+        factory.createVariable(name, ctx = eval(stmt, thisValue, factory), egressType);
         return ctx;
     }
 

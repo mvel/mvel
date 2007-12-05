@@ -6,7 +6,9 @@ import static org.mvel.AbstractParser.isReservedWord;
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.integration.impl.*;
+import org.mvel.integration.impl.ClassImportResolverFactory;
+import org.mvel.integration.impl.StaticMethodImportResolverFactory;
+import org.mvel.integration.impl.TypeInjectionResolverFactoryImpl;
 import org.mvel.math.MathProcessor;
 
 import java.io.*;
@@ -582,43 +584,49 @@ public class ParseTools {
         return stmt;
     }
 
-
-    public static VariableResolverFactory finalLocalVariableFactory(VariableResolverFactory factory, boolean indexable) {
-        if (!indexable) {
-            VariableResolverFactory v = factory;
-            while (v != null) {
-                if (v instanceof LocalVariableResolverFactory) {
-                    return v;
-                }
-
-                v = v.getNextFactory();
-            }
-
-            if (factory == null) {
-                throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
-            }
-            else {
-                return new DefaultLocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
-            }
-        }
-        else {
-            VariableResolverFactory v = factory;
-            while (v != null) {
-                if (v instanceof LocalVariableResolverFactory && v.isIndexedFactory()) {
-                    return v;
-                }
-
-                v = v.getNextFactory();
-            }
-
-            if (factory == null) {
-                throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
-            }
-            else {
-                return new FunctionVariableResolverFactory().setNextFactory(factory);
-            }
-        }
-    }
+//    public static VariableResolverFactory finalLocalVariableFactory(VariableResolverFactory factory, boolean indexable) {
+//        if (!indexable) {
+//            VariableResolverFactory v = factory;
+//            while (v != null) {
+//                if (v instanceof LocalVariableResolverFactory) {
+//                    return v;
+//                }
+//
+//                v = v.getNextFactory();
+//            }
+//
+//            if (factory == null) {
+//                throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
+//            }
+//            else {
+//                return factory;
+//
+//        //        return ResolverTools.insertFactory(factory, new DefaultLocalVariableResolverFactory(new HashMap<String, Object>()));
+//
+//            }
+//        }
+//        else {
+//            VariableResolverFactory v = factory;
+//            while (v != null) {
+//                if (v instanceof LocalVariableResolverFactory && v.isIndexedFactory()) {
+//                    System.out.println("returning:" + v);
+//                    return v;
+//                }
+//
+//                v = v.getNextFactory();
+//            }
+//
+//            if (factory == null) {
+//                throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
+//            }
+//            else {
+//                System.out.println("returning new functionVariableResolverFactory");
+//                return new FunctionVariableResolverFactory().setNextFactory(factory);
+//
+//             //   return ResolverTools.insertFactory(factory, new FunctionVariableResolverFactory());
+//            }
+//        }
+//    }
 
 
     public static TypeInjectionResolverFactoryImpl findTypeInjectionResolverFactory(VariableResolverFactory factory) {
