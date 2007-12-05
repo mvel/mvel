@@ -71,17 +71,11 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        //      System.out.println("IDX_ASSIGN_TO:" + register + " [" + name + "]");
-
         if (setExpr == null) {
             setExpr = (CompiledSetExpression) compileSetExpression(indexTarget);
-            //      statement = (ExecutableStatement) subCompileExpression(stmt);
         }
 
-        //   Object o;
-
         if (col) {
-
             setExpr.setValue(ctx, factory, ctx = statement.getValue(ctx, thisValue, factory));
         }
         else if (statement != null) {
@@ -93,8 +87,12 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
             }
         }
         else {
-
-            factory.createIndexedVariable(register, name, null);
+            if (factory.isIndexedFactory()) {
+                factory.createIndexedVariable(register, name, null);
+            }
+            else {
+                factory.createVariable(name, ctx = statement.getValue(ctx, thisValue, factory));
+            }
             return Void.class;
         }
 
