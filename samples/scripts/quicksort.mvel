@@ -4,18 +4,10 @@
  * by: Christopher Michael Brock
  */
 
-
-function quicksort(array) {
-    sort(array, 0, array.length - 1);
-}
-
-function sort(array, low, high) {
-    if (low >= high) {
-        return;
-    }
-    p = partition(array, low, high);
-    sort(array, low, p);
-    sort(array, p + 1, high);
+function swap(array, i, j) {
+    temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
 }
 
 function partition(array, low, high) {
@@ -29,22 +21,34 @@ function partition(array, low, high) {
         j--; while (array[j] > pivotPoint) j--;
         if (i < j) swap(array, i, j);
     }
-    
+
     return j;
 }
 
-function swap(array, i, j) {
-    temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
+function sort(array, low, high) {
+    if (low >= high) {
+        return;
+    }
+    p = partition(array, low, high);
+    sort(array, low, p);
+    sort(array, p + 1, high);
 }
+
+
+
+function quicksort(array) {
+    sort(array, 0, array.length - 1);
+}
+
+
+
 
 test = {50,20,21,209,10,77,8,9,55,73,41,99};
 
 quicksort(test);
 
-//foreach (item : test) {
-//    System.out.println(item);
-//}
+foreach (item : test) {
+    System.out.println(item);
+}
 
 test;

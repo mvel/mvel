@@ -99,15 +99,15 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     }
 
     public VariableResolver createIndexedVariable(int index, String name, Object value) {
-        throw new RuntimeException("cannot create indexed variable: " + index + ". operation not supported by resolver.");
+        throw new RuntimeException("cannot create indexed variable: " + name + "(" + index + "). operation not supported by resolver: " + this.getClass().getName());
     }
 
     public VariableResolver getIndexedVariableResolver(int index) {
-        throw new RuntimeException("cannot access indexed variable: " + index + ".  operation not supported by resolver.");
+        throw new RuntimeException("cannot access indexed variable: " + index + ".  operation not supported by resolver: " + this.getClass().getName());
     }
 
     public VariableResolver createIndexedVariable(int index, String name, Object value, Class<?> type) {
-        throw new RuntimeException("cannot access indexed variable: " + index + ".  operation not supported by resolver.");
+        throw new RuntimeException("cannot access indexed variable: " + name + "(" + index + ").  operation not supported by resolver.: " + this.getClass().getName());
     }
 
     public Map<String, VariableResolver> getVariableResolvers() {
@@ -128,7 +128,7 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
     public int variableIndexOf(String name) {
         for (int i = 0; i < indexedVariableNames.length; i++) {
-            if (name.equals(indexedVariableNames[i++])) return i;
+            if (name.equals(indexedVariableNames[i])) return i;
         }
         return -1;
     }
@@ -138,5 +138,9 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
             indexedVariableResolvers = new VariableResolver[indexedVariableNames.length];
         }
         indexedVariableResolvers[index] = resolver;
+    }
+
+    public boolean isIndexedFactory() {
+        return false;
     }
 }

@@ -316,8 +316,15 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 return this.thisRef;
             }
             else if (variableFactory != null && variableFactory.isResolveable(property)) {
-                addAccessorNode(new VariableAccessor(property));
-                return variableFactory.getVariableResolver(property).getValue();
+                if (variableFactory.isIndexedFactory()) {
+                    int idx;
+                    addAccessorNode(new IndexedVariableAccessor(idx = variableFactory.variableIndexOf(property)));
+                    return variableFactory.getIndexedVariableResolver(idx).getValue();
+                }
+                else {
+                    addAccessorNode(new VariableAccessor(property));
+                    return variableFactory.getVariableResolver(property).getValue();
+                }
             }
         }
 

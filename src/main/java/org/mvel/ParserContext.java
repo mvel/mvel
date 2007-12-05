@@ -10,7 +10,6 @@ import java.io.Serializable;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
 import java.util.*;
-import static java.util.Arrays.asList;
 
 /**
  * The ParserContext is the main enviroment object used for sharing state throughout the entire
@@ -46,6 +45,7 @@ public class ParserContext implements Serializable {
     private boolean debugSymbols = false;
     private boolean blockSymbols = false;
     private boolean executableCodeReached = false;
+    private boolean indexAllocation = false;
 
 
     public ParserContext() {
@@ -189,6 +189,7 @@ public class ParserContext implements Serializable {
     }
 
     public void addVariable(String name, Class type) {
+        initializeTables();
         if (variables.containsKey(name)) return;
         if (type == null) type = Object.class;
         variables.put(name, type);
@@ -406,22 +407,39 @@ public class ParserContext implements Serializable {
 
     public void addIndexedVariables(String[] variables) {
         initIndexedVariables();
-        indexedVariables.addAll(asList(variables));
+        for (String s : variables) {
+            if (!indexedVariables.contains(s))
+                indexedVariables.add(s);
+        }
     }
 
     public void addIndexedVariable(String variable) {
         initIndexedVariables();
-        indexedVariables.add(variable);
+        if (!indexedVariables.contains(variable)) indexedVariables.add(variable);
     }
 
     public void addIndexedVariables(Collection<String> variables) {
         initIndexedVariables();
-        indexedVariables.addAll(variables);
+        for (String s : variables) {
+            if (!indexedVariables.contains(s))
+                indexedVariables.add(s);
+        }
     }
 
     public int variableIndexOf(String name) {
-        initializeTables();
-        return indexedVariables.indexOf(name);
+        //   initializeTables();
+        return indexedVariables != null ? indexedVariables.indexOf(name) : -1;
     }
 
+    public boolean hasIndexedVariables() {
+        return indexedVariables != null && indexedVariables.size() != 0;
+    }
+
+    public boolean isIndexAllocation() {
+        return indexAllocation;
+    }
+
+    public void setIndexAllocation(boolean indexAllocation) {
+        this.indexAllocation = indexAllocation;
+    }
 }

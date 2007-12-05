@@ -72,7 +72,6 @@ public class ASTNode implements Cloneable, Serializable {
 
     protected Object literal;
 
-    // don't serialize this.
     protected transient Accessor accessor;
     protected Accessor safeAccessor;
 
@@ -84,90 +83,6 @@ public class ASTNode implements Cloneable, Serializable {
     protected boolean discard;
 
     private int intRegister;
-
-    public ASTNode() {
-    }
-
-    public ASTNode(char[] expr, int start, int end, int fields) {
-        this.fields = fields;
-
-        char[] name = new char[end - (this.cursorPosition = start)];
-        for (int i = 0; i < name.length; i++)
-            name[i] = expr[i + start];
-
-        setName(name);
-    }
-
-    public ASTNode(char[] expr, int fields) {
-        this.fields = fields;
-        this.name = expr;
-    }
-
-    public ASTNode(int fields, Object literalValue) {
-        this.fields = fields;
-        this.literal = literalValue;
-    }
-
-    protected String getAbsoluteRootElement() {
-        if ((fields & (DEEP_PROPERTY | COLLECTION)) != 0) {
-            return new String(name, 0, getAbsoluteFirstPart());
-        }
-        return new String(name);
-    }
-
-    public Class getEgressType() {
-        return egressType;
-    }
-
-    public void setEgressType(Class egressType) {
-        this.egressType = egressType;
-    }
-
-    protected String getAbsoluteRemainder() {
-        return (fields & COLLECTION) != 0 ? new String(name, endOfName, name.length - endOfName)
-                : ((fields & DEEP_PROPERTY) != 0 ? new String(name, firstUnion + 1, name.length - firstUnion - 1) : null);
-    }
-
-    public char[] getNameAsArray() {
-        return name;
-    }
-
-    private int getAbsoluteFirstPart() {
-        if ((fields & COLLECTION) != 0) {
-            if (firstUnion < 0 || endOfName < firstUnion) return endOfName;
-            else return firstUnion;
-        }
-        else if ((fields & DEEP_PROPERTY) != 0) {
-            return firstUnion;
-        }
-        else {
-            return -1;
-        }
-
-    }
-
-    public String getAbsoluteName() {
-        if ((fields & (COLLECTION | DEEP_PROPERTY)) != 0) {
-            return new String(name, 0, getAbsoluteFirstPart());
-        }
-        else {
-            return getName();
-        }
-    }
-
-    public String getName() {
-        if (nameCache != null) return nameCache;
-        else if (name != null) return nameCache = new String(name);
-        return "";
-    }
-
-    public Object getLiteralValue() {
-        return literal;
-    }
-
-    public void setLiteralValue(Object literal) {
-        this.literal = literal;
-    }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((fields & (LITERAL)) != 0) {
@@ -284,6 +199,7 @@ public class ASTNode implements Cloneable, Serializable {
                             factory.getVariableResolver(s).getValue(), factory, thisValue));
                 }
 
+
                 return valRet(factory.getVariableResolver(s).getValue());
             }
             else if (ctx != null) {
@@ -330,6 +246,67 @@ public class ASTNode implements Cloneable, Serializable {
             throw new UnresolveablePropertyException(this);
         }
         return valRet(literal);
+    }
+
+    protected String getAbsoluteRootElement() {
+        if ((fields & (DEEP_PROPERTY | COLLECTION)) != 0) {
+            return new String(name, 0, getAbsoluteFirstPart());
+        }
+        return new String(name);
+    }
+
+    public Class getEgressType() {
+        return egressType;
+    }
+
+    public void setEgressType(Class egressType) {
+        this.egressType = egressType;
+    }
+
+    protected String getAbsoluteRemainder() {
+        return (fields & COLLECTION) != 0 ? new String(name, endOfName, name.length - endOfName)
+                : ((fields & DEEP_PROPERTY) != 0 ? new String(name, firstUnion + 1, name.length - firstUnion - 1) : null);
+    }
+
+    public char[] getNameAsArray() {
+        return name;
+    }
+
+    private int getAbsoluteFirstPart() {
+        if ((fields & COLLECTION) != 0) {
+            if (firstUnion < 0 || endOfName < firstUnion) return endOfName;
+            else return firstUnion;
+        }
+        else if ((fields & DEEP_PROPERTY) != 0) {
+            return firstUnion;
+        }
+        else {
+            return -1;
+        }
+
+    }
+
+    public String getAbsoluteName() {
+        if ((fields & (COLLECTION | DEEP_PROPERTY)) != 0) {
+            return new String(name, 0, getAbsoluteFirstPart());
+        }
+        else {
+            return getName();
+        }
+    }
+
+    public String getName() {
+        if (nameCache != null) return nameCache;
+        else if (name != null) return nameCache = new String(name);
+        return "";
+    }
+
+    public Object getLiteralValue() {
+        return literal;
+    }
+
+    public void setLiteralValue(Object literal) {
+        this.literal = literal;
     }
 
 
@@ -581,6 +558,29 @@ public class ASTNode implements Cloneable, Serializable {
         return safeAccessor != null;
     }
 
+
+    public ASTNode() {
+    }
+
+    public ASTNode(char[] expr, int start, int end, int fields) {
+        this.fields = fields;
+
+        char[] name = new char[end - (this.cursorPosition = start)];
+        for (int i = 0; i < name.length; i++)
+            name[i] = expr[i + start];
+
+        setName(name);
+    }
+
+    public ASTNode(char[] expr, int fields) {
+        this.fields = fields;
+        this.name = expr;
+    }
+
+    public ASTNode(int fields, Object literalValue) {
+        this.fields = fields;
+        this.literal = literalValue;
+    }
 }
 
 

@@ -1,8 +1,6 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
-import org.mvel.EndWithValue;
-import org.mvel.ExecutableStatement;
+import org.mvel.*;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.FunctionVariableResolverFactory;
@@ -15,11 +13,35 @@ public class Function extends ASTNode implements Safe {
     protected ExecutableStatement compiledBlock;
 
     protected String[] parameters;
+    protected int parmNum;
 
     public Function(String name, char[] parameters, char[] block) {
         this.name = name.trim();
         this.parameters = ParseTools.parseParameterList(parameters, 0, parameters.length);
-        this.compiledBlock = (ExecutableStatement) ParseTools.subCompileExpression(block);
+        parmNum = this.parameters.length;
+
+        ParserContext old = AbstractParser.getCurrentThreadParserContext();
+
+        ParserContext ctx = new ParserContext();
+        ctx.addIndexedVariables(this.parameters);
+        ctx.declareFunction(this);
+        ctx.setIndexAllocation(true);
+
+        /**
+         * To prevent the function parameters from being counted as
+         * external inputs, we must add them explicitly here.
+         */
+        for (String s : this.parameters) {
+            ctx.addVariable(s, Object.class);
+        }
+
+        this.compiledBlock = (ExecutableStatement) ParseTools.subCompileExpression(block, ctx);
+
+        AbstractParser.setCurrentThreadParserContext(old);
+
+        this.parameters = (String[]) ctx.getIndexedVariables().toArray(new String[ctx.getIndexedVariables().size()]);
+
+        this.egressType = this.compiledBlock.getKnownEgressType();
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -33,15 +55,16 @@ public class Function extends ASTNode implements Safe {
     }
 
     public Object call(Object ctx, Object thisValue, VariableResolverFactory factory, Object[] parms) {
+        //    System.out.println("CALL_FUNCTION:" + this.name);
+
+//        for (int i = 0; i < parmNum; i++) {
+//            System.out.println("   [" + parameters[i] + "]=" + String.valueOf(parms[i]));
+//        }
+
+
         try {
             if (parms != null && parms.length != 0) {
-                VariableResolverFactory f = new FunctionVariableResolverFactory(factory);
-
-                int i = 0;
-                for (Object p : parms) {
-                    f.createVariable(parameters[i++], p);
-                }
-
+                VariableResolverFactory f = new FunctionVariableResolverFactory(factory, parameters, parms);
                 return compiledBlock.getValue(ctx, thisValue, f);
             }
             else {

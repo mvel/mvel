@@ -112,4 +112,8 @@ public interface VariableResolverFactory {
      * @return
      */
     public Set<String> getKnownVariables();
+
+    public int variableIndexOf(String name);
+
+    public boolean isIndexedFactory();
 }

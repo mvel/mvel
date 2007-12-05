@@ -582,21 +582,41 @@ public class ParseTools {
         return stmt;
     }
 
-    public static VariableResolverFactory finalLocalVariableFactory(VariableResolverFactory factory) {
-        VariableResolverFactory v = factory;
-        while (v != null) {
-            if (v instanceof LocalVariableResolverFactory) {
-                return v;
+
+    public static VariableResolverFactory finalLocalVariableFactory(VariableResolverFactory factory, boolean indexable) {
+        if (!indexable) {
+            VariableResolverFactory v = factory;
+            while (v != null) {
+                if (v instanceof LocalVariableResolverFactory) {
+                    return v;
+                }
+
+                v = v.getNextFactory();
             }
 
-            v = v.getNextFactory();
-        }
-
-        if (factory == null) {
-            throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
+            if (factory == null) {
+                throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
+            }
+            else {
+                return new DefaultLocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
+            }
         }
         else {
-            return new DefaultLocalVariableResolverFactory(new HashMap<String, Object>()).setNextFactory(factory);
+            VariableResolverFactory v = factory;
+            while (v != null) {
+                if (v instanceof LocalVariableResolverFactory && v.isIndexedFactory()) {
+                    return v;
+                }
+
+                v = v.getNextFactory();
+            }
+
+            if (factory == null) {
+                throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
+            }
+            else {
+                return new FunctionVariableResolverFactory().setNextFactory(factory);
+            }
         }
     }
 

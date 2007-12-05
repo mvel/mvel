@@ -18,6 +18,7 @@
  */
 package org.mvel;
 
+import org.mvel.ast.Function;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.getBestCandidate;
@@ -178,11 +179,18 @@ public class PropertyVerifier extends AbstractOptimizer {
 
 
     private Class getMethod(Class ctx, String name) {
-        if (first && parserContext.hasImport(name)) {
-            Method m = parserContext.getStaticImport(name).getMethod();
-            ctx = m.getDeclaringClass();
-            name = m.getName();
-            first = false;
+        if (first) {
+            if (parserContext.hasImport(name)) {
+                Method m = parserContext.getStaticImport(name).getMethod();
+                ctx = m.getDeclaringClass();
+                name = m.getName();
+                first = false;
+            }
+            else if (parserContext.hasFunction(name)) {
+                resolvedExternally = false;
+                Function f = parserContext.getFunction(name);
+                return f.getEgressType();
+            }
         }
 
         int st = cursor;

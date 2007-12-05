@@ -72,4 +72,8 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
     public String getAssignmentVar() {
         return property;
     }
+
+    public char[] getExpression() {
+        return stmt;
+    }
 }

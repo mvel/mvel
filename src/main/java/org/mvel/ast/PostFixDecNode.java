@@ -12,6 +12,10 @@ import static org.mvel.util.ParseTools.doOperations;
 public class PostFixDecNode extends ASTNode {
     private String name;
 
+    public PostFixDecNode(String name) {
+        this.name = name;
+    }
+
     public PostFixDecNode(char[] expr, int fields) {
         super(expr, fields);
         name = new String(expr);

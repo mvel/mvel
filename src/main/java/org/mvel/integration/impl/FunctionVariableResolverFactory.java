@@ -5,32 +5,35 @@ import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class FunctionVariableResolverFactory extends MapVariableResolverFactory implements LocalVariableResolverFactory {
 
     public FunctionVariableResolverFactory() {
-        super(new HashMap<String, Object>());
+        super(null);
     }
-
-    public FunctionVariableResolverFactory(Map<String, Object> variables) {
-        super(variables);
-    }
-
-    public FunctionVariableResolverFactory(Map<String, Object> variables, VariableResolverFactory nextFactory) {
-        super(variables, nextFactory);
-    }
-
-    public FunctionVariableResolverFactory(Map<String, Object> variables, boolean cachingSafe) {
-        super(variables, cachingSafe);
-    }
-
 
     public FunctionVariableResolverFactory(VariableResolverFactory nextFactory) {
         super(new HashMap<String, Object>(), nextFactory);
     }
 
+    public FunctionVariableResolverFactory(VariableResolverFactory nextFactory, String[] indexedVariables, Object[] parameters) {
+        super(null, nextFactory);
+        this.indexedVariableNames = indexedVariables;
+        this.indexedVariableResolvers = new VariableResolver[indexedVariableNames.length];
+        for (int i = 0; i < parameters.length; i++) {
+            this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]);
+        }
+    }
+
+    public boolean isResolveable(String name) {
+        for (String s : indexedVariableNames) {
+            if (name.equals(s)) return true;
+        }
+        return super.isResolveable(name);
+    }
+
     public VariableResolver createVariable(String name, Object value) {
+
         VariableResolver vr = this.variableResolvers != null ? this.variableResolvers.get(name) : null;
         if (vr != null) {
             vr.setValue(value);
@@ -62,7 +65,7 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
             indexedVariableResolvers[index].setValue(value);
         }
         else {
-            VariableResolver resolver = new MapVariableResolver(variables, name, false);
+            VariableResolver resolver = new SimpleValueResolver(value);
             resolver.setValue(value);
             indexedVariableResolvers[index] = resolver;
         }
@@ -74,7 +77,7 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
             indexedVariableResolvers[index].setValue(value);
         }
         else {
-            VariableResolver resolver = new MapVariableResolver(variables, name, type, false);
+            VariableResolver resolver = new SimpleValueResolver(value);
             resolver.setValue(value);
             indexedVariableResolvers[index] = resolver;
         }
@@ -84,4 +87,16 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
     public VariableResolver getIndexedVariableResolver(int index) {
         return indexedVariableResolvers[index];
     }
+
+    public VariableResolver getVariableResolver(String name) {
+        int idx = variableIndexOf(name);
+        if (idx != -1) return indexedVariableResolvers[idx];
+        return super.getVariableResolver(name);
+    }
+
+    public boolean isIndexedFactory() {
+        return true;
+    }
+
+
 }

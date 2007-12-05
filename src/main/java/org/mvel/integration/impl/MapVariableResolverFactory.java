@@ -77,7 +77,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver getVariableResolver(String name) {
-        if (variables.containsKey(name)) {
+        if (variables != null && variables.containsKey(name)) {
             return variableResolvers != null && variableResolvers.containsKey(name) ? variableResolvers.get(name) :
                     new MapVariableResolver(variables, name, cachingSafe);
         }

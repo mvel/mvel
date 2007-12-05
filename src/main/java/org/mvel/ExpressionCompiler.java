@@ -2,6 +2,7 @@ package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Soundex.soundex;
+import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
 import static org.mvel.util.CompilerTools.optimizeAST;
@@ -58,6 +59,7 @@ public class ExpressionCompiler extends AbstractParser {
      *
      * @return compiled expression object
      */
+    @SuppressWarnings({"ConstantConditions"})
     public CompiledExpression _compile() {
         ASTNode tk;
         ASTNode tkOp;
@@ -208,21 +210,24 @@ public class ExpressionCompiler extends AbstractParser {
 
         if (verifying) {
             if (tk.isAssignment()) {
-                char[] assign = tk.getNameAsArray();
-                int c = 0;
-                while (c < assign.length && assign[c] != '=') c++;
-
-                String varName = new String(assign, 0, c++).trim();
+                String varName = ((Assignment) tk).getAssignmentVar();
+//                int c = 0;
+//                while (c < assign.length && assign[c] != '=') c++;
+//
+//                String varName = new String(assign, 0, c++).trim();
 
                 if (isReservedWord(varName)) {
                     addFatalError("invalid assignment - variable name is a reserved keyword: " + varName);
                 }
 
-                new ExpressionCompiler(new String(assign, c, assign.length - c).trim())._compile();
+                new ExpressionCompiler(new String(((Assignment) tk).getExpression()).trim())._compile();
+
+                //      new ExpressionCompiler(new String(assign, c, assign.length - c).trim())._compile();
+
                 pCtx.addVariable(varName, returnType = tk.getEgressType());
             }
             else if (tk.isIdentifier()) {
-                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
+                PropertyVerifier propVerifier = new PropertyVerifier(tk.getAbsoluteName().toCharArray(), getParserContext());
                 returnType = propVerifier.analyze();
 
                 if (propVerifier.isResolvedExternally()) {
@@ -396,12 +401,12 @@ public class ExpressionCompiler extends AbstractParser {
 
     public ExpressionCompiler(String expression, ParserContext ctx) {
         setExpression(expression);
-        this.pCtx = ctx;
+        contextControl(SET, ctx, this);
     }
 
     public ExpressionCompiler(char[] expression, ParserContext ctx) {
         setExpression(expression);
-        this.pCtx = ctx;
+        contextControl(SET, ctx, this);
     }
 
     public boolean isVerifying() {

@@ -9,21 +9,17 @@ import static org.mvel.util.ParseTools.doOperations;
 /**
  * @author Christopher Brock
  */
-public class PostFixIncNode extends ASTNode {
-    private String name;
+public class IndexedPreFixDecNode extends ASTNode {
+    private int register;
 
-    public PostFixIncNode(String name) {
-        this.name = name;
-    }
-
-    public PostFixIncNode(char[] expr, int fields) {
+    public IndexedPreFixDecNode(char[] expr, int fields, int register) {
         super(expr, fields);
-        name = new String(expr);
+        this.register = register;
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolver vResolver = factory.getVariableResolver(name);
-        vResolver.setValue(doOperations(ctx = vResolver.getValue(), Operator.ADD, 1));
+        VariableResolver vResolver = factory.getIndexedVariableResolver(register);
+        vResolver.setValue(ctx = doOperations(vResolver.getValue(), Operator.SUB, 1));
         return ctx;
     }
 
