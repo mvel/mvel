@@ -870,16 +870,11 @@ public class AbstractParser implements Serializable {
 
             if ((offset = findFirst('.', _subset)) != -1) {
                 String iStr = new String(_subset, 0, offset);
-//                if ("this".equals(iStr)) {
-//                    return lastNode = new ThisValDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields);
-//                }
-//                else
                 if (getParserContext().hasImport(iStr)) {
                     return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, getParserContext().getImport(iStr));
                 }
             }
             else {
-
                 String iStr = new String(_subset);
 
                 if (getParserContext().hasImport(iStr)) {
@@ -890,12 +885,8 @@ public class AbstractParser implements Serializable {
                     }
                 }
 
-                //    lastWasIdentifier = (lastNode = new ASTNode(_subset, 0, _subset.length, fields)).isIdentifier();
-
                 lastWasIdentifier = true;
                 return lastNode = new ASTNode(_subset, 0, _subset.length, fields);
-
-                //  return lastNode;
             }
         }
         else if ((fields & ASTNode.METHOD) != 0) {
