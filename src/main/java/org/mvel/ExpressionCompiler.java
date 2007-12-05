@@ -394,7 +394,12 @@ public class ExpressionCompiler extends AbstractParser {
         setExpression(expression);
     }
 
-    ExpressionCompiler(char[] expression, ParserContext ctx) {
+    public ExpressionCompiler(String expression, ParserContext ctx) {
+        setExpression(expression);
+        this.pCtx = ctx;
+    }
+
+    public ExpressionCompiler(char[] expression, ParserContext ctx) {
         setExpression(expression);
         this.pCtx = ctx;
     }

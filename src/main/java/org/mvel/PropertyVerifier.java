@@ -122,9 +122,17 @@ public class PropertyVerifier extends AbstractOptimizer {
                 if (tryStaticMethodRef instanceof Class) {
                     return tryStaticMethodRef.getClass();
                 }
-                else {
+                else if (tryStaticMethodRef instanceof Field) {
                     try {
                         return ((Field) tryStaticMethodRef).get(null).getClass();
+                    }
+                    catch (Exception e) {
+                        throw new CompileException("in verifier: ", e);
+                    }
+                }
+                else {
+                    try {
+                        return ((Method) tryStaticMethodRef).getReturnType();
                     }
                     catch (Exception e) {
                         throw new CompileException("in verifier: ", e);

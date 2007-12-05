@@ -5,6 +5,7 @@ import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Thread.currentThread;
+import java.lang.reflect.Method;
 
 /**
  * @author Christopher Brock
@@ -41,10 +42,17 @@ public class AbstractOptimizer extends AbstractParser {
                                 return currentThread().getContextClassLoader().loadClass(new String(expr, 0, last));
                             }
                             catch (ClassNotFoundException e) {
-                                // return a field instead
-
-                                return currentThread().getContextClassLoader().loadClass(new String(expr, 0, i))
-                                        .getField(new String(expr, i + 1, expr.length - i - 1));
+                                Class cls = currentThread().getContextClassLoader().loadClass(new String(expr, 0, i));
+                                String name = new String(expr, i + 1, expr.length - i - 1);
+                                try {
+                                    return cls.getField(name);
+                                }
+                                catch (NoSuchFieldException nfe) {
+                                    for (Method m : cls.getMethods()) {
+                                        if (name.equals(m.getName())) return m;
+                                    }
+                                    return null;
+                                }
                             }
                         }
 

@@ -29,8 +29,6 @@ import org.mvel.asm.Opcodes;
 import static org.mvel.asm.Opcodes.*;
 import static org.mvel.asm.Type.*;
 import org.mvel.ast.Function;
-import org.mvel.ast.LiteralNode;
-import org.mvel.ast.PropertyASTNode;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
@@ -307,7 +305,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
 
         if (first) {
-            if (variableFactory != null && variableFactory.isResolveable(property)) {
+            if ("this".equals(property)) {
+                debug("ALOAD 2");
+                mv.visitVarInsn(ALOAD, 2);
+                return thisRef;
+            }
+            else if (variableFactory != null && variableFactory.isResolveable(property)) {
                 try {
                     loadVariableByName(property);
                 }
@@ -318,6 +321,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return variableFactory.getVariableResolver(property).getValue();
             }
             else {
+                debug("ALOAD 1");
                 mv.visitVarInsn(ALOAD, 1);
             }
         }
@@ -432,6 +436,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     ldcClassConstant((Class) ts);
                     return ts;
                 }
+                else if (ts instanceof Method) {
+                    writeFunctionPointerStub(((Method) ts).getDeclaringClass(), (Method) ts);
+                    return ts;
+                }
                 else {
                     debug("GETSTATIC " + getDescriptor(((Field) ts).getDeclaringClass()) + "."
                             + ((Field) ts).getName() + "::" + getDescriptor(((Field) ts).getType()));
@@ -443,6 +451,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     return ((Field) ts).get(null);
                 }
             }
+
             else if (ctx instanceof Class) {
                 /**
                  * This is our ugly support for function pointers.  This works but needs to be re-thought out at some
@@ -451,49 +460,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 Class c = (Class) ctx;
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
-
-                        ldcClassConstant(c);
-
-                        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getMethods", "()[Ljava/lang/reflect/Method;");
-                        mv.visitVarInsn(ASTORE, 7);
-                        mv.visitInsn(ICONST_0);
-                        mv.visitVarInsn(ISTORE, 5);
-                        mv.visitVarInsn(ALOAD, 7);
-                        mv.visitInsn(ARRAYLENGTH);
-                        mv.visitVarInsn(ISTORE, 6);
-                        Label l1 = new Label();
-                        mv.visitJumpInsn(GOTO, l1);
-                        Label l2 = new Label();
-                        mv.visitLabel(l2);
-                        mv.visitVarInsn(ALOAD, 7);
-                        mv.visitVarInsn(ILOAD, 5);
-                        mv.visitInsn(AALOAD);
-                        mv.visitVarInsn(ASTORE, 4);
-                        Label l3 = new Label();
-                        mv.visitLabel(l3);
-                        mv.visitLdcInsn(m.getName());
-                        mv.visitVarInsn(ALOAD, 4);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/reflect/Method", "getName", "()Ljava/lang/String;");
-                        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "equals", "(Ljava/lang/Object;)Z");
-                        Label l4 = new Label();
-                        mv.visitJumpInsn(IFEQ, l4);
-                        Label l5 = new Label();
-                        mv.visitLabel(l5);
-                        mv.visitVarInsn(ALOAD, 4);
-                        mv.visitInsn(ARETURN);
-                        mv.visitLabel(l4);
-                        mv.visitIincInsn(5, 1);
-                        mv.visitLabel(l1);
-                        mv.visitVarInsn(ILOAD, 5);
-                        mv.visitVarInsn(ILOAD, 6);
-                        mv.visitJumpInsn(IF_ICMPLT, l2);
-                        Label l6 = new Label();
-                        mv.visitLabel(l6);
-                        mv.visitInsn(ACONST_NULL);
-                        mv.visitInsn(ARETURN);
-
-                        deferFinish = true;
-
+                        writeFunctionPointerStub(c, m);
                         return m;
                     }
                 }
@@ -501,6 +468,50 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             throw new PropertyAccessException(property);
         }
+    }
+
+    private void writeFunctionPointerStub(Class c, Method m) {
+        ldcClassConstant(c);
+
+        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getMethods", "()[Ljava/lang/reflect/Method;");
+        mv.visitVarInsn(ASTORE, 7);
+        mv.visitInsn(ICONST_0);
+        mv.visitVarInsn(ISTORE, 5);
+        mv.visitVarInsn(ALOAD, 7);
+        mv.visitInsn(ARRAYLENGTH);
+        mv.visitVarInsn(ISTORE, 6);
+        Label l1 = new Label();
+        mv.visitJumpInsn(GOTO, l1);
+        Label l2 = new Label();
+        mv.visitLabel(l2);
+        mv.visitVarInsn(ALOAD, 7);
+        mv.visitVarInsn(ILOAD, 5);
+        mv.visitInsn(AALOAD);
+        mv.visitVarInsn(ASTORE, 4);
+        Label l3 = new Label();
+        mv.visitLabel(l3);
+        mv.visitLdcInsn(m.getName());
+        mv.visitVarInsn(ALOAD, 4);
+        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/reflect/Method", "getName", "()Ljava/lang/String;");
+        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "equals", "(Ljava/lang/Object;)Z");
+        Label l4 = new Label();
+        mv.visitJumpInsn(IFEQ, l4);
+        Label l5 = new Label();
+        mv.visitLabel(l5);
+        mv.visitVarInsn(ALOAD, 4);
+        mv.visitInsn(ARETURN);
+        mv.visitLabel(l4);
+        mv.visitIincInsn(5, 1);
+        mv.visitLabel(l1);
+        mv.visitVarInsn(ILOAD, 5);
+        mv.visitVarInsn(ILOAD, 6);
+        mv.visitJumpInsn(IF_ICMPLT, l2);
+        Label l6 = new Label();
+        mv.visitLabel(l6);
+        mv.visitInsn(ACONST_NULL);
+        mv.visitInsn(ARETURN);
+
+        deferFinish = true;
     }
 
 
@@ -745,13 +756,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 if (e instanceof ExecutableLiteral) {
                     continue;
                 }
-                else if (e instanceof ExecutableAccessor
-                        && ((ExecutableAccessor) e).getNode() instanceof PropertyASTNode
-                        && ((PropertyASTNode) ((ExecutableAccessor) e).getNode()).getWrappedNode() instanceof LiteralNode) {
-                    es[i] = new ExecutableLiteral(((PropertyASTNode) ((ExecutableAccessor) e).getNode())
-                            .getWrappedNode().getLiteralValue());
-                    continue;
-                }
+//                else if (e instanceof ExecutableAccessor
+//                        && ((ExecutableAccessor) e).getNode() instanceof PropertyASTNode
+//                        && ((PropertyASTNode) ((ExecutableAccessor) e).getNode()) instanceof LiteralNode) {
+//
+//                    es[i] = new ExecutableLiteral(((PropertyASTNode) ((ExecutableAccessor) e).getNode())
+//                            .getWrappedNode().getLiteralValue());
+//                    continue;
+//                }
 
                 compiledInputs.add((ExecutableStatement) e);
             }

@@ -10,6 +10,7 @@ import java.io.Serializable;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
 import java.util.*;
+import static java.util.Arrays.asList;
 
 /**
  * The ParserContext is the main enviroment object used for sharing state throughout the entire
@@ -26,6 +27,7 @@ public class ParserContext implements Serializable {
 
     protected Map<String, Interceptor> interceptors;
 
+    private ArrayList<String> indexedVariables;
     private Map<String, Class> variables;
     private Map<String, Class> inputs;
     private Map<String, Function> globalFunctions;
@@ -109,6 +111,10 @@ public class ParserContext implements Serializable {
         return imports != null ? (MethodStub) imports.get(name) : null;
     }
 
+    public Object getStaticOrClassImport(String name) {
+        return (imports != null && imports.containsKey(name) ? imports.get(name) : AbstractParser.LITERALS.get(name));
+    }
+
     public void addPackageImport(String packageName) {
         if (packageImports == null) packageImports = new HashSet<String>();
         packageImports.add(packageName);
@@ -164,7 +170,7 @@ public class ParserContext implements Serializable {
     }
 
     public void addImport(String name, Class cls) {
-        if (this.imports == null) this.imports = new HashMap<String, Object>();
+        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
         this.imports.put(name, cls);
     }
 
@@ -173,13 +179,13 @@ public class ParserContext implements Serializable {
     }
 
     public void addImport(String name, MethodStub method) {
-        if (this.imports == null) this.imports = new HashMap<String, Object>();
+        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
         this.imports.put(name, method);
     }
 
     public void initializeTables() {
-        if (variables == null) variables = new HashMap<String, Class>();
-        if (inputs == null) inputs = new HashMap<String, Class>();
+        if (variables == null) variables = new LinkedHashMap<String, Class>();
+        if (inputs == null) inputs = new LinkedHashMap<String, Class>();
     }
 
     public void addVariable(String name, Class type) {
@@ -189,7 +195,7 @@ public class ParserContext implements Serializable {
     }
 
     public void addInput(String name, Class type) {
-        if (inputs == null) inputs = new HashMap<String, Class>();
+        if (inputs == null) inputs = new LinkedHashMap<String, Class>();
         if (inputs.containsKey(name)) return;
         if (type == null) type = Object.class;
         inputs.put(name, type);
@@ -329,7 +335,7 @@ public class ParserContext implements Serializable {
     }
 
     public void addKnownLine(String sourceName, int lineNumber) {
-        if (sourceMap == null) sourceMap = new HashMap<String, Set<Integer>>();
+        if (sourceMap == null) sourceMap = new LinkedHashMap<String, Set<Integer>>();
         if (!sourceMap.containsKey(sourceName)) sourceMap.put(sourceName, new HashSet<Integer>());
         sourceMap.get(sourceName).add(lineNumber);
     }
@@ -352,7 +358,7 @@ public class ParserContext implements Serializable {
     }
 
     public void declareFunction(Function function) {
-        if (globalFunctions == null) globalFunctions = new HashMap<String, Function>();
+        if (globalFunctions == null) globalFunctions = new LinkedHashMap<String, Function>();
         globalFunctions.put(function.getName(), function);
     }
 
@@ -388,4 +394,34 @@ public class ParserContext implements Serializable {
     public void setExecutableCodeReached(boolean executableCodeReached) {
         this.executableCodeReached = executableCodeReached;
     }
+
+    private void initIndexedVariables() {
+        if (indexedVariables == null) indexedVariables = new ArrayList<String>();
+    }
+
+    public ArrayList getIndexedVariables() {
+        initIndexedVariables();
+        return indexedVariables;
+    }
+
+    public void addIndexedVariables(String[] variables) {
+        initIndexedVariables();
+        indexedVariables.addAll(asList(variables));
+    }
+
+    public void addIndexedVariable(String variable) {
+        initIndexedVariables();
+        indexedVariables.add(variable);
+    }
+
+    public void addIndexedVariables(Collection<String> variables) {
+        initIndexedVariables();
+        indexedVariables.addAll(variables);
+    }
+
+    public int variableIndexOf(String name) {
+        initializeTables();
+        return indexedVariables.indexOf(name);
+    }
+
 }

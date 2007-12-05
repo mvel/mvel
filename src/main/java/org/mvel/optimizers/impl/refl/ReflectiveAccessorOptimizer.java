@@ -316,7 +316,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 return this.thisRef;
             }
             else if (variableFactory != null && variableFactory.isResolveable(property)) {
-                addAccessorNode(new VariableAccessor(property, variableFactory));
+                addAccessorNode(new VariableAccessor(property));
                 return variableFactory.getVariableResolver(property).getValue();
             }
         }
@@ -364,9 +364,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     addAccessorNode(new StaticReferenceAccessor(tryStaticMethodRef));
                     return tryStaticMethodRef;
                 }
-                else {
+                else if (tryStaticMethodRef instanceof Field) {
                     addAccessorNode(new StaticVarAccessor((Field) tryStaticMethodRef));
                     return ((Field) tryStaticMethodRef).get(null);
+                }
+                else {
+                    addAccessorNode(new StaticReferenceAccessor(tryStaticMethodRef));
+                    return tryStaticMethodRef;
                 }
 
             }

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FunctionVariableResolverFactory extends MapVariableResolverFactory implements LocalVariableResolverFactory {
+
     public FunctionVariableResolverFactory() {
         super(new HashMap<String, Object>());
     }
@@ -36,7 +37,8 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
             return vr;
         }
         else {
-            (vr = new MapVariableResolver(variables, name, false)).setValue(value);
+            addResolver(name, (vr = new MapVariableResolver(variables, name, false)));
+            vr.setValue(value);
             return vr;
         }
     }
@@ -48,9 +50,38 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
         }
         else {
             addResolver(name, vr = new MapVariableResolver(variables, name, type, false));
+            createIndexedVariable(variableIndexOf(name), name, value);
             vr.setValue(value);
+
             return vr;
         }
     }
 
+    public VariableResolver createIndexedVariable(int index, String name, Object value) {
+        if (indexedVariableResolvers[index] != null) {
+            indexedVariableResolvers[index].setValue(value);
+        }
+        else {
+            VariableResolver resolver = new MapVariableResolver(variables, name, false);
+            resolver.setValue(value);
+            indexedVariableResolvers[index] = resolver;
+        }
+        return indexedVariableResolvers[index];
+    }
+
+    public VariableResolver createIndexedVariable(int index, String name, Object value, Class<?> type) {
+        if (indexedVariableResolvers[index] != null) {
+            indexedVariableResolvers[index].setValue(value);
+        }
+        else {
+            VariableResolver resolver = new MapVariableResolver(variables, name, type, false);
+            resolver.setValue(value);
+            indexedVariableResolvers[index] = resolver;
+        }
+        return indexedVariableResolvers[index];
+    }
+
+    public VariableResolver getIndexedVariableResolver(int index) {
+        return indexedVariableResolvers[index];
+    }
 }

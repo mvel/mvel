@@ -13,6 +13,7 @@ import static org.mvel.util.ParseTools.findTypeInjectionResolverFactory;
 public class Function extends ASTNode implements Safe {
     protected String name;
     protected ExecutableStatement compiledBlock;
+
     protected String[] parameters;
 
     public Function(String name, char[] parameters, char[] block) {

@@ -8,7 +8,6 @@ import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 import org.mvel.util.Stack;
-import org.mvel.util.ThisLiteral;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -70,7 +69,7 @@ public class AbstractParser implements Serializable {
 
         AbstractParser.LITERALS.put("empty", BlankLiteral.INSTANCE);
 
-        AbstractParser.LITERALS.put("this", ThisLiteral.class);
+        //    AbstractParser.LITERALS.put("this", ThisLiteral.class);
 
         /**
          * Add System and all the class wrappers from the JCL.
@@ -871,40 +870,39 @@ public class AbstractParser implements Serializable {
 
             if ((offset = findFirst('.', _subset)) != -1) {
                 String iStr = new String(_subset, 0, offset);
-                if ("this".equals(iStr)) {
-                    return lastNode = new ThisValDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields);
-                }
-                else if (getParserContext().hasImport(iStr)) {
+//                if ("this".equals(iStr)) {
+//                    return lastNode = new ThisValDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields);
+//                }
+//                else
+                if (getParserContext().hasImport(iStr)) {
                     return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, getParserContext().getImport(iStr));
                 }
             }
             else {
+
                 String iStr = new String(_subset);
+
                 if (getParserContext().hasImport(iStr)) {
-                    return lastNode = new LiteralNode(getParserContext().getImport(iStr), Class.class);
+                    Object i = getParserContext().getStaticOrClassImport(iStr);
+
+                    if (i instanceof Class) {
+                        return lastNode = new LiteralNode(i, Class.class);
+                    }
                 }
 
-                lastWasIdentifier = (lastNode = new ASTNode(_subset, 0, _subset.length, fields)).isIdentifier();
-                return lastNode;
+                //    lastWasIdentifier = (lastNode = new ASTNode(_subset, 0, _subset.length, fields)).isIdentifier();
+
+                lastWasIdentifier = true;
+                return lastNode = new ASTNode(_subset, 0, _subset.length, fields);
+
+                //  return lastNode;
             }
         }
         else if ((fields & ASTNode.METHOD) != 0) {
-//            if (hasParserContext() && getParserContext().hasFunction()) {
-//                int chop = start;
-//                while (chop != length && expr[chop] != '(') {
-//                    chop++;
-//                }
-//                String name = new String(expr, start, chop - start);
-//
-//                if (getParserContext().hasFunction(name)) {
-//                    return lastNode = new FunctionCall(getParserContext().getFunction(name), null);
-//                }
-//            }
-
             return lastNode = new ASTNode(expr, start, end, fields);
         }
 
-        return lastNode = new PropertyASTNode(expr, start, end, fields);
+        return lastNode = new ASTNode(expr, start, end, fields);
     }
 
     private ASTNode createBlockToken(final int condStart,

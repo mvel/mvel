@@ -27,7 +27,7 @@ public class VariableAccessor implements AccessorNode {
     private String property;
 
 
-    public VariableAccessor(String property, VariableResolverFactory vrf) {
+    public VariableAccessor(String property) {
         this.property = property;
     }
 

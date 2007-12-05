@@ -33,6 +33,9 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     protected Map<String, VariableResolver> variableResolvers;
     protected VariableResolverFactory nextFactory;
 
+    protected String[] indexedVariableNames;
+    protected VariableResolver[] indexedVariableResolvers;
+
     public VariableResolverFactory getNextFactory() {
         return nextFactory;
     }
@@ -93,5 +96,47 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
             knownVars.addAll(nextFactory.getKnownVariables());
             return knownVars;
         }
+    }
+
+    public VariableResolver createIndexedVariable(int index, String name, Object value) {
+        throw new RuntimeException("cannot create indexed variable: " + index + ". operation not supported by resolver.");
+    }
+
+    public VariableResolver getIndexedVariableResolver(int index) {
+        throw new RuntimeException("cannot access indexed variable: " + index + ".  operation not supported by resolver.");
+    }
+
+    public VariableResolver createIndexedVariable(int index, String name, Object value, Class<?> type) {
+        throw new RuntimeException("cannot access indexed variable: " + index + ".  operation not supported by resolver.");
+    }
+
+    public Map<String, VariableResolver> getVariableResolvers() {
+        return variableResolvers;
+    }
+
+    public void setVariableResolvers(Map<String, VariableResolver> variableResolvers) {
+        this.variableResolvers = variableResolvers;
+    }
+
+    public String[] getIndexedVariableNames() {
+        return indexedVariableNames;
+    }
+
+    public void setIndexedVariableNames(String[] indexedVariableNames) {
+        this.indexedVariableNames = indexedVariableNames;
+    }
+
+    public int variableIndexOf(String name) {
+        for (int i = 0; i < indexedVariableNames.length; i++) {
+            if (name.equals(indexedVariableNames[i++])) return i;
+        }
+        return -1;
+    }
+
+    protected void setIndexedVariable(int index, VariableResolver resolver) {
+        if (indexedVariableResolvers == null) {
+            indexedVariableResolvers = new VariableResolver[indexedVariableNames.length];
+        }
+        indexedVariableResolvers[index] = resolver;
     }
 }

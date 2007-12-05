@@ -28,6 +28,7 @@ import static java.lang.System.currentTimeMillis;
 import java.util.*;
 import java.util.List;
 
+@SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes", "UnnecessaryBoxing", "unchecked"})
 public class CoreConfidenceTests extends AbstractTest {
 
 
@@ -1837,7 +1838,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrictTypeEnforcement(false);
 
         ExpressionCompiler compiler = new ExpressionCompiler("bar.add(\"hello\")");
-        Serializable s = compiler.compile(ctx);
+        compiler.compile(ctx);
     }
 
     public void testTypedAssignment() {
@@ -2561,7 +2562,7 @@ public class CoreConfidenceTests extends AbstractTest {
                         "recipients.addRecipient( (with ( new Recipient() ) {name = 'userName1', email = 'user1@domain.com' }) );\n" +
                         "return recipients;\n";
 
-        ParserContext context = new ParserContext();
+        ParserContext context;
         context = new ParserContext();
         context.addImport(Recipient.class);
         context.addImport(Recipients.class);
@@ -2591,7 +2592,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         String text = "(with ( new EmailMessage() ) { recipients = (with (new Recipients()) { recipients = [(with ( new Recipient() ) {name = 'user1', email = 'user1@domain.com'}), (with ( new Recipient() ) {name = 'user2', email = 'user2@domain.com'}) ] }), " +
                 " from = 'from@domain.com' } )";
-        ParserContext context = new ParserContext();
+        ParserContext context;
         context = new ParserContext();
         context.addImport(Recipient.class);
         context.addImport(Recipients.class);
@@ -2681,7 +2682,7 @@ public class CoreConfidenceTests extends AbstractTest {
         }
 
         public Recipient[] toArray() {
-            return (Recipient[]) list.toArray(new Recipient[list.size()]);
+            return list.toArray(new Recipient[list.size()]);
         }
 
         @Override

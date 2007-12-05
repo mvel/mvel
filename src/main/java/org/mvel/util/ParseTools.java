@@ -1072,6 +1072,14 @@ public class ParseTools {
         return optimizeTree(new ExpressionCompiler(expression)._compile());
     }
 
+    public static Serializable subCompileExpression(char[] expression, ParserContext ctx) {
+        return optimizeTree(new ExpressionCompiler(expression, ctx)._compile());
+    }
+
+    public static Serializable subCompileExpression(String expression, ParserContext ctx) {
+        return optimizeTree(new ExpressionCompiler(expression, ctx)._compile());
+    }
+
     public static Serializable optimizeTree(final CompiledExpression compiled) {
         ASTIterator nodes = compiled.getTokens();
 
