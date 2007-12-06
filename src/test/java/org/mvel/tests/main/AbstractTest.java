@@ -366,7 +366,7 @@ public abstract class AbstractTest extends TestCase {
     }
 
     protected static Object serializationTest(Serializable s) throws Exception {
-        File file = new File("./mvel_ser_test" + currentTimeMillis() + Math.round(Math.random() * 1000) + ".tmp");
+        File file = new File(System.getProperty("java.io.tmpdir") + "/mvel_ser_test" + currentTimeMillis() + Math.round(Math.random() * 1000) + ".tmp");
         InputStream inputStream = null;
         ObjectInputStream objectIn = null;
         try {

@@ -349,7 +349,12 @@ public class AbstractParser implements Serializable {
                                         name = new String(expr, start, trimLeft(cursor) - start);
                                         start = cursor += 2;
                                         captureToEOS();
-                                        return lastNode = new AssignSub(subArray(start, cursor), fields, name);
+                                        if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                            return lastNode = new IndexedOperativeAssign(name, subArray(start, cursor), Operator.SUB, idx, fields);
+                                        }
+                                        else {
+                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.SUB, fields);
+                                        }
                                 }
                                 break;
 
@@ -358,7 +363,16 @@ public class AbstractParser implements Serializable {
                                     name = new String(expr, start, trimLeft(cursor) - start);
                                     start = cursor += 2;
                                     captureToEOS();
-                                    return lastNode = new AssignMult(subArray(start, cursor), fields, name);
+                                    //             return lastNode = new AssignMult(subArray(start, cursor), fields, name);
+
+
+                                    if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        return lastNode = new IndexedOperativeAssign(name, subArray(start, cursor), Operator.MULT, idx, fields);
+                                    }
+                                    else {
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.MULT, fields);
+                                    }
+
                                 }
                                 break;
 
@@ -367,7 +381,13 @@ public class AbstractParser implements Serializable {
                                     name = new String(expr, start, trimLeft(cursor) - start);
                                     start = cursor += 2;
                                     captureToEOS();
-                                    return lastNode = new AssignDiv(subArray(start, cursor), fields, name);
+
+                                    if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        return lastNode = new IndexedOperativeAssign(name, subArray(start, cursor), Operator.DIV, idx, fields);
+                                    }
+                                    else {
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.DIV, fields);
+                                    }
                                 }
                                 break;
 
@@ -394,7 +414,13 @@ public class AbstractParser implements Serializable {
                                     name = new String(expr, start, trimLeft(cursor) - start);
                                     start = cursor += 2;
                                     captureToEOS();
-                                    return lastNode = new AssignAdd(subArray(start, cursor), fields, name);
+
+                                    if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        return lastNode = new IndexedOperativeAssign(name, subArray(start, cursor), Operator.ADD, idx, fields);
+                                    }
+                                    else {
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.ADD, fields);
+                                    }
                                 }
 
                                 if (greedy && !isNext('=')) {

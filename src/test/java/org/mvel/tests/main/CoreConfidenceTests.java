@@ -2886,9 +2886,10 @@ public class CoreConfidenceTests extends AbstractTest {
         MVEL.evalFile(new File("samples/scripts/quicksort.mvel"));
     }
 
-    public void testQuickSortScript2() throws IOException {
-        Object[] sorted = (Object[]) test(new String(ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"))));
 
+    public void testQuickSortScript2() throws IOException {
+        Object[] sorted = null;
+        sorted = (Object[]) test(new String(ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"))));
         int last = -1;
         for (Object o : sorted) {
             if (last == -1) {

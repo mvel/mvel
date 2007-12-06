@@ -2,37 +2,36 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.ExecutableStatement;
-import org.mvel.MVEL;
-import org.mvel.Operator;
+import static org.mvel.MVEL.eval;
 import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.doOperations;
 
-public class AssignSub extends ASTNode {
+public class OperativeAssign extends ASTNode {
     private String varName;
     private ExecutableStatement statement;
+    private final int operation;
 
-    public AssignSub(char[] expr, int fields, String variableName) {
-        super(expr, fields);
+    public OperativeAssign(String variableName, char[] expr, int operation, int fields) {
         this.varName = variableName;
+        this.operation = operation;
+        this.name = expr;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             statement = (ExecutableStatement) ParseTools.subCompileExpression(expr);
         }
     }
 
-
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver resolver = factory.getVariableResolver(varName);
-        resolver.setValue(ctx = doOperations(resolver.getValue(), Operator.SUB, statement.getValue(ctx, thisValue, factory)));
+        resolver.setValue(ctx = doOperations(resolver.getValue(), operation, statement.getValue(ctx, thisValue, factory)));
         return ctx;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver resolver = factory.getVariableResolver(varName);
-        resolver.setValue(ctx = doOperations(resolver.getValue(), Operator.SUB, MVEL.eval(name, ctx, factory)));
+        resolver.setValue(ctx = doOperations(resolver.getValue(), operation, eval(name, ctx, factory)));
         return ctx;
     }
-
 }
