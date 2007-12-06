@@ -2841,7 +2841,13 @@ public class CoreConfidenceTests extends AbstractTest {
 
         MVEL.executeSetExpression(fooExpr, myMap, "baz");
         assertEquals("baz", myMap.get("foo"));
+    }
 
+    public void testInlineCollectionNestedObjectCreation() {
+        Map m = (Map) test("['Person.age' : [1, 2, 3, 4], 'Person.rating' : ['High', 'Low']," +
+                " 'Person.something' : (new String('foo').toUpperCase())]");
+
+        assertEquals("FOO", m.get("Person.something"));
     }
 }
 
