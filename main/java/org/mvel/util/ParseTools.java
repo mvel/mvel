@@ -1073,7 +1073,7 @@ public class ParseTools {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
             }
-            return new ExecutableAccessor(tk, false);
+            return new ExecutableAccessor(tk, false, tk.getEgressType());
 
         }
 
