@@ -37,6 +37,12 @@ public class ExecutableAccessorSafe implements ExecutableStatement, Safe {
         this.returnBigDecimal = returnBigDecimal;
     }
 
+    public ExecutableAccessorSafe(ASTNode node, boolean returnBigDecimal, Class returnType) {
+        this.node = node;
+        this.returnBigDecimal = returnBigDecimal;
+        this.egress = returnType;
+    }
+
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         return handleParserEgress(node.getReducedValueAccelerated(ctx, elCtx, variableFactory),
                 returnBigDecimal);
