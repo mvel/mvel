@@ -25,8 +25,6 @@ import java.util.*;
 import java.util.List;
 
 public class CoreConfidenceTests extends AbstractTest {
-
-
     public void testSingleProperty() {
         assertEquals(false, test("fun"));
     }
