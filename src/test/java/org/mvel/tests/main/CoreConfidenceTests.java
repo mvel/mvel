@@ -16,7 +16,7 @@ import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.MethodStub;
-import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.loadFromFile;
 
 import javax.swing.*;
 import java.awt.*;
@@ -2901,10 +2901,8 @@ public class CoreConfidenceTests extends AbstractTest {
         MVEL.evalFile(new File("samples/scripts/quicksort.mvel"));
     }
 
-
     public void testQuickSortScript2() throws IOException {
-        Object[] sorted = null;
-        sorted = (Object[]) test(new String(ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"))));
+        Object[] sorted = (Object[]) test(new String(loadFromFile(new File("samples/scripts/quicksort.mvel"))));
         int last = -1;
         for (Object o : sorted) {
             if (last == -1) {
@@ -2939,6 +2937,12 @@ public class CoreConfidenceTests extends AbstractTest {
                 " 'Person.something' : (new String('foo').toUpperCase())]");
 
         assertEquals("FOO", m.get("Person.something"));
+    }
+
+    public void testInlineCollectionNestedObjectCreation1() {
+        Map m = (Map) test("[new String('foo') : new String('bar')]");
+
+        assertEquals("bar", m.get("foo"));
     }
 }
 

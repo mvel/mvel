@@ -302,8 +302,7 @@ public class AbstractParser implements Serializable {
                             case '+':
                                 switch (lookAhead()) {
                                     case '+':
-                                        name = new String(subArray(start, cursor));
-                                        if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        if ((idx = pCtx.variableIndexOf(name = new String(subArray(start, cursor)))) != -1) {
                                             lastNode = new IndexedPostFixIncNode(idx);
                                         }
                                         else {
@@ -335,8 +334,7 @@ public class AbstractParser implements Serializable {
                             case '-':
                                 switch (lookAhead()) {
                                     case '-':
-                                        name = new String(subArray(start, cursor));
-                                        if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        if ((idx = pCtx.variableIndexOf(name = new String(subArray(start, cursor)))) != -1) {
                                             lastNode = new IndexedPostFixDecNode(idx);
                                         }
                                         else {
@@ -363,8 +361,6 @@ public class AbstractParser implements Serializable {
                                     name = new String(expr, start, trimLeft(cursor) - start);
                                     start = cursor += 2;
                                     captureToEOS();
-                                    //             return lastNode = new AssignMult(subArray(start, cursor), fields, name);
-
 
                                     if ((idx = pCtx.variableIndexOf(name)) != -1) {
                                         return lastNode = new IndexedOperativeAssign(name, subArray(start, cursor), Operator.MULT, idx, fields);
@@ -1031,7 +1027,6 @@ public class AbstractParser implements Serializable {
          * Functions are a special case we handle differently from the rest of block parsing
          */
         if (type == FUNCTION) {
-
             int start = cursor;
 
             while (cursor != length && expr[cursor] != '(') cursor++;

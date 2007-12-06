@@ -752,18 +752,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         if (es != null) {
             for (int i = 0; i < es.length; i++) {
-                Accessor e = es[i];
+                ExecutableStatement e = es[i];
                 if (e instanceof ExecutableLiteral) {
                     continue;
                 }
-//                else if (e instanceof ExecutableAccessor
-//                        && ((ExecutableAccessor) e).getNode() instanceof PropertyASTNode
-//                        && ((PropertyASTNode) ((ExecutableAccessor) e).getNode()) instanceof LiteralNode) {
-//
-//                    es[i] = new ExecutableLiteral(((PropertyASTNode) ((ExecutableAccessor) e).getNode())
-//                            .getWrappedNode().getLiteralValue());
-//                    continue;
-//                }
 
                 compiledInputs.add((ExecutableStatement) e);
             }

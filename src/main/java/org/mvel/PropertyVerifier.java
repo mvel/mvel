@@ -23,7 +23,7 @@ import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.getBestCandidate;
 import static org.mvel.util.ParseTools.parseParameterList;
-import org.mvel.util.PropertyTools;
+import static org.mvel.util.PropertyTools.getFieldOrAccessor;
 import org.mvel.util.StringAppender;
 
 import java.lang.reflect.Field;
@@ -64,7 +64,6 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
     public Class analyze() {
-
         Class ctx = Object.class;
         resolvedExternally = true;
 
@@ -106,7 +105,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         start = cursor;
 
-        Member member = ctx != null ? PropertyTools.getFieldOrAccessor(ctx, property) : null;
+        Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
 
         if (member instanceof Field) {
             return ((Field) member).getType();
@@ -158,7 +157,6 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
     private Class getCollectionProperty() {
-
         int start = ++cursor;
 
         whiteSpaceSkip();

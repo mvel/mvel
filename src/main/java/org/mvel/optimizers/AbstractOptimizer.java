@@ -101,7 +101,6 @@ public class AbstractOptimizer extends AbstractParser {
             case '.':
                 skipWhitespace();
                 cursor = ++start;
-
         }
 
         //noinspection StatementWithEmptyBody
