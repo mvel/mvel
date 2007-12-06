@@ -229,6 +229,9 @@ public class ExpressionCompiler extends AbstractParser {
                     pCtx.addInput(tk.getAbsoluteName(), returnType);
                 }
             }
+            else {
+                returnType = tk.getEgressType();
+            }
         }
         return tk;
     }
