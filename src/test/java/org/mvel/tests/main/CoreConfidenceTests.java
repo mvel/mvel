@@ -1666,6 +1666,22 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(7, executeExpression(compiler.compile(ctx), new DefaultLocalVariableResolverFactory()));
     }
 
+    public void testStrictTypingCompilation4() throws NoSuchMethodException {
+        ParserContext ctx = new ParserContext();
+
+        ctx.setStrictTypeEnforcement(true);
+        ctx.addImport(Foo.class);
+
+        ExpressionCompiler compiler =
+                new ExpressionCompiler("x_a = new Foo()");
+
+        compiler.compile(ctx);
+
+
+        assertEquals(Foo.class, ctx.getVariables().get("x_a"));
+    }
+    
+
     public void testProvidedExternalTypes() {
         ExpressionCompiler compiler = new ExpressionCompiler("foo.bar");
         ParserContext ctx = new ParserContext();
@@ -2849,6 +2865,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("FOO", m.get("Person.something"));
     }
+
+
 }
 
 
