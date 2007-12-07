@@ -59,7 +59,6 @@ public class ExpressionCompiler extends AbstractParser {
      *
      * @return compiled expression object
      */
-    @SuppressWarnings({"ConstantConditions"})
     public CompiledExpression _compile() {
         ASTNode tk;
         ASTNode tkOp;
@@ -71,6 +70,7 @@ public class ExpressionCompiler extends AbstractParser {
         boolean firstLA;
 
         debugSymbols = (pCtx = getParserContext()).isDebugSymbols();
+
 
         try {
             if (verifying) {
@@ -88,8 +88,14 @@ public class ExpressionCompiler extends AbstractParser {
                 returnType = tk.getEgressType();
 
                 if (tk instanceof Substatement) {
+
                     ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray(), pCtx);
                     tk.setAccessor(subCompiler._compile());
+
+                    if (subCompiler.isLiteralOnly()) {
+                        //   stk.push(tk.getReducedValueAccelerated(null, null, null));
+                        tk = new LiteralNode(tk.getReducedValueAccelerated(null, null, null));
+                    }
                     returnType = subCompiler.getReturnType();
                 }
 
@@ -98,10 +104,12 @@ public class ExpressionCompiler extends AbstractParser {
                  * reducing for certain literals like, 'this', ternary and ternary else.
                  */
                 if (tk.isLiteral() && tk.getLiteralValue() != LITERALS.get("this")) {
+                    literalOnly = true;
+
                     if ((tkOp = nextTokenSkipSymbols()) != null && tkOp.isOperator()
                             && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
 
-                        /**
+                        /**       (int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d))
                          * If the next token is ALSO a literal, then we have a candidate for a compile-time literal
                          * reduction.
                          */
@@ -111,28 +119,26 @@ public class ExpressionCompiler extends AbstractParser {
                             /**
                              * Reduce the token now.
                              */
+
                             reduce();
 
                             firstLA = true;
 
                             /**
-                             * Now we need to check to see if this is actually a continuing reduction.
+                             * Now we need to check to see if this is a continuing reduction.
                              */
                             while ((tkOp2 = nextTokenSkipSymbols()) != null) {
-                                if (!tkOp2.isOperator(tkOp.getOperator())) {
-                                    /**
-                                     * We can't continue any further because we are dealing with
-                                     * different operators.
-                                     */
+                                if (isBooleanOperator(tkOp2.getOperator())) {
                                     astLinkedList.addTokenNode(new LiteralNode(stk.pop()), verify(pCtx, tkOp2));
                                     break;
                                 }
-                                else if ((tkLA2 = nextTokenSkipSymbols()) != null
-                                        && tkLA2.isLiteral()) {
+                                else if ((tkLA2 = nextTokenSkipSymbols()) != null && tkLA2.isLiteral()) {
 
                                     stk.push(tkLA2.getLiteralValue(), tkOp2.getLiteralValue());
+
                                     reduce();
                                     firstLA = false;
+                                    literalOnly = false;
                                 }
                                 else {
                                     if (firstLA) {
@@ -172,12 +178,17 @@ public class ExpressionCompiler extends AbstractParser {
                         }
                     }
                     else {
+                        literalOnly = false;
                         astLinkedList.addTokenNode(verify(pCtx, tk));
                         if (tkOp != null) astLinkedList.addTokenNode(verify(pCtx, tkOp));
 
                         continue;
                     }
                 }
+                else {
+                    literalOnly = false;
+                }
+
                 astLinkedList.addTokenNode(verify(pCtx, tk));
             }
 
@@ -187,7 +198,9 @@ public class ExpressionCompiler extends AbstractParser {
 
             astLinkedList.finish();
 
-            return new CompiledExpression(optimizeAST(astLinkedList, secondPassOptimization), getCurrentSourceFileName(), returnType, pCtx);
+            if (!stk.isEmpty()) throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
+
+            return new CompiledExpression(optimizeAST(astLinkedList, secondPassOptimization), getCurrentSourceFileName(), returnType, pCtx, literalOnly);
         }
         catch (Throwable e) {
             parserContext.set(null);
@@ -197,6 +210,10 @@ public class ExpressionCompiler extends AbstractParser {
             }
         }
 
+    }
+
+    private static boolean isBooleanOperator(int operator) {
+        return operator == Operator.AND || operator == Operator.OR;
     }
 
     protected ASTNode verify(ParserContext pCtx, ASTNode tk) {
@@ -432,5 +449,9 @@ public class ExpressionCompiler extends AbstractParser {
 
     public void removeParserContext() {
         removeContext();
+    }
+
+    public boolean isLiteralOnly() {
+        return literalOnly;
     }
 }

@@ -35,6 +35,7 @@ public class AbstractParser implements Serializable {
     protected boolean lastWasIdentifier = false;
     protected boolean lastWasLineLabel = false;
     protected boolean lastWasComment = false;
+    protected boolean literalOnly = true;
 
     protected boolean debugSymbols = false;
 
