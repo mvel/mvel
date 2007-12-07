@@ -566,6 +566,10 @@ public class ASTNode implements Cloneable, Serializable {
     public Accessor getAccessor() {
         return accessor;
     }
+
+    public String toString() {
+        return name != null ? new String(name) : String.valueOf(literal);
+    }
 }
 
 

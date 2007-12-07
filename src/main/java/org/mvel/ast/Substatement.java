@@ -24,7 +24,6 @@ public class Substatement extends ASTNode {
         return valRet(MVEL.eval(this.name, ctx, factory));
     }
 
-
     public ExecutableStatement getStatement() {
         return statement;
     }
