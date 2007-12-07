@@ -1,6 +1,7 @@
 package org.mvel.ast;
 
 import org.mvel.ASTNode;
+import org.mvel.debug.DebugTools;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.doOperations;
 
@@ -47,5 +48,9 @@ public class BinaryOperation extends ASTNode {
 
     public void setRight(ASTNode right) {
         this.right = right;
+    }
+
+    public String toString() {
+        return left.toString() + " " + DebugTools.getOperatorName(operation) + " " + right.toString();
     }
 }

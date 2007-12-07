@@ -74,4 +74,8 @@ public class ExecutableLiteral implements ExecutableStatement {
         // not implemented
         return null;
     }
+
+    public boolean isLiteralOnly() {
+        return true;
+    }
 }

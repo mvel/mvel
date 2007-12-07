@@ -136,7 +136,9 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath4() {
-        assertEquals((int) ((100d % 3d) * 2d - 1d - 1d + 8d + (5d * 2d)), test("(100 % 3) * 2 - 1 - 1 + 8 + (5 * 2)"));
+        int val = (int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
+        System.out.println("val=" + val);
+        assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
     }
 
     public void testMath5() {
