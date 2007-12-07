@@ -4,7 +4,6 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Soundex.soundex;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
-import org.mvel.debug.DebugTools;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
@@ -121,7 +120,6 @@ public class ExpressionCompiler extends AbstractParser {
                              */
 
                             reduce();
-                            stk.showStack();
 
                             firstLA = true;
 
