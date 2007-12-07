@@ -91,6 +91,10 @@ public class ExecutableAccessor implements ExecutableStatement {
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;
     }
+
+    public boolean isLiteralOnly() {
+        return false;
+    }
 }
 
 

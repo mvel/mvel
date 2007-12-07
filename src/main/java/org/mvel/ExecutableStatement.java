@@ -38,4 +38,6 @@ public interface ExecutableStatement extends Accessor, Serializable, Cloneable {
     public void computeTypeConversionRule();
 
     public boolean intOptimized();
+
+    public boolean isLiteralOnly();
 }

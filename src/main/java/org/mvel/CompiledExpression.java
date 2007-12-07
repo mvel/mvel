@@ -39,7 +39,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private boolean returnBigDecimal = false;
     private boolean literalOnly;
 
-
     private Class<? extends AccessorOptimizer> accessorOptimizer;
 
     private String sourceName;
@@ -184,5 +183,9 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;
+    }
+
+    public boolean isLiteralOnly() {
+        return literalOnly;
     }
 }

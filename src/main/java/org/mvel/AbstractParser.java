@@ -735,10 +735,10 @@ public class AbstractParser implements Serializable {
                             }
 
                             if (_subset != null) {
-                                return handleUnion(new Substatement(_subset, fields));
+                                return handleUnion(handleSubstatement(new Substatement(_subset, fields)));
                             }
                             else {
-                                return handleUnion(new Substatement(subset(expr, start = trimRight(start + 1), trimLeft(cursor - 1) - start), fields));
+                                return handleUnion(handleSubstatement(new Substatement(subset(expr, start = trimRight(start + 1), trimLeft(cursor - 1) - start), fields)));
                             }
                         }
 
@@ -870,6 +870,12 @@ public class AbstractParser implements Serializable {
         catch (CompileException e) {
             throw new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0, e);
         }
+    }
+
+    public ASTNode handleSubstatement(Substatement stmt) {
+        return stmt.getStatement() != null && stmt.getStatement().isLiteralOnly() ?
+                new LiteralNode(stmt.getStatement().getValue(null, null, null), fields)
+                : stmt;
     }
 
     protected ASTNode handleUnion(ASTNode node) {
