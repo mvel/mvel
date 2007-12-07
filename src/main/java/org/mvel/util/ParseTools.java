@@ -214,6 +214,8 @@ public class ParseTools {
         for (Method meth : cls.getMethods()) {
             if (name.equals(meth.getName()) && returnType == meth.getReturnType()) {
                 Class[] parameterTypes = meth.getParameterTypes();
+                if (parameterTypes.length != args.length) continue;
+
                 for (int i = 0; i < parameterTypes.length; i++) {
                     if (parameterTypes[i] != args[i]) return null;
                 }
