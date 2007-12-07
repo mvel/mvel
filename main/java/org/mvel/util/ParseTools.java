@@ -215,9 +215,12 @@ public class ParseTools {
         for (Method meth : cls.getMethods()) {
             if (name.equals(meth.getName()) && returnType == meth.getReturnType()) {
                 Class[] parameterTypes = meth.getParameterTypes();
+                if (parameterTypes.length != args.length) continue;
+
                 for (int i = 0; i < parameterTypes.length; i++) {
                     if (parameterTypes[i] != args[i]) return null;
                 }
+
                 return meth;
             }
         }
@@ -1059,7 +1062,7 @@ public class ParseTools {
     public static Serializable optimizeTree(final CompiledExpression compiled) {
         ASTIterator nodes = compiled.getTokens();
 
-        /**
+        /**                                            g
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
         if (MVEL.isOptimizationEnabled() && nodes.size() == 1) {

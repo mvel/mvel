@@ -24,6 +24,7 @@ import static java.lang.System.currentTimeMillis;
 import java.util.*;
 import java.util.List;
 
+@SuppressWarnings({"PointlessArithmeticExpression", "AssertEqualsBetweenInconvertibleTypes"})
 public class CoreConfidenceTests extends AbstractTest {
     public void testSingleProperty() {
         assertEquals(false, test("fun"));
@@ -128,6 +129,18 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath2() {
         assertEquals(3, test("foo.number-1"));
+    }
+
+    public void testMath3() {
+        assertEquals((10d * 5d) * 2d / 3d, test("(10 * 5) * 2 / 3"));
+    }
+
+    public void testMath4() {
+        assertEquals((int) ((100d % 3d) * 2d - 1d - 1d + 8d + (5d * 2d)), test("(100 % 3) * 2 - 1 - 1 + 8 + (5 * 2)"));
+    }
+
+    public void testMath5() {
+        assertEquals(300.5 / 5.3 / 2.1 / 1.5, test("300.5 / 5.3 / 2.1 / 1.5"));
     }
 
     public void testPowerOf() {
