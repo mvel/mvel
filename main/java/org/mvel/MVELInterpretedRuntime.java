@@ -115,8 +115,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
                     stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
 
                     if (tk instanceof Substatement) {
-                        if ((tk = nextToken()) != null && isStandardMathOperator(tk.getOperator())) {
+                        procDStack();
 
+                        if ((tk = nextToken()) != null && isStandardMathOperator(tk.getOperator())) {
                             dStack.push(tk.getOperator());
                             dStack.push(stk.pop());
                             continue;

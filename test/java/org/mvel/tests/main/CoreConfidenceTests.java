@@ -146,9 +146,9 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath6() {
-        int val = (300 * 5) + 100 / 2 * 2;
+        int val = (300 * 5 + 1) + 100 / 2 * 2;
         System.out.println("val=" + val);
-        assertEquals(val, test("(300 * five) + (100 / 2 * 2)"));
+        assertEquals(val, test("(300 * five + 1) + (100 / 2 * 2)"));
     }
 
     public void testMath7() {
