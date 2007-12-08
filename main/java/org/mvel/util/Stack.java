@@ -25,5 +25,9 @@ public interface Stack extends Serializable {
 
     public int size();
 
+    public void xswap();
+
+    public void swap();
+
     public void showStack();
 }

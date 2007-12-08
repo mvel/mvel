@@ -826,7 +826,7 @@ public class AbstractParser implements Serializable {
         }
         return lastNode = node;
     }
-
+                                                                                                                     
     public ASTNode handleSubstatement(Substatement stmt) {
         return stmt.getStatement() != null && stmt.getStatement().isLiteralOnly() ?
                 new LiteralNode(stmt.getStatement().getValue(null, null, null), fields)

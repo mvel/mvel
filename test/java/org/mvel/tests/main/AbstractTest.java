@@ -58,6 +58,8 @@ public abstract class AbstractTest extends TestCase {
         map.put("order", new Order());
         map.put("$id", 20);
 
+        map.put("five", 5);
+
         map.put("testImpl",
                 new TestInterface() {
 

@@ -145,6 +145,18 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(300.5 / 5.3 / 2.1 / 1.5, test("300.5 / 5.3 / 2.1 / 1.5"));
     }
 
+    public void testMath6() {
+        int val = (300 * 5) + 100 / 2 * 2;
+        System.out.println("val=" + val);
+        assertEquals(val, test("(300 * five) + (100 / 2 * 2)"));
+    }
+
+    public void testMath7() {
+        int val = (int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
+        System.out.println("val=" + val);
+        assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
+    }
+
     public void testPowerOf() {
         assertEquals(25, test("5 ** 2"));
     }
@@ -1693,7 +1705,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(Foo.class, ctx.getVariables().get("x_a"));
     }
-    
+
 
     public void testProvidedExternalTypes() {
         ExpressionCompiler compiler = new ExpressionCompiler("foo.bar");
