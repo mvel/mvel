@@ -113,6 +113,10 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 if (stk.isEmpty()) {
                     stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
 
+                    /**
+                     * If this is a substatement, we need to move the result into the d-stack to preserve
+                     * proper execution order.
+                     */
                     if (tk instanceof Substatement) {
                         procDStack();
 
