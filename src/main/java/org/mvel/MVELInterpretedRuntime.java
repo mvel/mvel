@@ -21,6 +21,7 @@ package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
+import org.mvel.ast.Substatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
@@ -45,6 +46,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
     private Object ctx;
     private VariableResolverFactory variableFactory;
 
+    private ExecutionStack dStack;
+
 
     Object parse() {
         setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);
@@ -52,6 +55,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
         try {
             stk = new ExecutionStack();
+            //   dStack = new ExecutionStack();
 
             cursor = 0;
 
@@ -108,6 +112,19 @@ public class MVELInterpretedRuntime extends AbstractParser {
                  */
                 if (stk.isEmpty()) {
                     stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
+
+                    if (tk instanceof Substatement) {
+                        procDStack();
+
+                        if ((tk = nextToken()) != null && isStandardMathOperator(tk.getOperator())) {
+                            if (dStack == null) dStack = new ExecutionStack();
+                            dStack.push(tk.getOperator());
+                            dStack.push(stk.pop());
+                            continue;
+                        }
+
+                        if (tk == null) continue;
+                    }
                 }
 
                 if (!tk.isOperator()) {
@@ -116,6 +133,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
                 switch (operator = tk.getOperator()) {
                     case AND:
+                        procDStack();
+
                         if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
                             if (unwindStatement(operator)) {
                                 return;
@@ -129,7 +148,10 @@ public class MVELInterpretedRuntime extends AbstractParser {
                             stk.discard();
                             continue;
                         }
+
                     case OR:
+                        procDStack();
+
                         if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
                             if (unwindStatement(operator)) {
                                 return;
@@ -188,6 +210,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
             if (holdOverRegister != null) {
                 stk.push(holdOverRegister);
             }
+
+            procDStack();
         }
 
         catch (NullPointerException e) {
@@ -198,6 +222,22 @@ public class MVELInterpretedRuntime extends AbstractParser {
             else {
                 throw e;
             }
+        }
+    }
+
+    private static boolean isStandardMathOperator(int operator) {
+        return operator == ADD || operator == MULT || operator == SUB || operator == DIV;
+    }
+
+    private void procDStack() {
+        if (dStack == null) return;
+        Object o;
+        while (!dStack.isEmpty()) {
+            o = stk.pop();
+            stk.push(dStack.pop());
+            stk.push(o);
+            stk.push(dStack.pop());
+            reduce();
         }
     }
 
