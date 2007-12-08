@@ -22,6 +22,21 @@ public class ExecutionStack implements Stack {
         }
     }
 
+    public void swap() {
+        StackElement temp = element.next;
+        element.next = temp.next;
+        element = temp;
+    }
+
+    public void xswap() {
+        StackElement temp = element.next.next;
+        StackElement temp2 = temp.next;
+
+        element.next.next = temp2;
+        temp.next = temp2.next;
+        temp2.next = temp;
+    }
+
     public void push(Object o) {
         size++;
         element = new StackElement(element, o);
@@ -78,6 +93,7 @@ public class ExecutionStack implements Stack {
 
     public void showStack() {
         StackElement el = element;
+        if (el == null) return;
         do {
             System.out.println("->" + el.value);
         }

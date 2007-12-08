@@ -87,12 +87,10 @@ public class ExpressionCompiler extends AbstractParser {
                 returnType = tk.getEgressType();
 
                 if (tk instanceof Substatement) {
-
                     ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray(), pCtx);
                     tk.setAccessor(subCompiler._compile());
 
                     if (subCompiler.isLiteralOnly()) {
-                        //   stk.push(tk.getReducedValueAccelerated(null, null, null));
                         tk = new LiteralNode(tk.getReducedValueAccelerated(null, null, null));
                     }
                     returnType = subCompiler.getReturnType();
@@ -108,11 +106,12 @@ public class ExpressionCompiler extends AbstractParser {
                     if ((tkOp = nextTokenSkipSymbols()) != null && tkOp.isOperator()
                             && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
 
-                        /**       (int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d))
+                        /**
                          * If the next token is ALSO a literal, then we have a candidate for a compile-time literal
                          * reduction.
                          */
                         if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()) {
+
                             stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), tkOp.getLiteralValue());
 
                             /**
@@ -132,7 +131,6 @@ public class ExpressionCompiler extends AbstractParser {
                                     break;
                                 }
                                 else if ((tkLA2 = nextTokenSkipSymbols()) != null && tkLA2.isLiteral()) {
-
                                     stk.push(tkLA2.getLiteralValue(), tkOp2.getLiteralValue());
 
                                     reduce();
@@ -165,12 +163,14 @@ public class ExpressionCompiler extends AbstractParser {
                              * we've been doing any reducing, and if so we create the token
                              * now.
                              */
-                            if (!stk.isEmpty())
-                                astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
+                            if (!stk.isEmpty()) {
+                                astLinkedList.addTokenNode(new LiteralNode(stk.pop()));
+                            }
 
                             continue;
                         }
                         else {
+                            literalOnly = false;
                             astLinkedList.addTokenNode(verify(pCtx, tk), verify(pCtx, tkOp));
                             if (tkLA != null) astLinkedList.addTokenNode(verify(pCtx, tkLA));
                             continue;
@@ -261,7 +261,7 @@ public class ExpressionCompiler extends AbstractParser {
      * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
      * current state against 2 downrange structures (usually an op and a val).
      */
-    private void reduce() {
+    private void reduce() {        
         Object v1 = null, v2 = null;
         Integer operator;
         try {

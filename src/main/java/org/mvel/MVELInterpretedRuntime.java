@@ -21,6 +21,8 @@ package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
+import org.mvel.ast.Substatement;
+import org.mvel.debug.DebugTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
@@ -45,6 +47,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
     private Object ctx;
     private VariableResolverFactory variableFactory;
 
+    private ExecutionStack dStack;
+
 
     Object parse() {
         setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);
@@ -52,6 +56,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
         try {
             stk = new ExecutionStack();
+            dStack = new ExecutionStack();
 
             cursor = 0;
 
@@ -108,6 +113,17 @@ public class MVELInterpretedRuntime extends AbstractParser {
                  */
                 if (stk.isEmpty()) {
                     stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
+
+                    if (tk instanceof Substatement) {
+                        if ((tk = nextToken()) != null && isStandardMathOperator(tk.getOperator())) {
+
+                            dStack.push(tk.getOperator());
+                            dStack.push(stk.pop());
+                            continue;
+                        }
+
+                        if (tk == null) continue;
+                    }
                 }
 
                 if (!tk.isOperator()) {
@@ -116,6 +132,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
                 switch (operator = tk.getOperator()) {
                     case AND:
+                        procDStack();
+
                         if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
                             if (unwindStatement(operator)) {
                                 return;
@@ -129,7 +147,10 @@ public class MVELInterpretedRuntime extends AbstractParser {
                             stk.discard();
                             continue;
                         }
+
                     case OR:
+                        procDStack();
+
                         if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
                             if (unwindStatement(operator)) {
                                 return;
@@ -188,6 +209,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
             if (holdOverRegister != null) {
                 stk.push(holdOverRegister);
             }
+
+            procDStack();
         }
 
         catch (NullPointerException e) {
@@ -198,6 +221,21 @@ public class MVELInterpretedRuntime extends AbstractParser {
             else {
                 throw e;
             }
+        }
+    }
+
+    private static boolean isStandardMathOperator(int operator) {
+        return operator == ADD || operator == MULT || operator == SUB || operator == DIV;
+    }
+
+    private void procDStack() {
+        Object o;
+        while (!dStack.isEmpty()) {
+            o = stk.pop();
+            stk.push(dStack.pop());
+            stk.push(o);
+            stk.push(dStack.pop());
+            reduce();
         }
     }
 
@@ -212,106 +250,107 @@ public class MVELInterpretedRuntime extends AbstractParser {
      * current state against 2 downrange structures (usually an op and a val).
      */
     private void reduce() {
+        if (stk.size() <= 1) return;
+
         Object v1 = null, v2 = null;
         Integer operator;
         try {
-            while (stk.size() > 1) {
-                operator = (Integer) stk.pop();
-                v1 = stk.pop();
-                v2 = stk.pop();
+            operator = (Integer) stk.pop();
+            v1 = stk.pop();
+            v2 = stk.pop();
 
-                switch (operator) {
-                    case ADD:
-                    case SUB:
-                    case DIV:
-                    case MULT:
-                    case MOD:
-                    case EQUAL:
-                    case NEQUAL:
-                    case GTHAN:
-                    case LTHAN:
-                    case GETHAN:
-                    case LETHAN:
-                    case POWER:
-                        stk.push(doOperations(v2, operator, v1));
-                        break;
+            switch (operator) {
+                case ADD:
+                case SUB:
+                case DIV:
+                case MULT:
+                case MOD:
+                case EQUAL:
+                case NEQUAL:
+                case GTHAN:
+                case LTHAN:
+                case GETHAN:
+                case LETHAN:
+                case POWER:
+                    stk.push(doOperations(v2, operator, v1));
+                    break;
 
-                    case CHOR:
-                        if (!isEmpty(v2) || !isEmpty(v1)) {
-                            stk.clear();
-                            stk.push(!isEmpty(v2) ? v2 : v1);
-                            return;
-                        }
-                        else stk.push(null);
-                        break;
+                case CHOR:
+                    if (!isEmpty(v2) || !isEmpty(v1)) {
+                        stk.clear();
+                        stk.push(!isEmpty(v2) ? v2 : v1);
+                        return;
+                    }
+                    else stk.push(null);
+                    break;
 
-                    case REGEX:
-                        stk.push(compile(valueOf(v1)).matcher(valueOf(v2)).matches());
-                        break;
+                case REGEX:
+                    stk.push(compile(valueOf(v1)).matcher(valueOf(v2)).matches());
+                    break;
 
-                    case INSTANCEOF:
-                        if (v1 instanceof Class)
-                            stk.push(((Class) v1).isInstance(v2));
-                        else
-                            stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
+                case INSTANCEOF:
+                    if (v1 instanceof Class)
+                        stk.push(((Class) v1).isInstance(v2));
+                    else
+                        stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
 
-                        break;
+                    break;
 
-                    case CONVERTABLE_TO:
-                        if (v1 instanceof Class)
-                            stk.push(canConvert(v2.getClass(), (Class) v1));
-                        else
-                            stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
-                        break;
+                case CONVERTABLE_TO:
+                    if (v1 instanceof Class)
+                        stk.push(canConvert(v2.getClass(), (Class) v1));
+                    else
+                        stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
+                    break;
 
-                    case CONTAINS:
-                        stk.push(containsCheck(v2, v1));
-                        break;
+                case CONTAINS:
+                    stk.push(containsCheck(v2, v1));
+                    break;
 
-                    case BW_AND:
-                        stk.push(asInt(v2) & asInt(v1));
-                        break;
+                case BW_AND:
+                    stk.push(asInt(v2) & asInt(v1));
+                    break;
 
-                    case BW_OR:
-                        stk.push(asInt(v2) | asInt(v1));
-                        break;
+                case BW_OR:
+                    stk.push(asInt(v2) | asInt(v1));
+                    break;
 
-                    case BW_XOR:
-                        stk.push(asInt(v2) ^ asInt(v1));
-                        break;
+                case BW_XOR:
+                    stk.push(asInt(v2) ^ asInt(v1));
+                    break;
 
-                    case BW_SHIFT_LEFT:
-                        stk.push(asInt(v2) << asInt(v1));
-                        break;
+                case BW_SHIFT_LEFT:
+                    stk.push(asInt(v2) << asInt(v1));
+                    break;
 
-                    case BW_USHIFT_LEFT:
-                        int iv2 = asInt(v2);
-                        if (iv2 < 0) iv2 *= -1;
-                        stk.push(iv2 << asInt(v1));
-                        break;
+                case BW_USHIFT_LEFT:
+                    int iv2 = asInt(v2);
+                    if (iv2 < 0) iv2 *= -1;
+                    stk.push(iv2 << asInt(v1));
+                    break;
 
-                    case BW_SHIFT_RIGHT:
-                        stk.push(asInt(v2) >> asInt(v1));
-                        break;
+                case BW_SHIFT_RIGHT:
+                    stk.push(asInt(v2) >> asInt(v1));
+                    break;
 
-                    case BW_USHIFT_RIGHT:
-                        stk.push(asInt(v2) >>> asInt(v1));
-                        break;
+                case BW_USHIFT_RIGHT:
+                    stk.push(asInt(v2) >>> asInt(v1));
+                    break;
 
-                    case STR_APPEND:
-                        stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
-                        break;
+                case STR_APPEND:
+                    stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
+                    break;
 
-                    case SOUNDEX:
-                        stk.push(Soundex.soundex(valueOf(v1)).equals(Soundex.soundex(valueOf(v2))));
-                        break;
+                case SOUNDEX:
+                    stk.push(Soundex.soundex(valueOf(v1)).equals(Soundex.soundex(valueOf(v2))));
+                    break;
 
-                    case SIMILARITY:
-                        stk.push(similarity(valueOf(v1), valueOf(v2)));
-                        break;
+                case SIMILARITY:
+                    stk.push(similarity(valueOf(v1), valueOf(v2)));
+                    break;
 
-                }
             }
+
         }
         catch (ClassCastException e) {
             if ((fields & ASTNode.LOOKAHEAD) == 0) {
