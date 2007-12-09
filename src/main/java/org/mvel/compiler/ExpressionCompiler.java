@@ -5,7 +5,10 @@ import static org.mvel.DataConversion.canConvert;
 import org.mvel.Operator;
 import org.mvel.ParserContext;
 import static org.mvel.Soundex.soundex;
-import org.mvel.ast.*;
+import org.mvel.ast.ASTNode;
+import org.mvel.ast.Assignment;
+import org.mvel.ast.LiteralNode;
+import org.mvel.ast.Substatement;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
@@ -193,9 +196,9 @@ public class ExpressionCompiler extends AbstractParser {
                 astLinkedList.addTokenNode(verify(pCtx, tk));
             }
 
-            if (astLinkedList.peekLast() instanceof EndOfStatement) {
-                astLinkedList.peekLast().discard();
-            }
+//            if (astLinkedList.peekLast() instanceof EndOfStatement) {
+//                astLinkedList.peekLast().discard();
+//            }
 
             astLinkedList.finish();
 

@@ -22,12 +22,8 @@ public class ReturnNode extends ASTNode {
         if (accessor == null) {
             setAccessor((Accessor) subCompileExpression(this.name));
         }
-        if (graceful) {
-            return accessor.getValue(ctx, thisValue, factory);
-        }
-        else {
-            throw new EndWithValue(accessor.getValue(ctx, thisValue, factory));
-        }
+
+        throw new EndWithValue(accessor.getValue(ctx, thisValue, factory));
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
