@@ -40,9 +40,18 @@ public class Function extends ASTNode implements Safe {
 
         this.compiledBlock = (ExecutableStatement) ParseTools.subCompileExpression(block, ctx);
 
+        ctx.addIndexedVariables(ctx.getVariables().keySet());
+
+//        for (String s : ctx.getVariables().keySet()) {
+//             ctx.addIndexedVariable(s);
+//        }
+
+        this.compiledBlock = (ExecutableStatement) ParseTools.subCompileExpression(block, ctx);
+
         AbstractParser.setCurrentThreadParserContext(old);
 
         this.parameters = (String[]) ctx.getIndexedVariables().toArray(new String[ctx.getIndexedVariables().size()]);
+
 
         this.egressType = this.compiledBlock.getKnownEgressType();
     }
@@ -58,13 +67,6 @@ public class Function extends ASTNode implements Safe {
     }
 
     public Object call(Object ctx, Object thisValue, VariableResolverFactory factory, Object[] parms) {
-        //    System.out.println("CALL_FUNCTION:" + this.name);
-
-//        for (int i = 0; i < parmNum; i++) {
-//            System.out.println("   [" + parameters[i] + "]=" + String.valueOf(parms[i]));
-//        }
-
-
         try {
             if (parms != null && parms.length != 0) {
                 VariableResolverFactory f = new FunctionVariableResolverFactory(factory, parameters, parms);

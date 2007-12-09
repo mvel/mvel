@@ -43,9 +43,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
             this.name = new String(expr, 0, assignStart).trim();
             stmt = subset(expr, assignStart + 1);
 
-            //  if ((fields & COMPILE_IMMEDIATE) != 0) {
             this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt)).getKnownEgressType();
-            //  }
 
             if (col = ((endOfName = findFirst('[', indexTarget = this.name.toCharArray())) > 0)) {
                 if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
@@ -128,5 +126,9 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
     public void setRegister(int register) {
         this.register = register;
+    }
+
+    public boolean isAssignment() {
+        return true;
     }
 }

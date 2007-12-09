@@ -35,8 +35,6 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
         }
 
-
-        System.out.println("ALLOC_TYPED:" + name);
     }
 
 

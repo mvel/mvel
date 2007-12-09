@@ -288,7 +288,13 @@ public class AbstractParser implements Serializable {
                                     continue;
                                 }
                                 else {
-                                    return lastNode = new TypedVarNode(subArray(start, end), fields, Object.class);
+                                    String name = new String(subArray(start, end));
+                                    if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        return lastNode = new IndexedDeclTypedVarNode(idx, Object.class);
+                                    }
+                                    else {
+                                        return lastNode = new DeclTypedVarNode(name, fields, Object.class);
+                                    }
                                 }
                         }
                     }
@@ -490,18 +496,19 @@ public class AbstractParser implements Serializable {
                                     }
                                     else
                                     if (pCtx != null && ((idx = pCtx.variableIndexOf(t)) != -1 || (pCtx.isIndexAllocation()))) {
-
+                                        IndexedAssignmentNode ian = new IndexedAssignmentNode(subArray(start, cursor), ASTNode.ASSIGN, idx);
 
                                         if (idx == -1) {
-                                            pCtx.addIndexedVariable(t);
+                                            pCtx.addIndexedVariable(t = ian.getAssignmentVar());
                                             idx = pCtx.variableIndexOf(t);
+
+                                            ian.setRegister(idx);
                                         }
-                                        System.out.println("REGISTER_ALLOC[" + idx + "]:" + new String(subArray(start, cursor)));
-                                        return lastNode = new IndexedAssignmentNode(subArray(start, cursor), ASTNode.ASSIGN, idx);
+
+
+                                        return lastNode = ian;
                                     }
                                     else {
-                                        System.out.println("HEAP_ALLOC:" + new String(subArray(start, cursor)));
-
                                         return lastNode = new AssignmentNode(subArray(start, cursor), fields | ASTNode.ASSIGN);
                                     }
                                 }

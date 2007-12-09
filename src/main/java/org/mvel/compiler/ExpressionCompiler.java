@@ -113,7 +113,7 @@ public class ExpressionCompiler extends AbstractParser {
                     if ((tkOp = nextTokenSkipSymbols()) != null && tkOp.isOperator()
                             && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
 
-                        /**       (int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d))
+                        /**
                          * If the next token is ALSO a literal, then we have a candidate for a compile-time literal
                          * reduction.
                          */

@@ -43,17 +43,6 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
             resolver.setValue(value);
         }
         return resolver;
-
-//        VariableResolver vr = this.variableResolvers != null ? this.variableResolvers.get(name) : null;
-//        if (vr != null) {
-//            vr.setValue(value);
-//            return vr;
-//        }
-//        else {
-//            addResolver(name, (vr = new MapVariableResolver(variables, name, false)));
-//            vr.setValue(value);
-//            return vr;
-//        }
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
@@ -62,11 +51,8 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
             throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
         }
         else {
-            addResolver(name, vr = new MapVariableResolver(variables, name, type, false));
-            createIndexedVariable(variableIndexOf(name), name, value);
-            vr.setValue(value);
-
-            return vr;
+            //      addResolver(name, vr = new MapVariableResolver(variables, name, type, false));
+            return createIndexedVariable(variableIndexOf(name), name, value);
         }
     }
 
