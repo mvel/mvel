@@ -11,6 +11,7 @@ import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.findTypeInjectionResolverFactory;
 
 
+@SuppressWarnings({"unchecked"})
 public class Function extends ASTNode implements Safe {
     protected String name;
     protected ExecutableStatement compiledBlock;
@@ -38,20 +39,15 @@ public class Function extends ASTNode implements Safe {
             ctx.addVariable(s, Object.class);
         }
 
-        this.compiledBlock = (ExecutableStatement) ParseTools.subCompileExpression(block, ctx);
+        ParseTools.subCompileExpression(block, ctx);
 
         ctx.addIndexedVariables(ctx.getVariables().keySet());
-
-//        for (String s : ctx.getVariables().keySet()) {
-//             ctx.addIndexedVariable(s);
-//        }
 
         this.compiledBlock = (ExecutableStatement) ParseTools.subCompileExpression(block, ctx);
 
         AbstractParser.setCurrentThreadParserContext(old);
 
         this.parameters = (String[]) ctx.getIndexedVariables().toArray(new String[ctx.getIndexedVariables().size()]);
-
 
         this.egressType = this.compiledBlock.getKnownEgressType();
     }
