@@ -1,6 +1,5 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
 import org.mvel.ParserContext;
 import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.EndWithValue;

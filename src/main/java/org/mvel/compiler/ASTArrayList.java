@@ -18,7 +18,7 @@
  */
 package org.mvel.compiler;
 
-import org.mvel.ASTNode;
+import org.mvel.ast.ASTNode;
 import org.mvel.util.StringAppender;
 
 import java.io.Serializable;

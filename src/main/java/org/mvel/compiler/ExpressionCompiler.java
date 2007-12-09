@@ -1,11 +1,11 @@
 package org.mvel.compiler;
 
-import org.mvel.ASTNode;
 import org.mvel.CompileException;
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.Operator;
 import org.mvel.ParserContext;
 import static org.mvel.Soundex.soundex;
+import org.mvel.ast.ASTNode;
 import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;

@@ -21,6 +21,7 @@ package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
+import org.mvel.ast.ASTNode;
 import org.mvel.ast.Substatement;
 import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.EndWithValue;

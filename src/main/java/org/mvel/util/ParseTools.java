@@ -2,6 +2,7 @@ package org.mvel.util;
 
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
+import org.mvel.ast.ASTNode;
 import org.mvel.compiler.*;
 import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel.compiler.AbstractParser.isReservedWord;

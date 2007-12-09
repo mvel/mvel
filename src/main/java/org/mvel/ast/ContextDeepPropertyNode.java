@@ -1,6 +1,5 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
 import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;

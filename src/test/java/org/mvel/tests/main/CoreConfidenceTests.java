@@ -2,6 +2,7 @@ package org.mvel.tests.main;
 
 import org.mvel.*;
 import static org.mvel.MVEL.*;
+import org.mvel.ast.ASTNode;
 import org.mvel.ast.WithNode;
 import org.mvel.compiler.CompiledExpression;
 import org.mvel.compiler.ExpressionCompiler;
@@ -146,7 +147,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testMath4() {
         int val = (int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
         System.out.println("val=" + val);
-        assertEquals(val, test("(100 % 3) * 2 - 1 / 1 +  + (5 * 2)"));
+        assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
     }
 
     public void testMath5() {

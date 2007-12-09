@@ -1,6 +1,5 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
 import org.mvel.ast.cache.CachedListAccessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
