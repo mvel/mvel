@@ -24,6 +24,7 @@ import org.mvel.ast.ASTNode;
 public class ASTLinkedList implements ASTIterator {
     private ASTNode firstASTNode;
     private ASTNode current;
+    private ASTNode last;
     private int size;
 
     public ASTLinkedList() {
@@ -45,16 +46,16 @@ public class ASTLinkedList implements ASTIterator {
             this.firstASTNode = this.current = astNode;
         }
         else {
-            this.current = (this.current.nextASTNode = astNode);
+            this.last = this.current = (this.current.nextASTNode = astNode);
         }
     }
 
     public void addTokenNode(ASTNode astNode, ASTNode token2) {
         if (this.firstASTNode == null) {
-            this.current = ((this.firstASTNode = astNode).nextASTNode = token2);
+            this.last = this.current = ((this.firstASTNode = astNode).nextASTNode = token2);
         }
         else {
-            this.current = (this.current.nextASTNode = astNode).nextASTNode = token2;
+            this.last = this.current = (this.current.nextASTNode = astNode).nextASTNode = token2;
         }
     }
 
@@ -95,7 +96,7 @@ public class ASTLinkedList implements ASTIterator {
 
     public ASTNode peekNode() {
         if (current == null) return null;
-        return current.nextASTNode;
+        return current;
     }
 
     public void removeToken() {
@@ -105,7 +106,7 @@ public class ASTLinkedList implements ASTIterator {
     }
 
     public ASTNode peekLast() {
-        throw new RuntimeException("unimplemented");
+        return last;
     }
 
     public ASTNode nodesBack(int offset) {
@@ -159,6 +160,8 @@ public class ASTLinkedList implements ASTIterator {
 
             last = curr;
         }
+
+        this.last = last;
 
         reset();
     }

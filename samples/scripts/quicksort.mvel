@@ -22,7 +22,7 @@ function partition(array, low, high) {
         if (i < j) swap(array, i, j);
     }
 
-    return j;
+    j;
 }
 
 function sort(array, low, high) {
