@@ -1,5 +1,6 @@
 package org.mvel.ast;
 
+import org.mvel.ASTNode;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;

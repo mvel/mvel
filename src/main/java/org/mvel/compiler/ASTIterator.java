@@ -19,7 +19,7 @@
 
 package org.mvel.compiler;
 
-import org.mvel.ast.ASTNode;
+import org.mvel.ASTNode;
 
 import java.io.Serializable;
 

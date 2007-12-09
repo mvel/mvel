@@ -1,7 +1,5 @@
 package org.mvel;
 
-import org.mvel.ast.ASTNode;
-
 /**
  * @author Christopher Brock
  */

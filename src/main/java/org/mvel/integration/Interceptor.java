@@ -1,6 +1,6 @@
 package org.mvel.integration;
 
-import org.mvel.ast.ASTNode;
+import org.mvel.ASTNode;
 
 /**
  * An interceptor can be used to decorate functionality into an expression.

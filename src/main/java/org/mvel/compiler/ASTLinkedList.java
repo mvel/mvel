@@ -19,7 +19,7 @@
 
 package org.mvel.compiler;
 
-import org.mvel.ast.ASTNode;
+import org.mvel.ASTNode;
 
 public class ASTLinkedList implements ASTIterator {
     private ASTNode firstASTNode;

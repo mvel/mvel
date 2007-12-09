@@ -1,5 +1,6 @@
 package org.mvel.ast;
 
+import org.mvel.ASTNode;
 import org.mvel.CompileException;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findLast;

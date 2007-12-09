@@ -21,6 +21,8 @@ package org.mvel;
 
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.ast.Function;
+import org.mvel.compiler.AbstractParser;
+import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
@@ -64,7 +66,7 @@ public class ASTNode implements Cloneable, Serializable {
     protected int firstUnion;
     protected int endOfName;
 
-    protected int fields = 0;
+    public int fields = 0;
 
     protected Class egressType;
     protected char[] name;

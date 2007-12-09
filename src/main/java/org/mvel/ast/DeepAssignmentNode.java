@@ -1,5 +1,6 @@
 package org.mvel.ast;
 
+import org.mvel.ASTNode;
 import static org.mvel.MVEL.compileSetExpression;
 import static org.mvel.MVEL.eval;
 import static org.mvel.PropertyAccessor.set;

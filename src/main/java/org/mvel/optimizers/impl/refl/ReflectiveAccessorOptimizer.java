@@ -22,7 +22,6 @@ package org.mvel.optimizers.impl.refl;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.MVEL.eval;
-import org.mvel.ast.ASTNode;
 import org.mvel.ast.Function;
 import org.mvel.compiler.Accessor;
 import org.mvel.compiler.AccessorNode;

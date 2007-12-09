@@ -132,7 +132,7 @@ public class AbstractParser implements Serializable {
     }
 
 
-    static void configureFactory() {
+    public static void configureFactory() {
         if (MVEL.THREAD_SAFE) {
             EX_PRECACHE = synchronizedMap(new WeakHashMap<String, char[]>(10));
         }

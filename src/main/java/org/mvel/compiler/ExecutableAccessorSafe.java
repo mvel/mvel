@@ -18,7 +18,7 @@
  */
 package org.mvel.compiler;
 
-import org.mvel.ast.ASTNode;
+import org.mvel.ASTNode;
 import org.mvel.ast.Safe;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.handleParserEgress;

@@ -1,5 +1,6 @@
 package org.mvel.ast;
 
+import org.mvel.ASTNode;
 import org.mvel.MVEL;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
