@@ -9,14 +9,11 @@ import org.mvel.ast.ASTNode;
 import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
+import org.mvel.util.*;
 import static org.mvel.util.CompilerTools.optimizeAST;
-import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.ParseTools.doOperations;
-import org.mvel.util.PropertyTools;
 import static org.mvel.util.PropertyTools.similarity;
-import org.mvel.util.Stack;
-import org.mvel.util.StringAppender;
 
 import static java.lang.String.valueOf;
 import static java.lang.Thread.currentThread;
@@ -69,7 +66,9 @@ public class ExpressionCompiler extends AbstractParser {
         ASTNode tkOp2;
         ASTNode tkLA;
         ASTNode tkLA2;
-        ASTLinkedList astLinkedList = new ASTLinkedList();
+
+
+        ASTLinkedList astBuild = new ASTLinkedList();
 
         boolean firstLA;
 
@@ -85,7 +84,7 @@ public class ExpressionCompiler extends AbstractParser {
 
             while ((tk = nextToken()) != null) {
                 if (tk.fields == -1) {
-                    astLinkedList.addTokenNode(tk);
+                    astBuild.addTokenNode(tk);
                     continue;
                 }
 
@@ -133,7 +132,7 @@ public class ExpressionCompiler extends AbstractParser {
                              */
                             while ((tkOp2 = nextTokenSkipSymbols()) != null) {
                                 if (isBooleanOperator(tkOp2.getOperator())) {
-                                    astLinkedList.addTokenNode(new LiteralNode(stk.pop()), verify(pCtx, tkOp2));
+                                    astBuild.addTokenNode(new LiteralNode(stk.pop()), verify(pCtx, tkOp2));
                                     break;
                                 }
                                 else if ((tkLA2 = nextTokenSkipSymbols()) != null && tkLA2.isLiteral()) {
@@ -150,16 +149,16 @@ public class ExpressionCompiler extends AbstractParser {
                                          * There are more tokens, but we can't reduce anymore.  So
                                          * we create a reduced token for what we've got.
                                          */
-                                        astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
+                                        astBuild.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
                                     }
                                     else {
                                         /**
                                          * We have reduced additional tokens, but we can't reduce
                                          * anymore.
                                          */
-                                        astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()), tkOp);
+                                        astBuild.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()), tkOp);
 
-                                        if (tkLA2 != null) astLinkedList.addTokenNode(tkLA2);
+                                        if (tkLA2 != null) astBuild.addTokenNode(tkLA2);
                                     }
                                     break;
                                 }
@@ -171,20 +170,20 @@ public class ExpressionCompiler extends AbstractParser {
                              * now.
                              */
                             if (!stk.isEmpty())
-                                astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
+                                astBuild.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
 
                             continue;
                         }
                         else {
-                            astLinkedList.addTokenNode(verify(pCtx, tk), verify(pCtx, tkOp));
-                            if (tkLA != null) astLinkedList.addTokenNode(verify(pCtx, tkLA));
+                            astBuild.addTokenNode(verify(pCtx, tk), verify(pCtx, tkOp));
+                            if (tkLA != null) astBuild.addTokenNode(verify(pCtx, tkLA));
                             continue;
                         }
                     }
                     else {
                         literalOnly = false;
-                        astLinkedList.addTokenNode(verify(pCtx, tk));
-                        if (tkOp != null) astLinkedList.addTokenNode(verify(pCtx, tkOp));
+                        astBuild.addTokenNode(verify(pCtx, tk));
+                        if (tkOp != null) astBuild.addTokenNode(verify(pCtx, tkOp));
 
                         continue;
                     }
@@ -193,14 +192,11 @@ public class ExpressionCompiler extends AbstractParser {
                     literalOnly = false;
                 }
 
-                astLinkedList.addTokenNode(verify(pCtx, tk));
+                astBuild.addTokenNode(verify(pCtx, tk));
             }
 
-//            if (astLinkedList.peekLast() instanceof EndOfStatement) {
-//                astLinkedList.peekLast().discard();
-//            }
 
-            astLinkedList.finish();
+            astBuild.finish();
 
             if (verifying) {
                 pCtx.processTables();
@@ -208,7 +204,7 @@ public class ExpressionCompiler extends AbstractParser {
 
             if (!stk.isEmpty()) throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
 
-            return new CompiledExpression(optimizeAST(astLinkedList, secondPassOptimization), getCurrentSourceFileName(), returnType, pCtx, literalOnly);
+            return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization), getCurrentSourceFileName(), returnType, pCtx, literalOnly);
         }
         catch (Throwable e) {
             parserContext.set(null);

@@ -24,6 +24,8 @@ import org.mvel.ParserContext;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
+import org.mvel.util.ASTIterator;
+import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.ParseTools.handleParserEgress;
 
 import java.io.Serializable;

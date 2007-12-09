@@ -2,7 +2,6 @@ package org.mvel.util;
 
 import org.mvel.Operator;
 import org.mvel.ast.*;
-import org.mvel.compiler.ASTLinkedList;
 
 public class CompilerTools {
 
@@ -27,10 +26,21 @@ public class CompilerTools {
             }
             else if (astLinkedList.hasMoreNodes()) {
                 if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
-                    optimizedAst.addTokenNode(tk);
+
                     if (tk instanceof EndOfStatement) {
+                        /**
+                         * If this is the last node of the script, don't bother
+                         * with the end of statement.
+                         */
+                        if (astLinkedList.hasMoreNodes()) {
+                            optimizedAst.addTokenNode(tk);
+                        }
+
                         astLinkedList.setCurrentNode(tkOp);
                         continue;
+                    }
+                    else {
+                        optimizedAst.addTokenNode(tk);
                     }
 
                     optimizedAst.addTokenNode(tkOp);
@@ -54,12 +64,22 @@ public class CompilerTools {
                         optimizedAst.addTokenNode(tkOp2);
                     }
                 }
-
                 else {
-                    optimizedAst.addTokenNode(tk);
                     if (tk instanceof EndOfStatement) {
                         astLinkedList.setCurrentNode(tkOp);
+
+                        /**
+                         * If this is the last node of the script, don't bother
+                         * with the end of statement.
+                         */
+                        if (astLinkedList.hasMoreNodes()) {
+                            optimizedAst.addTokenNode(tk);
+                        }
+
                         continue;
+                    }
+                    else {
+                        optimizedAst.addTokenNode(tk);
                     }
 
                     optimizedAst.addTokenNode(tkOp);
