@@ -10,6 +10,8 @@ import static org.mvel.util.ParseTools.subCompileExpression;
  * @author Christopher Brock
  */
 public class ReturnNode extends ASTNode {
+    private boolean graceful = false;
+
     public ReturnNode(char[] expr, int fields) {
         super(expr, fields);
         setAccessor((Accessor) subCompileExpression(expr));
@@ -20,10 +22,23 @@ public class ReturnNode extends ASTNode {
         if (accessor == null) {
             setAccessor((Accessor) subCompileExpression(this.name));
         }
-        throw new EndWithValue(accessor.getValue(ctx, thisValue, factory));
+        if (graceful) {
+            return accessor.getValue(ctx, thisValue, factory);
+        }
+        else {
+            throw new EndWithValue(accessor.getValue(ctx, thisValue, factory));
+        }
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         throw new EndWithValue(eval(this.name, ctx, factory));
+    }
+
+    public boolean isGraceful() {
+        return graceful;
+    }
+
+    public void setGraceful(boolean graceful) {
+        this.graceful = graceful;
     }
 }
