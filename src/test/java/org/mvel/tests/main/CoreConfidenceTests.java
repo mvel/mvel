@@ -2923,8 +2923,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testFunctionsScript1() throws IOException {
-        //  test(new String(ParseTools.loadFromFile(new File("samples/scripts/functions1.mvel"))));
-
         MVEL.evalFile(new File("samples/scripts/functions1.mvel"));
     }
 

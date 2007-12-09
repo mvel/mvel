@@ -125,7 +125,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             int r = (int) Math.random() * 100;
             cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_"
                     + String.valueOf(cw.hashCode()).replaceAll("\\-", "_") + (System.currentTimeMillis() / 10) + r,
-                    null, "java/lang/Object", new String[]{"org/mvel/Accessor"});
+                    null, "java/lang/Object", new String[]{"org/mvel/compiler/Accessor"});
         }
 
         MethodVisitor m = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
@@ -685,7 +685,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         mv.visitIntInsn(ALOAD, 3);
 
                         debug("INVOKEINTERFACE ExecutableStatement.getValue");
-                        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/ExecutableStatement", "getValue",
+                        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/compiler/ExecutableStatement", "getValue",
                                 "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
 
                         debug("AASTORE");
@@ -928,7 +928,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     mv.visitVarInsn(ALOAD, 0);
 
                     debug("GETFIELD p" + inputsOffset);
-                    mv.visitFieldInsn(GETFIELD, className, "p" + inputsOffset, "Lorg/mvel/ExecutableStatement;");
+                    mv.visitFieldInsn(GETFIELD, className, "p" + inputsOffset, "Lorg/mvel/compiler/ExecutableStatement;");
 
                     inputsOffset++;
 
@@ -1427,7 +1427,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         mv.visitVarInsn(ALOAD, 0);
 
         debug("GETFIELD p" + number);
-        mv.visitFieldInsn(GETFIELD, className, "p" + number, "Lorg/mvel/ExecutableStatement;");
+        mv.visitFieldInsn(GETFIELD, className, "p" + number, "Lorg/mvel/compiler/ExecutableStatement;");
     }
 
 //    private void writeOutLiteral(Object lit) {
@@ -1500,10 +1500,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         for (int i = 0; i < size; i++) {
             debug("ACC_PRIVATE p" + i);
             //FieldVisitor fv =
-            cw.visitField(ACC_PRIVATE, "p" + i, "Lorg/mvel/ExecutableStatement;", null, null).visitEnd();
+            cw.visitField(ACC_PRIVATE, "p" + i, "Lorg/mvel/compiler/ExecutableStatement;", null, null).visitEnd();
             // fv.visitEnd();
 
-            constSig.append("Lorg/mvel/ExecutableStatement;");
+            constSig.append("Lorg/mvel/compiler/ExecutableStatement;");
         }
         constSig.append(")V");
 
@@ -1523,7 +1523,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             debug("ALOAD " + (i + 1));
             cv.visitVarInsn(ALOAD, i + 1);
             debug("PUTFIELD p" + i);
-            cv.visitFieldInsn(PUTFIELD, className, "p" + i, "Lorg/mvel/ExecutableStatement;");
+            cv.visitFieldInsn(PUTFIELD, className, "p" + i, "Lorg/mvel/compiler/ExecutableStatement;");
         }
         debug("RETURN");
         cv.visitInsn(RETURN);
@@ -1688,7 +1688,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             mv.visitVarInsn(ALOAD, 0);
 
             debug("GETFIELD p" + (compiledInputs.size() - 1));
-            mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/ExecutableStatement;");
+            mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/compiler/ExecutableStatement;");
 
             debug("ALOAD 2");
             mv.visitVarInsn(ALOAD, 2);
@@ -1865,13 +1865,13 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     debug("ALOAD 0");
                     mv.visitVarInsn(ALOAD, 0);
                     debug("GETFIELD p" + i);
-                    mv.visitFieldInsn(GETFIELD, className, "p" + i, "Lorg/mvel/ExecutableStatement;");
+                    mv.visitFieldInsn(GETFIELD, className, "p" + i, "Lorg/mvel/compiler/ExecutableStatement;");
                     debug("ALOAD 2");
                     mv.visitVarInsn(ALOAD, 2);
                     debug("ALOAD 3");
                     mv.visitVarInsn(ALOAD, 3);
-                    debug("INVOKEINTERFACE org/mvel/ExecutableStatement.getValue");
-                    mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/ExecutableStatement", "getValue", "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+                    debug("INVOKEINTERFACE org/mvel/compiler/ExecutableStatement.getValue");
+                    mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/compiler/ExecutableStatement", "getValue", "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
 
                     tg = cns.getParameterTypes()[i].isPrimitive()
                             ? getWrapperClass(cns.getParameterTypes()[i]) : cns.getParameterTypes()[i];
