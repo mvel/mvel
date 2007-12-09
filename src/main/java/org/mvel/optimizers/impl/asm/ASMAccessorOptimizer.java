@@ -29,6 +29,7 @@ import org.mvel.asm.Opcodes;
 import static org.mvel.asm.Opcodes.*;
 import static org.mvel.asm.Type.*;
 import org.mvel.ast.Function;
+import org.mvel.compiler.Accessor;
 import org.mvel.compiler.ExecutableLiteral;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
@@ -231,7 +232,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         if (!(o instanceof Accessor)) {
             dumpAdvancedDebugging();
-            throw new RuntimeException("Classloader problem detected. JIT Class is not subclass of org.mvel.Accessor.");
+            throw new RuntimeException("Classloader problem detected. JIT Class is not subclass of org.mvel.compiler.Accessor.");
         }
 
         return (Accessor) o;

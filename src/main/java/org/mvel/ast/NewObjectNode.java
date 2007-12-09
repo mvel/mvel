@@ -1,9 +1,12 @@
 package org.mvel.ast;
 
-import org.mvel.*;
-import static org.mvel.AbstractParser.getCurrentThreadParserContext;
+import org.mvel.CompileException;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.eval;
+import org.mvel.ParserContext;
+import org.mvel.PropertyAccessor;
+import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
+import org.mvel.compiler.Accessor;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;

@@ -1,8 +1,8 @@
-package org.mvel;
+package org.mvel.compiler;
 
+import org.mvel.*;
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
-import org.mvel.compiler.BlankLiteral;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;

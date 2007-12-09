@@ -1,10 +1,9 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
-import org.mvel.Accessor;
 import static org.mvel.MVEL.compileSetExpression;
 import static org.mvel.MVEL.eval;
 import static org.mvel.PropertyAccessor.set;
+import org.mvel.compiler.Accessor;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;

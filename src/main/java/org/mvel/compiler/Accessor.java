@@ -16,28 +16,13 @@
  * limitations under the License.
  *
  */
-package org.mvel;
+
+package org.mvel.compiler;
 
 import org.mvel.integration.VariableResolverFactory;
 
-import java.io.Serializable;
+public interface Accessor {
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory);
 
-public interface ExecutableStatement extends Accessor, Serializable, Cloneable {
-    public Object getValue(Object staticContext, VariableResolverFactory factory);
-
-    public void setKnownIngressType(Class type);
-
-    public void setKnownEgressType(Class type);
-
-    public Class getKnownIngressType();
-
-    public Class getKnownEgressType();
-
-    public boolean isConvertableIngressEgress();
-
-    public void computeTypeConversionRule();
-
-    public boolean intOptimized();
-
-    public boolean isLiteralOnly();
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value);
 }

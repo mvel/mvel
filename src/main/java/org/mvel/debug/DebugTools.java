@@ -1,13 +1,13 @@
 package org.mvel.debug;
 
-import org.mvel.ASTIterator;
-import org.mvel.ASTNode;
 import org.mvel.Operator;
 import static org.mvel.Operator.ADD;
 import static org.mvel.Operator.SUB;
+import org.mvel.ast.ASTNode;
 import org.mvel.ast.BinaryOperation;
 import org.mvel.ast.NestedStatement;
 import org.mvel.ast.Substatement;
+import org.mvel.compiler.ASTIterator;
 import org.mvel.compiler.CompiledExpression;
 import org.mvel.compiler.ExecutableAccessor;
 import org.mvel.compiler.ExecutableLiteral;

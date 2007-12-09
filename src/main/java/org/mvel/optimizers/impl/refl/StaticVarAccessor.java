@@ -1,8 +1,8 @@
 package org.mvel.optimizers.impl.refl;
 
-import org.mvel.AccessorNode;
 import org.mvel.CompileException;
 import org.mvel.OptimizationFailure;
+import org.mvel.compiler.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Field;

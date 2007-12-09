@@ -19,7 +19,6 @@
 package org.mvel.compiler;
 
 import org.mvel.CompileException;
-import org.mvel.ExpressionCompiler;
 import org.mvel.ParserContext;
 import org.mvel.PropertyAccessException;
 import org.mvel.ast.Function;

@@ -1,6 +1,5 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
 import org.mvel.integration.VariableResolverFactory;
 
 public class Or extends ASTNode {
@@ -19,7 +18,7 @@ public class Or extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-       throw new RuntimeException("improper use of AST element");
+        throw new RuntimeException("improper use of AST element");
     }
 
     public ASTNode getLeft() {

@@ -21,10 +21,7 @@ package org.mvel;
 
 import static org.mvel.DataConversion.convert;
 import static org.mvel.MVELRuntime.execute;
-import org.mvel.compiler.CompiledExpression;
-import org.mvel.compiler.CompiledSetExpression;
-import org.mvel.compiler.EndWithValue;
-import org.mvel.compiler.ExecutableStatement;
+import org.mvel.compiler.*;
 import org.mvel.integration.Interceptor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;

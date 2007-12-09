@@ -1,6 +1,6 @@
 package org.mvel.optimizers;
 
-import org.mvel.AbstractParser;
+import org.mvel.compiler.AbstractParser;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import static java.lang.Character.isWhitespace;

@@ -19,7 +19,7 @@
 
 package org.mvel.optimizers.impl.refl;
 
-import org.mvel.AccessorNode;
+import org.mvel.compiler.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.util.Map;

@@ -2,6 +2,7 @@ package org.mvel;
 
 import org.mvel.ast.Function;
 import org.mvel.ast.LineLabel;
+import org.mvel.compiler.AbstractParser;
 import org.mvel.integration.Interceptor;
 import org.mvel.util.MethodStub;
 import static org.mvel.util.ParseTools.getSimpleClassName;

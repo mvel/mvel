@@ -18,8 +18,8 @@
  */
 package org.mvel.optimizers;
 
-import org.mvel.Accessor;
 import org.mvel.SetAccessor;
+import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 
 public interface AccessorOptimizer {

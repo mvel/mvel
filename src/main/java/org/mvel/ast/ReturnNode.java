@@ -1,8 +1,7 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
-import org.mvel.Accessor;
 import static org.mvel.MVEL.eval;
+import org.mvel.compiler.Accessor;
 import org.mvel.compiler.EndWithValue;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;

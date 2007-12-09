@@ -1,6 +1,5 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
 import org.mvel.integration.VariableResolverFactory;
 
 /**
@@ -16,12 +15,12 @@ public class LineLabel extends ASTNode {
         this.fields = -1;
     }
 
-   public LineLabel(String sourceFile, int lineNumber) {
-       super();
-       this.lineNumber = lineNumber;
-       this.sourceFile = sourceFile;
-       this.fields = -1;
-   }
+    public LineLabel(String sourceFile, int lineNumber) {
+        super();
+        this.lineNumber = lineNumber;
+        this.sourceFile = sourceFile;
+        this.fields = -1;
+    }
 
     public String getSourceFile() {
         return sourceFile;

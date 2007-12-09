@@ -1,6 +1,6 @@
 package org.mvel.ast.cache;
 
-import org.mvel.Accessor;
+import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.FastList;
 

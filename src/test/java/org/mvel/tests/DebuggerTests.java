@@ -1,11 +1,11 @@
 package org.mvel.tests;
 
 import junit.framework.TestCase;
-import org.mvel.ExpressionCompiler;
 import org.mvel.MVEL;
 import org.mvel.MVELRuntime;
 import org.mvel.ParserContext;
 import org.mvel.compiler.CompiledExpression;
+import org.mvel.compiler.ExpressionCompiler;
 import static org.mvel.debug.DebugTools.decompile;
 import org.mvel.debug.Debugger;
 import org.mvel.debug.Frame;

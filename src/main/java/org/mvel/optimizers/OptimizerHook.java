@@ -1,6 +1,6 @@
 package org.mvel.optimizers;
 
-import org.mvel.Accessor;
+import org.mvel.compiler.Accessor;
 
 /**
  * @author Christopher Brock

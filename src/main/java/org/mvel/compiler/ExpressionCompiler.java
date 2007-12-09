@@ -1,13 +1,14 @@
-package org.mvel;
+package org.mvel.compiler;
 
+import org.mvel.CompileException;
 import static org.mvel.DataConversion.canConvert;
+import org.mvel.Operator;
+import org.mvel.ParserContext;
 import static org.mvel.Soundex.soundex;
+import org.mvel.ast.ASTNode;
 import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
-import org.mvel.compiler.ASTLinkedList;
-import org.mvel.compiler.CompiledExpression;
-import org.mvel.compiler.PropertyVerifier;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;

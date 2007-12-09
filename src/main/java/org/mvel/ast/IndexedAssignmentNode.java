@@ -1,6 +1,5 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
 import org.mvel.MVEL;
 import static org.mvel.MVEL.compileSetExpression;
 import org.mvel.compiler.CompiledSetExpression;

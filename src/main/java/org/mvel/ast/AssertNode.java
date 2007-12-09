@@ -1,6 +1,5 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
 import org.mvel.CompileException;
 import org.mvel.MVEL;
 import org.mvel.compiler.ExecutableStatement;

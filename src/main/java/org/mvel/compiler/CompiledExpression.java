@@ -19,7 +19,6 @@
 
 package org.mvel.compiler;
 
-import org.mvel.ASTIterator;
 import static org.mvel.MVELRuntime.execute;
 import org.mvel.ParserContext;
 import org.mvel.integration.VariableResolverFactory;

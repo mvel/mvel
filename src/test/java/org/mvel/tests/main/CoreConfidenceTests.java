@@ -2,8 +2,10 @@ package org.mvel.tests.main;
 
 import org.mvel.*;
 import static org.mvel.MVEL.*;
+import org.mvel.ast.ASTNode;
 import org.mvel.ast.WithNode;
 import org.mvel.compiler.CompiledExpression;
+import org.mvel.compiler.ExpressionCompiler;
 import org.mvel.debug.DebugTools;
 import org.mvel.debug.Debugger;
 import org.mvel.debug.Frame;

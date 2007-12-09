@@ -1,6 +1,6 @@
 package org.mvel.optimizers.impl.refl.collection;
 
-import org.mvel.Accessor;
+import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.util.HashMap;

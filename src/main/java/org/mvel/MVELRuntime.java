@@ -3,6 +3,7 @@ package org.mvel;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
 import static org.mvel.Soundex.soundex;
+import org.mvel.ast.ASTNode;
 import org.mvel.ast.LineLabel;
 import org.mvel.compiler.ASTLinkedList;
 import org.mvel.compiler.CompiledExpression;

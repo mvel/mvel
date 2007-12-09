@@ -1,10 +1,11 @@
 package org.mvel.util;
 
 import org.mvel.*;
-import static org.mvel.AbstractParser.getCurrentThreadParserContext;
-import static org.mvel.AbstractParser.isReservedWord;
 import static org.mvel.DataConversion.canConvert;
+import org.mvel.ast.ASTNode;
 import org.mvel.compiler.*;
+import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
+import static org.mvel.compiler.AbstractParser.isReservedWord;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;

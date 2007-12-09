@@ -1,5 +1,6 @@
 package org.mvel;
 
+import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 
 public class SetAccessor {

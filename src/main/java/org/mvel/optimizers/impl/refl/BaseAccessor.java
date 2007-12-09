@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -19,7 +18,7 @@
  */
 package org.mvel.optimizers.impl.refl;
 
-import org.mvel.AccessorNode;
+import org.mvel.compiler.AccessorNode;
 
 public abstract class BaseAccessor implements AccessorNode {
     protected AccessorNode nextNode;

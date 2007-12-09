@@ -1,6 +1,6 @@
 package org.mvel.optimizers.impl.refl.collection;
 
-import org.mvel.Accessor;
+import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 
 /**
@@ -10,7 +10,7 @@ public class ArrayCreator implements Accessor {
     public Accessor[] template;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-      // return null;
+        // return null;
         Object[] newArray = new Object[template.length];
 
         for (int i = 0; i < newArray.length; i++)

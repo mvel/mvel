@@ -18,7 +18,6 @@
  */
 package org.mvel.compiler;
 
-import org.mvel.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.io.Serializable;
