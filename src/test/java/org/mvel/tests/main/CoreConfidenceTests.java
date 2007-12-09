@@ -3,6 +3,7 @@ package org.mvel.tests.main;
 import org.mvel.*;
 import static org.mvel.MVEL.*;
 import org.mvel.ast.WithNode;
+import org.mvel.compiler.CompiledExpression;
 import org.mvel.debug.DebugTools;
 import org.mvel.debug.Debugger;
 import org.mvel.debug.Frame;
@@ -28,7 +29,7 @@ import static java.lang.System.currentTimeMillis;
 import java.util.*;
 import java.util.List;
 
-@SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes", "UnnecessaryBoxing", "unchecked"})
+@SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes", "UnnecessaryBoxing", "unchecked", "PointlessArithmeticExpression"})
 public class CoreConfidenceTests extends AbstractTest {
 
 
@@ -137,10 +138,35 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(3, test("foo.number-1"));
     }
 
+    public void testMath3() {
+        assertEquals((10d * 5d) * 2d / 3d, test("(10 * 5) * 2 / 3"));
+    }
+
     public void testMath4() {
         int val = (int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
         System.out.println("val=" + val);
+        assertEquals(val, test("(100 % 3) * 2 - 1 / 1 +  + (5 * 2)"));
+    }
+
+    public void testMath5() {
+        assertEquals(300.5 / 5.3 / 2.1 / 1.5, test("300.5 / 5.3 / 2.1 / 1.5"));
+    }
+
+    public void testMath6() {
+        int val = (300 * 5 + 1) + 100 / 2 * 2;
+        System.out.println("val=" + val);
+        assertEquals(val, test("(300 * five + 1) + (100 / 2 * 2)"));
+    }
+
+    public void testMath7() {
+        int val = (int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
+        //   System.out.println("val=" + val);
         assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
+    }
+
+    public void testMath8() {
+        float val = 5f * (100.56f * 30.1f);
+        assertEquals(val, test("5 * (100.56 * 30.1)"));
     }
 
     public void testPowerOf() {
@@ -2923,6 +2949,14 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testAnonymousFunctionDecl() {
         assertEquals(3, test("anonFunc = function (a,b) { return a + b; }; anonFunc(1,2)"));
+    }
+
+    public void testFunctionSemantics() {
+        assertEquals(true, test("function fooFunction(a) { return a; }; x__0 = ''; 'boob' == fooFunction(x__0 = 'boob') && x__0 == 'boob';"));
+    }
+
+    public void testUseOfVarKeyword() {
+        assertEquals("FOO_BAR", test("var barfoo = 'FOO_BAR'; return barfoo;"));
     }
 
 

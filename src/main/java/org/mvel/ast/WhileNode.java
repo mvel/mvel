@@ -1,6 +1,6 @@
 package org.mvel.ast;
 
-import org.mvel.ExecutableStatement;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
 

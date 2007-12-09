@@ -1,13 +1,13 @@
 package org.mvel.debug;
 
 import org.mvel.ast.LineLabel;
+import org.mvel.compiler.CompiledExpression;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.CompiledExpression;
 
-import java.util.Set;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class DebuggerContext {
     private Map<String, Set<Integer>> breakpoints;

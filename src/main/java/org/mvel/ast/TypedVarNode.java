@@ -1,8 +1,8 @@
 package org.mvel.ast;
 
 import org.mvel.ASTNode;
-import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.eval;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
@@ -33,8 +33,11 @@ public class TypedVarNode extends ASTNode implements Assignment {
         }
         else {
             checkNameSafety(name = new String(expr));
+
         }
 
+
+        System.out.println("ALLOC_TYPED:" + name);
     }
 
 

@@ -2,11 +2,11 @@ package org.mvel.ast;
 
 import org.mvel.ASTNode;
 import org.mvel.Accessor;
-import org.mvel.CompiledSetExpression;
-import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.compileSetExpression;
 import static org.mvel.MVEL.eval;
 import static org.mvel.PropertyAccessor.set;
+import org.mvel.compiler.CompiledSetExpression;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;

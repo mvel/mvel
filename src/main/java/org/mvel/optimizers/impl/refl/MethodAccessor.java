@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -22,7 +21,7 @@ package org.mvel.optimizers.impl.refl;
 import org.mvel.AccessorNode;
 import org.mvel.CompileException;
 import static org.mvel.DataConversion.convert;
-import org.mvel.ExecutableStatement;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Method;
@@ -114,7 +113,7 @@ public class MethodAccessor implements AccessorNode {
     public MethodAccessor(Method method, ExecutableStatement[] parms) {
         this.method = method;
         this.length = (this.parameterTypes = this.method.getParameterTypes()).length;
-                
+
         this.parms = parms;
     }
 

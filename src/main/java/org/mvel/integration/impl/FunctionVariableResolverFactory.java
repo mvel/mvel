@@ -33,17 +33,27 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
     }
 
     public VariableResolver createVariable(String name, Object value) {
-
-        VariableResolver vr = this.variableResolvers != null ? this.variableResolvers.get(name) : null;
-        if (vr != null) {
-            vr.setValue(value);
-            return vr;
+        VariableResolver resolver = getVariableResolver(name);
+        if (resolver == null) {
+            int idx = increaseRegisterTableSize();
+            this.indexedVariableNames[idx] = name;
+            resolver = this.indexedVariableResolvers[idx] = new SimpleValueResolver(value);
         }
         else {
-            addResolver(name, (vr = new MapVariableResolver(variables, name, false)));
-            vr.setValue(value);
-            return vr;
+            resolver.setValue(value);
         }
+        return resolver;
+
+//        VariableResolver vr = this.variableResolvers != null ? this.variableResolvers.get(name) : null;
+//        if (vr != null) {
+//            vr.setValue(value);
+//            return vr;
+//        }
+//        else {
+//            addResolver(name, (vr = new MapVariableResolver(variables, name, false)));
+//            vr.setValue(value);
+//            return vr;
+//        }
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
@@ -98,5 +108,20 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
         return true;
     }
 
+    private int increaseRegisterTableSize() {
+        String[] oldNames = indexedVariableNames;
+        VariableResolver[] oldResolvers = indexedVariableResolvers;
+
+        int newLength = oldNames.length + 1;
+        indexedVariableNames = new String[newLength];
+        indexedVariableResolvers = new VariableResolver[newLength];
+
+        for (int i = 0; i < oldNames.length; i++) {
+            indexedVariableNames[i] = oldNames[i];
+            indexedVariableResolvers[i] = oldResolvers[i];
+        }
+
+        return newLength - 1;
+    }
 
 }

@@ -1,21 +1,19 @@
 package org.mvel.ast;
 
 import org.mvel.ASTNode;
-import org.mvel.ExecutableStatement;
 import static org.mvel.MVEL.eval;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.doOperations;
 
 public class IndexedOperativeAssign extends ASTNode {
-    //   private String varName;
     private final int register;
     private ExecutableStatement statement;
     private final int operation;
 
-    public IndexedOperativeAssign(String variableName, char[] expr, int operation, int register, int fields) {
-        //   this.varName = variableName;
+    public IndexedOperativeAssign(char[] expr, int operation, int register, int fields) {
         this.operation = operation;
         this.name = expr;
         this.register = register;

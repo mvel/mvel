@@ -1,10 +1,10 @@
 package org.mvel.ast;
 
 import org.mvel.ASTNode;
-import org.mvel.CompiledSetExpression;
-import org.mvel.ExecutableStatement;
 import org.mvel.MVEL;
 import static org.mvel.MVEL.compileSetExpression;
+import org.mvel.compiler.CompiledSetExpression;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;

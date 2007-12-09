@@ -1,7 +1,7 @@
 package org.mvel.tests.perftests;
 
-import org.mvel.ExecutableAccessor;
 import org.mvel.MVEL;
+import org.mvel.compiler.ExecutableAccessor;
 import org.mvel.util.FastList;
 
 import java.util.List;

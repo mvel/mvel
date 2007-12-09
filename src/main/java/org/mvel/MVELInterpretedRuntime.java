@@ -22,6 +22,7 @@ package org.mvel;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
 import org.mvel.ast.Substatement;
+import org.mvel.compiler.EndWithValue;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;

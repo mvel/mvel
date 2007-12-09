@@ -1,12 +1,12 @@
 package org.mvel.util;
 
-import org.mvel.ASTLinkedList;
 import org.mvel.ASTNode;
 import org.mvel.Operator;
 import org.mvel.ast.And;
 import org.mvel.ast.BinaryOperation;
 import org.mvel.ast.EndOfStatement;
 import org.mvel.ast.Or;
+import org.mvel.compiler.ASTLinkedList;
 
 public class CompilerTools {
 
@@ -152,16 +152,16 @@ public class CompilerTools {
 
     public static boolean isOperator(char item) {
         switch (item) {
-            case'+':
-            case'-':
-            case'*':
-            case'/':
-            case'&':
-            case'|':
-            case'^':
-            case'.':
-            case'>':
-            case'<':
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+            case '&':
+            case '|':
+            case '^':
+            case '.':
+            case '>':
+            case '<':
 
                 return true;
             default:

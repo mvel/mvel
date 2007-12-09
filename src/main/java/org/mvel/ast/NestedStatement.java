@@ -1,6 +1,6 @@
 package org.mvel.ast;
 
-import org.mvel.ExecutableStatement;
+import org.mvel.compiler.ExecutableStatement;
 
 /**
  * @author Christopher Brock

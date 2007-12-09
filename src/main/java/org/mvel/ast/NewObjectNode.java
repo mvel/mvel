@@ -4,6 +4,7 @@ import org.mvel.*;
 import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.eval;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
@@ -11,7 +12,6 @@ import org.mvel.util.ArrayTools;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.ParseTools.findClass;
 import static org.mvel.util.PropertyTools.getBaseComponentType;
 
 import java.io.Serializable;

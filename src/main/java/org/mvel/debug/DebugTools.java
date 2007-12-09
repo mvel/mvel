@@ -1,11 +1,16 @@
 package org.mvel.debug;
 
-import org.mvel.*;
+import org.mvel.ASTIterator;
+import org.mvel.ASTNode;
+import org.mvel.Operator;
 import static org.mvel.Operator.ADD;
 import static org.mvel.Operator.SUB;
 import org.mvel.ast.BinaryOperation;
 import org.mvel.ast.NestedStatement;
 import org.mvel.ast.Substatement;
+import org.mvel.compiler.CompiledExpression;
+import org.mvel.compiler.ExecutableAccessor;
+import org.mvel.compiler.ExecutableLiteral;
 import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.getSimpleClassName;
@@ -41,7 +46,7 @@ public class DebugTools {
         ASTIterator iter = cExp.getTokens();
         ASTNode tk;
 
-     //   int node = 0;
+        //   int node = 0;
 
         StringBuffer sbuf = new StringBuffer();
 
@@ -83,9 +88,9 @@ public class DebugTools {
                 sbuf.append("REFERENCE :: ").append(getSimpleClassName(tk.getClass())).append(":").append(tk.getName());
             }
             else if (tk instanceof BinaryOperation) {
-               BinaryOperation bo = (BinaryOperation) tk;
-               sbuf.append("OPERATION [" + getOperatorName(bo.getOperation()) + "] {").append(bo.getLeft().getName())
-                       .append("} {").append(bo.getRight().getName()).append("}");
+                BinaryOperation bo = (BinaryOperation) tk;
+                sbuf.append("OPERATION [" + getOperatorName(bo.getOperation()) + "] {").append(bo.getLeft().getName())
+                        .append("} {").append(bo.getRight().getName()).append("}");
             }
             else {
                 //noinspection StringConcatenationInsideStringBufferAppend

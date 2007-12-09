@@ -23,6 +23,7 @@ import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.MVEL.eval;
 import org.mvel.ast.Function;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;

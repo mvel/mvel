@@ -20,9 +20,9 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.AccessorNode;
-import org.mvel.ExecutableStatement;
-import org.mvel.util.ParseTools;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.ParseTools;
 
 import java.util.List;
 

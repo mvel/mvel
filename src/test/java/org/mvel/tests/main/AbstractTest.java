@@ -1,12 +1,12 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-import org.mvel.CompiledExpression;
 import org.mvel.ExpressionCompiler;
 import org.mvel.MVEL;
 import static org.mvel.MVEL.compileExpression;
 import static org.mvel.MVEL.executeExpression;
 import org.mvel.ParserContext;
+import org.mvel.compiler.CompiledExpression;
 import static org.mvel.debug.DebugTools.decompile;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setDefaultOptimizer;
@@ -54,6 +54,8 @@ public abstract class AbstractTest extends TestCase {
         map.put("pi", "3.14");
         map.put("hour", "60");
         map.put("zero", 0);
+
+        map.put("five", 5);
 
         map.put("order", new Order());
         map.put("$id", 20);

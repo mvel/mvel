@@ -1,7 +1,7 @@
 package org.mvel.conversion;
 
-import org.mvel.BlankLiteral;
 import org.mvel.ConversionHandler;
+import org.mvel.compiler.BlankLiteral;
 
 import static java.lang.String.valueOf;
 

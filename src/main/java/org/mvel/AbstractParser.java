@@ -2,6 +2,7 @@ package org.mvel;
 
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
+import org.mvel.compiler.BlankLiteral;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
@@ -273,6 +274,22 @@ public class AbstractParser implements Serializable {
                                 capture = false;
                                 start = cursor + 1;
                                 return function;
+
+                            case UNTYPED_VAR:
+                                start = cursor + 1;
+                                captureToEOT();
+                                int end = cursor;
+
+                                //  String tk = new String(expr, start, cursor - start).trim();
+
+                                skipWhitespace();
+                                if (expr[cursor] == '=') {
+                                    cursor = start;
+                                    continue;
+                                }
+                                else {
+                                    return lastNode = new TypedVarNode(subArray(start, end), fields, Object.class);
+                                }
                         }
                     }
 
@@ -349,7 +366,7 @@ public class AbstractParser implements Serializable {
                                         start = cursor += 2;
                                         captureToEOS();
                                         if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                            return lastNode = new IndexedOperativeAssign(name, subArray(start, cursor), Operator.SUB, idx, fields);
+                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.SUB, idx, fields);
                                         }
                                         else {
                                             return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.SUB, fields);
@@ -364,7 +381,7 @@ public class AbstractParser implements Serializable {
                                     captureToEOS();
 
                                     if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(name, subArray(start, cursor), Operator.MULT, idx, fields);
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.MULT, idx, fields);
                                     }
                                     else {
                                         return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.MULT, fields);
@@ -380,7 +397,7 @@ public class AbstractParser implements Serializable {
                                     captureToEOS();
 
                                     if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(name, subArray(start, cursor), Operator.DIV, idx, fields);
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.DIV, idx, fields);
                                     }
                                     else {
                                         return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.DIV, fields);
@@ -413,7 +430,7 @@ public class AbstractParser implements Serializable {
                                     captureToEOS();
 
                                     if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(name, subArray(start, cursor), Operator.ADD, idx, fields);
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.ADD, idx, fields);
                                     }
                                     else {
                                         return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.ADD, fields);
@@ -473,13 +490,18 @@ public class AbstractParser implements Serializable {
                                     }
                                     else
                                     if (pCtx != null && ((idx = pCtx.variableIndexOf(t)) != -1 || (pCtx.isIndexAllocation()))) {
+
+
                                         if (idx == -1) {
                                             pCtx.addIndexedVariable(t);
                                             idx = pCtx.variableIndexOf(t);
                                         }
+                                        System.out.println("REGISTER_ALLOC[" + idx + "]:" + new String(subArray(start, cursor)));
                                         return lastNode = new IndexedAssignmentNode(subArray(start, cursor), ASTNode.ASSIGN, idx);
                                     }
                                     else {
+                                        System.out.println("HEAP_ALLOC:" + new String(subArray(start, cursor)));
+
                                         return lastNode = new AssignmentNode(subArray(start, cursor), fields | ASTNode.ASSIGN);
                                     }
                                 }
@@ -1477,7 +1499,7 @@ public class AbstractParser implements Serializable {
 
             case 4: // assignment
                 OPERATORS.put("=", Operator.ASSIGN);
-                OPERATORS.put("var", TYPED_VAR);
+                OPERATORS.put("var", UNTYPED_VAR);
                 OPERATORS.put("+=", ASSIGN_ADD);
                 OPERATORS.put("-=", ASSIGN_SUB);
 

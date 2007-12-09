@@ -1,8 +1,12 @@
 package org.mvel.ast;
 
 import static org.mvel.AbstractParser.getCurrentThreadParserContext;
-import org.mvel.*;
+import org.mvel.CompileException;
+import org.mvel.MVEL;
 import static org.mvel.MVEL.executeSetExpression;
+import org.mvel.Operator;
+import org.mvel.ParserContext;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 
@@ -65,21 +69,21 @@ public class WithNode extends BlockNode implements NestedStatement {
         int oper = -1;
         for (int i = 0; i < block.length; i++) {
             switch (block[i]) {
-                case'{':
-                case'[':
-                case'(':
+                case '{':
+                case '[':
+                case '(':
                     if ((i = balancedCapture(block, i, block[i])) == -1) {
                         throw new CompileException("unbalanced braces", block, i);
                     }
                     continue;
 
-                case'*':
+                case '*':
                     if (i < block.length && block[i + 1] == '=') {
                         oper = Operator.MULT;
                     }
                     continue;
 
-                case'/':
+                case '/':
                     if (i < block.length && block[i + 1] == '/') {
                         end = i;
                         while (i < block.length && block[i] != '\n') i++;
@@ -90,7 +94,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
                         while (i < block.length) {
                             switch (block[i++]) {
-                                case'*':
+                                case '*':
                                     if (i < block.length) {
                                         if (block[i] == '/') break;
                                     }
@@ -104,24 +108,24 @@ public class WithNode extends BlockNode implements NestedStatement {
                     }
                     continue;
 
-                case'-':
+                case '-':
                     if (i < block.length && block[i + 1] == '=') {
                         oper = Operator.SUB;
                     }
                     continue;
 
-                case'+':
+                case '+':
                     if (i < block.length && block[i + 1] == '=') {
                         oper = Operator.ADD;
                     }
                     continue;
 
-                case'=':
+                case '=':
                     parm = new String(block, start, i - start - (oper != -1 ? 1 : 0)).trim();
                     start = ++i;
                     continue;
 
-                case',':
+                case ',':
                     if (end == -1) end = i;
 
                     if (parm == null) {

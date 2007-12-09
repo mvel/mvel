@@ -1,4 +1,3 @@
-
 /**
  * MVEL (The MVFLEX Expression Language)
  *
@@ -21,7 +20,7 @@ package org.mvel.optimizers.impl.refl;
 
 import org.mvel.CompileException;
 import static org.mvel.DataConversion.convert;
-import org.mvel.ExecutableStatement;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Constructor;

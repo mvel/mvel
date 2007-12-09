@@ -1,6 +1,10 @@
 package org.mvel.ast;
 
-import org.mvel.*;
+import org.mvel.ASTNode;
+import org.mvel.AbstractParser;
+import org.mvel.ParserContext;
+import org.mvel.compiler.EndWithValue;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.FunctionVariableResolverFactory;

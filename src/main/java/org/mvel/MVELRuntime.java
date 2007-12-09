@@ -4,6 +4,8 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
 import static org.mvel.Soundex.soundex;
 import org.mvel.ast.LineLabel;
+import org.mvel.compiler.ASTLinkedList;
+import org.mvel.compiler.CompiledExpression;
 import org.mvel.debug.Debugger;
 import org.mvel.debug.DebuggerContext;
 import org.mvel.integration.VariableResolverFactory;

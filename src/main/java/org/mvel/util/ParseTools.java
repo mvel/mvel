@@ -4,6 +4,7 @@ import org.mvel.*;
 import static org.mvel.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel.AbstractParser.isReservedWord;
 import static org.mvel.DataConversion.canConvert;
+import org.mvel.compiler.*;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
