@@ -374,7 +374,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 returnType = ((Method) member).getReturnType();
 
-
                 debug("INVOKEVIRTUAL " + member.getName() + ":" + returnType);
                 mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(member.getDeclaringClass()), member.getName(),
                         getMethodDescriptor((Method) member));

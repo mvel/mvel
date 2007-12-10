@@ -16,7 +16,6 @@
  * limitations under the License.
  *
  */
-
 package org.mvel.util;
 
 import org.mvel.ast.ASTNode;
