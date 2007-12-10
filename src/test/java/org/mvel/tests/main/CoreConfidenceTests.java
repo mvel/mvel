@@ -1,6 +1,7 @@
 package org.mvel.tests.main;
 
 import org.mvel.*;
+import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.*;
 import org.mvel.ast.WithNode;
 import org.mvel.debug.DebugTools;
@@ -146,15 +147,23 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath6() {
-        int val = (300 * 5 + 1) + 100 / 2 * 2;
-        System.out.println("val=" + val);
-        assertEquals(val, test("(300 * five + 1) + (100 / 2 * 2)"));
+        assertEquals((300 * 5 + 1) + 100 / 2 * 2, test("(300 * five + 1) + (100 / 2 * 2)"));
     }
 
     public void testMath7() {
-        int val = (int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
-        System.out.println("val=" + val);
-        assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
+        assertEquals((int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d)), test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
+    }
+
+    public void testMath8() {
+        assertEquals(5f * (100.56f * 30.1f), test("5 * (100.56 * 30.1)"));
+    }
+
+    public void testMath9() {
+        assertEquals(25, test("(five * 5) + 1 - 1"));
+    }
+
+    public void testMath10() {
+        assertEquals(5f * (0.95f / 2f), convert(test("five * (0.95 / 2)"), Float.class));
     }
 
     public void testPowerOf() {
@@ -2890,8 +2899,6 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("FOO", m.get("Person.something"));
     }
-
-
 }
 
 
