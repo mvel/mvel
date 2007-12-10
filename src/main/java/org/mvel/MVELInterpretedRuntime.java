@@ -42,6 +42,7 @@ import java.util.Map;
 import static java.util.regex.Pattern.compile;
 
 
+@SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class MVELInterpretedRuntime extends AbstractParser {
     private boolean returnBigDecimal = false;
     private int roundingMode = BigDecimal.ROUND_HALF_DOWN;
@@ -58,7 +59,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
         try {
             stk = new ExecutionStack();
-            //   dStack = new ExecutionStack();
 
             cursor = 0;
 
@@ -123,14 +123,17 @@ public class MVELInterpretedRuntime extends AbstractParser {
                     if (tk instanceof Substatement) {
                         procDStack();
 
-                        if ((tk = nextToken()) != null && isStandardMathOperator(tk.getOperator())) {
-                            if (dStack == null) dStack = new ExecutionStack();
-                            dStack.push(tk.getOperator());
-                            dStack.push(stk.pop());
+                        if ((tk = nextToken()) != null) {
+                            if (isStandardMathOperator(tk.getOperator())) {
+                                if (dStack == null) dStack = new ExecutionStack();
+                                dStack.push(tk.getOperator());
+                                dStack.push(stk.pop());
+                                continue;
+                            }
+                        }
+                        else {
                             continue;
                         }
-
-                        if (tk == null) continue;
                     }
                 }
 
@@ -220,7 +223,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
             procDStack();
         }
-
         catch (NullPointerException e) {
             if (tk != null && tk.isOperator() && cursor >= length) {
                 throw new CompileException("incomplete statement: "

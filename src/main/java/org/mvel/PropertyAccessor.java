@@ -36,6 +36,7 @@ import static java.lang.reflect.Array.getLength;
 import java.util.*;
 import static java.util.Collections.synchronizedMap;
 
+@SuppressWarnings({"unchecked"})
 public class PropertyAccessor {
     private int start = 0;
     private int cursor = 0;
@@ -195,6 +196,7 @@ public class PropertyAccessor {
 
         try {
             int oLength = length;
+
             length = findAbsoluteLast(property);
 
             if ((curr = get()) == null)
@@ -226,8 +228,6 @@ public class PropertyAccessor {
                 }
                 else if (curr.getClass().isArray()) {
                     Array.set(curr, eval(ex, this.ctx, this.variableFactory, Integer.class), convert(value, getBaseComponentType(curr.getClass())));
-
-                    //           ((Object[]) curr)[eval(ex, this.ctx, this.variableFactory, Integer.class)] = convert(value, ctx.getClass().getComponentType());
                 }
 
                 else {
