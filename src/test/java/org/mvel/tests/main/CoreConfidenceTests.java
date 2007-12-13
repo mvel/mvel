@@ -309,6 +309,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(null, test("null"));
     }
 
+    public void testLiteralReduction1() {
+        assertEquals("foo", test("null or 'foo'"));
+    }
+
     public void testRegEx() {
         assertEquals(true, test("foo.bar.name ~= '[a-z].+'"));
     }
@@ -2942,6 +2946,14 @@ public class CoreConfidenceTests extends AbstractTest {
                 last = (Integer) o;
             }
         }
+    }
+
+    public void testCompactIfElse() {
+        assertEquals("foo", test("if (false) 'bar'; else 'foo';"));
+    }
+
+    public void testAndOpLiteral() {
+        assertEquals(true, test("true && true"));
     }
 
     public void testAnonymousFunctionDecl() {

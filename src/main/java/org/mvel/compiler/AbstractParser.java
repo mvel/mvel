@@ -968,6 +968,7 @@ public class AbstractParser implements Serializable {
 
     private ASTNode createPropertyToken(int start, int end) {
         lastWasIdentifier = true;
+        String tmp;
         if (parserContext != null && parserContext.get() != null && parserContext.get().hasImports()) {
             char[] _subset = subset(expr, start, cursor - start);
             int offset;
@@ -979,10 +980,10 @@ public class AbstractParser implements Serializable {
                 }
             }
             else {
-                String iStr = new String(_subset);
+                tmp = new String(_subset);
 
-                if (getParserContext().hasImport(iStr)) {
-                    Object i = getParserContext().getStaticOrClassImport(iStr);
+                if (getParserContext().hasImport(tmp)) {
+                    Object i = getParserContext().getStaticOrClassImport(tmp);
 
                     if (i instanceof Class) {
                         return lastNode = new LiteralNode(i, Class.class);
@@ -995,6 +996,12 @@ public class AbstractParser implements Serializable {
         }
         else if ((fields & ASTNode.METHOD) != 0) {
             return lastNode = new ASTNode(expr, start, end, fields);
+        }
+        else if (LITERALS.containsKey(tmp = new String(expr, start, end - start))) {
+            return lastNode = new LiteralNode(LITERALS.get(tmp));
+        }
+        else if (OPERATORS.containsKey(tmp)) {
+            return lastNode = new OperatorNode(OPERATORS.get(tmp));
         }
 
         return lastNode = new ASTNode(expr, start, end, fields);
@@ -1108,9 +1115,7 @@ public class AbstractParser implements Serializable {
                 }
             }
             else {
-                blockStart = cursor - 1;
-                captureToEOLorOF();
-                blockEnd = cursor + 1;
+                throw new CompileException("expected '{'", expr, cursor);
             }
 
             blockStart = trimRight(blockStart + 1);
@@ -1328,11 +1333,11 @@ public class AbstractParser implements Serializable {
         while (cursor != 0 && isWhitespace(expr[cursor - 1])) cursor--;
     }
 
-    protected ASTNode captureTokenToEOS() {
-        int start = cursor;
-        captureToEOS();
-        return lastNode = new ASTNode(expr, start, cursor, 0);
-    }
+//    protected ASTNode captureTokenToEOS() {
+//        int start = cursor;
+//        captureToEOS();
+//        return lastNode = new ASTNode(expr, start, cursor, 0);
+//    }
 
     protected void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {

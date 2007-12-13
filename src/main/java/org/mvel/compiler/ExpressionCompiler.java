@@ -19,7 +19,6 @@
 package org.mvel.compiler;
 
 import org.mvel.CompileException;
-import static org.mvel.DataConversion.canConvert;
 import org.mvel.Operator;
 import org.mvel.ParserContext;
 import static org.mvel.Soundex.soundex;
@@ -27,14 +26,16 @@ import org.mvel.ast.ASTNode;
 import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
-import org.mvel.util.*;
+import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.CompilerTools.optimizeAST;
-import static org.mvel.util.ParseTools.containsCheck;
+import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.doOperations;
+import static org.mvel.util.PropertyTools.isEmpty;
 import static org.mvel.util.PropertyTools.similarity;
+import org.mvel.util.Stack;
+import org.mvel.util.StringAppender;
 
 import static java.lang.String.valueOf;
-import static java.lang.Thread.currentThread;
 import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
@@ -101,6 +102,9 @@ public class ExpressionCompiler extends AbstractParser {
             fields |= ASTNode.COMPILE_IMMEDIATE;
 
             while ((tk = nextToken()) != null) {
+                /**
+                 * If this is a debug symbol, just add it and continue.
+                 */
                 if (tk.fields == -1) {
                     astBuild.addTokenNode(tk);
                     continue;
@@ -109,7 +113,6 @@ public class ExpressionCompiler extends AbstractParser {
                 returnType = tk.getEgressType();
 
                 if (tk instanceof Substatement) {
-
                     ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray(), pCtx);
                     tk.setAccessor(subCompiler._compile());
 
@@ -124,7 +127,7 @@ public class ExpressionCompiler extends AbstractParser {
                  * This kludge of code is to handle compile-time literal reduction.  We need to avoid
                  * reducing for certain literals like, 'this', ternary and ternary else.
                  */
-                if (tk.isLiteral() && tk.getLiteralValue() != LITERALS.get("this")) {
+                if (tk.isLiteral()) {
                     literalOnly = true;
 
                     if ((tkOp = nextTokenSkipSymbols()) != null && tkOp.isOperator()
@@ -315,9 +318,9 @@ public class ExpressionCompiler extends AbstractParser {
                         break;
 
                     case Operator.CHOR:
-                        if (!PropertyTools.isEmpty(v2) || !PropertyTools.isEmpty(v1)) {
+                        if (!isEmpty(v2) || !isEmpty(v1)) {
                             stk.clear();
-                            stk.push(!PropertyTools.isEmpty(v2) ? v2 : v1);
+                            stk.push(!isEmpty(v2) ? v2 : v1);
                             return;
                         }
                         else stk.push(null);
@@ -327,24 +330,24 @@ public class ExpressionCompiler extends AbstractParser {
                         stk.push(Pattern.compile(valueOf(v1)).matcher(valueOf(v2)).matches());
                         break;
 
-                    case Operator.INSTANCEOF:
-                        if (v1 instanceof Class)
-                            stk.push(((Class) v1).isInstance(v2));
-                        else
-                            stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
-
-                        break;
-
-                    case Operator.CONVERTABLE_TO:
-                        if (v1 instanceof Class)
-                            stk.push(canConvert(v2.getClass(), (Class) v1));
-                        else
-                            stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
-                        break;
-
-                    case Operator.CONTAINS:
-                        stk.push(containsCheck(v2, v1));
-                        break;
+//                    case Operator.INSTANCEOF:
+//                        if (v1 instanceof Class)
+//                            stk.push(((Class) v1).isInstance(v2));
+//                        else
+//                            stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
+//
+//                        break;
+//
+//                    case Operator.CONVERTABLE_TO:
+//                        if (v1 instanceof Class)
+//                            stk.push(canConvert(v2.getClass(), (Class) v1));
+//                        else
+//                            stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
+//                        break;
+//
+//                    case Operator.CONTAINS:
+//                        stk.push(containsCheck(v2, v1));
+//                        break;
 
                     case Operator.BW_AND:
                         stk.push(asInt(v2) & asInt(v1));
@@ -391,22 +394,22 @@ public class ExpressionCompiler extends AbstractParser {
             }
         }
         catch (ClassCastException e) {
-            if ((fields & ASTNode.LOOKAHEAD) == 0) {
-                /**
-                 * This will allow for some developers who like messy expressions to compileAccessor
-                 * away with some messy constructs like: a + b < c && e + f > g + q instead
-                 * of using brackets like (a + b < c) && (e + f > g + q)
-                 */
-                fields |= ASTNode.LOOKAHEAD;
-
-                ASTNode tk = nextToken();
-                if (tk != null) {
-                    stk.push(v1, nextToken(), tk.getOperator());
-
-                    reduce();
-                    return;
-                }
-            }
+//            if ((fields & ASTNode.LOOKAHEAD) == 0) {
+//                /**
+//                 * This will allow for some developers who like messy expressions to compileAccessor
+//                 * away with some messy constructs like: a + b < c && e + f > g + q instead
+//                 * of using brackets like (a + b < c) && (e + f > g + q)
+//                 */
+//                fields |= ASTNode.LOOKAHEAD;
+//
+//                ASTNode tk = nextToken();
+//                if (tk != null) {
+//                    stk.push(v1, nextToken(), tk.getOperator());
+//
+//                    reduce();
+//                    return;
+//                }
+//            }
             throw new CompileException("syntax error or incomptable types (left=" +
                     (v1 != null ? v1.getClass().getName() : "null") + ", right=" +
                     (v2 != null ? v2.getClass().getName() : "null") + ")", expr, cursor, e);

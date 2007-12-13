@@ -65,7 +65,6 @@ public class LiteralNode extends ASTNode {
         return literal;
     }
 
-
     public boolean isLiteral() {
         return true;
     }

@@ -183,24 +183,4 @@ public class CompilerTools {
 
         return optimizedAst;
     }
-
-    public static boolean isOperator(char item) {
-        switch (item) {
-            case '+':
-            case '-':
-            case '*':
-            case '/':
-            case '&':
-            case '|':
-            case '^':
-            case '.':
-            case '>':
-            case '<':
-
-                return true;
-            default:
-                return false;
-        }
-    }
-
 }
