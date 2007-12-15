@@ -31,7 +31,6 @@ import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import static org.mvel.optimizers.OptimizerFactory.*;
 import static org.mvel.util.ArrayTools.findFirst;
-import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.handleNumericConversion;
 import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
@@ -93,10 +92,13 @@ public class ASTNode implements Cloneable, Serializable {
         if ((fields & (LITERAL)) != 0) {
             return literal;
         }
-        try {
+
+        if (accessor != null) {
+            //      try {
             return valRet(accessor.getValue(ctx, thisValue, factory));
         }
-        catch (NullPointerException e) {
+        //    catch (NullPointerException e) {
+        else {
             AccessorOptimizer optimizer;
             Object retVal = null;
 
@@ -113,7 +115,7 @@ public class ASTNode implements Cloneable, Serializable {
             }
 
             if (accessor == null)
-                throw new OptimizationFailure("failed optimization", e);
+                throw new OptimizationFailure("failed optimization");
 
             if (retVal == null) {
                 retVal = optimizer.getResultOptPass();
@@ -131,20 +133,13 @@ public class ASTNode implements Cloneable, Serializable {
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         String s;
         if ((fields & (LITERAL)) != 0) {
-            if ((fields & THISREF) != 0) {
-                return thisValue;
-            }
-            else {
-                return literal;
-            }
+            return literal;
         }
         else if ((fields & FOLD) != 0) {
-            if (accessor == null) {
-                AccessorOptimizer optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
-                accessor = optimizer.optimizeFold(name, ctx, thisValue, factory);
+            AccessorOptimizer optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
+            optimizer.optimizeFold(name, ctx, thisValue, factory);
 
-                return optimizer.getResultOptPass();
-            }
+            return optimizer.getResultOptPass();
         }
 
         if ((fields & DEEP_PROPERTY) != 0) {
@@ -156,11 +151,7 @@ public class ASTNode implements Cloneable, Serializable {
                 /**
                  * The root of the DEEP PROPERTY is a literal.
                  */
-                if ((literal = AbstractParser.LITERALS.get(s)) == ThisLiteral.class) {
-                    literal = thisValue;
-                }
-
-                return valRet(get(getAbsoluteRemainder(), literal, factory, thisValue));
+                return valRet(get(getAbsoluteRemainder(), AbstractParser.LITERALS.get(s), factory, thisValue));
             }
             else if (factory != null && factory.isResolveable(s)) {
                 /**
@@ -189,7 +180,8 @@ public class ASTNode implements Cloneable, Serializable {
                      * make it a literal to prevent re-evaluation.
                      */
                     fields |= LITERAL;
-                    return literal = valRet(literal);
+                    //  return literal = valRet(literal);
+                    return valRet(literal);
                 }
             }
         }
@@ -387,38 +379,38 @@ public class ASTNode implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     protected void setName(char[] name) {
-        if ((fields & STR_LITERAL) != 0) {
-            fields |= LITERAL;
+//        if ((fields & STR_LITERAL) != 0) {
+//            fields |= LITERAL;
+//
+//            int escapes = 0;
+//            for (int i = 0; i < name.length; i++) {
+//                if (name[i] == '\\') {
+//                    name[i++] = 0;
+//                    name[i] = handleEscapeSequence(name[i]);
+//                    escapes++;
+//                }
+//            }
+//
+//            char[] processedEscapeString = new char[name.length - escapes];
+//            int cursor = 0;
+//            for (char aName : name) {
+//                if (aName == 0) {
+//                    continue;
+//                }
+//                processedEscapeString[cursor++] = aName;
+//            }
+//
+//            this.literal = new String(this.name = processedEscapeString);
+//
+//        }
+//        else {
+        this.literal = new String(this.name = name);
+//        }
 
-            int escapes = 0;
-            for (int i = 0; i < name.length; i++) {
-                if (name[i] == '\\') {
-                    name[i++] = 0;
-                    name[i] = handleEscapeSequence(name[i]);
-                    escapes++;
-                }
-            }
-
-            char[] processedEscapeString = new char[name.length - escapes];
-            int cursor = 0;
-            for (char aName : name) {
-                if (aName == 0) {
-                    continue;
-                }
-                processedEscapeString[cursor++] = aName;
-            }
-
-            this.literal = new String(this.name = processedEscapeString);
-
-        }
-        else {
-            this.literal = new String(this.name = name);
-        }
-
-        if ((fields & (LITERAL)) != 0) {
-            //    return;
-        }
-        else if (AbstractParser.LITERALS.containsKey(literal)) {
+//        if ((fields & (LITERAL)) != 0) {
+//                return;
+//        }
+        if (AbstractParser.LITERALS.containsKey(literal)) {
             fields |= LITERAL | IDENTIFIER;
             if ((literal = AbstractParser.LITERALS.get(literal)) == ThisLiteral.class) fields |= THISREF;
             if (literal != null) egressType = literal.getClass();
@@ -473,7 +465,6 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public Accessor setAccessor(Accessor accessor) {
-
         return this.accessor = accessor;
     }
 

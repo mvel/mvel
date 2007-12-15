@@ -27,13 +27,6 @@ import static org.mvel.util.ParseTools.checkNameSafety;
 public class DeclTypedVarNode extends ASTNode implements Assignment {
     private String name;
 
-    public DeclTypedVarNode(char[] expr, int fields, Class type) {
-        super(expr, fields);
-        this.egressType = type;
-
-        checkNameSafety(name = new String(expr));
-    }
-
     public DeclTypedVarNode(String name, int fields, Class type) {
         super(null, fields);
         this.egressType = type;
@@ -43,7 +36,7 @@ public class DeclTypedVarNode extends ASTNode implements Assignment {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         factory.createVariable(name, null, egressType);
-        return ctx;
+        return null;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {

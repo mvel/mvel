@@ -170,14 +170,14 @@ public class ExpressionCompiler extends AbstractParser {
                                          * There are more tokens, but we can't reduce anymore.  So
                                          * we create a reduced token for what we've got.
                                          */
-                                        astBuild.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
+                                        astBuild.addTokenNode(new LiteralNode(stk.pop()));
                                     }
                                     else {
                                         /**
                                          * We have reduced additional tokens, but we can't reduce
                                          * anymore.
                                          */
-                                        astBuild.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()), tkOp);
+                                        astBuild.addTokenNode(new LiteralNode(stk.pop()), tkOp);
 
                                         if (tkLA2 != null) astBuild.addTokenNode(tkLA2);
                                     }
@@ -191,7 +191,7 @@ public class ExpressionCompiler extends AbstractParser {
                              * now.
                              */
                             if (!stk.isEmpty())
-                                astBuild.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
+                                astBuild.addTokenNode(new LiteralNode(stk.pop()));
 
                             continue;
                         }
