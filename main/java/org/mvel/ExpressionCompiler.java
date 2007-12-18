@@ -143,14 +143,14 @@ public class ExpressionCompiler extends AbstractParser {
                                          * There are more tokens, but we can't reduce anymore.  So
                                          * we create a reduced token for what we've got.
                                          */
-                                        astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()));
+                                        astLinkedList.addTokenNode(new LiteralNode(stk.pop()));
                                     }
                                     else {
                                         /**
                                          * We have reduced additional tokens, but we can't reduce
                                          * anymore.
                                          */
-                                        astLinkedList.addTokenNode(new ASTNode(ASTNode.LITERAL, stk.pop()), tkOp);
+                                        astLinkedList.addTokenNode(new LiteralNode(stk.pop()), tkOp);
 
                                         if (tkLA2 != null) astLinkedList.addTokenNode(tkLA2);
                                     }

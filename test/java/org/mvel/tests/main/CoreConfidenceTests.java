@@ -2899,6 +2899,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("FOO", m.get("Person.something"));
     }
+
 }
 
 

@@ -10,7 +10,7 @@ import org.mvel.tests.main.res.Foo;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ParserPerformanceTests extends TestCase {
+public class ParserPerformanceTests {
     private static final int COUNT = 10000;
 
     Foo foo = new Foo();
