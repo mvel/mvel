@@ -11,6 +11,7 @@ import org.mvel.util.ThisLiteral;
 public class PropertyASTNode extends ASTNode {
     private transient ASTNode wrappedNode;
 
+
     public PropertyASTNode(char[] expr, int start, int end, int fields) {
         super(expr, start, end, fields);
     }
@@ -35,7 +36,8 @@ public class PropertyASTNode extends ASTNode {
 
     private Object initializePropertyNode(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((fields & STR_LITERAL) != 0) {
-            return (wrappedNode = new LiteralNode(new String(name))).getReducedValueAccelerated(ctx, thisValue, factory);
+            literal = new String(name);
+            return (wrappedNode = new LiteralNode(literal)).getReducedValueAccelerated(ctx, thisValue, factory);
         }
         else if ((fields & LITERAL) != 0) {
             if ((fields & THISREF) != 0) {
@@ -137,5 +139,6 @@ public class PropertyASTNode extends ASTNode {
     public ASTNode getWrappedNode() {
         return wrappedNode;
     }
+
 
 }

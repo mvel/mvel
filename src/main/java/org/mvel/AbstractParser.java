@@ -36,6 +36,7 @@ public class AbstractParser implements Serializable {
     protected boolean lastWasIdentifier = false;
     protected boolean lastWasLineLabel = false;
     protected boolean lastWasComment = false;
+    protected boolean literalOnly = true;
 
     protected boolean debugSymbols = false;
 
@@ -271,42 +272,11 @@ public class AbstractParser implements Serializable {
                     if (cursor != length && expr[cursor] == '(') {
                         fields |= ASTNode.METHOD;
 
-                        /**
-                         * If the current token is a method call or a constructor, we
-                         * simply capture the entire parenthesized range and allow
-                         * reduction to be dealt with through sub-parsing the property.
-                         */
-                        cursor++;
-                        for (brace = 1; cursor != length && brace != 0;) {
-                            switch (expr[cursor++]) {
-                                case '(':
-                                    brace++;
-                                    break;
-                                case ')':
-                                    brace--;
-                                    break;
-
-                                    /**
-                                     * String literals need to be skipped over, or encountering a ')' in a String
-                                     * will cause an explosion.
-                                     */
-                                case '\'':
-                                    cursor = captureStringLiteral('\'', expr, cursor, length) + 1;
-                                    break;
-
-                                case '"':
-                                    cursor = captureStringLiteral('"', expr, cursor, length) + 1;
-                                    break;
-                            }
+                        if ((cursor = balancedCapture(expr, cursor, '(')) == -1) {
+                            throw new CompileException("unbalanced braces", expr, cursor);
                         }
 
-                        /**
-                         * If the brace counter is greater than 0, we know we have
-                         * unbalanced braces in the expression.  So we throw a
-                         * optimize error now.
-                         */
-                        if (brace != 0)
-                            throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
+                        cursor++;
                     }
 
                     /**
@@ -624,7 +594,7 @@ public class AbstractParser implements Serializable {
                                         break;
 
                                     case 'i':
-                                        if (isNext('n') && isWhitespace(lookAhead(2))) {
+                                        if (isNext('n') && isWhitespace(lookAhead(2)) && !isIdentifierPart(lookBehind())) {
                                             fields |= ASTNode.FOLD;
                                             for (int level = brace; cursor != length; cursor++) {
                                                 switch (expr[cursor]) {
@@ -704,10 +674,10 @@ public class AbstractParser implements Serializable {
                             }
 
                             if (_subset != null) {
-                                return handleUnion(new Substatement(_subset, fields));
+                                return handleUnion(handleSubstatement(new Substatement(_subset, fields)));
                             }
                             else {
-                                return handleUnion(new Substatement(subset(expr, start = trimRight(start + 1), trimLeft(cursor - 1) - start), fields));
+                                return handleUnion(handleSubstatement(new Substatement(subset(expr, start = trimRight(start + 1), trimLeft(cursor - 1) - start), fields)));
                             }
                         }
 
@@ -855,6 +825,12 @@ public class AbstractParser implements Serializable {
             }
         }
         return lastNode = node;
+    }
+                                                                                                                     
+    public ASTNode handleSubstatement(Substatement stmt) {
+        return stmt.getStatement() != null && stmt.getStatement().isLiteralOnly() ?
+                new LiteralNode(stmt.getStatement().getValue(null, null, null), fields)
+                    : stmt;
     }
 
 
@@ -1213,9 +1189,9 @@ public class AbstractParser implements Serializable {
         while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
     }
 
-    private boolean isFlag(int bit) {
-        return (fields & bit) != 0;
-    }
+//    private boolean isFlag(int bit) {
+//        return (fields & bit) != 0;
+//    }
 
     public static boolean isReservedWord(String name) {
         return LITERALS.containsKey(name) || OPERATORS.containsKey(name);
@@ -1363,7 +1339,7 @@ public class AbstractParser implements Serializable {
                 OPERATORS.put("if", IF);
                 OPERATORS.put("else", ELSE);
                 OPERATORS.put("?", Operator.TERNARY);
-                OPERATORS.put("switch", SWITCH);
+             //   OPERATORS.put("switch", SWITCH);
 
             case 4: // assignment
                 OPERATORS.put("=", Operator.ASSIGN);
@@ -1373,9 +1349,9 @@ public class AbstractParser implements Serializable {
 
             case 3: // iteration
                 OPERATORS.put("foreach", FOREACH);
-                OPERATORS.put("while", WHILE);
-                OPERATORS.put("for", FOR);
-                OPERATORS.put("do", DO);
+             //   OPERATORS.put("while", WHILE);
+            //    OPERATORS.put("for", FOR);
+             //   OPERATORS.put("do", DO);
 
             case 2: // multi-statement
                 OPERATORS.put("return", RETURN);

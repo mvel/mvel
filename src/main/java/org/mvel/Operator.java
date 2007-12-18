@@ -83,4 +83,8 @@ public interface Operator {
 
     public static final int FUNCTION = 100;
 
+    public static final int STK_SWAP = 200;
+    public static final int STK_XSWAP = 201;
+    public static final int STK_X2SWAP = 202;
+
 }

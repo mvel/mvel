@@ -73,7 +73,7 @@ public class InlineCollectionsPerformance {
         OgnlContext context = (OgnlContext) Ognl.createDefaultContext(null);
         Node node;
         try {
-            node = Ognl.compileExpression(context, null, "{'Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar'}");
+         //   node = Ognl.compileExpression(context, null, "{'Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar'}");
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -81,9 +81,9 @@ public class InlineCollectionsPerformance {
 
         List list;
         for (int i = 0; i < COUNT; i++) {
-            list = (List) node.getAccessor().get(null, null);
+   //         list = (List) node.getAccessor().get(null, null);
 
-            assert "Foo".equals(list.get(0)) && "Foo".equals(list.get(2)) && list.size() == 10;
+    //        assert "Foo".equals(list.get(0)) && "Foo".equals(list.get(2)) && list.size() == 10;
         }
     }
 

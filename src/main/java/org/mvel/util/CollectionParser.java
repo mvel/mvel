@@ -97,21 +97,23 @@ public class CollectionParser {
                         list.add(curr = o);
                     }
 
-                    if ((start = ++cursor) < (length - 1) && property[start] != ',') {
-                        start = ++cursor;
+
+                    if ((start = ++cursor) < (length - 1) && property[cursor] == ',') {
+                        start = cursor + 1;
                     }
 
                     continue;
 
                 case '(':
-                    if ((cursor = balancedCapture(property, start = cursor, property[start])) == -1) {
+                    if ((cursor = balancedCapture(property, cursor, property[cursor])) == -1) {
                         throw new RuntimeException("unbalanced braces inside inline collection");
                     }
+
                     break;
 
                 case '\"':
                 case '\'':
-                    if ((cursor = balancedCapture(property, start = cursor, property[start])) == -1) {
+                    if ((cursor = balancedCapture(property, cursor, property[cursor])) == -1) {
                         throw new RuntimeException("unterminated string literal starting at index " + start + " {" + property[start] + "}: " + new String(property));
                     }
 

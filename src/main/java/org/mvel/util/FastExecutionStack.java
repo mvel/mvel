@@ -56,4 +56,11 @@ public class FastExecutionStack implements Stack {
     public void showStack() {
 
     }
+
+    public void swap() {
+        
+    }
+
+    public void xswap() {
+    }
 }

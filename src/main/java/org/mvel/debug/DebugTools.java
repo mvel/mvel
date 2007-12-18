@@ -204,6 +204,11 @@ public class DebugTools {
                 return "WHILE";
             case Operator.CHOR:
                 return "CHAINED_OR";
+
+            case Operator.STK_SWAP:
+                return "STK_SWAP";
+            case Operator.STK_XSWAP:
+                return "STK_XSWAP";
         }
 
 

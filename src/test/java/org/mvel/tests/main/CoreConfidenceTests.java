@@ -1,6 +1,7 @@
 package org.mvel.tests.main;
 
 import org.mvel.*;
+import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.*;
 import org.mvel.ast.WithNode;
 import org.mvel.debug.DebugTools;
@@ -24,9 +25,8 @@ import static java.lang.System.currentTimeMillis;
 import java.util.*;
 import java.util.List;
 
+@SuppressWarnings({"PointlessArithmeticExpression", "AssertEqualsBetweenInconvertibleTypes"})
 public class CoreConfidenceTests extends AbstractTest {
-
-
     public void testSingleProperty() {
         assertEquals(false, test("fun"));
     }
@@ -130,6 +130,40 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath2() {
         assertEquals(3, test("foo.number-1"));
+    }
+
+    public void testMath3() {
+        assertEquals((10d * 5d) * 2d / 3d, test("(10 * 5) * 2 / 3"));
+    }
+
+    public void testMath4() {
+        int val = (int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
+        System.out.println("val=" + val);
+        assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
+    }
+
+    public void testMath5() {
+        assertEquals(300.5 / 5.3 / 2.1 / 1.5, test("300.5 / 5.3 / 2.1 / 1.5"));
+    }
+
+    public void testMath6() {
+        assertEquals((300 * 5 + 1) + 100 / 2 * 2, test("(300 * five + 1) + (100 / 2 * 2)"));
+    }
+
+    public void testMath7() {
+        assertEquals((int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d)), test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
+    }
+
+    public void testMath8() {
+        assertEquals(5f * (100.56f * 30.1f), test("5 * (100.56 * 30.1)"));
+    }
+
+    public void testMath9() {
+        assertEquals(25, test("(five * 5) + 1 - 1"));
+    }
+
+    public void testMath10() {
+        assertEquals(5f * (0.95f / 2f), convert(test("five * (0.95 / 2)"), Float.class));
     }
 
     public void testPowerOf() {
@@ -1666,6 +1700,22 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(7, executeExpression(compiler.compile(ctx), new DefaultLocalVariableResolverFactory()));
     }
 
+    public void testStrictTypingCompilation4() throws NoSuchMethodException {
+        ParserContext ctx = new ParserContext();
+
+        ctx.setStrictTypeEnforcement(true);
+        ctx.addImport(Foo.class);
+
+        ExpressionCompiler compiler =
+                new ExpressionCompiler("x_a = new Foo()");
+
+        compiler.compile(ctx);
+
+
+        assertEquals(Foo.class, ctx.getVariables().get("x_a"));
+    }
+
+
     public void testProvidedExternalTypes() {
         ExpressionCompiler compiler = new ExpressionCompiler("foo.bar");
         ParserContext ctx = new ParserContext();
@@ -2830,6 +2880,24 @@ public class CoreConfidenceTests extends AbstractTest {
         public int getAttribute() {
             return _attribute;
         }
+    }
+
+    public void testSetExpressions1() {
+        Map<String, Object> myMap = new HashMap<String, Object>();
+
+        final Serializable fooExpr = MVEL.compileSetExpression("foo");
+        MVEL.executeSetExpression(fooExpr, myMap, "blah");
+        assertEquals("blah", myMap.get("foo"));
+
+        MVEL.executeSetExpression(fooExpr, myMap, "baz");
+        assertEquals("baz", myMap.get("foo"));
+    }
+
+    public void testInlineCollectionNestedObjectCreation() {
+        Map m = (Map) test("['Person.age' : [1, 2, 3, 4], 'Person.rating' : ['High', 'Low']," +
+                " 'Person.something' : (new String('foo').toUpperCase())]");
+
+        assertEquals("FOO", m.get("Person.something"));
     }
 
 }

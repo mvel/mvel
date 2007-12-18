@@ -37,6 +37,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private boolean optimized = false;
     private boolean importInjectionRequired = false;
     private boolean returnBigDecimal = false;
+    private boolean literalOnly;
 
     private Class<? extends AccessorOptimizer> accessorOptimizer;
 
@@ -44,17 +45,19 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     private ParserContext parserContext;
 
-    public CompiledExpression(ASTIterator astMap, String sourceName, Class egressType, ParserContext ctx) {
+    public CompiledExpression(ASTIterator astMap, String sourceName, Class egressType, ParserContext ctx, boolean literalOnly) {
         this.tokens = astMap;
         this.sourceName = sourceName;
         this.knownEgressType = egressType;
+        this.literalOnly = literalOnly;
         setParserContext(ctx);
     }
 
 
-    public CompiledExpression(ASTIterator astMap, String sourceName) {
+    public CompiledExpression(ASTIterator astMap, String sourceName, boolean literalOnly) {
         this.tokens = astMap;
         this.sourceName = sourceName;
+        this.literalOnly = literalOnly;
     }
 
     public ASTIterator getTokens() {
@@ -180,5 +183,9 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;
+    }
+
+    public boolean isLiteralOnly() {
+        return literalOnly;
     }
 }

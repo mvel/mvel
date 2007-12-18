@@ -35,6 +35,12 @@ public class ExecutableAccessor implements ExecutableStatement {
         this.returnBigDecimal = returnBigDecimal;
     }
 
+    public ExecutableAccessor(ASTNode node, boolean returnBigDecimal, Class egress) {
+        this.node = node;
+        this.returnBigDecimal = returnBigDecimal;
+        this.egress = egress;
+    }
+
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         return handleParserEgress(node.getReducedValueAccelerated(ctx, elCtx, variableFactory),
                 returnBigDecimal);
@@ -81,9 +87,12 @@ public class ExecutableAccessor implements ExecutableStatement {
         return node;
     }
 
-
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;
+    }
+
+    public boolean isLiteralOnly() {
+        return false;
     }
 }
 
