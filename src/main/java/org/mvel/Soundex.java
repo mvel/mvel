@@ -119,16 +119,12 @@ public class Soundex {
             if (c >= 'A' && c <= 'Z' && c != prev) {
                 prev = c;
 
-                // First char is installed unchanged, for sorting.
-//                if (i == 0)
-//                    res.append(c);
-//                else {
                 char m = MAP[c - 'A'];
                 if (m != '0')
                     res.append(m);
-//                }
             }
         }
+
         if (res.length() == 0)
             return null;
 

@@ -204,7 +204,7 @@ public class MVELRuntime {
                 }
             }
 
-            return stk.peek();
+            return stk.pop();
         }
         catch (NullPointerException e) {
             if (tk != null && tk.isOperator() && !node.hasMoreNodes()) {

@@ -70,7 +70,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 contextControl(REMOVE, null, null);
             }
 
-            return handleParserEgress(stk.peek(), returnBigDecimal);
+            return handleParserEgress(stk.pop(), returnBigDecimal);
         }
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();

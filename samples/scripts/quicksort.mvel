@@ -35,14 +35,9 @@ function sort(array, low, high) {
     sort(array, p + 1, high);
 }
 
-
-
 function quicksort(array) {
     sort(array, 0, array.length - 1);
 }
-
-
-
 
 test = {50,20,21,209,10,77,8,9,55,73,41,99};
 
