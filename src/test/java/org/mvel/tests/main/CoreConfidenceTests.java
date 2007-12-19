@@ -3006,7 +3006,6 @@ public class CoreConfidenceTests extends AbstractTest {
         ExecutableStatement expr = (ExecutableStatement) compiler.compile(context);
 
         assertEquals(Cheese.class, expr.getKnownEgressType());
-
     }
 
 }

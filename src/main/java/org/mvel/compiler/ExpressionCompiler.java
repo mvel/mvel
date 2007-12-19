@@ -274,7 +274,7 @@ public class ExpressionCompiler extends AbstractParser {
             }
             else if (tk.isIdentifier()) {
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
-                returnType = propVerifier.analyze();
+                tk.setEgressType(returnType = propVerifier.analyze());
 
                 if (propVerifier.isResolvedExternally()) {
                     pCtx.addInput(tk.getAbsoluteName(), returnType);

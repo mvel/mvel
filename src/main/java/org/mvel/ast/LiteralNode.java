@@ -36,13 +36,16 @@ public class LiteralNode extends ASTNode {
         this.fields |= LITERAL;
         if (literal instanceof String) {
             this.literal = ((String) literal).intern();
+            this.egressType = String.class;
         }
         else if (literal instanceof Integer) {
             this.fields |= INTEGER32;
             this.intRegister = ((Integer) (this.literal = literal));
+            this.egressType = Integer.class;
         }
         else {
             this.literal = literal;
+            if (this.literal != null) this.egressType = this.literal.getClass();
         }
     }
 
@@ -51,9 +54,12 @@ public class LiteralNode extends ASTNode {
         this.fields = fields;
         if (literal instanceof String) {
             this.literal = ((String) literal).intern();
+            this.egressType = String.class;
         }
         else {
             this.literal = valRet(literal);
+            if (this.literal != null) this.egressType = this.literal.getClass();
+
         }
     }
 

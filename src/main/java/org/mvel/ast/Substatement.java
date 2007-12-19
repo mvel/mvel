@@ -30,7 +30,10 @@ public class Substatement extends ASTNode {
         this.name = expr;
         this.fields = fields;
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) this.statement = (ExecutableStatement) subCompileExpression(this.name);
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            this.statement = (ExecutableStatement) subCompileExpression(this.name);
+            this.egressType = this.statement.getKnownEgressType();
+        }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
