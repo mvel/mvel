@@ -33,11 +33,6 @@ public class PostFixIncNode extends ASTNode {
         this.name = name;
     }
 
-    public PostFixIncNode(char[] expr, int fields) {
-        super(expr, fields);
-        name = new String(expr);
-    }
-
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver vResolver = factory.getVariableResolver(name);
         vResolver.setValue(doOperations(ctx = vResolver.getValue(), Operator.ADD, 1));

@@ -29,9 +29,9 @@ import static org.mvel.util.ParseTools.doOperations;
 public class PreFixDecNode extends ASTNode {
     private String name;
 
-    public PreFixDecNode(char[] expr, int fields) {
-        super(expr, fields);
-        name = new String(expr);
+
+    public PreFixDecNode(String name) {
+        this.name = name;
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

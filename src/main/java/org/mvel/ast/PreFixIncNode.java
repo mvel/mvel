@@ -29,9 +29,8 @@ import static org.mvel.util.ParseTools.doOperations;
 public class PreFixIncNode extends ASTNode {
     private String name;
 
-    public PreFixIncNode(char[] expr, int fields) {
-        super(expr, fields);
-        name = new String(expr);
+    public PreFixIncNode(String name) {
+        this.name = name;
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

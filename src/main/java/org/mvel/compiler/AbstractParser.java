@@ -540,20 +540,22 @@ public class AbstractParser implements Serializable {
 
                     return createPropertyToken(start, cursor);
                 }
-                else
+                else {
+                    String name;
+
                     switch (expr[cursor]) {
                         case '@': {
                             start++;
                             captureToEOT();
 
-                            String interceptorName = new String(expr, start, cursor - start);
+                            name = new String(expr, start, cursor - start);
 
                             if (pCtx.getInterceptors() == null || !pCtx.getInterceptors().
-                                    containsKey(interceptorName)) {
-                                throw new CompileException("reference to undefined interceptor: " + interceptorName, expr, cursor);
+                                    containsKey(name)) {
+                                throw new CompileException("reference to undefined interceptor: " + name, expr, cursor);
                             }
 
-                            return lastNode = new InterceptorWrapper(pCtx.getInterceptors().get(interceptorName), nextToken());
+                            return lastNode = new InterceptorWrapper(pCtx.getInterceptors().get(name), nextToken());
                         }
 
                         case '=':
@@ -563,7 +565,16 @@ public class AbstractParser implements Serializable {
                             if (isNext('-')) {
                                 start = cursor += 2;
                                 captureToEOT();
-                                return lastNode = new PreFixDecNode(subArray(start, cursor), fields);
+
+                                if ((idx = pCtx.variableIndexOf(name = new String(subArray(start, cursor)))) != -1) {
+                                    return lastNode = new IndexedPreFixDecNode(idx);
+                                }
+                                else {
+                                    return lastNode = new PreFixDecNode(name);
+                                }
+
+                                //     return lastNode = new PreFixDecNode(subArray(start, cursor), fields);
+
                             }
                             else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
                                 return createToken(expr, start, cursor++ + 1, fields);
@@ -577,7 +588,15 @@ public class AbstractParser implements Serializable {
                             if (isNext('+')) {
                                 start = cursor += 2;
                                 captureToEOT();
-                                return lastNode = new PreFixIncNode(subArray(start, cursor), fields);
+
+                                if ((idx = pCtx.variableIndexOf(name = new String(subArray(start, cursor)))) != -1) {
+                                    return lastNode = new IndexedPreFixIncNode(idx);
+                                }
+                                else {
+                                    return lastNode = new PreFixIncNode(name);
+                                }
+
+                                //   return lastNode = new PreFixIncNode(subArray(start, cursor), fields);
                             }
                             return createToken(expr, start, cursor++ + 1, fields);
 
@@ -909,6 +928,7 @@ public class AbstractParser implements Serializable {
                         default:
                             cursor++;
                     }
+                }
             }
 
             if (start == cursor) return null;
@@ -920,9 +940,12 @@ public class AbstractParser implements Serializable {
     }
 
     public ASTNode handleSubstatement(Substatement stmt) {
-        return stmt.getStatement() != null && stmt.getStatement().isLiteralOnly() ?
-                new LiteralNode(stmt.getStatement().getValue(null, null, null), fields)
-                : stmt;
+        if (stmt.getStatement() != null && stmt.getStatement().isLiteralOnly()) {
+            return new LiteralNode(stmt.getStatement().getValue(null, null, null), fields);
+        }
+        else {
+            return stmt;
+        }
     }
 
     protected ASTNode handleUnion(ASTNode node) {

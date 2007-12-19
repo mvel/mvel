@@ -29,8 +29,7 @@ import static org.mvel.util.ParseTools.doOperations;
 public class IndexedPreFixDecNode extends ASTNode {
     private int register;
 
-    public IndexedPreFixDecNode(char[] expr, int fields, int register) {
-        super(expr, fields);
+    public IndexedPreFixDecNode(int register) {
         this.register = register;
     }
 

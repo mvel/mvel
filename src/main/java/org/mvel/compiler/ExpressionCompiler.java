@@ -116,10 +116,10 @@ public class ExpressionCompiler extends AbstractParser {
                     ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray(), pCtx);
                     tk.setAccessor(subCompiler._compile());
 
-                    if (subCompiler.isLiteralOnly()) {
-                        //   stk.push(tk.getReducedValueAccelerated(null, null, null));
-                        tk = new LiteralNode(tk.getReducedValueAccelerated(null, null, null));
-                    }
+//                    if (subCompiler.isLiteralOnly()) {
+//                        //   stk.push(tk.getReducedValueAccelerated(null, null, null));
+//                        tk = new LiteralNode(tk.getReducedValueAccelerated(null, null, null));
+//                    }
                     returnType = subCompiler.getReturnType();
                 }
 
@@ -394,22 +394,6 @@ public class ExpressionCompiler extends AbstractParser {
             }
         }
         catch (ClassCastException e) {
-//            if ((fields & ASTNode.LOOKAHEAD) == 0) {
-//                /**
-//                 * This will allow for some developers who like messy expressions to compileAccessor
-//                 * away with some messy constructs like: a + b < c && e + f > g + q instead
-//                 * of using brackets like (a + b < c) && (e + f > g + q)
-//                 */
-//                fields |= ASTNode.LOOKAHEAD;
-//
-//                ASTNode tk = nextToken();
-//                if (tk != null) {
-//                    stk.push(v1, nextToken(), tk.getOperator());
-//
-//                    reduce();
-//                    return;
-//                }
-//            }
             throw new CompileException("syntax error or incomptable types (left=" +
                     (v1 != null ? v1.getClass().getName() : "null") + ", right=" +
                     (v2 != null ? v2.getClass().getName() : "null") + ")", expr, cursor, e);

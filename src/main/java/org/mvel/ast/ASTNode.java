@@ -379,38 +379,7 @@ public class ASTNode implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     protected void setName(char[] name) {
-//        if ((fields & STR_LITERAL) != 0) {
-//            fields |= LITERAL;
-//
-//            int escapes = 0;
-//            for (int i = 0; i < name.length; i++) {
-//                if (name[i] == '\\') {
-//                    name[i++] = 0;
-//                    name[i] = handleEscapeSequence(name[i]);
-//                    escapes++;
-//                }
-//            }
-//
-//            char[] processedEscapeString = new char[name.length - escapes];
-//            int cursor = 0;
-//            for (char aName : name) {
-//                if (aName == 0) {
-//                    continue;
-//                }
-//                processedEscapeString[cursor++] = aName;
-//            }
-//
-//            this.literal = new String(this.name = processedEscapeString);
-//
-//        }
-//        else {
-        this.literal = new String(this.name = name);
-//        }
-
-//        if ((fields & (LITERAL)) != 0) {
-//                return;
-//        }
-        if (AbstractParser.LITERALS.containsKey(literal)) {
+        if (AbstractParser.LITERALS.containsKey(this.literal = new String(this.name = name))) {
             fields |= LITERAL | IDENTIFIER;
             if ((literal = AbstractParser.LITERALS.get(literal)) == ThisLiteral.class) fields |= THISREF;
             if (literal != null) egressType = literal.getClass();
@@ -461,7 +430,6 @@ public class ASTNode implements Cloneable, Serializable {
         }
 
         if ((endOfName = findFirst('[', name)) > 0) fields |= COLLECTION;
-
     }
 
     public Accessor setAccessor(Accessor accessor) {
@@ -571,11 +539,6 @@ public class ASTNode implements Cloneable, Serializable {
     public ASTNode(char[] expr, int fields) {
         this.fields = fields;
         this.name = expr;
-    }
-
-    public ASTNode(int fields, Object literalValue) {
-        this.fields = fields;
-        this.literal = literalValue;
     }
 }
 
