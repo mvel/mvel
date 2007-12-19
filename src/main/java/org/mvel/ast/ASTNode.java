@@ -86,13 +86,9 @@ public class ASTNode implements Cloneable, Serializable {
     // that it's safe to remove this node.
     protected boolean discard;
 
-    private int intRegister;
+    protected int intRegister;
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if ((fields & (LITERAL)) != 0) {
-            return literal;
-        }
-
         if (accessor != null) {
             //      try {
             return valRet(accessor.getValue(ctx, thisValue, factory));
@@ -306,7 +302,6 @@ public class ASTNode implements Cloneable, Serializable {
         this.literal = literal;
     }
 
-
     protected Object valRet(final Object value) {
         if ((fields & NEGATION) != 0) {
             try {
@@ -403,7 +398,6 @@ public class ASTNode implements Cloneable, Serializable {
             if (literal instanceof Integer) {
                 intRegister = (Integer) literal;
                 fields |= INTEGER32;
-
             }
 
             return;

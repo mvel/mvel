@@ -238,6 +238,11 @@ public class MVELInterpretedRuntime extends AbstractParser {
         return operator == ADD || operator == MULT || operator == SUB || operator == DIV;
     }
 
+    /**
+     * This method peforms the equivilent of an XSWAP operation to flip the operator
+     * over to the top of the stack, and loads the stored values on the d-stack onto
+     * the main program stack.
+     */
     private void procDStack() {
         if (dStack == null) return;
         Object o;

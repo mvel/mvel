@@ -1,7 +1,6 @@
 package org.mvel.tests.main;
 
 import org.mvel.*;
-
 import static org.mvel.MVEL.*;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.WithNode;
@@ -2516,51 +2515,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(11, test("xx0 = 15; xx0 -= 4; xx0"));
     }
 
-
-    public void testFail() {
-
-        Map map = new HashMap();
-        map.put("a", new JButton());
-        map.put("b", new JButton());
-        new JButton().setToolTipText("");
-        System.out.println(test(
-                "if (a.text!=null) {\n" +
-                        "    b.text = a.text;\n" +
-                        "} else if (a.toolTipText!=null) { \n" +
-                        "    b.text = a.toolTipText;\n" +
-                        "} " +
-                        "return b;"
-                , null, map
-        ));
-    }
-
-    public void testPass() {
-        Map map = new HashMap();
-        map.put("a", new JButton());
-        map.put("b", new JButton());
-        new JButton().setToolTipText("");
-        System.out.println(test(
-                "if (a.text!=null) {\n" +
-                        "    b.text = a.text;\n" +
-                        "} " +
-                        "if (a.text!=null && a.toolTipText!=null) { \n" +
-                        "    b.text = a.toolTipText;\n" +
-                        "}" +
-                        "return b;"
-                , null, map
-        ));
-
-
-        System.out.println(test(
-                "if (a.text!=null) {\n" +
-                        "    b.text = a.text;\n" +
-                        "} else if (a.text!=null && a.toolTipText!=null) { \n" +
-                        "    b.text = a.toolTipText;\n" +
-                        "}"
-                , null, map
-        ));
-    }
-
     public void testCommentsInWith() {
         HashMap map = new HashMap();
         map.put("f", new JFrame());
@@ -3043,15 +2997,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("bar", m.get("foo"));
     }
-    
+
     public void testEgressType() {
         ExpressionCompiler compiler = new ExpressionCompiler("( $cheese )");
         ParserContext context = new ParserContext();
-        context.addInput( "$cheese", Cheese.class );
+        context.addInput("$cheese", Cheese.class);
 
         ExecutableStatement expr = (ExecutableStatement) compiler.compile(context);
-        
-        assertEquals( Cheese.class, expr.getKnownEgressType() );
+
+        assertEquals(Cheese.class, expr.getKnownEgressType());
 
     }
 

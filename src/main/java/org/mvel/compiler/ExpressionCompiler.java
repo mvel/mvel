@@ -248,7 +248,17 @@ public class ExpressionCompiler extends AbstractParser {
             }
         }
 
-        if (tk.isDiscard() || (tk.fields & (ASTNode.OPERATOR | ASTNode.LITERAL)) != 0) return tk;
+        if (tk.isDiscard() || tk.isOperator()) {
+            return tk;
+        }
+        else if (tk.isLiteral()) {
+            if ((fields & ASTNode.COMPILE_IMMEDIATE) != 0 && tk.getClass() == ASTNode.class) {
+                return new LiteralNode(tk.getLiteralValue());
+            }
+            else {
+                return tk;
+            }
+        }
 
         if (verifying) {
             if (tk.isAssignment()) {
