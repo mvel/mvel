@@ -17,6 +17,7 @@ import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.MethodStub;
+import org.mvel.compiler.ExecutableStatement;
 
 import javax.swing.*;
 import java.awt.*;
@@ -2899,6 +2900,18 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("FOO", m.get("Person.something"));
     }
+
+    public void testEgressType() {
+        ExpressionCompiler compiler = new ExpressionCompiler("( $cheese )");
+        ParserContext context = new ParserContext();
+        context.addInput( "$cheese", Cheese.class );
+
+        ExecutableStatement expr = (ExecutableStatement) compiler.compile(context);
+        
+        assertEquals( Cheese.class, expr.getKnownEgressType() );
+
+    }
+
 
 }
 
