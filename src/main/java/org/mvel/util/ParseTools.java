@@ -1147,8 +1147,8 @@ public class ParseTools {
                     return new ExecutableLiteral(tk.getLiteralValue());
                 }
             }
-            return tk.canSerializeAccessor() ? new ExecutableAccessorSafe(tk, false, tk.getEgressType()) :
-                    new ExecutableAccessor(tk, false, tk.getEgressType());
+            return tk.canSerializeAccessor() ? new ExecutableAccessorSafe(tk, false, compiled.getKnownEgressType()) :
+                    new ExecutableAccessor(tk, false, compiled.getKnownEgressType());
 
         }
 
