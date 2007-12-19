@@ -1,10 +1,12 @@
 package org.mvel.tests.main;
 
 import org.mvel.*;
+
 import static org.mvel.MVEL.*;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.WithNode;
 import org.mvel.compiler.CompiledExpression;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.compiler.ExpressionCompiler;
 import org.mvel.debug.DebugTools;
 import org.mvel.debug.Debugger;
@@ -3041,6 +3043,18 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("bar", m.get("foo"));
     }
+    
+    public void testEgressType() {
+        ExpressionCompiler compiler = new ExpressionCompiler("( $cheese )");
+        ParserContext context = new ParserContext();
+        context.addInput( "$cheese", Cheese.class );
+
+        ExecutableStatement expr = (ExecutableStatement) compiler.compile(context);
+        
+        assertEquals( Cheese.class, expr.getKnownEgressType() );
+
+    }
+
 }
 
 
