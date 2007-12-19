@@ -16,7 +16,6 @@ import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.PropertyTools.isEmpty;
 import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
-import org.mvel.util.StringAppender;
 
 import static java.lang.String.valueOf;
 import static java.lang.Thread.currentThread;
@@ -24,6 +23,7 @@ import static java.lang.Thread.currentThread;
 /**
  * This class contains the runtime for running compiled MVEL expressions.
  */
+@SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class MVELRuntime {
 //    private static ThreadLocal<Map<String, Set<Integer>>> threadBreakpoints;
 //    private static ThreadLocal<Debugger> threadDebugger;
@@ -184,10 +184,6 @@ public class MVELRuntime {
 
                             case BW_USHIFT_RIGHT:
                                 stk.push((Integer) v2 >>> (Integer) v1);
-                                break;
-
-                            case STR_APPEND:
-                                stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
                                 break;
 
                             case SOUNDEX:

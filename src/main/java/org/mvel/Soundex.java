@@ -90,7 +90,7 @@ public class Soundex {
     * to:   00000000111122222222334556
     */
     public static final char[] MAP = {
-            //A  B   C   D   E   F   G   H   I   J   K   L   M
+            //A   B    C    D    E    F    G    H    I    J    K    L    M
             '0', '1', '2', '3', '0', '1', '2', '0', '0', '2', '2', '4', '5',
             //N  O   P   W   R   S   T   U   V   W   X   Y   Z
             '5', '0', '1', '2', '6', '2', '3', '0', '1', '0', '2', '0', '2'
@@ -120,13 +120,13 @@ public class Soundex {
                 prev = c;
 
                 // First char is installed unchanged, for sorting.
-                if (i == 0)
-                    res.append(c);
-                else {
-                    char m = MAP[c - 'A'];
-                    if (m != '0')
-                        res.append(m);
-                }
+//                if (i == 0)
+//                    res.append(c);
+//                else {
+                char m = MAP[c - 'A'];
+                if (m != '0')
+                    res.append(m);
+//                }
             }
         }
         if (res.length() == 0)

@@ -389,24 +389,56 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("(2|1) == 3"));
     }
 
+    public void testBitwiseOr4() {
+        assertEquals(2 | 5, test("2|five"));
+    }
+
     public void testBitwiseAnd1() {
         assertEquals(2, test("2 & 3"));
+    }
+
+    public void testBitwiseAnd2() {
+        assertEquals(5 & 3, test("five & 3"));
     }
 
     public void testShiftLeft() {
         assertEquals(4, test("2 << 1"));
     }
 
+    public void testShiftLeft2() {
+        assertEquals(5 << 1, test("five << 1"));
+    }
+
     public void testUnsignedShiftLeft() {
         assertEquals(2, test("-2 <<< 0"));
+    }
+
+    public void testUnsignedShiftLeft2() {
+        assertEquals(5, test("(five - 10) <<< 0"));
     }
 
     public void testShiftRight() {
         assertEquals(128, test("256 >> 1"));
     }
 
+    public void testShiftRight2() {
+        assertEquals(5 >> 1, test("five >> 1"));
+    }
+
+    public void testUnsignedShiftRight() {
+        assertEquals(-5 >>> 1, test("-5 >>> 1"));
+    }
+
+    public void testUnsignedShiftRight2() {
+        assertEquals(-5 >>> 1, test("(five - 10) >>> 1"));
+    }
+
     public void testXOR() {
         assertEquals(3, test("1 ^ 2"));
+    }
+
+    public void testXOR2() {
+        assertEquals(5 ^ 2, test("five ^ 2"));
     }
 
     public void testContains1() {
@@ -573,6 +605,14 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testSoundex2() {
         assertFalse((Boolean) test("'flexbar' soundslike 'fubar'"));
+    }
+
+    public void testSoundex3() {
+        assertEquals(true, test("c soundslike 'kat'"));
+    }
+
+    public void testSimilarity1() {
+        assertEquals(0.6666667f, test("c strsim 'kat'"));
     }
 
     public void testThisReference() {
@@ -2448,6 +2488,14 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testBooleanStrAppend() {
         assertEquals("footrue", test("\"foo\" + true"));
+    }
+
+    public void testStringAppend() {
+        assertEquals("catbar", test("c + 'bar'"));
+    }
+
+    public void testConvertableTo() {
+        assertEquals(true, test("pi convertable_to Integer"));
     }
 
     public void testAssignPlus() {

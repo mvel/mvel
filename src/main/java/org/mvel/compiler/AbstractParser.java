@@ -518,12 +518,8 @@ public class AbstractParser implements Serializable {
 
                                         if (idx == -1) {
                                             pCtx.addIndexedVariable(t = ian.getAssignmentVar());
-                                            idx = pCtx.variableIndexOf(t);
-
-                                            ian.setRegister(idx);
+                                            ian.setRegister(idx = pCtx.variableIndexOf(t));
                                         }
-
-
                                         return lastNode = ian;
                                     }
                                     else {
@@ -1388,9 +1384,9 @@ public class AbstractParser implements Serializable {
         while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
     }
 
-    private boolean isFlag(int bit) {
-        return (fields & bit) != 0;
-    }
+//    private boolean isFlag(int bit) {
+//        return (fields & bit) != 0;
+//    }
 
     public static boolean isReservedWord(String name) {
         return LITERALS.containsKey(name) || OPERATORS.containsKey(name);
@@ -1401,12 +1397,12 @@ public class AbstractParser implements Serializable {
         return expr[cursor - 1];
     }
 
-    protected char lookBehind(int range) {
-        if ((cursor - range) <= 0) return 0;
-        else {
-            return expr[cursor - range];
-        }
-    }
+//    protected char lookBehind(int range) {
+//        if ((cursor - range) <= 0) return 0;
+//        else {
+//            return expr[cursor - range];
+//        }
+//    }
 
     protected char lookAhead() {
         if (cursor != length) return expr[cursor + 1];
@@ -1426,21 +1422,21 @@ public class AbstractParser implements Serializable {
         return (c != length && expr[c] == ';');
     }
 
-    protected boolean isRemain(int range) {
-        return (cursor + range) != length;
-    }
+//    protected boolean isRemain(int range) {
+//        return (cursor + range) != length;
+//    }
 
     protected boolean isNext(char c) {
         return lookAhead() == c;
     }
 
-    protected boolean isAt(char c, int range) {
-        return lookAhead(range) == c;
-    }
+//    protected boolean isAt(char c, int range) {
+//        return lookAhead(range) == c;
+//    }
 
-    protected boolean hasParserContext() {
-        return parserContext != null && parserContext.get() != null;
-    }
+//    protected boolean hasParserContext() {
+//        return parserContext != null && parserContext.get() != null;
+//    }
 
     protected ParserContext getParserContext() {
         if (parserContext == null || parserContext.get() == null) {
