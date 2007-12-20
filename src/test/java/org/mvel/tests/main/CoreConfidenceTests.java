@@ -17,7 +17,7 @@ import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.MethodStub;
-import org.mvel.compiler.ExecutableStatement;
+import org.mvel.ExecutableStatement;
 
 import javax.swing.*;
 import java.awt.*;
