@@ -222,7 +222,19 @@ public class ExpressionCompiler extends AbstractParser {
             }
         }
 
-        if (tk.isDiscard() || (tk.fields & (ASTNode.OPERATOR | ASTNode.LITERAL)) != 0) return tk;
+//        if (tk.isDiscard() || (tk.fields & (ASTNode.OPERATOR | ASTNode.LITERAL)) != 0) return tk;
+
+        if (tk.isDiscard() || tk.isOperator()) {
+            return tk;
+        }
+        else if (tk.isLiteral()) {
+            if ((fields & ASTNode.COMPILE_IMMEDIATE) != 0 && tk.getClass() == ASTNode.class) {
+                return new LiteralNode(tk.getLiteralValue());
+            }
+            else {
+                return tk;
+            }
+        }
 
         if (verifying) {
             if (tk.isAssignment()) {
@@ -261,7 +273,7 @@ public class ExpressionCompiler extends AbstractParser {
      * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
      * current state against 2 downrange structures (usually an op and a val).
      */
-    private void reduce() {        
+    private void reduce() {
         Object v1 = null, v2 = null;
         Integer operator;
         try {

@@ -81,7 +81,7 @@ public class ASTNode implements Cloneable, Serializable {
     // that it's safe to remove this node.
     protected boolean discard;
 
-    private int intRegister;
+    protected int intRegister;
 
     public ASTNode() {
     }
