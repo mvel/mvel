@@ -55,9 +55,8 @@ public class NewObjectNode extends ASTNode {
     private ExecutableStatement[] compiledArraySize;
 
     public NewObjectNode(char[] expr, int fields) {
-        super(expr, fields);
-
-        updateClassName(fields);
+        this.name = expr;
+        updateClassName(this.fields = fields);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             ParserContext pCtx = getCurrentThreadParserContext();

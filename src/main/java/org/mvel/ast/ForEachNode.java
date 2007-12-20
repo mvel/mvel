@@ -38,8 +38,8 @@ public class ForEachNode extends BlockNode {
     protected ExecutableStatement compiledBlock;
 
     public ForEachNode(char[] condition, char[] block, int fields) {
-        super(condition, fields);
-        handleCond(condition);
+        //    super(condition, fields);
+        handleCond(this.name = condition);
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }
 

@@ -41,7 +41,9 @@ public class WithNode extends BlockNode implements NestedStatement {
     private ParmValuePair[] withExpressions;
 
     public WithNode(char[] expr, char[] block, int fields) {
-        super(expr, fields, block);
+        //  super(expr, fields, block);
+        this.name = expr;
+        this.block = block;
 
         ParserContext pCtx = null;
         if ((fields & COMPILE_IMMEDIATE) != 0) {

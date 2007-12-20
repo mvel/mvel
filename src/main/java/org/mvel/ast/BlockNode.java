@@ -24,12 +24,17 @@ package org.mvel.ast;
 public class BlockNode extends ASTNode {
     protected char[] block;
 
+    public BlockNode() {
+    }
+
     public BlockNode(char[] expr, int fields) {
-        super(expr, fields);
+        //  super(expr, fields);
+        this.name = expr;
     }
 
     public BlockNode(char[] expr, int fields, char[] block) {
-        super(expr, fields);
+        //   super(expr, fields);
+        this.name = expr;
         this.block = block;
     }
 }

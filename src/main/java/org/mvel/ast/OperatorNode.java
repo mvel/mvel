@@ -4,8 +4,6 @@ public class OperatorNode extends ASTNode {
     private Integer operator;
 
     public OperatorNode(Integer operator) {
-        super();
-
         this.literal = this.operator = operator;
     }
 

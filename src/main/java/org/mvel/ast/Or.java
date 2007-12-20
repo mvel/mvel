@@ -25,7 +25,6 @@ public class Or extends ASTNode {
     private ASTNode right;
 
     public Or(ASTNode left, ASTNode right) {
-        super();
         this.left = left;
         this.right = right;
     }

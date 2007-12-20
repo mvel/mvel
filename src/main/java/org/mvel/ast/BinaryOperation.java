@@ -27,7 +27,6 @@ public class BinaryOperation extends ASTNode {
     private ASTNode right;
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right) {
-        super();
         this.operation = operation;
         this.left = left;
         this.right = right;

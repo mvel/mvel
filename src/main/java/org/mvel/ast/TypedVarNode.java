@@ -34,11 +34,11 @@ public class TypedVarNode extends ASTNode implements Assignment {
     private transient ExecutableStatement statement;
 
     public TypedVarNode(char[] expr, int fields, Class type) {
-        super(expr, fields);
         this.egressType = type;
+        this.fields = fields;
 
         int assignStart;
-        if ((assignStart = find(expr, '=')) != -1) {
+        if ((assignStart = find(super.name = expr, '=')) != -1) {
             checkNameSafety(name = new String(expr, 0, assignStart).trim());
 
             if (((fields |= ASSIGN) & COMPILE_IMMEDIATE) != 0) {

@@ -28,14 +28,14 @@ import static org.mvel.util.ParseTools.subCompileExpression;
 public class WhileNode extends BlockNode {
     protected String item;
 
-    protected char[] cond;
+    // protected char[] cond;
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
 
     public WhileNode(char[] condition, char[] block, int fields) {
-        super(condition, fields);
+        //    super(condition, fields);
 
-        this.condition = (ExecutableStatement) subCompileExpression(this.cond = condition);
+        this.condition = (ExecutableStatement) subCompileExpression(this.name = condition);
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }
 

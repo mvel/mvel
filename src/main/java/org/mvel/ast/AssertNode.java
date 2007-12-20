@@ -22,7 +22,7 @@ import org.mvel.CompileException;
 import org.mvel.MVEL;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.subCompileExpression;
 
 /**
  * @author Christopher Brock
@@ -31,10 +31,11 @@ public class AssertNode extends ASTNode {
     public ExecutableStatement assertion;
 
     public AssertNode(char[] expr, int fields) {
-        super(expr, fields);
+        //    super(expr, fields);
 
+        this.name = expr;
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            assertion = (ExecutableStatement) ParseTools.subCompileExpression(expr);
+            assertion = (ExecutableStatement) subCompileExpression(expr);
         }
     }
 

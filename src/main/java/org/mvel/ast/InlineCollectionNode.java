@@ -36,7 +36,7 @@ public class InlineCollectionNode extends ASTNode {
     }
 
     public InlineCollectionNode(char[] expr, int fields) {
-        super(expr, fields);
+        //  super(expr, fields);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

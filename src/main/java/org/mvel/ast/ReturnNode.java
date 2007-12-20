@@ -28,13 +28,14 @@ import static org.mvel.util.ParseTools.subCompileExpression;
  * @author Christopher Brock
  */
 public class ReturnNode extends ASTNode {
-    private boolean graceful = false;
 
     public ReturnNode(char[] expr, int fields) {
-        super(expr, fields);
-        setAccessor((Accessor) subCompileExpression(expr));
-    }
+        this.name = expr;
 
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            setAccessor((Accessor) subCompileExpression(expr));
+        }
+    }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (accessor == null) {
@@ -46,13 +47,5 @@ public class ReturnNode extends ASTNode {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         throw new EndWithValue(eval(this.name, ctx, factory));
-    }
-
-    public boolean isGraceful() {
-        return graceful;
-    }
-
-    public void setGraceful(boolean graceful) {
-        this.graceful = graceful;
     }
 }

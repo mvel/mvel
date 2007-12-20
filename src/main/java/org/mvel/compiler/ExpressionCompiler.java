@@ -116,10 +116,6 @@ public class ExpressionCompiler extends AbstractParser {
                     ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray(), pCtx);
                     tk.setAccessor(subCompiler._compile());
 
-//                    if (subCompiler.isLiteralOnly()) {
-//                        //   stk.push(tk.getReducedValueAccelerated(null, null, null));
-//                        tk = new LiteralNode(tk.getReducedValueAccelerated(null, null, null));
-//                    }
                     returnType = subCompiler.getReturnType();
                 }
 
@@ -339,25 +335,6 @@ public class ExpressionCompiler extends AbstractParser {
                     case Operator.REGEX:
                         stk.push(Pattern.compile(valueOf(v1)).matcher(valueOf(v2)).matches());
                         break;
-
-//                    case Operator.INSTANCEOF:
-//                        if (v1 instanceof Class)
-//                            stk.push(((Class) v1).isInstance(v2));
-//                        else
-//                            stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
-//
-//                        break;
-//
-//                    case Operator.CONVERTABLE_TO:
-//                        if (v1 instanceof Class)
-//                            stk.push(canConvert(v2.getClass(), (Class) v1));
-//                        else
-//                            stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
-//                        break;
-//
-//                    case Operator.CONTAINS:
-//                        stk.push(containsCheck(v2, v1));
-//                        break;
 
                     case Operator.BW_AND:
                         stk.push(asInt(v2) & asInt(v1));

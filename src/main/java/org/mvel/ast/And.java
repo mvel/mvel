@@ -25,7 +25,7 @@ public class And extends ASTNode {
     private ASTNode right;
 
     public And(ASTNode left, ASTNode right) {
-        super();
+        //super();
         this.left = left;
         this.right = right;
     }

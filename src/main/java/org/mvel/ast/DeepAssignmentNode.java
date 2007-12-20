@@ -39,7 +39,9 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
     private transient Accessor statement;
 
     public DeepAssignmentNode(char[] expr, int fields, int operation, String name) {
-        super(expr, fields);
+        //  super(expr, fields);
+
+        this.name = expr;
         int mark;
 
         if (operation != -1) {

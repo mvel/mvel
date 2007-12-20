@@ -45,8 +45,9 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
     //   private String index;
 
     public IndexedAssignmentNode(char[] expr, int fields, int operation, String name, int register) {
-        super(expr, fields);
+        //  super(expr, fields);
 
+        super.name = expr;
         this.register = register;
 
         int assignStart;
