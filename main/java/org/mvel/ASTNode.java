@@ -25,7 +25,6 @@ import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import static org.mvel.optimizers.OptimizerFactory.*;
 import static org.mvel.util.ArrayTools.findFirst;
-import static org.mvel.util.ParseTools.handleEscapeSequence;
 import static org.mvel.util.PropertyTools.handleNumericConversion;
 import static org.mvel.util.PropertyTools.isNumber;
 import org.mvel.util.ThisLiteral;
@@ -168,9 +167,9 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if ((fields & (LITERAL)) != 0) {
-            return literal;
-        }
+//        if ((fields & (LITERAL)) != 0) {
+//            return literal;
+//        }
         try {
             return valRet(accessor.getValue(ctx, thisValue, factory));
         }
