@@ -28,9 +28,8 @@ public class Substatement extends ASTNode {
 
     public Substatement(char[] expr, int fields) {
         this.name = expr;
-        this.fields = fields;
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
+        if (((this.fields = fields) & COMPILE_IMMEDIATE) != 0) {
             this.statement = (ExecutableStatement) subCompileExpression(this.name);
             this.egressType = this.statement.getKnownEgressType();
         }

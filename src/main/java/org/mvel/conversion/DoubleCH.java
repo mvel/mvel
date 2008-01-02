@@ -31,6 +31,14 @@ public class DoubleCH implements ConversionHandler {
     private static final Map<Class, Converter> CNV =
             new HashMap<Class, Converter>();
 
+    private static Converter stringConverter = new Converter() {
+                    public Object convert(Object o) {
+                        if (((String) o).length() == 0) return (double) 0;
+
+
+                        return Double.parseDouble(((String) o));
+                    }
+                };
 
     public Object convertFrom(Object in) {
         if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
@@ -45,20 +53,13 @@ public class DoubleCH implements ConversionHandler {
 
     static {
         CNV.put(String.class,
-                new Converter() {
-                    public Object convert(Object o) {
-                        if (((String) o).length() == 0) return (double) 0;
-
-
-                        return Double.parseDouble(((String) o));
-                    }
-                }
+              stringConverter
         );
 
         CNV.put(Object.class,
                 new Converter() {
                     public Object convert(Object o) {
-                        return CNV.get(String.class).convert(valueOf(o));
+                        return stringConverter.convert(valueOf(o));
                     }
                 }
         );

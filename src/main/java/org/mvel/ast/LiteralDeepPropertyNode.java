@@ -22,6 +22,7 @@ import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
+import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
 /**
  * @author Christopher Brock
@@ -42,7 +43,7 @@ public class LiteralDeepPropertyNode extends ASTNode {
         }
         catch (NullPointerException e) {
             if (accessor == null) {
-                AccessorOptimizer aO = OptimizerFactory.getThreadAccessorOptimizer();
+                AccessorOptimizer aO = getThreadAccessorOptimizer();
                 accessor = aO.optimizeAccessor(name, literal, thisValue, factory, false);
 
                 return valRet(aO.getResultOptPass());

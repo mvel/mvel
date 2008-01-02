@@ -35,6 +35,12 @@ public class ShortCH implements ConversionHandler {
     private static final Short TRUE = (short) 1;
     private static final Short FALSE = (short) 0;
 
+    private static Converter stringConverter = new Converter() {
+        public Short convert(Object o) {
+            return Short.parseShort(((String) o));
+        }
+    };
+
     private static final Map<Class, Converter> CNV =
             new HashMap<Class, Converter>();
 
@@ -53,17 +59,13 @@ public class ShortCH implements ConversionHandler {
 
     static {
         CNV.put(String.class,
-                new Converter() {
-                    public Short convert(Object o) {
-                        return Short.parseShort(((String) o));
-                    }
-                }
+                stringConverter
         );
 
         CNV.put(Object.class,
                 new Converter() {
                     public Object convert(Object o) {
-                        return CNV.get(String.class).convert(valueOf(o));
+                        return stringConverter.convert(valueOf(o));
                     }
                 }
         );

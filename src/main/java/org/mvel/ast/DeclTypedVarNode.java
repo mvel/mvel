@@ -27,10 +27,8 @@ import static org.mvel.util.ParseTools.checkNameSafety;
 public class DeclTypedVarNode extends ASTNode implements Assignment {
     private String name;
 
-    public DeclTypedVarNode(String name, int fields, Class type) {
-        //  super(null, fields);
+    public DeclTypedVarNode(String name, Class type) {
         this.egressType = type;
-
         checkNameSafety(this.name = name);
     }
 

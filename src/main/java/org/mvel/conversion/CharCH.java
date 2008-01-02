@@ -30,6 +30,15 @@ public class CharCH implements ConversionHandler {
     private static final Map<Class, Converter> CNV =
             new HashMap<Class, Converter>();
 
+    private static final Converter stringConverter =
+            new Converter() {
+                public Object convert(Object o) {
+                    if ((((String) o).length()) > 1)
+                        throw new ConversionException("cannot convert a string with a length greater than 1 to java.lang.Character");
+
+                    return (((String) o)).charAt(0);
+                }
+            };
 
     public Object convertFrom(Object in) {
         if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
@@ -43,21 +52,12 @@ public class CharCH implements ConversionHandler {
     }
 
     static {
-        CNV.put(String.class,
-                new Converter() {
-                    public Object convert(Object o) {
-                        if ((((String) o).length()) > 1)
-                            throw new ConversionException("cannot convert a string with a length greater than 1 to java.lang.Character");
-
-                        return (((String) o)).charAt(0);
-                    }
-                }
-        );
+        CNV.put(String.class, stringConverter);
 
         CNV.put(Object.class,
                 new Converter() {
                     public Object convert(Object o) {
-                        return CNV.get(String.class).convert(valueOf(o));
+                        return stringConverter.convert(valueOf(o));
                     }
                 }
         );

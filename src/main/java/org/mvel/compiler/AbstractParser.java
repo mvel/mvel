@@ -311,7 +311,7 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new IndexedDeclTypedVarNode(idx, Object.class);
                                     }
                                     else {
-                                        return lastNode = new DeclTypedVarNode(name, fields, Object.class);
+                                        return lastNode = new DeclTypedVarNode(name, Object.class);
                                     }
                                 }
                         }
