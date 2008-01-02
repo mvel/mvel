@@ -215,8 +215,9 @@ public class PropertyVerifier extends AbstractOptimizer {
         else {
             String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
             args = new Class[subtokens.length];
+            ExpressionCompiler compiler;
             for (int i = 0; i < subtokens.length; i++) {
-                ExpressionCompiler compiler = new ExpressionCompiler(subtokens[i], true);
+                compiler = new ExpressionCompiler(subtokens[i], true);
                 compiler._compile();
                 args[i] = compiler.getReturnType() != null ? compiler.getReturnType() : Object.class;
             }

@@ -568,9 +568,6 @@ public class AbstractParser implements Serializable {
                                 else {
                                     return lastNode = new PreFixDecNode(name);
                                 }
-
-                                //     return lastNode = new PreFixDecNode(subArray(start, cursor), fields);
-
                             }
                             else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
                                 return createToken(expr, start, cursor++ + 1, fields);
@@ -999,9 +996,7 @@ public class AbstractParser implements Serializable {
                 }
             }
             else {
-                tmp = new String(_subset);
-
-                if (getParserContext().hasImport(tmp)) {
+                if (getParserContext().hasImport(tmp = new String(_subset))) {
                     Object i = getParserContext().getStaticOrClassImport(tmp);
 
                     if (i instanceof Class) {
@@ -1352,12 +1347,6 @@ public class AbstractParser implements Serializable {
         while (cursor != 0 && isWhitespace(expr[cursor - 1])) cursor--;
     }
 
-//    protected ASTNode captureTokenToEOS() {
-//        int start = cursor;
-//        captureToEOS();
-//        return lastNode = new ASTNode(expr, start, cursor, 0);
-//    }
-
     protected void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
             if (!EX_PRECACHE.containsKey(expression)) {
@@ -1384,10 +1373,6 @@ public class AbstractParser implements Serializable {
         while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
     }
 
-//    private boolean isFlag(int bit) {
-//        return (fields & bit) != 0;
-//    }
-
     public static boolean isReservedWord(String name) {
         return LITERALS.containsKey(name) || OPERATORS.containsKey(name);
     }
@@ -1396,13 +1381,6 @@ public class AbstractParser implements Serializable {
         if (cursor == 0) return 0;
         return expr[cursor - 1];
     }
-
-//    protected char lookBehind(int range) {
-//        if ((cursor - range) <= 0) return 0;
-//        else {
-//            return expr[cursor - range];
-//        }
-//    }
 
     protected char lookAhead() {
         if (cursor != length) return expr[cursor + 1];
@@ -1422,21 +1400,9 @@ public class AbstractParser implements Serializable {
         return (c != length && expr[c] == ';');
     }
 
-//    protected boolean isRemain(int range) {
-//        return (cursor + range) != length;
-//    }
-
     protected boolean isNext(char c) {
         return lookAhead() == c;
     }
-
-//    protected boolean isAt(char c, int range) {
-//        return lookAhead(range) == c;
-//    }
-
-//    protected boolean hasParserContext() {
-//        return parserContext != null && parserContext.get() != null;
-//    }
 
     protected ParserContext getParserContext() {
         if (parserContext == null || parserContext.get() == null) {
@@ -1452,7 +1418,6 @@ public class AbstractParser implements Serializable {
     public static void setCurrentThreadParserContext(ParserContext pCtx) {
         contextControl(SET, pCtx, null);
     }
-
 
     protected void newContext() {
         contextControl(SET, new ParserContext(), this);
@@ -1542,12 +1507,12 @@ public class AbstractParser implements Serializable {
             case 5:  // control flow operations
                 OPERATORS.put("if", IF);
                 OPERATORS.put("else", ELSE);
-                OPERATORS.put("?", Operator.TERNARY);
+                OPERATORS.put("?", TERNARY);
                 OPERATORS.put("switch", SWITCH);
                 OPERATORS.put("function", FUNCTION);
 
             case 4: // assignment
-                OPERATORS.put("=", Operator.ASSIGN);
+                OPERATORS.put("=", ASSIGN);
                 OPERATORS.put("var", UNTYPED_VAR);
                 OPERATORS.put("+=", ASSIGN_ADD);
                 OPERATORS.put("-=", ASSIGN_SUB);

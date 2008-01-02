@@ -26,6 +26,7 @@ import org.mvel.optimizers.OptimizerFactory;
 /**
  * @author Christopher Brock
  */
+@SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class LiteralDeepPropertyNode extends ASTNode {
     private Object literal;
 

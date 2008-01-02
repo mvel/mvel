@@ -129,7 +129,8 @@ public class MVELSH {
                 }
 
                 if (showExecTime) System.out.println("DONE in : " + time + "ms.");
-                if (output) System.out.println((template ? "TOUT: " : "OUT: ") + out);
+                if (output)
+                    System.out.println((template ? "TOUT: " : "OUT: " + (out != null ? "[" + out.getClass().getName() + "] = " : "")) + out);
             }
             catch (Exception e) {
                 if (stacktrace) e.printStackTrace();

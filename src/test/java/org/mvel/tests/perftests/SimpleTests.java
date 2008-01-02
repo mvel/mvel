@@ -1,35 +1,41 @@
 package org.mvel.tests.perftests;
 
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
-import org.mvel.tests.main.CoreConfidenceTests;
+import org.mvel.MVEL;
+import org.mvel.util.ParseTools;
 import sun.misc.Unsafe;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
 
 public class SimpleTests {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         //   Unsafe unsafe = getUnsafe();
 
-
-        TestSuite testSuite = new TestSuite(CoreConfidenceTests.class);
-        TestResult result = new TestResult();
+        //   TestSuite testSuite = new TestSuite(CoreConfidenceTests.class);
+        //    TestResult result = new TestResult();
 
         PrintStream ps = System.out;
 
         System.setOut(new PrintStream(new NullOutputStream()));
         System.setErr(new PrintStream(new NullOutputStream()));
 
-        testSuite.run(result);
+        //  testSuite.run(result);
         long time;
 
-        for (int i = 0; i < 100; i++) {
-            time = System.currentTimeMillis();
-            testSuite.run(result);
-            ps.println("Result: " + (System.currentTimeMillis() - time));
+        time = System.currentTimeMillis();
+
+        char[] sourceFile = ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"));
+        for (int i = 0; i < 10000; i++) {
+//            time = System.currentTimeMillis();
+            //  testSuite.run(result);
+            MVEL.compileExpression(sourceFile);
+//            ps.println("Result: " + (System.currentTimeMillis() - time));
         }
+        ps.println("Result: " + (System.currentTimeMillis() - time));
+
 
         System.setOut(ps);
     }
@@ -47,12 +53,5 @@ public class SimpleTests {
 
     private static final Unsafe unsafe__ = getUnsafe();
 
-    private static void setBoolean(Field f, Object o, boolean v) {
-        unsafe__.putBoolean(o, unsafe__.objectFieldOffset(f), v);
-    }
-
-    private static Object newInstance(Class clazz) throws Exception {
-        return (unsafe__.allocateInstance(clazz));
-    }
 
 }

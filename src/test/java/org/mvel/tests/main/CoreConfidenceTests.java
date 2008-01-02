@@ -22,7 +22,6 @@ import org.mvel.tests.main.res.*;
 import org.mvel.util.MethodStub;
 import static org.mvel.util.ParseTools.loadFromFile;
 
-import javax.swing.*;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.File;
@@ -2515,16 +2514,16 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(11, test("xx0 = 15; xx0 -= 4; xx0"));
     }
 
-    public void testCommentsInWith() {
-        HashMap map = new HashMap();
-        map.put("f", new JFrame());
-        System.out.println(eval(
-                "with (f) {\n" +
-                        "title = 'blah', // setting title\n" +
-                        "alwaysOnTop = false \n" +
-                        "}", map
-        ));
-    }
+//    public void testCommentsInWith() {
+//        HashMap map = new HashMap();
+//        map.put("f", new JFrame());
+//        System.out.println(eval(
+//                "with (f) {\n" +
+//                        "title = 'blah', // setting title\n" +
+//                        "alwaysOnTop = false \n" +
+//                        "}", map
+//        ));
+//    }
 
 
     public void testStaticWithExplicitParam() {

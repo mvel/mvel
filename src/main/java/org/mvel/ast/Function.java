@@ -27,6 +27,7 @@ import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.FunctionVariableResolverFactory;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.findTypeInjectionResolverFactory;
+import static org.mvel.util.ParseTools.parseParameterList;
 
 
 @SuppressWarnings({"unchecked"})
@@ -39,8 +40,7 @@ public class Function extends ASTNode implements Safe {
 
     public Function(String name, char[] parameters, char[] block) {
         this.name = name.trim();
-        this.parameters = ParseTools.parseParameterList(parameters, 0, parameters.length);
-        parmNum = this.parameters.length;
+        parmNum = (this.parameters = parseParameterList(parameters, 0, parameters.length)).length;
 
         ParserContext old = AbstractParser.getCurrentThreadParserContext();
 

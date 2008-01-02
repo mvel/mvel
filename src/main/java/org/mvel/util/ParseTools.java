@@ -30,6 +30,7 @@ import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.integration.impl.TypeInjectionResolverFactoryImpl;
 import org.mvel.math.MathProcessor;
+import sun.misc.Unsafe;
 
 import java.io.*;
 import static java.lang.Character.isWhitespace;
@@ -38,6 +39,7 @@ import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -943,10 +945,10 @@ public class ParseTools {
      * If a balanced capture is performed from position 15, we get "(bar - foo)" back.<br>
      * Etc.
      *
-     * @param chars
-     * @param start
-     * @param type
-     * @return
+     * @param chars -
+     * @param start -
+     * @param type  -
+     * @return -
      */
     public static int balancedCapture(char[] chars, int start, char type) {
         int depth = 1;
@@ -1170,8 +1172,7 @@ public class ParseTools {
         FileInputStream inStream = null;
         ReadableByteChannel fc = null;
         try {
-            inStream = new FileInputStream(file);
-            fc = inStream.getChannel();
+            fc = (inStream = new FileInputStream(file)).getChannel();
             ByteBuffer buf = allocateDirect(10);
 
             StringAppender sb = new StringAppender((int) file.length());
@@ -1200,4 +1201,23 @@ public class ParseTools {
 
         return null;
     }
+
+
+    private static Unsafe _getUnsafe() {
+        try {
+            Field field = Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            return (Unsafe) field.get(null);
+        }
+        catch (Exception ex) {
+            throw new RuntimeException("can't get Unsafe instance", ex);
+        }
+    }
+
+    private static final Unsafe unsafe__ = _getUnsafe();
+
+    public static Unsafe getUnsafe() {
+        return unsafe__;
+    }
+
 }
