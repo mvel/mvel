@@ -204,7 +204,6 @@ public class AbstractParser implements Serializable {
                         throw new CompileException("unable to produce debugging symbols: source name must be provided.");
                     }
 
-                    //   ParserContext pCtx = getParserContext();
                     line = pCtx.getLineCount();
 
                     skipWhitespaceWithLineAccounting();
@@ -285,7 +284,7 @@ public class AbstractParser implements Serializable {
                             case IMPORT_STATIC:
                                 start = cursor + 1;
                                 captureToEOS();
-                                return lastNode = new StaticImportNode(subArray(start, cursor--), fields);
+                                return lastNode = new StaticImportNode(subArray(start, cursor--));
 
                             case FUNCTION:
                                 Function function = (Function) captureCodeBlock(FUNCTION);
@@ -772,7 +771,7 @@ public class AbstractParser implements Serializable {
                                 if (pCtx.hasImport(tokenStr)) {
                                     start = cursor;
                                     captureToEOS();
-                                    return lastNode = new TypeCast(expr, start, cursor, fields, pCtx.getImport(tokenStr));
+                                    return lastNode = new TypeCast(subset(expr, start, cursor - start), pCtx.getImport(tokenStr), fields);
                                 }
                                 else {
                                     try {
@@ -782,7 +781,7 @@ public class AbstractParser implements Serializable {
                                          */
                                         int _start = cursor;
                                         captureToEOS();
-                                        return lastNode = new TypeCast(expr, _start, cursor, fields, createClass(tokenStr));
+                                        return lastNode = new TypeCast(subset(expr, _start, cursor - _start), createClass(tokenStr), fields);
 
                                     }
                                     catch (ClassNotFoundException e) {

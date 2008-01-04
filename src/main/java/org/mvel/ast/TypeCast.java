@@ -27,9 +27,10 @@ import static org.mvel.util.ParseTools.subCompileExpression;
 public class TypeCast extends ASTNode {
     private ExecutableStatement statement;
 
-    public TypeCast(char[] expr, int start, int end, int fields, Class cast) {
-        super(expr, start, end, fields);
+    public TypeCast(char[] expr, Class cast, int fields) {
+     //   super(expr, start, end, fields);
         this.egressType = cast;
+        this.name = expr;
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             statement = (ExecutableStatement) subCompileExpression(name);
         }

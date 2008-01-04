@@ -36,7 +36,7 @@ public class StaticImportNode extends ASTNode {
     private String methodName;
     private transient Method method;
 
-    public StaticImportNode(char[] expr, int fields) {
+    public StaticImportNode(char[] expr) {
         try {
             declaringClass = currentThread().getContextClassLoader().loadClass(new String(subset(expr, 0, findLast('.', this.name = expr))));
             methodName = new String(subset(expr, findLast('.', expr) + 1));
@@ -55,7 +55,6 @@ public class StaticImportNode extends ASTNode {
         for (Method meth : declaringClass.getMethods()) {
             if (isStatic(meth.getModifiers()) && methodName.equals(meth.getName())) {
                 return method = meth;
-                //      return;
             }
         }
         return null;

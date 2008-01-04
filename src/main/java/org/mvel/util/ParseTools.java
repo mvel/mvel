@@ -739,7 +739,6 @@ public class ParseTools {
 
     public static char[] subset(char[] array, int start, int length) {
         char[] newArray = new char[length];
-        //  arraycopy(array, start, newArray, 0, length);
 
         for (int i = 0; i < newArray.length; i++) {
             newArray[i] = array[i + start];
@@ -759,7 +758,51 @@ public class ParseTools {
         return newArray;
     }
 
+    private static Map<Class, Integer> typeResolveMap = new HashMap<Class, Integer>();
+    static {
+        Map<Class, Integer> t = typeResolveMap;
+        t.put(BigDecimal.class, DataTypes.BIG_DECIMAL);
+        t.put(BigInteger.class, DataTypes.BIG_INTEGER);
+        t.put(String.class,  DataTypes.STRING);
+
+        t.put(int.class, DataTypes.INTEGER);
+        t.put(Integer.class, DataTypes.W_INTEGER);
+
+        t.put(short.class, DataTypes.SHORT);
+        t.put(Short.class, DataTypes.W_SHORT);
+
+        t.put(float.class, DataTypes.FLOAT);
+        t.put(Float.class, DataTypes.W_FLOAT);
+
+        t.put(double.class, DataTypes.DOUBLE);
+        t.put(Double.class, DataTypes.W_DOUBLE);
+
+        t.put(long.class, DataTypes.LONG);
+        t.put(Long.class, DataTypes.W_LONG);
+
+        t.put(boolean.class, DataTypes.BOOLEAN);
+        t.put(Boolean.class, DataTypes.W_BOOLEAN);
+
+        t.put(byte.class, DataTypes.BYTE);
+        t.put(Byte.class, DataTypes.W_BYTE);
+
+
+        t.put(char.class, DataTypes.CHAR);
+        t.put(Character.class, DataTypes.W_CHAR);
+
+        t.put(BlankLiteral.class, DataTypes.EMPTY);
+
+    }
+
     public static int resolveType(Class cls) {
+        Integer i = typeResolveMap.get(cls);
+        if (i == null) return DataTypes.OBJECT;
+        else {
+            return i;
+        }
+    }
+
+    public static int __resolveType(Class cls) {
         if (cls == null)
             return 0;
         if (BigDecimal.class == cls)

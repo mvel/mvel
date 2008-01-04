@@ -22,6 +22,7 @@ import org.mvel.ConversionException;
 import org.mvel.ConversionHandler;
 
 import static java.lang.String.valueOf;
+import static java.lang.Short.parseShort;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -37,7 +38,7 @@ public class ShortCH implements ConversionHandler {
 
     private static Converter stringConverter = new Converter() {
         public Short convert(Object o) {
-            return Short.parseShort(((String) o));
+            return parseShort(((String) o));
         }
     };
 

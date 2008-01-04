@@ -24,6 +24,7 @@ import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.doOperations;
+import static org.mvel.util.ParseTools.subCompileExpression;
 
 public class IndexedOperativeAssign extends ASTNode {
     private final int register;
@@ -36,7 +37,7 @@ public class IndexedOperativeAssign extends ASTNode {
         this.register = register;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            statement = (ExecutableStatement) ParseTools.subCompileExpression(expr);
+            statement = (ExecutableStatement) subCompileExpression(expr);
         }
     }
 
