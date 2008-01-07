@@ -58,4 +58,8 @@ public class TypedVarNode extends ASTNode implements Assignment {
     public String getAssignmentVar() {
         return name;
     }
+
+    public boolean isNewDeclaration() {
+        return true;
+    }
 }
