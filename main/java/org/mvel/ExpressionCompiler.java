@@ -4,6 +4,7 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Soundex.soundex;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
+import org.mvel.ast.Assignment;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
@@ -249,6 +250,11 @@ public class ExpressionCompiler extends AbstractParser {
                 }
 
                 new ExpressionCompiler(new String(assign, c, assign.length - c).trim())._compile();
+
+                if (pCtx.hasVarOrInput(varName) && ((Assignment) tk).isNewDeclaration()) {
+                    throw new CompileException("statically-typed variable '" + varName + "' defined more than once in scope");
+                }
+
                 pCtx.addVariable(varName, returnType = tk.getEgressType());
             }
             else if (tk.isIdentifier()) {

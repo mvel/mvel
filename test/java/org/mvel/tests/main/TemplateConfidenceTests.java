@@ -504,6 +504,10 @@ public class TemplateConfidenceTests extends TestCase {
         assertEquals("MVEL's Parser is Fast", parse("@{'MVEL\\'s Parser is Fast'}"));
     }
 
+    public void testNestedAtSymbol() {
+        assertEquals("email:foo@foo.com", parse("email:@{'foo@foo.com'}"));
+    }
+
 
     public void testIteration1() {
         List<String> list = new ArrayList<String>();
