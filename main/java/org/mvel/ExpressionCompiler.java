@@ -251,7 +251,7 @@ public class ExpressionCompiler extends AbstractParser {
 
                 new ExpressionCompiler(new String(assign, c, assign.length - c).trim())._compile();
 
-                if (pCtx.hasVarOrInput(varName) && ((Assignment) tk).isNewDeclaration()) {
+                if (((Assignment) tk).isNewDeclaration() && pCtx.hasVarOrInput(varName)) {
                     throw new CompileException("statically-typed variable '" + varName + "' defined more than once in scope");
                 }
 
