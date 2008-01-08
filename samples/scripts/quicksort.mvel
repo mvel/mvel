@@ -26,13 +26,11 @@ function partition(array, low, high) {
 }
 
 function sort(array, low, high) {
-    if (low >= high) {
-        return;
+    if (low < high) {
+        var p;
+        sort(array, low, p = partition(array, low, high));
+        sort(array, p + 1, high);
     }
-
-    var p;
-    sort(array, low, p = partition(array, low, high));
-    sort(array, p + 1, high);
 }
 
 function quicksort(array) {

@@ -13,16 +13,13 @@ package org.mvel.util;
  */
 public class QuickSort {
     public static void main(String[] args) {
-
-        int[] ar = new int[]{50, 20, 21, 209, 10, 77, 8, 9, 55, 73, 41, 99};
-
-        QuickSort qs = new QuickSort(ar);
+        QuickSort qs = new QuickSort(new int[]{50, 20, 21, 209, 10, 77, 8, 9, 55, 73, 41, 99});
         qs.sort();
+    }
 
-        for (int i : ar) {
-            System.out.println(i);
-        }
-
+    public static int[] quickSort(int[] num) {
+        new QuickSort(num).sort();
+        return num;
     }
 
     public QuickSort(int[] anArray) {
@@ -37,20 +34,16 @@ public class QuickSort {
     }
 
     public void sort(int low, int high) {
-        System.out.println("sort(" + low + "," + high + ")");
         if (low >= high) return;
         int p = partition(low, high);
-        System.out.println("p=" + p);
         sort(low, p);
 
-        System.out.println("high=" + high);
         sort(p + 1, high);
     }
 
     private int partition(int low, int high) {
         // First element
         int pivot = a[low];
-        System.out.println("pivotPoint=" + pivot);
 
         // Middle element
         //int middle = (low + high) / 2;
@@ -60,7 +53,6 @@ public class QuickSort {
         int j = high + 1;
 
         while (i < j) {
-            System.out.println("i<j:" + i + "," + j);
             i++;
             while (a[i] < pivot) i++;
             j--;
