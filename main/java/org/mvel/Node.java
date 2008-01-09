@@ -157,15 +157,6 @@ public class Node implements Cloneable {
         n.name = name;
         n.register = register;
 
-//        if (register != null) {
-//            if (register instanceof ForeachContext) {
-//                n.register = ((ForeachContext) register).clone();
-//            }
-//            else {
-//                n.register = register;
-//            }
-//        }
-
         return n;
     }
 }

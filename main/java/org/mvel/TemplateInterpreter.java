@@ -36,7 +36,7 @@ import java.util.*;
 import static java.util.Collections.synchronizedMap;
 
 /**
- * The MVEL Template Interpreter.  Naming this an "Interpreter" is not inaccurate.   All template expressions
+ * The MVEL Template Interpreter.    All template expressions
  * are pre-compiled by the the {@link TemplateCompiler} prior to being processed by this interpreter.<br/>
  * <br/>
  * Under normal circumstances, it is completely acceptable to execute the parser/interpreter from the static
@@ -222,7 +222,7 @@ public class TemplateInterpreter {
             this.nodes = cloneAll(nodes);
         }
         else {
-            
+
             try {
                 this.nodes = cloneAll(EX_NODE_CACHE.get(this.expression = EX_PRECACHE.get(expression)));
             }
@@ -431,9 +431,10 @@ public class TemplateInterpreter {
                         ForeachContext foreachContext;
 
                         if (!(localStack.peek() instanceof ForeachContext)) {
-                             foreachContext = ((ForeachContext) currNode.getRegister()).clone();
 
-                      //  if (foreachContext.getItererators() == null) {
+                            // create a clone of the context
+                            foreachContext = ((ForeachContext) currNode.getRegister()).clone();
+
                             try {
                                 String[] lists = getForEachSegment(currNode).split(",");
                                 Iterator[] iters = new Iterator[lists.length];
@@ -443,17 +444,22 @@ public class TemplateInterpreter {
                                     if (listObject instanceof Object[]) {
                                         listObject = Arrays.asList((Object[]) listObject);
                                     }
-                                    iters[i] = ((Collection) listObject).iterator();
+
+
+                                    iters[i] = ((Collection) listObject).iterator(); // this throws null pointer exception in thread race
                                 }
 
+                                // set the newly created iterators into the context
                                 foreachContext.setIterators(iters);
+
+                                // push the context onto the local stack.
                                 localStack.push(foreachContext);
                             }
                             catch (ClassCastException e) {
-                                throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)));
+                                throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)), e);
                             }
                             catch (NullPointerException e) {
-                                throw new CompileException("null returned for foreach in expression: " + (getForEachSegment(currNode)));
+                                throw new CompileException("null returned for foreach in expression: " + (getForEachSegment(currNode)), e);
                             }
                         }
 
