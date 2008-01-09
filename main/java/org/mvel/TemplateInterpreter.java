@@ -429,18 +429,21 @@ public class TemplateInterpreter {
                         }
 
                         ForeachContext foreachContext;
+                        String[] names;
+                        String[] aliases;
 
                         if (!(localStack.peek() instanceof ForeachContext)) {
 
                             // create a clone of the context
                             foreachContext = ((ForeachContext) currNode.getRegister()).clone();
+                            names = foreachContext.getNames();
+                            aliases = foreachContext.getAliases();
 
                             try {
-                                String[] lists = getForEachSegment(currNode).split(",");
-                                Iterator[] iters = new Iterator[lists.length];
-                                for (int i = 0; i < lists.length; i++) {
+                                Iterator[] iters = new Iterator[names.length];
+                                for (int i = 0; i < names.length; i++) {
                                     //noinspection unchecked
-                                    Object listObject = new MVELInterpretedRuntime(lists[i], ctx, tokens).parse();
+                                    Object listObject = new MVELInterpretedRuntime(names[i], ctx, tokens).parse();
                                     if (listObject instanceof Object[]) {
                                         listObject = Arrays.asList((Object[]) listObject);
                                     }
@@ -462,15 +465,14 @@ public class TemplateInterpreter {
                                 throw new CompileException("null returned for foreach in expression: " + (getForEachSegment(currNode)), e);
                             }
                         }
-
-                        foreachContext = (ForeachContext) localStack.peek();
+                        else {
+                            foreachContext = (ForeachContext) localStack.peek();
+                      //      names = foreachContext.getNames();
+                            aliases = foreachContext.getAliases();
+                        }
 
                         Iterator[] iters = foreachContext.getItererators();
-                        String[] alias = currNode.getAlias().split(",");
-                        // must trim vars
-                        for (int i = 0; i < alias.length; i++) {
-                            alias[i] = alias[i].trim();
-                        }
+
 
                         if (iters[0].hasNext()) {
                             push();
@@ -479,7 +481,7 @@ public class TemplateInterpreter {
                             for (int i = 0; i < iters.length; i++) {
 
                                 //noinspection unchecked
-                                tokens.put(alias[i], iters[i].next());
+                                tokens.put(aliases[i], iters[i].next());
                             }
                             if (foreachContext.getCount() != 0) {
                                 sbuf.append(foreachContext.getSeperator());
@@ -490,7 +492,7 @@ public class TemplateInterpreter {
                         }
                         else {
                             for (int i = 0; i < iters.length; i++) {
-                                tokens.remove(alias[i]);
+                                tokens.remove(aliases[i]);
                             }
                             foreachContext.setIterators(null);
                             foreachContext.setCount(0);
