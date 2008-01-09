@@ -130,5 +130,8 @@ public class AssignmentNode extends ASTNode implements Assignment {
         return stmt;
     }
 
+    public boolean isNewDeclaration() {
+        return false;
+    }
 
 }

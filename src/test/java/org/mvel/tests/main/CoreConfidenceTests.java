@@ -3007,6 +3007,19 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(Cheese.class, expr.getKnownEgressType());
     }
 
+    public void testDuplicateVariableDeclaration() {
+        ExpressionCompiler compiler = new ExpressionCompiler("String x = \"abc\"; Integer x = new Integer( 10 );");
+        ParserContext context = new ParserContext();
+
+        try {
+            ExecutableStatement expr = (ExecutableStatement) compiler.compile(context);
+            fail( "Compilation must fail with duplicate variable declaration exception.");
+        } catch (CompileException ce) {
+            // success
+        }
+    }
+
+
 }
 
 

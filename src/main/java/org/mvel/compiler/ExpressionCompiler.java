@@ -266,6 +266,10 @@ public class ExpressionCompiler extends AbstractParser {
 
                 new ExpressionCompiler(new String(((Assignment) tk).getExpression()).trim())._compile();
 
+                if (((Assignment) tk).isNewDeclaration() && pCtx.hasVarOrInput(varName)) {
+                    throw new CompileException("statically-typed variable '" + varName + "' defined more than once in scope");
+                }
+
                 pCtx.addVariable(varName, returnType = tk.getEgressType());
             }
             else if (tk.isIdentifier()) {

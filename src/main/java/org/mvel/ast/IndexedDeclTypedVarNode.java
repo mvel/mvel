@@ -52,4 +52,8 @@ public class IndexedDeclTypedVarNode extends ASTNode implements Assignment {
     public boolean isAssignment() {
         return true;
     }
+
+    public boolean isNewDeclaration() {
+        return true;
+    }
 }

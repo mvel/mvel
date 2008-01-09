@@ -150,4 +150,8 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
     public boolean isAssignment() {
         return true;
     }
+
+    public boolean isNewDeclaration() {
+        return false;
+    }
 }

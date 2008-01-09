@@ -80,4 +80,8 @@ public class TypedVarNode extends ASTNode implements Assignment {
     public char[] getExpression() {
         return stmt;
     }
+
+    public boolean isNewDeclaration() {
+        return true;
+    }
 }
