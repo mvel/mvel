@@ -483,19 +483,23 @@ public class TemplateInterpreter {
                                 //noinspection unchecked
                                 tokens.put(aliases[i], iters[i].next());
                             }
-                            if (foreachContext.getCount() != 0) {
+
+
+                            int c;
+                            tokens.put("i0", c = foreachContext.getCount());
+
+                            if (c != 0) {
                                 sbuf.append(foreachContext.getSeperator());
                             }
                             //noinspection unchecked
-                            tokens.put("i0", foreachContext.getCount());
-                            foreachContext.setCount(foreachContext.getCount() + 1);
+                            foreachContext.incrementCount();
                         }
                         else {
                             for (int i = 0; i < iters.length; i++) {
                                 tokens.remove(aliases[i]);
                             }
-                            foreachContext.setIterators(null);
-                            foreachContext.setCount(0);
+                     //       foreachContext.setIterators(null);
+                     //       foreachContext.setCount(0);
                             localStack.pop();
                             exitContext();
                         }

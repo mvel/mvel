@@ -204,14 +204,14 @@ public class TemplateConfidenceTests extends TestCase {
                 ));
     }
 
-//    public void testMultiCollectionControlLoop() {
-//        assertEquals("HappyHappy0Happy!Happy!1JoyJoy2Joy!Joy!3",
-//                parse(
-//                        "@foreach{list, array as listItem, arrayItem}" +
-//                                "@{listItem}@{arrayItem}@{i0}" +
-//                                "@end{}"
-//                ));
-//    }
+    public void testMultiCollectionControlLoop() {
+        assertEquals("0=Happy:Happy,1=Happy!:Happy!,2=Joy:Joy,3=Joy!:Joy!",
+                parse(
+                        "@foreach{list, array as listItem}" +
+                                "@{i0}=@{item}:@{listItem}" +
+                                "@end{','}"
+                ));
+    }
 //
 //    public void testMultiCollectionWithSingleCharSeperatorControlLoop() {
 //        assertEquals("Happy0Happy,Happy!1Happy!,Joy2Joy,Joy!3Joy!",

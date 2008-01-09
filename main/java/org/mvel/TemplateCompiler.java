@@ -222,16 +222,16 @@ public class TemplateCompiler {
                                 j++;
                             }
 
-                            if (props[j] != '"') { //&& props[i+2] !='\"') {
+                            if (props[j] != '"' && props[j] != '\'') { //&& props[i+2] !='\"') {
                                 throw new CompileException("seperator is not correctly specified \"" + props + "\"");
                             }
 
                             int k = props.length - 1;
-                            while (k < props.length && props[k] != '"') {
+                            while (k < props.length && (props[k] != '"' && props[j] != '\'')) {
                                 k--;
                             }
 
-                            if (props[k] != '"') { //&& props[i+2] !='\"') {
+                            if (props[k] != '"' && props[j] != '\'') { //&& props[i+2] !='\"') {
                                 throw new CompileException("seperator is not correctly specified \"" + props + "\"");
                             }
 

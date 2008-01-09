@@ -54,6 +54,10 @@ public class ForeachContext {
         this.count = count;
     }
 
+    public void incrementCount() {
+        this.count++;
+    }
+
     public ForeachContext clone() {
         return new ForeachContext(seperator, count, names, aliases);
     }
