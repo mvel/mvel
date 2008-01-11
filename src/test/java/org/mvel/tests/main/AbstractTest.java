@@ -24,10 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public abstract class AbstractTest extends TestCase {
-    protected Foo foo;
-    protected Map<String, Object> map;
-    protected Base base;
-    protected DerivedClass derived;
 
 
     private boolean silentTests = Boolean.getBoolean("mvel.tests.silent");
@@ -37,13 +33,12 @@ public abstract class AbstractTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        foo = new Foo();
-        map = new HashMap<String, Object>();
-        base = new Base();
-        derived = new DerivedClass();
 
-        foo.setBar(new Bar());
-        map.put("foo", foo);
+    }
+
+    protected static Map createTestMap() {
+        Map map = new HashMap();
+        map.put("foo", new Foo());
         map.put("a", null);
         map.put("b", null);
         map.put("c", "cat");
@@ -55,10 +50,10 @@ public abstract class AbstractTest extends TestCase {
         map.put("hour", "60");
         map.put("zero", 0);
 
-        map.put("five", 5);
-
         map.put("order", new Order());
         map.put("$id", 20);
+
+        map.put("five", 5);
 
         map.put("testImpl",
                 new TestInterface() {
@@ -73,7 +68,11 @@ public abstract class AbstractTest extends TestCase {
                     }
                 });
 
-        map.put("derived", derived);
+        map.put("derived", new DerivedClass());
+
+        map.put("dt1", new Date(currentTimeMillis() - 100000));
+        map.put("dt2", new Date(currentTimeMillis()));
+        return map;
     }
 
 
@@ -94,15 +93,11 @@ public abstract class AbstractTest extends TestCase {
         }
 
         final AbstractTest aTest = this;
-        final LinkedList<Object> results = new LinkedList<Object>();
+        final Collection<Object> results = Collections.synchronizedCollection(new LinkedList<Object>());
         long time = currentTimeMillis();
 
         for (int i = 0; i < threads.length; i++) {
-            threads[i] = new Thread() {
-                public void run() {
-                    results.add(aTest.runSingleTest(ex));
-                }
-            };
+            threads[i] = new Thread(new TestRunner(results, ex));
         }
 
         if (!silentTests) {
@@ -112,18 +107,39 @@ public abstract class AbstractTest extends TestCase {
         }
 
         for (Thread thread1 : threads) {
-            thread1.setPriority(Thread.MIN_PRIORITY);
-            thread1.run();
-        }
-
-        for (Thread thread : threads) {
-            try {
-                thread.join();
+            if (threads.length > 1) {
+                System.out.println("Start Thread.");
+                thread1.setPriority(Thread.MIN_PRIORITY);
+                thread1.start();
             }
-            catch (InterruptedException e) {
-
+            else {
+                thread1.run();
             }
         }
+
+        if (threads.length > 1) {
+            boolean threadsRunning = true;
+            while (threadsRunning) {
+                threadsRunning = false;
+                for (Thread thread : threads) {
+                    if (thread.isAlive()) {
+                        System.out.println("Thread Alive.");
+                        threadsRunning = true;
+                        break;
+                    }
+                }
+
+                try {
+                    Thread.sleep(250);
+                }
+                catch (InterruptedException e) {
+                    break;
+                }
+            }
+        }
+
+        System.out.println("All threads have stopped.");
+        System.out.println("Result Count: " + results.size());
 
         // analyze results
 
@@ -132,34 +148,42 @@ public abstract class AbstractTest extends TestCase {
             System.out.print("[test] analyzing results ... ");
         }
 
-        Object last = results.getFirst();
-        if (last != null)
-            for (Object o : results) {
-                if (!o.equals(last)) {
-                    if (o.getClass().isArray()) {
-                        Object[] a1 = (Object[]) o;
-                        Object[] a2 = (Object[]) last;
+        Object last = null;
+        if (!results.isEmpty()) {
+            last = results.iterator().next();
+            if (last != null) {
+                for (Object o : results) {
+                    if (o == null) {
+                        throw new AssertionError("differing result in multi-thread test (first array has: " + valueOf(last) + "; second has: " + valueOf(o) + ")");
+                    }
+                    else if (!o.equals(last)) {
+                        if (o.getClass().isArray()) {
+                            Object[] a1 = (Object[]) o;
+                            Object[] a2 = (Object[]) last;
 
-                        if (a1.length == a2.length) {
-                            for (int i = 0; i < a1.length; i++) {
-                                if (a1[i] == null && a2[i] == null) {
-                                    continue;
+                            if (a1.length == a2.length) {
+                                for (int i = 0; i < a1.length; i++) {
+                                    if (a1[i] == null && a2[i] == null) {
+                                        continue;
+                                    }
+                                    else if (!a1[i].equals(a2[i])) {
+                                        throw new AssertionError("differing result in multi-thread test (first array has: " + valueOf(last) + "; second has: " + valueOf(o) + ")");
+                                    }
                                 }
-                                else if (!a1[i].equals(a2[i])) {
-                                    throw new AssertionError("differing result in multi-thread test (first array has: " + valueOf(last) + "; second has: " + valueOf(o) + ")");
-                                }
+                            }
+                            else {
+                                throw new AssertionError("differing result in multi-thread test: array sizes differ.");
                             }
                         }
                         else {
-                            throw new AssertionError("differing result in multi-thread test: array sizes differ.");
+                            throw new AssertionError("differing result in multi-thread test (last was: " + valueOf(last) + "; current is: " + valueOf(o) + ")");
                         }
                     }
-                    else {
-                        throw new AssertionError("differing result in multi-thread test (last was: " + valueOf(last) + "; current is: " + valueOf(o) + ")");
-                    }
+                    last = o;
                 }
-                last = o;
             }
+        }
+
 
         if (!silentTests) {
             System.out.println("good!");
@@ -167,30 +191,65 @@ public abstract class AbstractTest extends TestCase {
         return last;
     }
 
-    protected Object runSingleTest(final String ex) {
-        return test(ex, this.base, this.map);
+    protected static class TestRunner implements Runnable {
+        private Collection results;
+        private String expression;
+
+        public TestRunner(Collection results, String expression) {
+            this.results = results;
+            this.expression = expression;
+        }
+
+        public void run() {
+            try {
+                Object result = runSingleTest(expression);
+                results.add(result);
+            }
+            catch (Throwable e) {
+                System.out.println("thread terminating due to exception");
+                e.printStackTrace();
+                return;
+            }
+
+
+        }
     }
 
-    protected Object test(String ex, Object base, Map map) {
+    protected static Object runSingleTest(final String ex) {
+        return _test(ex);
+    }
+
+
+    protected static Object testCompiledSimple(String ex) {
+        return MVEL.executeExpression(MVEL.compileExpression(ex));
+    }
+
+    protected static Object testCompiledSimple(String ex, Map map) {
+        return MVEL.executeExpression(MVEL.compileExpression(ex), map);
+    }
+
+    protected static Object testCompiledSimple(String ex, Object base, Map map) {
+        return MVEL.executeExpression(MVEL.compileExpression(ex), base, map);
+    }
+
+    protected static Object _test(String ex) {
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
-        StringAppender failErrors = null;
+        StringAppender failErrors = new StringAppender();
 
         CompiledExpression compiled = compiler.compile();
         Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null,
                 eighth = null;
 
-        //      System.out.println(DebugTools.decompile((Serializable) compiled));
+        //  System.out.println(DebugTools.decompile((Serializable) compiled));
 
         if (!Boolean.getBoolean("mvel.disable.jit")) {
 
             setDefaultOptimizer("ASM");
 
             try {
-                first = executeExpression(compiled, base, map);
-
+                first = executeExpression(compiled, new Base(), createTestMap());
             }
             catch (Exception e) {
-                failErrors = new StringAppender();
                 failErrors.append("\nFIRST TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
                 CharArrayWriter writer = new CharArrayWriter();
@@ -200,10 +259,9 @@ public abstract class AbstractTest extends TestCase {
             }
 
             try {
-                second = executeExpression(compiled, base, map);
+                second = executeExpression(compiled, new Base(), createTestMap());
             }
             catch (Exception e) {
-                if (failErrors == null) failErrors = new StringAppender();
                 failErrors.append("\nSECOND TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
                 CharArrayWriter writer = new CharArrayWriter();
@@ -215,10 +273,9 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            third = MVEL.eval(ex, base, map);
+            third = MVEL.eval(ex, new Base(), createTestMap());
         }
         catch (Exception e) {
-            if (failErrors == null) failErrors = new StringAppender();
             failErrors.append("\nTHIRD TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
             CharArrayWriter writer = new CharArrayWriter();
@@ -229,8 +286,6 @@ public abstract class AbstractTest extends TestCase {
 
         if (first != null && !first.getClass().isArray()) {
             if (!first.equals(second)) {
-                if (failErrors == null) failErrors = new StringAppender();
-
                 System.out.println(failErrors.toString());
 
                 throw new AssertionError("Different result from test 1 and 2 (Compiled Re-Run / JIT) [first: "
@@ -249,7 +304,7 @@ public abstract class AbstractTest extends TestCase {
         Serializable compiled2 = compileExpression(ex);
 
         try {
-            fourth = executeExpression(compiled2, base, map);
+            fourth = executeExpression(compiled2, new Base(), createTestMap());
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -262,7 +317,7 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            fifth = executeExpression(compiled2, base, map);
+            fifth = executeExpression(compiled2, new Base(), createTestMap());
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -277,7 +332,7 @@ public abstract class AbstractTest extends TestCase {
         if (fourth != null && !fourth.getClass().isArray()) {
             if (!fourth.equals(fifth)) {
                 throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-                        + valueOf(fourth) + "; second: " + valueOf(fifth) + "]");
+                        + valueOf(first) + "; second: " + valueOf(second) + "]");
             }
         }
 
@@ -289,7 +344,7 @@ public abstract class AbstractTest extends TestCase {
         CompiledExpression compiledD = debuggingCompiler.compile(ctx);
 
         try {
-            sixth = executeExpression(compiledD, base, map);
+            sixth = executeExpression(compiledD, new Base(), createTestMap());
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -318,7 +373,7 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            seventh = executeExpression(compiledD, base, map);
+            seventh = executeExpression(compiledD, new Base(), createTestMap());
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -338,8 +393,7 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            Object expr = serializationTest(compiledD);
-            eighth = executeExpression(expr, base, new MapVariableResolverFactory(map));
+            eighth = executeExpression(serializationTest(compiledD), new Base(), new MapVariableResolverFactory(createTestMap()));
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -353,13 +407,13 @@ public abstract class AbstractTest extends TestCase {
 
         if (eighth != null && !eighth.getClass().isArray()) {
             if (!eighth.equals(seventh)) {
-                throw new AssertionError("Different result from test 7 and 8 (Reflective / De-Serialized) [first: "
-                        + valueOf(seventh) + "; second: " + valueOf(eighth) + "]");
+                throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
+                        + valueOf(first) + "; second: " + valueOf(second) + "]");
             }
         }
 
 
-        if (failErrors != null) {
+        if (failErrors.length() > 0) {
             System.out.println(decompile(compiledD));
             throw new AssertionError("Detailed Failure Report:\n" + failErrors.toString());
         }
@@ -368,7 +422,7 @@ public abstract class AbstractTest extends TestCase {
     }
 
     protected static Object serializationTest(Serializable s) throws Exception {
-        File file = new File(System.getProperty("java.io.tmpdir") + "/mvel_ser_test" + currentTimeMillis() + Math.round(Math.random() * 1000) + ".tmp");
+        File file = new File("./mvel_ser_test" + currentTimeMillis() + Math.round(Math.random() * 1000) + ".tmp");
         InputStream inputStream = null;
         ObjectInputStream objectIn = null;
         try {

@@ -56,12 +56,15 @@ public class Foo {
         this.collectionTest = collectionTest;
     }
 
-
     public int getCountTest() {
         return countTest;
     }
 
     public void setCountTest(int countTest) {
         this.countTest = countTest;
+    }
+
+    public boolean equals(Object o) {
+        return o instanceof Foo;
     }
 }
