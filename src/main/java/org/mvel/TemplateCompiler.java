@@ -27,9 +27,7 @@ import static java.lang.Boolean.getBoolean;
 import static java.lang.Character.isWhitespace;
 import static java.lang.String.copyValueOf;
 import static java.lang.System.arraycopy;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TemplateCompiler {
     private static final boolean DEFAULT_DEBUG = getBoolean("mvflex.expression.debug");
@@ -106,31 +104,39 @@ public class TemplateCompiler {
 
                 if (ex.getNodeType() == FOREACH) {
                     ex.setAlias("item");
-                    ex.setName(new String(exStr));
+                    //ex.setName(new String(exStr));
 
-                    int capture = -1;
+                    ForeachContext foreachContext = new ForeachContext();
+                    List<String[]> iterators = new LinkedList<String[]>();
+
+                    int start = 0;
                     for (int i = 0; i < exStr.length; i++) {
                         switch (exStr[i]) {
-                            case ' ':
-                                if (capture == -1 && ((i + 3) < exStr.length)
-                                        && exStr[i + 1] == 'a' && exStr[i + 2] == 's'
-                                        && exStr[i + 3] == ' ') {
-
-                                    ex.setName(new String(exStr, 0, i));
-
-                                    capture = i += 4;
-
-                                    ex.setAlias(copyValueOf(exStr, capture, exStr.length - capture));
-
-                                    /**
-                                     * Scan to skip any excess whitespace.
-                                     */
-                                    //noinspection StatementWithEmptyBody
-                                    while (i < exStr.length && !isWhitespace(exStr[i++])) ;
-                                }
+                            case ',':
+                                iterators.add(parseAlias(exStr, start, i, iterators.size()));
+                                start = i + 1;
                                 break;
                         }
                     }
+                    if (start < exStr.length) {
+                        iterators.add(parseAlias(exStr, start, exStr.length, iterators.size()));
+                    }
+
+                    String[] names = new String[iterators.size()];
+                    String[] aliases = new String[names.length];
+                    String[] temp;
+
+                    Iterator<String[]> iterator = iterators.iterator();
+                    for (int i = 0;  iterator.hasNext(); i++) {
+                        temp = iterator.next();
+                        names[i] = temp[0];
+                        aliases[i] = temp[1];
+                    }
+
+                    foreachContext.setNames(names);
+                    foreachContext.setAliases(aliases);
+
+                    ex.setRegister(foreachContext);
                 }
                 else
                     ex.setEndPos(cursor);
@@ -216,23 +222,26 @@ public class TemplateCompiler {
                                 j++;
                             }
 
-                            if (props[j] != '"') { //&& props[i+2] !='\"') {
+                            if (props[j] != '"' && props[j] != '\'') { //&& props[i+2] !='\"') {
                                 throw new CompileException("seperator is not correctly specified \"" + props + "\"");
                             }
 
                             int k = props.length - 1;
-                            while (k < props.length && props[k] != '"') {
+                            while (k < props.length && (props[k] != '"' && props[j] != '\'')) {
                                 k--;
                             }
 
-                            if (props[k] != '"') { //&& props[i+2] !='\"') {
+                            if (props[k] != '"' && props[j] != '\'') { //&& props[i+2] !='\"') {
                                 throw new CompileException("seperator is not correctly specified \"" + props + "\"");
                             }
 
-                            e.setRegister(new ForeachContext(new String(props, j + 1, k - j - 1)));
+                            ((ForeachContext) e.getRegister()).setSeperator(new String(props, j + 1, k - j - 1));
+                       //     e.setRegister(new ForeachContext(new String(props, j + 1, k - j - 1)));
                         }
                         else {
-                            e.setRegister(new ForeachContext(""));
+                            ((ForeachContext) e.getRegister()).setSeperator("");
+
+                         //   e.setRegister(new ForeachContext(""));
                         }
                     }
 
@@ -275,6 +284,19 @@ public class TemplateCompiler {
         }
 
         return expressions;
+    }
+
+    public static String[] parseAlias(char[] seq, int start, int end, int index) {
+        for (int i = start; i < end; i++) {
+            switch (seq[i])  {
+                case ' ':
+                    if ((i + 3) < end && seq[i + 1] == 'a' && seq[i + 2] == 's' && seq[i + 3] == ' ') {
+                          return new String[] { new String(seq, start, i - start).trim(), new String(seq, i += 4, end - i).trim() };
+                    }
+            }
+        }
+
+        return new String[] { new String(seq, start, end - start).trim(), index != 0 ? "item" + index : "item"};
     }
 
     public static String getNodeTypeName(int node) {

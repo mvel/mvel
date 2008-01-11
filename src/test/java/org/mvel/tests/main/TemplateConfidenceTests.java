@@ -207,7 +207,7 @@ public class TemplateConfidenceTests extends TestCase {
     public void testMultiCollectionControlLoop() {
         assertEquals("HappyHappy0Happy!Happy!1JoyJoy2Joy!Joy!3",
                 parse(
-                        "@foreach{list, array as listItem, arrayItem}" +
+                        "@foreach{list as listItem, array as arrayItem}" +
                                 "@{listItem}@{arrayItem}@{i0}" +
                                 "@end{}"
                 ));
@@ -216,7 +216,7 @@ public class TemplateConfidenceTests extends TestCase {
     public void testMultiCollectionWithSingleCharSeperatorControlLoop() {
         assertEquals("Happy0Happy,Happy!1Happy!,Joy2Joy,Joy!3Joy!",
                 parse(
-                        "@foreach{list, array as listItem, arrayItem}" +
+                        "@foreach{list as listItem, array as arrayItem}" +
                                 "@{listItem}@{i0}@{arrayItem}" +
                                 "@end{\",\"  }"
                 ));
@@ -225,7 +225,7 @@ public class TemplateConfidenceTests extends TestCase {
     public void testMultiCollectionWithMultipleCharSeperatorControlLoop() {
         assertEquals("HappyHappy,|Happy!Happy!,|JoyJoy,|Joy!Joy!",
                 parse(
-                        "@foreach{list, array as listItem, arrayItem}" +
+                        "@foreach{list as listItem, array as arrayItem}" +
                                 "@{listItem}@{arrayItem}" +
                                 "@end{\",|\"  }"
                 ));
