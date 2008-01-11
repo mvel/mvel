@@ -21,14 +21,14 @@ public class PropertyASTNode extends ASTNode {
             return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
         }
         catch (NullPointerException e) {
-            synchronized (this) {
+          //  synchronized (this) {
                 if (wrappedNode == null) {
                     return initializePropertyNode(ctx, thisValue, factory);
                 }
                 else {
                     throw e;
                 }
-            }
+          //  }
         }
     }
 

@@ -22,7 +22,7 @@ public class ThisValDeepPropertyNode extends ASTNode {
             return valRet(accessor.getValue(thisValue, thisValue, factory));
         }
         catch (NullPointerException e) {
-            synchronized (this) {
+        //    synchronized (this) {
                 if (accessor == null) {
                     AccessorOptimizer aO = OptimizerFactory.getThreadAccessorOptimizer();
                     accessor = aO.optimizeAccessor(name, thisValue, thisValue, factory, false);
@@ -31,7 +31,7 @@ public class ThisValDeepPropertyNode extends ASTNode {
                 }
                 else {
                     throw e;
-                }
+      //          }
             }
         }
     }

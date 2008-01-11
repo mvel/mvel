@@ -148,10 +148,10 @@ public class NewObjectNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (newObjectOptimizer == null) {
-            synchronized (this) {
+   //         synchronized (this) {
 
                 // double-check in case the optimization has occured in a competing thread.
-                if (newObjectOptimizer == null) {
+   //             if (newObjectOptimizer == null) {
                     if (egressType == null) {
                         /**
                          * This means we couldn't resolve the type at the time this AST node was created, which means
@@ -198,8 +198,8 @@ public class NewObjectNode extends ASTNode {
                         egressType = optimizer.getEgressType();
                         return optimizer.getResultOptPass();
                     }
-                }
-            }
+     //           }
+     //       }
         }
 
         return newObjectOptimizer.getValue(ctx, thisValue, factory);
