@@ -22,14 +22,16 @@ public class LiteralDeepPropertyNode extends ASTNode {
             return valRet(accessor.getValue(literal, thisValue, factory));
         }
         catch (NullPointerException e) {
-            if (accessor == null) {
-                AccessorOptimizer aO = OptimizerFactory.getThreadAccessorOptimizer();
-                accessor = aO.optimizeAccessor(name, literal, thisValue, factory, false);
+            synchronized (this) {
+                if (accessor == null) {
+                    AccessorOptimizer aO = OptimizerFactory.getThreadAccessorOptimizer();
+                    accessor = aO.optimizeAccessor(name, literal, thisValue, factory, false);
 
-                return valRet(aO.getResultOptPass());
-            }
-            else {
-                throw e;
+                    return valRet(aO.getResultOptPass());
+                }
+                else {
+                    throw e;
+                }
             }
         }
     }

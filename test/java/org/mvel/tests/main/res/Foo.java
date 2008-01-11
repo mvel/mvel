@@ -64,4 +64,8 @@ public class Foo {
     public void setCountTest(int countTest) {
         this.countTest = countTest;
     }
+
+    public boolean equals(Object o) {
+        return o instanceof Foo;
+    }
 }

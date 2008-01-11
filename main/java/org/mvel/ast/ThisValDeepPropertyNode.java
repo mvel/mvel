@@ -22,14 +22,16 @@ public class ThisValDeepPropertyNode extends ASTNode {
             return valRet(accessor.getValue(thisValue, thisValue, factory));
         }
         catch (NullPointerException e) {
-            if (accessor == null) {
-                AccessorOptimizer aO = OptimizerFactory.getThreadAccessorOptimizer();
-                accessor = aO.optimizeAccessor(name, thisValue, thisValue, factory, false);
+            synchronized (this) {
+                if (accessor == null) {
+                    AccessorOptimizer aO = OptimizerFactory.getThreadAccessorOptimizer();
+                    accessor = aO.optimizeAccessor(name, thisValue, thisValue, factory, false);
 
-                return valRet(accessor.getValue(thisValue, thisValue, factory));
-            }
-            else {
-                throw e;
+                    return valRet(accessor.getValue(thisValue, thisValue, factory));
+                }
+                else {
+                    throw e;
+                }
             }
         }
     }

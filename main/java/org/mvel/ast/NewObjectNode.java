@@ -148,51 +148,57 @@ public class NewObjectNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (newObjectOptimizer == null) {
-            if (egressType == null) {
-                /**
-                 * This means we couldn't resolve the type at the time this AST node was created, which means
-                 * we have to attempt runtime resolution.
-                 */
+            synchronized (this) {
 
-                if (factory != null && factory.isResolveable(className)) {
-                    try {
-                        egressType = (Class) factory.getVariableResolver(className).getValue();
-                        rewriteClassReferenceToFQCN(COMPILE_IMMEDIATE);
+                // double-check in case the optimization has occured in a competing thread.
+                if (newObjectOptimizer == null) {
+                    if (egressType == null) {
+                        /**
+                         * This means we couldn't resolve the type at the time this AST node was created, which means
+                         * we have to attempt runtime resolution.
+                         */
 
-                        if (arraySize != null) {
+                        if (factory != null && factory.isResolveable(className)) {
                             try {
-                                egressType = findClass(factory, repeatChar('[', arraySize.length) + "L" + egressType.getName() + ";");
+                                egressType = (Class) factory.getVariableResolver(className).getValue();
+                                rewriteClassReferenceToFQCN(COMPILE_IMMEDIATE);
+
+                                if (arraySize != null) {
+                                    try {
+                                        egressType = findClass(factory, repeatChar('[', arraySize.length) + "L" + egressType.getName() + ";");
+                                    }
+                                    catch (Exception e) {
+                                        // for now, don't handle this.
+                                    }
+                                }
+
                             }
-                            catch (Exception e) {
-                                // for now, don't handle this.
+                            catch (ClassCastException e) {
+                                throw new CompileException("cannot construct object: " + className + " is not a class reference", e);
                             }
                         }
-
                     }
-                    catch (ClassCastException e) {
-                        throw new CompileException("cannot construct object: " + className + " is not a class reference", e);
+
+                    Class cls = Class[].class;
+
+                    if (arraySize != null) {
+                        return (newObjectOptimizer = new NewObjectArray(getBaseComponentType(egressType.getComponentType()), compiledArraySize))
+                                .getValue(ctx, thisValue, factory);
+                    }
+
+
+                    AccessorOptimizer optimizer = getThreadAccessorOptimizer();
+                    newObjectOptimizer = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
+
+                    /**
+                     * Check to see if the optimizer actually produced the object during optimization.  If so,
+                     * we return that value now.
+                     */
+                    if (optimizer.getResultOptPass() != null) {
+                        egressType = optimizer.getEgressType();
+                        return optimizer.getResultOptPass();
                     }
                 }
-            }
-
-            Class cls = Class[].class;
-
-            if (arraySize != null) {
-                return (newObjectOptimizer = new NewObjectArray(getBaseComponentType(egressType.getComponentType()), compiledArraySize))
-                        .getValue(ctx, thisValue, factory);
-            }
-
-
-            AccessorOptimizer optimizer = getThreadAccessorOptimizer();
-            newObjectOptimizer = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
-
-            /**
-             * Check to see if the optimizer actually produced the object during optimization.  If so,
-             * we return that value now.
-             */
-            if (optimizer.getResultOptPass() != null) {
-                egressType = optimizer.getEgressType();
-                return optimizer.getResultOptPass();
             }
         }
 
