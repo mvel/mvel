@@ -12,7 +12,7 @@ import org.mvel.TemplateInterpreter;
 
 public class ThreadSafetyTests extends TestCase {
     private static final int TOTAL_THREADS = 5;
-    private static final int RUNCOUNT = 1000000;
+    private static final int RUNCOUNT = 1000;
 
     private Thread[] threads;
 
@@ -28,7 +28,7 @@ public class ThreadSafetyTests extends TestCase {
 
         while (areThreadsActive()) {
             try {
-                Thread.sleep(1000);
+                Thread.sleep(100);
             }
             catch (InterruptedException e) {
                 return;
