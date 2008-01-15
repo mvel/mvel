@@ -57,6 +57,13 @@ public class TemplateCompiler {
         int node = 0;
         for (; cursor < length; cursor++) {
             if (expressionArray[cursor] == '@') {
+                if (expressionArray[cursor + 1] == '@') {
+                    cursor++;
+                    aList.add(new Node(node++, LITERAL, cursor - literalRange, literalRange, node));
+                    literalRange = 0;
+                    continue;
+                }
+
                 if (literalRange != 0) {
                     aList.add(new Node(node++, LITERAL, cursor - literalRange, literalRange, node));
                     literalRange = 0;
@@ -127,7 +134,7 @@ public class TemplateCompiler {
                     String[] temp;
 
                     Iterator<String[]> iterator = iterators.iterator();
-                    for (int i = 0;  iterator.hasNext(); i++) {
+                    for (int i = 0; iterator.hasNext(); i++) {
                         temp = iterator.next();
                         names[i] = temp[0];
                         aliases[i] = temp[1];
@@ -236,12 +243,12 @@ public class TemplateCompiler {
                             }
 
                             ((ForeachContext) e.getRegister()).setSeperator(new String(props, j + 1, k - j - 1));
-                       //     e.setRegister(new ForeachContext(new String(props, j + 1, k - j - 1)));
+                            //     e.setRegister(new ForeachContext(new String(props, j + 1, k - j - 1)));
                         }
                         else {
                             ((ForeachContext) e.getRegister()).setSeperator("");
 
-                         //   e.setRegister(new ForeachContext(""));
+                            //   e.setRegister(new ForeachContext(""));
                         }
                     }
 
@@ -288,15 +295,15 @@ public class TemplateCompiler {
 
     public static String[] parseAlias(char[] seq, int start, int end, int index) {
         for (int i = start; i < end; i++) {
-            switch (seq[i])  {
+            switch (seq[i]) {
                 case ' ':
                     if ((i + 3) < end && seq[i + 1] == 'a' && seq[i + 2] == 's' && seq[i + 3] == ' ') {
-                          return new String[] { new String(seq, start, i - start).trim(), new String(seq, i += 4, end - i).trim() };
+                        return new String[]{new String(seq, start, i - start).trim(), new String(seq, i += 4, end - i).trim()};
                     }
             }
         }
 
-        return new String[] { new String(seq, start, end - start).trim(), index != 0 ? "item" + index : "item"};
+        return new String[]{new String(seq, start, end - start).trim(), index != 0 ? "item" + index : "item"};
     }
 
     public static String getNodeTypeName(int node) {

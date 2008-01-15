@@ -89,7 +89,7 @@ public abstract class AbstractTest extends TestCase {
             threads = new Thread[parseInt(getProperty("mvel.tests.threadcount"))];
         }
         else {
-            threads = new Thread[5];
+            threads = new Thread[100];
         }
 
         final AbstractTest aTest = this;
@@ -130,7 +130,7 @@ public abstract class AbstractTest extends TestCase {
                 }
 
                 try {
-                    Thread.sleep(250);
+                    Thread.sleep(2000);
                 }
                 catch (InterruptedException e) {
                     break;
