@@ -297,8 +297,6 @@ public class AbstractParser implements Serializable {
                                 captureToEOT();
                                 int end = cursor;
 
-                                //  String tk = new String(expr, start, cursor - start).trim();
-
                                 skipWhitespace();
                                 if (expr[cursor] == '=') {
                                     cursor = start;
@@ -587,8 +585,6 @@ public class AbstractParser implements Serializable {
                                 else {
                                     return lastNode = new PreFixIncNode(name);
                                 }
-
-                                //   return lastNode = new PreFixIncNode(subArray(start, cursor), fields);
                             }
                             return createToken(expr, start, cursor++ + 1, fields);
 
@@ -1222,7 +1218,6 @@ public class AbstractParser implements Serializable {
         }
         return false;
     }
-
 
     protected boolean tokenContinues() {
         if (cursor >= length) return false;
