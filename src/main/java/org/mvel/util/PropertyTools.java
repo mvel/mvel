@@ -327,7 +327,7 @@ public class PropertyTools {
 
     public static boolean isIdentifierPart(final int c) {
         return ((c >= 97 && c <= 122)
-                || (c >= 65 && c <= 90) || (c >= 48 && c <= 57) || (c == '_') || (c == '$'));
+                || (c >= 65 && c <= 90) || (c >= 48 && c <= 57) || (c == '_') || (c == '$') || (c == '?'));
     }
 
     public static boolean isDigit(final int c) {

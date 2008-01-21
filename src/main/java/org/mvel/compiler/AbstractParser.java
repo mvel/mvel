@@ -1377,7 +1377,8 @@ public class AbstractParser implements Serializable {
     }
 
     protected char lookAhead() {
-        if (cursor != length) return expr[cursor + 1];
+        int tmp = cursor + 1;
+        if (tmp != length) return expr[tmp];
         return 0;
     }
 

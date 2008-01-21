@@ -2567,6 +2567,23 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(10, test("xStr = new String[5][10]; xStr[4][0] = 'foo'; xStr[4].length"));
     }
 
+    public void testNullSafe() {
+        Foo foo = new Foo();
+        foo.setBar(null);
+
+        Map map = new HashMap();
+        map.put("foo", foo);
+
+
+        String expression = "foo.?bar.name == null";
+        Serializable compiled = MVEL.compileExpression(expression);
+
+
+        assertEquals(true, executeExpression(compiled, map));
+        assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
+
+        assertEquals(true, eval(expression, map));
+    }
 
     /**
      * MVEL-57 (Submitted by: Rognvald Eaversen) -- Slightly modified by cbrock to include a positive testcase.

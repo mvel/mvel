@@ -118,7 +118,11 @@ public class AbstractOptimizer extends AbstractParser {
                 return COL;
             case '.':
                 skipWhitespace();
-                cursor = ++start;
+                if (expr[cursor = ++start] == '?') {
+                    cursor = ++start;
+                    fields = -1;
+                }
+                break;
         }
 
         //noinspection StatementWithEmptyBody
@@ -132,7 +136,7 @@ public class AbstractOptimizer extends AbstractParser {
                 case '(':
                     return METH;
                 default:
-                    return 0;
+                    return BEAN;
             }
         }
 

@@ -49,6 +49,7 @@ public class PropertyAccessor {
     private Object curr;
 
     private boolean first = true;
+    private boolean nullHandle = false;
 
     private VariableResolverFactory variableFactory;
 
@@ -161,6 +162,15 @@ public class PropertyAccessor {
                         curr = getCollectionProperty(curr, capture());
                         break;
                     case DONE:
+                }
+
+                if (nullHandle) {
+                    if (curr == null) {
+                        return null;
+                    }
+                    else {
+                        nullHandle = false;
+                    }
                 }
 
                 first = false;
@@ -296,7 +306,11 @@ public class PropertyAccessor {
             case '[':
                 return COL;
             case '.':
-                ++cursor;
+                // ++cursor;
+                if (property[cursor = ++start] == '?') {
+                    cursor = ++start;
+                    nullHandle = true;
+                }
         }
 
         while (cursor < length && isWhitespace(property[cursor])) cursor++;

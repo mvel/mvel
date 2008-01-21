@@ -257,6 +257,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         break;
                 }
 
+                // check to see if a null safety is enabled on this property.
+                if (fields == -1) {
+                    if (curr == null) {
+                        break;
+                    }
+                    else {
+                        fields = 0;
+                    }
+                }
+
                 first = false;
             }
 
@@ -430,6 +440,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             return LITERALS.get(property);
         }
+        else if (ctx == null) {
+            throw new NullPointerException("parent field of '" + property + "' is null in: " + new String(expr));
+        }
         else {
             Object ts = tryStaticAccess();
 
@@ -453,7 +466,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     return ((Field) ts).get(null);
                 }
             }
-
             else if (ctx instanceof Class) {
                 /**
                  * This is our ugly support for function pointers.  This works but needs to be re-thought out at some
