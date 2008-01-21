@@ -504,6 +504,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(3, test("(name in things).size()"));
     }
 
+    public void testProjectionSupport3() {
+        assertEquals(3, ((Collection)test("(name in things)")).size());
+    }
+
     public void testSizeOnInlineArray() {
         assertEquals(3, test("{1,2,3}.size()"));
     }

@@ -70,7 +70,7 @@ public abstract class AbstractTest extends TestCase {
 
         map.put("derived", new DerivedClass());
 
-                map.put("dt1", new Date(currentTimeMillis() - 100000));
+        map.put("dt1", new Date(currentTimeMillis() - 100000));
         map.put("dt2", new Date(currentTimeMillis()));
         return map;
     }
@@ -89,7 +89,7 @@ public abstract class AbstractTest extends TestCase {
             threads = new Thread[parseInt(getProperty("mvel.tests.threadcount"))];
         }
         else {
-            threads = new Thread[100];
+            threads = new Thread[5];
         }
 
         final AbstractTest aTest = this;
@@ -130,7 +130,7 @@ public abstract class AbstractTest extends TestCase {
                 }
 
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(333);
                 }
                 catch (InterruptedException e) {
                     break;
