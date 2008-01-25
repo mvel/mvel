@@ -61,7 +61,7 @@ public class DebugTools {
     }
 
     private static String decompile(CompiledExpression cExp, boolean nest, DecompileContext context) {
-        ASTIterator iter = cExp.getTokens();
+        ASTIterator iter = cExp.getInstructions();
         ASTNode tk;
 
         //   int node = 0;

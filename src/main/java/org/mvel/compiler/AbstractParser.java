@@ -338,6 +338,12 @@ public class AbstractParser implements Serializable {
                     String name;
                     if (cursor != length) {
                         switch (expr[cursor]) {
+                            case '?':
+                                if (lookToLast() == '.') {
+                                    capture = true;
+                                    cursor++;
+                                    continue;
+                                }
                             case '+':
                                 switch (lookAhead()) {
                                     case '+':
@@ -1369,6 +1375,13 @@ public class AbstractParser implements Serializable {
 
     public static boolean isReservedWord(String name) {
         return LITERALS.containsKey(name) || OPERATORS.containsKey(name);
+    }
+
+    protected char lookToLast() {
+        if (cursor == 0) return 0;
+        int temp = cursor;
+        while (temp != 0 && isWhitespace(expr[--temp]));
+        return expr[temp];
     }
 
     protected char lookBehind() {

@@ -1176,7 +1176,7 @@ public class ParseTools {
     }
 
     public static Serializable optimizeTree(final CompiledExpression compiled) {
-        ASTIterator nodes = compiled.getTokens();
+        ASTIterator nodes = compiled.getInstructions();
 
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.

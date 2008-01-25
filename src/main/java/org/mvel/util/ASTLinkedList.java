@@ -29,6 +29,10 @@ public class ASTLinkedList implements ASTIterator {
     public ASTLinkedList() {
     }
 
+    public ASTLinkedList(ASTIterator iter) {
+        this.current = this.firstASTNode = iter.firstNode();
+    }
+
     public ASTLinkedList(ASTNode firstASTNode) {
         this.current = this.firstASTNode = firstASTNode;
     }

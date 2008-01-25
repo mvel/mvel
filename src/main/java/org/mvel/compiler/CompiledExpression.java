@@ -63,11 +63,11 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         this.literalOnly = literalOnly;
     }
 
-    public ASTIterator getTokens() {
+    public ASTIterator getInstructions() {
         return new ASTLinkedList(tokens.firstNode(), tokens.size());
     }
 
-    public void setTokens(ASTIterator tokens) {
+    public void setInstructions(ASTIterator tokens) {
         this.tokens = tokens;
     }
 

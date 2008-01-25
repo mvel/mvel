@@ -118,7 +118,7 @@ public class AbstractOptimizer extends AbstractParser {
                 return COL;
             case '.':
                 skipWhitespace();
-                if (expr[cursor = ++start] == '?') {
+                if ((start+1) != length && expr[cursor = ++start] == '?') {
                     cursor = ++start;
                     fields = -1;
                 }

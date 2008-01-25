@@ -19,7 +19,11 @@
 package org.mvel.util;
 
 import org.mvel.Operator;
+import org.mvel.compiler.CompiledExpression;
 import org.mvel.ast.*;
+
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 public class CompilerTools {
 
@@ -182,5 +186,25 @@ public class CompilerTools {
         }
 
         return optimizedAst;
+    }
+
+    /**
+     * Returns an ordered Map of all functions declared within an compiled script.
+     *
+     * @param compile
+     * @return - ordered Map
+     */
+    public static Map<String, Function> extractAllDeclaredFunctions(CompiledExpression compile) {
+        Map<String, Function> allFunctions = new LinkedHashMap<String, Function>();
+        ASTIterator instructions = new ASTLinkedList(compile.getInstructions());
+
+        ASTNode n;
+        while (instructions.hasMoreNodes()) {
+            if ((n = instructions.nextNode()) instanceof Function) {
+                allFunctions.put(n.getName(), (Function) n);
+            }
+        }
+
+        return allFunctions;
     }
 }

@@ -4,6 +4,7 @@ import org.mvel.*;
 import static org.mvel.MVEL.*;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.WithNode;
+import org.mvel.ast.Function;
 import org.mvel.compiler.CompiledExpression;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.compiler.ExpressionCompiler;
@@ -20,6 +21,7 @@ import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.MethodStub;
+import org.mvel.util.CompilerTools;
 import static org.mvel.util.ParseTools.loadFromFile;
 
 import java.awt.*;
@@ -27,11 +29,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import static java.lang.System.currentTimeMillis;
 import java.util.*;
 import java.util.List;
-
-import sun.security.krb5.internal.crypto.crc32;
 
 @SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes", "UnnecessaryBoxing", "unchecked", "PointlessArithmeticExpression"})
 public class CoreConfidenceTests extends AbstractTest {
@@ -717,7 +716,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testCompiledMethodCall() {
         Serializable compiled = compileExpression("c.getClass()");
-        assertEquals(String.class, (Object) executeExpression(compiled, new Base(), createTestMap()));
+        assertEquals(String.class, executeExpression(compiled, new Base(), createTestMap()));
     }
 
     public void testStaticNamespaceCall() {
@@ -2578,9 +2577,14 @@ public class CoreConfidenceTests extends AbstractTest {
         String expression = "foo.?bar.name == null";
         Serializable compiled = MVEL.compileExpression(expression);
 
-
+        OptimizerFactory.setDefaultOptimizer("ASM");
         assertEquals(true, executeExpression(compiled, map));
         assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        assertEquals(true, executeExpression(compiled, map));
+        assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
+
 
         assertEquals(true, eval(expression, map));
     }
@@ -2925,6 +2929,10 @@ public class CoreConfidenceTests extends AbstractTest {
 
         Serializable s = compiler.compile();
 
+        Map<String, Function> m = CompilerTools.extractAllDeclaredFunctions((CompiledExpression) s);
+
+        assertTrue(m.containsKey("heyFoo"));
+
         OptimizerFactory.setDefaultOptimizer("reflective");
 
         assertEquals("FoobarFoobar", MVEL.executeExpression(s, new HashMap()));
@@ -3024,7 +3032,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ParserContext context = new ParserContext();
         context.addInput("$cheese", Cheese.class);
 
-        ExecutableStatement expr = (ExecutableStatement) compiler.compile(context);
+        ExecutableStatement expr = compiler.compile(context);
 
         assertEquals(Cheese.class, expr.getKnownEgressType());
     }
@@ -3034,12 +3042,13 @@ public class CoreConfidenceTests extends AbstractTest {
         ParserContext context = new ParserContext();
 
         try {
-            ExecutableStatement expr = (ExecutableStatement) compiler.compile(context);
+             compiler.compile(context);
             fail( "Compilation must fail with duplicate variable declaration exception.");
         } catch (CompileException ce) {
             // success
         }
     }
+
 
 
 }
