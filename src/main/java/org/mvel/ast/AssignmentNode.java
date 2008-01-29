@@ -106,4 +106,8 @@ public class AssignmentNode extends ASTNode implements Assignment {
     public String getAssignmentVar() {
         return name;
     }
+
+    public boolean isNewDeclaration() {
+        return false;
+    }
 }

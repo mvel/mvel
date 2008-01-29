@@ -61,6 +61,10 @@ public class ParserContext implements Serializable {
         this.sourceFile = sourceFile;
     }
 
+    public boolean hasVariable(String name) {
+        return (variables != null && variables.containsKey(name));
+    }
+
     public boolean hasVarOrInput(String name) {
         return (variables != null && variables.containsKey(name))
                 || (inputs != null && inputs.containsKey(name));

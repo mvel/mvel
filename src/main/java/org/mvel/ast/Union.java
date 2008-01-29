@@ -17,11 +17,10 @@ public class Union extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        try {
+        if (accessor != null) {
             return accessor.getValue(main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory);
         }
-        catch (NullPointerException e) {
-            if (accessor != null) throw e;
+        else {
             AccessorOptimizer o = OptimizerFactory.getDefaultAccessorCompiler();
             accessor = o.optimizeAccessor(name, main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false);
             return o.getResultOptPass();
@@ -29,7 +28,7 @@ public class Union extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return  PropertyAccessor.get(
+        return PropertyAccessor.get(
                 name,
                 main.getReducedValue(ctx, thisValue, factory), factory, thisValue);
     }

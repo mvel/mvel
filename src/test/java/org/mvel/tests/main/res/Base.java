@@ -89,4 +89,8 @@ public class Base {
         System.out.println("num: " + num);
         return val;
     }
+
+    public boolean equals(Object o) {
+        return o instanceof Base;
+    }
 }
