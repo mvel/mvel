@@ -18,21 +18,13 @@ public class VariableDeepPropertyNode extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        try {
+        if (accessor != null) {
             return valRet(accessor.getValue(ctx, thisValue, factory));
         }
-        catch (NullPointerException e) {
-       ///     synchronized (this) {
-                if (accessor == null) {
-
-                    AccessorOptimizer aO = OptimizerFactory.getThreadAccessorOptimizer();
-                    accessor = aO.optimizeAccessor(name, ctx, thisValue, factory, false);
-                    return valRet(aO.getResultOptPass());
-                }
-                else {
-                    throw e;
-                }
-      //      }
+        else {
+            AccessorOptimizer aO = OptimizerFactory.getThreadAccessorOptimizer();
+            accessor = aO.optimizeAccessor(name, ctx, thisValue, factory, false);
+            return valRet(aO.getResultOptPass());
         }
     }
 

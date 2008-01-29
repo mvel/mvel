@@ -18,16 +18,13 @@ public class ContextDeepPropertyNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
-            return valRet(accessor.getValue(ctx, thisValue, factory));
-        }
-        catch (NullPointerException e) {
-            if (accessor == null) {
+            if (accessor != null) {
+                return valRet(accessor.getValue(ctx, thisValue, factory));
+            }
+            else {
                 AccessorOptimizer aO = getThreadAccessorOptimizer();
                 accessor = aO.optimizeAccessor(name, ctx, thisValue, factory, false);
                 return valRet(aO.getResultOptPass());
-            }
-            else {
-                throw e;
             }
         }
         catch (ClassCastException e) {

@@ -17,18 +17,11 @@ public class PropertyASTNode extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        try {
+        if (wrappedNode != null) {
             return wrappedNode.getReducedValueAccelerated(ctx, thisValue, factory);
         }
-        catch (NullPointerException e) {
-          //  synchronized (this) {
-                if (wrappedNode == null) {
-                    return initializePropertyNode(ctx, thisValue, factory);
-                }
-                else {
-                    throw e;
-                }
-          //  }
+        else {
+            return initializePropertyNode(ctx, thisValue, factory);   
         }
     }
 
