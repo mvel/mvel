@@ -3048,9 +3048,6 @@ public class CoreConfidenceTests extends AbstractTest {
             // success
         }
     }
-
-
-
 }
 
 
