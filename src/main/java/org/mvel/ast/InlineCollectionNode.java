@@ -40,28 +40,22 @@ public class InlineCollectionNode extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        try {
+        if (accessor != null) {
             return accessor.getValue(ctx, thisValue, factory);
         }
-        catch (NullPointerException e) {
-            if (accessor == null) {
-                AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-                accessor = ao.optimizeCollection(name, ctx, thisValue, factory);
-                egressType = ao.getEgressType();
+        else {
+            AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
+            accessor = ao.optimizeCollection(name, ctx, thisValue, factory);
+            egressType = ao.getEgressType();
 
-                if (ao.isLiteralOnly()) {
-                    if (egressType == List.class) {
-                        List v = (List) accessor.getValue(null, null, null);
-                        accessor = new CachedListAccessor(v);
-                        return v;
-                    }
+            if (ao.isLiteralOnly()) {
+                if (egressType == List.class) {
+                    List v = (List) accessor.getValue(null, null, null);
+                    accessor = new CachedListAccessor(v);
+                    return v;
                 }
-
-                return accessor.getValue(ctx, thisValue, factory);
             }
-            else {
-                throw e;
-            }
+            return accessor.getValue(ctx, thisValue, factory);
         }
 
     }

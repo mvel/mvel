@@ -40,9 +40,6 @@ public class WhileNode extends BlockNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        //   Object ret = null;
-
-
         while ((Boolean) condition.getValue(ctx, thisValue, factory)) {
             compiledBlock.getValue(ctx, thisValue, factory);
         }

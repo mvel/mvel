@@ -90,10 +90,8 @@ public class ASTNode implements Cloneable, Serializable {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (accessor != null) {
-            //      try {
             return valRet(accessor.getValue(ctx, thisValue, factory));
         }
-        //    catch (NullPointerException e) {
         else {
             AccessorOptimizer optimizer;
             Object retVal = null;
