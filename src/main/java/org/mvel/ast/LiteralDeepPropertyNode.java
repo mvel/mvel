@@ -21,7 +21,6 @@ package org.mvel.ast;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
-import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
 /**

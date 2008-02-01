@@ -236,6 +236,10 @@ public class ASTNode implements Cloneable, Serializable {
         if ((literal = tryStaticAccess(ctx, factory)) == null) {
             throw new UnresolveablePropertyException(this);
         }
+        else {
+            fields |= LITERAL;
+        }
+
         return valRet(literal);
     }
 
