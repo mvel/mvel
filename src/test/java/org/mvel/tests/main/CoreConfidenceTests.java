@@ -883,7 +883,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testUnQualifiedStaticTyping() {
-        assertEquals(20, testCompiledSimple("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ", new HashMap()));
+        assertEquals(20.0f, testCompiledSimple("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ", new HashMap()));
     }
 
     public void testObjectCreation() {

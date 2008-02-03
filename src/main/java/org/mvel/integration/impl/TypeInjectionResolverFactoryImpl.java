@@ -1,6 +1,7 @@
 package org.mvel.integration.impl;
 
 import org.mvel.ParserContext;
+import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.util.HashMap;
@@ -32,6 +33,25 @@ public class TypeInjectionResolverFactoryImpl extends MapVariableResolverFactory
         super(variables, cachingSafe);
     }
 
+    public VariableResolver createVariable(String name, Object value) {
+        if (nextFactory == null) {
+            nextFactory = new MapVariableResolverFactory(new HashMap());
+        }
+        /**
+         * Delegate to the next factory.
+         */
+        return nextFactory.createVariable(name, value);
+    }
+
+    public VariableResolver createVariable(String name, Object value, Class<?> type) {
+        if (nextFactory == null) {
+            nextFactory = new MapVariableResolverFactory(new HashMap());
+        }
+        /**
+         * Delegate to the next factory.
+         */
+        return nextFactory.createVariable(name, value, type);
+    }
 
     public Set<String> getKnownVariables() {
         Set<String> knownVars = new HashSet<String>();

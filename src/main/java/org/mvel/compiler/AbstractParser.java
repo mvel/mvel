@@ -235,7 +235,7 @@ public class AbstractParser implements Serializable {
                      * part of an identifier, we keep capturing.
                      */
                     capture = true;
-                    cursor++;
+                    cursor++ ;
                 }
                 else if (capture) {
                     String t;
@@ -1078,7 +1078,6 @@ public class AbstractParser implements Serializable {
             }
 
             default: // either BLOCK_WITH or BLOCK_FOREACH
-
                 skipToNextTokenJunction();
                 if (debugSymbols) {
                     skipWhitespaceWithLineAccounting();

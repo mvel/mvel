@@ -37,17 +37,30 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver createVariable(String name, Object value) {
-        throw new RuntimeException("unimplemented, please use addClass(Class)");
+//        throw new RuntimeException("unimplemented, please use addClass(Class)");
 
 //        VariableResolver vr = new ClassImportResolver(name.substring(name.lastIndexOf('.')), name);
 //        variableResolvers.put(vr.getName(), vr);
 //        return vr;
+
+        if (nextFactory == null) {
+            nextFactory = new MapVariableResolverFactory(new HashMap());
+        }
+
+        return nextFactory.createVariable(name, value);
+
     }
 
 
     public VariableResolver createVariable(String name, Object value, Class type) {
-        throw new RuntimeException("attempt to created a typed import type.  this is highly redundant and more " +
-                "importantly, not implemented.");
+//        throw new RuntimeException("attempt to created a typed import type.  this is highly redundant and more " +
+//                "importantly, not implemented.");
+
+        if (nextFactory == null) {
+            nextFactory = new MapVariableResolverFactory(new HashMap());
+        }
+
+        return nextFactory.createVariable(name, value);
     }
 
     public Class addClass(Class clazz) {
