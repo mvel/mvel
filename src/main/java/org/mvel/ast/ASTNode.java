@@ -90,7 +90,7 @@ public class ASTNode implements Cloneable, Serializable {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (accessor != null) {
-            return valRet(accessor.getValue(ctx, thisValue, factory));
+            return accessor.getValue(ctx, thisValue, factory);
         }
         else {
             AccessorOptimizer optimizer;
@@ -119,7 +119,7 @@ public class ASTNode implements Cloneable, Serializable {
                 egressType = optimizer.getEgressType();
             }
 
-            return valRet(retVal);
+            return retVal;
         }
     }
 
@@ -145,13 +145,13 @@ public class ASTNode implements Cloneable, Serializable {
                 /**
                  * The root of the DEEP PROPERTY is a literal.
                  */
-                return valRet(get(getAbsoluteRemainder(), AbstractParser.LITERALS.get(s), factory, thisValue));
+                return get(getAbsoluteRemainder(), AbstractParser.LITERALS.get(s), factory, thisValue);
             }
             else if (factory != null && factory.isResolveable(s)) {
                 /**
                  * The root of the DEEP PROPERTY is a local or global var.
                  */
-                return valRet(get(name, ctx, factory, thisValue));
+                return get(name, ctx, factory, thisValue);
 
             }
             else if (ctx != null) {
@@ -161,7 +161,7 @@ public class ASTNode implements Cloneable, Serializable {
                  */
 
                 try {
-                    return valRet(get(name, ctx, factory, thisValue));
+                    return get(name, ctx, factory, thisValue);
                 }
                 catch (PropertyAccessException e) {
                     /**
@@ -175,7 +175,7 @@ public class ASTNode implements Cloneable, Serializable {
                      */
                     fields |= LITERAL;
                     //  return literal = valRet(literal);
-                    return valRet(literal);
+                    return literal;
                 }
             }
         }
@@ -186,19 +186,19 @@ public class ASTNode implements Cloneable, Serializable {
                  */
 
                 if (isCollection()) {
-                    return valRet(get(new String(name, endOfName, name.length - endOfName),
-                            factory.getVariableResolver(s).getValue(), factory, thisValue));
+                    return get(new String(name, endOfName, name.length - endOfName),
+                            factory.getVariableResolver(s).getValue(), factory, thisValue);
                 }
 
 
-                return valRet(factory.getVariableResolver(s).getValue());
+                return factory.getVariableResolver(s).getValue();
             }
             else if (ctx != null) {
                 /**
                  * Check to see if the var exists in the VROOT.
                  */
                 try {
-                    return valRet(get(name, ctx, factory, thisValue));
+                    return get(name, ctx, factory, thisValue);
                 }
                 catch (RuntimeException e) {
                     e.printStackTrace();
@@ -217,13 +217,13 @@ public class ASTNode implements Cloneable, Serializable {
 
                             if (o instanceof Method) {
                                 Method m = (Method) o;
-                                return valRet(get(m.getName() + new String(name, mBegin, name.length - mBegin),
-                                        m.getDeclaringClass(), factory, thisValue));
+                                return get(m.getName() + new String(name, mBegin, name.length - mBegin),
+                                        m.getDeclaringClass(), factory, thisValue);
                             }
                             else {
                                 Function f = (Function) o;
-                                return valRet(get(f.getName() + new String(name, mBegin, name.length - mBegin),
-                                        null, factory, thisValue));
+                                return get(f.getName() + new String(name, mBegin, name.length - mBegin),
+                                        null, factory, thisValue);
                             }
                         }
                     }
@@ -240,7 +240,7 @@ public class ASTNode implements Cloneable, Serializable {
             fields |= LITERAL;
         }
 
-        return valRet(literal);
+        return literal;
     }
 
     protected String getAbsoluteRootElement() {
@@ -304,27 +304,26 @@ public class ASTNode implements Cloneable, Serializable {
         this.literal = literal;
     }
 
-    protected Object valRet(final Object value) {
-        if ((fields & NEGATION) != 0) {
-            try {
-                return !((Boolean) value);
-            }
-            catch (Exception e) {
-                throw new CompileException("illegal negation of non-boolean value");
-            }
-        }
-        else if ((fields & INVERT) != 0) {
-            try {
-                return ~((Integer) value);
-            }
-            catch (Exception e) {
-                throw new CompileException("bitwise (~) operator can only be applied to integers");
-            }
-        }
-
-
-        return value;
-    }
+//    protected Object valRet(final Object value) {
+//        if ((fields & NEGATION) != 0) {
+//            try {
+//                return !((Boolean) value);
+//            }
+//            catch (Exception e) {
+//                throw new CompileException("illegal negation of non-boolean value");
+//            }
+//        }
+//        else if ((fields & INVERT) != 0) {
+//            try {
+//                return ~((Integer) value);
+//            }
+//            catch (Exception e) {
+//                throw new CompileException("bitwise (~) operator can only be applied to integers");
+//            }
+//        }
+//
+//        return value;
+//    }
 
     protected Object tryStaticAccess(Object thisRef, VariableResolverFactory factory) {
         try {

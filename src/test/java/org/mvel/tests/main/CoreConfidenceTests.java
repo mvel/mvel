@@ -3048,6 +3048,11 @@ public class CoreConfidenceTests extends AbstractTest {
             // success
         }
     }
+
+    public void testFullyQualifiedTypeAndCast() {
+        assertEquals(1, test("java.lang.Integer number = (java.lang.Integer) '1';"));
+
+    }
 }
 
 

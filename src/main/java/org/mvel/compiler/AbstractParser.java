@@ -235,7 +235,7 @@ public class AbstractParser implements Serializable {
                      * part of an identifier, we keep capturing.
                      */
                     capture = true;
-                    cursor++ ;
+                    cursor++;
                 }
                 else if (capture) {
                     String t;
@@ -750,7 +750,7 @@ public class AbstractParser implements Serializable {
                                          * Check to see if we should disqualify this current token as a potential
                                          * type-cast candidate.
                                          */
-                                        if (lastWS || !isIdentifierPart(expr[cursor])) {
+                                        if ((lastWS && expr[cursor] != '.') || !(isIdentifierPart(expr[cursor]) || expr[cursor] == '.')) {
                                             singleToken = false;
                                         }
                                         else if (isWhitespace(expr[cursor])) {
@@ -869,29 +869,32 @@ public class AbstractParser implements Serializable {
                         }
 
                         case '~':
-                            if ((cursor - 1 != 0 || !isIdentifierPart(lookBehind()))
-                                    && isDigit(expr[cursor + 1])) {
-
-                                fields |= ASTNode.INVERT;
-                                start++;
-                                cursor++;
-                                break;
+                            if ((cursor++ - 1 != 0 || !isIdentifierPart(lookBehind()))
+                                    && isDigit(expr[cursor])) {
+                                start = cursor;
+                                captureToEOT();
+                                return lastNode = new Invert(subset(expr, start, cursor - start), fields);
                             }
-                            else if (expr[cursor + 1] == '(') {
-                                fields |= ASTNode.INVERT;
-                                start = ++cursor;
-                                continue;
+                            else if (expr[cursor] == '(') {
+                                start = cursor--;
+                                captureToEOT();
+                                return lastNode = new Invert(subset(expr, start, cursor - start), fields);
                             }
                             else {
-                                if (expr[cursor + 1] == '=') cursor++;
-                                return createToken(expr, start, ++cursor, fields);
+                                if (expr[cursor] == '=') cursor++;
+                                return createToken(expr, start, cursor, fields);
                             }
 
                         case '!': {
-                            if (isIdentifierPart(expr[++cursor]) || expr[cursor] == '(') {
+                            if (isIdentifierPart(expr[++cursor])) {
                                 start = cursor;
-                                fields |= ASTNode.NEGATION;
-                                continue;
+                                captureToEOT();
+                                return lastNode = new Negation(subset(expr, start, cursor - start), fields);
+                            }
+                            else if (expr[cursor] == '(') {
+                                start = cursor--;
+                                captureToEOT();
+                                return lastNode = new Negation(subset(expr, start, cursor - start), fields);
                             }
                             else if (expr[cursor] != '=')
                                 throw new CompileException("unexpected operator '!'", expr, cursor, null);
@@ -1379,7 +1382,7 @@ public class AbstractParser implements Serializable {
     protected char lookToLast() {
         if (cursor == 0) return 0;
         int temp = cursor;
-        while (temp != 0 && isWhitespace(expr[--temp]));
+        while (temp != 0 && isWhitespace(expr[--temp])) ;
         return expr[temp];
     }
 

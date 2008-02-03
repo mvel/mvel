@@ -36,11 +36,11 @@ public class Substatement extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return valRet(statement.getValue(ctx, thisValue, factory));
+        return statement.getValue(ctx, thisValue, factory);
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return valRet(MVEL.eval(this.name, ctx, factory));
+        return (MVEL.eval(this.name, ctx, factory));
     }
 
 

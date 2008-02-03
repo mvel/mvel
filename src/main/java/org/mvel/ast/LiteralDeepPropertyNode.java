@@ -38,12 +38,12 @@ public class LiteralDeepPropertyNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (accessor != null) {
-            return valRet(accessor.getValue(literal, thisValue, factory));
+            return accessor.getValue(literal, thisValue, factory);
         }
         else {
             AccessorOptimizer aO = getThreadAccessorOptimizer();
             accessor = aO.optimizeAccessor(name, literal, thisValue, factory, false);
-            return valRet(aO.getResultOptPass());
+            return aO.getResultOptPass();
         }
     }
 

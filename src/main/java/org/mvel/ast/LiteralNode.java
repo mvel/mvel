@@ -53,7 +53,7 @@ public class LiteralNode extends ASTNode {
             this.literal = ((String) literal).intern();
         }
         else {
-            this.literal = valRet(literal);
+            this.literal = literal;
         }
     }
 
