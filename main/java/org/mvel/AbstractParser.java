@@ -629,7 +629,7 @@ public class AbstractParser implements Serializable {
                                          * Check to see if we should disqualify this current token as a potential
                                          * type-cast candidate.
                                          */
-                                        if (lastWS || !isIdentifierPart(expr[cursor])) {
+                                        if ((lastWS && expr[cursor] != '.') || !(isIdentifierPart(expr[cursor]) || expr[cursor] == '.')) {
                                             singleToken = false;
                                         }
                                         else if (isWhitespace(expr[cursor])) {
