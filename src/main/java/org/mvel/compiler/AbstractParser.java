@@ -515,8 +515,7 @@ public class AbstractParser implements Serializable {
 
                                         throw new ParseException("unknown class: " + lastNode.getLiteralValue());
                                     }
-                                    else
-                                    if (pCtx != null && ((idx = pCtx.variableIndexOf(t)) != -1 || (pCtx.isIndexAllocation()))) {
+                                    else if (pCtx != null && ((idx = pCtx.variableIndexOf(t)) != -1 || (pCtx.isIndexAllocation()))) {
                                         IndexedAssignmentNode ian = new IndexedAssignmentNode(subArray(start, cursor), ASTNode.ASSIGN, idx);
 
                                         if (idx == -1) {

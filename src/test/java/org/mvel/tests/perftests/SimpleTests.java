@@ -22,7 +22,7 @@ public class SimpleTests {
         try {
             for (int i = 0; i < 10; i++) {
                 testQuickSortMVEL(ps);
-                testQuickSortNative(ps);
+        //        testQuickSortNative(ps);
             }
         }
         catch (Throwable t) {
