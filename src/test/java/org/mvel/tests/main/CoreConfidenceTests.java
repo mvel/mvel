@@ -344,7 +344,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testBooleanModeOnly4() {
-        assertEquals(true,  test("hour == (hour + 0)"));
+        assertEquals(true, test("hour == (hour + 0)"));
     }
 
     public void testTernary() {
@@ -3037,17 +3037,19 @@ public class CoreConfidenceTests extends AbstractTest {
         ParserContext context = new ParserContext();
 
         try {
-             compiler.compile(context);
-            fail( "Compilation must fail with duplicate variable declaration exception.");
-        } catch (CompileException ce) {
+            compiler.compile(context);
+            fail("Compilation must fail with duplicate variable declaration exception.");
+        }
+        catch (CompileException ce) {
             // success
         }
     }
 
     public void testFullyQualifiedTypeAndCast() {
         assertEquals(1, test("java.lang.Integer number = (java.lang.Integer) '1';"));
-
     }
+
+
 }
 
 

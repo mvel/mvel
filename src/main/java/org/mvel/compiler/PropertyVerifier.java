@@ -26,6 +26,7 @@ import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.getBestCandidate;
 import static org.mvel.util.ParseTools.parseParameterList;
+import static org.mvel.util.ParseTools.balancedCapture;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
 import org.mvel.util.StringAppender;
 
@@ -197,7 +198,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         int st = cursor;
 
-        String tk = ((cursor = ParseTools.balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
+        String tk = ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
 
         cursor++;
 
@@ -217,8 +218,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             args = new Class[subtokens.length];
             ExpressionCompiler compiler;
             for (int i = 0; i < subtokens.length; i++) {
-                compiler = new ExpressionCompiler(subtokens[i], true);
-                compiler._compile();
+                (compiler = new ExpressionCompiler(subtokens[i], true))._compile();
                 args[i] = compiler.getReturnType() != null ? compiler.getReturnType() : Object.class;
             }
         }
