@@ -3049,7 +3049,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(1, test("java.lang.Integer number = (java.lang.Integer) '1';"));
     }
 
-
 }
 
 
