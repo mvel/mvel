@@ -8,6 +8,7 @@ import org.mvel.ParserContext;
 import org.mvel.compiler.CompiledExpression;
 import org.mvel.compiler.ExpressionCompiler;
 import static org.mvel.debug.DebugTools.decompile;
+import org.mvel.debug.DebugTools;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setDefaultOptimizer;
 import org.mvel.tests.main.res.*;
@@ -240,7 +241,7 @@ public abstract class AbstractTest extends TestCase {
         Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null,
                 eighth = null;
 
-        //  System.out.println(DebugTools.decompile((Serializable) compiled));
+         System.out.println(DebugTools.decompile((Serializable) compiled));
 
         if (!Boolean.getBoolean("mvel.disable.jit")) {
 

@@ -146,7 +146,8 @@ public class AbstractParser implements Serializable {
 
         //LITERALS.putAll(Units.MEASUREMENTS_ALL);
 
-        _loadLanguageFeaturesByLevel(5);
+        //loadLanguageFeaturesByLevel(5);
+        setLanguageLevel(5);
     }
 
 
@@ -322,7 +323,7 @@ public class AbstractParser implements Serializable {
                      * character, we stop and figure out what to do.
                      */
                     if (cursor != length && expr[cursor] == '(') {
-                        fields |= ASTNode.METHOD;
+               //         fields |= ASTNode.METHOD;
 
                         if ((cursor = balancedCapture(expr, cursor, '(')) == -1) {
                             throw new CompileException("unbalanced braces", expr, cursor);
@@ -1508,84 +1509,90 @@ public class AbstractParser implements Serializable {
 
     public static void setLanguageLevel(int level) {
         OPERATORS.clear();
-        _loadLanguageFeaturesByLevel(level);
+        OPERATORS.putAll(loadLanguageFeaturesByLevel(level));
+        System.out.println("optable: " + OPERATORS.size());
     }
 
-    private static void _loadLanguageFeaturesByLevel(int languageLevel) {
+    public static Map<String, Integer> loadLanguageFeaturesByLevel(int languageLevel) {
+
+        Map<String, Integer> operatorsTable = new HashMap<String, Integer>();
+
         switch (languageLevel) {
             case 5:  // control flow operations
-                OPERATORS.put("if", IF);
-                OPERATORS.put("else", ELSE);
-                OPERATORS.put("?", TERNARY);
-                OPERATORS.put("switch", SWITCH);
-                OPERATORS.put("function", FUNCTION);
+                operatorsTable.put("if", IF);
+                operatorsTable.put("else", ELSE);
+                operatorsTable.put("?", TERNARY);
+                operatorsTable.put("switch", SWITCH);
+                operatorsTable.put("function", FUNCTION);
 
             case 4: // assignment
-                OPERATORS.put("=", ASSIGN);
-                OPERATORS.put("var", UNTYPED_VAR);
-                OPERATORS.put("+=", ASSIGN_ADD);
-                OPERATORS.put("-=", ASSIGN_SUB);
+                operatorsTable.put("=", ASSIGN);
+                operatorsTable.put("var", UNTYPED_VAR);
+                operatorsTable.put("+=", ASSIGN_ADD);
+                operatorsTable.put("-=", ASSIGN_SUB);
 
             case 3: // iteration
-                OPERATORS.put("foreach", FOREACH);
-                OPERATORS.put("while", WHILE);
-                OPERATORS.put("for", FOR);
-                OPERATORS.put("do", DO);
+                operatorsTable.put("foreach", FOREACH);
+                operatorsTable.put("while", WHILE);
+                operatorsTable.put("for", FOR);
+                operatorsTable.put("do", DO);
 
             case 2: // multi-statement
-                OPERATORS.put("return", RETURN);
-                OPERATORS.put(";", END_OF_STMT);
+                operatorsTable.put("return", RETURN);
+                operatorsTable.put(";", END_OF_STMT);
 
             case 1: // boolean, math ops, projection, assertion, objection creation, block setters, imports
-                OPERATORS.put("+", ADD);
-                OPERATORS.put("-", SUB);
-                OPERATORS.put("*", MULT);
-                OPERATORS.put("**", POWER);
-                OPERATORS.put("/", DIV);
-                OPERATORS.put("%", MOD);
-                OPERATORS.put("==", EQUAL);
-                OPERATORS.put("!=", NEQUAL);
-                OPERATORS.put(">", GTHAN);
-                OPERATORS.put(">=", GETHAN);
-                OPERATORS.put("<", LTHAN);
-                OPERATORS.put("<=", LETHAN);
-                OPERATORS.put("&&", AND);
-                OPERATORS.put("and", AND);
-                OPERATORS.put("||", OR);
-                OPERATORS.put("or", CHOR);
-                OPERATORS.put("~=", REGEX);
-                OPERATORS.put("instanceof", INSTANCEOF);
-                OPERATORS.put("is", INSTANCEOF);
-                OPERATORS.put("contains", CONTAINS);
-                OPERATORS.put("soundslike", SOUNDEX);
-                OPERATORS.put("strsim", SIMILARITY);
-                OPERATORS.put("convertable_to", CONVERTABLE_TO);
+                operatorsTable.put("+", ADD);
+                operatorsTable.put("-", SUB);
+                operatorsTable.put("*", MULT);
+                operatorsTable.put("**", POWER);
+                operatorsTable.put("/", DIV);
+                operatorsTable.put("%", MOD);
+                operatorsTable.put("==", EQUAL);
+                operatorsTable.put("!=", NEQUAL);
+                operatorsTable.put(">", GTHAN);
+                operatorsTable.put(">=", GETHAN);
+                operatorsTable.put("<", LTHAN);
+                operatorsTable.put("<=", LETHAN);
+                operatorsTable.put("&&", AND);
+                operatorsTable.put("and", AND);
+                operatorsTable.put("||", OR);
+                operatorsTable.put("or", CHOR);
+                operatorsTable.put("~=", REGEX);
+                operatorsTable.put("instanceof", INSTANCEOF);
+                operatorsTable.put("is", INSTANCEOF);
+                operatorsTable.put("contains", CONTAINS);
+                operatorsTable.put("soundslike", SOUNDEX);
+                operatorsTable.put("strsim", SIMILARITY);
+                operatorsTable.put("convertable_to", CONVERTABLE_TO);
 
-                OPERATORS.put("#", STR_APPEND);
+                operatorsTable.put("#", STR_APPEND);
 
-                OPERATORS.put("&", BW_AND);
-                OPERATORS.put("|", BW_OR);
-                OPERATORS.put("^", BW_XOR);
-                OPERATORS.put("<<", BW_SHIFT_LEFT);
-                OPERATORS.put("<<<", BW_USHIFT_LEFT);
-                OPERATORS.put(">>", BW_SHIFT_RIGHT);
-                OPERATORS.put(">>>", BW_USHIFT_RIGHT);
+                operatorsTable.put("&", BW_AND);
+                operatorsTable.put("|", BW_OR);
+                operatorsTable.put("^", BW_XOR);
+                operatorsTable.put("<<", BW_SHIFT_LEFT);
+                operatorsTable.put("<<<", BW_USHIFT_LEFT);
+                operatorsTable.put(">>", BW_SHIFT_RIGHT);
+                operatorsTable.put(">>>", BW_USHIFT_RIGHT);
 
-                OPERATORS.put("new", Operator.NEW);
-                OPERATORS.put("in", PROJECTION);
+                operatorsTable.put("new", Operator.NEW);
+                operatorsTable.put("in", PROJECTION);
 
-                OPERATORS.put("with", WITH);
+                operatorsTable.put("with", WITH);
 
-                OPERATORS.put("assert", ASSERT);
-                OPERATORS.put("import", IMPORT);
-                OPERATORS.put("import_static", IMPORT_STATIC);
+                operatorsTable.put("assert", ASSERT);
+                operatorsTable.put("import", IMPORT);
+                operatorsTable.put("import_static", IMPORT_STATIC);
 
-                OPERATORS.put("++", INC);
-                OPERATORS.put("--", DEC);
+                operatorsTable.put("++", INC);
+                operatorsTable.put("--", DEC);
 
             case 0: // Property access and inline collections
-                OPERATORS.put(":", TERNARY_ELSE);
+                operatorsTable.put(":", TERNARY_ELSE);
         }
+
+        return operatorsTable;
     }
 
     public static void resetParserContext() {

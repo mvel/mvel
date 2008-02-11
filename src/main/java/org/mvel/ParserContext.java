@@ -2,13 +2,11 @@ package org.mvel;
 
 import org.mvel.ast.Function;
 import org.mvel.ast.LineLabel;
-import org.mvel.compiler.AbstractParser;
 import org.mvel.integration.Interceptor;
 import org.mvel.util.MethodStub;
 import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.io.Serializable;
-import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -22,10 +20,11 @@ public class ParserContext implements Serializable {
     private int lineCount = 1;
     private int lineOffset;
 
-    protected Map<String, Object> imports;
-    protected Set<String> packageImports;
+    private ParserConfiguration parserConfiguration = new ParserConfiguration();
 
-    protected Map<String, Interceptor> interceptors;
+//    protected Map<String, Object> imports;
+//    protected Set<String> packageImports;
+//    protected Map<String, Interceptor> interceptors;
 
     private ArrayList<String> indexedVariables;
     private Map<String, Class> variables;
@@ -48,7 +47,6 @@ public class ParserContext implements Serializable {
     private boolean executableCodeReached = false;
     private boolean indexAllocation = false;
 
-
     public ParserContext() {
     }
 
@@ -60,10 +58,15 @@ public class ParserContext implements Serializable {
         this.rootParser = rootParser;
     }
 
+    public ParserContext(ParserConfiguration parserConfiguration) {
+        this.parserConfiguration = parserConfiguration;
+    }
+
     public ParserContext(Map<String, Object> imports, Map<String, Interceptor> interceptors, String sourceFile) {
-        setImports(imports);
-        this.interceptors = interceptors;
+//        setImports(imports);
+//        this.interceptors = interceptors;
         this.sourceFile = sourceFile;
+        this.parserConfiguration = new ParserConfiguration(imports, interceptors);
     }
 
     public boolean hasVarOrInput(String name) {
@@ -105,64 +108,29 @@ public class ParserContext implements Serializable {
     }
 
     public Class getImport(String name) {
-        return (imports != null && imports.containsKey(name) ? (Class) imports.get(name) : (Class) AbstractParser.LITERALS.get(name));
+        //   return (imports != null && imports.containsKey(name) ? (Class) imports.get(name) : (Class) AbstractParser.LITERALS.get(name));
+        return parserConfiguration.getImport(name);
     }
 
     public MethodStub getStaticImport(String name) {
-        return imports != null ? (MethodStub) imports.get(name) : null;
+        //return imports != null ? (MethodStub) imports.get(name) : null;
+        return parserConfiguration.getStaticImport(name);
     }
 
     public Object getStaticOrClassImport(String name) {
-        return (imports != null && imports.containsKey(name) ? imports.get(name) : AbstractParser.LITERALS.get(name));
+        //     return (imports != null && imports.containsKey(name) ? imports.get(name) : AbstractParser.LITERALS.get(name));
+        return parserConfiguration.getStaticOrClassImport(name);
     }
 
     public void addPackageImport(String packageName) {
-        if (packageImports == null) packageImports = new HashSet<String>();
-        packageImports.add(packageName);
+//        if (packageImports == null) packageImports = new HashSet<String>();
+//        packageImports.add(packageName);
+        parserConfiguration.addPackageImport(packageName);
     }
 
-    private boolean checkForDynamicImport(String className) {
-        if (packageImports == null) return false;
-
-        int found = 0;
-        Class cls = null;
-        for (String pkg : packageImports) {
-            try {
-                cls = currentThread().getContextClassLoader().loadClass(pkg + "." + className);
-                found++;
-            }
-            catch (ClassNotFoundException e) {
-                // do nothing.
-            }
-            catch (NoClassDefFoundError e) {
-                if (e.getMessage().contains("wrong name")) {
-                    // do nothing.  this is a weirdness in the jvm.
-                    // see MVEL-43
-                }
-                else {
-                    throw e;
-                }
-            }
-        }
-
-        if (found > 1) {
-            throw new CompileException("ambiguous class name: " + className);
-        }
-        else if (found == 1) {
-            addImport(className, cls);
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
 
     public boolean hasImport(String name) {
-        return (imports != null && imports.containsKey(name)) ||
-                (!"this".equals(name) && !"self".equals(name) && !"empty".equals(name) && !"null".equals(name) &&
-                        !"nil".equals(name) && !"true".equals(name) && !"false".equals(name)
-                        && AbstractParser.LITERALS.containsKey(name))
-                || checkForDynamicImport(name);
+        return parserConfiguration.hasImport(name);
     }
 
 
@@ -171,8 +139,7 @@ public class ParserContext implements Serializable {
     }
 
     public void addImport(String name, Class cls) {
-        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
-        this.imports.put(name, cls);
+        parserConfiguration.addImport(name, cls);
     }
 
     public void addImport(String name, Method method) {
@@ -180,8 +147,7 @@ public class ParserContext implements Serializable {
     }
 
     public void addImport(String name, MethodStub method) {
-        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
-        this.imports.put(name, method);
+        parserConfiguration.addImport(name, method);
     }
 
     public void initializeTables() {
@@ -276,15 +242,15 @@ public class ParserContext implements Serializable {
     }
 
     public Map<String, Interceptor> getInterceptors() {
-        return interceptors;
+        return this.parserConfiguration.getInterceptors();
     }
 
     public void setInterceptors(Map<String, Interceptor> interceptors) {
-        this.interceptors = interceptors;
+        this.parserConfiguration.setInterceptors(interceptors);
     }
 
     public Map<String, Object> getImports() {
-        return imports;
+        return this.parserConfiguration.getImports();
     }
 
     public void setImports(Map<String, Object> imports) {
@@ -356,7 +322,7 @@ public class ParserContext implements Serializable {
     }
 
     public boolean hasImports() {
-        return (imports != null && imports.size() != 0) || (packageImports != null && packageImports.size() != 0);
+        return parserConfiguration.hasImports();
     }
 
     public void declareFunction(Function function) {
@@ -443,4 +409,5 @@ public class ParserContext implements Serializable {
     public void setIndexAllocation(boolean indexAllocation) {
         this.indexAllocation = indexAllocation;
     }
+
 }
