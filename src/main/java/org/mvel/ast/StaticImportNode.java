@@ -65,7 +65,7 @@ public class StaticImportNode extends ASTNode {
             method = resolveMethod();
         }
 
-        findStaticMethodImportResolverFactory(factory).createVariable(methodName, method);
+        factory.createVariable(methodName, method);
         return null;
     }
 

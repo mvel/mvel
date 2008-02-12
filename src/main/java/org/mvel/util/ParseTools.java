@@ -608,50 +608,6 @@ public class ParseTools {
         return stmt;
     }
 
-//    public static VariableResolverFactory finalLocalVariableFactory(VariableResolverFactory factory, boolean indexable) {
-//        if (!indexable) {
-//            VariableResolverFactory v = factory;
-//            while (v != null) {
-//                if (v instanceof LocalVariableResolverFactory) {
-//                    return v;
-//                }
-//
-//                v = v.getNextFactory();
-//            }
-//
-//            if (factory == null) {
-//                throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
-//            }
-//            else {
-//                return factory;
-//
-//        //        return ResolverTools.insertFactory(factory, new DefaultLocalVariableResolverFactory(new HashMap<String, Object>()));
-//
-//            }
-//        }
-//        else {
-//            VariableResolverFactory v = factory;
-//            while (v != null) {
-//                if (v instanceof LocalVariableResolverFactory && v.isIndexedFactory()) {
-//                    System.out.println("returning:" + v);
-//                    return v;
-//                }
-//
-//                v = v.getNextFactory();
-//            }
-//
-//            if (factory == null) {
-//                throw new OptimizationFailure("unable to assign variables.  no variable resolver factory available.");
-//            }
-//            else {
-//                System.out.println("returning new functionVariableResolverFactory");
-//                return new FunctionVariableResolverFactory().setNextFactory(factory);
-//
-//             //   return ResolverTools.insertFactory(factory, new FunctionVariableResolverFactory());
-//            }
-//        }
-//    }
-
 
     public static TypeInjectionResolverFactoryImpl findTypeInjectionResolverFactory(VariableResolverFactory factory) {
         VariableResolverFactory v = factory;

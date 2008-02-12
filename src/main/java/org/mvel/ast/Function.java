@@ -26,7 +26,6 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.FunctionVariableResolverFactory;
 import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.findTypeInjectionResolverFactory;
 import static org.mvel.util.ParseTools.parseParameterList;
 
 
@@ -71,12 +70,18 @@ public class Function extends ASTNode implements Safe {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (name.length() != 0) findTypeInjectionResolverFactory(factory).createVariable(name, this);
+        if (name.length() != 0) {
+            //findTypeInjectionResolverFactory(factory).createVariable(name, this);
+            factory.createVariable(name, this);
+        }
         return this;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (name.length() != 0) findTypeInjectionResolverFactory(factory).createVariable(name, this);
+        if (name.length() != 0) {
+            //findTypeInjectionResolverFactory(factory).createVariable(name, this);
+            factory.createVariable(name, this);
+        }
         return this;
     }
 
