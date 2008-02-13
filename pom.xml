@@ -3,11 +3,11 @@
     <groupId>org.mvel</groupId>
     <artifactId>mvel</artifactId>
     <packaging>jar</packaging>
-    <version>mvel-2.0-dp3-SNAPSHOT</version>
+    <version>mvel-2.0-SNAPSHOT-2</version>
     <name>mvel</name>
     <url>http://mvel.codehaus.org</url>
   <scm>
-    <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/mvel-mvel-2.0-dp3-SNAPSHOT</developerConnection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/mvel-2.0-SNAPSHOT</developerConnection>
   </scm>
 
     <build>
