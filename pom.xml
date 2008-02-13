@@ -3,11 +3,11 @@
     <groupId>org.mvel</groupId>
     <artifactId>mvel</artifactId>
     <packaging>jar</packaging>
-    <version>2.0</version>
+    <version>mvel-2.0-dp3-SNAPSHOT</version>
     <name>mvel</name>
     <url>http://mvel.codehaus.org</url>
   <scm>
-    <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/mvel-2.0-SNAPSHOT</developerConnection>
+    <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/mvel-mvel-2.0-dp3-SNAPSHOT</developerConnection>
   </scm>
 
     <build>
@@ -108,13 +108,13 @@
 	  <repository>
 	    <id>codehaus-main</id>
 	    <name>Codehaus Maven Repository</name>
-	    <url>https://dav.codehaus.org/repository/mvel/</url>
+	    <url>file://./SNAPSHOTS/</url>
 	  </repository>
 	  <!-- use the following if you ARE using a snapshot version. -->
 	  <snapshotRepository>
 	    <id>codehaus-snapshot</id>
 	    <name>Codehaus Maven Repository</name>
-	    <url>https://dav.codehaus.org/repository/mvel/SNAPSHOTS/</url>
+	    <url>file://./SNAPSHOTS/</url>
 	  </snapshotRepository>
 	</distributionManagement>
 
