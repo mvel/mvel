@@ -13,7 +13,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 
 public class SimpleTests {
-    private static final double COUNT = 10000;
+    private static final double COUNT = 1000000;
 
     public static void main(String[] args) throws IOException {
         PrintStream ps = System.out;

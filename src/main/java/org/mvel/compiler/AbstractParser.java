@@ -323,8 +323,6 @@ public class AbstractParser implements Serializable {
                      * character, we stop and figure out what to do.
                      */
                     if (cursor != length && expr[cursor] == '(') {
-               //         fields |= ASTNode.METHOD;
-
                         if ((cursor = balancedCapture(expr, cursor, '(')) == -1) {
                             throw new CompileException("unbalanced braces", expr, cursor);
                         }
@@ -362,7 +360,6 @@ public class AbstractParser implements Serializable {
                                         name = new String(expr, start, trimLeft(cursor) - start);
                                         start = cursor += 2;
                                         captureToEOS();
-
 
                                         if (union) {
                                             return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, Operator.ADD, t);

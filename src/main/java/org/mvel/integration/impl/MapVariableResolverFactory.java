@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings({"unchecked"})
 public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     /**
      * Holds the instance of the variables.
@@ -37,7 +38,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
 
     private boolean cachingSafe = false;
 
-    public MapVariableResolverFactory(Map<String, Object> variables) {
+    public MapVariableResolverFactory(Map variables) {
         this.variables = variables;
     }
 

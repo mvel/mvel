@@ -21,6 +21,7 @@ package org.mvel.integration.impl;
 import org.mvel.integration.VariableResolver;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.getSimpleClassName;
+import static org.mvel.util.ParseTools.createClass;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,13 +79,13 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
         }
         else if (packageImports != null) {
 
-            Class loadClass;
+          //  Class loadClass;
             for (String s : packageImports) {
 
                 try {
-                    loadClass = ParseTools.createClass(s + "." + name);
+                   // loadClass = ParseTools.createClass(s + "." + name);
 
-                    addClass(loadClass);
+                    addClass(createClass(s + "." + name));
                     return true;
                 }
                 catch (ClassNotFoundException e) {

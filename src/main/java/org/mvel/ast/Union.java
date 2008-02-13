@@ -49,4 +49,8 @@ public class Union extends ASTNode {
                 name,
                 main.getReducedValue(ctx, thisValue, factory), factory, thisValue);
     }
+
+    public String toString() {
+        return main.toString() + "-[union]->" + accessor.toString();
+    }
 }

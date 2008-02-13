@@ -13,7 +13,11 @@ public class SetAccessor {
     }
 
     public void setValue(Object ctx, VariableResolverFactory vrf, Object value) {
-        if (rootAccessor != null) setAccessor.setValue(rootAccessor.getValue(ctx, ctx, vrf), ctx, vrf, value);
-        else setAccessor.setValue(ctx, ctx, vrf, value);
+        if (rootAccessor != null) {
+            setAccessor.setValue(rootAccessor.getValue(ctx, ctx, vrf), ctx, vrf, value);
+        }
+        else {
+            setAccessor.setValue(ctx, ctx, vrf, value);
+        }
     }
 }
