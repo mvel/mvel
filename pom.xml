@@ -108,13 +108,13 @@
 	  <repository>
 	    <id>codehaus-main</id>
 	    <name>Codehaus Maven Repository</name>
-	    <url>https://dav.codehaus.org/repository/mvel/</url>
+	    <url>file://./SNAPSHOTS/</url>
 	  </repository>
 	  <!-- use the following if you ARE using a snapshot version. -->
 	  <snapshotRepository>
 	    <id>codehaus-snapshot</id>
 	    <name>Codehaus Maven Repository</name>
-	    <url>https://dav.codehaus.org/repository/mvel/SNAPSHOTS/</url>
+	    <url>file://./SNAPSHOTS/</url>
 	  </snapshotRepository>
 	</distributionManagement>
 
