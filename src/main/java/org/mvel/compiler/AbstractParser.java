@@ -323,11 +323,9 @@ public class AbstractParser implements Serializable {
                      * character, we stop and figure out what to do.
                      */
                     if (cursor != length && expr[cursor] == '(') {
-                        if ((cursor = balancedCapture(expr, cursor, '(')) == -1) {
-                            throw new CompileException("unbalanced braces", expr, cursor);
-                        }
+                        cursor = balancedCapture(expr, cursor, '(') + 1;
 
-                        cursor++;
+                    //    cursor++;
                     }
 
                     /**
@@ -513,7 +511,8 @@ public class AbstractParser implements Serializable {
 
                                         throw new ParseException("unknown class: " + lastNode.getLiteralValue());
                                     }
-                                    else if (pCtx != null && ((idx = pCtx.variableIndexOf(t)) != -1 || (pCtx.isIndexAllocation()))) {
+                                    else
+                                    if (pCtx != null && ((idx = pCtx.variableIndexOf(t)) != -1 || (pCtx.isIndexAllocation()))) {
                                         IndexedAssignmentNode ian = new IndexedAssignmentNode(subArray(start, cursor), ASTNode.ASSIGN, idx);
 
                                         if (idx == -1) {
@@ -902,13 +901,7 @@ public class AbstractParser implements Serializable {
 
                         case '[':
                         case '{':
-                            if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
-                                if (cursor >= length) cursor--;
-                                throw new CompileException("unbalanced brace: in inline map/list/array creation", expr, cursor);
-                            }
-
-                            cursor++;
-
+                            cursor = balancedCapture(expr, cursor, expr[cursor]) + 1;
                             if (tokenContinues()) {
                                 //   if (lookAhead(1) == '.') {
                                 lastNode = new InlineCollectionNode(expr, start, start = cursor, fields);
@@ -1123,10 +1116,7 @@ public class AbstractParser implements Serializable {
             }
             else if (expr[cursor] == '{') {
                 blockStart = cursor;
-
-                if ((blockEnd = cursor = balancedCapture(expr, cursor, '{')) == -1) {
-                    throw new CompileException("unbalanced braces { }", expr, cursor);
-                }
+                blockEnd = cursor = balancedCapture(expr, cursor, '{');
             }
             else {
                 throw new CompileException("expected '{'", expr, cursor);
@@ -1172,18 +1162,13 @@ public class AbstractParser implements Serializable {
 
             if (debugSymbols) {
                 int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '{');
-                if (cap[0] == -1) {
-                    throw new CompileException("unbalanced braces { }", expr, cursor);
-                }
-
                 blockEnd = cursor = cap[0];
 
                 getParserContext().setLineCount((line = getParserContext().getLineCount() + cap[1]));
             }
-            else if ((blockEnd = cursor = balancedCapture(expr, cursor, '{')) == -1) {
-                throw new CompileException("unbalanced braces { }", expr, cursor);
+            else {
+                blockEnd = cursor = balancedCapture(expr, cursor, '{');
             }
-
         }
         else {
             blockStart = cursor - 1;
@@ -1242,9 +1227,7 @@ public class AbstractParser implements Serializable {
                 case '(':
                 case '[':
                 case '{':
-                    if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
-                        throw new CompileException("unbalanced braces", expr, cursor);
-                    }
+                    cursor = balancedCapture(expr, cursor, expr[cursor]);
                     break;
 
                 case ';':
@@ -1269,9 +1252,7 @@ public class AbstractParser implements Serializable {
                 case '(':
                 case '[':
                 case '{':
-                    if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
-                        throw new CompileException("unbalanced braces", expr, cursor);
-                    }
+                    cursor = balancedCapture(expr, cursor, expr[cursor]);
                     break;
 
                 case '=':

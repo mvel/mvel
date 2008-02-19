@@ -123,17 +123,13 @@ public class CollectionParser {
                     continue;
 
                 case '(':
-                    if ((cursor = balancedCapture(property, cursor, property[cursor])) == -1) {
-                        throw new RuntimeException("unbalanced braces inside inline collection");
-                    }
+                    cursor = balancedCapture(property, cursor, property[cursor]);
 
                     break;
 
                 case '\"':
                 case '\'':
-                    if ((cursor = balancedCapture(property, cursor, property[cursor])) == -1) {
-                        throw new RuntimeException("unterminated string literal starting at index " + start + " {" + property[start] + "}: " + new String(property));
-                    }
+                    cursor = balancedCapture(property, cursor, property[cursor]);
 
                     break;
 

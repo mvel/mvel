@@ -715,11 +715,12 @@ public class ParseTools {
     }
 
     private static Map<Class, Integer> typeResolveMap = new HashMap<Class, Integer>();
+
     static {
         Map<Class, Integer> t = typeResolveMap;
         t.put(BigDecimal.class, DataTypes.BIG_DECIMAL);
         t.put(BigInteger.class, DataTypes.BIG_INTEGER);
-        t.put(String.class,  DataTypes.STRING);
+        t.put(String.class, DataTypes.STRING);
 
         t.put(int.class, DataTypes.INTEGER);
         t.put(Integer.class, DataTypes.W_INTEGER);
@@ -985,7 +986,19 @@ public class ParseTools {
             }
         }
 
-        return -1;
+        switch (type) {
+            case '[':
+                throw new CompileException("unbalanced braces [ ... ]", chars, start);
+            case '{':
+                throw new CompileException("unbalanced braces { ... }", chars, start);
+            case '(':
+                throw new CompileException("unbalanced braces ( ... )", chars, start);
+            default:
+                throw new CompileException("unterminated string literal", chars, start);
+
+        }
+
+        //    return -1;
     }
 
     public static int[] balancedCaptureWithLineAccounting(char[] chars, int start, char type) {
@@ -1036,7 +1049,19 @@ public class ParseTools {
             }
         }
 
-        return new int[]{-1, 0};
+        //     return new int[]{-1, 0};
+
+        switch (type) {
+            case '[':
+                throw new CompileException("unbalanced braces [ ... ]", chars, start);
+            case '{':
+                throw new CompileException("unbalanced braces { ... }", chars, start);
+            case '(':
+                throw new CompileException("unbalanced braces ( ... )", chars, start);
+            default:
+                throw new CompileException("unterminated string literal", chars, start);
+
+        }
     }
 
     public static String handleStringEscapes(char[] input) {

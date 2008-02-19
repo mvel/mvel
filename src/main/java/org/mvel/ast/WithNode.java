@@ -92,9 +92,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                 case '{':
                 case '[':
                 case '(':
-                    if ((i = balancedCapture(block, i, block[i])) == -1) {
-                        throw new CompileException("unbalanced braces", block, i);
-                    }
+                    i = balancedCapture(block, i, block[i]);
                     continue;
 
                 case '*':
