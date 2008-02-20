@@ -184,7 +184,11 @@ public class CollectionParser {
             start++;
 
         char[] newA = new char[end - start];
-        arraycopy(property, start, newA, 0, end - start);
+        //arraycopy(property, start, newA, 0, end - start);
+        for (int i = 0; i < newA.length; i++) {
+           newA[i] = property[i + start];
+        }
+
         return newA;
     }
 

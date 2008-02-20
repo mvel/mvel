@@ -120,7 +120,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
 
-
         synchronized (Runtime.getRuntime()) {
             int r = (int) Math.random() * 100;
             cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_"
@@ -765,13 +764,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         int inputsOffset = compiledInputs.size();
 
         if (es != null) {
-            for (int i = 0; i < es.length; i++) {
-                ExecutableStatement e = es[i];
+            for (ExecutableStatement e : es) {
                 if (e instanceof ExecutableLiteral) {
                     continue;
                 }
 
-                compiledInputs.add((ExecutableStatement) e);
+                compiledInputs.add(e);
             }
         }
 
@@ -833,7 +831,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             if (es != null) {
                 ExecutableStatement cExpr;
                 for (int i = 0; i < es.length; i++) {
-                    if ((cExpr = (ExecutableStatement) es[i]).getKnownIngressType() == null) {
+                    if ((cExpr = es[i]).getKnownIngressType() == null) {
                         cExpr.setKnownIngressType(parameterTypes[i]);
                         cExpr.computeTypeConversionRule();
                     }

@@ -136,8 +136,7 @@ public class NewObjectNode extends ASTNode {
                     if (name[endRange] != '[')
                         throw new CompileException("unexpected token in contstructor", name, endRange);
 
-                    if ((to = balancedCapture(name, endRange, '[')) == -1)
-                        throw new CompileException("unbalanced brace '['", name, endRange);
+                    to = balancedCapture(name, endRange, '[');
 
                     sizes.add(ParseTools.subset(name, ++endRange, to - endRange));
                     endRange = to + 1;

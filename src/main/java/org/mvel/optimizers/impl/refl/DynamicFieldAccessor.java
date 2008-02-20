@@ -25,9 +25,11 @@ import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Field;
 
+@SuppressWarnings({"unchecked"})
 public class DynamicFieldAccessor implements AccessorNode {
     private AccessorNode nextNode;
     private Field field;
+    private Class targetType;
 
 
     public DynamicFieldAccessor() {
@@ -54,7 +56,7 @@ public class DynamicFieldAccessor implements AccessorNode {
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         try {
-            field.set(ctx, DataConversion.convert(value, field.getType()));
+            field.set(ctx, DataConversion.convert(value, targetType));
         }
         catch (Exception e) {
             throw new CompileException("unable to access field", e);
@@ -68,6 +70,7 @@ public class DynamicFieldAccessor implements AccessorNode {
 
     public void setField(Field field) {
         this.field = field;
+        this.targetType = field.getType();
     }
 
     public AccessorNode getNextNode() {

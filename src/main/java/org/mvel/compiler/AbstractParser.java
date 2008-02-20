@@ -387,7 +387,9 @@ public class AbstractParser implements Serializable {
                                     case '=':
                                         name = new String(expr, start, trimLeft(cursor) - start);
                                         start = cursor += 2;
+
                                         captureToEOS();
+
                                         if ((idx = pCtx.variableIndexOf(name)) != -1) {
                                             return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.SUB, idx, fields);
                                         }
@@ -400,6 +402,7 @@ public class AbstractParser implements Serializable {
                             case '*':
                                 if (isNext('=')) {
                                     name = new String(expr, start, trimLeft(cursor) - start);
+
                                     start = cursor += 2;
                                     captureToEOS();
 
@@ -416,6 +419,7 @@ public class AbstractParser implements Serializable {
                             case '/':
                                 if (isNext('=')) {
                                     name = new String(expr, start, trimLeft(cursor) - start);
+
                                     start = cursor += 2;
                                     captureToEOS();
 
@@ -440,8 +444,10 @@ public class AbstractParser implements Serializable {
                             case '~':
                                 if (isNext('=')) {
                                     char[] stmt = subArray(start, trimLeft(cursor));
+
                                     start = cursor += 2;
                                     skipWhitespace();
+
                                     return lastNode = new RegExMatch(stmt, fields, subArray(start, (cursor = balancedCapture(expr, cursor, expr[cursor]) + 1)));
                                 }
                                 break;
@@ -449,6 +455,7 @@ public class AbstractParser implements Serializable {
                             case '=':
                                 if (isNext('+')) {
                                     name = new String(expr, start, trimLeft(cursor) - start);
+
                                     start = cursor += 2;
                                     captureToEOS();
 

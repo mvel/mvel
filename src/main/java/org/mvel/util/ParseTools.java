@@ -997,8 +997,6 @@ public class ParseTools {
                 throw new CompileException("unterminated string literal", chars, start);
 
         }
-
-        //    return -1;
     }
 
     public static int[] balancedCaptureWithLineAccounting(char[] chars, int start, char type) {

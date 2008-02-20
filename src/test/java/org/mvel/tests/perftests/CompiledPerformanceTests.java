@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CompiledPerformanceTests extends TestCase {
-    private static final int ITERATIONS = 10000;
+    private static final int ITERATIONS = 1000000;
 
     protected Foo foo = new Foo();
     protected Map<String, Object> map = new HashMap<String, Object>();
@@ -60,10 +60,28 @@ public class CompiledPerformanceTests extends TestCase {
 //    }
 
     public void testQuickSort() throws IOException {
-        Serializable s = MVEL.compileExpression(new String(ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"))));
+        //   Serializable s = MVEL.compileExpression(new String(ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"))));
 
-        for (int i = 0; i < ITERATIONS; i++) {
-            MVEL.executeExpression(s, map);
+        for (int x = 0; x < 4; x++) {
+            Serializable s = MVEL.compileSetExpression("foo.bar.name");
+            long time = System.currentTimeMillis();
+
+            for (int i = 0; i < ITERATIONS; i++) {
+                MVEL.executeSetExpression(s, map, "foobie");
+            }
+
+            System.out.println("SET PERFORMANCE: " + (System.currentTimeMillis() - time));
+
+            time = System.currentTimeMillis();
+
+            s = MVEL.compileExpression("foo.bar.name");
+
+            for (int i = 0; i < ITERATIONS; i++) {
+                MVEL.executeExpression(s, map);
+            }
+
+            System.out.println("GET PERFORMANCE: " + (System.currentTimeMillis() - time));
+
         }
     }
 

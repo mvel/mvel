@@ -20,6 +20,7 @@ package org.mvel.optimizers.impl.refl;
 
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
+import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.eval;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.Function;
@@ -35,11 +36,13 @@ import org.mvel.optimizers.impl.refl.collection.ListCreator;
 import org.mvel.optimizers.impl.refl.collection.MapCreator;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
+import static org.mvel.util.ParseTools.getWidenedTarget;
 import static org.mvel.util.PropertyTools.getBaseComponentType;
 import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
 
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
+import static java.lang.reflect.Array.getLength;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -185,7 +188,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
                 else if (ctx.getClass().isArray()) {
                     //noinspection unchecked
-                    Array.set(ctx, eval(ex, ctx, variableFactory, Integer.class), DataConversion.convert(value, getBaseComponentType(ctx.getClass())));
+                    Array.set(ctx, eval(ex, ctx, variableFactory, Integer.class), convert(value, getBaseComponentType(ctx.getClass())));
                     return new SetAccessor(rootAccessor, new ArrayAccessorNest(ex));
                 }
                 else {
@@ -206,7 +209,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                                 + value.getClass() + ": to " + fld.getType());
                     }
 
-                    fld.set(ctx, DataConversion.convert(value, fld.getType()));
+                    fld.set(ctx, convert(value, fld.getType()));
                     return new SetAccessor(rootAccessor, new DynamicFieldAccessor(fld));
                 }
                 else {
@@ -223,14 +226,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                                 + value.getClass() + ": to " + meth.getParameterTypes()[0]);
                     }
 
-                    meth.invoke(ctx, DataConversion.convert(value, meth.getParameterTypes()[0]));
-
-                    return new SetAccessor(rootAccessor, new SetterAccessor(meth));
+                    meth.invoke(ctx, convert(value, meth.getParameterTypes()[0]));
                 }
                 else {
                     meth.invoke(ctx, value);
-                    return new SetAccessor(rootAccessor, new DynamicSetterAccessor(meth));
                 }
+
+                return new SetAccessor(rootAccessor, new SetterAccessor(meth));
+
             }
             else if (ctx instanceof Map) {
                 //noinspection unchecked
@@ -360,7 +363,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         else if ("length".equals(property) && ctx.getClass().isArray()) {
             addAccessorNode(new ArrayLength());
-            return Array.getLength(ctx);
+            return getLength(ctx);
         }
         else if (LITERALS.containsKey(property)) {
             addAccessorNode(new StaticReferenceAccessor(ctx = LITERALS.get(property)));
@@ -586,7 +589,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             if ("size".equals(name) && args.length == 0 && cls.isArray()) {
                 addAccessorNode(new ArrayLength());
-                return Array.getLength(ctx);
+                return getLength(ctx);
             }
 
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
@@ -601,7 +604,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                         cExpr.computeTypeConversionRule();
                     }
                     if (!cExpr.isConvertableIngressEgress()) {
-                        args[i] = DataConversion.convert(args[i], parameterTypes[i]);
+                        args[i] = convert(args[i], parameterTypes[i]);
                     }
                 }
             }
@@ -610,11 +613,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                  * Coerce any types if required.
                  */
                 for (int i = 0; i < args.length; i++)
-                    args[i] = DataConversion.convert(args[i], parameterTypes[i]);
+                    args[i] = convert(args[i], parameterTypes[i]);
             }
 
 
-            addAccessorNode(new MethodAccessor(ParseTools.getWidenedTarget(m), (ExecutableStatement[]) es));
+            addAccessorNode(new MethodAccessor(getWidenedTarget(m), (ExecutableStatement[]) es));
 
             /**
              * Invoke the target method and return the response.
@@ -792,7 +795,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             for (int i = 0; i < parms.length; i++) {
                 //noinspection unchecked
-                parms[i] = DataConversion.convert(parms[i], cns.getParameterTypes()[i]);
+                parms[i] = convert(parms[i], cns.getParameterTypes()[i]);
             }
 
             AccessorNode ca = new ConstructorAccessor(cns, cStmts);

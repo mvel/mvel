@@ -19,22 +19,24 @@
 package org.mvel.optimizers.impl.refl;
 
 import org.mvel.CompileException;
-import org.mvel.DataConversion;
+import static org.mvel.DataConversion.convert;
 import org.mvel.compiler.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Method;
 
+@SuppressWarnings({"unchecked"})
 public class DynamicSetterAccessor implements AccessorNode {
     private AccessorNode nextNode;
 
     private final Method method;
+    private Class targetType;
 
     public static final Object[] EMPTY = new Object[0];
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         try {
-            return method.invoke(ctx, DataConversion.convert(value, method.getParameterTypes()[0]));
+            return method.invoke(ctx, convert(value, targetType));
         }
         catch (Exception e) {
             throw new CompileException("error binding property", e);
@@ -49,6 +51,7 @@ public class DynamicSetterAccessor implements AccessorNode {
 
     public DynamicSetterAccessor(Method method) {
         this.method = method;
+        this.targetType = method.getParameterTypes()[0];
     }
 
     public Method getMethod() {
