@@ -834,12 +834,14 @@ public class ParseTools {
     }
 
     public static Object handleParserEgress(Object result, boolean returnBigDecimal) {
+
         if (result instanceof BigDecimal) {
+            int scale = ((BigDecimal) result).scale();
             if (returnBigDecimal) return result;
-            else if (((BigDecimal) result).scale() > 14) {
+            else if (scale > 14) {
                 return ((BigDecimal) result).doubleValue();
             }
-            else if (((BigDecimal) result).scale() > 0) {
+            else if (scale > 0) {
                 return ((BigDecimal) result).floatValue();
             }
             else if (((BigDecimal) result).longValue() > Integer.MAX_VALUE) {

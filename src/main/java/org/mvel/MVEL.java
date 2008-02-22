@@ -27,9 +27,7 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
-import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.handleParserEgress;
-import static org.mvel.util.ParseTools.loadFromFile;
+import static org.mvel.util.ParseTools.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -136,7 +134,7 @@ public class MVEL {
     public static Serializable compileExpression(String expression, Map<String, Object> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
 
-        return ParseTools.optimizeTree(new ExpressionCompiler(expression)
+        return optimizeTree(new ExpressionCompiler(expression)
                 .compile(new ParserContext(imports, interceptors, sourceName)));
     }
 
@@ -169,11 +167,12 @@ public class MVEL {
      * @param expression   - the expression to be compiled
      * @param imports      -
      * @param interceptors -
+     * @param sourceName -
      * @return -
      */
     public static Serializable compileExpression(char[] expression, Map<String, Object> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
-        return ParseTools.optimizeTree(new ExpressionCompiler(expression).compile(new ParserContext(imports, interceptors, sourceName)));
+        return optimizeTree(new ExpressionCompiler(expression).compile(new ParserContext(imports, interceptors, sourceName)));
     }
 
 

@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 public class SetterAccessor implements AccessorNode {
     private AccessorNode nextNode;
     private final Method method;
-    private Class<? extends Object> targetType;
+    private Class<?> targetType;
 
     private boolean coercionRequired = false;
 
@@ -41,7 +41,6 @@ public class SetterAccessor implements AccessorNode {
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         return null;
     }
-
 
     public SetterAccessor(Method method) {
         this.method = method;

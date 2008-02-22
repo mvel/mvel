@@ -37,6 +37,9 @@ import org.mvel.optimizers.impl.refl.collection.MapCreator;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.ParseTools.getWidenedTarget;
+import static org.mvel.util.ParseTools.determineActualTargetMethod;
+import static org.mvel.util.ParseTools.getBestCandidate;
+import static org.mvel.util.ParseTools.balancedCapture;
 import static org.mvel.util.PropertyTools.getBaseComponentType;
 import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
 
@@ -233,13 +236,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
 
                 return new SetAccessor(rootAccessor, new SetterAccessor(meth));
-
             }
             else if (ctx instanceof Map) {
                 //noinspection unchecked
                 ((Map) ctx).put(tk, value);
                 return new SetAccessor(rootAccessor, new MapAccessor(tk));
-
             }
             else {
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
@@ -251,7 +252,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         catch (IllegalAccessException e) {
             throw new PropertyAccessException("could not access property", e);
         }
-
     }
 
     private Accessor compileGetChain() {
@@ -335,7 +335,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         //noinspection unchecked
-        Class<? extends Object> cls = (ctx instanceof Class ? ((Class<? extends Object>) ctx) : ctx != null ? ctx.getClass() : null);
+        Class<?> cls = (ctx instanceof Class ? ((Class<?>) ctx) : ctx != null ? ctx.getClass() : null);
         Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
 
         if (member instanceof Field) {
@@ -350,7 +350,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 addAccessorNode(new GetterAccessor((Method) member));
             }
             catch (IllegalAccessException e) {
-                Method iFaceMeth = ParseTools.determineActualTargetMethod((Method) member);
+                Method iFaceMeth = determineActualTargetMethod((Method) member);
                 addAccessorNode(new GetterAccessor(iFaceMeth));
                 o = iFaceMeth.invoke(ctx, EMPTYARG);
             }
@@ -360,7 +360,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             addAccessorNode(new MapAccessor(property));
             return ((Map) ctx).get(property);
         }
-
         else if ("length".equals(property) && ctx.getClass().isArray()) {
             addAccessorNode(new ArrayLength());
             return getLength(ctx);
@@ -396,7 +395,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     }
                 }
             }
-
             throw new PropertyAccessException(property);
         }
     }
@@ -501,7 +499,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name) throws Exception {
         int st = cursor;
-        String tk = ((cursor = ParseTools.balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
+        String tk = ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
         cursor++;
 
         Object[] args;
@@ -554,7 +552,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
          * If the target object is an instance of java.lang.Class itself then do not
          * adjust the Class scope target.
          */
-        Class<? extends Object> cls = ctx instanceof Class ? (Class<? extends Object>) ctx : ctx.getClass();
+        Class<?> cls = ctx instanceof Class ? (Class<?>) ctx : ctx.getClass();
 
         Method m;
         Class[] parameterTypes = null;
@@ -566,7 +564,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
          * Try to find an instance method from the class target.
          */
 
-        if ((m = ParseTools.getBestCandidate(args, name, cls.getMethods())) != null) {
+        if ((m = getBestCandidate(args, name, cls.getMethods())) != null) {
             parameterTypes = m.getParameterTypes();
         }
 
@@ -574,7 +572,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             /**
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
-            if ((m = ParseTools.getBestCandidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
+            if ((m = getBestCandidate(args, name, cls.getClass().getDeclaredMethods())) != null) {
                 parameterTypes = m.getParameterTypes();
             }
         }
@@ -616,7 +614,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     args[i] = convert(args[i], parameterTypes[i]);
             }
 
-
             addAccessorNode(new MethodAccessor(getWidenedTarget(m), (ExecutableStatement[]) es));
 
             /**
@@ -630,12 +627,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) throws Exception {
         return rootNode.getValue(ctx, elCtx, variableFactory);
     }
-
-
-    public static void main(String[] args) {
-        new ReflectiveAccessorOptimizer().optimizeCollection("[test, foo, bar, {1,2,3}]".toCharArray(), null, null, null);
-    }
-
 
     private Accessor _getAccessor(Object o) {
         if (o instanceof List) {
@@ -677,9 +668,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return new ArrayCreator(a);
         }
         else {
-
             returnType = Object.class;
-
             return new ExprValueAccessor((String) o);
         }
 
@@ -759,7 +748,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         return rootNode;
     }
 
-
     public Object getResultOptPass() {
         return val;
     }
@@ -830,7 +818,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return ca;
         }
     }
-
 
     public Class getEgressType() {
         return returnType;

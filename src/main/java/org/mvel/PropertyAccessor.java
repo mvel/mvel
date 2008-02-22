@@ -214,7 +214,6 @@ public class PropertyAccessor {
 
             length = oLength;
 
-
             if (nextToken() == COL) {
                 int start = ++cursor;
 
@@ -572,8 +571,6 @@ public class PropertyAccessor {
                 name = ((MethodStub) ptr).getMethodName();
             }
             else if (ptr instanceof Function) {
-
-
                 return ((Function) ptr).call(ctx, thisReference, variableFactory, args);
             }
             else {

@@ -28,13 +28,12 @@ import java.util.Map;
  * @author Christopher Brock
  */
 public class MapCreator implements Accessor {
-
     private Accessor[] keys;
     private Accessor[] vals;
     private int size;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        Map map = new HashMap(size);
+        Map map = new HashMap(size * 2);
         for (int i = size - 1; i != -1; i--) {
             //noinspection unchecked
             map.put(keys[i].getValue(ctx, elCtx, variableFactory), vals[i].getValue(ctx, elCtx, variableFactory));
