@@ -19,9 +19,8 @@
 package org.mvel.integration.impl;
 
 import org.mvel.integration.VariableResolver;
-import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.getSimpleClassName;
 import static org.mvel.util.ParseTools.createClass;
+import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,25 +37,15 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver createVariable(String name, Object value) {
-//        throw new RuntimeException("unimplemented, please use addClass(Class)");
-
-//        VariableResolver vr = new ClassImportResolver(name.substring(name.lastIndexOf('.')), name);
-//        variableResolvers.put(vr.getName(), vr);
-//        return vr;
-
         if (nextFactory == null) {
             nextFactory = new MapVariableResolverFactory(new HashMap());
         }
 
         return nextFactory.createVariable(name, value);
-
     }
 
 
     public VariableResolver createVariable(String name, Object value, Class type) {
-//        throw new RuntimeException("attempt to created a typed import type.  this is highly redundant and more " +
-//                "importantly, not implemented.");
-
         if (nextFactory == null) {
             nextFactory = new MapVariableResolverFactory(new HashMap());
         }
@@ -79,12 +68,8 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
         }
         else if (packageImports != null) {
 
-          //  Class loadClass;
             for (String s : packageImports) {
-
                 try {
-                   // loadClass = ParseTools.createClass(s + "." + name);
-
                     addClass(createClass(s + "." + name));
                     return true;
                 }
@@ -110,7 +95,7 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     public Map<String, Object> getImportedClasses() {
         Map<String, Object> imports = new HashMap<String, Object>();
         for (String var : variableResolvers.keySet()) {
-            imports.put(var, (Class) variableResolvers.get(var).getValue());
+            imports.put(var, variableResolvers.get(var).getValue());
         }
 
         return imports;

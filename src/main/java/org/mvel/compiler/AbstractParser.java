@@ -325,7 +325,7 @@ public class AbstractParser implements Serializable {
                     if (cursor != length && expr[cursor] == '(') {
                         cursor = balancedCapture(expr, cursor, '(') + 1;
 
-                    //    cursor++;
+                        //    cursor++;
                     }
 
                     /**
@@ -1104,29 +1104,43 @@ public class AbstractParser implements Serializable {
         if (type == FUNCTION) {
             int start = cursor;
 
-            while (cursor != length && expr[cursor] != '(') cursor++;
+            while (cursor != length && expr[cursor] != '(' && expr[cursor] != '{') cursor++;
 
             if (cursor == length) {
                 throw new CompileException("expected '('", expr, start);
             }
 
-            String functionName = new String(expr, start, (startCond = cursor) - start);
+            String functionName = new String(expr, start, (startCond = cursor) - start).trim();
 
-            endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
-            startCond++;
-            cursor++;
+            if (expr[cursor] == '(') {
+                endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
+                startCond++;
+                cursor++;
 
-            skipWhitespace();
+                skipWhitespace();
 
-            if (cursor >= length) {
-                throw new CompileException("unbalanced braces", expr, cursor);
-            }
-            else if (expr[cursor] == '{') {
-                blockStart = cursor;
-                blockEnd = cursor = balancedCapture(expr, cursor, '{');
+                if (cursor >= length) {
+                    throw new CompileException("unbalanced braces", expr, cursor);
+                }
+                else if (expr[cursor] == '{') {
+                    blockStart = cursor;
+                    blockEnd = cursor = balancedCapture(expr, cursor, '{');
+                }
+                else {
+                    throw new CompileException("expected '{'", expr, cursor);
+                }
             }
             else {
-                throw new CompileException("expected '{'", expr, cursor);
+                functionName = null;
+                if (expr[cursor] == '{') {
+                    blockStart = cursor;
+                    blockEnd = cursor = balancedCapture(expr, cursor, '{');
+                }
+                else {
+                    blockStart = cursor;
+                    captureToEOS();
+                    blockEnd = cursor;
+                }
             }
 
             blockStart = trimRight(blockStart + 1);
@@ -1157,7 +1171,6 @@ public class AbstractParser implements Serializable {
                 cursor++;
             }
         }
-
 
         skipWhitespace();
 
@@ -1229,7 +1242,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected void captureToEOS() {
-        while (cursor != length && expr[cursor] != ';') {
+        while (cursor != length) {
             switch (expr[cursor]) {
                 case '(':
                 case '[':
@@ -1238,6 +1251,7 @@ public class AbstractParser implements Serializable {
                     break;
 
                 case ';':
+                case '}':
                     return;
 
             }
@@ -1390,6 +1404,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected boolean isStatementManuallyTerminated() {
+        if (cursor >= length) return true;
         int c = cursor;
         while (c != length && isWhitespace(expr[c])) c++;
         return (c != length && expr[c] == ';');
@@ -1495,7 +1510,6 @@ public class AbstractParser implements Serializable {
     public static void setLanguageLevel(int level) {
         OPERATORS.clear();
         OPERATORS.putAll(loadLanguageFeaturesByLevel(level));
-        System.out.println("optable: " + OPERATORS.size());
     }
 
     public static Map<String, Integer> loadLanguageFeaturesByLevel(int languageLevel) {

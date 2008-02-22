@@ -27,6 +27,7 @@ import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.FunctionVariableResolverFactory;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.parseParameterList;
+import static org.mvel.util.ParseTools.subCompileExpression;
 
 
 @SuppressWarnings({"unchecked"})
@@ -38,7 +39,9 @@ public class Function extends ASTNode implements Safe {
     protected int parmNum;
 
     public Function(String name, char[] parameters, char[] block) {
-        this.name = name.trim();
+        if ((this.name = name) == null || name.length() == 0) {
+            this.name = "AnonFunction" + this.hashCode();
+        }
         parmNum = (this.parameters = parseParameterList(parameters, 0, parameters.length)).length;
 
         ParserContext old = AbstractParser.getCurrentThreadParserContext();
@@ -56,11 +59,11 @@ public class Function extends ASTNode implements Safe {
             ctx.addVariable(s, Object.class);
         }
 
-        ParseTools.subCompileExpression(block, ctx);
+        subCompileExpression(block, ctx);
 
         ctx.addIndexedVariables(ctx.getVariables().keySet());
 
-        this.compiledBlock = (ExecutableStatement) ParseTools.subCompileExpression(block, ctx);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(block, ctx);
 
         AbstractParser.setCurrentThreadParserContext(old);
 

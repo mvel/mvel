@@ -32,12 +32,12 @@ public class ResolverTools {
      * @return An instance of the new factory
      */
     public static <T extends VariableResolverFactory> T appendFactory(VariableResolverFactory root, T newFactory) {
-        VariableResolverFactory vrf = root;
-
-        if (vrf.getNextFactory() == null) {
-            vrf.setNextFactory(newFactory);
+        if (root.getNextFactory() == null) {
+            root.setNextFactory(newFactory);
         }
         else {
+            VariableResolverFactory vrf = root;
+
             while (vrf.getNextFactory() != null) {
                 vrf = vrf.getNextFactory();
             }

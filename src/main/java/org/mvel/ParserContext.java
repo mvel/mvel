@@ -22,10 +22,6 @@ public class ParserContext implements Serializable {
 
     private ParserConfiguration parserConfiguration = new ParserConfiguration();
 
-//    protected Map<String, Object> imports;
-//    protected Set<String> packageImports;
-//    protected Map<String, Interceptor> interceptors;
-
     private ArrayList<String> indexedVariables;
     private Map<String, Class> variables;
     private Map<String, Class> inputs;
