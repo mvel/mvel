@@ -323,14 +323,27 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return thisRef;
             }
             else if (variableFactory != null && variableFactory.isResolveable(property)) {
-                try {
-                    loadVariableByName(property);
-                }
-                catch (Exception e) {
-                    throw new OptimizationFailure("critical error in JIT", e);
-                }
+                if (variableFactory.isIndexedFactory() && variableFactory.isTarget(property)) {
+                    int idx;
+                    try {
+                        loadVariableByIndex(idx = variableFactory.variableIndexOf(property));
+                    }
+                    catch (Exception e) {
+                        throw new OptimizationFailure(property);
+                    }
 
-                return variableFactory.getVariableResolver(property).getValue();
+                    return variableFactory.getIndexedVariableResolver(idx).getValue();
+                }
+                else {
+                    try {
+                        loadVariableByName(property);
+                    }
+                    catch (Exception e) {
+                        throw new OptimizationFailure("critical error in JIT", e);
+                    }
+
+                    return variableFactory.getVariableResolver(property).getValue();
+                }
             }
             else {
                 assert debug("ALOAD 1");
@@ -714,7 +727,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     mv.visitVarInsn(ASTORE, 4);
                 }
 
-                loadVariableByName(name);
+
+                if (variableFactory.isIndexedFactory()  && variableFactory.isTarget(name)) {
+                    loadVariableByIndex(variableFactory.variableIndexOf(name));
+                }
+                else {
+                    loadVariableByName(name);
+                }
+
 
                 checkcast(Function.class);
 
@@ -1424,6 +1444,24 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         assert debug("INVOKEINTERFACE org/mvel/integration/VariableResolverFactory.getVariableResolver");
         mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolverFactory",
                 "getVariableResolver", "(Ljava/lang/String;)Lorg/mvel/integration/VariableResolver;");
+
+        assert debug("INVOKEINTERFACE org/mvel/integration/VariableResolver.getValue");
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolver",
+                "getValue", "()Ljava/lang/Object;");
+
+        returnType = Object.class;
+    }
+
+    private void loadVariableByIndex(int pos) {
+        assert debug("ALOAD 3");
+        mv.visitVarInsn(ALOAD, 3);
+
+        assert debug("PUSH IDX VAL =" + pos);
+        intPush(pos);
+
+        assert debug("INVOKEINTERFACE org/mvel/integration/VariableResolverFactory.getIndexedVariableResolver");
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolverFactory",
+                "getIndexedVariableResolver", "(I)Lorg/mvel/integration/VariableResolver;");
 
         assert debug("INVOKEINTERFACE org/mvel/integration/VariableResolver.getValue");
         mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/integration/VariableResolver",

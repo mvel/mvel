@@ -8,12 +8,13 @@ import java.util.HashMap;
 
 public class FunctionVariableResolverFactory extends MapVariableResolverFactory implements LocalVariableResolverFactory {
 
+    
     public FunctionVariableResolverFactory() {
         super(null);
     }
 
     public FunctionVariableResolverFactory(VariableResolverFactory nextFactory) {
-        super(new HashMap<String, Object>(), nextFactory);
+        super(null, nextFactory);
     }
 
     public FunctionVariableResolverFactory(VariableResolverFactory nextFactory, String[] indexedVariables, Object[] parameters) {
@@ -86,7 +87,9 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
 
     public VariableResolver getVariableResolver(String name) {
         int idx = variableIndexOf(name);
-        if (idx != -1) return indexedVariableResolvers[idx];
+        if (idx != -1) {
+            return indexedVariableResolvers[idx];
+        }
         return super.getVariableResolver(name);
     }
 

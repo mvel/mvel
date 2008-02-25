@@ -18,7 +18,7 @@ public class SimpleTests {
     public static void main(String[] args) throws IOException {
         PrintStream ps = System.out;
 
-        System.setOut(new PrintStream(new NullOutputStream()));
+       System.setOut(new PrintStream(new NullOutputStream()));
         try {
             for (int i = 0; i < 10; i++) {
                 testQuickSortMVEL(ps);

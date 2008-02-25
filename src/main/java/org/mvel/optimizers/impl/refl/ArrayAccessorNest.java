@@ -31,6 +31,9 @@ public class ArrayAccessorNest implements AccessorNode {
     private AccessorNode nextNode;
     private ExecutableStatement index;
 
+    private Class baseComponentType;
+    private boolean requireConversion;
+
     public ArrayAccessorNest() {
     }
 
@@ -54,9 +57,21 @@ public class ArrayAccessorNest implements AccessorNode {
 
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        Object o = convert(value, getBaseComponentType(ctx.getClass()));
-        Array.set(ctx, (Integer) index.getValue(ctx, elCtx, variableFactory), o);
-        return o;
+        if (baseComponentType == null) {
+            baseComponentType = getBaseComponentType(ctx.getClass());
+            requireConversion = baseComponentType != value.getClass() && !baseComponentType.isAssignableFrom(value.getClass());
+        }
+
+
+        if (requireConversion) {
+            Object o = convert(value, baseComponentType);
+            Array.set(ctx, (Integer) index.getValue(ctx, elCtx, variableFactory), o);
+            return o;
+        }
+        else {
+            Array.set(ctx, (Integer) index.getValue(ctx, elCtx, variableFactory), value);
+            return value;
+        }
     }
 
     public ExecutableStatement getIndex() {

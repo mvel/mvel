@@ -59,8 +59,6 @@ public class ParserContext implements Serializable {
     }
 
     public ParserContext(Map<String, Object> imports, Map<String, Interceptor> interceptors, String sourceFile) {
-//        setImports(imports);
-//        this.interceptors = interceptors;
         this.sourceFile = sourceFile;
         this.parserConfiguration = new ParserConfiguration(imports, interceptors);
     }
@@ -114,13 +112,10 @@ public class ParserContext implements Serializable {
     }
 
     public Object getStaticOrClassImport(String name) {
-        //     return (imports != null && imports.containsKey(name) ? imports.get(name) : AbstractParser.LITERALS.get(name));
         return parserConfiguration.getStaticOrClassImport(name);
     }
 
     public void addPackageImport(String packageName) {
-//        if (packageImports == null) packageImports = new HashSet<String>();
-//        packageImports.add(packageName);
         parserConfiguration.addPackageImport(packageName);
     }
 
@@ -390,7 +385,6 @@ public class ParserContext implements Serializable {
     }
 
     public int variableIndexOf(String name) {
-        //   initializeTables();
         return indexedVariables != null ? indexedVariables.indexOf(name) : -1;
     }
 

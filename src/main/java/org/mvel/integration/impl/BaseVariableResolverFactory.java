@@ -21,9 +21,7 @@ package org.mvel.integration.impl;
 import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Use this class to extend you own VariableResolverFactories. It contains most of the baseline implementation needed
@@ -35,6 +33,9 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
     protected String[] indexedVariableNames;
     protected VariableResolver[] indexedVariableResolvers;
+
+    private Map<String, Integer> indexCache;
+
 
     public VariableResolverFactory getNextFactory() {
         return nextFactory;
@@ -127,10 +128,13 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     }
 
     public int variableIndexOf(String name) {
-        for (int i = 0; i < indexedVariableNames.length; i++) {
-            if (name.equals(indexedVariableNames[i])) return i;
-        }
-        return -1;
+            for (int i = 0; i < indexedVariableNames.length; i++) {
+                if (name.equals(indexedVariableNames[i])) {
+                    return i;
+                }
+            }
+            return -1;
+        
     }
 
     protected void setIndexedVariable(int index, VariableResolver resolver) {

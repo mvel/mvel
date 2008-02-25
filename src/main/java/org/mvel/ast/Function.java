@@ -25,7 +25,6 @@ import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.FunctionVariableResolverFactory;
-import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.ParseTools.subCompileExpression;
 
@@ -91,8 +90,8 @@ public class Function extends ASTNode implements Safe {
     public Object call(Object ctx, Object thisValue, VariableResolverFactory factory, Object[] parms) {
         try {
             if (parms != null && parms.length != 0) {
-                VariableResolverFactory f = new FunctionVariableResolverFactory(factory, parameters, parms);
-                return compiledBlock.getValue(ctx, thisValue, f);
+             //   VariableResolverFactory f = ;
+                return compiledBlock.getValue(ctx, thisValue, new FunctionVariableResolverFactory(factory, parameters, parms));
             }
             else {
                 return compiledBlock.getValue(ctx, thisValue, new DefaultLocalVariableResolverFactory(factory));
@@ -122,4 +121,10 @@ public class Function extends ASTNode implements Safe {
     public boolean hasParameters() {
         return this.parameters != null && this.parameters.length != 0;
     }
+
+    public String toString() {
+        return "FunctionDef:" + name;
+    }
+
 }
+

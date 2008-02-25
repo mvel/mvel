@@ -108,7 +108,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
 
 
     public boolean isTarget(String name) {
-        return variableResolvers.containsKey(name);
+        return variableResolvers != null && variableResolvers.containsKey(name);
     }
 
 
