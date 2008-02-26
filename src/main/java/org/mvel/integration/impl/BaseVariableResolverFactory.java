@@ -34,9 +34,6 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     protected String[] indexedVariableNames;
     protected VariableResolver[] indexedVariableResolvers;
 
-    private Map<String, Integer> indexCache;
-
-
     public VariableResolverFactory getNextFactory() {
         return nextFactory;
     }
@@ -137,11 +134,11 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
         
     }
 
-    protected void setIndexedVariable(int index, VariableResolver resolver) {
+    public VariableResolver setIndexedVariableResolver (int index, VariableResolver resolver) {
         if (indexedVariableResolvers == null) {
             indexedVariableResolvers = new VariableResolver[indexedVariableNames.length];
         }
-        indexedVariableResolvers[index] = resolver;
+        return indexedVariableResolvers[index] = resolver;
     }
 
     public boolean isIndexedFactory() {

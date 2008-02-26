@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 public class FunctionVariableResolverFactory extends MapVariableResolverFactory implements LocalVariableResolverFactory {
 
-    
+
     public FunctionVariableResolverFactory() {
         super(null);
     }
@@ -52,7 +52,6 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
             throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
         }
         else {
-            //      addResolver(name, vr = new MapVariableResolver(variables, name, type, false));
             return createIndexedVariable(variableIndexOf(name), name, value);
         }
     }
@@ -82,12 +81,22 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
     }
 
     public VariableResolver getIndexedVariableResolver(int index) {
+        if (indexedVariableResolvers[index] == null) {
+            /**
+             * If the register is null, this means we need to forward-allocate the variable onto the
+             * register table.
+             */
+            indexedVariableResolvers[index] = super.getVariableResolver(indexedVariableNames[index]);
+        }
         return indexedVariableResolvers[index];
     }
 
     public VariableResolver getVariableResolver(String name) {
         int idx = variableIndexOf(name);
         if (idx != -1) {
+            if (indexedVariableResolvers[idx] == null) {
+                indexedVariableResolvers[idx] = super.getVariableResolver(name);
+            }
             return indexedVariableResolvers[idx];
         }
         return super.getVariableResolver(name);
@@ -95,6 +104,10 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
 
     public boolean isIndexedFactory() {
         return true;
+    }
+
+    public boolean isTarget(String name) {
+        return variableIndexOf(name) != -1;
     }
 
     private int increaseRegisterTableSize() {

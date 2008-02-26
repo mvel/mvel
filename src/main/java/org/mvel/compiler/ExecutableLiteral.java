@@ -64,7 +64,7 @@ public class ExecutableLiteral implements ExecutableStatement, Safe {
     }
 
     public Class getKnownEgressType() {
-        return this.literal.getClass();
+        return this.literal == null ? Object.class : this.literal.getClass();
     }
 
     public boolean isConvertableIngressEgress() {

@@ -41,12 +41,12 @@ public class Function extends ASTNode implements Safe {
         if ((this.name = name) == null || name.length() == 0) {
             this.name = "AnonFunction" + this.hashCode();
         }
+
         parmNum = (this.parameters = parseParameterList(parameters, 0, parameters.length)).length;
 
         ParserContext old = AbstractParser.getCurrentThreadParserContext();
 
         ParserContext ctx = new ParserContext();
-        ctx.addIndexedVariables(this.parameters);
         ctx.declareFunction(this);
         ctx.setIndexAllocation(true);
 
@@ -56,9 +56,22 @@ public class Function extends ASTNode implements Safe {
          */
         for (String s : this.parameters) {
             ctx.addVariable(s, Object.class);
+            ctx.addIndexedVariable(s);
         }
 
+
         subCompileExpression(block, ctx);
+
+        /**
+         * Add globals as inputs
+         */
+        if (old.getVariables() != null) {
+            for (String s : old.getVariables().keySet()) {
+                ctx.addInput(s, old.getVariables().get(s));
+            }
+
+            ctx.processTables();
+        }
 
         ctx.addIndexedVariables(ctx.getVariables().keySet());
 
@@ -66,14 +79,19 @@ public class Function extends ASTNode implements Safe {
 
         AbstractParser.setCurrentThreadParserContext(old);
 
-        this.parameters = (String[]) ctx.getIndexedVariables().toArray(new String[ctx.getIndexedVariables().size()]);
+        this.parameters = new String[ctx.getIndexedVariables().size()];
+        int i = 0;
+        for (String s : ctx.getIndexedVariables()) {
+            this.parameters[i++] = s;
+        }
+
+        //    this.parameters = (String[]) ctx.getIndexedVariables().toArray(new String[ctx.getIndexedVariables().size()]);
 
         this.egressType = this.compiledBlock.getKnownEgressType();
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (name.length() != 0) {
-            //findTypeInjectionResolverFactory(factory).createVariable(name, this);
             factory.createVariable(name, this);
         }
         return this;
@@ -90,7 +108,7 @@ public class Function extends ASTNode implements Safe {
     public Object call(Object ctx, Object thisValue, VariableResolverFactory factory, Object[] parms) {
         try {
             if (parms != null && parms.length != 0) {
-             //   VariableResolverFactory f = ;
+                //   VariableResolverFactory f = ;
                 return compiledBlock.getValue(ctx, thisValue, new FunctionVariableResolverFactory(factory, parameters, parms));
             }
             else {

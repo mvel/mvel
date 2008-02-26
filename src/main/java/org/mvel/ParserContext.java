@@ -146,6 +146,13 @@ public class ParserContext implements Serializable {
         if (inputs == null) inputs = new LinkedHashMap<String, Class>();
     }
 
+    public void addVariable(String name, Class type, boolean failIfNewAssignment) {
+        initializeTables();
+        if (variables.containsKey(name) && failIfNewAssignment) throw new CompileException("statically-typed variable already defined in scope: " + name);
+        if (type == null) type = Object.class;
+        variables.put(name, type);
+    }
+
     public void addVariable(String name, Class type) {
         initializeTables();
         if (variables.containsKey(name)) return;
@@ -153,11 +160,27 @@ public class ParserContext implements Serializable {
         variables.put(name, type);
     }
 
+    public void addVariables(Map<String, Class> variables) {
+        if (variables == null) return;
+        initializeTables();
+        for (String name : variables.keySet()) {
+            addVariable(name, variables.get(name));
+        }
+    }
+
     public void addInput(String name, Class type) {
         if (inputs == null) inputs = new LinkedHashMap<String, Class>();
         if (inputs.containsKey(name)) return;
         if (type == null) type = Object.class;
         inputs.put(name, type);
+    }
+
+    public void addInputs(Map<String, Class> inputs) {
+        if (inputs == null) return;
+        if (inputs == null) inputs = new LinkedHashMap<String, Class>();
+        for (String name : inputs.keySet()) {
+            addInput(name, inputs.get(name));
+        }
     }
 
     public void processTables() {
@@ -358,7 +381,7 @@ public class ParserContext implements Serializable {
         if (indexedVariables == null) indexedVariables = new ArrayList<String>();
     }
 
-    public ArrayList getIndexedVariables() {
+    public ArrayList<String> getIndexedVariables() {
         initIndexedVariables();
         return indexedVariables;
     }

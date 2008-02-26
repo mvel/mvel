@@ -20,6 +20,7 @@ package org.mvel.ast;
 
 import static org.mvel.MVEL.eval;
 import org.mvel.compiler.ExecutableStatement;
+import org.mvel.compiler.AbstractParser;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
@@ -53,6 +54,9 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
         }
 
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            AbstractParser.getCurrentThreadParserContext().addVariable(name, egressType, true);
+        }
     }
 
 

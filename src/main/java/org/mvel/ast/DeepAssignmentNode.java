@@ -24,6 +24,7 @@ import static org.mvel.PropertyAccessor.set;
 import org.mvel.compiler.Accessor;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
+import org.mvel.compiler.AbstractParser;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
@@ -64,6 +65,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             set = (CompiledSetExpression) compileSetExpression(property.toCharArray());
+            AbstractParser.getCurrentThreadParserContext().addVariable(name, egressType);
         }
     }
 

@@ -52,6 +52,8 @@ public interface VariableResolverFactory {
 
     public VariableResolver createIndexedVariable(int index, String name, Object value, Class<?> typee);
 
+    public VariableResolver setIndexedVariableResolver(int index, VariableResolver variableResolver);
+
 
     /**
      * Returns the next factory in the factory chain.  MVEL uses a hierarchical variable resolution strategy,

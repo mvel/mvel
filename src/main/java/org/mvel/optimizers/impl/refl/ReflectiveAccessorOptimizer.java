@@ -28,6 +28,7 @@ import org.mvel.compiler.Accessor;
 import org.mvel.compiler.AccessorNode;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.VariableResolver;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.impl.refl.collection.ArrayCreator;
@@ -322,10 +323,15 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 return this.thisRef;
             }
             else if (variableFactory != null && variableFactory.isResolveable(property)) {
-                if (variableFactory.isIndexedFactory()) {
+                if (variableFactory.isIndexedFactory() && variableFactory.isTarget(property)) {
                     int idx;
                     addAccessorNode(new IndexedVariableAccessor(idx = variableFactory.variableIndexOf(property)));
-                    assert idx != -1;
+
+                    VariableResolver vr = variableFactory.getIndexedVariableResolver(idx);
+                    if (vr == null) {
+                        variableFactory.setIndexedVariableResolver(idx, variableFactory.getVariableResolver(property));
+                    }
+
                     return variableFactory.getIndexedVariableResolver(idx).getValue();
                 }
                 else {

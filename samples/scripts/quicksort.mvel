@@ -4,13 +4,16 @@
  * by: Christopher Michael Brock
  */
 
-function swap(array, i, j) {
+
+array = null;
+
+function swap(i, j) {
     temp = array[i];
     array[i] = array[j];
     array[j] = temp;
 }
 
-function partition(array, low, high) {
+function partition(low, high) {
     pivotPoint = array[low];
 
     i = low - 1;
@@ -19,30 +22,30 @@ function partition(array, low, high) {
     while (i < j) {
         i++; while (array[i] < pivotPoint) ++i;
         j--; while (array[j] > pivotPoint) --j;
-        if (i < j) swap(array, i, j);
+        if (i < j) swap(i, j);
     }
 
     j;
 }
 
-function sort(array, low, high) {
+function sort(low, high) {
     if (low < high) {
         var p;
-        sort(array, low, p = partition(array, low, high));
-        sort(array, p + 1, high);
+        sort(low, p = partition(low, high));
+        sort(p + 1, high);
     }
 }
 
-function quicksort(array) {
-    sort(array, 0, array.length - 1);
+function quicksort() {
+    sort(0, array.length - 1);
 }
 
-test = {50,20,21,209,10,77,8,9,55,73,41,99};
+array = {50,20,21,209,10,77,8,9,55,73,41,99};
 
-quicksort(test);
+quicksort();
 
-//foreach (item : test) {
+//foreach (item : array) {
 //    System.out.println(item);
 //}
 
-test;
+array;

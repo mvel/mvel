@@ -19,6 +19,7 @@
 package org.mvel.ast;
 
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.compiler.AbstractParser;
 
 /**
  * @author Christopher Brock
@@ -28,7 +29,7 @@ public class IndexedDeclTypedVarNode extends ASTNode implements Assignment {
 
     public IndexedDeclTypedVarNode(int register, Class type) {
         this.egressType = type;
-        this.register = register;
+        this.register = register;        
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

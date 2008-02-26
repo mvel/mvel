@@ -26,14 +26,13 @@ public class IndexedVariableAccessor implements AccessorNode {
     private AccessorNode nextNode;
     private int register;
 
-
     public IndexedVariableAccessor(int register) {
         this.register = register;
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
-        if (vrf == null)
-            throw new CompileException("cannot access property in indexed accessor: " + register);
+//        if (vrf == null)
+//            throw new CompileException("cannot access property in indexed accessor: " + register);
 
         if (nextNode != null) {
             return nextNode.getValue(vrf.getIndexedVariableResolver(register).getValue(), elCtx, vrf);
@@ -41,6 +40,7 @@ public class IndexedVariableAccessor implements AccessorNode {
         else {
             return vrf.getIndexedVariableResolver(register).getValue();
         }
+
     }
 
     public AccessorNode getNextNode() {

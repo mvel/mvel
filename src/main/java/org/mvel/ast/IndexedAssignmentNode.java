@@ -22,6 +22,7 @@ import org.mvel.MVEL;
 import static org.mvel.MVEL.compileSetExpression;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
+import org.mvel.compiler.AbstractParser;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
@@ -52,6 +53,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
         int assignStart;
 
+
         if (operation != -1) {
             checkNameSafety(this.name = name.trim());
 
@@ -77,6 +79,10 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
         }
         else {
             checkNameSafety(this.name = new String(expr));
+        }
+
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            AbstractParser.getCurrentThreadParserContext().addVariable(name, egressType);
         }
     }
 

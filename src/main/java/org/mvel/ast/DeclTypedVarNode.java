@@ -20,6 +20,7 @@ package org.mvel.ast;
 
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.checkNameSafety;
+import org.mvel.compiler.AbstractParser;
 
 /**
  * @author Christopher Brock
@@ -27,9 +28,13 @@ import static org.mvel.util.ParseTools.checkNameSafety;
 public class DeclTypedVarNode extends ASTNode implements Assignment {
     private String name;
 
-    public DeclTypedVarNode(String name, Class type) {
+    public DeclTypedVarNode(String name, Class type, int fields) {
         this.egressType = type;
         checkNameSafety(this.name = name);
+
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            AbstractParser.getCurrentThreadParserContext().addVariable(name, egressType, true);
+        }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
