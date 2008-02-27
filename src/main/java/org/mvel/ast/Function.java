@@ -80,12 +80,11 @@ public class Function extends ASTNode implements Safe {
         AbstractParser.setCurrentThreadParserContext(old);
 
         this.parameters = new String[ctx.getIndexedVariables().size()];
+
         int i = 0;
         for (String s : ctx.getIndexedVariables()) {
             this.parameters[i++] = s;
         }
-
-        //    this.parameters = (String[]) ctx.getIndexedVariables().toArray(new String[ctx.getIndexedVariables().size()]);
 
         this.egressType = this.compiledBlock.getKnownEgressType();
     }
@@ -99,7 +98,6 @@ public class Function extends ASTNode implements Safe {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (name.length() != 0) {
-            //findTypeInjectionResolverFactory(factory).createVariable(name, this);
             factory.createVariable(name, this);
         }
         return this;

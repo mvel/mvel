@@ -21,7 +21,7 @@ public class SimpleValueResolver implements VariableResolver {
     }
 
     public int getFlags() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0;
     }
 
     public Object getValue() {

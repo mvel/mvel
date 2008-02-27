@@ -73,9 +73,7 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
             indexedVariableResolvers[index].setValue(value);
         }
         else {
-            VariableResolver resolver = new SimpleValueResolver(value);
-            resolver.setValue(value);
-            indexedVariableResolvers[index] = resolver;
+            indexedVariableResolvers[index] = new SimpleValueResolver(value);
         }
         return indexedVariableResolvers[index];
     }
