@@ -4,8 +4,6 @@ import org.mvel.CompileException;
 import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 
-import java.util.HashMap;
-
 public class FunctionVariableResolverFactory extends MapVariableResolverFactory implements LocalVariableResolverFactory {
 
 
@@ -84,7 +82,7 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
              * If the register is null, this means we need to forward-allocate the variable onto the
              * register table.
              */
-            indexedVariableResolvers[index] = super.getVariableResolver(indexedVariableNames[index]);
+           return indexedVariableResolvers[index] = super.getVariableResolver(indexedVariableNames[index]);
         }
         return indexedVariableResolvers[index];
     }

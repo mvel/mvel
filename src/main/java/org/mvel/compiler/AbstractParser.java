@@ -324,8 +324,6 @@ public class AbstractParser implements Serializable {
                      */
                     if (cursor != length && expr[cursor] == '(') {
                         cursor = balancedCapture(expr, cursor, '(') + 1;
-
-                        //    cursor++;
                     }
 
                     /**
@@ -352,6 +350,7 @@ public class AbstractParser implements Serializable {
                                         }
 
                                         cursor += 2;
+
                                         return lastNode;
 
                                     case '=':
@@ -382,6 +381,7 @@ public class AbstractParser implements Serializable {
                                             lastNode = new PostFixDecNode(name);
                                         }
                                         cursor += 2;
+
                                         return lastNode;
 
                                     case '=':
@@ -1131,7 +1131,7 @@ public class AbstractParser implements Serializable {
                 }
             }
             else {
-                functionName = null;
+             //   functionName = null;
                 if (expr[cursor] == '{') {
                     blockStart = cursor;
                     blockEnd = cursor = balancedCapture(expr, cursor, '{');
@@ -1523,6 +1523,7 @@ public class AbstractParser implements Serializable {
                 operatorsTable.put("?", TERNARY);
                 operatorsTable.put("switch", SWITCH);
                 operatorsTable.put("function", FUNCTION);
+                operatorsTable.put("def", FUNCTION);
 
             case 4: // assignment
                 operatorsTable.put("=", ASSIGN);

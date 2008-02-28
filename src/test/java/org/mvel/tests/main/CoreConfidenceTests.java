@@ -34,8 +34,6 @@ import java.util.List;
 
 @SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes", "UnnecessaryBoxing", "unchecked", "PointlessArithmeticExpression"})
 public class CoreConfidenceTests extends AbstractTest {
-
-
     public void testSingleProperty() {
         assertEquals(false, test("fun"));
     }
