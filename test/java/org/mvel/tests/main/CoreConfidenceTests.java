@@ -505,7 +505,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testProjectionSupport3() {
-        assertEquals(3, ((Collection)test("(name in things)")).size());
+        assertEquals(3, ((Collection) test("(name in things)")).size());
     }
 
     public void testSizeOnInlineArray() {
@@ -2495,7 +2495,6 @@ public class CoreConfidenceTests extends AbstractTest {
         new JButton().setToolTipText("");
 
 
-
         System.out.println(testCompiledSimple(
                 "if (a.text!=null) {\n" +
                         "    b.text = a.text;\n" +
@@ -2940,6 +2939,18 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testThreadSafetyInterpreter1() {
+
+        //First evaluation
+        System.out.println("First evaluation: " + MVEL.eval("true"));
+
+        new Thread(new Runnable() {
+            public void run() {
+                // Second evaluation - this succeeds only if the first evaluation is not commented out
+                System.out.println("Second evaluation: " + MVEL.eval("true"));
+            }
+        }).start();
+    }
 
 }
 
