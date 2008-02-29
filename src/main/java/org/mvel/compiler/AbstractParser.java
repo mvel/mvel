@@ -614,7 +614,9 @@ public class AbstractParser implements Serializable {
                                 /**
                                  * Handle single line comments.
                                  */
-                                while (cursor != length && expr[cursor] != '\n') cursor++;
+                                // while (cursor != length && expr[cursor] != '\n') cursor++;
+
+                                captureToEOL();
 
                                 if (debugSymbols) {
                                     line = pCtx.getLineCount();
@@ -1073,7 +1075,7 @@ public class AbstractParser implements Serializable {
                         cursor++;
                     }
                 }
-                while (blockContinues());
+                while (ifThenElseblockContinues());
                 return first;
             }
 
@@ -1107,15 +1109,27 @@ public class AbstractParser implements Serializable {
             captureToNextTokenJunction();
 
             if (cursor == length) {
-                throw new CompileException("expected '('", expr, start);
+                throw new CompileException("unexpected end of statement", expr, start);
             }
 
+            /**
+             * Grabe the function name.
+             */
             String functionName = new String(expr, start, (startCond = cursor) - start).trim();
 
-            if (isReservedWord(functionName))
-                throw new CompileException("illegal function name: use of reserved word", expr, cursor);
+            /**
+             * Check to see if the name is legal.
+             */
+            if (isReservedWord(functionName) || !isValidNameorLabel(functionName))
+                throw new CompileException("illegal function name or use of reserved word", expr, cursor);
+
 
             if (expr[cursor] == '(') {
+                /**
+                 * If we discover an opening bracket after the function name, we check to see
+                 * if this function accepts parameters.
+                 */
+
                 endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
                 startCond++;
                 cursor++;
@@ -1136,29 +1150,54 @@ public class AbstractParser implements Serializable {
                 }
             }
             else {
+                /**
+                 * This function has not parameters.
+                 */
                 if (expr[cursor] == '{') {
+                    /**
+                     * This function is bracketed.  We capture the entire range in the brackets.
+                     */
                     blockStart = cursor;
                     blockEnd = cursor = balancedCapture(expr, cursor, '{');
                 }
                 else {
+                    /**
+                     * This is a single statement function declaration.  We only capture the statement.
+                     */
                     blockStart = cursor;
                     captureToEOS();
                     blockEnd = cursor;
                 }
             }
 
+            /**
+             * Trim any whitespace from the captured block range.
+             */
             blockStart = trimRight(blockStart + 1);
             blockEnd = trimLeft(blockEnd);
 
             cursor++;
 
+            /**
+             * Check if the function is manually terminated.
+             */
             if (!isStatementManuallyTerminated()) {
+                /**
+                 * Add an EndOfStatement to the split accumulator in the parser.
+                 */
                 splitAccumulator.add(new EndOfStatement());
             }
 
+            /**
+             * Produce the funciton node.
+             */
             return new Function(functionName, subArray(startCond, endCond), subArray(blockStart, blockEnd));
         }
         else if (cond) {
+            /**
+             * This block is an: IF, FOREACH or WHILE node.
+             */
+
             if (debugSymbols) {
                 int[] cap = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(');
 
@@ -1196,7 +1235,7 @@ public class AbstractParser implements Serializable {
         }
         else {
             blockStart = cursor - 1;
-            captureToEOLorOF();
+            captureToEOSorEOL();
             blockEnd = cursor + 1;
         }
 
@@ -1223,7 +1262,13 @@ public class AbstractParser implements Serializable {
         }
     }
 
-    protected boolean blockContinues() {
+
+    /**
+     * Checking from the current cursor position, check to see if the if-then-else block continues.
+     *
+     * @return boolean value
+     */
+    protected boolean ifThenElseblockContinues() {
         if ((cursor + 4) < length) {
             if (expr[cursor] != ';') cursor--;
             skipWhitespace();
@@ -1233,6 +1278,11 @@ public class AbstractParser implements Serializable {
         return false;
     }
 
+    /**
+     * Checking from the current cursor position, check to see if we're inside a contiguous identifier.
+     *
+     * @return
+     */
     protected boolean tokenContinues() {
         if (cursor >= length) return false;
         else if (expr[cursor] == '.' || expr[cursor] == '[') return true;
@@ -1245,6 +1295,9 @@ public class AbstractParser implements Serializable {
         return false;
     }
 
+    /**
+     * Capture from the current cursor position, to the end of the statement.
+     */
     protected void captureToEOS() {
         while (cursor != length) {
             switch (expr[cursor]) {
@@ -1263,13 +1316,25 @@ public class AbstractParser implements Serializable {
         }
     }
 
-    protected void captureToEOLorOF() {
+    /**
+     * From the current cursor position, capture to the end of statement, or the end of line, whichever comes first.
+     */
+    protected void captureToEOSorEOL() {
         while (cursor != length && (expr[cursor] != '\n' && expr[cursor] != '\r' && expr[cursor] != ';')) {
             cursor++;
         }
     }
 
+    /**
+     * From the current cursor position, capture to the end of the line.
+     */
+    protected void captureToEOL() {
+        while (cursor != length && (expr[cursor] != '\n')) cursor++;
+    }
 
+    /**
+     * From the current cursor position, capture to the end of the current token.
+     */
     protected void captureToEOT() {
         skipWhitespace();
         while (++cursor != length) {
@@ -1308,20 +1373,42 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    /**
+     * From the specified cursor position, trim out any whitespace between the current position and the end of the
+     * last non-whitespace character.
+     *
+     * @param pos - current position
+     * @return new position.
+     */
     protected int trimLeft(int pos) {
         while (pos != 0 && isWhitespace(expr[pos - 1])) pos--;
         return pos;
     }
 
+    /**
+     * From the specified cursor position, trim out any whitespace between the current position and beginning of the
+     * first non-whitespace character.
+     *
+     * @param pos
+     * @return
+     */
     protected int trimRight(int pos) {
         while (pos != length && isWhitespace(expr[pos])) pos++;
         return pos;
     }
 
+    /**
+     * If the cursor is currently pointing to whitespace, move the cursor forward to the first non-whitespace
+     * character.
+     */
     protected void skipWhitespace() {
         while (cursor != length && isWhitespace(expr[cursor])) cursor++;
     }
 
+    /**
+     * If the cursor is currently pointing to whitespace, move the cursor forward to the first non-whitespace
+     * character, but account for carraige returns in the script (updates parser field: line).
+     */
     protected void skipWhitespaceWithLineAccounting() {
         while (cursor != length && isWhitespace(expr[cursor])) {
             switch (expr[cursor]) {
@@ -1335,6 +1422,9 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    /**
+     * From the current cursor position, capture to the end of the next token junction.
+     */
     protected void captureToNextTokenJunction() {
         while (cursor != length) {
             switch (expr[cursor]) {
@@ -1348,9 +1438,38 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    /**
+     * From the current cursor position, trim backward over any whitespace to the first non-whitespace character.
+     */
     protected void trimWhitespace() {
         while (cursor != 0 && isWhitespace(expr[cursor - 1])) cursor--;
     }
+
+
+    /**
+     * Check if the specified string is a reserved word in the parser.
+     *
+     * @param name
+     * @return
+     */
+    public static boolean isReservedWord(String name) {
+        return LITERALS.containsKey(name) || OPERATORS.containsKey(name);
+    }
+
+    /**
+     * Check if the specfied string represents a valid name of label.
+     *
+     * @param name
+     * @return
+     */
+    public static boolean isValidNameorLabel(String name) {
+        for (char c : name.toCharArray()) {
+            if (c == '.') return false;
+            else if (!isIdentifierPart(c)) return false;
+        }
+        return true;
+    }
+
 
     protected void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
@@ -1378,10 +1497,12 @@ public class AbstractParser implements Serializable {
         while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
     }
 
-    public static boolean isReservedWord(String name) {
-        return LITERALS.containsKey(name) || OPERATORS.containsKey(name);
-    }
 
+    /**
+     * Return the previous non-whitespace character.
+     *
+     * @return
+     */
     protected char lookToLast() {
         if (cursor == 0) return 0;
         int temp = cursor;
@@ -1389,17 +1510,33 @@ public class AbstractParser implements Serializable {
         return expr[temp];
     }
 
+    /**
+     * Return the last character (delta -1 of cursor position).
+     *
+     * @return
+     */
     protected char lookBehind() {
         if (cursor == 0) return 0;
         return expr[cursor - 1];
     }
 
+    /**
+     * Return the next character (delta 1 of cursor position).
+     *
+     * @return
+     */
     protected char lookAhead() {
         int tmp = cursor + 1;
         if (tmp != length) return expr[tmp];
         return 0;
     }
 
+    /**
+     * Return the character, forward of the currrent cursor position based on the specified range delta.
+     *
+     * @param range
+     * @return
+     */
     protected char lookAhead(int range) {
         if ((cursor + range) >= length) return 0;
         else {
@@ -1407,6 +1544,14 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    /**
+     * NOTE: This method assumes that the current position of the cursor is at the end of a logical statement, to
+     * begin with.
+     * <p/>
+     * Determines whether or not the logical statement is manually terminated with a statement separator (';').
+     *
+     * @return
+     */
     protected boolean isStatementManuallyTerminated() {
         if (cursor >= length) return true;
         int c = cursor;
@@ -1414,6 +1559,12 @@ public class AbstractParser implements Serializable {
         return (c != length && expr[c] == ';');
     }
 
+    /**
+     * Returns true of if the detal 1 of the cursor matches the specified character.
+     *
+     * @param c
+     * @return
+     */
     protected boolean isNext(char c) {
         return lookAhead() == c;
     }
@@ -1433,14 +1584,25 @@ public class AbstractParser implements Serializable {
         contextControl(SET, pCtx, null);
     }
 
+    /**
+     * Create a new ParserContext in the current thread.
+     */
     protected void newContext() {
         contextControl(SET, new ParserContext(), this);
     }
 
+    /**
+     * Create a new ParserContext in the current thread, using the one specified.
+     *
+     * @param pCtx
+     */
     protected void newContext(ParserContext pCtx) {
         contextControl(SET, pCtx, this);
     }
 
+    /**
+     * Remove the current ParserContext from the thread.
+     */
     protected void removeContext() {
         contextControl(REMOVE, null, this);
     }
@@ -1599,6 +1761,9 @@ public class AbstractParser implements Serializable {
         return operatorsTable;
     }
 
+    /**
+     * Remove the current parser context from the thread.
+     */
     public static void resetParserContext() {
         contextControl(REMOVE, null, null);
     }
