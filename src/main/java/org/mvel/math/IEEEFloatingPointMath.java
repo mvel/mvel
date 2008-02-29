@@ -98,7 +98,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
 
     private static Object _doOperations(final int type1, final Object val1, final int operation, final int type2, final Object val2) {
         if (operation < 10 || operation == EQUAL || operation == NEQUAL) {
-            if ((type1 == 1 || type1 > 99) && type1 == type2) {
+            if (type1 > 99 && type1 == type2) {
                 return doOperationsSameType(type1, val1, operation, val2);
             }
             else if ((type1 > 99 && (type2 > 99)) || (isNumber(val1) && isNumber(val2))) {

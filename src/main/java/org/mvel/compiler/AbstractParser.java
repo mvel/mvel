@@ -1055,7 +1055,7 @@ public class AbstractParser implements Serializable {
             case ASTNode.BLOCK_IF: {
                 do {
                     if (tk != null) {
-                        skipToNextTokenJunction();
+                        captureToNextTokenJunction();
                         skipWhitespace();
 
                         cond = expr[cursor] != '{' && expr[cursor] == 'i' && expr[++cursor] == 'f'
@@ -1078,7 +1078,7 @@ public class AbstractParser implements Serializable {
             }
 
             default: // either BLOCK_WITH or BLOCK_FOREACH
-                skipToNextTokenJunction();
+                captureToNextTokenJunction();
                 if (debugSymbols) {
                     skipWhitespaceWithLineAccounting();
                 }
@@ -1104,13 +1104,16 @@ public class AbstractParser implements Serializable {
         if (type == FUNCTION) {
             int start = cursor;
 
-            while (cursor != length && expr[cursor] != '(' && expr[cursor] != '{') cursor++;
+            captureToNextTokenJunction();
 
             if (cursor == length) {
                 throw new CompileException("expected '('", expr, start);
             }
 
             String functionName = new String(expr, start, (startCond = cursor) - start).trim();
+
+            if (isReservedWord(functionName))
+                throw new CompileException("illegal function name: use of reserved word", expr, cursor);
 
             if (expr[cursor] == '(') {
                 endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
@@ -1127,11 +1130,12 @@ public class AbstractParser implements Serializable {
                     blockEnd = cursor = balancedCapture(expr, cursor, '{');
                 }
                 else {
-                    throw new CompileException("expected '{'", expr, cursor);
+                    blockStart = cursor;
+                    captureToEOS();
+                    blockEnd = cursor;
                 }
             }
             else {
-             //   functionName = null;
                 if (expr[cursor] == '{') {
                     blockStart = cursor;
                     blockEnd = cursor = balancedCapture(expr, cursor, '{');
@@ -1331,7 +1335,7 @@ public class AbstractParser implements Serializable {
         }
     }
 
-    protected void skipToNextTokenJunction() {
+    protected void captureToNextTokenJunction() {
         while (cursor != length) {
             switch (expr[cursor]) {
                 case '{':

@@ -3051,6 +3051,20 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("foobar", test("a = function { 'foobar' }; a();"));
     }
 
+
+    public void testThreadSafetyInterpreter1() {
+
+        //First evaluation
+        System.out.println("First evaluation: " + MVEL.eval("true"));
+
+        new Thread(new Runnable() {
+            public void run() {
+                // Second evaluation - this succeeds only if the first evaluation is not commented out
+                System.out.println("Second evaluation: " + MVEL.eval("true"));
+            }
+        }).start();
+    }
+
 }
 
 

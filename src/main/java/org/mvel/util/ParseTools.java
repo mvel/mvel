@@ -1126,7 +1126,7 @@ public class ParseTools {
 
     public static void checkNameSafety(String name) {
         if (isReservedWord(name)) {
-            throw new CompileException("reserved word in assignment: " + name);
+            throw new CompileException("illegal use of reserved word: " + name);
         }
     }
 
