@@ -36,7 +36,7 @@ import java.util.*;
 import static java.util.Collections.synchronizedMap;
 
 /**
- * The MVEL Template Interpreter.  Naming this an "Interpreter" is not inaccurate.   All template expressions
+ * The MVEL Template Interpreter.    All template expressions
  * are pre-compiled by the the {@link TemplateCompiler} prior to being processed by this interpreter.<br/>
  * <br/>
  * Under normal circumstances, it is completely acceptable to execute the parser/interpreter from the static
@@ -162,6 +162,7 @@ public class TemplateInterpreter {
     }
 
     private ExecutionStack stack;
+    private ExecutionStack localStack;
 
     /**
      * Creates a new intepreter
@@ -172,25 +173,16 @@ public class TemplateInterpreter {
         if (CACHE_DISABLE) {
             nodes = new TemplateCompiler(this).compileExpression();
         }
-        else if (!EX_PRECACHE.containsKey(template)) {
+        else if ((this.expression = EX_PRECACHE.get(template)) == null) {
             EX_PRECACHE.put(template, this.expression = template.toString().toCharArray());
-            nodes = new TemplateCompiler(this).compileExpression();
-            Node[] nodes = cloneAll(EX_NODE_CACHE.get(expression));
-
-            EX_NODE_CACHE.put(template, nodes);
+            EX_NODE_CACHE.put(template, nodes = new TemplateCompiler(this).compileExpression());
         }
         else {
-            this.expression = EX_PRECACHE.get(template);
-
-            try {
-                this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
-            }
-            catch (NullPointerException e) {
-                EX_NODE_CACHE.remove(expression);
-                nodes = new TemplateCompiler(this).compileExpression();
-                EX_NODE_CACHE.put(expression, cloneAll(nodes));
+            if ((this.nodes = EX_NODE_CACHE.get(expression)) == null) {
+                EX_NODE_CACHE.put(expression, nodes = new TemplateCompiler(this).compileExpression());
             }
         }
+        this.nodes = cloneAll(nodes);
     }
 
     private Node[] cloneAll(Node[] nodes) {
@@ -210,29 +202,20 @@ public class TemplateInterpreter {
     }
 
 
-    public TemplateInterpreter(String expression) {
+    public TemplateInterpreter(String template) {
         if (CACHE_DISABLE) {
             nodes = new TemplateCompiler(this).compileExpression();
         }
-        else if (!EX_PRECACHE.containsKey(expression)) {
-            EX_PRECACHE.put(expression, this.expression = expression.toCharArray());
-            nodes = new TemplateCompiler(this).compileExpression();
-            EX_NODE_CACHE.put(expression, nodes);
-            this.nodes = cloneAll(nodes);
+        else if ((this.expression = EX_PRECACHE.get(template)) == null) {
+            EX_PRECACHE.put(template, this.expression = template.toCharArray());
+            EX_NODE_CACHE.put(template, nodes = new TemplateCompiler(this).compileExpression());
         }
         else {
-            
-            try {
-                this.nodes = cloneAll(EX_NODE_CACHE.get(this.expression = EX_PRECACHE.get(expression)));
-            }
-            catch (NullPointerException e) {
-                EX_NODE_CACHE.remove(expression);
-                nodes = new TemplateCompiler(this).compileExpression();
-                EX_NODE_CACHE.put(expression, nodes);
-                this.nodes = cloneAll(nodes);
+            if ((this.nodes = EX_NODE_CACHE.get(expression)) == null) {
+                EX_NODE_CACHE.put(expression, nodes = new TemplateCompiler(this).compileExpression());
             }
         }
-
+        this.nodes = cloneAll(nodes);
     }
 
     public TemplateInterpreter(char[] expression) {
@@ -422,40 +405,56 @@ public class TemplateInterpreter {
                         break;
                     }
                     case FOREACH: {
-                        ForeachContext foreachContext = (ForeachContext) currNode.getRegister();
 
                         if (tokens == null) {
                             tokens = new HashMap();
                         }
 
-                        if (foreachContext.getItererators() == null) {
+                        ForeachContext foreachContext;
+                        String[] names;
+                        String[] aliases;
+
+                        if (!(localStack.peek() instanceof ForeachContext)) {
+
+                            // create a clone of the context
+                            foreachContext = ((ForeachContext) currNode.getRegister()).clone();
+                            names = foreachContext.getNames();
+                            aliases = foreachContext.getAliases();
+
                             try {
-                                String[] lists = getForEachSegment(currNode).split(",");
-                                Iterator[] iters = new Iterator[lists.length];
-                                for (int i = 0; i < lists.length; i++) {
+                                Iterator[] iters = new Iterator[names.length];
+                                for (int i = 0; i < names.length; i++) {
                                     //noinspection unchecked
-                                    Object listObject = new MVELInterpretedRuntime(lists[i], ctx, tokens).parse();
+                                    Object listObject = new MVELInterpretedRuntime(names[i], ctx, tokens).parse();
                                     if (listObject instanceof Object[]) {
                                         listObject = Arrays.asList((Object[]) listObject);
                                     }
-                                    iters[i] = ((Collection) listObject).iterator();
+
+
+                                    iters[i] = ((Collection) listObject).iterator(); // this throws null pointer exception in thread race
                                 }
+
+                                // set the newly created iterators into the context
                                 foreachContext.setIterators(iters);
+
+                                // push the context onto the local stack.
+                                localStack.push(foreachContext);
                             }
                             catch (ClassCastException e) {
-                                throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)));
+                                throw new CompileException("expression for collections does not return a collections object: " + new String(getSegment(currNode)), e);
                             }
                             catch (NullPointerException e) {
-                                throw new CompileException("null returned for foreach in expression: " + (getForEachSegment(currNode)));
+                                throw new CompileException("null returned for foreach in expression: " + (getForEachSegment(currNode)), e);
                             }
+                        }
+                        else {
+                            foreachContext = (ForeachContext) localStack.peek();
+                            //      names = foreachContext.getNames();
+                            aliases = foreachContext.getAliases();
                         }
 
                         Iterator[] iters = foreachContext.getItererators();
-                        String[] alias = currNode.getAlias().split(",");
-                        // must trim vars
-                        for (int i = 0; i < alias.length; i++) {
-                            alias[i] = alias[i].trim();
-                        }
+
 
                         if (iters[0].hasNext()) {
                             push();
@@ -464,21 +463,26 @@ public class TemplateInterpreter {
                             for (int i = 0; i < iters.length; i++) {
 
                                 //noinspection unchecked
-                                tokens.put(alias[i], iters[i].next());
+                                tokens.put(aliases[i], iters[i].next());
                             }
-                            if (foreachContext.getCount() != 0) {
+
+
+                            int c;
+                            tokens.put("i0", c = foreachContext.getCount());
+
+                            if (c != 0) {
                                 sbuf.append(foreachContext.getSeperator());
                             }
                             //noinspection unchecked
-                            tokens.put("i0", foreachContext.getCount());
-                            foreachContext.setCount(foreachContext.getCount() + 1);
+                            foreachContext.incrementCount();
                         }
                         else {
                             for (int i = 0; i < iters.length; i++) {
-                                tokens.remove(alias[i]);
+                                tokens.remove(aliases[i]);
                             }
-                            foreachContext.setIterators(null);
-                            foreachContext.setCount(0);
+                            //       foreachContext.setIterators(null);
+                            //       foreachContext.setCount(0);
+                            localStack.pop();
                             exitContext();
                         }
                         break;
@@ -539,6 +543,7 @@ public class TemplateInterpreter {
 
     private void initStack() {
         stack = new ExecutionStack();
+        localStack = new ExecutionStack();
     }
 
     private void push() {

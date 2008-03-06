@@ -205,31 +205,23 @@ public class TemplateConfidenceTests extends TestCase {
     }
 
     public void testMultiCollectionControlLoop() {
-        assertEquals("HappyHappy0Happy!Happy!1JoyJoy2Joy!Joy!3",
+        assertEquals("0=Happy:Happy,1=Happy!:Happy!,2=Joy:Joy,3=Joy!:Joy!",
                 parse(
-                        "@foreach{list, array as listItem, arrayItem}" +
-                                "@{listItem}@{arrayItem}@{i0}" +
-                                "@end{}"
+                        "@foreach{list, array as listItem}" +
+                                "@{i0}=@{item}:@{listItem}" +
+                                "@end{','}"
                 ));
     }
+//
+//    public void testMultiCollectionWithSingleCharSeperatorControlLoop() {
+//        assertEquals("Happy0Happy,Happy!1Happy!,Joy2Joy,Joy!3Joy!",
+//                parse(
+//                        "@foreach{list, array as listItem, arrayItem}" +
+//                                "@{listItem}@{i0}@{arrayItem}" +
+//                                "@end{\",\"  }"
+//                ));
+//    }
 
-    public void testMultiCollectionWithSingleCharSeperatorControlLoop() {
-        assertEquals("Happy0Happy,Happy!1Happy!,Joy2Joy,Joy!3Joy!",
-                parse(
-                        "@foreach{list, array as listItem, arrayItem}" +
-                                "@{listItem}@{i0}@{arrayItem}" +
-                                "@end{\",\"  }"
-                ));
-    }
-
-    public void testMultiCollectionWithMultipleCharSeperatorControlLoop() {
-        assertEquals("HappyHappy,|Happy!Happy!,|JoyJoy,|Joy!Joy!",
-                parse(
-                        "@foreach{list, array as listItem, arrayItem}" +
-                                "@{listItem}@{arrayItem}" +
-                                "@end{\",|\"  }"
-                ));
-    }
 
     public void testControlLoopListMultiple() {
         for (int i = 0; i < 100; i++) {
@@ -243,24 +235,24 @@ public class TemplateConfidenceTests extends TestCase {
         }
     }
 
-    public void testMultiCollectionControlLoopMultiple() {
-        for (int i = 0; i < 100; i++) {
-            testMultiCollectionControlLoop();
-        }
-    }
+//    public void testMultiCollectionControlLoopMultiple() {
+//        for (int i = 0; i < 100; i++) {
+//            testMultiCollectionControlLoop();
+//        }
+//    }
+//
+//
+//    public void testMultiCollectionWithSingleCharSeperatorControlLoopMultiple() {
+//        for (int i = 0; i < 100; i++) {
+//            testMultiCollectionWithSingleCharSeperatorControlLoop();
+//        }
+//    }
 
-
-    public void testMultiCollectionWithSingleCharSeperatorControlLoopMultiple() {
-        for (int i = 0; i < 100; i++) {
-            testMultiCollectionWithSingleCharSeperatorControlLoop();
-        }
-    }
-
-    public void testMultiCollectionWithMultipleCharSeperatorControlLoopMultiple() {
-        for (int i = 0; i < 100; i++) {
-            testMultiCollectionWithMultipleCharSeperatorControlLoop();
-        }
-    }
+//    public void testMultiCollectionWithMultipleCharSeperatorControlLoopMultiple() {
+//        for (int i = 0; i < 100; i++) {
+//            testMultiCollectionWithMultipleCharSeperatorControlLoop();
+//        }
+//    }
 
     public static interface TestInterface {
         public String getName();
@@ -502,6 +494,10 @@ public class TemplateConfidenceTests extends TestCase {
 
     public void testStringEscaping2() {
         assertEquals("MVEL's Parser is Fast", parse("@{'MVEL\\'s Parser is Fast'}"));
+    }
+
+    public void testNestedAtSymbol() {
+        assertEquals("email:foo@foo.com", parse("email:@{'foo@foo.com'}"));
     }
 
 

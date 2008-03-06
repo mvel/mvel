@@ -312,7 +312,7 @@ public class ASTNode implements Cloneable, Serializable {
                     }
                 }
 
-                throw new CompileException("can not resolve identifier: " + new String(name));
+                throw new CompileException("can not resolve identifier: '" + new String(name) + "'");
             }
         }
 

@@ -155,8 +155,9 @@ public class ParseTools {
 
         Integer hash = createClassSignatureHash(methods[0].getDeclaringClass(), arguments);
 
-        if (RESOLVED_METH_CACHE.containsKey(method) && RESOLVED_METH_CACHE.get(method).containsKey(hash)) {
-            return RESOLVED_METH_CACHE.get(method).get(hash);
+        Map<Integer, Method> methCache = RESOLVED_METH_CACHE.get(method);
+        if (methCache != null) {
+            if ((bestCandidate = methCache.get(hash)) != null) return bestCandidate;
         }
 
         for (Method meth : methods) {
@@ -202,10 +203,12 @@ public class ParseTools {
         }
 
         if (bestCandidate != null) {
-            if (!RESOLVED_METH_CACHE.containsKey(method))
-                RESOLVED_METH_CACHE.put(method, new WeakHashMap<Integer, Method>());
+            //        methCache = RESOLVED_METH_CACHE.get(method);
+            if (methCache == null) {
+                RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, Method>());
+            }
 
-            RESOLVED_METH_CACHE.get(method).put(hash, bestCandidate);
+            methCache.put(hash, bestCandidate);
         }
 
         return bestCandidate;
@@ -250,12 +253,13 @@ public class ParseTools {
     private static Map<Constructor, Class[]> CONSTRUCTOR_PARMS_CACHE = new WeakHashMap<Constructor, Class[]>(10);
 
     private static Class[] getConstructors(Constructor cns) {
-        if (CONSTRUCTOR_PARMS_CACHE.containsKey(cns))
-            return CONSTRUCTOR_PARMS_CACHE.get(cns);
+        Class[] parms = CONSTRUCTOR_PARMS_CACHE.get(cns);
+        if (parms != null)
+            return parms;
         else {
-            Class[] c = cns.getParameterTypes();
-            CONSTRUCTOR_PARMS_CACHE.put(cns, c);
-            return c;
+            parms = cns.getParameterTypes();
+            CONSTRUCTOR_PARMS_CACHE.put(cns, parms);
+            return parms;
         }
     }
 
@@ -272,8 +276,10 @@ public class ParseTools {
 
         Integer hash = createClassSignatureHash(cls, targetParms);
 
-        if (RESOLVED_CONST_CACHE.containsKey(cls) && RESOLVED_CONST_CACHE.get(cls).containsKey(hash))
-            return RESOLVED_CONST_CACHE.get(cls).get(hash);
+        Map<Integer, Constructor> cache = RESOLVED_CONST_CACHE.get(cls);
+        if (cache != null) {
+            if ((bestCandidate = cache.get(hash)) != null) return bestCandidate;
+        }
 
         for (Constructor construct : getConstructors(cls)) {
             if ((parmTypes = getConstructors(construct)).length != arguments.length)
@@ -315,10 +321,10 @@ public class ParseTools {
         }
 
         if (bestCandidate != null) {
-            if (!RESOLVED_CONST_CACHE.containsKey(cls))
-                RESOLVED_CONST_CACHE.put(cls, new WeakHashMap<Integer, Constructor>());
-
-            RESOLVED_CONST_CACHE.get(cls).put(hash, bestCandidate);
+            if (cache == null) {
+                RESOLVED_CONST_CACHE.put(cls, cache = new WeakHashMap<Integer, Constructor>());
+            }
+            cache.put(hash, bestCandidate);
         }
 
 
@@ -339,15 +345,17 @@ public class ParseTools {
 
     public static Class createClass(String className) throws ClassNotFoundException {
         ClassLoader classLoader = currentThread().getContextClassLoader();
-        if (!CLASS_RESOLVER_CACHE.containsKey(classLoader)) {
-            CLASS_RESOLVER_CACHE.put(classLoader, new WeakHashMap<String, Class>(10));
+        Map<String, Class> cache = CLASS_RESOLVER_CACHE.get(classLoader);
+        if (cache == null) {
+            CLASS_RESOLVER_CACHE.put(classLoader, cache = new WeakHashMap<String, Class>(10));
         }
 
-        if (CLASS_RESOLVER_CACHE.get(classLoader).containsKey(className)) {
-            return CLASS_RESOLVER_CACHE.get(classLoader).get(className);
+        Class cls;
+
+        if ((cls = cache.get(className)) != null) {
+            return cls;
         }
         else {
-            Class cls;
             try {
                 cls = currentThread().getContextClassLoader().loadClass(className);
             }
@@ -358,17 +366,18 @@ public class ParseTools {
                 cls = Class.forName(className);
             }
 
-            CLASS_RESOLVER_CACHE.get(classLoader).put(className, cls);
+            cache.put(className, cls);
             return cls;
         }
     }
 
     public static Constructor[] getConstructors(Class cls) {
-        if (CLASS_CONSTRUCTOR_CACHE.containsKey(cls))
-            return CLASS_CONSTRUCTOR_CACHE.get(cls);
+        Constructor[] cns = CLASS_CONSTRUCTOR_CACHE.get(cls);
+        if (cns != null) {
+            return cns;
+        }
         else {
-            Constructor[] cns = cls.getConstructors();
-            CLASS_CONSTRUCTOR_CACHE.put(cls, cns);
+            CLASS_CONSTRUCTOR_CACHE.put(cls, cns = cls.getConstructors());
             return cns;
         }
     }
@@ -1090,5 +1099,5 @@ public class ParseTools {
         }
         return new String(n);
     }
-    
+
 }

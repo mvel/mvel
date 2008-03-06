@@ -629,7 +629,7 @@ public class AbstractParser implements Serializable {
                                          * Check to see if we should disqualify this current token as a potential
                                          * type-cast candidate.
                                          */
-                                        if (lastWS || !isIdentifierPart(expr[cursor])) {
+                                        if ((lastWS && expr[cursor] != '.') || !(isIdentifierPart(expr[cursor]) || expr[cursor] == '.')) {
                                             singleToken = false;
                                         }
                                         else if (isWhitespace(expr[cursor])) {
@@ -826,11 +826,11 @@ public class AbstractParser implements Serializable {
         }
         return lastNode = node;
     }
-                                                                                                                     
+
     public ASTNode handleSubstatement(Substatement stmt) {
         return stmt.getStatement() != null && stmt.getStatement().isLiteralOnly() ?
                 new LiteralNode(stmt.getStatement().getValue(null, null, null), fields)
-                    : stmt;
+                : stmt;
     }
 
 
@@ -1165,7 +1165,8 @@ public class AbstractParser implements Serializable {
 
     protected void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
-            if (!EX_PRECACHE.containsKey(expression)) {
+            this.expr = EX_PRECACHE.get(expression);
+            if (this.expr == null) {
                 length = (this.expr = expression.toCharArray()).length;
 
                 // trim any whitespace.
@@ -1179,7 +1180,7 @@ public class AbstractParser implements Serializable {
                 EX_PRECACHE.put(expression, e);
             }
             else {
-                length = (expr = EX_PRECACHE.get(expression)).length;
+                length = this.expr.length;
             }
         }
     }
@@ -1210,7 +1211,8 @@ public class AbstractParser implements Serializable {
     }
 
     protected char lookAhead() {
-        if (cursor != length) return expr[cursor + 1];
+        int tmp = cursor + 1;
+        if (tmp != length) return expr[tmp];
         return 0;
     }
 
@@ -1339,7 +1341,7 @@ public class AbstractParser implements Serializable {
                 OPERATORS.put("if", IF);
                 OPERATORS.put("else", ELSE);
                 OPERATORS.put("?", Operator.TERNARY);
-             //   OPERATORS.put("switch", SWITCH);
+                //   OPERATORS.put("switch", SWITCH);
 
             case 4: // assignment
                 OPERATORS.put("=", Operator.ASSIGN);
@@ -1349,9 +1351,9 @@ public class AbstractParser implements Serializable {
 
             case 3: // iteration
                 OPERATORS.put("foreach", FOREACH);
-             //   OPERATORS.put("while", WHILE);
-            //    OPERATORS.put("for", FOR);
-             //   OPERATORS.put("do", DO);
+                //   OPERATORS.put("while", WHILE);
+                //    OPERATORS.put("for", FOR);
+                //   OPERATORS.put("do", DO);
 
             case 2: // multi-statement
                 OPERATORS.put("return", RETURN);

@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 public class SetterAccessor implements AccessorNode {
     private AccessorNode nextNode;
     private final Method method;
+    
     private Class<? extends Object> targetType;
 
     private boolean coercionRequired = false;
