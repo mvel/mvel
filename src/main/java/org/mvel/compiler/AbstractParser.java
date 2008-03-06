@@ -153,7 +153,7 @@ public class AbstractParser implements Serializable {
 
     public static void configureFactory() {
         if (MVEL.THREAD_SAFE) {
-            EX_PRECACHE = synchronizedMap(new WeakHashMap<String, char[]>(10));
+            EX_PRECACHE = synchronizedMap(new WeakHashMap<String, char[]>(10)) ;
         }
         else {
             EX_PRECACHE = new WeakHashMap<String, char[]>(10);
@@ -516,7 +516,7 @@ public class AbstractParser implements Serializable {
                                                     lastNode.getLiteralValue());
                                         }
 
-                                        throw new ParseException("unknown class: " + lastNode.getLiteralValue());
+                                        throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
                                     }
                                     else
                                     if (pCtx != null && ((idx = pCtx.variableIndexOf(t)) != -1 || (pCtx.isIndexAllocation()))) {
