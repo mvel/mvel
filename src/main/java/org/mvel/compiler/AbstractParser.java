@@ -1470,10 +1470,10 @@ public class AbstractParser implements Serializable {
         return true;
     }
 
-
     protected void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
-            if (!EX_PRECACHE.containsKey(expression)) {
+            this.expr = EX_PRECACHE.get(expression);
+            if (this.expr == null) {
                 length = (this.expr = expression.toCharArray()).length;
 
                 // trim any whitespace.
@@ -1487,10 +1487,11 @@ public class AbstractParser implements Serializable {
                 EX_PRECACHE.put(expression, e);
             }
             else {
-                length = (expr = EX_PRECACHE.get(expression)).length;
+                length = this.expr.length;
             }
         }
     }
+
 
     protected void setExpression(char[] expression) {
         length = (this.expr = expression).length;
