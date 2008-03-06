@@ -86,11 +86,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     public static Object get(String expression, Object ctx) {
         int hash = createSignatureHash(expression, ctx);
-        if (REFLECTIVE_ACCESSOR_CACHE.containsKey(hash)) {
-            return REFLECTIVE_ACCESSOR_CACHE.get(hash).getValue(ctx, null, null);
+        Accessor accessor = REFLECTIVE_ACCESSOR_CACHE.get(hash);
+        if (accessor != null) {
+            return accessor.getValue(ctx, null, null);
         }
         else {
-            Accessor accessor = new ReflectiveAccessorOptimizer().optimizeAccessor(expression.toCharArray(), ctx, null, null, false);
+            accessor = new ReflectiveAccessorOptimizer().optimizeAccessor(expression.toCharArray(), ctx, null, null, false);
             REFLECTIVE_ACCESSOR_CACHE.put(hash, accessor);
             return accessor.getValue(ctx, null, null);
         }

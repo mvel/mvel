@@ -173,25 +173,16 @@ public class TemplateInterpreter {
         if (CACHE_DISABLE) {
             nodes = new TemplateCompiler(this).compileExpression();
         }
-        else if (!EX_PRECACHE.containsKey(template)) {
+        else if ((this.expression = EX_PRECACHE.get(template)) == null) {
             EX_PRECACHE.put(template, this.expression = template.toString().toCharArray());
-            nodes = new TemplateCompiler(this).compileExpression();
-            Node[] nodes = cloneAll(EX_NODE_CACHE.get(expression));
-
-            EX_NODE_CACHE.put(template, nodes);
+            EX_NODE_CACHE.put(template, nodes = new TemplateCompiler(this).compileExpression());
         }
         else {
-            this.expression = EX_PRECACHE.get(template);
-
-            try {
-                this.nodes = cloneAll(EX_NODE_CACHE.get(expression));
-            }
-            catch (NullPointerException e) {
-                EX_NODE_CACHE.remove(expression);
-                nodes = new TemplateCompiler(this).compileExpression();
-                EX_NODE_CACHE.put(expression, cloneAll(nodes));
+            if ((this.nodes = EX_NODE_CACHE.get(expression)) == null) {
+                EX_NODE_CACHE.put(expression, nodes = new TemplateCompiler(this).compileExpression());
             }
         }
+        this.nodes = cloneAll(nodes);
     }
 
     private Node[] cloneAll(Node[] nodes) {
@@ -211,29 +202,20 @@ public class TemplateInterpreter {
     }
 
 
-    public TemplateInterpreter(String expression) {
+    public TemplateInterpreter(String template) {
         if (CACHE_DISABLE) {
             nodes = new TemplateCompiler(this).compileExpression();
         }
-        else if (!EX_PRECACHE.containsKey(expression)) {
-            EX_PRECACHE.put(expression, this.expression = expression.toCharArray());
-            nodes = new TemplateCompiler(this).compileExpression();
-            EX_NODE_CACHE.put(expression, nodes);
-            this.nodes = cloneAll(nodes);
+        else if ((this.expression = EX_PRECACHE.get(template)) == null) {
+            EX_PRECACHE.put(template, this.expression = template.toCharArray());
+            EX_NODE_CACHE.put(template, nodes = new TemplateCompiler(this).compileExpression());
         }
         else {
-
-            try {
-                this.nodes = cloneAll(EX_NODE_CACHE.get(this.expression = EX_PRECACHE.get(expression)));
-            }
-            catch (NullPointerException e) {
-                EX_NODE_CACHE.remove(expression);
-                nodes = new TemplateCompiler(this).compileExpression();
-                EX_NODE_CACHE.put(expression, nodes);
-                this.nodes = cloneAll(nodes);
+            if ((this.nodes = EX_NODE_CACHE.get(expression)) == null) {
+                EX_NODE_CACHE.put(expression, nodes = new TemplateCompiler(this).compileExpression());
             }
         }
-
+        this.nodes = cloneAll(nodes);
     }
 
     public TemplateInterpreter(char[] expression) {
@@ -467,7 +449,7 @@ public class TemplateInterpreter {
                         }
                         else {
                             foreachContext = (ForeachContext) localStack.peek();
-                      //      names = foreachContext.getNames();
+                            //      names = foreachContext.getNames();
                             aliases = foreachContext.getAliases();
                         }
 
@@ -498,8 +480,8 @@ public class TemplateInterpreter {
                             for (int i = 0; i < iters.length; i++) {
                                 tokens.remove(aliases[i]);
                             }
-                     //       foreachContext.setIterators(null);
-                     //       foreachContext.setCount(0);
+                            //       foreachContext.setIterators(null);
+                            //       foreachContext.setCount(0);
                             localStack.pop();
                             exitContext();
                         }
