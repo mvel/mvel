@@ -165,7 +165,7 @@ public class ParseTools {
     }
 
 
-    public static Method getBestCandidate(Class[] arguments, String method, Method[] methods) {
+   public static Method getBestCandidate(Class[] arguments, String method, Method[] methods) {
         if (methods.length == 0) {
             return null;
         }
@@ -176,8 +176,9 @@ public class ParseTools {
 
         Integer hash = createClassSignatureHash(methods[0].getDeclaringClass(), arguments);
 
-        if (RESOLVED_METH_CACHE.containsKey(method) && RESOLVED_METH_CACHE.get(method).containsKey(hash)) {
-            return RESOLVED_METH_CACHE.get(method).get(hash);
+        Map<Integer, Method> methCache = RESOLVED_METH_CACHE.get(method);
+        if (methCache != null) {
+            if ((bestCandidate = methCache.get(hash)) != null) return bestCandidate;
         }
 
         for (Method meth : methods) {
@@ -223,10 +224,12 @@ public class ParseTools {
         }
 
         if (bestCandidate != null) {
-            if (!RESOLVED_METH_CACHE.containsKey(method))
-                RESOLVED_METH_CACHE.put(method, new WeakHashMap<Integer, Method>());
+    //        methCache = RESOLVED_METH_CACHE.get(method);
+            if (methCache == null) {
+                RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, Method>());
+            }
 
-            RESOLVED_METH_CACHE.get(method).put(hash, bestCandidate);
+            methCache.put(hash, bestCandidate);
         }
 
         return bestCandidate;
@@ -270,80 +273,84 @@ public class ParseTools {
     private static Map<Constructor, Class[]> CONSTRUCTOR_PARMS_CACHE = new WeakHashMap<Constructor, Class[]>(10);
 
     private static Class[] getConstructors(Constructor cns) {
-        if (CONSTRUCTOR_PARMS_CACHE.containsKey(cns))
-            return CONSTRUCTOR_PARMS_CACHE.get(cns);
-        else {
-            Class[] c = cns.getParameterTypes();
-            CONSTRUCTOR_PARMS_CACHE.put(cns, c);
-            return c;
-        }
-    }
+          Class[] parms = CONSTRUCTOR_PARMS_CACHE.get(cns);
+          if (parms != null)
+              return parms;
+          else {
+              parms = cns.getParameterTypes();
+              CONSTRUCTOR_PARMS_CACHE.put(cns, parms);
+              return parms;
+          }
+      }
 
-    public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
-        Class[] parmTypes;
-        Constructor bestCandidate = null;
-        int bestScore = 0;
-        int score = 0;
+      public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
+          Class[] parmTypes;
+          Constructor bestCandidate = null;
+          int bestScore = 0;
+          int score = 0;
 
-        Class[] targetParms = new Class[arguments.length];
+          Class[] targetParms = new Class[arguments.length];
 
-        for (int i = 0; i < arguments.length; i++)
-            targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
+          for (int i = 0; i < arguments.length; i++)
+              targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
 
-        Integer hash = createClassSignatureHash(cls, targetParms);
+          Integer hash = createClassSignatureHash(cls, targetParms);
 
-        if (RESOLVED_CONST_CACHE.containsKey(cls) && RESOLVED_CONST_CACHE.get(cls).containsKey(hash))
-            return RESOLVED_CONST_CACHE.get(cls).get(hash);
+          Map<Integer, Constructor> cache = RESOLVED_CONST_CACHE.get(cls);
+          if (cache != null) {
+              if ((bestCandidate = cache.get(hash)) != null) return bestCandidate;
+          }
 
-        for (Constructor construct : getConstructors(cls)) {
-            if ((parmTypes = getConstructors(construct)).length != arguments.length)
-                continue;
-            else if (arguments.length == 0 && parmTypes.length == 0)
-                return construct;
+          for (Constructor construct : getConstructors(cls)) {
+              if ((parmTypes = getConstructors(construct)).length != arguments.length)
+                  continue;
+              else if (arguments.length == 0 && parmTypes.length == 0)
+                  return construct;
 
-            for (int i = 0; i < arguments.length; i++) {
-                if (parmTypes[i] == targetParms[i]) {
-                    score += 5;
-                }
-                else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
-                    score += 4;
-                }
-                else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
-                    score += 4;
-                }
-                else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
-                    score += 3;
-                }
-                else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
-                    score += 2;
-                }
-                else if (canConvert(parmTypes[i], targetParms[i])) {
-                    score += 1;
-                }
-                else {
-                    score = 0;
-                    break;
-                }
-            }
+              for (int i = 0; i < arguments.length; i++) {
+                  if (parmTypes[i] == targetParms[i]) {
+                      score += 5;
+                  }
+                  else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
+                      score += 4;
+                  }
+                  else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
+                      score += 4;
+                  }
+                  else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
+                      score += 3;
+                  }
+                  else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
+                      score += 2;
+                  }
+                  else if (canConvert(parmTypes[i], targetParms[i])) {
+                      score += 1;
+                  }
+                  else {
+                      score = 0;
+                      break;
+                  }
+              }
 
-            if (score != 0 && score > bestScore) {
-                bestCandidate = construct;
-                bestScore = score;
-            }
-            score = 0;
+              if (score != 0 && score > bestScore) {
+                  bestCandidate = construct;
+                  bestScore = score;
+              }
+              score = 0;
 
-        }
+          }
 
-        if (bestCandidate != null) {
-            if (!RESOLVED_CONST_CACHE.containsKey(cls))
-                RESOLVED_CONST_CACHE.put(cls, new WeakHashMap<Integer, Constructor>());
+          if (bestCandidate != null) {
+              if (cache == null) {
+                  RESOLVED_CONST_CACHE.put(cls, cache = new WeakHashMap<Integer, Constructor>());
+              }
+              cache.put(hash, bestCandidate);
+          }
 
-            RESOLVED_CONST_CACHE.get(cls).put(hash, bestCandidate);
-        }
 
-
-        return bestCandidate;
-    }
+          return bestCandidate;
+      }
+ 
 
     private static Map<ClassLoader, Map<String, Class>> CLASS_RESOLVER_CACHE = new WeakHashMap<ClassLoader, Map<String, Class>>(1, 1.0f);
     private static Map<Class, Constructor[]> CLASS_CONSTRUCTOR_CACHE = new WeakHashMap<Class, Constructor[]>(10);
@@ -359,15 +366,17 @@ public class ParseTools {
 
     public static Class createClass(String className) throws ClassNotFoundException {
         ClassLoader classLoader = currentThread().getContextClassLoader();
-        if (!CLASS_RESOLVER_CACHE.containsKey(classLoader)) {
-            CLASS_RESOLVER_CACHE.put(classLoader, new WeakHashMap<String, Class>(10));
+        Map<String, Class> cache = CLASS_RESOLVER_CACHE.get(classLoader);
+        if (cache == null) {
+            CLASS_RESOLVER_CACHE.put(classLoader, cache = new WeakHashMap<String, Class>(10));
         }
 
-        if (CLASS_RESOLVER_CACHE.get(classLoader).containsKey(className)) {
-            return CLASS_RESOLVER_CACHE.get(classLoader).get(className);
+        Class cls;
+
+        if ((cls = cache.get(className)) != null) {
+            return cls;
         }
         else {
-            Class cls;
             try {
                 cls = currentThread().getContextClassLoader().loadClass(className);
             }
@@ -378,20 +387,23 @@ public class ParseTools {
                 cls = Class.forName(className);
             }
 
-            CLASS_RESOLVER_CACHE.get(classLoader).put(className, cls);
+            cache.put(className, cls);
             return cls;
         }
     }
 
+
     public static Constructor[] getConstructors(Class cls) {
-        if (CLASS_CONSTRUCTOR_CACHE.containsKey(cls))
-            return CLASS_CONSTRUCTOR_CACHE.get(cls);
+        Constructor[] cns = CLASS_CONSTRUCTOR_CACHE.get(cls);
+        if (cns != null) {
+            return cns;
+        }
         else {
-            Constructor[] cns = cls.getConstructors();
-            CLASS_CONSTRUCTOR_CACHE.put(cls, cns);
+            CLASS_CONSTRUCTOR_CACHE.put(cls, cns = cls.getConstructors());
             return cns;
         }
     }
+
 
 
     public static String[] captureContructorAndResidual(String token) {

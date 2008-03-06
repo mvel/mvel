@@ -363,47 +363,55 @@ public class PropertyAccessor {
     }
 
     private static void addReadCache(Class cls, Integer property, Member member) {
-        if (!READ_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
-            READ_PROPERTY_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Member>());
+        Map<Integer, Member> nestedMap = READ_PROPERTY_RESOLVER_CACHE.get(cls);
+
+        if (nestedMap == null) {
+            READ_PROPERTY_RESOLVER_CACHE.put(cls, nestedMap = new WeakHashMap<Integer, Member>());
         }
-        READ_PROPERTY_RESOLVER_CACHE.get(cls).put(property, member);
+        nestedMap.put(property, member);
     }
 
     private static Member checkReadCache(Class cls, Integer property) {
-        if (READ_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
-            return READ_PROPERTY_RESOLVER_CACHE.get(cls).get(property);
+        Map<Integer, Member> map = READ_PROPERTY_RESOLVER_CACHE.get(cls);
+        if (map != null) {
+            return map.get(property);
         }
         return null;
     }
 
     private static void addWriteCache(Class cls, Integer property, Member member) {
-        if (!WRITE_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
-            WRITE_PROPERTY_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Member>());
+        Map<Integer, Member> map = WRITE_PROPERTY_RESOLVER_CACHE.get(cls);
+        if (map == null) {
+            WRITE_PROPERTY_RESOLVER_CACHE.put(cls, map = new WeakHashMap<Integer, Member>());
         }
-        WRITE_PROPERTY_RESOLVER_CACHE.get(cls).put(property, member);
+        map.put(property, member);
     }
 
     private static Member checkWriteCache(Class cls, Integer property) {
-        if (WRITE_PROPERTY_RESOLVER_CACHE.containsKey(cls)) {
-            return WRITE_PROPERTY_RESOLVER_CACHE.get(cls).get(property);
+        Map<Integer, Member> map = WRITE_PROPERTY_RESOLVER_CACHE.get(cls);
+        if (map != null) {
+            return map.get(property);
         }
         return null;
     }
 
 
     private static void addMethodCache(Class cls, Integer property, Method member) {
-        if (!METHOD_RESOLVER_CACHE.containsKey(cls)) {
-            METHOD_RESOLVER_CACHE.put(cls, new WeakHashMap<Integer, Object[]>());
+        Map<Integer, Object[]> map = METHOD_RESOLVER_CACHE.get(cls);
+        if (map == null) {
+            METHOD_RESOLVER_CACHE.put(cls, map = new WeakHashMap<Integer, Object[]>());
         }
-        METHOD_RESOLVER_CACHE.get(cls).put(property, new Object[]{member, member.getParameterTypes()});
+        map.put(property, new Object[]{member, member.getParameterTypes()});
     }
 
     private static Object[] checkMethodCache(Class cls, Integer property) {
-        if (METHOD_RESOLVER_CACHE.containsKey(cls)) {
-            return METHOD_RESOLVER_CACHE.get(cls).get(property);
+        Map<Integer, Object[]> map = METHOD_RESOLVER_CACHE.get(cls);
+        if (map != null) {
+            return map.get(property);
         }
         return null;
     }
+
 
 
     private Object getBeanProperty(Object ctx, String property)
