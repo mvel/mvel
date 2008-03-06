@@ -160,10 +160,6 @@ public class ParseTools {
             if ((bestCandidate = methCache.get(hash)) != null) return bestCandidate;
         }
 
-//        if (RESOLVED_METH_CACHE.containsKey(method) && RESOLVED_METH_CACHE.get(method).containsKey(hash)) {
-//            return RESOLVED_METH_CACHE.get(method).get(hash);
-//        }
-
         for (Method meth : methods) {
             if (method.equals(meth.getName())) {
                 if ((parmTypes = meth.getParameterTypes()).length != arguments.length)
@@ -207,7 +203,7 @@ public class ParseTools {
         }
 
         if (bestCandidate != null) {
-    //        methCache = RESOLVED_METH_CACHE.get(method);
+            //        methCache = RESOLVED_METH_CACHE.get(method);
             if (methCache == null) {
                 RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, Method>());
             }
@@ -349,15 +345,17 @@ public class ParseTools {
 
     public static Class createClass(String className) throws ClassNotFoundException {
         ClassLoader classLoader = currentThread().getContextClassLoader();
-        if (!CLASS_RESOLVER_CACHE.containsKey(classLoader)) {
-            CLASS_RESOLVER_CACHE.put(classLoader, new WeakHashMap<String, Class>(10));
+        Map<String, Class> cache = CLASS_RESOLVER_CACHE.get(classLoader);
+        if (cache == null) {
+            CLASS_RESOLVER_CACHE.put(classLoader, cache = new WeakHashMap<String, Class>(10));
         }
 
-        if (CLASS_RESOLVER_CACHE.get(classLoader).containsKey(className)) {
-            return CLASS_RESOLVER_CACHE.get(classLoader).get(className);
+        Class cls;
+
+        if ((cls = cache.get(className)) != null) {
+            return cls;
         }
         else {
-            Class cls;
             try {
                 cls = currentThread().getContextClassLoader().loadClass(className);
             }
@@ -368,17 +366,18 @@ public class ParseTools {
                 cls = Class.forName(className);
             }
 
-            CLASS_RESOLVER_CACHE.get(classLoader).put(className, cls);
+            cache.put(className, cls);
             return cls;
         }
     }
 
     public static Constructor[] getConstructors(Class cls) {
-        if (CLASS_CONSTRUCTOR_CACHE.containsKey(cls))
-            return CLASS_CONSTRUCTOR_CACHE.get(cls);
+        Constructor[] cns = CLASS_CONSTRUCTOR_CACHE.get(cls);
+        if (cns != null) {
+            return cns;
+        }
         else {
-            Constructor[] cns = cls.getConstructors();
-            CLASS_CONSTRUCTOR_CACHE.put(cls, cns);
+            CLASS_CONSTRUCTOR_CACHE.put(cls, cns = cls.getConstructors());
             return cns;
         }
     }
