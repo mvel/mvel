@@ -222,17 +222,17 @@ public class AbstractParser implements Serializable {
                     if (OPERATORS.containsKey(t = new String(expr, start, cursor - start))) {
                         switch (OPERATORS.get(t)) {
                             case NEW:
-                                start = cursor + 1;
+                                start = cursor = trimRight(cursor);
                                 captureToEOT();
                                 return lastNode = new NewObjectNode(subArray(start, cursor), fields);
 
                             case ASSERT:
-                                start = cursor + 1;
+                                start = cursor = trimRight(cursor);
                                 captureToEOS();
                                 return lastNode = new AssertNode(subArray(start, cursor--), fields);
 
                             case RETURN:
-                                start = cursor + 1;
+                                start = cursor = trimRight(cursor);
                                 captureToEOS();
                                 return lastNode = new ReturnNode(subArray(start, cursor), fields);
 
@@ -249,14 +249,14 @@ public class AbstractParser implements Serializable {
                                 return captureCodeBlock(ASTNode.BLOCK_WITH);
 
                             case IMPORT:
-                                start = cursor + 1;
+                                start = cursor = trimRight(cursor);
                                 captureToEOS();
                                 ImportNode importNode = new ImportNode(subArray(start, cursor--), fields);
                                 getParserContext().addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
                                 return importNode;
 
                             case IMPORT_STATIC:
-                                start = cursor + 1;
+                                start = cursor = trimRight(cursor);
                                 captureToEOS();
                                 return lastNode = new StaticImportNode(subArray(start, cursor--), fields);
                         }
