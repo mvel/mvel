@@ -57,7 +57,7 @@ public class StringAppender implements CharSequence {
         for (int i = 0; i < chars.length; size++) {
             str[size] = chars[i++];
         }
-        size += chars.length;
+  //      size += chars.length;
         return this;
     }
 
@@ -70,7 +70,7 @@ public class StringAppender implements CharSequence {
         for (int i = 0; size < capacity; size++) {
             str[size] = s.charAt(i++);
         }
-        size += s.length();
+     //   size += s.length();
         return this;
     }
 
