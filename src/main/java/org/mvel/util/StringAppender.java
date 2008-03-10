@@ -18,6 +18,8 @@
  */
 package org.mvel.util;
 
+import static java.lang.System.arraycopy;
+
 public class StringAppender implements CharSequence {
     private static final int DEFAULT_SIZE = 15;
 
@@ -61,6 +63,15 @@ public class StringAppender implements CharSequence {
         return this;
     }
 
+    public StringAppender append(char[] chars, int start, int length) {
+        if (length > (capacity - size)) grow(length);
+        int x = start + length;
+        for (int i = start; i < x; i++) {
+            str[size++] = chars[i];
+        }
+        return this;
+    }
+
     public StringAppender append(Object o) {
         return append(String.valueOf(o));
     }
@@ -70,7 +81,6 @@ public class StringAppender implements CharSequence {
         for (int i = 0; size < capacity; size++) {
             str[size] = s.charAt(i++);
         }
-     //   size += s.length();
         return this;
     }
 
@@ -101,19 +111,19 @@ public class StringAppender implements CharSequence {
     private void grow(int s) {
         if (capacity == 0) capacity = DEFAULT_SIZE;
         final char[] newArray = new char[capacity += s * 2];
-        System.arraycopy(str, 0, newArray, 0, size);
+        arraycopy(str, 0, newArray, 0, size);
         str = newArray;
     }
 
     public char[] getChars(int start, int count) {
         char[] chars = new char[count];
-        System.arraycopy(str, start, chars, 0, count);
+        arraycopy(str, start, chars, 0, count);
         return chars;
     }
 
     public char[] toChars() {
         char[] chars = new char[size];
-        System.arraycopy(str, 0, chars, 0, size);
+        arraycopy(str, 0, chars, 0, size);
         return chars;
     }
 
