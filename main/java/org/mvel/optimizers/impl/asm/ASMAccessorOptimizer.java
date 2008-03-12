@@ -1780,7 +1780,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     tg = cns.getParameterTypes()[i].isPrimitive()
                             ? getWrapperClass(cns.getParameterTypes()[i]) : cns.getParameterTypes()[i];
 
-                    if (!parms[i].getClass().isAssignableFrom(cns.getParameterTypes()[i])) {
+                    if (parms[i] != null && !parms[i].getClass().isAssignableFrom(cns.getParameterTypes()[i])) {
                         ldcClassConstant(tg);
 
                         debug("INVOKESTATIC org/mvel/DataConversion.convert");

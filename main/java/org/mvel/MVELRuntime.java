@@ -8,6 +8,7 @@ import org.mvel.debug.Debugger;
 import org.mvel.debug.DebuggerContext;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.TypeInjectionResolverFactoryImpl;
+import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.PropertyTools.isEmpty;
@@ -41,7 +42,8 @@ public class MVELRuntime {
         final ASTLinkedList node = new ASTLinkedList(expression.getTokens().firstNode());
 
         if (expression.isImportInjectionRequired()) {
-            variableFactory = new TypeInjectionResolverFactoryImpl(expression.getParserContext().getImports(), variableFactory);
+      //      variableFactory = new TypeInjectionResolverFactoryImpl(expression.getParserContext().getImports(), variableFactory);
+               variableFactory = new ClassImportResolverFactory(expression.getParserContext(), variableFactory);
         }
 
         Stack stk = new ExecutionStack();

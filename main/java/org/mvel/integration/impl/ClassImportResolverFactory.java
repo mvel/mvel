@@ -19,8 +19,10 @@
 package org.mvel.integration.impl;
 
 import org.mvel.integration.VariableResolver;
+import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.createClass;
 import static org.mvel.util.ParseTools.getSimpleClassName;
+import org.mvel.ParserContext;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,6 +36,18 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
         super();
 
         variableResolvers = new HashMap<String, VariableResolver>();
+    }
+
+    public ClassImportResolverFactory(ParserContext ctx, VariableResolverFactory nextFactory) {
+        packageImports = ctx.getPackageImports();
+        Map<String, Object> classes = ctx.getImports();
+
+        this.nextFactory = nextFactory;
+
+        this.variableResolvers = new HashMap<String,VariableResolver>();
+        for (String s : classes.keySet()) {
+            variableResolvers.put(s, new SimpleValueResolver(classes.get(s)));
+        }
     }
 
     public VariableResolver createVariable(String name, Object value) {
@@ -54,7 +68,7 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     }
 
     public Class addClass(Class clazz) {
-        variableResolvers.put(getSimpleClassName(clazz), new ClassImportResolver(getSimpleClassName(clazz), clazz));
+        variableResolvers.put(getSimpleClassName(clazz), new SimpleValueResolver(clazz));
         return clazz;
     }
 
@@ -88,7 +102,7 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     public void setImportedClasses(Map<String, Class> imports) {
         if (imports == null) return;
         for (String var : imports.keySet()) {
-            variableResolvers.put(var, new ClassImportResolver(var, imports.get(var)));
+            variableResolvers.put(var, new SimpleValueResolver(imports.get(var)));
         }
     }
 

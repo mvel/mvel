@@ -369,4 +369,8 @@ public class ParserContext implements Serializable {
     public void setExecutableCodeReached(boolean executableCodeReached) {
         this.executableCodeReached = executableCodeReached;
     }
+
+    public Set<String> getPackageImports() {
+        return packageImports;
+    }
 }

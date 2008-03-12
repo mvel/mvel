@@ -138,82 +138,92 @@ public class ParseTools {
     public static Method getBestCandidate(Object[] arguments, String method, Class decl, Method[] methods) {
         Class[] targetParms = new Class[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
-            targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
+            targetParms[i] = arguments[i] != null ? arguments[i].getClass() : null;
         }
         return getBestCandidate(targetParms, method, decl, methods);
     }
 
 
     public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods) {
-        if (methods.length == 0) {
-            return null;
-        }
-        Class[] parmTypes;
-        Method bestCandidate = null;
-        int bestScore = 0;
-        int score = 0;
+          if (methods.length == 0) {
+              return null;
+          }
+          Class[] parmTypes;
+          Method bestCandidate = null;
+          int bestScore = 0;
+          int score = 0;
 
-        Integer hash = createClassSignatureHash(decl, arguments);
+          Integer hash = createClassSignatureHash(decl, arguments);
 
-        Map<Integer, Method> methCache = RESOLVED_METH_CACHE.get(method);
-        if (methCache != null) {
-            if ((bestCandidate = methCache.get(hash)) != null) return bestCandidate;
-        }
+          Map<Integer, Method> methCache = RESOLVED_METH_CACHE.get(method);
+          if (methCache != null) {
+              if ((bestCandidate = methCache.get(hash)) != null) return bestCandidate;
+          }
 
-        for (Method meth : methods) {
-            if (method.equals(meth.getName())) {
-                if ((parmTypes = meth.getParameterTypes()).length != arguments.length)
-                    continue;
-                else if (arguments.length == 0 && parmTypes.length == 0) {
-                    bestCandidate = meth;
-                    break;
-                }
+          for (Method meth : methods) {
+              if (method.equals(meth.getName())) {
+                  if ((parmTypes = meth.getParameterTypes()).length != arguments.length)
+                      continue;
+                  else if (arguments.length == 0 && parmTypes.length == 0) {
+                      bestCandidate = meth;
+                      break;
+                  }
 
-                for (int i = 0; i < arguments.length; i++) {
-                    if (parmTypes[i] == arguments[i]) {
-                        score += 5;
-                    }
-                    else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
-                        score += 4;
-                    }
-                    else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
-                        score += 4;
-                    }
-                    else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
-                        score += 3;
-                    }
-                    else if (parmTypes[i].isAssignableFrom(arguments[i])) {
-                        score += 2;
-                    }
-                    else if (canConvert(parmTypes[i], arguments[i]) || arguments[i] == Object.class) {
-                        score += 1;
-                    }
-                    else {
-                        score = 0;
-                        break;
-                    }
-                }
+                  for (int i = 0; i < arguments.length; i++) {
+                      if (arguments[i] == null) {
+                          if (!parmTypes[i].isPrimitive()) {
+                              score += 5;
+                          }
+                          else {
+                              score = 0;
+                              break;
+                          }
+                      }
+                      else if (parmTypes[i] == arguments[i]) {
+                          score += 5;
+                      }
+                      else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
+                          score += 4;
+                      }
+                      else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
+                          score += 4;
+                      }
+                      else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
+                          score += 3;
+                      }
+                      else if (parmTypes[i].isAssignableFrom(arguments[i])) {
+                          score += 2;
+                      }
+                      else if (canConvert(parmTypes[i], arguments[i]) || arguments[i] == Object.class) {
+                          score += 1;
+                      }
+                      else {
+                          score = 0;
+                          break;
+                      }
+                  }
 
-                if (score != 0 && score > bestScore) {
-                    bestCandidate = meth;
-                    bestScore = score;
-                }
-                score = 0;
-            }
-        }
+                  if (score != 0 && score > bestScore) {
+                      bestCandidate = meth;
+                      bestScore = score;
+                  }
+                  score = 0;
+              }
+          }
 
-        if (bestCandidate != null) {
-            //        methCache = RESOLVED_METH_CACHE.get(method);
-            if (methCache == null) {
-                RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, Method>());
-            }
+          if (bestCandidate != null) {
+              //        methCache = RESOLVED_METH_CACHE.get(method);
+              if (methCache == null) {
+                  RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, Method>());
+              }
 
-            methCache.put(hash, bestCandidate);
-        }
+              methCache.put(hash, bestCandidate);
+          }
 
-        return bestCandidate;
-    }
+          return bestCandidate;
+      }
 
+    
     public static Method getExactMatch(String name, Class[] args, Class returnType, Class cls) {
         for (Method meth : cls.getMethods()) {
             if (name.equals(meth.getName()) && returnType == meth.getReturnType()) {
@@ -263,7 +273,7 @@ public class ParseTools {
         }
     }
 
-    public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
+   public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
         Class[] parmTypes;
         Constructor bestCandidate = null;
         int bestScore = 0;
@@ -271,9 +281,11 @@ public class ParseTools {
 
         Class[] targetParms = new Class[arguments.length];
 
-        for (int i = 0; i < arguments.length; i++)
-            targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
-
+        for (int i = 0; i < arguments.length; i++) {
+            if (arguments[i] != null) {
+                targetParms[i] = arguments[i].getClass();
+            }
+        }
         Integer hash = createClassSignatureHash(cls, targetParms);
 
         Map<Integer, Constructor> cache = RESOLVED_CONST_CACHE.get(cls);
@@ -288,7 +300,14 @@ public class ParseTools {
                 return construct;
 
             for (int i = 0; i < arguments.length; i++) {
-                if (parmTypes[i] == targetParms[i]) {
+                if (targetParms[i] == null) {
+                    if (!parmTypes[i].isPrimitive()) score += 5;
+                    else {
+                        score = 0;
+                        break;
+                    }
+                }
+                else if (parmTypes[i] == targetParms[i]) {
                     score += 5;
                 }
                 else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
@@ -330,7 +349,6 @@ public class ParseTools {
 
         return bestCandidate;
     }
-
     private static Map<ClassLoader, Map<String, Class>> CLASS_RESOLVER_CACHE = new WeakHashMap<ClassLoader, Map<String, Class>>(1, 1.0f);
     private static Map<Class, Constructor[]> CLASS_CONSTRUCTOR_CACHE = new WeakHashMap<Class, Constructor[]>(10);
 

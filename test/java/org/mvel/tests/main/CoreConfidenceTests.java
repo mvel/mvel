@@ -838,7 +838,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testUnQualifiedStaticTyping() {
-        assertEquals(20, testCompiledSimple("import java.math.BigDecimal;  BigDecimal axx = new BigDecimal( 10.0 ); BigDecimal bxx = new BigDecimal( 10.0 ); BigDecimal cxx = axx + bxx; return cxx; ", new HashMap()));
+        assertEquals(20.0f, testCompiledSimple("import java.math.BigDecimal;  BigDecimal axx = new BigDecimal( 10.0 ); BigDecimal bxx = new BigDecimal( 10.0 ); BigDecimal cxx = axx + bxx; return cxx; ", new HashMap()));
     }
 
     public void testObjectCreation() {
@@ -2957,6 +2957,36 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testGraphNavigation() {
         test("System.out.println(submap['foo'].name)");
+    }
+
+    public void testDynamicImportsOnNestedExpressions() {
+        ParserContext ctx = new ParserContext();
+        ctx.addPackageImport("org.mvel.tests.main.res");
+
+
+        ExpressionCompiler compiler = new ExpressionCompiler("new Person(\"bobbo\", new Cheese(\"cheddar\", 15))");
+        Serializable s = compiler.compile(ctx);
+
+        org.mvel.tests.main.res.Person p1 = new org.mvel.tests.main.res.Person("bobbo", new Cheese("cheddar", 15));
+
+        org.mvel.tests.main.res.Person p2 = (org.mvel.tests.main.res.Person) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
+
+        assertEquals(p1, p2);
+    }
+
+    public void testDynamicImportsWithNullConstructorParam() {
+        ParserContext ctx = new ParserContext();
+        ctx.addPackageImport("org.mvel.tests.main.res");
+
+
+        ExpressionCompiler compiler = new ExpressionCompiler("new Person(\"bobbo\", null)");
+        Serializable s = compiler.compile(ctx);
+
+        org.mvel.tests.main.res.Person p1 = new org.mvel.tests.main.res.Person("bobbo", null);
+
+        org.mvel.tests.main.res.Person p2 = (org.mvel.tests.main.res.Person) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
+
+        assertEquals(p1, p2);
     }
 
 }
