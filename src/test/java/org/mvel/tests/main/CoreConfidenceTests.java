@@ -1923,6 +1923,36 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(0, MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory()));
     }
+    
+    public void testDynamicImportsOnNestedExpressions() {
+        ParserContext ctx = new ParserContext();
+        ctx.addPackageImport("org.mvel.tests.main.res");
+
+
+        ExpressionCompiler compiler = new ExpressionCompiler("new Person(\"bobbo\", new Cheese(\"cheddar\"))");
+        Serializable s = compiler.compile(ctx);
+        
+        org.mvel.tests.main.res.Person p1 = new org.mvel.tests.main.res.Person( "bobbo", new Cheese("cheddar", 15) );
+        
+        org.mvel.tests.main.res.Person p2 = ( org.mvel.tests.main.res.Person ) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
+        
+        assertEquals( p1, p2 );       
+    }
+    
+    public void testDynamicImportsWithNullConstructorParam() {
+        ParserContext ctx = new ParserContext();
+        ctx.addPackageImport("org.mvel.tests.main.res");
+
+
+        ExpressionCompiler compiler = new ExpressionCompiler("new Person(\"bobbo\", null)");
+        Serializable s = compiler.compile(ctx);
+        
+        org.mvel.tests.main.res.Person p1 = new org.mvel.tests.main.res.Person( "bobbo", null );
+        
+        org.mvel.tests.main.res.Person p2 = ( org.mvel.tests.main.res.Person ) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
+        
+        assertEquals( p1, p2 );       
+    }    
 
     public void testDynamicImportsWithIdentifierSameAsClassWithDiffCase() {
         ParserContext ctx = new ParserContext();
