@@ -31,7 +31,7 @@ public class ImportNode extends ASTNode {
     private boolean packageImport;
     private short offset;
 
-    public ImportNode(char[] expr, int fields) {
+    public ImportNode(char[] expr) {
 
         String name = new String(this.name = expr);
 

@@ -188,6 +188,7 @@ public class TemplateInterpreter {
 
     public TemplateInterpreter(String template) {
         if (CACHE_DISABLE) {
+            this.expression = template.toCharArray();
             nodes = new TemplateCompiler(this).compileExpression();
         }
         else if ((this.expression = EX_PRECACHE.get(template)) == null) {

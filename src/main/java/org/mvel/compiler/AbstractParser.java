@@ -272,7 +272,7 @@ public class AbstractParser implements Serializable {
                             case IMPORT:
                                 start = cursor = trimRight(cursor);
                                 captureToEOS();
-                                ImportNode importNode = new ImportNode(subArray(start, cursor--), fields);
+                                ImportNode importNode = new ImportNode(subArray(start, cursor--));
                                 if (importNode.isPackageImport()) {
                                     pCtx.addPackageImport(importNode.getPackageImport());
                                     cursor++;

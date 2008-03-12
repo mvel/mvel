@@ -237,8 +237,8 @@ public class PropertyVerifier extends AbstractOptimizer {
          * Try to find an instance method from the class target.
          */
 
-        if ((m = getBestCandidate(args, name, ctx.getMethods())) == null) {
-            if ((m = getBestCandidate(args, name, ctx.getDeclaredMethods())) == null) {
+        if ((m = getBestCandidate(args, name, ctx, ctx.getMethods())) == null) {
+            if ((m = getBestCandidate(args, name, ctx, ctx.getDeclaredMethods())) == null) {
                 StringAppender errorBuild = new StringAppender();
                 for (int i = 0; i < args.length; i++) {
                     errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
