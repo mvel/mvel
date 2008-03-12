@@ -19,12 +19,17 @@
 package org.mvel.integration.impl;
 
 import org.mvel.integration.VariableResolver;
+import static org.mvel.util.ParseTools.createClass;
 import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ClassImportResolverFactory extends BaseVariableResolverFactory {
+    private Set<String> packageImports;
+
     public ClassImportResolverFactory() {
         super();
 
@@ -32,17 +37,20 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver createVariable(String name, Object value) {
-        throw new RuntimeException("unimplemented, please use addClass(Class)");
+        if (nextFactory == null) {
+            nextFactory = new MapVariableResolverFactory(new HashMap());
+        }
 
-//        VariableResolver vr = new ClassImportResolver(name.substring(name.lastIndexOf('.')), name);
-//        variableResolvers.put(vr.getName(), vr);
-//        return vr;
+        return nextFactory.createVariable(name, value);
     }
 
 
     public VariableResolver createVariable(String name, Object value, Class type) {
-        throw new RuntimeException("attempt to created a typed import type.  this is highly redundant and more " +
-                "importantly, not implemented.");
+        if (nextFactory == null) {
+            nextFactory = new MapVariableResolverFactory(new HashMap());
+        }
+
+        return nextFactory.createVariable(name, value);
     }
 
     public Class addClass(Class clazz) {
@@ -55,7 +63,22 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     }
 
     public boolean isResolveable(String name) {
-        return variableResolvers.containsKey(name) || isNextResolveable(name);
+        if (variableResolvers.containsKey(name) || isNextResolveable(name)) {
+            return true;
+        }
+        else if (packageImports != null) {
+
+            for (String s : packageImports) {
+                try {
+                    addClass(createClass(s + "." + name));
+                    return true;
+                }
+                catch (ClassNotFoundException e) {
+                    // do nothing;
+                }
+            }
+        }
+        return false;
     }
 
     public void clear() {
@@ -72,9 +95,14 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     public Map<String, Object> getImportedClasses() {
         Map<String, Object> imports = new HashMap<String, Object>();
         for (String var : variableResolvers.keySet()) {
-            imports.put(var, (Class) variableResolvers.get(var).getValue());
+            imports.put(var, variableResolvers.get(var).getValue());
         }
 
         return imports;
+    }
+
+    public void addPackageImport(String packageName) {
+        if (packageImports == null) packageImports = new HashSet<String>();
+        packageImports.add(packageName);
     }
 }

@@ -72,6 +72,10 @@ public abstract class AbstractTest extends TestCase {
 
         map.put("dt1", new Date(currentTimeMillis() - 100000));
         map.put("dt2", new Date(currentTimeMillis()));
+
+        Map map2 = new HashMap();
+        map2.put("foo", new Foo());
+        map.put("submap", map2);
         return map;
     }
 

@@ -180,7 +180,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertTrue((Boolean) MVEL.executeExpression(compiler.compile(context), new DefaultLocalVariableResolverFactory()));
     }
 
-
     public void testComplexExpression() {
         assertEquals("bar", test("a = 'foo'; b = 'bar'; c = 'jim'; list = {a,b,c}; list[1]"));
     }
@@ -1880,6 +1879,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(0, MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory()));
     }
 
+    public void testDynamicImports2() {
+        assertTrue(test("import java.util.*; map = new HashMap(); map") instanceof HashMap);
+    }
+
     public void testDynamicImportsWithIdentifierSameAsClassWithDiffCase() {
         ParserContext ctx = new ParserContext();
         ctx.addPackageImport("org.mvel.tests.main.res");
@@ -2950,6 +2953,10 @@ public class CoreConfidenceTests extends AbstractTest {
                 System.out.println("Second evaluation: " + MVEL.eval("true"));
             }
         }).start();
+    }
+
+    public void testGraphNavigation() {
+        test("System.out.println(submap['foo'].name)");
     }
 
 }
