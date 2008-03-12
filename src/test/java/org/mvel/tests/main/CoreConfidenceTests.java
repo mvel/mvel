@@ -1929,7 +1929,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addPackageImport("org.mvel.tests.main.res");
 
 
-        ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", new Cheese(\"cheddar\"))");
+        ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", new Cheese(\"cheddar\", 15))");
         Serializable s = compiler.compile(ctx);
         
         Cheesery p1 = new Cheesery( "bobbo", new Cheese("cheddar", 15) );        
