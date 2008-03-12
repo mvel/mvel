@@ -1929,10 +1929,10 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addPackageImport("org.mvel.tests.main.res");
 
 
-        ExpressionCompiler compiler = new ExpressionCompiler("new Person(\"bobbo\", new Cheese(\"cheddar\"))");
+        ExpressionCompiler compiler = new ExpressionCompiler("new Person(\"bobbo\", new Cheese(\"cheddar\", 0))");
         Serializable s = compiler.compile(ctx);
         
-        org.mvel.tests.main.res.Person p1 = new org.mvel.tests.main.res.Person( "bobbo", new Cheese("cheddar", 15) );
+        org.mvel.tests.main.res.Person p1 = new org.mvel.tests.main.res.Person( "bobbo", new Cheese("cheddar", 0) );
         
         org.mvel.tests.main.res.Person p2 = ( org.mvel.tests.main.res.Person ) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
         

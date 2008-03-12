@@ -159,13 +159,13 @@ public class ParseTools {
     public static Method getBestCandidate(Object[] arguments, String method, Class decl, Method[] methods) {
         Class[] targetParms = new Class[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
-            targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
+            targetParms[i] = arguments[i] != null ? arguments[i].getClass() : null;
         }
         return getBestCandidate(targetParms, method, decl, methods);
     }
 
 
-   public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods) {
+    public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods) {
         if (methods.length == 0) {
             return null;
         }
@@ -191,7 +191,16 @@ public class ParseTools {
                 }
 
                 for (int i = 0; i < arguments.length; i++) {
-                    if (parmTypes[i] == arguments[i]) {
+                    if (arguments[i] == null) {
+                        if (!parmTypes[i].isPrimitive()) {
+                            score += 5;
+                        }
+                        else {
+                            score = 0;
+                            break;
+                        }
+                    }
+                    else if (parmTypes[i] == arguments[i]) {
                         score += 5;
                     }
                     else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
@@ -224,7 +233,7 @@ public class ParseTools {
         }
 
         if (bestCandidate != null) {
-    //        methCache = RESOLVED_METH_CACHE.get(method);
+            //        methCache = RESOLVED_METH_CACHE.get(method);
             if (methCache == null) {
                 RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, Method>());
             }
@@ -273,84 +282,93 @@ public class ParseTools {
     private static Map<Constructor, Class[]> CONSTRUCTOR_PARMS_CACHE = new WeakHashMap<Constructor, Class[]>(10);
 
     private static Class[] getConstructors(Constructor cns) {
-          Class[] parms = CONSTRUCTOR_PARMS_CACHE.get(cns);
-          if (parms != null)
-              return parms;
-          else {
-              parms = cns.getParameterTypes();
-              CONSTRUCTOR_PARMS_CACHE.put(cns, parms);
-              return parms;
-          }
-      }
+        Class[] parms = CONSTRUCTOR_PARMS_CACHE.get(cns);
+        if (parms != null)
+            return parms;
+        else {
+            parms = cns.getParameterTypes();
+            CONSTRUCTOR_PARMS_CACHE.put(cns, parms);
+            return parms;
+        }
+    }
 
-      public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
-          Class[] parmTypes;
-          Constructor bestCandidate = null;
-          int bestScore = 0;
-          int score = 0;
+    public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
+        Class[] parmTypes;
+        Constructor bestCandidate = null;
+        int bestScore = 0;
+        int score = 0;
 
-          Class[] targetParms = new Class[arguments.length];
+        Class[] targetParms = new Class[arguments.length];
 
-          for (int i = 0; i < arguments.length; i++)
-              targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
+        for (int i = 0; i < arguments.length; i++) {
+            if (arguments[i] != null) {
+                targetParms[i] = arguments[i].getClass();
+            }
+        }
+        Integer hash = createClassSignatureHash(cls, targetParms);
 
-          Integer hash = createClassSignatureHash(cls, targetParms);
+        Map<Integer, Constructor> cache = RESOLVED_CONST_CACHE.get(cls);
+        if (cache != null) {
+            if ((bestCandidate = cache.get(hash)) != null) return bestCandidate;
+        }
 
-          Map<Integer, Constructor> cache = RESOLVED_CONST_CACHE.get(cls);
-          if (cache != null) {
-              if ((bestCandidate = cache.get(hash)) != null) return bestCandidate;
-          }
+        for (Constructor construct : getConstructors(cls)) {
+            if ((parmTypes = getConstructors(construct)).length != arguments.length)
+                continue;
+            else if (arguments.length == 0 && parmTypes.length == 0)
+                return construct;
 
-          for (Constructor construct : getConstructors(cls)) {
-              if ((parmTypes = getConstructors(construct)).length != arguments.length)
-                  continue;
-              else if (arguments.length == 0 && parmTypes.length == 0)
-                  return construct;
+            for (int i = 0; i < arguments.length; i++) {
+                if (targetParms[i] == null) {
+                    if (!parmTypes[i].isPrimitive()) score += 5;
+                    else {
+                        score = 0;
+                        break;
+                    }
+                }
+                else if (parmTypes[i] == targetParms[i]) {
+                    score += 5;
+                }
+                else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
+                    score += 4;
+                }
+                else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
+                    score += 4;
+                }
+                else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
+                    score += 3;
+                }
+                else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
+                    score += 2;
+                }
+                else if (canConvert(parmTypes[i], targetParms[i])) {
+                    score += 1;
+                }
+                else {
+                    score = 0;
+                    break;
+                }
+            }
 
-              for (int i = 0; i < arguments.length; i++) {
-                  if (parmTypes[i] == targetParms[i]) {
-                      score += 5;
-                  }
-                  else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
-                      score += 4;
-                  }
-                  else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
-                      score += 4;
-                  }
-                  else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
-                      score += 3;
-                  }
-                  else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
-                      score += 2;
-                  }
-                  else if (canConvert(parmTypes[i], targetParms[i])) {
-                      score += 1;
-                  }
-                  else {
-                      score = 0;
-                      break;
-                  }
-              }
+            if (score != 0 && score > bestScore) {
+                bestCandidate = construct;
+                bestScore = score;
+            }
+            score = 0;
 
-              if (score != 0 && score > bestScore) {
-                  bestCandidate = construct;
-                  bestScore = score;
-              }
-              score = 0;
+        }
 
-          }
-
-          if (bestCandidate != null) {
-              if (cache == null) {
-                  RESOLVED_CONST_CACHE.put(cls, cache = new WeakHashMap<Integer, Constructor>());
-              }
-              cache.put(hash, bestCandidate);
-          }
+        if (bestCandidate != null) {
+            if (cache == null) {
+                RESOLVED_CONST_CACHE.put(cls, cache = new WeakHashMap<Integer, Constructor>());
+            }
+            cache.put(hash, bestCandidate);
+        }
 
 
-          return bestCandidate;
-      }
- 
+        return bestCandidate;
+    }
+
 
     private static Map<ClassLoader, Map<String, Class>> CLASS_RESOLVER_CACHE = new WeakHashMap<ClassLoader, Map<String, Class>>(1, 1.0f);
     private static Map<Class, Constructor[]> CLASS_CONSTRUCTOR_CACHE = new WeakHashMap<Class, Constructor[]>(10);
@@ -403,7 +421,6 @@ public class ParseTools {
             return cns;
         }
     }
-
 
 
     public static String[] captureContructorAndResidual(String token) {

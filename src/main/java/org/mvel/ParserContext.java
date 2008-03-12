@@ -423,4 +423,7 @@ public class ParserContext implements Serializable {
         this.indexAllocation = indexAllocation;
     }
 
+    public ParserConfiguration getParserConfiguration() {
+        return parserConfiguration;
+    }
 }
