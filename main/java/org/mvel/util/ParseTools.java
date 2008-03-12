@@ -135,16 +135,16 @@ public class ParseTools {
 
     private static Map<String, Map<Integer, Method>> RESOLVED_METH_CACHE = new WeakHashMap<String, Map<Integer, Method>>(10);
 
-    public static Method getBestCandidate(Object[] arguments, String method, Method[] methods) {
+    public static Method getBestCandidate(Object[] arguments, String method, Class decl, Method[] methods) {
         Class[] targetParms = new Class[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
             targetParms[i] = arguments[i] != null ? arguments[i].getClass() : Object.class;
         }
-        return getBestCandidate(targetParms, method, methods);
+        return getBestCandidate(targetParms, method, decl, methods);
     }
 
 
-    public static Method getBestCandidate(Class[] arguments, String method, Method[] methods) {
+    public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods) {
         if (methods.length == 0) {
             return null;
         }
@@ -153,7 +153,7 @@ public class ParseTools {
         int bestScore = 0;
         int score = 0;
 
-        Integer hash = createClassSignatureHash(methods[0].getDeclaringClass(), arguments);
+        Integer hash = createClassSignatureHash(decl, arguments);
 
         Map<Integer, Method> methCache = RESOLVED_METH_CACHE.get(method);
         if (methCache != null) {
