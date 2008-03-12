@@ -1,14 +1,14 @@
 package org.mvel.tests.main.res;
 
-public class Person {
+public class Cheesery {
     private String name;
     private Cheese cheese;
     
-    public Person(String name) {
+    public Cheesery(String name) {
         this(name, null);
     }
     
-    public Person(String name,
+    public Cheesery(String name,
                   Cheese cheese) {
         super();
         this.name = name;
@@ -41,7 +41,7 @@ public class Person {
         if ( this == obj ) return true;
         if ( obj == null ) return false;
         if ( getClass() != obj.getClass() ) return false;
-        final Person other = (Person) obj;
+        final Cheesery other = (Cheesery) obj;
         if ( cheese == null ) {
             if ( other.cheese != null ) return false;
         } else if ( !cheese.equals( other.cheese ) ) return false;

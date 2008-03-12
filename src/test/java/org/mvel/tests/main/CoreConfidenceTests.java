@@ -1929,12 +1929,11 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addPackageImport("org.mvel.tests.main.res");
 
 
-        ExpressionCompiler compiler = new ExpressionCompiler("new Person(\"bobbo\", new Cheese(\"cheddar\", 0))");
+        ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", new Cheese(\"cheddar\"))");
         Serializable s = compiler.compile(ctx);
         
-        org.mvel.tests.main.res.Person p1 = new org.mvel.tests.main.res.Person( "bobbo", new Cheese("cheddar", 0) );
-        
-        org.mvel.tests.main.res.Person p2 = ( org.mvel.tests.main.res.Person ) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
+        Cheesery p1 = new Cheesery( "bobbo", new Cheese("cheddar", 15) );        
+        Cheesery p2 = ( Cheesery ) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
         
         assertEquals( p1, p2 );       
     }
@@ -1944,12 +1943,12 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addPackageImport("org.mvel.tests.main.res");
 
 
-        ExpressionCompiler compiler = new ExpressionCompiler("new Person(\"bobbo\", null)");
+        ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", null)");
         Serializable s = compiler.compile(ctx);
         
-        org.mvel.tests.main.res.Person p1 = new org.mvel.tests.main.res.Person( "bobbo", null );
+        Cheesery p1 = new Cheesery( "bobbo", null );
         
-        org.mvel.tests.main.res.Person p2 = ( org.mvel.tests.main.res.Person ) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
+        Cheesery p2 = ( Cheesery ) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
         
         assertEquals( p1, p2 );       
     }    
