@@ -17,12 +17,10 @@ import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.MethodStub;
-import org.mvel.ExecutableStatement;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
-import static java.lang.System.currentTimeMillis;
 import java.util.*;
 import java.util.List;
 
@@ -268,6 +266,14 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testNegation4() {
         assertEquals(false, test("(fun && fun)"));
+    }
+
+    public void testNegation5() {
+        assertEquals(true, test("!false"));
+    }
+
+    public void testNegation6() {
+        assertEquals(false, test("!true"));
     }
 
     public void testMultiStatement() {

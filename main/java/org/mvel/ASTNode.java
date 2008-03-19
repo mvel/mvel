@@ -402,7 +402,9 @@ public class ASTNode implements Cloneable, Serializable {
         }
         else if (AbstractParser.LITERALS.containsKey(literal)) {
             fields |= LITERAL | IDENTIFIER;
-            if ((literal = AbstractParser.LITERALS.get(literal)) == ThisLiteral.class) fields |= THISREF;
+            if ((literal = valRet(AbstractParser.LITERALS.get(literal))) == ThisLiteral.class) fields |= THISREF;
+      ///      if ((fields & NEGATION) != 0) literal = !((Boolean)literal);
+
             if (literal != null) egressType = literal.getClass();
         }
         else if (AbstractParser.OPERATORS.containsKey(literal)) {
