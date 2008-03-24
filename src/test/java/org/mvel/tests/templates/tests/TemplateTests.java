@@ -1,20 +1,20 @@
-package org.mvel.templates.tests;
+package org.mvel.tests.templates.tests;
 
 import junit.framework.TestCase;
-import org.mvel.templates.*;
-import static org.mvel.templates.TemplateCompiler.compileTemplate;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.tests.main.res.Foo;
-import org.mvel.tests.main.res.Base;
+import org.mvel.templates.CompiledTemplate;
+import org.mvel.templates.SimpleTemplateRegistry;
+import static org.mvel.templates.TemplateCompiler.compileTemplate;
+import org.mvel.templates.TemplateRuntime;
 import org.mvel.tests.main.res.Bar;
+import org.mvel.tests.main.res.Base;
+import org.mvel.tests.main.res.Foo;
 
-import org.mvel.*;
-
-import java.util.Map;
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class TemplateTests extends TestCase {
@@ -130,7 +130,7 @@ public class TemplateTests extends TestCase {
     }
 
     public void testInclusionOfTemplateFile() {
-        String s = "<<@include{'src/tests/org/mvel/templates/tests/templateTest.mv'}>>";
+        String s = "<<@include{'src/test/java/org/mvel/tests/templates/tests/templateTest.mv'}>>";
         assertEquals("<<Foo::Bar>>", test(s));
     }
 
@@ -165,9 +165,10 @@ public class TemplateTests extends TestCase {
      */
 
     public void testPassThru2() {
-        assertEquals("foo@bar.com", TemplateInterpreter.eval("foo@bar.com", map));
+        assertEquals("foo@bar.com", TemplateRuntime.eval("foo@bar.com", map));
     }
 
+    
     public void testMethodOnValue() {
         assertEquals("DOG", test("@{foo.bar.name.toUpperCase()}"));
     }
@@ -300,27 +301,27 @@ public class TemplateTests extends TestCase {
 
     public void testControlLoopList() {
         assertEquals("HappyHappy!JoyJoy!",
-                parse(
-                        "@foreach{list as fun}" +
-                                "@{fun}" +
+                test(
+                        "@foreach{item : list}" +
+                                "@{item}" +
                                 "@end{}"
                 ));
     }
 
     public void testControlLoopArray() {
         assertEquals("Happy0Happy!1Joy2Joy!3",
-                parse(
-                        "@foreach{array as fun}" +
-                                "@{fun}@{i0}" +
+                test(
+                        "@code{i=0}@foreach{item : array}" +
+                                "@{item}@{i++}" +
                                 "@end{}"
                 ));
     }
 
     public void testMultiCollectionControlLoop() {
         assertEquals("0=Happy:Happy,1=Happy!:Happy!,2=Joy:Joy,3=Joy!:Joy!",
-                parse(
-                        "@foreach{list, array as listItem}" +
-                                "@{i0}=@{item}:@{listItem}" +
+                test(
+                        "@code{i=0}@foreach{item : list, listItem : array}" +
+                                "@{i++}=@{item}:@{listItem}" +
                                 "@end{','}"
                 ));
     }
@@ -374,8 +375,8 @@ public class TemplateTests extends TestCase {
 
     public void testControlLoop2() {
         assertEquals("HappyHappy!JoyJoy!",
-                parse(
-                        "@foreach{list}" +
+                test(
+                        "@foreach{item : list}" +
                                 "@{item}" +
                                 "@end{}"
                 ));
@@ -383,8 +384,8 @@ public class TemplateTests extends TestCase {
 
     public void testControlLoop3() {
         assertEquals("HappyHappy!JoyJoy!",
-                parse(
-                        "@foreach{ list }" +
+                test(
+                        "@foreach{item : list }" +
                                 "@{item}" +
                                 "@end{}"
                 ));
@@ -603,10 +604,10 @@ public class TemplateTests extends TestCase {
         list.add("a2");
         list.add("a3");
 
-        String template = "@foreach{list}a@end{}";
+        String template = "@foreach{item : list}a@end{}";
         Map map = new HashMap();
         map.put("list", list);
-        String r = TemplateInterpreter.evalToString(template, map);
+        String r = (String) TemplateRuntime.eval(template, map);
         System.out.println("r: " + r);
         assertEquals("aaa", r);
     }
@@ -615,8 +616,8 @@ public class TemplateTests extends TestCase {
     public void testIteration2() {
         Folder f1 = new Folder("f1", null);
 
-        String template = "@{name} @foreach{children}a@end{}";
-        String r = TemplateInterpreter.evalToString(template, f1);
+        String template = "@{name} @foreach{item : children}a@end{}";
+        String r = (String) TemplateRuntime.eval(template, f1);
         System.out.println("r: " + r);
     }
 
@@ -624,10 +625,10 @@ public class TemplateTests extends TestCase {
         Folder f = new Folder("a1", null);
         List<Page> list = f.getChildren();
 
-        String template = "@foreach{list}a@end{}";
+        String template = "@foreach{item : list}a@end{}";
         Map map = new HashMap();
         map.put("list", list);
-        String r = TemplateInterpreter.evalToString(template, map);
+        String r = (String) TemplateRuntime.eval(template, map);
         System.out.println("r: " + r);
         assertEquals("aaa", r);
     }
@@ -635,10 +636,10 @@ public class TemplateTests extends TestCase {
     public void testIteration4() {
         Folder f = new Folder("a1", null);
 
-        String template = "@foreach{f.children}a@end{}";
+        String template = "@foreach{item : f.children}a@end{}";
         Map map = new HashMap();
         map.put("f", f);
-        String r = TemplateInterpreter.evalToString(template, map);
+        String r = (String) TemplateRuntime.eval(template, map);
         System.out.println("r: " + r);
         assertEquals("aaa", r);
     }
@@ -675,12 +676,4 @@ public class TemplateTests extends TestCase {
         }
     }
 
-
-    public Object parse(String ex, org.mvel.TemplateRegistry registry) {
-        return TemplateInterpreter.parse(ex, base, map, registry);
-    }
-
-    public Object parse(String ex) {
-        return TemplateInterpreter.parse(ex, base, map);
-    }
 }

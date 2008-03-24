@@ -7,6 +7,7 @@ import org.mvel.MVEL;
 import org.mvel.templates.TemplateSyntaxError;
 import org.mvel.templates.TemplateRuntimeError;
 import org.mvel.templates.TemplateRuntime;
+import org.mvel.templates.util.ArrayIterator;
 
 import java.util.*;
 
@@ -51,6 +52,9 @@ public class ForEachNode extends Node {
         for (int i = 0; i < iters.length; i++) {
             if ((o = MVEL.eval(expression[i], ctx, factory)) instanceof Collection) {
                 iters[i] = ((Collection) o).iterator();
+            }
+            else if (o instanceof Object[]) {
+                iters[i] = new ArrayIterator((Object[]) o);
             }
             else {
                 throw new TemplateRuntimeError("cannot iterate object type: " + o.getClass().getName());

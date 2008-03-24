@@ -68,7 +68,7 @@ public class MVEL {
     public static void setThreadSafe(boolean threadSafe) {
         THREAD_SAFE = threadSafe;
         PropertyAccessor.configureFactory();
-        TemplateInterpreter.configureFactory();
+    //    TemplateInterpreter.configureFactory();
         MVELInterpretedRuntime.configureFactory();
     }
 

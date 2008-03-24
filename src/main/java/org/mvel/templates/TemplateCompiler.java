@@ -53,6 +53,8 @@ public class TemplateCompiler {
         IfNode last;
         Integer opcode;
         String name;
+        int x;
+
         while (cursor < length) {
             switch (template[cursor]) {
                 case '@':
@@ -64,7 +66,8 @@ public class TemplateCompiler {
 
                         continue;
                     }
-                    if (captureOrbToken()) {
+                    if ((x = captureOrbToken()) != -1) {
+                        start = x;
                         switch ((opcode = OPCODES.get(name = new String(capture()))) == null ? 0 : opcode) {
                             case Opcodes.IF:
                                 /**
@@ -189,10 +192,11 @@ public class TemplateCompiler {
         return cursor != length && template[cursor + 1] == c;
     }
 
-    public boolean captureOrbToken() {
-        start = ++cursor;
+    public int captureOrbToken() {
+        int newStart = ++cursor;
         while ((cursor != length) && isIdentifierPart(template[cursor])) cursor++;
-        return cursor != length && template[cursor] == '{';
+        if (cursor != length && template[cursor] == '{') return newStart;
+        return -1;
     }
 
     public int captureOrbInternal() {

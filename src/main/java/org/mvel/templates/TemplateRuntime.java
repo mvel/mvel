@@ -23,6 +23,11 @@ public class TemplateRuntime {
         return execute(compileTemplate(template), null, new MapVariableResolverFactory(vars));
     }
 
+    public static Object eval(String template, Object ctx) {
+        return execute(compileTemplate(template), ctx, null);
+    }
+
+
     public static Object eval(String template, Object ctx, Map vars) {
         return execute(compileTemplate(template), ctx, new MapVariableResolverFactory(vars));
     }
