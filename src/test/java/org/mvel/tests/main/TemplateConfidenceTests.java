@@ -1,9 +1,6 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-import org.mvel.MVELTemplateRegistry;
-import org.mvel.TemplateInterpreter;
-import org.mvel.TemplateRegistry;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;

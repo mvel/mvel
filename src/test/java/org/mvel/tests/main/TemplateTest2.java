@@ -1,10 +1,6 @@
 package org.mvel.tests.main;
 
-import org.mvel.TemplateInterpreter;
-
 import java.io.IOException;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Map;
 import java.util.HashMap;
 
