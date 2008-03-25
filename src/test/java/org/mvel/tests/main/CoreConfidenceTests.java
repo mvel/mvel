@@ -273,6 +273,14 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(false, test("(fun && fun)"));
     }
 
+    public void testNegation5() {
+        assertEquals(true, test("!false"));
+    }
+
+    public void testNegation6() {
+        assertEquals(false, test("!true"));
+    }
+    
     public void testMultiStatement() {
         assertEquals(true, test("populate(); barfoo == 'sarah'"));
     }
