@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.File;
 
 
 @SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes"})
@@ -127,6 +128,11 @@ public class TemplateTests extends TestCase {
     public void testComplexTemplate() {
         String s = "@foreach{item : arrayList}@if{item[0] == 'J'}@{item}@end{}@end{}";
         assertEquals("JaneJohn", test(s));
+    }
+
+    public void testFileBasedEval() {
+        assertEquals("Foo::Bar", TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/tests/templateTest.mv"),
+                base, new MapVariableResolverFactory(map), null));
     }
 
     public void testInclusionOfTemplateFile() {
