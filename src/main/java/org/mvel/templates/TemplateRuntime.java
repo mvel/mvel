@@ -4,9 +4,12 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.templates.TemplateCompiler.compileTemplate;
 import org.mvel.templates.res.Node;
+import org.mvel.templates.util.TemplateTools;
 import org.mvel.util.StringAppender;
 
 import java.util.Map;
+import java.io.InputStream;
+import java.io.File;
 
 public class TemplateRuntime {
     private char[] template;
@@ -17,6 +20,14 @@ public class TemplateRuntime {
         this.template = template;
         this.namedTemplateRegistry = namedTemplateRegistry;
         this.rootNode = rootNode;
+    }
+
+    public static Object eval(File file, Object ctx, VariableResolverFactory vars, TemplateRegistry registry) {
+        return execute(compileTemplate(TemplateTools.readInFile(file)), ctx, vars, registry);
+    }
+
+    public static Object eval(InputStream instream, Object ctx, VariableResolverFactory vars, TemplateRegistry registry) {
+        return execute(compileTemplate(TemplateTools.readStream(instream)), ctx, vars, registry);
     }
 
     public static Object eval(String template, Map vars) {
@@ -58,8 +69,8 @@ public class TemplateRuntime {
     }
 
     public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, TemplateRegistry registry) {
-         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, factory, registry);
-     }
+        return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, factory, registry);
+    }
 
 
     public static Object execute(Node root, char[] template,
@@ -69,7 +80,7 @@ public class TemplateRuntime {
     }
 
     public Object execute(StringAppender appender, Object context, VariableResolverFactory factory) {
-       return rootNode.eval(this, appender, context, factory);
+        return rootNode.eval(this, appender, context, factory);
     }
 
     public Node getRootNode() {
