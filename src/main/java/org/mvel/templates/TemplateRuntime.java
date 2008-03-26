@@ -27,7 +27,6 @@ public class TemplateRuntime {
         return execute(compileTemplate(template), ctx, null);
     }
 
-
     public static Object eval(String template, Object ctx, Map vars) {
         return execute(compileTemplate(template), ctx, new MapVariableResolverFactory(vars));
     }
@@ -47,6 +46,12 @@ public class TemplateRuntime {
     public static Object eval(String template, Object ctx, VariableResolverFactory vars, TemplateRegistry registry) {
         return execute(compileTemplate(template), ctx, vars, registry);
     }
+
+
+    public static Object execute(CompiledTemplate compiled) {
+        return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), null, null, null);
+    }
+
 
     public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, factory, null);

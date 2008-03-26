@@ -162,21 +162,17 @@ public class TemplateCompiler {
                                 else if (customNodes != null && customNodes.containsKey(name)) {
                                     Class<? extends Node> customNode = customNodes.get(name);
 
-                                    Node newNode;
                                     try {
-                                        newNode = customNode.newInstance();
-                                        newNode.setBegin(start);
-                                        newNode.setName(name);
+                                        n = markTextNode(n).setNext(customNode.newInstance());
+                                        n.setBegin(start);
+                                        n.setName(name);
+                                        n.setCStart(captureOrbInternal());
+                                        n.setCEnd(start = cursor + 1);
+                                        n.setEnd(n.getCEnd());
 
-                                        newNode.setCStart(captureOrbInternal());
-                                        newNode.setCEnd(start = cursor + 1);
-                                        newNode.setEnd(newNode.getCEnd());
+                                        n.setContents(subset(template, n.getCStart(), n.getCEnd() - n.getCStart() - 1));
 
-                                        newNode.setContents(subset(template, newNode.getCStart(), newNode.getCEnd() - newNode.getCStart() - 1));
-
-                                        n = markTextNode(n).setNext(newNode);
-
-                                        if (newNode.isOpenNode()) {
+                                        if (n.isOpenNode()) {
                                             stack.push(n);
                                         }
                                     }

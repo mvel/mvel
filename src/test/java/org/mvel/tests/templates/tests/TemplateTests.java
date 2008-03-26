@@ -7,9 +7,12 @@ import org.mvel.templates.CompiledTemplate;
 import org.mvel.templates.SimpleTemplateRegistry;
 import static org.mvel.templates.TemplateCompiler.compileTemplate;
 import org.mvel.templates.TemplateRuntime;
+import org.mvel.templates.TemplateCompiler;
+import org.mvel.templates.res.Node;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
+import org.mvel.tests.templates.tests.res.TestPluginNode;
 import org.mvel.CompileException;
 
 import java.util.ArrayList;
@@ -18,12 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 
+@SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes"})
 public class TemplateTests extends TestCase {
     private Map<String, Object> map = new HashMap<String, Object>();
     private VariableResolverFactory vrf = new MapVariableResolverFactory(map);
     private Foo foo = new Foo();
     private Base base = new Base();
-
 
     public TemplateTests() {
         map.put("_foo_", "Foo");
@@ -42,8 +45,6 @@ public class TemplateTests extends TestCase {
         map.put("b", null);
         map.put("c", "cat");
         map.put("BWAH", "");
-
-        //     map.put("misc", new MiscTestClass());
 
         map.put("pi", "3.14");
         map.put("hour", "60");
@@ -66,12 +67,10 @@ public class TemplateTests extends TestCase {
                         return true;
                     }
                 });
-
     }
 
     public Object test(String template) {
         CompiledTemplate compiled = compileTemplate(template);
-        //  TemplateDebug.decompile(compiled, template.toCharArray());
         return TemplateRuntime.execute(compiled, base, vrf);
     }
 
@@ -176,6 +175,16 @@ public class TemplateTests extends TestCase {
         assertEquals("Hello John! -- Hello Mary!", test(s));
     }
 
+    public void testPluginNode() {
+        Map<String, Class<? extends Node>> plugins = new HashMap<String, Class<? extends Node>>();
+        plugins.put("testNode", TestPluginNode.class);
+
+        TemplateCompiler compiler = new TemplateCompiler("Foo:@testNode{}!!", plugins);
+        CompiledTemplate compiled = compiler.compile();
+
+        assertEquals("Foo:THIS_IS_A_TEST!!", TemplateRuntime.execute(compiled));
+    }
+
     /**
      * Integration of old tests
      */
@@ -183,7 +192,6 @@ public class TemplateTests extends TestCase {
     public void testPassThru2() {
         assertEquals("foo@bar.com", TemplateRuntime.eval("foo@bar.com", map));
     }
-
 
     public void testMethodOnValue() {
         assertEquals("DOG", test("@{foo.bar.name.toUpperCase()}"));
@@ -233,7 +241,6 @@ public class TemplateTests extends TestCase {
         assertEquals("dogDOGGIE133.5", test("@{foo.bar.name}DOGGIE@{hour*2.225+1-1}"));
     }
 
-
     public void testComplexAnd() {
         assertEquals(true, test("@{(pi * hour) > 0 && foo.happy() == 'happyBar'}"));
     }
@@ -242,7 +249,6 @@ public class TemplateTests extends TestCase {
         assertEquals(38392 % 2,
                 test("@{38392 % 2}"));
     }
-
 
     public void testLessThan() {
         assertEquals(true, test("@{pi < 3.15}"));
@@ -341,16 +347,6 @@ public class TemplateTests extends TestCase {
                                 "@end{','}"
                 ));
     }
-//
-//    public void testMultiCollectionWithSingleCharSeperatorControlLoop() {
-//        assertEquals("Happy0Happy,Happy!1Happy!,Joy2Joy,Joy!3Joy!",
-//                parse(
-//                        "@foreach{list, array as listItem, arrayItem}" +
-//                                "@{listItem}@{i0}@{arrayItem}" +
-//                                "@end{\",\"  }"
-//                ));
-//    }
-
 
     public void testControlLoopListMultiple() {
         for (int i = 0; i < 100; i++) {
@@ -363,25 +359,6 @@ public class TemplateTests extends TestCase {
             testControlLoopArray();
         }
     }
-
-//    public void testMultiCollectionControlLoopMultiple() {
-//        for (int i = 0; i < 100; i++) {
-//            testMultiCollectionControlLoop();
-//        }
-//    }
-//
-//
-//    public void testMultiCollectionWithSingleCharSeperatorControlLoopMultiple() {
-//        for (int i = 0; i < 100; i++) {
-//            testMultiCollectionWithSingleCharSeperatorControlLoop();
-//        }
-//    }
-
-//    public void testMultiCollectionWithMultipleCharSeperatorControlLoopMultiple() {
-//        for (int i = 0; i < 100; i++) {
-//            testMultiCollectionWithMultipleCharSeperatorControlLoop();
-//        }
-//    }
 
     public static interface TestInterface {
         public String getName();
@@ -575,22 +552,6 @@ public class TemplateTests extends TestCase {
         assertEquals(true, test("@{this}") instanceof Base);
     }
 
-//
-//    public void testRegisterTemplateGroup() {
-//        StringReader reader = new StringReader("myTemplate1() ::=<<@{var1}>>=::  myTemplate2() ::=<<@{var2}>>=::");
-//        org.mvel.TemplateRegistry registry = new MVELTemplateRegistry();
-//        registry.registerTemplate(reader);
-//
-//        assertEquals("xvalue1catx", test("x@includeByRef{myTemplate1(var1 = \"value1\")}@includeByRef{myTemplate2(var2 = c)}x", registry));
-//    }
-//
-//    public void testRecursiveRegisterTemplateGroup() {
-//        StringReader reader = new StringReader("myTemplate1() ::=<<@{var1}@includeByRef{myTemplate2(var2 = var2)}>>=::  myTemplate2() ::=<<@{var2}>>=::");
-//        org.mvel.TemplateRegistry registry = new MVELTemplateRegistry();
-//        registry.registerTemplate(reader);
-//
-//        assertEquals("xvalue1catx", test("x@includeByRef{myTemplate1(var1 = \"value1\", var2 = c)}x", registry));
-//    }
 
     public void testIfLoopInTemplate() {
         assertEquals("ONETWOTHREE", test("@foreach{item :things}@if{item.name=='Bob'}ONE@elseif{item.name=='Smith'}TWO@elseif{item.name=='Cow'}THREE@end{}@end{}"));
