@@ -10,6 +10,7 @@ import org.mvel.templates.TemplateRuntime;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
+import org.mvel.CompileException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,7 +93,7 @@ public class TemplateTests extends TestCase {
     public void testIfStatement2() {
         String s = "@if{_foo_=='Bar'}Hello@else{_foo_=='Foo'}Goodbye@end{}";
         assertEquals("Goodbye", test(s));
-    }         
+    }
 
     public void testIfStatement3() {
         String s = "@if{_foo_=='Bar'}Hello@else{_foo_=='foo'}Goodbye@else{}Nope@end{}";
@@ -134,6 +135,21 @@ public class TemplateTests extends TestCase {
         assertEquals("<<Foo::Bar>>", test(s));
     }
 
+    public void testInclusionOfTemplateFile2() {
+        String s = "<<@include{'src/test/java/org/mvel/tests/templates/tests/templateError.mv'}>>";
+        try {
+            test(s);
+        }
+        catch (CompileException e) {
+            System.out.println("[Line:" + e.getLineNumber() + ";Column:" +e.getColumn() + "]");
+            System.out.println(e.toString()
+            );
+            assertTrue(true);
+            return;
+        }
+        assertTrue(false);
+    }
+
     public void testInclusionOfNamedTemplate() {
         SimpleTemplateRegistry registry = new SimpleTemplateRegistry();
         registry.addNamedTemplate("footemplate", compileTemplate("@{_foo_}@{_bar_}"));
@@ -168,7 +184,7 @@ public class TemplateTests extends TestCase {
         assertEquals("foo@bar.com", TemplateRuntime.eval("foo@bar.com", map));
     }
 
-    
+
     public void testMethodOnValue() {
         assertEquals("DOG", test("@{foo.bar.name.toUpperCase()}"));
     }
@@ -558,7 +574,6 @@ public class TemplateTests extends TestCase {
     public void testThisReference() {
         assertEquals(true, test("@{this}") instanceof Base);
     }
-
 
 //
 //    public void testRegisterTemplateGroup() {

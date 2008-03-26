@@ -2,8 +2,11 @@ package org.mvel.templates;
 
 import org.mvel.templates.res.*;
 import org.mvel.util.ExecutionStack;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.balancedCapture;
+import static org.mvel.util.ParseTools.balancedCaptureWithLineAccounting;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
+import org.mvel.CompileException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +19,9 @@ public class TemplateCompiler {
     private int start;
     private int cursor;
     private int lastTextRangeEnding;
+
+    private int line;
+    private int colStart;
 
     private static final Map<String, Integer> OPCODES = new HashMap<String, Integer>();
 
@@ -45,6 +51,8 @@ public class TemplateCompiler {
     }
 
     public Node compileFrom(Node root, ExecutionStack stack) {
+        line = 1;
+
         Node n = root;
         if (root == null) {
             n = root = new TextNode(0, 0);
@@ -57,11 +65,15 @@ public class TemplateCompiler {
 
         while (cursor < length) {
             switch (template[cursor]) {
+                case '\n':
+                    line++;
+                    colStart = cursor + 1;
+                    break;
                 case '@':
                 case '$':
                     if (isNext(template[cursor])) {
                         start = ++cursor;
-                        (n = markTextNode(n)).setEnd(n.getEnd()+1);
+                        (n = markTextNode(n)).setEnd(n.getEnd() + 1);
                         lastTextRangeEnding = ++cursor;
 
                         continue;
@@ -169,11 +181,12 @@ public class TemplateCompiler {
         n = root;
         do {
             if (n.getLength() != 0) {
-              break;
+                break;
             }
-        } while ((n = n.getNext()) != null);
+        }
+        while ((n = n.getNext()) != null);
 
-        if (n != null && n.getLength() == template.length-1) {
+        if (n != null && n.getLength() == template.length - 1) {
             if (n instanceof ExpressionNode) {
                 return new TerminalExpressionNode(n);
             }
@@ -184,7 +197,6 @@ public class TemplateCompiler {
 
         return root;
     }
-
 
     // Parse Utilities Start Here
 
@@ -200,10 +212,19 @@ public class TemplateCompiler {
     }
 
     public int captureOrbInternal() {
-        cursor = balancedCapture(template, start = cursor, '{');
-        int ret = start + 1;
-        start = cursor + 1;
-        return ret;
+        try {
+            int[] r = balancedCaptureWithLineAccounting(template, start = cursor, '{');
+            cursor = r[0];
+            line += r[1];
+            int ret = start + 1;
+            start = cursor + 1;
+            return ret;
+        }
+        catch (CompileException e) {
+            e.setLineNumber(line);
+            e.setColumn((cursor - colStart)+1);
+            throw e;
+        }
     }
 
     public char[] capture() {
