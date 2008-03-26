@@ -1,12 +1,11 @@
 package org.mvel.templates;
 
+import org.mvel.CompileException;
 import org.mvel.templates.res.*;
 import org.mvel.util.ExecutionStack;
-import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.balancedCapture;
 import static org.mvel.util.ParseTools.balancedCaptureWithLineAccounting;
+import static org.mvel.util.ParseTools.subset;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
-import org.mvel.CompileException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +21,8 @@ public class TemplateCompiler {
 
     private int line;
     private int colStart;
+
+    private Map<String, Class<? extends Node>> customNodes;
 
     private static final Map<String, Integer> OPCODES = new HashMap<String, Integer>();
 
@@ -42,9 +43,6 @@ public class TemplateCompiler {
         OPCODES.put("stop", Opcodes.STOP);
     }
 
-    public static CompiledTemplate compileTemplate(String template) {
-        return new TemplateCompiler(template).compile();
-    }
 
     public CompiledTemplate compile() {
         return new CompiledTemplate(template, compileFrom(null, new ExecutionStack()));
@@ -147,11 +145,9 @@ public class TemplateCompiler {
                                 Node end = (Node) stack.pop();
 
                                 Node terminal = end.getTerminus();
-
                                 terminal.setCStart(captureOrbInternal());
                                 terminal.setEnd((lastTextRangeEnding = start) - 1);
                                 terminal.calculateContents(template);
-
 
                                 if (end.demarcate(terminal, template)) n = n.setNext(terminal);
                                 else n = terminal;
@@ -159,8 +155,42 @@ public class TemplateCompiler {
                                 break;
 
                             default:
-                                n = markTextNode(n).setNext(
-                                        new ExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1));
+                                if (name.length() == 0) {
+                                    n = markTextNode(n).setNext(
+                                            new ExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1));
+                                }
+                                else if (customNodes != null && customNodes.containsKey(name)) {
+                                    Class<? extends Node> customNode = customNodes.get(name);
+
+                                    Node newNode;
+                                    try {
+                                        newNode = customNode.newInstance();
+                                        newNode.setBegin(start);
+                                        newNode.setName(name);
+
+                                        newNode.setCStart(captureOrbInternal());
+                                        newNode.setCEnd(start = cursor + 1);
+                                        newNode.setEnd(newNode.getCEnd());
+
+                                        newNode.setContents(subset(template, newNode.getCStart(), newNode.getCEnd() - newNode.getCStart() - 1));
+
+                                        n = markTextNode(n).setNext(newNode);
+
+                                        if (newNode.isOpenNode()) {
+                                            stack.push(n);
+                                        }
+                                    }
+                                    catch (InstantiationException e) {
+                                       throw new CompileException("unable to instantiate custome node class: " + customNode.getName(), e);
+                                    }
+                                    catch (IllegalAccessException e) {
+                                        throw new CompileException("unable to instantiate custome node class: " + customNode.getName(), e);
+                                    }                                    
+                                }
+                                else {
+                                    throw new TemplateSyntaxError("uknown token type: " + name);
+                                }
+
                         }
                     }
             }
@@ -173,10 +203,6 @@ public class TemplateCompiler {
             n = n.setNext(new TextNode(start, template.length));
         }
         n.setNext(new EndNode());
-//
-//        if (root.getNext() != null && (n = root.getNext()) instanceof ExpressionNode && n.getNext() instanceof EndNode) {
-//            return new TerminalExpressionNode(n);
-//        }
 
         n = root;
         do {
@@ -222,7 +248,7 @@ public class TemplateCompiler {
         }
         catch (CompileException e) {
             e.setLineNumber(line);
-            e.setColumn((cursor - colStart)+1);
+            e.setColumn((cursor - colStart) + 1);
             throw e;
         }
     }
@@ -244,6 +270,31 @@ public class TemplateCompiler {
         return n;
     }
 
+
+    public static CompiledTemplate compileTemplate(String template) {
+        return new TemplateCompiler(template).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(char[] template) {
+        return new TemplateCompiler(template).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(CharSequence template) {
+        return new TemplateCompiler(template).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(String template, Map<String, Class<? extends Node>> customNodes) {
+        return new TemplateCompiler(template, customNodes).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(char[] template,  Map<String, Class<? extends Node>> customNodes) {
+        return new TemplateCompiler(template, customNodes).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(CharSequence template,  Map<String, Class<? extends Node>> customNodes) {
+        return new TemplateCompiler(template, customNodes).compile();
+    }
+
     public TemplateCompiler(String template) {
         this.length = (this.template = template.toCharArray()).length;
     }
@@ -255,4 +306,20 @@ public class TemplateCompiler {
     public TemplateCompiler(CharSequence sequence) {
         this.length = (this.template = sequence.toString().toCharArray()).length;
     }
+
+    public TemplateCompiler(String template, Map<String, Class<? extends Node>> customNodes) {
+        this.length = (this.template = template.toCharArray()).length;
+        this.customNodes = customNodes;
+    }
+
+    public TemplateCompiler(char[] template, Map<String, Class<? extends Node>> customNodes) {
+        this.length = (this.template = template).length;
+        this.customNodes = customNodes;
+    }
+
+    public TemplateCompiler(CharSequence sequence, Map<String, Class<? extends Node>> customNodes) {
+        this.length = (this.template = sequence.toString().toCharArray()).length;
+        this.customNodes = customNodes;
+    }
+
 }

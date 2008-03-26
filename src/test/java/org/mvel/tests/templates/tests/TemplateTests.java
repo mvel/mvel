@@ -81,7 +81,7 @@ public class TemplateTests extends TestCase {
     }
 
     public void testBasicParsing() {
-        String s = "foo: @bar{_foo_}--@{_bar_}!";
+        String s = "foo: @{_foo_}--@{_bar_}!";
         assertEquals("foo: Foo--Bar!", test(s));
     }
 
