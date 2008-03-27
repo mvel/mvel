@@ -1,4 +1,4 @@
-package org.mvel.tests.templates.tests;
+package org.mvel.tests.main;
 
 import junit.framework.TestCase;
 import org.mvel.integration.VariableResolverFactory;
@@ -131,17 +131,17 @@ public class TemplateTests extends TestCase {
     }
 
     public void testFileBasedEval() {
-        assertEquals("Foo::Bar", TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/tests/templateTest.mv"),
+        assertEquals("Foo::Bar", TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/templateTest.mv"),
                 base, new MapVariableResolverFactory(map), null));
     }
 
     public void testInclusionOfTemplateFile() {
-        String s = "<<@include{'src/test/java/org/mvel/tests/templates/tests/templateTest.mv'}>>";
+        String s = "<<@include{'src/test/java/org/mvel/tests/templates/templateTest.mv'}>>";
         assertEquals("<<Foo::Bar>>", test(s));
     }
 
     public void testInclusionOfTemplateFile2() {
-        String s = "<<@include{'src/test/java/org/mvel/tests/templates/tests/templateError.mv'}>>";
+        String s = "<<@include{'src/test/java/org/mvel/tests/templates/templateError.mv'}>>";
         try {
             test(s);
         }
@@ -156,7 +156,7 @@ public class TemplateTests extends TestCase {
     }
 
     public void testTemplateFile() {
-         String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/tests/templateIfTest.mv"),
+         String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/templateIfTest.mv"),
                 base, new MapVariableResolverFactory(map), null);
 
         System.out.println(s);
