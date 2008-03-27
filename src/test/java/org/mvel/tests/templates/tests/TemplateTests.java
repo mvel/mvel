@@ -146,13 +146,21 @@ public class TemplateTests extends TestCase {
             test(s);
         }
         catch (CompileException e) {
-            System.out.println("[Line:" + e.getLineNumber() + ";Column:" +e.getColumn() + "]");
+            System.out.println("[Line:" + e.getLineNumber() + ";Column:" + e.getColumn() + "]");
             System.out.println(e.toString()
             );
             assertTrue(true);
             return;
         }
         assertTrue(false);
+    }
+
+    public void testTemplateFile() {
+         String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/tests/templateIfTest.mv"),
+                base, new MapVariableResolverFactory(map), null);
+
+        System.out.println(s);
+
     }
 
     public void testInclusionOfNamedTemplate() {
