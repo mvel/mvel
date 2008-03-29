@@ -104,17 +104,10 @@ public class TemplateCompiler {
                                     break;
 
                                 case Opcodes.FOREACH:
-                                    //todo: delimiter
-
-                                    //                              try {
                                     stack.push(
                                             n = markTextNode(n).setNext(new ForEachNode(start, name, template, captureOrbInternal(), start))
                                     );
-//                                }
-//                                catch (CompileException e) {
-//                                    throw new CompileException(e.getMessage(), template, e.getCursor(), e.getCause());
-//                                }
-//
+
                                     n.setTerminus(new TerminalNode());
 
                                     break;
