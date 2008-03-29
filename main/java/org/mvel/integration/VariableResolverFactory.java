@@ -19,13 +19,14 @@
 package org.mvel.integration;
 
 import java.util.Set;
+import java.io.Serializable;
 
 /**
  * A VariableResolverFactory is the primary integration point for tying in external variables.  The factory is
  * responsible for returing {@link org.mvel.integration.VariableResolver}'s to the MVEL runtime.  Factories are
  * also structured in a chain to maintain locality-of-reference.
  */
-public interface VariableResolverFactory {
+public interface VariableResolverFactory extends Serializable {
     /**
      * Creates a new variable.  This probably doesn't need to be implemented in most scenarios.  This is
      * used for variable assignment.
