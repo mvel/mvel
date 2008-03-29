@@ -149,7 +149,19 @@ public class TemplateTests extends TestCase {
             System.out.println("[Line:" + e.getLineNumber() + ";Column:" + e.getColumn() + "]");
             System.out.println(e.toString()
             );
-            assertTrue(true);
+         //   assertTrue(true);
+            return;
+        }
+        assertTrue(false);
+    }
+
+    public void testForEachException1() {
+        String s = "<<@foreach{arrayList}@{item}@end{}>>";
+        try {
+          test(s);
+        }
+        catch (Exception e) {
+            System.out.println(e.toString());
             return;
         }
         assertTrue(false);

@@ -117,7 +117,7 @@ public class ForEachNode extends Node {
 
         if (start < contents.length) {
             if (expr.size() != (items.size() - 1)) {
-                throw new TemplateSyntaxError("unexpected character ',' in foreach tag");
+                throw new TemplateSyntaxError("expected character ':' in foreach tag");
             }
             expr.add(new String(contents, start, contents.length - start).trim());
         }
