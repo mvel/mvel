@@ -146,7 +146,6 @@ public class TemplateTests extends TestCase {
             test(s);
         }
         catch (CompileException e) {
-            System.out.println("[Line:" + e.getLineNumber() + ";Column:" + e.getColumn() + "]");
             System.out.println(e.toString()
             );
          //   assertTrue(true);

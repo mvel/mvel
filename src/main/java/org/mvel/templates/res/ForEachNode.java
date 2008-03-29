@@ -4,6 +4,7 @@ import org.mvel.util.StringAppender;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.MVEL;
+import org.mvel.CompileException;
 import org.mvel.templates.TemplateSyntaxError;
 import org.mvel.templates.TemplateRuntimeError;
 import org.mvel.templates.TemplateRuntime;
@@ -107,7 +108,7 @@ public class ForEachNode extends Node {
                     break;
                 case ',':
                     if (expr.size() != (items.size() - 1)) {
-                        throw new TemplateSyntaxError("unexpected character ',' in foreach tag");
+                        throw new CompileException("unexpected character ',' in foreach tag", cStart + i);
                     }
                     expr.add(new String(contents, start, i - start).trim());
                     start = i + 1;
@@ -117,7 +118,7 @@ public class ForEachNode extends Node {
 
         if (start < contents.length) {
             if (expr.size() != (items.size() - 1)) {
-                throw new TemplateSyntaxError("expected character ':' in foreach tag");
+                throw new CompileException("expected character ':' in foreach tag", cEnd);
             }
             expr.add(new String(contents, start, contents.length - start).trim());
         }
