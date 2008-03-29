@@ -169,8 +169,7 @@ public class TemplateCompiler {
                                         Class<? extends Node> customNode = customNodes.get(name);
 
                                         try {
-                                            n = markTextNode(n).setNext(customNode.newInstance());
-                                            n.setBegin(start);
+                                            (n = markTextNode(n).setNext(customNode.newInstance())).setBegin(start);
                                             n.setName(name);
                                             n.setCStart(captureOrbInternal());
                                             n.setCEnd(start = cursor + 1);
@@ -221,8 +220,12 @@ public class TemplateCompiler {
             throw ce;
         }
 
-        if (!stack.isEmpty())
-            throw new CompileException("unbalanced tokens. expected @end", template, ((Node) stack.peek()).getBegin());
+        if (!stack.isEmpty()) {
+            CompileException ce = new CompileException("unclosed @" + ((Node) stack.peek()).getName() + " block. expected @end", template, cursor);
+            ce.setColumn(cursor - colStart);
+            ce.setLineNumber(line);
+            throw ce;
+        }
 
         if (start < template.length) {
             n = n.setNext(new TextNode(start, template.length));

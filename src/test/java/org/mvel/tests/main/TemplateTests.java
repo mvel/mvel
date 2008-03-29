@@ -148,7 +148,7 @@ public class TemplateTests extends TestCase {
         catch (CompileException e) {
             System.out.println(e.toString()
             );
-         //   assertTrue(true);
+            //   assertTrue(true);
             return;
         }
         assertTrue(false);
@@ -157,7 +157,19 @@ public class TemplateTests extends TestCase {
     public void testForEachException1() {
         String s = "<<@foreach{arrayList}@{item}@end{}>>";
         try {
-          test(s);
+            test(s);
+        }
+        catch (Exception e) {
+            System.out.println(e.toString());
+            return;
+        }
+        assertTrue(false);
+    }
+
+    public void testForEachException2() {
+        String s = "<<@foreach{item:arrayList}@{item}>>";
+        try {
+            test(s);
         }
         catch (Exception e) {
             System.out.println(e.toString());
@@ -167,7 +179,7 @@ public class TemplateTests extends TestCase {
     }
 
     public void testTemplateFile() {
-         String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/templateIfTest.mv"),
+        String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/templateIfTest.mv"),
                 base, new MapVariableResolverFactory(map), null);
 
         System.out.println(s);
