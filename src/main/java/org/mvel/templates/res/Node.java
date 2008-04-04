@@ -83,6 +83,10 @@ public abstract class Node implements Serializable {
         this.cEnd = cEnd;
     }
 
+    public boolean isOpenNode() {
+        return false;
+    }
+
     public abstract boolean demarcate(Node terminatingNode, char[] template);
 
     public Node getNext() {
