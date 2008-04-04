@@ -89,6 +89,7 @@
             <id>codehaus.org</id>
             <name>Codehaus Snapshot Maven Repository</name>
             <url>dav:https://dav.codehaus.org/snapshots.repository/mvel/</url>
+            <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
 
