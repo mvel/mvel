@@ -58,7 +58,8 @@ public class AbstractParser implements Serializable {
 
     protected boolean debugSymbols = false;
 
-    private int line = 1;
+    protected int lastLineStart = -1;
+    protected int line = 1;
 
     protected ASTNode lastNode;
 
@@ -74,6 +75,7 @@ public class AbstractParser implements Serializable {
     protected ExecutionStack splitAccumulator = new ExecutionStack();
 
     protected static ThreadLocal<ParserContext> parserContext;
+    protected ParserContext pCtx;
 
     static {
         configureFactory();
@@ -153,7 +155,7 @@ public class AbstractParser implements Serializable {
 
     public static void configureFactory() {
         if (MVEL.THREAD_SAFE) {
-            EX_PRECACHE = synchronizedMap(new WeakHashMap<String, char[]>(10)) ;
+            EX_PRECACHE = synchronizedMap(new WeakHashMap<String, char[]>(10));
         }
         else {
             EX_PRECACHE = new WeakHashMap<String, char[]>(10);
@@ -197,7 +199,7 @@ public class AbstractParser implements Serializable {
 
             boolean capture = false, union = false;
 
-            ParserContext pCtx = getParserContext();
+            pCtx = getParserContext();
 
             if (debugSymbols) {
                 if (!lastWasLineLabel) {
@@ -618,23 +620,23 @@ public class AbstractParser implements Serializable {
 
                                 captureToEOL();
 
-                                if (debugSymbols) {
-                                    line = pCtx.getLineCount();
+                                //                             if (debugSymbols) {
+                                line = pCtx.getLineCount();
 
-                                    skipWhitespaceWithLineAccounting();
+                                skipWhitespaceWithLineAccounting();
 
-                                    if (lastNode instanceof LineLabel) {
-                                        pCtx.getLastLineLabel().setLineNumber(line);
-                                        pCtx.addKnownLine(line);
-                                    }
-
-                                    lastWasComment = true;
-
-                                    pCtx.setLineCount(line);
+                                if (lastNode instanceof LineLabel) {
+                                    pCtx.getLastLineLabel().setLineNumber(line);
+                                    pCtx.addKnownLine(line);
                                 }
-                                else if (cursor != length) {
-                                    skipWhitespace();
-                                }
+
+                                lastWasComment = true;
+
+                                pCtx.setLineCount(line);
+                                //                              }
+                                //                               else if (cursor != length) {
+                                //                                  skipWhitespace();
+                                //                              }
 
                                 if ((start = cursor) >= length) return null;
 
@@ -651,9 +653,9 @@ public class AbstractParser implements Serializable {
                                  * source will spawn a new compiler, and we need to sync this with the
                                  * parser context;
                                  */
-                                if (debugSymbols) {
-                                    line = pCtx.getLineCount();
-                                }
+                                //                   if (debugSymbols) {
+                                line = pCtx.getLineCount();
+                                //                   }
 
                                 while (true) {
                                     cursor++;
@@ -661,9 +663,9 @@ public class AbstractParser implements Serializable {
                                      * Since multi-line comments may cross lines, we must keep track of any line-break
                                      * we encounter.
                                      */
-                                    if (debugSymbols) {
-                                        skipWhitespaceWithLineAccounting();
-                                    }
+                                    //                       if (debugSymbols) {
+                                    skipWhitespaceWithLineAccounting();
+                                    //                       }
 
                                     if (cursor == len) {
                                         throw new CompileException("unterminated block comment", expr, cursor);
@@ -676,16 +678,16 @@ public class AbstractParser implements Serializable {
                                     }
                                 }
 
-                                if (debugSymbols) {
-                                    pCtx.setLineCount(line);
+                                //                      if (debugSymbols) {
+                                pCtx.setLineCount(line);
 
-                                    if (lastNode instanceof LineLabel) {
-                                        pCtx.getLastLineLabel().setLineNumber(line);
-                                        pCtx.addKnownLine(line);
-                                    }
-
-                                    lastWasComment = true;
+                                if (lastNode instanceof LineLabel) {
+                                    pCtx.getLastLineLabel().setLineNumber(line);
+                                    pCtx.addKnownLine(line);
                                 }
+
+                                lastWasComment = true;
+                                //                      }
 
                                 continue;
                             }
@@ -931,7 +933,10 @@ public class AbstractParser implements Serializable {
             return createPropertyToken(start, cursor);
         }
         catch (CompileException e) {
-            throw new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0, e);
+            CompileException c = new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0, e);
+            c.setLineNumber(line);
+            c.setColumn(cursor - lastLineStart);
+            throw c;
         }
     }
 
@@ -994,13 +999,13 @@ public class AbstractParser implements Serializable {
 
             if ((offset = findFirst('.', _subset)) != -1) {
                 String iStr = new String(_subset, 0, offset);
-                if (getParserContext().hasImport(iStr)) {
-                    return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, getParserContext().getImport(iStr));
+                if (pCtx.hasImport(iStr)) {
+                    return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, pCtx.getImport(iStr));
                 }
             }
             else {
-                if (getParserContext().hasImport(tmp = new String(_subset))) {
-                    Object i = getParserContext().getStaticOrClassImport(tmp);
+                if (pCtx.hasImport(tmp = new String(_subset))) {
+                    Object i = pCtx.getStaticOrClassImport(tmp);
 
                     if (i instanceof Class) {
                         return lastNode = new LiteralNode(i, Class.class);
@@ -1081,12 +1086,12 @@ public class AbstractParser implements Serializable {
 
             default: // either BLOCK_WITH or BLOCK_FOREACH
                 captureToNextTokenJunction();
-                if (debugSymbols) {
-                    skipWhitespaceWithLineAccounting();
-                }
-                else {
-                    skipWhitespace();
-                }
+                //         if (debugSymbols) {
+                skipWhitespaceWithLineAccounting();
+                //             }
+//                else {
+//                    skipWhitespace();
+//                }
                 return _captureBlock(null, expr, true, type);
         }
 
@@ -1198,21 +1203,23 @@ public class AbstractParser implements Serializable {
              * This block is an: IF, FOREACH or WHILE node.
              */
 
-            if (debugSymbols) {
-                int[] cap = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(');
+//            if (debugSymbols) {
+            int[] cap = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(');
 
-                endCond = cursor = cap[0];
+            endCond = cursor = cap[0];
 
-                startCond++;
-                cursor++;
+            startCond++;
+            cursor++;
 
-                getParserContext().setLineCount(line = getParserContext().getLineCount() + cap[1]);
-            }
-            else {
-                endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
-                startCond++;
-                cursor++;
-            }
+            pCtx.incrementLineCount(cap[1]);
+
+            //getParserContext().setLineCount(line = getParserContext().getLineCount() + cap[1]);
+//            }
+//            else {
+//                endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
+//                startCond++;
+//                cursor++;
+//            }
         }
 
         skipWhitespace();
@@ -1223,15 +1230,18 @@ public class AbstractParser implements Serializable {
         else if (expr[cursor] == '{') {
             blockStart = cursor;
 
-            if (debugSymbols) {
-                int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '{');
-                blockEnd = cursor = cap[0];
+//            if (debugSymbols) {
+            int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '{');
+            blockEnd = cursor = cap[0];
 
-                getParserContext().setLineCount((line = getParserContext().getLineCount() + cap[1]));
-            }
-            else {
-                blockEnd = cursor = balancedCapture(expr, cursor, '{');
-            }
+            pCtx.incrementLineCount(cap[1]);
+
+            //   getParserContext().setLineCount((line = getParserContext().getLineCount() + cap[1]));
+
+            //           }
+//            else {
+//                blockEnd = cursor = balancedCapture(expr, cursor, '{');
+//            }
         }
         else {
             blockStart = cursor - 1;
@@ -1414,6 +1424,7 @@ public class AbstractParser implements Serializable {
             switch (expr[cursor]) {
                 case '\n':
                     line++;
+                    lastLineStart = cursor;
                 case '\r':
                     cursor++;
                     continue;
@@ -1599,6 +1610,7 @@ public class AbstractParser implements Serializable {
      */
     protected void newContext(ParserContext pCtx) {
         contextControl(SET, pCtx, this);
+
     }
 
     /**

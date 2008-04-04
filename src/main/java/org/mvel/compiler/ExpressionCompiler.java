@@ -23,7 +23,6 @@ import org.mvel.Operator;
 import org.mvel.ParserContext;
 import static org.mvel.Soundex.soundex;
 import org.mvel.ast.ASTNode;
-import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
 import org.mvel.util.ASTLinkedList;
@@ -46,7 +45,7 @@ public class ExpressionCompiler extends AbstractParser {
     private boolean verifying = true;
     private boolean secondPassOptimization = false;
 
-    private ParserContext pCtx;
+    //private ParserContext pCtx;
 
     public CompiledExpression compile() {
         return compile(new ParserContext());
@@ -91,7 +90,9 @@ public class ExpressionCompiler extends AbstractParser {
 
         boolean firstLA;
 
-        debugSymbols = (pCtx = getParserContext()).isDebugSymbols();
+        if (pCtx == null) pCtx = getParserContext();
+
+        debugSymbols = pCtx.isDebugSymbols();
 
 
         try {
@@ -275,7 +276,7 @@ public class ExpressionCompiler extends AbstractParser {
 //            }
         //    else
             if (tk.isIdentifier()) {
-                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
+                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), pCtx);
                 returnType = propVerifier.analyze();
 
                 if (propVerifier.isResolvedExternally()) {
