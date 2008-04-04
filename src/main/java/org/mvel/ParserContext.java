@@ -88,6 +88,10 @@ public class ParserContext implements Serializable {
         return this.lineCount = (short) lineCount;
     }
 
+    public int incrementLineCount(int increment) {
+        return this.lineCount += increment;
+    }
+
     public int getLineOffset() {
         return lineOffset;
     }
