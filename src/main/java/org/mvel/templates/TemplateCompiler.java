@@ -142,8 +142,8 @@ public class TemplateCompiler {
                                     n = markTextNode(n);
 
                                     Node end = (Node) stack.pop();
-
                                     Node terminal = end.getTerminus();
+                                    
                                     terminal.setCStart(captureOrbInternal());
                                     terminal.setEnd((lastTextRangeEnding = start) - 1);
                                     terminal.calculateContents(template);
@@ -176,18 +176,13 @@ public class TemplateCompiler {
                                         }
                                         catch (InstantiationException e) {
                                             throw new RuntimeException("unable to instantiate custom node class: " + customNode.getName());
-
-                                            //throw new CompileException("unable to instantiate custome node class: " + customNode.getName(), template, start, e);
                                         }
                                         catch (IllegalAccessException e) {
                                             throw new RuntimeException("unable to instantiate custom node class: " + customNode.getName());
-
-                                            //  throw new CompileException("unable to instantiate custome node class: " + customNode.getName(), template, start, e);
                                         }
                                     }
                                     else {
                                         throw new RuntimeException("unknown token type: " + name);
-                                        //    throw new TemplateSyntaxError("uknown token type: " + name);
                                     }
 
                             }
@@ -198,7 +193,7 @@ public class TemplateCompiler {
         }
         catch (RuntimeException e) {
             CompileException ce = new CompileException(e.getMessage());
-            ce.setExpr(template);
+            ce.setExpr(template);                                                          
 
             if (e instanceof CompileException) {
                 CompileException ce2 = (CompileException) e;
@@ -214,7 +209,7 @@ public class TemplateCompiler {
         }
 
         if (!stack.isEmpty()) {
-            CompileException ce = new CompileException("unclosed @" + ((Node) stack.peek()).getName() + " block. expected @end", template, cursor);
+            CompileException ce = new CompileException("unclosed @" + ((Node) stack.peek()).getName() + "{} block. expected @end{}", template, cursor);
             ce.setColumn(cursor - colStart);
             ce.setLineNumber(line);
             throw ce;
