@@ -230,6 +230,10 @@ public class TemplateTests extends TestCase {
         assertEquals("Foo:THIS_IS_A_TEST!!", TemplateRuntime.execute(compiled));
     }
 
+
+    public void testComments() {
+        assertEquals("FOOBAR!", test("@comment{ This section is commented }FOOBAR!"));
+    }
     /**
      * Integration of old tests
      */

@@ -63,7 +63,6 @@ public class TemplateRuntime {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), null, null, null);
     }
 
-
     public static Object execute(CompiledTemplate compiled, Object context) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, null, null);
     }

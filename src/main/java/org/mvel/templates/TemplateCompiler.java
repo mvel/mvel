@@ -132,6 +132,13 @@ public class TemplateCompiler {
                                             .setNext(new CodeNode(start, name, template, captureOrbInternal(), start = cursor + 1));
                                     break;
 
+                                case Opcodes.COMMENT:
+                                    n = markTextNode(n);
+                                    captureOrbInternal();
+                                    start = cursor + 1;
+                                    break;
+                                         //   .setNext(new CommentNode(start, name, template, captureOrbInternal(), start = cursor + 1));
+
                                 case Opcodes.DECLARE:
                                     stack.push(n = markTextNode(n).setNext(
                                             new DeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1)
@@ -301,7 +308,7 @@ public class TemplateCompiler {
     public static CompiledTemplate compileTemplate(CharSequence template) {
         return new TemplateCompiler(template).compile();
     }
-    
+
 
     public static CompiledTemplate compileTemplate(String template, Map<String, Class<? extends Node>> customNodes) {
         return new TemplateCompiler(template, customNodes).compile();
