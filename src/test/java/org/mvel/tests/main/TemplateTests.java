@@ -186,13 +186,21 @@ public class TemplateTests extends TestCase {
 
     }
 
+    public void testTemplateFile2() {
+        String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/templateDeclareTest.mv"),
+                base, new MapVariableResolverFactory(map), null);
+
+        System.out.println(s);
+
+    }
+
     public void testInclusionOfNamedTemplate() {
         SimpleTemplateRegistry registry = new SimpleTemplateRegistry();
         registry.addNamedTemplate("footemplate", compileTemplate("@{_foo_}@{_bar_}"));
         registry.addNamedTemplate("bartemplate", compileTemplate("@{_bar_}@{_foo_}"));
 
-        String s = "@includeNamed{'footemplate'}::@includeNamed{'bartemplate'}";
-        assertEquals("FooBar::BarFoo", TemplateRuntime.eval(s, map, registry));
+        String s = "@includeNamed{'footemplate'}  ::  @includeNamed{'bartemplate'}";
+        assertEquals("FooBar  ::  BarFoo", TemplateRuntime.eval(s, map, registry));
     }
 
     @SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes"})

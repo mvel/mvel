@@ -301,6 +301,7 @@ public class TemplateCompiler {
     public static CompiledTemplate compileTemplate(CharSequence template) {
         return new TemplateCompiler(template).compile();
     }
+    
 
     public static CompiledTemplate compileTemplate(String template, Map<String, Class<? extends Node>> customNodes) {
         return new TemplateCompiler(template, customNodes).compile();
