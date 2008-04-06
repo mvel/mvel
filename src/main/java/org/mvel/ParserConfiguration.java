@@ -19,14 +19,16 @@ public class ParserConfiguration implements Serializable {
     }
 
     public ParserConfiguration(Map<String, Object> imports, Map<String, Interceptor> interceptors) {
-        this.imports = new HashMap<String, Object>();
-        Object o;
-        for (String key : imports.keySet()) {
-            if ((o = imports.get(key)) instanceof Method) {
-                this.imports.put(key, new MethodStub((Method) o));
-            }
-            else {
-                this.imports.put(key, o);
+        if (imports != null) {
+            this.imports = new HashMap<String, Object>();
+            Object o;
+            for (String key : imports.keySet()) {
+                if ((o = imports.get(key)) instanceof Method) {
+                    this.imports.put(key, new MethodStub((Method) o));
+                }
+                else {
+                    this.imports.put(key, o);
+                }
             }
         }
 
