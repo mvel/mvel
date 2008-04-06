@@ -18,11 +18,13 @@
  */
 package org.mvel.integration;
 
+import java.io.Serializable;
+
 /**
  * A variable resolver is responsible for physically accessing a variable, for either read or write.  VariableResolver's
  * are obtained via a {@link org.mvel.integration.VariableResolverFactory}.
  */
-public interface VariableResolver {
+public interface VariableResolver extends Serializable {
     /**
      * Returns the name of external variable.
      *

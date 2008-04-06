@@ -136,7 +136,7 @@ public class MVELSH {
             catch (Exception e) {
                 if (stacktrace) e.printStackTrace();
                 else
-                    System.out.println("ERROR: " + e.getMessage());
+                    System.out.println(e.toString());
             }
         }
     }
