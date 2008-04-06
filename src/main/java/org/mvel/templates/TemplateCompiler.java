@@ -2,6 +2,7 @@ package org.mvel.templates;
 
 import org.mvel.CompileException;
 import org.mvel.templates.res.*;
+import org.mvel.templates.util.TemplateTools;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.balancedCaptureWithLineAccounting;
 import static org.mvel.util.ParseTools.subset;
@@ -9,6 +10,8 @@ import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.io.InputStream;
+import java.io.File;
 
 @SuppressWarnings({"ManualArrayCopy"})
 public class TemplateCompiler {
@@ -143,7 +146,7 @@ public class TemplateCompiler {
 
                                     Node end = (Node) stack.pop();
                                     Node terminal = end.getTerminus();
-                                    
+
                                     terminal.setCStart(captureOrbInternal());
                                     terminal.setEnd((lastTextRangeEnding = start) - 1);
                                     terminal.calculateContents(template);
@@ -193,7 +196,7 @@ public class TemplateCompiler {
         }
         catch (RuntimeException e) {
             CompileException ce = new CompileException(e.getMessage());
-            ce.setExpr(template);                                                          
+            ce.setExpr(template);
 
             if (e instanceof CompileException) {
                 CompileException ce2 = (CompileException) e;
@@ -310,6 +313,15 @@ public class TemplateCompiler {
     public static CompiledTemplate compileTemplate(CharSequence template, Map<String, Class<? extends Node>> customNodes) {
         return new TemplateCompiler(template, customNodes).compile();
     }
+
+    public static CompiledTemplate compileTemplate(InputStream stream, Map<String, Class<? extends Node>> customNodes) {
+        return new TemplateCompiler(TemplateTools.readStream(stream), customNodes).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(File file, Map<String, Class<? extends Node>> customNodes) {
+        return new TemplateCompiler(TemplateTools.readInFile(file), customNodes).compile();
+    }
+
 
     public TemplateCompiler(String template) {
         this.length = (this.template = template.toCharArray()).length;
