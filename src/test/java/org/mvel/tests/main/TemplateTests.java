@@ -1,4 +1,4 @@
-package org.mvel.tests.templates.tests;
+package org.mvel.tests.main;
 
 import junit.framework.TestCase;
 import org.mvel.integration.VariableResolverFactory;
@@ -7,22 +7,27 @@ import org.mvel.templates.CompiledTemplate;
 import org.mvel.templates.SimpleTemplateRegistry;
 import static org.mvel.templates.TemplateCompiler.compileTemplate;
 import org.mvel.templates.TemplateRuntime;
+import org.mvel.templates.TemplateCompiler;
+import org.mvel.templates.res.Node;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
 import org.mvel.tests.main.res.Foo;
+import org.mvel.tests.templates.tests.res.TestPluginNode;
+import org.mvel.CompileException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.File;
 
 
+@SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes"})
 public class TemplateTests extends TestCase {
     private Map<String, Object> map = new HashMap<String, Object>();
     private VariableResolverFactory vrf = new MapVariableResolverFactory(map);
     private Foo foo = new Foo();
     private Base base = new Base();
-
 
     public TemplateTests() {
         map.put("_foo_", "Foo");
@@ -41,8 +46,6 @@ public class TemplateTests extends TestCase {
         map.put("b", null);
         map.put("c", "cat");
         map.put("BWAH", "");
-
-        //     map.put("misc", new MiscTestClass());
 
         map.put("pi", "3.14");
         map.put("hour", "60");
@@ -65,12 +68,10 @@ public class TemplateTests extends TestCase {
                         return true;
                     }
                 });
-
     }
 
     public Object test(String template) {
         CompiledTemplate compiled = compileTemplate(template);
-        //  TemplateDebug.decompile(compiled, template.toCharArray());
         return TemplateRuntime.execute(compiled, base, vrf);
     }
 
@@ -80,7 +81,7 @@ public class TemplateTests extends TestCase {
     }
 
     public void testBasicParsing() {
-        String s = "foo: @bar{_foo_}--@{_bar_}!";
+        String s = "foo: @{_foo_}--@{_bar_}!";
         assertEquals("foo: Foo--Bar!", test(s));
     }
 
@@ -92,7 +93,7 @@ public class TemplateTests extends TestCase {
     public void testIfStatement2() {
         String s = "@if{_foo_=='Bar'}Hello@else{_foo_=='Foo'}Goodbye@end{}";
         assertEquals("Goodbye", test(s));
-    }         
+    }
 
     public void testIfStatement3() {
         String s = "@if{_foo_=='Bar'}Hello@else{_foo_=='foo'}Goodbye@else{}Nope@end{}";
@@ -129,9 +130,68 @@ public class TemplateTests extends TestCase {
         assertEquals("JaneJohn", test(s));
     }
 
+    public void testFileBasedEval() {
+        assertEquals("Foo::Bar", TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/templateTest.mv"),
+                base, new MapVariableResolverFactory(map), null));
+    }
+
     public void testInclusionOfTemplateFile() {
-        String s = "<<@include{'src/test/java/org/mvel/tests/templates/tests/templateTest.mv'}>>";
+        String s = "<<@include{'src/test/java/org/mvel/tests/templates/templateTest.mv'}>>";
         assertEquals("<<Foo::Bar>>", test(s));
+    }
+
+    public void testInclusionOfTemplateFile2() {
+        String s = "<<@include{'src/test/java/org/mvel/tests/templates/templateError.mv'}>>";
+        try {
+            test(s);
+        }
+        catch (CompileException e) {
+            System.out.println(e.toString()
+            );
+            //   assertTrue(true);
+            return;
+        }
+        assertTrue(false);
+    }
+
+    public void testForEachException1() {
+        String s = "<<@foreach{arrayList}@{item}@end{}>>";
+        try {
+            test(s);
+        }
+        catch (Exception e) {
+            System.out.println(e.toString());
+            return;
+        }
+        assertTrue(false);
+    }
+
+    public void testForEachException2() {
+        String s = "<<@foreach{item:arrayList}@{item}>>";
+        try {
+            test(s);
+        }
+        catch (Exception e) {
+            System.out.println(e.toString());
+            return;
+        }
+        assertTrue(false);
+    }
+
+    public void testTemplateFile() {
+        String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/templateIfTest.mv"),
+                base, new MapVariableResolverFactory(map), null);
+
+        System.out.println(s);
+
+    }
+
+    public void testTemplateFile2() {
+        String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/templateDeclareTest.mv"),
+                base, new MapVariableResolverFactory(map), null);
+
+        System.out.println(s);
+
     }
 
     public void testInclusionOfNamedTemplate() {
@@ -139,8 +199,8 @@ public class TemplateTests extends TestCase {
         registry.addNamedTemplate("footemplate", compileTemplate("@{_foo_}@{_bar_}"));
         registry.addNamedTemplate("bartemplate", compileTemplate("@{_bar_}@{_foo_}"));
 
-        String s = "@includeNamed{'footemplate'}::@includeNamed{'bartemplate'}";
-        assertEquals("FooBar::BarFoo", TemplateRuntime.eval(s, map, registry));
+        String s = "@includeNamed{'footemplate'}  ::  @includeNamed{'bartemplate'}";
+        assertEquals("FooBar  ::  BarFoo", TemplateRuntime.eval(s, map, registry));
     }
 
     @SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes"})
@@ -160,6 +220,16 @@ public class TemplateTests extends TestCase {
         assertEquals("Hello John! -- Hello Mary!", test(s));
     }
 
+    public void testPluginNode() {
+        Map<String, Class<? extends Node>> plugins = new HashMap<String, Class<? extends Node>>();
+        plugins.put("testNode", TestPluginNode.class);
+
+        TemplateCompiler compiler = new TemplateCompiler("Foo:@testNode{}!!", plugins);
+        CompiledTemplate compiled = compiler.compile();
+
+        assertEquals("Foo:THIS_IS_A_TEST!!", TemplateRuntime.execute(compiled));
+    }
+
     /**
      * Integration of old tests
      */
@@ -168,7 +238,6 @@ public class TemplateTests extends TestCase {
         assertEquals("foo@bar.com", TemplateRuntime.eval("foo@bar.com", map));
     }
 
-    
     public void testMethodOnValue() {
         assertEquals("DOG", test("@{foo.bar.name.toUpperCase()}"));
     }
@@ -217,7 +286,6 @@ public class TemplateTests extends TestCase {
         assertEquals("dogDOGGIE133.5", test("@{foo.bar.name}DOGGIE@{hour*2.225+1-1}"));
     }
 
-
     public void testComplexAnd() {
         assertEquals(true, test("@{(pi * hour) > 0 && foo.happy() == 'happyBar'}"));
     }
@@ -226,7 +294,6 @@ public class TemplateTests extends TestCase {
         assertEquals(38392 % 2,
                 test("@{38392 % 2}"));
     }
-
 
     public void testLessThan() {
         assertEquals(true, test("@{pi < 3.15}"));
@@ -325,16 +392,6 @@ public class TemplateTests extends TestCase {
                                 "@end{','}"
                 ));
     }
-//
-//    public void testMultiCollectionWithSingleCharSeperatorControlLoop() {
-//        assertEquals("Happy0Happy,Happy!1Happy!,Joy2Joy,Joy!3Joy!",
-//                parse(
-//                        "@foreach{list, array as listItem, arrayItem}" +
-//                                "@{listItem}@{i0}@{arrayItem}" +
-//                                "@end{\",\"  }"
-//                ));
-//    }
-
 
     public void testControlLoopListMultiple() {
         for (int i = 0; i < 100; i++) {
@@ -347,25 +404,6 @@ public class TemplateTests extends TestCase {
             testControlLoopArray();
         }
     }
-
-//    public void testMultiCollectionControlLoopMultiple() {
-//        for (int i = 0; i < 100; i++) {
-//            testMultiCollectionControlLoop();
-//        }
-//    }
-//
-//
-//    public void testMultiCollectionWithSingleCharSeperatorControlLoopMultiple() {
-//        for (int i = 0; i < 100; i++) {
-//            testMultiCollectionWithSingleCharSeperatorControlLoop();
-//        }
-//    }
-
-//    public void testMultiCollectionWithMultipleCharSeperatorControlLoopMultiple() {
-//        for (int i = 0; i < 100; i++) {
-//            testMultiCollectionWithMultipleCharSeperatorControlLoop();
-//        }
-//    }
 
     public static interface TestInterface {
         public String getName();
@@ -559,23 +597,6 @@ public class TemplateTests extends TestCase {
         assertEquals(true, test("@{this}") instanceof Base);
     }
 
-
-//
-//    public void testRegisterTemplateGroup() {
-//        StringReader reader = new StringReader("myTemplate1() ::=<<@{var1}>>=::  myTemplate2() ::=<<@{var2}>>=::");
-//        org.mvel.TemplateRegistry registry = new MVELTemplateRegistry();
-//        registry.registerTemplate(reader);
-//
-//        assertEquals("xvalue1catx", test("x@includeByRef{myTemplate1(var1 = \"value1\")}@includeByRef{myTemplate2(var2 = c)}x", registry));
-//    }
-//
-//    public void testRecursiveRegisterTemplateGroup() {
-//        StringReader reader = new StringReader("myTemplate1() ::=<<@{var1}@includeByRef{myTemplate2(var2 = var2)}>>=::  myTemplate2() ::=<<@{var2}>>=::");
-//        org.mvel.TemplateRegistry registry = new MVELTemplateRegistry();
-//        registry.registerTemplate(reader);
-//
-//        assertEquals("xvalue1catx", test("x@includeByRef{myTemplate1(var1 = \"value1\", var2 = c)}x", registry));
-//    }
 
     public void testIfLoopInTemplate() {
         assertEquals("ONETWOTHREE", test("@foreach{item :things}@if{item.name=='Bob'}ONE@elseif{item.name=='Smith'}TWO@elseif{item.name=='Cow'}THREE@end{}@end{}"));
