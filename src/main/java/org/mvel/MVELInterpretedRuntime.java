@@ -52,7 +52,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
     private ExecutionStack dStack;
 
-
     Object parse() {
         setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);
         debugSymbols = false;
@@ -222,6 +221,12 @@ public class MVELInterpretedRuntime extends AbstractParser {
             }
 
             procDStack();
+        }
+        catch (CompileException e) {
+            CompileException c = new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0, e);
+            c.setLineNumber(line);
+            c.setColumn(cursor - lastLineStart);
+            throw c;
         }
         catch (NullPointerException e) {
             if (tk != null && tk.isOperator() && cursor >= length) {
@@ -513,7 +518,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
     }
 
     protected boolean hasImport(String name) {
-        if (getParserContext().hasImport(name)) {
+        if (pCtx == null) pCtx = getParserContext();
+
+        if (pCtx.hasImport(name)) {
             return true;
         }
         else {
@@ -523,7 +530,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
     }
 
     protected Class getImport(String name) {
-        if (getParserContext().hasImport(name)) return getParserContext().getImport(name);
+        if (pCtx == null) pCtx = getParserContext();
+
+        if (pCtx.hasImport(name)) return pCtx.getImport(name);
 
         VariableResolverFactory vrf = findClassImportResolverFactory(variableFactory);
         return (Class) vrf.getVariableResolver(name).getValue();
