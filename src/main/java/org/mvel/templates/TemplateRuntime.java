@@ -63,12 +63,17 @@ public class TemplateRuntime {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), null, null, null);
     }
 
+
     public static Object execute(CompiledTemplate compiled, Object context) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, null, null);
     }
 
     public static Object execute(CompiledTemplate compiled, Object context, Map vars) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, new MapVariableResolverFactory(vars), null);
+    }
+
+    public static Object execute(CompiledTemplate compiled, Object context, TemplateRegistry registry) {
+        return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, null, registry);
     }
 
     public static Object execute(CompiledTemplate compiled, Object context, Map vars, TemplateRegistry registry) {
