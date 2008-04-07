@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.mvel</groupId>
     <artifactId>mvel</artifactId>
@@ -6,6 +7,8 @@
     <version>2.0-SNAPSHOT</version>
     <name>mvel</name>
     <url>http://mvel.codehaus.org/</url>
+
+
     <scm>
         <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/mvel-2.0-SNAPSHOT</developerConnection>
     </scm>
@@ -28,6 +31,19 @@
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.mvel.sh.Main</mainClass>
+                            <packageName>org.mvel</packageName>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
 
@@ -79,9 +95,9 @@
     <distributionManagement>
         <!-- use the following if you're not using a snapshot version. -->
         <!--<repository>-->
-            <!--<id>repository.codehaus.org</id>-->
-            <!--<name>Codehaus Maven Repository</name>-->
-            <!--<url>dav:https://dav.codehaus.org/repository/mvel/</url>-->
+        <!--<id>repository.codehaus.org</id>-->
+        <!--<name>Codehaus Maven Repository</name>-->
+        <!--<url>dav:https://dav.codehaus.org/repository/mvel/</url>-->
         <!--</repository>-->
         <!-- use the following if you ARE using a snapshot version. -->
         <snapshotRepository>
