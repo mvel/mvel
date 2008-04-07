@@ -53,7 +53,7 @@ public class TemplateCompiler {
 
     public Node compileFrom(Node root, ExecutionStack stack) {
         line = 1;
-
+                
         Node n = root;
         if (root == null) {
             n = root = new TextNode(0, 0);
@@ -295,7 +295,6 @@ public class TemplateCompiler {
         return n;
     }
 
-
     public static CompiledTemplate compileTemplate(String template) {
         return new TemplateCompiler(template).compile();
     }
@@ -307,7 +306,6 @@ public class TemplateCompiler {
     public static CompiledTemplate compileTemplate(CharSequence template) {
         return new TemplateCompiler(template).compile();
     }
-
 
     public static CompiledTemplate compileTemplate(String template, Map<String, Class<? extends Node>> customNodes) {
         return new TemplateCompiler(template, customNodes).compile();
@@ -328,7 +326,6 @@ public class TemplateCompiler {
     public static CompiledTemplate compileTemplate(File file, Map<String, Class<? extends Node>> customNodes) {
         return new TemplateCompiler(TemplateTools.readInFile(file), customNodes).compile();
     }
-
 
     public TemplateCompiler(String template) {
         this.length = (this.template = template.toCharArray()).length;
