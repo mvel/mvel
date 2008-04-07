@@ -10,15 +10,17 @@ public class CommentNode extends Node {
     }
 
     public CommentNode(int begin, String name, char[] template, int start, int end) {
-        this.begin = begin;
+      //  this.begin = begin;
         this.name = name;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+        this.end = this.cEnd = end;
+      //  this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
     }
 
     public CommentNode(int begin, String name, char[] template, int start, int end, Node next) {
-        this.name = name;
+     //   this.name = name;
         this.begin = begin;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+        this.end = this.cEnd = end;
+      //  this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
         this.next = next;
     }
 

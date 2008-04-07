@@ -186,13 +186,13 @@ public class TemplateTests extends TestCase {
 
     }
 
-    public void testTemplateFile2() {
-        String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/templateDeclareTest.mv"),
-                base, new MapVariableResolverFactory(map), null);
-
-        System.out.println(s);
-
-    }
+//    public void testTemplateFile2() {
+//        String s = (String) TemplateRuntime.eval(new File("src/test/java/org/mvel/tests/templates/templateDeclareTest.mv"),
+//                base, new MapVariableResolverFactory(map), null);
+//
+//        System.out.println(s);
+//
+//    }
 
     public void testInclusionOfNamedTemplate() {
         SimpleTemplateRegistry registry = new SimpleTemplateRegistry();
@@ -232,7 +232,7 @@ public class TemplateTests extends TestCase {
 
 
     public void testComments() {
-        assertEquals("FOOBAR!", test("@comment{ This section is commented }FOOBAR!"));
+        assertEquals("Foo", test("@comment{ This section is commented }@{_foo_}"));
     }
     /**
      * Integration of old tests

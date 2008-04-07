@@ -133,11 +133,10 @@ public class TemplateCompiler {
                                     break;
 
                                 case Opcodes.COMMENT:
-                                    n = markTextNode(n);
-                                    captureOrbInternal();
-                                    start = cursor + 1;
+                                    n = markTextNode(n)
+                                            .setNext(new CommentNode(start, name, template, captureOrbInternal(), start = cursor + 1));
+
                                     break;
-                                         //   .setNext(new CommentNode(start, name, template, captureOrbInternal(), start = cursor + 1));
 
                                 case Opcodes.DECLARE:
                                     stack.push(n = markTextNode(n).setNext(
