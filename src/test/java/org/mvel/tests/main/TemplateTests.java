@@ -140,12 +140,6 @@ public class TemplateTests extends TestCase {
         assertEquals("<<Foo::Bar>>", test(s));
     }
 
-    public void testInclusionOfTemplatePerformance() {
-        for (int i = 0; i < 500000; i++) {
-            testInclusionOfTemplateFile();
-        }
-    }
-
     public void testInclusionOfTemplateFile2() {
         String s = "<<@include{'src/test/java/org/mvel/tests/templates/templateError.mv'}>>";
         try {

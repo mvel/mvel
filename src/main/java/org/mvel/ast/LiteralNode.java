@@ -34,7 +34,7 @@ public class LiteralNode extends ASTNode {
     public LiteralNode(Object literal) {
         super();
         this.fields |= LITERAL;
-      //  if (literal instanceof String) {
+      //  if (literal instanceof String) {                                                                    
         //    this.literal = ((String) literal).intern();
 
        // }
