@@ -11,10 +11,7 @@ import org.mvel.templates.util.TemplateTools;
 import static org.mvel.templates.util.TemplateTools.captureToEOS;
 import org.mvel.MVEL;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.nio.ByteBuffer;
 import static java.nio.ByteBuffer.allocateDirect;
@@ -90,27 +87,46 @@ public class IncludeNode extends Node {
         File file = new File(String.valueOf(peek()) + "/" + fileName);
 
         try {
-            FileChannel fc = new FileInputStream(file).getChannel();
+//            FileChannel fc = new FileInputStream(file).getChannel();
+
+            FileInputStream instream = new FileInputStream(file);
+            BufferedInputStream bufstream = new BufferedInputStream(instream);
 
             push(file.getParent());
 
-            ByteBuffer buf = allocateDirect(10);
+            byte[] buf = new byte[10];
+            int read;
+            int i;
 
             StringAppender appender = new StringAppender();
-            int read;
 
-            while (true) {
-                buf.rewind();
-                if ((read = fc.read(buf)) != -1) {
-                    buf.rewind();
-                    for (; read != 0; read--) {
-                        appender.append((char) buf.get());
-                    }
-                }
-                else {
-                    break;
+            while ((read = bufstream.read(buf)) != -1) {
+                for (i = 0; i < read; i++) {
+                    appender.append((char) buf[i]);
                 }
             }
+
+            bufstream.close();
+            instream.close();
+
+
+//            ByteBuffer buf = allocateDirect(10);
+//
+//            StringAppender appender = new StringAppender();
+//            int read;
+//
+//            while (true) {
+//                buf.rewind();
+//                if ((read = fc.read(buf)) != -1) {
+//                    buf.rewind();
+//                    for (; read != 0; read--) {
+//                        appender.append((char) buf.get());
+//                    }
+//                }
+//                else {
+//                    break;
+//                }
+//            }
 
             pop();
 
