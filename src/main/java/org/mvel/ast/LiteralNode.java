@@ -34,10 +34,12 @@ public class LiteralNode extends ASTNode {
     public LiteralNode(Object literal) {
         super();
         this.fields |= LITERAL;
-        if (literal instanceof String) {
-            this.literal = ((String) literal).intern();
-        }
-        else if (literal instanceof Integer) {
+      //  if (literal instanceof String) {
+        //    this.literal = ((String) literal).intern();
+
+       // }
+        //else
+        if (literal instanceof Integer) {
             this.fields |= INTEGER32;
             this.intRegister = ((Integer) (this.literal = literal));
         }
