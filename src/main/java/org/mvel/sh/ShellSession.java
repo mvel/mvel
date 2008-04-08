@@ -1,12 +1,12 @@
 package org.mvel.sh;
 
 import static org.mvel.MVEL.*;
-import static org.mvel.TemplateInterpreter.evalToString;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.sh.command.basic.BasicCommandSet;
 import org.mvel.sh.command.file.FileCommandSet;
 import org.mvel.util.StringAppender;
+import org.mvel.templates.TemplateRuntime;
 
 import java.io.*;
 import static java.lang.Boolean.parseBoolean;
@@ -194,7 +194,7 @@ public class ShellSession {
                                             sysPrintStream.flush();
 
                                             if (!multi) {
-                                                multiIndentSize = (prompt = evalToString(env.get("$PROMPT"), variables)).length();
+                                                multiIndentSize = (prompt = String.valueOf(TemplateRuntime.eval(env.get("$PROMPT"), variables))).length();
                                                 out.append(prompt);
                                             }
                                             else {
@@ -321,7 +321,7 @@ public class ShellSession {
 
     public void printPrompt() {
         if (!multi) {
-            multiIndentSize = (prompt = evalToString(env.get("$PROMPT"), variables)).length();
+            multiIndentSize = (prompt = String.valueOf(TemplateRuntime.eval(env.get("$PROMPT"), variables))).length();
             out.append(prompt);
         }
         else {
