@@ -91,6 +91,9 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
                 catch (ClassNotFoundException e) {
                     // do nothing;
                 }
+                catch (NoClassDefFoundError e) {
+                    // do nothing;
+                }
             }
         }
         return false;
