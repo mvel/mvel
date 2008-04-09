@@ -26,6 +26,8 @@ import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.ItemResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
 import static org.mvel.util.ParseTools.subset;
+import org.mvel.util.PropertyTools;
+import static org.mvel.util.PropertyTools.createStringTrimmed;
 
 /**
  * @author Christopher Brock
@@ -137,7 +139,7 @@ public class ForEachNode extends BlockNode {
         if (cursor == condition.length || condition[cursor] != ':')
             throw new CompileException("expected : in foreach");
 
-        item = new String(condition, 0, cursor).trim();
+        item = createStringTrimmed(condition, 0, cursor);
         this.cond = subset(condition, ++cursor);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {

@@ -28,6 +28,9 @@ import org.mvel.compiler.AbstractParser;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
+import static org.mvel.util.PropertyTools.createStringTrimmed;
+import org.mvel.util.ParseTools;
+import org.mvel.util.PropertyTools;
 
 /**
  * @author Christopher Brock
@@ -48,11 +51,11 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         if (operation != -1) {
             this.egressType = ((ExecutableStatement) (statement =
                     (ExecutableStatement) subCompileExpression(stmt =
-                            createShortFormOperativeAssignment(this.property = name.trim(), expr, operation)))).getKnownEgressType();
+                            createShortFormOperativeAssignment(this.property = name, expr, operation)))).getKnownEgressType();
 
         }
         else if ((mark = find(expr, '=')) != -1) {
-            property = new String(expr, 0, mark).trim();
+            property = createStringTrimmed(expr, 0, mark);
             stmt = subset(expr, mark + 1);
 
             if ((fields & COMPILE_IMMEDIATE) != 0) {

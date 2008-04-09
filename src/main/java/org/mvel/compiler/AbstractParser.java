@@ -26,7 +26,9 @@ import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isDigit;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
+import static org.mvel.util.PropertyTools.createStringTrimmed;
 import org.mvel.util.Stack;
+import org.mvel.util.PropertyTools;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -356,7 +358,7 @@ public class AbstractParser implements Serializable {
                                         return lastNode;
 
                                     case '=':
-                                        name = new String(expr, start, trimLeft(cursor) - start);
+                                        name = createStringTrimmed(expr, start, cursor - start);
                                         start = cursor += 2;
                                         captureToEOS();
 
@@ -1120,7 +1122,7 @@ public class AbstractParser implements Serializable {
             /**
              * Grabe the function name.
              */
-            String functionName = new String(expr, start, (startCond = cursor) - start).trim();
+            String functionName = createStringTrimmed(expr, start, (startCond = cursor) - start);
 
             /**
              * Check to see if the name is legal.

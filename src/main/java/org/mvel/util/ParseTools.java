@@ -19,6 +19,7 @@
 package org.mvel.util;
 
 import org.mvel.*;
+import static org.mvel.util.PropertyTools.createStringTrimmed;
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.ast.ASTNode;
 import org.mvel.compiler.*;
@@ -141,12 +142,14 @@ public class ParseTools {
         }
 
         if (start < (length + offset) && i > start) {
-            String s = new String(parm, start, i - start).trim();
+          //  String s = new String(parm, start, i - start).trim();
+            String s = createStringTrimmed(parm, start, i - start);
             if (s.length() > 0)
                 list.add(s);
         }
         else if (list.size() == 0) {
-            String s = new String(parm, start, length).trim();
+      //      String s = new String(parm, start, length).trim();
+            String s = createStringTrimmed(parm, start, length);
             if (s.length() > 0)
                 list.add(s);
         }
@@ -451,7 +454,9 @@ public class ParseTools {
                     continue;
                 case ')':
                     if (1 == depth--) {
-                        return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i).trim()};
+                     //   return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i).trim()};
+                         return new String[]{new String(cs, 0, ++i), createStringTrimmed(cs, i, cs.length - i)};
+
                     }
             }
         }
@@ -940,14 +945,16 @@ public class ParseTools {
             switch (parms[i]) {
                 case '=':
                     //    i++;
-                    parmName = new String(parms, start, ++i - start - 1).trim();
+               //     parmName = new String(parms, start, ++i - start - 1).trim();
+                    parmName = createStringTrimmed(parms, start, ++i - start - 1);
                     capture = true;
                     start = i;
                     break;
 
                 case ',':
                     if (capture) {
-                        allParms.put(parmName, new String(parms, start, i - start).trim());
+                    //    allParms.put(parmName, new String(parms, start, i - start).trim());
+                        allParms.put(parmName, createStringTrimmed(parms, start, i - start));
                         start = ++i;
                         capture = false;
                         break;
@@ -956,7 +963,8 @@ public class ParseTools {
         }
 
         if (capture) {
-            allParms.put(parmName, new String(parms, start, i - start).trim());
+           // allParms.put(parmName, new String(parms, start, i - start).trim());
+            allParms.put(parmName, createStringTrimmed(parms, start, i - start));
         }
 
         return allParms;

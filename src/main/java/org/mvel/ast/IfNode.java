@@ -35,7 +35,6 @@ public class IfNode extends ASTNode implements NestedStatement {
     protected ExecutableStatement elseBlock;
 
     public IfNode(char[] condition, char[] block, int fields) {
-        // super(condition, fields);
         this.name = condition;
         this.block = block;
 

@@ -19,6 +19,7 @@
 package org.mvel.util;
 
 import static org.mvel.util.ParseTools.balancedCapture;
+import static org.mvel.util.PropertyTools.createStringTrimmed;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.System.arraycopy;
@@ -138,7 +139,7 @@ public class CollectionParser {
                         list.add(new String(property, start, cursor - start));
                     }
                     else {
-                        map.put(curr, new String(property, start, cursor - start).trim());
+                        map.put(curr, createStringTrimmed(property, start, cursor - start));
                     }
 
                     start = cursor + 1;
@@ -161,11 +162,11 @@ public class CollectionParser {
             if (cursor < (length - 1)) cursor++;
 
             if (type == MAP) {
-                map.put(curr, new String(property, start, cursor - start).trim());
+                map.put(curr, createStringTrimmed(property, start, cursor - start));
             }
             else {
                 if (cursor < length) cursor++;
-                list.add(new String(property, start, cursor - start).trim());
+                list.add(createStringTrimmed(property, start, cursor - start));
             }
         }
 
@@ -186,7 +187,7 @@ public class CollectionParser {
         char[] newA = new char[end - start];
         //arraycopy(property, start, newA, 0, end - start);
         for (int i = 0; i < newA.length; i++) {
-           newA[i] = property[i + start];
+            newA[i] = property[i + start];
         }
 
         return newA;

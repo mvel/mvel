@@ -11,6 +11,9 @@ import java.util.Map;
 import java.io.InputStream;
 import java.io.File;
 
+/**
+ * This is the root of the template runtime, and contains various utility methods for executing templates.
+ */
 public class TemplateRuntime {
     private char[] template;
     private TemplateRegistry namedTemplateRegistry;
@@ -67,6 +70,10 @@ public class TemplateRuntime {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, null, null);
     }
 
+    public static Object execute(CompiledTemplate compiled, Map vars) {
+        return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), null, new MapVariableResolverFactory(vars), null);
+    }
+    
     public static Object execute(CompiledTemplate compiled, Object context, Map vars) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, new MapVariableResolverFactory(vars), null);
     }

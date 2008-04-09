@@ -27,6 +27,8 @@ import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
+import static org.mvel.util.PropertyTools.createStringTrimmed;
+import org.mvel.util.PropertyTools;
 
 /**
  * @author Christopher Brock
@@ -55,13 +57,14 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
 
         if (operation != -1) {
-            checkNameSafety(this.name = name.trim());
+            checkNameSafety(this.name = name);
 
             this.egressType = (statement = (ExecutableStatement)
                     subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation))).getKnownEgressType();
         }
         else if ((assignStart = find(expr, '=')) != -1) {
-            this.name = new String(expr, 0, assignStart).trim();
+           // this.name = new String(expr, 0, assignStart).trim();
+            this.name = createStringTrimmed(expr, 0, assignStart);
             stmt = subset(expr, assignStart + 1);
 
             this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt)).getKnownEgressType();

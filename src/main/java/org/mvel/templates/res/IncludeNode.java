@@ -87,8 +87,6 @@ public class IncludeNode extends Node {
         File file = new File(String.valueOf(peek()) + "/" + fileName);
 
         try {
-//            FileChannel fc = new FileInputStream(file).getChannel();
-
             FileInputStream instream = new FileInputStream(file);
             BufferedInputStream bufstream = new BufferedInputStream(instream);
 
@@ -108,26 +106,7 @@ public class IncludeNode extends Node {
 
             bufstream.close();
             instream.close();
-
-
-//            ByteBuffer buf = allocateDirect(10);
-//
-//            StringAppender appender = new StringAppender();
-//            int read;
-//
-//            while (true) {
-//                buf.rewind();
-//                if ((read = fc.read(buf)) != -1) {
-//                    buf.rewind();
-//                    for (; read != 0; read--) {
-//                        appender.append((char) buf.get());
-//                    }
-//                }
-//                else {
-//                    break;
-//                }
-//            }
-
+            
             pop();
 
             return appender.toString();

@@ -24,6 +24,8 @@ import org.mvel.compiler.AbstractParser;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.find;
+import static org.mvel.util.PropertyTools.createStringTrimmed;
+import org.mvel.util.PropertyTools;
 
 /**
  * @author Christopher Brock
@@ -40,7 +42,7 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
         int assignStart;
         if ((assignStart = find(super.name = expr, '=')) != -1) {
-            checkNameSafety(name = new String(expr, 0, assignStart).trim());
+            checkNameSafety(name = createStringTrimmed(expr, 0, assignStart));
 
             if (((fields |= ASSIGN) & COMPILE_IMMEDIATE) != 0) {
                 statement = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1));

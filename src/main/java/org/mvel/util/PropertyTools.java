@@ -30,6 +30,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.isPublic;
+import static java.lang.Character.isWhitespace;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
@@ -315,6 +316,38 @@ public class PropertyTools {
     public static int find(char[] c, char find) {
         for (int i = 0; i < c.length; i++) if (c[i] == find) return i;
         return -1;
+    }
+
+    public static int findLast(char[] c, char find) {
+        for (int i = c.length - 1; i != -1; i--) if (c[i] == find) return i;
+        return -1;
+    }
+
+    public static String createStringTrimmed(char[] s) {
+        int start = 0, end = s.length;
+        while (start != end && isWhitespace(s[start])) start++;
+        while (end != start && isWhitespace(s[end - 1])) end--;
+        return new String(s, start, end - start);
+    }
+
+    public static String createStringTrimmed(char[] s, int start, int length) {
+        int end = start + length;
+        while (start != end && isWhitespace(s[start])) start++;
+        while (end != start && isWhitespace(s[end - 1])) end--;
+        return new String(s, start, end - start);
+    }
+
+
+    public static boolean endsWith(char[] c, char[] test) {
+        if (test.length > c.length) return false;
+
+        int tD = test.length - 1;
+        int cD = c.length - 1;
+        while (tD != -1) {
+            if (c[cD--] != test[tD--]) return false;
+        }
+
+        return true;
     }
 
     public static boolean equals(char[] obj1, String obj2) {
