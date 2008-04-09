@@ -3,7 +3,7 @@ package org.mvel;
 import org.mvel.compiler.AbstractParser;
 import org.mvel.util.StringAppender;
 
-import static java.lang.Character.isWhitespace;
+import static org.mvel.util.ParseTools.isWhitespace;
 import java.util.Map;
 
 /**

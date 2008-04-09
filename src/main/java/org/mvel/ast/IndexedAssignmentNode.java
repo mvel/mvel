@@ -63,7 +63,6 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
                     subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation))).getKnownEgressType();
         }
         else if ((assignStart = find(expr, '=')) != -1) {
-           // this.name = new String(expr, 0, assignStart).trim();
             this.name = createStringTrimmed(expr, 0, assignStart);
             stmt = subset(expr, assignStart + 1);
 

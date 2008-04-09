@@ -30,7 +30,7 @@ import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.StringAppender;
 
 import static java.lang.Character.isJavaIdentifierPart;
-import static java.lang.Character.isWhitespace;
+import static org.mvel.util.ParseTools.isWhitespace;
 import java.lang.reflect.*;
 import static java.lang.reflect.Array.getLength;
 import java.util.*;

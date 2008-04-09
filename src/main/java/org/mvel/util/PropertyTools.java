@@ -30,7 +30,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.isPublic;
-import static java.lang.Character.isWhitespace;
+import static org.mvel.util.ParseTools.isWhitespace;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
@@ -325,15 +325,20 @@ public class PropertyTools {
 
     public static String createStringTrimmed(char[] s) {
         int start = 0, end = s.length;
-        while (start != end && isWhitespace(s[start])) start++;
-        while (end != start && isWhitespace(s[end - 1])) end--;
+        while (start != end && s[start] <= '\u0020') start++;
+        while (end != start && s[end - 1] <= '\u0020') end--;
+
         return new String(s, start, end - start);
     }
 
     public static String createStringTrimmed(char[] s, int start, int length) {
         int end = start + length;
-        while (start != end && isWhitespace(s[start])) start++;
-        while (end != start && isWhitespace(s[end - 1])) end--;
+        while (start != end&& s[start] <= '\u0020') {
+            start++;
+        }
+        while (end != start && s[end - 1] <= '\u0020') {
+            end--;
+        }
         return new String(s, start, end - start);
     }
 
@@ -366,7 +371,6 @@ public class PropertyTools {
     public static boolean isDigit(final int c) {
         return c >= '0' && c <= '9';
     }
-
 
     public static float similarity(String s1, String s2) {
         if (s1 == null || s2 == null)
@@ -418,6 +422,34 @@ public class PropertyTools {
             cls = cls.getComponentType();
         }
         return cls;
+    }
+
+    public static void main(String[] args) {
+
+        char[] test = {' ', 'a', 'b', 'c', ' ', ' '};
+
+        String s = null;
+
+        long start;
+
+        for (int loop = 0; loop < 4; loop++) {
+            start = System.currentTimeMillis();
+
+            for (int i = 0; i < 10000000; i++) {
+                s = new String(test).trim();
+            }
+
+
+            System.out.println("trim() = " + (System.currentTimeMillis() - start) + ":" + s);
+
+            start = System.currentTimeMillis();
+            for (int i = 0; i < 10000000; i++) {
+                s = createStringTrimmed(test);
+            }
+
+            System.out.println("mvel  = " + (System.currentTimeMillis() - start) + ":" + s);
+
+        }
     }
 
 

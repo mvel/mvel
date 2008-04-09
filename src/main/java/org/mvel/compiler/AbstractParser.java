@@ -24,16 +24,12 @@ import org.mvel.ast.*;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.isDigit;
-import static org.mvel.util.PropertyTools.isIdentifierPart;
-import static org.mvel.util.PropertyTools.createStringTrimmed;
+import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
-import org.mvel.util.PropertyTools;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.lang.Character.isWhitespace;
 import static java.lang.Float.parseFloat;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;

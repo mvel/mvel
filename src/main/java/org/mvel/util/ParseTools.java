@@ -34,7 +34,7 @@ import org.mvel.math.MathProcessor;
 import sun.misc.Unsafe;
 
 import java.io.*;
-import static java.lang.Character.isWhitespace;
+import static org.mvel.util.ParseTools.isWhitespace;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
@@ -142,13 +142,11 @@ public class ParseTools {
         }
 
         if (start < (length + offset) && i > start) {
-          //  String s = new String(parm, start, i - start).trim();
             String s = createStringTrimmed(parm, start, i - start);
             if (s.length() > 0)
                 list.add(s);
         }
         else if (list.size() == 0) {
-      //      String s = new String(parm, start, length).trim();
             String s = createStringTrimmed(parm, start, length);
             if (s.length() > 0)
                 list.add(s);
@@ -454,9 +452,7 @@ public class ParseTools {
                     continue;
                 case ')':
                     if (1 == depth--) {
-                     //   return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i).trim()};
                          return new String[]{new String(cs, 0, ++i), createStringTrimmed(cs, i, cs.length - i)};
-
                     }
             }
         }
@@ -944,8 +940,6 @@ public class ParseTools {
         for (; i < parms.length; i++) {
             switch (parms[i]) {
                 case '=':
-                    //    i++;
-               //     parmName = new String(parms, start, ++i - start - 1).trim();
                     parmName = createStringTrimmed(parms, start, ++i - start - 1);
                     capture = true;
                     start = i;
@@ -953,7 +947,6 @@ public class ParseTools {
 
                 case ',':
                     if (capture) {
-                    //    allParms.put(parmName, new String(parms, start, i - start).trim());
                         allParms.put(parmName, createStringTrimmed(parms, start, i - start));
                         start = ++i;
                         capture = false;
@@ -963,7 +956,6 @@ public class ParseTools {
         }
 
         if (capture) {
-           // allParms.put(parmName, new String(parms, start, i - start).trim());
             allParms.put(parmName, createStringTrimmed(parms, start, i - start));
         }
 
@@ -1216,6 +1208,10 @@ public class ParseTools {
         }
 
         return compiled;
+    }
+
+    public static boolean isWhitespace(char c) {
+       return c <= '\u0020';
     }
 
     public static String repeatChar(char c, int times) {

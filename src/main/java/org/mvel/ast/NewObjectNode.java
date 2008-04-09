@@ -36,7 +36,7 @@ import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.getBaseComponentType;
 
 import java.io.Serializable;
-import static java.lang.Character.isWhitespace;
+import static org.mvel.util.ParseTools.isWhitespace;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;

@@ -21,7 +21,7 @@ package org.mvel;
 
 import org.mvel.util.StringAppender;
 
-import static java.lang.Character.isWhitespace;
+import static org.mvel.util.ParseTools.isWhitespace;
 import static java.lang.String.copyValueOf;
 import java.util.ArrayList;
 import java.util.List;

@@ -21,7 +21,7 @@ package org.mvel.util;
 import static org.mvel.util.ParseTools.balancedCapture;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
 
-import static java.lang.Character.isWhitespace;
+import static org.mvel.util.ParseTools.isWhitespace;
 import static java.lang.System.arraycopy;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -151,7 +151,7 @@ public class CollectionParser {
                         map = new HashMap<Object, Object>();
                         type = MAP;
                     }
-                    curr = new String(property, start, cursor - start).trim();
+                    curr = createStringTrimmed(property, start, cursor - start);
 
                     start = cursor + 1;
                     break;

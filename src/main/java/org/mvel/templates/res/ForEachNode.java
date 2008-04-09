@@ -112,7 +112,6 @@ public class ForEachNode extends Node {
                     if (expr.size() != (items.size() - 1)) {
                         throw new CompileException("unexpected character ',' in foreach tag", cStart + i);
                     }
-                   // expr.add(new String(contents, start, i - start).trim());
                     expr.add(createStringTrimmed(contents, start, i - start));
                     start = i + 1;
                     break;
@@ -123,7 +122,6 @@ public class ForEachNode extends Node {
             if (expr.size() != (items.size() - 1)) {
                 throw new CompileException("expected character ':' in foreach tag", cEnd);
             }
-         //   expr.add(new String(contents, start, contents.length - start).trim());
             expr.add(createStringTrimmed(contents, start, contents.length - start));
         }
 
