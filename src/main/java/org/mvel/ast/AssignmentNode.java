@@ -20,12 +20,13 @@ package org.mvel.ast;
 
 import org.mvel.MVEL;
 import static org.mvel.MVEL.compileSetExpression;
+import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
-import org.mvel.compiler.AbstractParser;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
+import static org.mvel.util.PropertyTools.createStringTrimmed;
 import static org.mvel.util.PropertyTools.find;
 
 /**
@@ -50,13 +51,13 @@ public class AssignmentNode extends ASTNode implements Assignment {
         int assignStart;
 
         if (operation != -1) {
-            checkNameSafety(this.varName = name.trim());
+            checkNameSafety(this.varName = name);
 
             this.egressType = (statement = (ExecutableStatement)
                     subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation))).getKnownEgressType();
         }
         else if ((assignStart = find(expr, '=')) != -1) {
-            this.varName = new String(expr, 0, assignStart).trim();
+            this.varName = createStringTrimmed(expr, 0, assignStart);
             stmt = subset(expr, assignStart + 1);
 
             if ((fields & COMPILE_IMMEDIATE) != 0) {

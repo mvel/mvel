@@ -13,6 +13,9 @@ import java.util.Map;
 import java.io.InputStream;
 import java.io.File;
 
+/**
+ * The TemplateCompiler class is used for pre-compiling MVEL Templates.  To execute a compiled template see {@link TemplateRuntime}
+ */
 @SuppressWarnings({"ManualArrayCopy"})
 public class TemplateCompiler {
     private char[] template;

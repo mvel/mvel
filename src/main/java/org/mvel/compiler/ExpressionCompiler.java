@@ -258,23 +258,6 @@ public class ExpressionCompiler extends AbstractParser {
         }
 
         if (verifying) {
-//            if (tk.isAssignment()) {
-//                String varName = ((Assignment) tk).getAssignmentVar();
-//
-//                if (isReservedWord(varName)) {
-//                    addFatalError("invalid assignment - variable name is a reserved keyword: " + varName);
-//                }
-//
-//                new ExpressionCompiler(new String(((Assignment) tk).getExpression()).trim())._compile();
-//
-//                if (((Assignment) tk).isNewDeclaration() && pCtx.hasVarOrInput(varName)) {
-//                    throw new CompileException("statically-typed variable '" + varName + "' defined more than once in scope: "
-//                            + tk.getClass().getName());
-//                }
-//
-//                pCtx.addVariable(varName, returnType = tk.getEgressType());
-//            }
-        //    else
             if (tk.isIdentifier()) {
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), pCtx);
                 returnType = propVerifier.analyze();

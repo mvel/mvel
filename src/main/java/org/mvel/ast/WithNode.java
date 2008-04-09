@@ -27,6 +27,8 @@ import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
+import org.mvel.util.PropertyTools;
+import static org.mvel.util.PropertyTools.createStringTrimmed;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ public class WithNode extends BlockNode implements NestedStatement {
             (pCtx = getCurrentThreadParserContext()).setBlockSymbols(true);
         }
 
-        nestedStatement = (ExecutableStatement) subCompileExpression(nestParm = new String(expr).trim());
+        nestedStatement = (ExecutableStatement) subCompileExpression(nestParm = createStringTrimmed(expr));
         compileWithExpressions();
 
         if (pCtx != null) {
@@ -139,7 +141,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                     continue;
 
                 case '=':
-                    parm = new String(block, start, i - start - (oper != -1 ? 1 : 0)).trim();
+                    parm = createStringTrimmed(block, start, i - start - (oper != -1 ? 1 : 0));
                     start = ++i;
                     continue;
 

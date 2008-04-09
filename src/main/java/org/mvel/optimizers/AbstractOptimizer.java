@@ -21,7 +21,7 @@ package org.mvel.optimizers;
 import org.mvel.compiler.AbstractParser;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 
-import static java.lang.Character.isWhitespace;
+import static org.mvel.util.ParseTools.isWhitespace;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
 

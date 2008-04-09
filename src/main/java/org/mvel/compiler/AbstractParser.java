@@ -24,14 +24,12 @@ import org.mvel.ast.*;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.isDigit;
-import static org.mvel.util.PropertyTools.isIdentifierPart;
+import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.lang.Character.isWhitespace;
 import static java.lang.Float.parseFloat;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
@@ -356,7 +354,7 @@ public class AbstractParser implements Serializable {
                                         return lastNode;
 
                                     case '=':
-                                        name = new String(expr, start, trimLeft(cursor) - start);
+                                        name = createStringTrimmed(expr, start, cursor - start);
                                         start = cursor += 2;
                                         captureToEOS();
 
@@ -1120,7 +1118,7 @@ public class AbstractParser implements Serializable {
             /**
              * Grabe the function name.
              */
-            String functionName = new String(expr, start, (startCond = cursor) - start).trim();
+            String functionName = createStringTrimmed(expr, start, (startCond = cursor) - start);
 
             /**
              * Check to see if the name is legal.
