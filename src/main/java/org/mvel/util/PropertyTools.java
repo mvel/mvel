@@ -423,34 +423,4 @@ public class PropertyTools {
         }
         return cls;
     }
-
-    public static void main(String[] args) {
-
-        char[] test = {' ', 'a', 'b', 'c', ' ', ' '};
-
-        String s = null;
-
-        long start;
-
-        for (int loop = 0; loop < 4; loop++) {
-            start = System.currentTimeMillis();
-
-            for (int i = 0; i < 10000000; i++) {
-                s = new String(test).trim();
-            }
-
-
-            System.out.println("trim() = " + (System.currentTimeMillis() - start) + ":" + s);
-
-            start = System.currentTimeMillis();
-            for (int i = 0; i < 10000000; i++) {
-                s = createStringTrimmed(test);
-            }
-
-            System.out.println("mvel  = " + (System.currentTimeMillis() - start) + ":" + s);
-
-        }
-    }
-
-
 }
