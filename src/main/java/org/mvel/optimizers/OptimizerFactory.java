@@ -78,9 +78,6 @@ public class OptimizerFactory {
     }
 
     public static AccessorOptimizer getThreadAccessorOptimizer() {
-//        if (threadOptimizer == null) {
-//            threadOptimizer = new ThreadLocal<Class<? extends AccessorOptimizer>>();
-//        }
         if (threadOptimizer.get() == null) {
             threadOptimizer.set(getDefaultAccessorCompiler().getClass());
         }

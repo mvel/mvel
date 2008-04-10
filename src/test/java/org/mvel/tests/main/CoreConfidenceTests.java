@@ -2596,6 +2596,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(10, test("xStr = new String[5][10]; xStr[4][0] = 'foo'; xStr[4].length"));
     }
 
+    public void testHigherOrderMathTest() {
+        assertEquals(10-5*2 + 5*8-4, test("10-5*2 + 5*8-4"));
+    }
+
     public void testNullSafe() {
         Foo foo = new Foo();
         foo.setBar(null);
@@ -3017,7 +3021,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testAndOpLiteral() {
         assertEquals(true, test("true && true"));
-    }
+    }                                                  
 
     public void testAnonymousFunctionDecl() {
         assertEquals(3, test("anonFunc = function (a,b) { return a + b; }; anonFunc(1,2)"));
@@ -3031,6 +3035,9 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("FOO_BAR", test("var barfoo = 'FOO_BAR'; return barfoo;"));
     }
 
+    public void testAssignment5() {
+        assertEquals(15, test("x = (10) + (5); x"));
+    }
 
     public void testSetExpressions1() {
         Map<String, Object> myMap = new HashMap<String, Object>();

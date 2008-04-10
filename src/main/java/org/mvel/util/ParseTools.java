@@ -63,11 +63,11 @@ public class ParseTools {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
-                MATH_PROCESSOR = (MathProcessor) currentThread().getContextClassLoader().loadClass("org.mvel.math.JDK14CompatabilityMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor)  Class.forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
                 JDK_14_COMPATIBILITY = true;
             }
             else if (version > 1.4) {
-                MATH_PROCESSOR = (MathProcessor) currentThread().getContextClassLoader().loadClass("org.mvel.math.IEEEFloatingPointMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor)  Class.forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
                 JDK_14_COMPATIBILITY = false;
             }
             else {
