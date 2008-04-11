@@ -249,7 +249,7 @@ public abstract class AbstractTest extends TestCase {
 
             try {
                 first = executeExpression(compiled, new Base(), createTestMap());
-            }
+            }                                      
             catch (Exception e) {
                 failErrors.append("\nFIRST TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 

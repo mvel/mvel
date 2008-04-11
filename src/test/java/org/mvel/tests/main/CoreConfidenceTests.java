@@ -280,7 +280,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testNegation6() {
         assertEquals(false, test("!true"));
     }
-    
+
     public void testMultiStatement() {
         assertEquals(true, test("populate(); barfoo == 'sarah'"));
     }
@@ -1683,7 +1683,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testComments4() {
-        assertEquals(50, test("/** This is a fun test script **/\r\n" +
+        assertEquals(((10 + 20) * 2) - 10, test("/** This is a fun test script **/\r\n" +
                 "a = 10;\r\n" +
                 "/**\r\n" +
                 "* Here is a useful variable\r\n" +
@@ -1931,7 +1931,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(0, MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory()));
     }
-    
+
     public void testDynamicImportsOnNestedExpressions() {
         ParserContext ctx = new ParserContext();
         ctx.addPackageImport("org.mvel.tests.main.res");
@@ -1939,13 +1939,13 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", new Cheese(\"cheddar\", 15))");
         Serializable s = compiler.compile(ctx);
-        
-        Cheesery p1 = new Cheesery( "bobbo", new Cheese("cheddar", 15) );        
-        Cheesery p2 = ( Cheesery ) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
-        
-        assertEquals( p1, p2 );       
+
+        Cheesery p1 = new Cheesery("bobbo", new Cheese("cheddar", 15));
+        Cheesery p2 = (Cheesery) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
+
+        assertEquals(p1, p2);
     }
-    
+
     public void testDynamicImportsWithNullConstructorParam() {
         ParserContext ctx = new ParserContext();
         ctx.addPackageImport("org.mvel.tests.main.res");
@@ -1953,13 +1953,13 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ExpressionCompiler compiler = new ExpressionCompiler("new Cheesery(\"bobbo\", null)");
         Serializable s = compiler.compile(ctx);
-        
-        Cheesery p1 = new Cheesery( "bobbo", null );
-        
-        Cheesery p2 = ( Cheesery ) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
-        
-        assertEquals( p1, p2 );       
-    }    
+
+        Cheesery p1 = new Cheesery("bobbo", null);
+
+        Cheesery p2 = (Cheesery) MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory());
+
+        assertEquals(p1, p2);
+    }
 
     public void testDynamicImportsWithIdentifierSameAsClassWithDiffCase() {
         ParserContext ctx = new ParserContext();
@@ -2597,8 +2597,18 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testHigherOrderMathTest() {
-        assertEquals(10-5*2 + 5*8-4, test("10-5*2 + 5*8-4"));
+        assertEquals(10 - 5 * 2 + 5 * 8 - 4, test("10-5*2 + 5*8-4"));
     }
+
+    public void testHigherOrderMathTest2() {
+        assertEquals(100 - 500 * 200 + 500 * 800 - 400, MVEL.eval("100-500*200 + 500*800-400"));
+
+    }
+
+    public void testHigherOrderMathTest3() {
+        assertEquals((10d * 5d) * 2d / 3d, MVEL.eval("(10 * 5) * 2 / 3"));
+    }
+
 
     public void testNullSafe() {
         Foo foo = new Foo();
@@ -3021,7 +3031,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testAndOpLiteral() {
         assertEquals(true, test("true && true"));
-    }                                                  
+    }
 
     public void testAnonymousFunctionDecl() {
         assertEquals(3, test("anonFunc = function (a,b) { return a + b; }; anonFunc(1,2)"));

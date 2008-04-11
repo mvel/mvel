@@ -24,6 +24,7 @@ import org.mvel.OptimizationFailure;
 import org.mvel.PropertyAccessException;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.UnresolveablePropertyException;
+import org.mvel.debug.DebugTools;
 import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
@@ -534,6 +535,11 @@ public class ASTNode implements Cloneable, Serializable {
     public ASTNode(char[] expr, int fields) {
         this.fields = fields;
         this.name = expr;
+    }
+
+    public String toString() {
+        return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" : String.valueOf(literal);
+
     }
 }
 

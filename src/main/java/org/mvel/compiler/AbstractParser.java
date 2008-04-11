@@ -174,7 +174,6 @@ public class AbstractParser implements Serializable {
      */
     protected ASTNode nextToken() {
         try {
-
             /**
              * If the cursor is at the end of the expression, we have nothing more to do:
              * return null.
@@ -781,20 +780,21 @@ public class AbstractParser implements Serializable {
                                     return lastNode = new TypeCast(subset(expr, start, cursor - start), pCtx.getImport(tokenStr), fields);
                                 }
                                 else {
+                                    int rewind = cursor;
                                     try {
                                         /**
                                          *
                                          *  take a stab in the dark and try and load the class
                                          */
-                                        int _start = cursor;
                                         captureToEOS();
-                                        return lastNode = new TypeCast(subset(expr, _start, cursor - _start), createClass(tokenStr), fields);
+                                         return lastNode = new TypeCast(subset(expr, rewind, cursor - rewind), createClass(tokenStr), fields);
 
                                     }
                                     catch (ClassNotFoundException e) {
                                         /**
                                          * Just fail through.
                                          */
+                                       cursor = rewind;                                        
                                     }
                                 }
                             }

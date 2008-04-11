@@ -19,7 +19,6 @@
 package org.mvel.util;
 
 import org.mvel.*;
-import static org.mvel.util.PropertyTools.createStringTrimmed;
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.ast.ASTNode;
 import org.mvel.compiler.*;
@@ -31,10 +30,10 @@ import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.integration.impl.TypeInjectionResolverFactoryImpl;
 import org.mvel.math.MathProcessor;
+import static org.mvel.util.PropertyTools.createStringTrimmed;
 import sun.misc.Unsafe;
 
 import java.io.*;
-import static org.mvel.util.ParseTools.isWhitespace;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
