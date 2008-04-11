@@ -97,7 +97,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
      */
     private void parseAndExecuteInterpreted() {
         ASTNode tk = null, tk2;
-        int operator, operator2, rw;
+        int operator, operator2;
         Object holdOverRegister = null;
 
         lastWasIdentifier = false;
@@ -217,11 +217,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory));
 
-                rw = cursor;
                 if ((tk2 = nextToken()) != null && tk2.isOperator()
                         && isStandardMathOperator(operator2 = tk2.getOperator())
                         && (operator2 > operator)) {
-
                     if (dStack == null) dStack = new ExecutionStack();
                     dStack.push(tk2.getOperator(), nextToken().getReducedValue(ctx, ctx, variableFactory));
                     procDStack();
@@ -232,22 +230,30 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 else if (tk2 != null) {
                     stk.push(operator);
                     reduce();
-                    cursor = rw;
+
+                    /**
+                     * Push tk2 back into the accumulator.
+                     */
+                    splitAccumulator.push(tk2);
                 }
                 else {
                     stk.push(operator);
                     reduce();
                 }
+
+                // Don't remove the "stk.push(operator); ruduce();" code duplication.
+                // It results in 3 GOTO instructions in the bytecode vs. one.
             }
 
             if (holdOverRegister != null) {
                 stk.push(holdOverRegister);
             }
 
-            if (dStack != null)
+            if (dStack != null) {
                 while (!dStack.isEmpty()) {
                     procDStack();
                 }
+            }
         }
         catch (CompileException e) {
             CompileException c = new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0, e);
@@ -311,7 +317,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
             v1 = stk.pop();
             v2 = stk.pop();
 
-        //    System.out.println("reduce:" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1);
+            System.out.println("reduce:" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1);
 
             switch (operator) {
                 case ADD:
