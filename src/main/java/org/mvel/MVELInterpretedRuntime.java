@@ -51,15 +51,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
     private Object ctx;
     private VariableResolverFactory variableFactory;
 
-    private ExecutionStack dStack;
-    private int lastOp;
-
     Object parse() {
         setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);
         debugSymbols = false;
 
         try {
             stk = new ExecutionStack();
+            dStack = new ExecutionStack();
 
             cursor = 0;
 
@@ -96,8 +94,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
      * Main interpreter loop.
      */
     private void parseAndExecuteInterpreted() {
-        ASTNode tk = null, tk2;
-        int operator, operator2;
+        ASTNode tk = null;
+        int operator;
         Object holdOverRegister = null;
 
         lastWasIdentifier = false;
@@ -122,12 +120,12 @@ public class MVELInterpretedRuntime extends AbstractParser {
                      * proper execution order.
                      */
                     if (tk instanceof Substatement) {
-                        procDStack();
+                        reduceRight();
 
                         if ((tk = nextToken()) != null) {
-                            if (isStandardMathOperator(tk.getOperator())) {
-                                if (dStack == null) dStack = new ExecutionStack();
-                                dStack.push(tk.getOperator(), stk.pop());
+                            if (isArithmeticOperator(operator = tk.getOperator())) {
+                                stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
+                                arithmeticFunctionReduction(operator);
                                 continue;
                             }
                         }
@@ -147,7 +145,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
                 switch (operator = tk.getOperator()) {
                     case AND:
-                        procDStack();
+                        reduceRight();
 
                         if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
                             if (unwindStatement(operator)) {
@@ -164,7 +162,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         }
 
                     case OR:
-                        procDStack();
+                        reduceRight();
 
                         if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
                             if (unwindStatement(operator)) {
@@ -215,32 +213,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
                 }
 
-                stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory));
-
-                if ((tk2 = nextToken()) != null && tk2.isOperator()
-                        && isStandardMathOperator(operator2 = tk2.getOperator())
-                        && (operator2 > operator)) {
-                    if (dStack == null) dStack = new ExecutionStack();
-                    dStack.push(tk2.getOperator(), nextToken().getReducedValue(ctx, ctx, variableFactory));
-                    procDStack();
-
-                    stk.push(operator);
-                    reduce();
-                }
-                else if (tk2 != null) {
-                    stk.push(operator);
-                    reduce();
-
-                    /**
-                     * Push tk2 back into the accumulator.
-                     */
-                    splitAccumulator.push(tk2);
-                }
-                else {
-                    stk.push(operator);
-                    reduce();
-                }
-
+                stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
+                arithmeticFunctionReduction(operator);
                 // Don't remove the "stk.push(operator); ruduce();" code duplication.
                 // It results in 3 GOTO instructions in the bytecode vs. one.
             }
@@ -251,7 +225,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
             if (dStack != null) {
                 while (!dStack.isEmpty()) {
-                    procDStack();
+                    reduceRight();
                 }
             }
         }
@@ -272,9 +246,66 @@ public class MVELInterpretedRuntime extends AbstractParser {
         }
     }
 
-    private static boolean isStandardMathOperator(int operator) {
+    private static boolean isArithmeticOperator(int operator) {
         //  return operator == ADD || operator == MULT || operator == SUB || operator == DIV;
         return operator < 6;
+    }
+
+    private void arithmeticFunctionReduction(int operator) {
+        ASTNode tk2;
+        int operator2;
+
+        boolean x = false;
+        /**
+         * If the next token is an operator, we check to see if it has a higher
+         * precdence.
+         */
+
+        if ((tk2 = nextToken()) != null && tk2.isOperator()
+                && isArithmeticOperator(operator2 = tk2.getOperator())
+                && (Operator.PTABLE[operator2] > Operator.PTABLE[operator])) {
+
+            do {
+                dStack.push(tk2.getOperator(), nextToken().getReducedValue(ctx, ctx, variableFactory));
+                if (x = !x)
+                    reduceRightXSwap(); // r
+                else
+                    reduceRightXXSwap();
+            }
+            while (((tk2 = nextToken()) != null && tk2.isOperator()
+                    && isArithmeticOperator(operator2 = tk2.getOperator())
+                    && (operator2 > operator)));
+
+            xswap();
+            reduce();
+
+            if (tk2 != null) stk.push(operator2);
+
+            if ((tk2 = nextToken()) != null) {
+                stk.push(tk2.getReducedValue(ctx, ctx, variableFactory));
+            }
+        }
+        else if (tk2 != null) {
+            reduce();
+            operator = tk2.getOperator();
+
+            if ((tk2 = nextToken()) != null) {
+                stk.push(tk2.getReducedValue(ctx, ctx, variableFactory), operator);
+                reduce();
+            }
+
+            while (stk.size() > 1) {
+                xswap();
+                reduce();
+            }
+
+            /**
+             * Push tk2 back into the accumulator.
+             */
+        }
+        else {
+            reduce();
+        }
     }
 
     /**
@@ -282,20 +313,55 @@ public class MVELInterpretedRuntime extends AbstractParser {
      * over to the top of the stack, and loads the stored values on the d-stack onto
      * the main program stack.
      */
-    private void procDStack() {
-        if (dStack == null) return;
-        Object o;
-        //    while (!dStack.isEmpty()) {
-        o = stk.pop();
+    private void reduceRight() {
+        if (dStack.isEmpty()) return;
+
+        Object o = stk.pop();
         stk.push(dStack.pop());
         stk.push(o);
         stk.push(dStack.pop());
 
-//        System.out.println("before exec...");
-//        stk.showStack();
-
         reduce();
-        //       }
+    }
+
+    /**
+     * A more efficient RHS reduction, to avoid the need
+     * to XSWAP directly on the stack.
+     */
+    private void reduceRightXSwap() {
+        Object o = stk.pop();
+        Object o2 = stk.pop();
+
+        stk.push(o);
+        stk.push(dStack.pop());
+        stk.push(o2);
+        stk.push(dStack.pop());
+        reduce();
+    }
+
+    /**
+     * Same as reduceRightXSwap, except this is an inverted
+     * operator, or XXSWAP.
+     */
+    private void reduceRightXXSwap() {
+        Object o = stk.pop();
+        Object o2 = stk.pop();
+
+        stk.push(o2);
+        stk.push(dStack.pop());
+        stk.push(o);
+        stk.push(dStack.pop());
+        reduce();
+    }
+
+    /**
+     * XSWAP.
+     */
+    private void xswap() {
+        Object o = stk.pop();
+        Object o2 = stk.pop();
+        stk.push(o);
+        stk.push(o2);
     }
 
     private boolean hasNoMore() {
@@ -309,15 +375,16 @@ public class MVELInterpretedRuntime extends AbstractParser {
      * current state against 2 downrange structures (usually an op and a val).
      */
     private void reduce() {
+
         Object v1 = null, v2 = null;
         Integer operator;
         try {
-            //   while (stk.size() > 1) {
+
             operator = (Integer) stk.pop();
             v1 = stk.pop();
             v2 = stk.pop();
 
-            System.out.println("reduce:" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1);
+   //         System.out.println("reduce:" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1);
 
             switch (operator) {
                 case ADD:

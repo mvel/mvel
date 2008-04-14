@@ -141,6 +141,7 @@ public class ExpressionCompiler extends AbstractParser {
                              * Reduce the token now.
                              */
 
+
                             reduce();
 
                             firstLA = true;
@@ -233,6 +234,17 @@ public class ExpressionCompiler extends AbstractParser {
         }
 
     }
+
+    private void pushDStack(Object o) {
+        if (dStack == null) this.dStack = new ExecutionStack();
+        dStack.push(o);
+    }
+
+    private void pushDStack(Object o1, Object o2) {
+        if (dStack == null) this.dStack = new ExecutionStack();
+        dStack.push(o1, o2);
+    }
+
 
     private static boolean isBooleanOperator(int operator) {
         return operator == Operator.AND || operator == Operator.OR;

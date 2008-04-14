@@ -74,6 +74,7 @@ public class AbstractParser implements Serializable {
 
     protected static ThreadLocal<ParserContext> parserContext;
     protected ParserContext pCtx;
+    protected ExecutionStack dStack;
 
     static {
         configureFactory();
@@ -560,7 +561,7 @@ public class AbstractParser implements Serializable {
                         }
 
                         case '=':
-                            return createToken(expr, start, (cursor += 2), fields);
+                            return createOperator(expr, start, (cursor += 2), fields);
 
                         case '-':
                             if (isNext('-')) {
@@ -772,12 +773,16 @@ public class AbstractParser implements Serializable {
                             char[] _subset = null;
                             if (singleToken) {
                                 int st;
-                                String tokenStr = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st));
 
-                                if (pCtx.hasImport(tokenStr)) {
+
+                                //String tokenStr = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st));
+
+                                name = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st));
+
+                                if (pCtx.hasImport(name)) {
                                     start = cursor;
                                     captureToEOS();
-                                    return lastNode = new TypeCast(subset(expr, start, cursor - start), pCtx.getImport(tokenStr), fields);
+                                    return lastNode = new TypeCast(subset(expr, start, cursor - start), pCtx.getImport(name), fields);
                                 }
                                 else {
                                     int rewind = cursor;
@@ -787,14 +792,14 @@ public class AbstractParser implements Serializable {
                                          *  take a stab in the dark and try and load the class
                                          */
                                         captureToEOS();
-                                         return lastNode = new TypeCast(subset(expr, rewind, cursor - rewind), createClass(tokenStr), fields);
+                                        return lastNode = new TypeCast(subset(expr, rewind, cursor - rewind), createClass(name), fields);
 
                                     }
                                     catch (ClassNotFoundException e) {
                                         /**
                                          * Just fail through.
                                          */
-                                       cursor = rewind;                                        
+                                        cursor = rewind;
                                     }
                                 }
                             }
@@ -816,26 +821,26 @@ public class AbstractParser implements Serializable {
                         case '>': {
                             if (expr[cursor + 1] == '>') {
                                 if (expr[cursor += 2] == '>') cursor++;
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor, fields);
                             }
                             else if (expr[cursor + 1] == '=') {
-                                return createToken(expr, start, cursor += 2, fields);
+                                return createOperator(expr, start, cursor += 2, fields);
                             }
                             else {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor, fields);
                             }
                         }
 
                         case '<': {
                             if (expr[++cursor] == '<') {
                                 if (expr[++cursor] == '<') cursor++;
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor, fields);
                             }
                             else if (expr[cursor] == '=') {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor, fields);
                             }
                             else {
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor, fields);
                             }
                         }
 
@@ -857,19 +862,22 @@ public class AbstractParser implements Serializable {
 
                         case '&': {
                             if (expr[cursor++ + 1] == '&') {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor, fields);
                             }
                             else {
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor, fields);
                             }
                         }
 
                         case '|': {
                             if (expr[cursor++ + 1] == '|') {
-                                return createToken(expr, start, ++cursor, fields);
+                                //         return createToken(expr, start, ++cursor, fields);
+
+                                return new OperatorNode(OPERATORS.get(subset(expr, start, ++cursor - start)));
+
                             }
                             else {
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor, fields);
                             }
                         }
 
@@ -887,7 +895,9 @@ public class AbstractParser implements Serializable {
                             }
                             else {
                                 if (expr[cursor] == '=') cursor++;
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor, fields);
+
+                                //   return new OperatorNode(OPERATORS.get(subset(expr, start, cursor - start)));
                             }
 
                         case '!': {
@@ -904,7 +914,8 @@ public class AbstractParser implements Serializable {
                             else if (expr[cursor] != '=')
                                 throw new CompileException("unexpected operator '!'", expr, cursor, null);
                             else {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor, fields);
+                                //   return new OperatorNode(OPERATORS.get("!="));
                             }
                         }
 
@@ -976,6 +987,12 @@ public class AbstractParser implements Serializable {
     private ASTNode createToken(final char[] expr, final int start, final int end, int fields) {
         lastWasIdentifier = (lastNode = new ASTNode(expr, start, end, fields)).isIdentifier();
         return lastNode;
+    }
+
+    private ASTNode createOperator(final char[] expr, final int start, final int end, int fields) {
+        char[] e = subset(expr, start, end - start);
+        lastWasIdentifier = false;
+        return lastNode = new OperatorNode(OPERATORS.get(new String(e)));
     }
 
     private char[] subArray(final int start, final int end) {

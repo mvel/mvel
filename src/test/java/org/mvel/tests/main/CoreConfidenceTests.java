@@ -192,7 +192,9 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testShortPathExpression() {
-        assertEquals(null, test("3 > 4 && foo.toUC('test'); foo.register"));
+        assertEquals(null, MVEL.eval("3 > 4 && foo.toUC('test'); foo.register", new Base(), createTestMap()) );
+
+     //   assertEquals(null, test("3 > 4 && foo.toUC('test'); foo.register"));
     }
 
     public void testShortPathExpression2() {
@@ -2548,17 +2550,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(11, test("xx0 = 15; xx0 -= 4; xx0"));
     }
 
-//    public void testCommentsInWith() {
-//        HashMap map = new HashMap();
-//        map.put("f", new JFrame());
-//        System.out.println(eval(
-//                "with (f) {\n" +
-//                        "title = 'blah', // setting title\n" +
-//                        "alwaysOnTop = false \n" +
-//                        "}", map
-//        ));
-//    }
-
 
     public void testStaticWithExplicitParam() {
         PojoStatic pojo = new PojoStatic("10");
@@ -2601,12 +2592,21 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testHigherOrderMathTest2() {
-        assertEquals(100 - 500 * 200 + 500 * 800 - 400, MVEL.eval("100-500*200 + 500*800-400"));
+        String ex = "100-500*200 + 500*800-400";
+        System.out.println("Expression: " + ex);
 
+        assertEquals(100 - 500 * 200 + 500 * 800 - 400, MVEL.eval(ex));
     }
 
     public void testHigherOrderMathTest3() {
-        assertEquals((10d * 5d) * 2d / 3d, MVEL.eval("(10 * 5) * 2 / 3"));
+        String ex =  "100-500*200*150 + 500*800-400";
+        assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, MVEL.eval(ex));
+    }
+
+    public void testHigherOrderMathTest4() {
+        String ex = "(100 * 50) * 20 / 30";
+        System.out.println("Expression: " + ex);
+        assertEquals((100d * 50d) * 20d / 30d, MVEL.eval(ex));
     }
 
 

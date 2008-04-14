@@ -19,6 +19,16 @@
 package org.mvel;
 
 public interface Operator {
+
+    /**
+     * The index positions of the operator precedence values
+     * correspond to the actual operator itself. So ADD is PTABLE[0],
+     * SUB is PTABLE[1] and so on.
+     */
+    public static final int[] PTABLE = {
+            0, 0, 1, 1, 1, 2
+    };
+
     public static final int ADD = 0;
     public static final int SUB = 1;
     public static final int MULT = 2;
@@ -82,5 +92,5 @@ public interface Operator {
     public static final int RETURN = 99;
 
     public static final int FUNCTION = 100;
-
+    
 }
