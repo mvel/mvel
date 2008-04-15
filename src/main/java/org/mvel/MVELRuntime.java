@@ -44,9 +44,7 @@ public class MVELRuntime {
         final ASTLinkedList node = new ASTLinkedList(expression.getInstructions().firstNode());
 
         if (expression.isImportInjectionRequired()) {
-     //       variableFactory = new TypeInjectionResolverFactoryImpl(expression.getParserContext().getImports(), variableFactory);
             variableFactory = new ClassImportResolverFactory(expression.getParserContext().getParserConfiguration(), variableFactory);
-
         }
 
         Stack stk = new ExecutionStack();
@@ -93,11 +91,14 @@ public class MVELRuntime {
                     stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
                 }
 
-                if (!tk.isOperator()) {
-                    continue;
-                }
+//                if (!tk.isOperator()) {
+//                    continue;
+//                }
 
                 switch (operator = tk.getOperator()) {
+                    case NOOP:
+                        continue;
+
                     case TERNARY:
                         if (!(Boolean) stk.pop()) {
                             //noinspection StatementWithEmptyBody
@@ -120,6 +121,7 @@ public class MVELRuntime {
                         }
 
                         continue;
+
                 }
 
                 stk.push(node.nextNode().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);

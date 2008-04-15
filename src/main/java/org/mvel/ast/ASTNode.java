@@ -19,11 +19,8 @@
 
 package org.mvel.ast;
 
-import org.mvel.CompileException;
-import org.mvel.OptimizationFailure;
-import org.mvel.PropertyAccessException;
 import static org.mvel.PropertyAccessor.get;
-import org.mvel.UnresolveablePropertyException;
+import org.mvel.*;
 import org.mvel.debug.DebugTools;
 import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.Accessor;
@@ -453,7 +450,8 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public Integer getOperator() {
-        return (Integer) literal;
+     //   return (Integer) literal;
+        return Operator.NOOP;
     }
 
     protected boolean isCollection() {
@@ -541,6 +539,8 @@ public class ASTNode implements Cloneable, Serializable {
         return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" : String.valueOf(literal);
 
     }
+
+
 }
 
 

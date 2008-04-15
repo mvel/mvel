@@ -19,6 +19,7 @@
 package org.mvel;
 
 public interface Operator {
+    public static final int NOOP = -1;
 
     /**
      * The index positions of the operator precedence values
@@ -28,6 +29,7 @@ public interface Operator {
     public static final int[] PTABLE = {
             0, 0, 1, 1, 1, 2
     };
+
 
     public static final int ADD = 0;
     public static final int SUB = 1;

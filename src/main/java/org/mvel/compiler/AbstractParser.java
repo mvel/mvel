@@ -597,13 +597,13 @@ public class AbstractParser implements Serializable {
                                     return lastNode = new PreFixIncNode(name);
                                 }
                             }
-                            return createToken(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1, fields);
 
                         case '*':
                             if (isNext('*')) {
                                 cursor++;
                             }
-                            return createToken(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1, fields);
 
                         case ';':
                             cursor++;

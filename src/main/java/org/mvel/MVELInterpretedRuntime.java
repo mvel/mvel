@@ -126,13 +126,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
                     }
                 }
 
-                if (!tk.isOperator()) {
-                    /**
-                     * There is no operator following the previous token, which means this either a naked identifier
-                     * or method call, etc.
-                     */
-                    continue;
-                }
+//                if (!tk.isOperator()) {
+//                    /**
+//                     * There is no operator following the previous token, which means this either a naked identifier
+//                     * or method call, etc.
+//                     */
+//                    continue;
+//                }
 
                 switch (procBooleanOperator(operator = tk.getOperator())) {
                     case -1:
@@ -177,6 +177,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
     private int procBooleanOperator(int operator) {
         switch (operator) {
+            case NOOP:
+                return 0;
             case AND:
                 reduceRight();
 
