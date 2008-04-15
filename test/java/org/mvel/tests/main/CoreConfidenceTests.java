@@ -1628,6 +1628,11 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(20, test("10 + 10; // This is a comment"));
     }
 
+    public void testComments2b() {
+        assertEquals(20, MVEL.eval("10 + 10; // This is a comment"));
+    }
+
+
     public void testComments3() {
         assertEquals(30, test("/* This is a test of\r\n" +
                 "MVEL's support for\r\n" +

@@ -1,26 +1,12 @@
 package org.mvel;
 
-import static org.mvel.DataConversion.canConvert;
-import static org.mvel.Soundex.soundex;
+import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
-import org.mvel.ast.Assignment;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
-import static org.mvel.util.ParseTools.containsCheck;
-import static org.mvel.util.ParseTools.doOperations;
-import org.mvel.util.PropertyTools;
-import static org.mvel.util.PropertyTools.similarity;
-import org.mvel.util.Stack;
-import org.mvel.util.StringAppender;
-
-import static java.lang.String.valueOf;
-import static java.lang.Thread.currentThread;
-import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
-    private final Stack stk = new ExecutionStack();
-
     private Class returnType;
 
     private boolean verifying = true;
@@ -66,6 +52,10 @@ public class ExpressionCompiler extends AbstractParser {
         ASTNode tkLA;
         ASTNode tkLA2;
         ASTLinkedList astLinkedList = new ASTLinkedList();
+
+        int op;
+        stk = new ExecutionStack();
+        dStack = new ExecutionStack();
 
         boolean firstLA;
 
@@ -113,14 +103,17 @@ public class ExpressionCompiler extends AbstractParser {
                          */
                         if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()) {
 
-                            stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), tkOp.getLiteralValue());
+                            stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), op = tkOp.getOperator());
 
                             /**
                              * Reduce the token now.
                              */
-
-                            reduce();
-
+                            if (isArithmeticOperator(op)) {
+                                arithmeticFunctionReduction(op);
+                            }
+                            else {
+                                reduce();
+                            }
                             firstLA = true;
 
                             /**
@@ -132,9 +125,16 @@ public class ExpressionCompiler extends AbstractParser {
                                     break;
                                 }
                                 else if ((tkLA2 = nextTokenSkipSymbols()) != null && tkLA2.isLiteral()) {
-                                    stk.push(tkLA2.getLiteralValue(), tkOp2.getLiteralValue());
+                                    stk.push(tkLA2.getLiteralValue(), op = tkOp2.getOperator());
 
-                                    reduce();
+
+                                    if (isArithmeticOperator(op)) {
+                                        arithmeticFunctionReduction(op);
+                                    }
+                                    else {
+                                        reduce();
+                                    }
+
                                     firstLA = false;
                                     literalOnly = false;
                                 }
@@ -272,149 +272,148 @@ public class ExpressionCompiler extends AbstractParser {
         return tk;
     }
 
-
-    /**
-     * This method is called when we reach the point where we must subEval a trinary operation in the expression.
-     * (ie. val1 op val2).  This is not the same as a binary operation, although binary operations would appear
-     * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
-     * current state against 2 downrange structures (usually an op and a val).
-     */
-    private void reduce() {
-        Object v1 = null, v2 = null;
-        Integer operator;
-        try {
-            while (stk.size() > 1) {
-                operator = (Integer) stk.pop();
-                v1 = stk.pop();
-                v2 = stk.pop();
-
-                switch (operator) {
-                    case Operator.ADD:
-                    case Operator.SUB:
-                    case Operator.DIV:
-                    case Operator.MULT:
-                    case Operator.MOD:
-                    case Operator.EQUAL:
-                    case Operator.NEQUAL:
-                    case Operator.GTHAN:
-                    case Operator.LTHAN:
-                    case Operator.GETHAN:
-                    case Operator.LETHAN:
-                    case Operator.POWER:
-                        stk.push(doOperations(v2, operator, v1));
-                        break;
-
-                    case Operator.AND:
-                        stk.push(((Boolean) v2) && ((Boolean) v1));
-                        break;
-
-                    case Operator.OR:
-                        stk.push(((Boolean) v2) || ((Boolean) v1));
-                        break;
-
-                    case Operator.CHOR:
-                        if (!PropertyTools.isEmpty(v2) || !PropertyTools.isEmpty(v1)) {
-                            stk.clear();
-                            stk.push(!PropertyTools.isEmpty(v2) ? v2 : v1);
-                            return;
-                        }
-                        else stk.push(null);
-                        break;
-
-                    case Operator.REGEX:
-                        stk.push(Pattern.compile(valueOf(v1)).matcher(valueOf(v2)).matches());
-                        break;
-
-                    case Operator.INSTANCEOF:
-                        if (v1 instanceof Class)
-                            stk.push(((Class) v1).isInstance(v2));
-                        else
-                            stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
-
-                        break;
-
-                    case Operator.CONVERTABLE_TO:
-                        if (v1 instanceof Class)
-                            stk.push(canConvert(v2.getClass(), (Class) v1));
-                        else
-                            stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
-                        break;
-
-                    case Operator.CONTAINS:
-                        stk.push(containsCheck(v2, v1));
-                        break;
-
-                    case Operator.BW_AND:
-                        stk.push(asInt(v2) & asInt(v1));
-                        break;
-
-                    case Operator.BW_OR:
-                        stk.push(asInt(v2) | asInt(v1));
-                        break;
-
-                    case Operator.BW_XOR:
-                        stk.push(asInt(v2) ^ asInt(v1));
-                        break;
-
-                    case Operator.BW_SHIFT_LEFT:
-                        stk.push(asInt(v2) << asInt(v1));
-                        break;
-
-                    case Operator.BW_USHIFT_LEFT:
-                        int iv2 = asInt(v2);
-                        if (iv2 < 0) iv2 *= -1;
-                        stk.push(iv2 << asInt(v1));
-                        break;
-
-                    case Operator.BW_SHIFT_RIGHT:
-                        stk.push(asInt(v2) >> asInt(v1));
-                        break;
-
-                    case Operator.BW_USHIFT_RIGHT:
-                        stk.push(asInt(v2) >>> asInt(v1));
-                        break;
-
-                    case Operator.STR_APPEND:
-                        stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
-                        break;
-
-                    case Operator.SOUNDEX:
-                        stk.push(soundex(valueOf(v1)).equals(soundex(valueOf(v2))));
-                        break;
-
-                    case Operator.SIMILARITY:
-                        stk.push(similarity(valueOf(v1), valueOf(v2)));
-                        break;
-                }
-            }
-        }
-        catch (ClassCastException e) {
-            if ((fields & ASTNode.LOOKAHEAD) == 0) {
-                /**
-                 * This will allow for some developers who like messy expressions to compileAccessor
-                 * away with some messy constructs like: a + b < c && e + f > g + q instead
-                 * of using brackets like (a + b < c) && (e + f > g + q)
-                 */
-                fields |= ASTNode.LOOKAHEAD;
-
-                ASTNode tk = nextToken();
-                if (tk != null) {
-                    stk.push(v1, nextToken(), tk.getOperator());
-
-                    reduce();
-                    return;
-                }
-            }
-            throw new CompileException("syntax error or incomptable types (left=" +
-                    (v1 != null ? v1.getClass().getName() : "null") + ", right=" +
-                    (v2 != null ? v2.getClass().getName() : "null") + ")", expr, cursor, e);
-
-        }
-        catch (Exception e) {
-            throw new CompileException("failed to subEval expression: <<" + new String(expr) + ">>", e);
-        }
-
-    }
+//    /**
+//     * This method is called when we reach the point where we must subEval a trinary operation in the expression.
+//     * (ie. val1 op val2).  This is not the same as a binary operation, although binary operations would appear
+//     * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
+//     * current state against 2 downrange structures (usually an op and a val).
+//     */
+//    private void reduce() {
+//        Object v1 = null, v2 = null;
+//        Integer operator;
+//        try {
+//            while (stk.size() > 1) {
+//                operator = (Integer) stk.pop();
+//                v1 = stk.pop();
+//                v2 = stk.pop();
+//
+//                switch (operator) {
+//                    case Operator.ADD:
+//                    case Operator.SUB:
+//                    case Operator.DIV:
+//                    case Operator.MULT:
+//                    case Operator.MOD:
+//                    case Operator.EQUAL:
+//                    case Operator.NEQUAL:
+//                    case Operator.GTHAN:
+//                    case Operator.LTHAN:
+//                    case Operator.GETHAN:
+//                    case Operator.LETHAN:
+//                    case Operator.POWER:
+//                        stk.push(doOperations(v2, operator, v1));
+//                        break;
+//
+//                    case Operator.AND:
+//                        stk.push(((Boolean) v2) && ((Boolean) v1));
+//                        break;
+//
+//                    case Operator.OR:
+//                        stk.push(((Boolean) v2) || ((Boolean) v1));
+//                        break;
+//
+//                    case Operator.CHOR:
+//                        if (!PropertyTools.isEmpty(v2) || !PropertyTools.isEmpty(v1)) {
+//                            stk.clear();
+//                            stk.push(!PropertyTools.isEmpty(v2) ? v2 : v1);
+//                            return;
+//                        }
+//                        else stk.push(null);
+//                        break;
+//
+//                    case Operator.REGEX:
+//                        stk.push(Pattern.compile(valueOf(v1)).matcher(valueOf(v2)).matches());
+//                        break;
+//
+//                    case Operator.INSTANCEOF:
+//                        if (v1 instanceof Class)
+//                            stk.push(((Class) v1).isInstance(v2));
+//                        else
+//                            stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
+//
+//                        break;
+//
+//                    case Operator.CONVERTABLE_TO:
+//                        if (v1 instanceof Class)
+//                            stk.push(canConvert(v2.getClass(), (Class) v1));
+//                        else
+//                            stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
+//                        break;
+//
+//                    case Operator.CONTAINS:
+//                        stk.push(containsCheck(v2, v1));
+//                        break;
+//
+//                    case Operator.BW_AND:
+//                        stk.push(asInt(v2) & asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_OR:
+//                        stk.push(asInt(v2) | asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_XOR:
+//                        stk.push(asInt(v2) ^ asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_SHIFT_LEFT:
+//                        stk.push(asInt(v2) << asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_USHIFT_LEFT:
+//                        int iv2 = asInt(v2);
+//                        if (iv2 < 0) iv2 *= -1;
+//                        stk.push(iv2 << asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_SHIFT_RIGHT:
+//                        stk.push(asInt(v2) >> asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_USHIFT_RIGHT:
+//                        stk.push(asInt(v2) >>> asInt(v1));
+//                        break;
+//
+//                    case Operator.STR_APPEND:
+//                        stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
+//                        break;
+//
+//                    case Operator.SOUNDEX:
+//                        stk.push(soundex(valueOf(v1)).equals(soundex(valueOf(v2))));
+//                        break;
+//
+//                    case Operator.SIMILARITY:
+//                        stk.push(similarity(valueOf(v1), valueOf(v2)));
+//                        break;
+//                }
+//            }
+//        }
+//        catch (ClassCastException e) {
+//            if ((fields & ASTNode.LOOKAHEAD) == 0) {
+//                /**
+//                 * This will allow for some developers who like messy expressions to compileAccessor
+//                 * away with some messy constructs like: a + b < c && e + f > g + q instead
+//                 * of using brackets like (a + b < c) && (e + f > g + q)
+//                 */
+//                fields |= ASTNode.LOOKAHEAD;
+//
+//                ASTNode tk = nextToken();
+//                if (tk != null) {
+//                    stk.push(v1, nextToken(), tk.getOperator());
+//
+//                    reduce();
+//                    return;
+//                }
+//            }
+//            throw new CompileException("syntax error or incomptable types (left=" +
+//                    (v1 != null ? v1.getClass().getName() : "null") + ", right=" +
+//                    (v2 != null ? v2.getClass().getName() : "null") + ")", expr, cursor, e);
+//
+//        }
+//        catch (Exception e) {
+//            throw new CompileException("failed to subEval expression: <<" + new String(expr) + ">>", e);
+//        }
+//
+//    }
 
     private static int asInt(final Object o) {
         return (Integer) o;

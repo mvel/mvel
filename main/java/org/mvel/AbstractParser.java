@@ -5,10 +5,11 @@ import org.mvel.ast.*;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.isDigit;
-import static org.mvel.util.PropertyTools.isIdentifierPart;
+import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 import org.mvel.util.ThisLiteral;
+import org.mvel.util.StringAppender;
+import org.mvel.integration.VariableResolverFactory;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -56,6 +57,10 @@ public class AbstractParser implements Serializable {
     protected ExecutionStack splitAccumulator = new ExecutionStack();
 
     protected static ThreadLocal<ParserContext> parserContext;
+    protected ParserContext pCtx;
+    protected ExecutionStack dStack;
+    protected Object ctx;
+    protected VariableResolverFactory variableFactory;
 
     static {
         configureFactory();
@@ -455,7 +460,7 @@ public class AbstractParser implements Serializable {
                         }
 
                         case '=':
-                            return createToken(expr, start, (cursor += 2), fields);
+                            return createOperator(expr, start, (cursor += 2), fields);
 
                         case '-':
                             if (isNext('-')) {
@@ -464,7 +469,7 @@ public class AbstractParser implements Serializable {
                                 return lastNode = new PreFixDecNode(subArray(start, cursor), fields);
                             }
                             else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
-                                return createToken(expr, start, cursor++ + 1, fields);
+                                return createOperator(expr, start, cursor++ + 1, fields);
                             }
                             else if ((cursor - 1) != 0 || (!isDigit(lookBehind())) && isDigit(lookAhead())) {
                                 cursor++;
@@ -477,13 +482,13 @@ public class AbstractParser implements Serializable {
                                 captureToEOT();
                                 return lastNode = new PreFixIncNode(subArray(start, cursor), fields);
                             }
-                            return createToken(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1, fields);
 
                         case '*':
                             if (isNext('*')) {
                                 cursor++;
                             }
-                            return createToken(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1, fields);
 
                         case ';':
                             cursor++;
@@ -574,7 +579,7 @@ public class AbstractParser implements Serializable {
                         case ':':
                         case '^':
                         case '%': {
-                            return createToken(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1, fields);
                         }
 
                         case '(': {
@@ -661,20 +666,21 @@ public class AbstractParser implements Serializable {
                                     return lastNode = new TypeCast(expr, start, cursor, fields, getParserContext().getImport(tokenStr));
                                 }
                                 else {
+                                    int rewind = cursor;
                                     try {
                                         /**
                                          *
                                          *  take a stab in the dark and try and load the class
                                          */
-                                        int _start = cursor;
                                         captureToEOS();
-                                        return lastNode = new TypeCast(expr, _start, cursor, fields, createClass(tokenStr));
+                                        return lastNode = new TypeCast(expr, rewind, cursor, fields, createClass(tokenStr));
 
                                     }
                                     catch (ClassNotFoundException e) {
                                         /**
                                          * Just fail through.
                                          */
+                                        cursor = rewind;
                                     }
                                 }
                             }
@@ -694,28 +700,28 @@ public class AbstractParser implements Serializable {
                         }
 
                         case '>': {
-                            if (expr[cursor + 1] == '>') {
+                               if (expr[cursor + 1] == '>') {
                                 if (expr[cursor += 2] == '>') cursor++;
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor, fields);
                             }
                             else if (expr[cursor + 1] == '=') {
-                                return createToken(expr, start, cursor += 2, fields);
+                                return createOperator(expr, start, cursor += 2, fields);
                             }
                             else {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor, fields);
                             }
                         }
 
                         case '<': {
                             if (expr[++cursor] == '<') {
                                 if (expr[++cursor] == '<') cursor++;
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor, fields);
                             }
                             else if (expr[cursor] == '=') {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor, fields);
                             }
                             else {
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor, fields);
                             }
                         }
 
@@ -737,19 +743,19 @@ public class AbstractParser implements Serializable {
 
                         case '&': {
                             if (expr[cursor++ + 1] == '&') {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor, fields);
                             }
                             else {
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor, fields);
                             }
                         }
 
                         case '|': {
                             if (expr[cursor++ + 1] == '|') {
-                                return createToken(expr, start, ++cursor, fields);
+                               return new OperatorNode(OPERATORS.get(new String(expr, start, ++cursor -start)));
                             }
                             else {
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor, fields);
                             }
                         }
 
@@ -769,7 +775,7 @@ public class AbstractParser implements Serializable {
                             }
                             else {
                                 if (expr[cursor + 1] == '=') cursor++;
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor, fields);
                             }
 
                         case '!': {
@@ -781,7 +787,7 @@ public class AbstractParser implements Serializable {
                             else if (expr[cursor] != '=')
                                 throw new CompileException("unexpected operator '!'", expr, cursor, null);
                             else {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor, fields);
                             }
                         }
 
@@ -852,6 +858,12 @@ public class AbstractParser implements Serializable {
     private ASTNode createToken(final char[] expr, final int start, final int end, int fields) {
         lastWasIdentifier = (lastNode = new ASTNode(expr, start, end, fields)).isIdentifier();
         return lastNode;
+    }
+
+    private ASTNode createOperator(final char[] expr, final int start, final int end, int fields) {
+        char[] e = subset(expr, start, end - start);
+        lastWasIdentifier = false;
+        return lastNode = new OperatorNode(OPERATORS.get(new String(e)));
     }
 
     private char[] subArray(final int start, final int end) {
@@ -1419,5 +1431,275 @@ public class AbstractParser implements Serializable {
 
     public static void resetParserContext() {
         contextControl(REMOVE, null, null);
+    }
+
+    protected static boolean isArithmeticOperator(int operator) {
+        //  return operator == ADD || operator == MULT || operator == SUB || operator == DIV;
+        return operator < 6;
+    }
+
+    protected void arithmeticFunctionReduction(int operator) {
+        ASTNode tk2;
+        int operator2;
+
+        boolean x = false;
+
+        /**
+         * If the next token is an operator, we check to see if it has a higher
+         * precdence.
+         */
+
+        if ((tk2 = nextToken()) != null && tk2.isOperator()) {
+            if (isArithmeticOperator(operator2 = tk2.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
+                do {
+                    dStack.push(tk2.getOperator(), nextToken().getReducedValue(ctx, ctx, variableFactory));
+                    if (x = !x)
+                        reduceRightXSwap(); // reduce from the RHS and XSWAP
+                    else
+                        reduceRightXXSwap(); // reduce from the RHS and XXSWAP
+                }
+                while (((tk2 = nextToken()) != null && tk2.isOperator()
+                        && isArithmeticOperator(operator2 = tk2.getOperator())
+                        && (PTABLE[operator2] > PTABLE[operator])));
+
+                xswap(); // XSWAP the stack.
+                reduce(); // reduce the stack.
+
+                // Record the current operator value to the stack.
+                if (tk2 != null) stk.push(operator2);
+
+                // Evaluate the next token and push the value to the stack.
+                if ((tk2 = nextToken()) != null) {
+                    stk.push(tk2.getReducedValue(ctx, ctx, variableFactory));
+                }
+            }
+            else {
+                reduce();
+                splitAccumulator.push(tk2);
+            }
+        }
+        else if (tk2 != null) {
+            reduce();  // reduce the stack.
+            operator = tk2.getOperator();
+
+            // if there is another token, then this statement must continue
+            // push the values down and reduce.
+            if ((tk2 = nextToken()) != null) {
+                stk.push(tk2.getReducedValue(ctx, ctx, variableFactory), operator);
+                reduce();
+            }
+
+            // while any values remain on the stack
+            // keep XSWAPing and reducing, until there is nothing left.
+            while (stk.size() > 1) {
+                xswap();
+                reduce();
+            }
+
+            /**
+             * Push tk2 back into the accumulator.
+             */
+        }
+        else {
+            reduce();
+
+            // while any values remain on the stack
+            // keep XSWAPing and reducing, until there is nothing left.
+            while (stk.size() > 1) {
+                xswap();
+                reduce();
+            }
+
+        }
+    }
+
+    /**
+     * A more efficient RHS reduction, to avoid the need
+     * to XSWAP directly on the stack.
+     */
+    private void reduceRightXSwap() {
+        Object o = stk.pop();
+        Object o2 = stk.pop();
+
+        stk.push(o);
+        stk.push(dStack.pop());
+        stk.push(o2);
+        stk.push(dStack.pop());
+        reduce();
+    }
+
+    /**
+     * Same as reduceRightXSwap, except this is an inverted
+     * operator, or XXSWAP.
+     */
+    private void reduceRightXXSwap() {
+        Object o = stk.pop();
+        Object o2 = stk.pop();
+
+        stk.push(o2);
+        stk.push(dStack.pop());
+        stk.push(o);
+        stk.push(dStack.pop());
+        reduce();
+    }
+
+    /**
+     * XSWAP.
+     */
+    private void xswap() {
+        Object o = stk.pop();
+        Object o2 = stk.pop();
+        stk.push(o);
+        stk.push(o2);
+    }
+
+    /**
+     * This method is called when we reach the point where we must subEval a trinary operation in the expression.
+     * (ie. val1 op val2).  This is not the same as a binary operation, although binary operations would appear
+     * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
+     * current state against 2 downrange structures (usually an op and a val).
+     */
+    protected void reduce() {
+        Object v1 = null, v2 = null;
+        Integer operator;
+        try {
+            operator = (Integer) stk.pop();
+            v1 = stk.pop();
+            v2 = stk.pop();
+
+     //      System.out.println("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
+
+            switch (operator) {
+                case ADD:
+                case SUB:
+                case DIV:
+                case MULT:
+                case MOD:
+                case EQUAL:
+                case NEQUAL:
+                case GTHAN:
+                case LTHAN:
+                case GETHAN:
+                case LETHAN:
+                case POWER:
+                    stk.push(doOperations(v2, operator, v1));
+                    break;
+
+                case AND:
+                    stk.push(((Boolean) v2) && ((Boolean) v1));
+                    break;
+
+                case OR:
+                    stk.push(((Boolean) v2) || ((Boolean) v1));
+                    break;
+
+                case CHOR:
+                    if (!isEmpty(v2) || !isEmpty(v1)) {
+                        stk.clear();
+                        stk.push(!isEmpty(v2) ? v2 : v1);
+                        return;
+                    }
+                    else stk.push(null);
+                    break;
+
+                case REGEX:
+                    stk.push(java.util.regex.Pattern.compile(java.lang.String.valueOf(v1)).matcher(java.lang.String.valueOf(v2)).matches());
+                    break;
+
+                case INSTANCEOF:
+                    if (v1 instanceof Class)
+                        stk.push(((Class) v1).isInstance(v2));
+                    else
+                        stk.push(currentThread().getContextClassLoader().loadClass(java.lang.String.valueOf(v1)).isInstance(v2));
+
+                    break;
+
+                case CONVERTABLE_TO:
+                    if (v1 instanceof Class)
+                        stk.push(org.mvel.DataConversion.canConvert(v2.getClass(), (Class) v1));
+                    else
+                        stk.push(org.mvel.DataConversion.canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(java.lang.String.valueOf(v1))));
+                    break;
+
+                case CONTAINS:
+                    stk.push(containsCheck(v2, v1));
+                    break;
+
+                case BW_AND:
+                    stk.push(asInt(v2) & asInt(v1));
+                    break;
+
+                case BW_OR:
+                    stk.push(asInt(v2) | asInt(v1));
+                    break;
+
+                case BW_XOR:
+                    stk.push(asInt(v2) ^ asInt(v1));
+                    break;
+
+                case BW_SHIFT_LEFT:
+                    stk.push(asInt(v2) << asInt(v1));
+                    break;
+
+                case BW_USHIFT_LEFT:
+                    int iv2 = asInt(v2);
+                    if (iv2 < 0) iv2 *= -1;
+                    stk.push(iv2 << asInt(v1));
+                    break;
+
+                case BW_SHIFT_RIGHT:
+                    stk.push(asInt(v2) >> asInt(v1));
+                    break;
+
+                case BW_USHIFT_RIGHT:
+                    stk.push(asInt(v2) >>> asInt(v1));
+                    break;
+
+                case STR_APPEND:
+                    stk.push(new StringAppender(java.lang.String.valueOf(v2)).append(java.lang.String.valueOf(v1)).toString());
+                    break;
+
+                case SOUNDEX:
+                    stk.push(Soundex.soundex(java.lang.String.valueOf(v1)).equals(Soundex.soundex(java.lang.String.valueOf(v2))));
+                    break;
+
+                case SIMILARITY:
+                    stk.push(similarity(java.lang.String.valueOf(v1), java.lang.String.valueOf(v2)));
+                    break;
+
+            }
+            //      }
+        }
+        catch (ClassCastException e) {
+            if ((fields & ASTNode.LOOKAHEAD) == 0) {
+                /**
+                 * This will allow for some developers who like messy expressions to compileAccessor
+                 * away with some messy constructs like: a + b < c && e + f > g + q instead
+                 * of using brackets like (a + b < c) && (e + f > g + q)
+                 */
+
+                fields |= ASTNode.LOOKAHEAD;
+
+                ASTNode tk = nextToken();
+                if (tk != null) {
+                    stk.push(v1, nextToken(), tk.getOperator());
+
+                    reduce();
+                    return;
+                }
+            }
+            throw new CompileException("syntax error or incomptable types (left=" +
+                    (v1 != null ? v1.getClass().getName() : "null") + ", right=" +
+                    (v2 != null ? v2.getClass().getName() : "null") + ")", expr, cursor, e);
+
+        }
+        catch (Exception e) {
+            throw new CompileException("failed to subEval expression", e);
+        }
+
+    }
+
+    private static int asInt(final Object o) {
+        return (Integer) o;
     }
 }

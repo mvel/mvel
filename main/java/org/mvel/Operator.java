@@ -19,16 +19,25 @@
 package org.mvel;
 
 public interface Operator {
+/**
+     * The index positions of the operator precedence values
+     * correspond to the actual operator itself. So ADD is PTABLE[0],
+     * SUB is PTABLE[1] and so on.
+     */
+    public static final int[] PTABLE = {
+            0, 0, 1, 1, 1, 2
+    };
+
     public static final int ADD = 0;
     public static final int SUB = 1;
     public static final int MULT = 2;
     public static final int DIV = 3;
     public static final int MOD = 4;
-    public static final int LTHAN = 5;
-    public static final int GTHAN = 6;
-    public static final int LETHAN = 7;
-    public static final int GETHAN = 8;
-    public static final int POWER = 9;
+    public static final int POWER = 5;
+    public static final int LTHAN = 6;
+    public static final int GTHAN = 7;
+    public static final int LETHAN = 8;
+    public static final int GETHAN = 9;
 
     public static final int EQUAL = 10;
     public static final int NEQUAL = 11;
