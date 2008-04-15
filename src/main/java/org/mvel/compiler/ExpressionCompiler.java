@@ -21,21 +21,12 @@ package org.mvel.compiler;
 import org.mvel.CompileException;
 import org.mvel.Operator;
 import org.mvel.ParserContext;
-import static org.mvel.Soundex.soundex;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
 import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
-import static org.mvel.util.ParseTools.doOperations;
-import static org.mvel.util.PropertyTools.isEmpty;
-import static org.mvel.util.PropertyTools.similarity;
-import org.mvel.util.Stack;
-import org.mvel.util.StringAppender;
-
-import static java.lang.String.valueOf;
-import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
     //private final Stack stk = new ExecutionStack();

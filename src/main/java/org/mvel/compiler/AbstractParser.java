@@ -19,16 +19,14 @@
 package org.mvel.compiler;
 
 import org.mvel.*;
-import org.mvel.integration.VariableResolverFactory;
-import org.mvel.debug.DebugTools;
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
+import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
-import org.mvel.util.PropertyTools;
 import org.mvel.util.StringAppender;
 
 import java.io.Serializable;
@@ -580,7 +578,7 @@ public class AbstractParser implements Serializable {
                                 }
                             }
                             else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
-                                return createToken(expr, start, cursor++ + 1, fields);
+                                return createOperator(expr, start, cursor++ + 1, fields);
                             }
                             else if ((cursor - 1) != 0 || (!isDigit(lookBehind())) && isDigit(lookAhead())) {
                                 cursor++;
@@ -618,11 +616,9 @@ public class AbstractParser implements Serializable {
                                 /**
                                  * Handle single line comments.
                                  */
-                                // while (cursor != length && expr[cursor] != '\n') cursor++;
 
                                 captureToEOL();
 
-                                //                             if (debugSymbols) {
                                 line = pCtx.getLineCount();
 
                                 skipWhitespaceWithLineAccounting();
@@ -635,10 +631,6 @@ public class AbstractParser implements Serializable {
                                 lastWasComment = true;
 
                                 pCtx.setLineCount(line);
-                                //                              }
-                                //                               else if (cursor != length) {
-                                //                                  skipWhitespace();
-                                //                              }
 
                                 if ((start = cursor) >= length) return null;
 
@@ -698,7 +690,7 @@ public class AbstractParser implements Serializable {
                         case ':':
                         case '^':
                         case '%': {
-                            return createToken(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1, fields);
                         }
 
                         case '(': {
@@ -875,9 +867,7 @@ public class AbstractParser implements Serializable {
 
                         case '|': {
                             if (expr[cursor++ + 1] == '|') {
-                                //         return createToken(expr, start, ++cursor, fields);
                                return new OperatorNode(OPERATORS.get(new String(expr, start, ++cursor -start)));
-
                             }
                             else {
                                 return createOperator(expr, start, cursor, fields);

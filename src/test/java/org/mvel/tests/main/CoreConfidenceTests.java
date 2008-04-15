@@ -2611,9 +2611,9 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testHigherOrderMathTest4() {
-        String ex = "(100 * 50) * 20 / 30";
+        String ex = "(100 * 50) * 20 / 30 * 2";
     //    System.out.println("Expression: " + ex);
-        assertEquals((100d * 50d) * 20d / 30d, test(ex));
+        assertEquals((100d * 50d) * 20d / 30d * 2d, test(ex));
     }
 
 
