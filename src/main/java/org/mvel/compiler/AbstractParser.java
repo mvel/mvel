@@ -26,6 +26,7 @@ import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
+import org.mvel.util.PropertyTools;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -872,8 +873,7 @@ public class AbstractParser implements Serializable {
                         case '|': {
                             if (expr[cursor++ + 1] == '|') {
                                 //         return createToken(expr, start, ++cursor, fields);
-
-                                return new OperatorNode(OPERATORS.get(subset(expr, start, ++cursor - start)));
+                               return new OperatorNode(OPERATORS.get(new String(expr, start, ++cursor -start)));
 
                             }
                             else {
@@ -896,8 +896,6 @@ public class AbstractParser implements Serializable {
                             else {
                                 if (expr[cursor] == '=') cursor++;
                                 return createOperator(expr, start, cursor, fields);
-
-                                //   return new OperatorNode(OPERATORS.get(subset(expr, start, cursor - start)));
                             }
 
                         case '!': {

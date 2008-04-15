@@ -1984,6 +1984,13 @@ public class CoreConfidenceTests extends AbstractTest {
         assertTrue((Boolean) test("5 > 6 && 2 < 1 || 10 > 9"));
     }
 
+    public void testPrecedenceOrder1() {
+        String ex = "50 > 60 && 20 < 10 || 100 > 90";
+        System.out.println("Expression: " + ex);
+
+        assertTrue((Boolean) MVEL.eval(ex));
+    }
+
     @SuppressWarnings({"unchecked"})
     public void testDifferentImplSameCompile() {
         Serializable compiled = compileExpression("a.funMap.hello");

@@ -21,11 +21,11 @@ package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
+import static org.mvel.Operator.PTABLE;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.Substatement;
 import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.EndWithValue;
-import org.mvel.debug.DebugTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
@@ -35,6 +35,7 @@ import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isEmpty;
 import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.StringAppender;
+import org.mvel.debug.DebugTools;
 
 import static java.lang.String.valueOf;
 import static java.lang.Thread.currentThread;
@@ -61,6 +62,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
             cursor = 0;
 
+            System.out.println("exec{" + new String(expr) + "}");
             parseAndExecuteInterpreted();
 
             if (parserContext != null
@@ -89,6 +91,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
         }
     }
 
+    private Object holdOverRegister;
 
     /**
      * Main interpreter loop.
@@ -96,7 +99,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
     private void parseAndExecuteInterpreted() {
         ASTNode tk = null;
         int operator;
-        Object holdOverRegister = null;
+        //   Object holdOverRegister = null;
 
         lastWasIdentifier = false;
 
@@ -143,74 +146,12 @@ public class MVELInterpretedRuntime extends AbstractParser {
                     continue;
                 }
 
-                switch (operator = tk.getOperator()) {
-                    case AND:
-                        reduceRight();
-
-                        if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
-                            if (unwindStatement(operator)) {
-                                return;
-                            }
-                            else {
-                                stk.clear();
-                                continue;
-                            }
-                        }
-                        else {
-                            stk.discard();
-                            continue;
-                        }
-
-                    case OR:
-                        reduceRight();
-
-                        if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
-                            if (unwindStatement(operator)) {
-                                return;
-                            }
-                            else {
-                                stk.clear();
-                                continue;
-                            }
-                        }
-                        else {
-                            stk.discard();
-                            continue;
-                        }
-
-                    case TERNARY:
-                        if (!(Boolean) stk.pop()) {
-                            stk.clear();
-
-                            while ((tk = nextToken()) != null && !tk.isOperator(Operator.TERNARY_ELSE)) {
-                                //nothing
-                            }
-
-                            continue;
-                        }
-
-
-                    case TERNARY_ELSE:
+                switch (procBooleanOperator(operator = tk.getOperator())) {
+                    case -1:
+                        return;
+                    case 0:
                         continue;
-
-                    case END_OF_STMT:
-                        /**
-                         * Assignments are a special scenario for dealing with the stack.  Assignments are basically like
-                         * held-over failures that basically kickstart the parser when an assignment operator is is
-                         * encountered.  The originating token is captured, and the the parser is told to march on.  The
-                         * resultant value on the stack is then used to populate the target variable.
-                         *
-                         * The other scenario in which we don't want to wipe the stack, is when we hit the end of the
-                         * statement, because that top stack value is the value we want back from the parser.
-                         */
-
-                        if (!hasNoMore()) {
-                            holdOverRegister = stk.pop();
-                            stk.clear();
-                        }
-
-                        continue;
-
+                    case 1:
                 }
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
@@ -251,49 +192,136 @@ public class MVELInterpretedRuntime extends AbstractParser {
         return operator < 6;
     }
 
+    private int procBooleanOperator(int operator) {
+        switch (operator) {
+            case AND:
+                reduceRight();
+
+                if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
+                    if (unwindStatement(operator)) {
+                        return -1;
+                    }
+                    else {
+                        stk.clear();
+                        return 0;
+                    }
+                }
+                else {
+                    stk.discard();
+                    return 0;
+                }
+
+            case OR:
+                reduceRight();
+
+                if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
+                    if (unwindStatement(operator)) {
+                        return -1;
+                    }
+                    else {
+                        stk.clear();
+                        return 0;
+                    }
+                }
+                else {
+                    stk.discard();
+                    return 0;
+                }
+
+            case TERNARY:
+                if (!(Boolean) stk.pop()) {
+                    stk.clear();
+
+                    ASTNode tk;
+                    while ((tk = nextToken()) != null && !tk.isOperator(Operator.TERNARY_ELSE)) {
+                        //nothing
+                    }
+
+                    return 0;
+                }
+
+
+            case TERNARY_ELSE:
+                return 0;
+
+            case END_OF_STMT:
+                /**
+                 * Assignments are a special scenario for dealing with the stack.  Assignments are basically like
+                 * held-over failures that basically kickstart the parser when an assignment operator is is
+                 * encountered.  The originating token is captured, and the the parser is told to march on.  The
+                 * resultant value on the stack is then used to populate the target variable.
+                 *
+                 * The other scenario in which we don't want to wipe the stack, is when we hit the end of the
+                 * statement, because that top stack value is the value we want back from the parser.
+                 */
+
+                if (!hasNoMore()) {
+                    holdOverRegister = stk.pop();
+                    stk.clear();
+                }
+
+                return 0;
+
+        }
+
+        return 1;
+    }
+
     private void arithmeticFunctionReduction(int operator) {
         ASTNode tk2;
         int operator2;
 
         boolean x = false;
+
         /**
          * If the next token is an operator, we check to see if it has a higher
          * precdence.
          */
 
-        if ((tk2 = nextToken()) != null && tk2.isOperator()
-                && isArithmeticOperator(operator2 = tk2.getOperator())
-                && (Operator.PTABLE[operator2] > Operator.PTABLE[operator])) {
 
-            do {
-                dStack.push(tk2.getOperator(), nextToken().getReducedValue(ctx, ctx, variableFactory));
-                if (x = !x)
-                    reduceRightXSwap(); // r
-                else
-                    reduceRightXXSwap();
+        if ((tk2 = nextToken()) != null && tk2.isOperator()) {
+            if (isArithmeticOperator(operator2 = tk2.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
+                do {
+                    dStack.push(tk2.getOperator(), nextToken().getReducedValue(ctx, ctx, variableFactory));
+                    if (x = !x)
+                        reduceRightXSwap(); // reduce from the RHS and XSWAP
+                    else
+                        reduceRightXXSwap(); // reduce from the RHS and XXSWAP
+                }
+                while (((tk2 = nextToken()) != null && tk2.isOperator()
+                        && isArithmeticOperator(operator2 = tk2.getOperator())
+                        && (operator2 > operator)));
+
+                xswap(); // XSWAP the stack.
+                reduce(); // reduce the stack.
+
+                // Record the current operator value to the stack.
+                if (tk2 != null) stk.push(operator2);
+
+                // Evaluate the next token and push the value to the stack.
+                if ((tk2 = nextToken()) != null) {
+                    stk.push(tk2.getReducedValue(ctx, ctx, variableFactory));
+                }
             }
-            while (((tk2 = nextToken()) != null && tk2.isOperator()
-                    && isArithmeticOperator(operator2 = tk2.getOperator())
-                    && (operator2 > operator)));
-
-            xswap();
-            reduce();
-
-            if (tk2 != null) stk.push(operator2);
-
-            if ((tk2 = nextToken()) != null) {
-                stk.push(tk2.getReducedValue(ctx, ctx, variableFactory));
+            else {
+                reduce();
+                splitAccumulator.push(tk2);
             }
         }
         else if (tk2 != null) {
-            reduce();
+            reduce();  // reduce the stack.
             operator = tk2.getOperator();
 
+            // if there is another token, then this statement must continue
+            // push the values down and reduce.
             if ((tk2 = nextToken()) != null) {
                 stk.push(tk2.getReducedValue(ctx, ctx, variableFactory), operator);
                 reduce();
+
             }
 
+            // while any values remain on the stack
+            // keep XSWAPing and reducing, until there is nothing left.
             while (stk.size() > 1) {
                 xswap();
                 reduce();
@@ -305,6 +333,14 @@ public class MVELInterpretedRuntime extends AbstractParser {
         }
         else {
             reduce();
+
+            // while any values remain on the stack
+            // keep XSWAPing and reducing, until there is nothing left.
+            while (stk.size() > 1) {
+                xswap();
+                reduce();
+            }
+
         }
     }
 
@@ -384,7 +420,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
             v1 = stk.pop();
             v2 = stk.pop();
 
-   //         System.out.println("reduce:" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1);
+            System.out.println("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
 
             switch (operator) {
                 case ADD:
@@ -524,6 +560,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
         switch (operator) {
             case Operator.AND:
                 while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT) && !tk.isOperator(Operator.OR)) {
+                    System.out.println(tk.getClass());
                     //nothing
                 }
                 break;
