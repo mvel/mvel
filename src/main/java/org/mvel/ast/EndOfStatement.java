@@ -25,11 +25,7 @@ import org.mvel.integration.VariableResolverFactory;
  * @author Christopher Brock
  */
 public class EndOfStatement extends ASTNode {
-    private static final char[] LIT = new char[]{';'};
-
     public EndOfStatement() {
-        // super(LIT, OPERATOR);
-        this.name = LIT;
         this.literal = getOperator();
     }
 

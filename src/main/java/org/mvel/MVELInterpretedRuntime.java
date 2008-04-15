@@ -19,9 +19,7 @@
 
 package org.mvel;
 
-import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
-import static org.mvel.Operator.PTABLE;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.Substatement;
 import org.mvel.compiler.AbstractParser;
@@ -31,26 +29,17 @@ import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 import org.mvel.util.ExecutionStack;
-import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.isEmpty;
-import static org.mvel.util.PropertyTools.similarity;
-import org.mvel.util.StringAppender;
-import org.mvel.debug.DebugTools;
+import static org.mvel.util.ParseTools.findClassImportResolverFactory;
+import static org.mvel.util.ParseTools.handleParserEgress;
 
-import static java.lang.String.valueOf;
-import static java.lang.Thread.currentThread;
 import java.math.BigDecimal;
 import java.util.Map;
-import static java.util.regex.Pattern.compile;
 
 
 @SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class MVELInterpretedRuntime extends AbstractParser {
     private boolean returnBigDecimal = false;
     private int roundingMode = BigDecimal.ROUND_HALF_DOWN;
-
-    private Object ctx;
-    private VariableResolverFactory variableFactory;
 
     Object parse() {
         setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);
@@ -62,7 +51,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
             cursor = 0;
 
-            System.out.println("exec{" + new String(expr) + "}");
             parseAndExecuteInterpreted();
 
             if (parserContext != null
@@ -187,11 +175,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
         }
     }
 
-    private static boolean isArithmeticOperator(int operator) {
-        //  return operator == ADD || operator == MULT || operator == SUB || operator == DIV;
-        return operator < 6;
-    }
-
     private int procBooleanOperator(int operator) {
         switch (operator) {
             case AND:
@@ -267,83 +250,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
         return 1;
     }
 
-    private void arithmeticFunctionReduction(int operator) {
-        ASTNode tk2;
-        int operator2;
-
-        boolean x = false;
-
-        /**
-         * If the next token is an operator, we check to see if it has a higher
-         * precdence.
-         */
-
-
-        if ((tk2 = nextToken()) != null && tk2.isOperator()) {
-            if (isArithmeticOperator(operator2 = tk2.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
-                do {
-                    dStack.push(tk2.getOperator(), nextToken().getReducedValue(ctx, ctx, variableFactory));
-                    if (x = !x)
-                        reduceRightXSwap(); // reduce from the RHS and XSWAP
-                    else
-                        reduceRightXXSwap(); // reduce from the RHS and XXSWAP
-                }
-                while (((tk2 = nextToken()) != null && tk2.isOperator()
-                        && isArithmeticOperator(operator2 = tk2.getOperator())
-                        && (operator2 > operator)));
-
-                xswap(); // XSWAP the stack.
-                reduce(); // reduce the stack.
-
-                // Record the current operator value to the stack.
-                if (tk2 != null) stk.push(operator2);
-
-                // Evaluate the next token and push the value to the stack.
-                if ((tk2 = nextToken()) != null) {
-                    stk.push(tk2.getReducedValue(ctx, ctx, variableFactory));
-                }
-            }
-            else {
-                reduce();
-                splitAccumulator.push(tk2);
-            }
-        }
-        else if (tk2 != null) {
-            reduce();  // reduce the stack.
-            operator = tk2.getOperator();
-
-            // if there is another token, then this statement must continue
-            // push the values down and reduce.
-            if ((tk2 = nextToken()) != null) {
-                stk.push(tk2.getReducedValue(ctx, ctx, variableFactory), operator);
-                reduce();
-
-            }
-
-            // while any values remain on the stack
-            // keep XSWAPing and reducing, until there is nothing left.
-            while (stk.size() > 1) {
-                xswap();
-                reduce();
-            }
-
-            /**
-             * Push tk2 back into the accumulator.
-             */
-        }
-        else {
-            reduce();
-
-            // while any values remain on the stack
-            // keep XSWAPing and reducing, until there is nothing left.
-            while (stk.size() > 1) {
-                xswap();
-                reduce();
-            }
-
-        }
-    }
-
     /**
      * This method peforms the equivilent of an XSWAP operation to flip the operator
      * over to the top of the stack, and loads the stored values on the d-stack onto
@@ -360,192 +266,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
         reduce();
     }
 
-    /**
-     * A more efficient RHS reduction, to avoid the need
-     * to XSWAP directly on the stack.
-     */
-    private void reduceRightXSwap() {
-        Object o = stk.pop();
-        Object o2 = stk.pop();
-
-        stk.push(o);
-        stk.push(dStack.pop());
-        stk.push(o2);
-        stk.push(dStack.pop());
-        reduce();
-    }
-
-    /**
-     * Same as reduceRightXSwap, except this is an inverted
-     * operator, or XXSWAP.
-     */
-    private void reduceRightXXSwap() {
-        Object o = stk.pop();
-        Object o2 = stk.pop();
-
-        stk.push(o2);
-        stk.push(dStack.pop());
-        stk.push(o);
-        stk.push(dStack.pop());
-        reduce();
-    }
-
-    /**
-     * XSWAP.
-     */
-    private void xswap() {
-        Object o = stk.pop();
-        Object o2 = stk.pop();
-        stk.push(o);
-        stk.push(o2);
-    }
-
     private boolean hasNoMore() {
         return cursor >= length;
-    }
-
-    /**
-     * This method is called when we reach the point where we must subEval a trinary operation in the expression.
-     * (ie. val1 op val2).  This is not the same as a binary operation, although binary operations would appear
-     * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
-     * current state against 2 downrange structures (usually an op and a val).
-     */
-    private void reduce() {
-
-        Object v1 = null, v2 = null;
-        Integer operator;
-        try {
-
-            operator = (Integer) stk.pop();
-            v1 = stk.pop();
-            v2 = stk.pop();
-
-            System.out.println("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
-
-            switch (operator) {
-                case ADD:
-                case SUB:
-                case DIV:
-                case MULT:
-                case MOD:
-                case EQUAL:
-                case NEQUAL:
-                case GTHAN:
-                case LTHAN:
-                case GETHAN:
-                case LETHAN:
-                case POWER:
-                    stk.push(doOperations(v2, operator, v1));
-                    break;
-
-                case CHOR:
-                    if (!isEmpty(v2) || !isEmpty(v1)) {
-                        stk.clear();
-                        stk.push(!isEmpty(v2) ? v2 : v1);
-                        return;
-                    }
-                    else stk.push(null);
-                    break;
-
-                case REGEX:
-                    stk.push(compile(valueOf(v1)).matcher(valueOf(v2)).matches());
-                    break;
-
-                case INSTANCEOF:
-                    if (v1 instanceof Class)
-                        stk.push(((Class) v1).isInstance(v2));
-                    else
-                        stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
-
-                    break;
-
-                case CONVERTABLE_TO:
-                    if (v1 instanceof Class)
-                        stk.push(canConvert(v2.getClass(), (Class) v1));
-                    else
-                        stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
-                    break;
-
-                case CONTAINS:
-                    stk.push(containsCheck(v2, v1));
-                    break;
-
-                case BW_AND:
-                    stk.push(asInt(v2) & asInt(v1));
-                    break;
-
-                case BW_OR:
-                    stk.push(asInt(v2) | asInt(v1));
-                    break;
-
-                case BW_XOR:
-                    stk.push(asInt(v2) ^ asInt(v1));
-                    break;
-
-                case BW_SHIFT_LEFT:
-                    stk.push(asInt(v2) << asInt(v1));
-                    break;
-
-                case BW_USHIFT_LEFT:
-                    int iv2 = asInt(v2);
-                    if (iv2 < 0) iv2 *= -1;
-                    stk.push(iv2 << asInt(v1));
-                    break;
-
-                case BW_SHIFT_RIGHT:
-                    stk.push(asInt(v2) >> asInt(v1));
-                    break;
-
-                case BW_USHIFT_RIGHT:
-                    stk.push(asInt(v2) >>> asInt(v1));
-                    break;
-
-                case STR_APPEND:
-                    stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
-                    break;
-
-                case SOUNDEX:
-                    stk.push(Soundex.soundex(valueOf(v1)).equals(Soundex.soundex(valueOf(v2))));
-                    break;
-
-                case SIMILARITY:
-                    stk.push(similarity(valueOf(v1), valueOf(v2)));
-                    break;
-
-            }
-            //      }
-        }
-        catch (ClassCastException e) {
-            if ((fields & ASTNode.LOOKAHEAD) == 0) {
-                /**
-                 * This will allow for some developers who like messy expressions to compileAccessor
-                 * away with some messy constructs like: a + b < c && e + f > g + q instead
-                 * of using brackets like (a + b < c) && (e + f > g + q)
-                 */
-
-                fields |= ASTNode.LOOKAHEAD;
-
-                ASTNode tk = nextToken();
-                if (tk != null) {
-                    stk.push(v1, nextToken(), tk.getOperator());
-
-                    reduce();
-                    return;
-                }
-            }
-            throw new CompileException("syntax error or incomptable types (left=" +
-                    (v1 != null ? v1.getClass().getName() : "null") + ", right=" +
-                    (v2 != null ? v2.getClass().getName() : "null") + ")", expr, cursor, e);
-
-        }
-        catch (Exception e) {
-            throw new CompileException("failed to subEval expression", e);
-        }
-
-    }
-
-    private static int asInt(final Object o) {
-        return (Integer) o;
     }
 
     /**
@@ -560,7 +282,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
         switch (operator) {
             case Operator.AND:
                 while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT) && !tk.isOperator(Operator.OR)) {
-                    System.out.println(tk.getClass());
                     //nothing
                 }
                 break;

@@ -38,7 +38,7 @@ import static java.lang.String.valueOf;
 import java.util.regex.Pattern;
 
 public class ExpressionCompiler extends AbstractParser {
-    private final Stack stk = new ExecutionStack();
+    //private final Stack stk = new ExecutionStack();
 
     private Class returnType;
 
@@ -85,15 +85,17 @@ public class ExpressionCompiler extends AbstractParser {
         ASTNode tkLA;
         ASTNode tkLA2;
 
-
+        int op;
+        
         ASTLinkedList astBuild = new ASTLinkedList();
+        stk = new ExecutionStack();
+        dStack = new ExecutionStack();
 
         boolean firstLA;
 
         if (pCtx == null) pCtx = getParserContext();
 
         debugSymbols = pCtx.isDebugSymbols();
-
 
         try {
             if (verifying) {
@@ -135,14 +137,17 @@ public class ExpressionCompiler extends AbstractParser {
                          * reduction.
                          */
                         if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()) {
-                            stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), tkOp.getLiteralValue());
+                            stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), op = tkOp.getOperator());
 
                             /**
                              * Reduce the token now.
                              */
-
-
-                            reduce();
+                            if (isArithmeticOperator(op)) {
+                                arithmeticFunctionReduction(op);
+                            }
+                            else {
+                                reduce();
+                            }
 
                             firstLA = true;
 
@@ -155,10 +160,15 @@ public class ExpressionCompiler extends AbstractParser {
                                     break;
                                 }
                                 else if ((tkLA2 = nextTokenSkipSymbols()) != null && tkLA2.isLiteral()) {
+                                    stk.push(tkLA2.getLiteralValue(), op = tkOp2.getOperator());
 
-                                    stk.push(tkLA2.getLiteralValue(), tkOp2.getLiteralValue());
-
-                                    reduce();
+                                    if (isArithmeticOperator(op)) {
+                                        arithmeticFunctionReduction(op);
+                                    }
+                                    else {
+                                        reduce();
+                                    }
+                                    
                                     firstLA = false;
                                     literalOnly = false;
                                 }
@@ -214,7 +224,6 @@ public class ExpressionCompiler extends AbstractParser {
                 astBuild.addTokenNode(verify(pCtx, tk));
             }
 
-
             astBuild.finish();
 
             if (verifying) {
@@ -235,15 +244,15 @@ public class ExpressionCompiler extends AbstractParser {
 
     }
 
-    private void pushDStack(Object o) {
-        if (dStack == null) this.dStack = new ExecutionStack();
-        dStack.push(o);
-    }
-
-    private void pushDStack(Object o1, Object o2) {
-        if (dStack == null) this.dStack = new ExecutionStack();
-        dStack.push(o1, o2);
-    }
+//    private void pushDStack(Object o) {
+//        if (dStack == null) this.dStack = new ExecutionStack();
+//        dStack.push(o);
+//    }
+//
+//    private void pushDStack(Object o1, Object o2) {
+//        if (dStack == null) this.dStack = new ExecutionStack();
+//        dStack.push(o1, o2);
+//    }
 
 
     private static boolean isBooleanOperator(int operator) {
@@ -285,114 +294,113 @@ public class ExpressionCompiler extends AbstractParser {
         return tk;
     }
 
-
-    /**
-     * This method is called when we reach the point where we must subEval a trinary operation in the expression.
-     * (ie. val1 op val2).  This is not the same as a binary operation, although binary operations would appear
-     * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
-     * current state against 2 downrange structures (usually an op and a val).
-     */
-    private void reduce() {
-        Object v1 = null, v2 = null;
-        Integer operator;
-        try {
-            while (stk.size() > 1) {
-                operator = (Integer) stk.pop();
-                v1 = stk.pop();
-                v2 = stk.pop();
-
-                switch (operator) {
-                    case Operator.ADD:
-                    case Operator.SUB:
-                    case Operator.DIV:
-                    case Operator.MULT:
-                    case Operator.MOD:
-                    case Operator.EQUAL:
-                    case Operator.NEQUAL:
-                    case Operator.GTHAN:
-                    case Operator.LTHAN:
-                    case Operator.GETHAN:
-                    case Operator.LETHAN:
-                    case Operator.POWER:
-                        stk.push(doOperations(v2, operator, v1));
-                        break;
-
-                    case Operator.AND:
-                        stk.push(((Boolean) v2) && ((Boolean) v1));
-                        break;
-
-                    case Operator.OR:
-                        stk.push(((Boolean) v2) || ((Boolean) v1));
-                        break;
-
-                    case Operator.CHOR:
-                        if (!isEmpty(v2) || !isEmpty(v1)) {
-                            stk.clear();
-                            stk.push(!isEmpty(v2) ? v2 : v1);
-                            return;
-                        }
-                        else stk.push(null);
-                        break;
-
-                    case Operator.REGEX:
-                        stk.push(Pattern.compile(valueOf(v1)).matcher(valueOf(v2)).matches());
-                        break;
-
-                    case Operator.BW_AND:
-                        stk.push(asInt(v2) & asInt(v1));
-                        break;
-
-                    case Operator.BW_OR:
-                        stk.push(asInt(v2) | asInt(v1));
-                        break;
-
-                    case Operator.BW_XOR:
-                        stk.push(asInt(v2) ^ asInt(v1));
-                        break;
-
-                    case Operator.BW_SHIFT_LEFT:
-                        stk.push(asInt(v2) << asInt(v1));
-                        break;
-
-                    case Operator.BW_USHIFT_LEFT:
-                        int iv2 = asInt(v2);
-                        if (iv2 < 0) iv2 *= -1;
-                        stk.push(iv2 << asInt(v1));
-                        break;
-
-                    case Operator.BW_SHIFT_RIGHT:
-                        stk.push(asInt(v2) >> asInt(v1));
-                        break;
-
-                    case Operator.BW_USHIFT_RIGHT:
-                        stk.push(asInt(v2) >>> asInt(v1));
-                        break;
-
-                    case Operator.STR_APPEND:
-                        stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
-                        break;
-
-                    case Operator.SOUNDEX:
-                        stk.push(soundex(valueOf(v1)).equals(soundex(valueOf(v2))));
-                        break;
-
-                    case Operator.SIMILARITY:
-                        stk.push(similarity(valueOf(v1), valueOf(v2)));
-                        break;
-                }
-            }
-        }
-        catch (ClassCastException e) {
-            throw new CompileException("syntax error or incomptable types (left=" +
-                    (v1 != null ? v1.getClass().getName() : "null") + ", right=" +
-                    (v2 != null ? v2.getClass().getName() : "null") + ")", expr, cursor, e);
-
-        }
-        catch (Exception e) {
-            throw new CompileException("failed to subEval expression: <<" + new String(expr) + ">>", e);
-        }
-
-    }
+//    /**
+//     * This method is called when we reach the point where we must subEval a trinary operation in the expression.
+//     * (ie. val1 op val2).  This is not the same as a binary operation, although binary operations would appear
+//     * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
+//     * current state against 2 downrange structures (usually an op and a val).
+//     */
+//    protected void reduce() {
+//        Object v1 = null, v2 = null;
+//        Integer operator;
+//        try {
+//            while (stk.size() > 1) {
+//                operator = (Integer) stk.pop();
+//                v1 = stk.pop();
+//                v2 = stk.pop();
+//
+//                switch (operator) {
+//                    case Operator.ADD:
+//                    case Operator.SUB:
+//                    case Operator.DIV:
+//                    case Operator.MULT:
+//                    case Operator.MOD:
+//                    case Operator.EQUAL:
+//                    case Operator.NEQUAL:
+//                    case Operator.GTHAN:
+//                    case Operator.LTHAN:
+//                    case Operator.GETHAN:
+//                    case Operator.LETHAN:
+//                    case Operator.POWER:
+//                        stk.push(doOperations(v2, operator, v1));
+//                        break;
+//
+//                    case Operator.AND:
+//                        stk.push(((Boolean) v2) && ((Boolean) v1));
+//                        break;
+//
+//                    case Operator.OR:
+//                        stk.push(((Boolean) v2) || ((Boolean) v1));
+//                        break;
+//
+//                    case Operator.CHOR:
+//                        if (!isEmpty(v2) || !isEmpty(v1)) {
+//                            stk.clear();
+//                            stk.push(!isEmpty(v2) ? v2 : v1);
+//                            return;
+//                        }
+//                        else stk.push(null);
+//                        break;
+//
+//                    case Operator.REGEX:
+//                        stk.push(Pattern.compile(valueOf(v1)).matcher(valueOf(v2)).matches());
+//                        break;
+//
+//                    case Operator.BW_AND:
+//                        stk.push(asInt(v2) & asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_OR:
+//                        stk.push(asInt(v2) | asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_XOR:
+//                        stk.push(asInt(v2) ^ asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_SHIFT_LEFT:
+//                        stk.push(asInt(v2) << asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_USHIFT_LEFT:
+//                        int iv2 = asInt(v2);
+//                        if (iv2 < 0) iv2 *= -1;
+//                        stk.push(iv2 << asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_SHIFT_RIGHT:
+//                        stk.push(asInt(v2) >> asInt(v1));
+//                        break;
+//
+//                    case Operator.BW_USHIFT_RIGHT:
+//                        stk.push(asInt(v2) >>> asInt(v1));
+//                        break;
+//
+//                    case Operator.STR_APPEND:
+//                        stk.push(new StringAppender(valueOf(v2)).append(valueOf(v1)).toString());
+//                        break;
+//
+//                    case Operator.SOUNDEX:
+//                        stk.push(soundex(valueOf(v1)).equals(soundex(valueOf(v2))));
+//                        break;
+//
+//                    case Operator.SIMILARITY:
+//                        stk.push(similarity(valueOf(v1), valueOf(v2)));
+//                        break;
+//                }
+//            }
+//        }
+//        catch (ClassCastException e) {
+//            throw new CompileException("syntax error or incomptable types (left=" +
+//                    (v1 != null ? v1.getClass().getName() : "null") + ", right=" +
+//                    (v2 != null ? v2.getClass().getName() : "null") + ")", expr, cursor, e);
+//
+//        }
+//        catch (Exception e) {
+//            throw new CompileException("failed to subEval expression: <<" + new String(expr) + ">>", e);
+//        }
+//
+//    }
 
     private static int asInt(final Object o) {
         return (Integer) o;

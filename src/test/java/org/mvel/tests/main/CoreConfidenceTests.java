@@ -2600,20 +2600,20 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testHigherOrderMathTest2() {
         String ex = "100-500*200 + 500*800-400";
-        System.out.println("Expression: " + ex);
+     //   System.out.println("Expression: " + ex);
 
-        assertEquals(100 - 500 * 200 + 500 * 800 - 400, MVEL.eval(ex));
+        assertEquals(100 - 500 * 200 + 500 * 800 - 400, test(ex));
     }
 
     public void testHigherOrderMathTest3() {
         String ex =  "100-500*200*150 + 500*800-400";
-        assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, MVEL.eval(ex));
+        assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, test(ex));
     }
 
     public void testHigherOrderMathTest4() {
         String ex = "(100 * 50) * 20 / 30";
-        System.out.println("Expression: " + ex);
-        assertEquals((100d * 50d) * 20d / 30d, MVEL.eval(ex));
+    //    System.out.println("Expression: " + ex);
+        assertEquals((100d * 50d) * 20d / 30d, test(ex));
     }
 
 
