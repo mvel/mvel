@@ -140,8 +140,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
                 arithmeticFunctionReduction(operator);
-                // Don't remove the "stk.push(operator); ruduce();" code duplication.
-                // It results in 3 GOTO instructions in the bytecode vs. one.
             }
 
             if (holdOverRegister != null) {
@@ -212,7 +210,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
                     return 0;
                 }
-
 
             case TERNARY_ELSE:
                 return 0;

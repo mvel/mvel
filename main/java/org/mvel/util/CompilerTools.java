@@ -58,7 +58,6 @@ public class CompilerTools {
                         optimizedAst.addTokenNode(tkOp2);
                     }
                 }
-
                 else {
                     optimizedAst.addTokenNode(tk);
                     if (tk instanceof EndOfStatement) {
