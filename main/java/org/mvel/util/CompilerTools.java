@@ -40,8 +40,11 @@ public class CompilerTools {
                     optimizedAst.addTokenNode(tkOp);
                 }
                 else if (tkOp.isOperator() && tkOp.getOperator() < 12) {
-                    // handle math and equals
-                    BinaryOperation bo = new BinaryOperation(tkOp.getOperator(), tk, astLinkedList.nextNode());
+                    int op;
+                    int op2;
+
+                    BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode());
+
                     tkOp2 = null;
 
                     /**
@@ -49,8 +52,14 @@ public class CompilerTools {
                      * right here.
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                            && tkOp2.getFields() != -1 && tkOp2.getOperator() < 12) {
-                        bo = new BinaryOperation(((tkOp = tkOp2).getOperator()), bo, astLinkedList.nextNode());
+                            && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 12) {
+                        if (op2 > op) {
+                            bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
+                        }
+                        else {
+                            bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
+                        }
+                        tkOp = tkOp2;
                     }
                     optimizedAst.addTokenNode(bo);
 

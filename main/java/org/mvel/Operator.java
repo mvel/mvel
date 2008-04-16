@@ -25,7 +25,7 @@ public interface Operator {
      * SUB is PTABLE[1] and so on.
      */
     public static final int[] PTABLE = {
-            0, 0, 1, 1, 1, 2
+            0, 0, 1, 1, 1, 2, 3, 3, 3, 3, 3, 2, 2, 3, 3, 3
     };
 
     public static final int ADD = 0;
