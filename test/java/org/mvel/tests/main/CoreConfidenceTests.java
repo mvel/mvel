@@ -164,6 +164,24 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(5f * (0.95f / 2f), convert(test("five * (0.95 / 2)"), Float.class));
     }
 
+    public void testMath11() {
+        String expression = "10-5*7-3*8-6";
+        CompiledExpression expr = compileSimpleExpression( expression );
+        assertEquals(10-5*7-3*8-6, MVEL.executeExpression( expr ) );
+    }
+
+    public void testMath12() {
+        String expression = "(10-5)*7-3*(8-6)**3";
+        CompiledExpression expr = compileSimpleExpression( expression );
+        assertEquals(11, MVEL.executeExpression( expr ) );
+    }
+
+    public void testMath13() {
+        String expression = "3** (2)*5**2";
+        CompiledExpression expr = compileSimpleExpression( expression );
+        assertEquals(225, MVEL.executeExpression( expr ) );
+    }
+
     public void testPowerOf() {
         assertEquals(25, test("5 ** 2"));
     }
@@ -3034,6 +3052,16 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, testCompiledSimple(ex, new HashMap()));
     }
 
+
+    /**
+     * @param expression
+     * @return
+     */
+    private CompiledExpression compileSimpleExpression(String expression) {
+        ExpressionCompiler compiler = new ExpressionCompiler( expression );
+        CompiledExpression expr = compiler.compile();
+        return expr;
+    }
 
 }
 
