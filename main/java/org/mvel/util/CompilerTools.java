@@ -3,6 +3,7 @@ package org.mvel.util;
 import org.mvel.ASTLinkedList;
 import org.mvel.ASTNode;
 import org.mvel.Operator;
+import static org.mvel.Operator.PTABLE;
 import org.mvel.ast.And;
 import org.mvel.ast.BinaryOperation;
 import org.mvel.ast.EndOfStatement;
@@ -53,7 +54,7 @@ public class CompilerTools {
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
                             && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 12) {
-                        if (op2 > op) {
+                        if (PTABLE[op2] > PTABLE[op]) {
                             bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
                         }
                         else {
