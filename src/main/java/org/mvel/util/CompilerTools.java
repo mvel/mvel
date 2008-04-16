@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 
 public class CompilerTools {
-
-
     /**
      * Optimize the AST, by reducing any stack-based-operations to dedicated nodes where possible.
      *
@@ -69,7 +67,11 @@ public class CompilerTools {
                 }
                 else if (tkOp.isOperator() && tkOp.getOperator() < 12) {
                     // handle math and equals
-                    BinaryOperation bo = new BinaryOperation(tkOp.getOperator(), tk, astLinkedList.nextNode());
+                    int op;
+                    int op2;
+
+                    BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode());
+
                     tkOp2 = null;
 
                     /**
@@ -77,10 +79,17 @@ public class CompilerTools {
                      * right here.
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                            && tkOp2.getFields() != -1 && tkOp2.getOperator() < 12) {
-                        bo = new BinaryOperation(((tkOp = tkOp2).getOperator()), bo, astLinkedList.nextNode());
+                            && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 12) {
+                        if (op2 > op) {
+                            bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
+                        }
+                        else {
+                            bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
+                        }
+                        tkOp = tkOp2;
                     }
                     optimizedAst.addTokenNode(bo);
+
 
                     if (tkOp2 != null && tkOp2 != tkOp) {
                         optimizedAst.addTokenNode(tkOp2);
@@ -187,6 +196,24 @@ public class CompilerTools {
 
         return optimizedAst;
     }
+
+    private static BinaryOperation rebalanceEvalTree(BinaryOperation b) {
+        BinaryOperation root = b, right;
+
+        ExecutionStack stk = new ExecutionStack();
+        stk.push(b);
+        while (!stk.isEmpty()) {
+            b = (BinaryOperation) stk.pop();
+            right = b.getRightBinary();
+            if (right != null && b.isGreaterPrecedence(right)) {
+                System.out.println("right is greater");
+            }
+
+        }
+
+        return root;
+    }
+
 
     /**
      * Returns an ordered Map of all functions declared within an compiled script.

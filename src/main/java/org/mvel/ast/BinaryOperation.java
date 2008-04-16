@@ -20,6 +20,8 @@ package org.mvel.ast;
 
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.doOperations;
+import org.mvel.debug.DebugTools;
+import org.mvel.Operator;
 
 public class BinaryOperation extends ASTNode {
     private int operation;
@@ -34,7 +36,6 @@ public class BinaryOperation extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return doOperations(left.getReducedValueAccelerated(ctx, thisValue, factory), operation, right.getReducedValueAccelerated(ctx, thisValue, factory));
-
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -62,7 +63,23 @@ public class BinaryOperation extends ASTNode {
         return right;
     }
 
+    public BinaryOperation getRightBinary() {
+        return right != null && right instanceof BinaryOperation ? (BinaryOperation) right : null;
+    }
+
     public void setRight(ASTNode right) {
         this.right = right;
+    }
+
+    public int getPrecedence() {
+        return Operator.PTABLE[operation];
+    }
+
+    public boolean isGreaterPrecedence(BinaryOperation o) {
+        return o.getPrecedence() > Operator.PTABLE[operation];
+    }
+
+    public String toString() {
+        return "(" + left.toString() + " [" + DebugTools.getOperatorName(operation) + "] " + right.toString() + ")";
     }
 }

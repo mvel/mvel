@@ -66,19 +66,9 @@ public class MVELRuntime {
                      * The consequence of this of course, is that it's not ideal to compile expressions with
                      * debugging symbols which you plan to use in a production enviroment.
                      */
-                    if (!debugger && hasDebuggerContext()) {
-                        debugger = true;
-                    }
-
-                    /**
-                     * If we're not debugging, we'll just skip over this.
-                     */
-                    if (debugger) {
-                        LineLabel label = (LineLabel) tk;
-                        DebuggerContext context = debuggerContext.get();
-
+                    if (debugger || (debugger = hasDebuggerContext())) {
                         try {
-                            context.checkBreak(label, variableFactory, expression);
+                            debuggerContext.get().checkBreak((LineLabel) tk, variableFactory, expression);
                         }
                         catch (NullPointerException e) {
                             // do nothing for now.  this isn't as calus as it seems.   
@@ -86,14 +76,9 @@ public class MVELRuntime {
                     }
                     continue;
                 }
-
-                if (stk.isEmpty()) {
+                else if (stk.isEmpty()) {
                     stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
                 }
-
-//                if (!tk.isOperator()) {
-//                    continue;
-//                }
 
                 switch (operator = tk.getOperator()) {
                     case NOOP:

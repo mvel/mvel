@@ -647,9 +647,7 @@ public class AbstractParser implements Serializable {
                                  * source will spawn a new compiler, and we need to sync this with the
                                  * parser context;
                                  */
-                                //                   if (debugSymbols) {
                                 line = pCtx.getLineCount();
-                                //                   }
 
                                 while (true) {
                                     cursor++;
@@ -657,9 +655,7 @@ public class AbstractParser implements Serializable {
                                      * Since multi-line comments may cross lines, we must keep track of any line-break
                                      * we encounter.
                                      */
-                                    //                       if (debugSymbols) {
                                     skipWhitespaceWithLineAccounting();
-                                    //                       }
 
                                     if (cursor == len) {
                                         throw new CompileException("unterminated block comment", expr, cursor);
@@ -672,7 +668,6 @@ public class AbstractParser implements Serializable {
                                     }
                                 }
 
-                                //                      if (debugSymbols) {
                                 pCtx.setLineCount(line);
 
                                 if (lastNode instanceof LineLabel) {
@@ -681,7 +676,6 @@ public class AbstractParser implements Serializable {
                                 }
 
                                 lastWasComment = true;
-                                //                      }
 
                                 continue;
                             }
@@ -769,7 +763,6 @@ public class AbstractParser implements Serializable {
                             char[] _subset = null;
                             if (singleToken) {
                                 int st;
-
 
                                 //String tokenStr = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st));
 
@@ -867,7 +860,7 @@ public class AbstractParser implements Serializable {
 
                         case '|': {
                             if (expr[cursor++ + 1] == '|') {
-                               return new OperatorNode(OPERATORS.get(new String(expr, start, ++cursor -start)));
+                                return new OperatorNode(OPERATORS.get(new String(expr, start, ++cursor - start)));
                             }
                             else {
                                 return createOperator(expr, start, cursor, fields);
@@ -1921,7 +1914,7 @@ public class AbstractParser implements Serializable {
             v1 = stk.pop();
             v2 = stk.pop();
 
-     //      System.out.println("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
+            //      System.out.println("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
 
             switch (operator) {
                 case ADD:
