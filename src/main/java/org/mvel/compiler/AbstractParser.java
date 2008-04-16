@@ -848,7 +848,6 @@ public class AbstractParser implements Serializable {
 
                             return lastNode;
 
-
                         case '&': {
                             if (expr[cursor++ + 1] == '&') {
                                 return createOperator(expr, start, ++cursor, fields);

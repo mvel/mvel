@@ -19,6 +19,7 @@
 package org.mvel.util;
 
 import org.mvel.Operator;
+import static org.mvel.Operator.PTABLE;
 import org.mvel.compiler.CompiledExpression;
 import org.mvel.ast.*;
 
@@ -80,7 +81,7 @@ public class CompilerTools {
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
                             && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 12) {
-                        if (op2 > op) {
+                        if (PTABLE[op2] > PTABLE[op]) {
                             bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
                         }
                         else {
@@ -88,8 +89,8 @@ public class CompilerTools {
                         }
                         tkOp = tkOp2;
                     }
-                    optimizedAst.addTokenNode(bo);
 
+                    optimizedAst.addTokenNode(bo);
 
                     if (tkOp2 != null && tkOp2 != tkOp) {
                         optimizedAst.addTokenNode(tkOp2);
@@ -125,8 +126,8 @@ public class CompilerTools {
             /**
              * Perform a second pass optimization for boolean conditions.
              */
-            astLinkedList = optimizedAst;
-            astLinkedList.reset();
+
+            (astLinkedList = optimizedAst).reset();
 
             optimizedAst = new ASTLinkedList();
 
@@ -196,24 +197,6 @@ public class CompilerTools {
 
         return optimizedAst;
     }
-
-    private static BinaryOperation rebalanceEvalTree(BinaryOperation b) {
-        BinaryOperation root = b, right;
-
-        ExecutionStack stk = new ExecutionStack();
-        stk.push(b);
-        while (!stk.isEmpty()) {
-            b = (BinaryOperation) stk.pop();
-            right = b.getRightBinary();
-            if (right != null && b.isGreaterPrecedence(right)) {
-                System.out.println("right is greater");
-            }
-
-        }
-
-        return root;
-    }
-
 
     /**
      * Returns an ordered Map of all functions declared within an compiled script.
