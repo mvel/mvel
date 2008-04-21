@@ -1847,6 +1847,8 @@ public class AbstractParser implements Serializable {
                             xswap();
                             reduce();
                         }
+
+                        y = 0;
                     }
                     else {
                         /**
@@ -1874,12 +1876,11 @@ public class AbstractParser implements Serializable {
                         break;
                     }
 
-
                     if (tk != null && (tk = nextToken()) != null) {
                         stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
                     }
 
-                    x = true;
+                    x = true; y = 0;
                 }
             }
             else {
@@ -1982,7 +1983,7 @@ public class AbstractParser implements Serializable {
             v1 = stk.pop();
             v2 = stk.pop();
 
-      //      System.out.print("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
+       //     System.out.print("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
 
             switch (operator) {
                 case ADD:
@@ -2111,7 +2112,7 @@ public class AbstractParser implements Serializable {
             throw new CompileException("failed to subEval expression", e);
         }
 
- //       System.out.println(" = " + stk.peek());
+    //    System.out.println(" = " + stk.peek());
 
     }
 

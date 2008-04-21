@@ -2676,7 +2676,7 @@ public class CoreConfidenceTests extends AbstractTest {
         float val = 51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19;
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
-        assertEquals(val, MVEL.eval(expression));
+        assertEquals(val, test(expression));
     }
 
     public void testMath25() {
@@ -2684,7 +2684,7 @@ public class CoreConfidenceTests extends AbstractTest {
         int val = 51 * (4 - 100 * 5) + 10 + 5 * 2 / 1 + 0 + 0 - 80;
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
-        assertEquals(val, MVEL.eval(expression));
+        assertEquals(val, test(expression));
     }
 
     public void testMath26() {
@@ -2692,7 +2692,7 @@ public class CoreConfidenceTests extends AbstractTest {
         double val =  5 + 3 * 8 * Math.pow(2, 2);
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
-        Object result = MVEL.eval(expression);
+        Object result = test(expression);
         assertEquals((int) val, result);
     }
 
@@ -2701,7 +2701,15 @@ public class CoreConfidenceTests extends AbstractTest {
         double val =  50 + 30 * 80 * Math.pow(20, 3) * 51;
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
-        Object result = MVEL.eval(expression);
+        Object result = test(expression);
+        assertEquals((int) val, result);
+    }
+
+    public void testMath28() {
+        String expression =  "50 + 30 + 80 + 11 ** 2 ** 2 * 51";
+        double val = 50 + 30 + 80 + Math.pow(Math.pow(11 , 2), 2) * 51;
+        Object result = test(expression);
+
         assertEquals((int) val, result);
     }
 
