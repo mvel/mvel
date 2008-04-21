@@ -63,12 +63,26 @@ public class BinaryOperation extends ASTNode {
         return right;
     }
 
+    public ASTNode getRightMost() {
+        BinaryOperation n = this;
+        while (n.right != null && n.right instanceof BinaryOperation) n = (BinaryOperation) n.right;
+
+        return n.right;
+    }
+
     public BinaryOperation getRightBinary() {
         return right != null && right instanceof BinaryOperation ? (BinaryOperation) right : null;
     }
 
     public void setRight(ASTNode right) {
         this.right = right;
+    }
+
+    public void setRightMost(ASTNode right) {
+        BinaryOperation n = this;
+        while (n.right != null && n.right instanceof BinaryOperation) n = (BinaryOperation) n.right;
+
+        n.right = right;
     }
 
     public int getPrecedence() {

@@ -143,9 +143,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 stk.push(holdOverRegister);
             }
 
-//            while (stk.size() > 1) {
-//                reduce();
-//            }
         }
         catch (CompileException e) {
             CompileException c = new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0, e);

@@ -67,6 +67,11 @@ public class ExecutionStack implements Stack {
         else return element.value;
     }
 
+    public Object peek2() {
+        if (size < 2) return null;
+        return element.next.value;
+    }
+
     public Object pop() {
         if (size-- == 0) return null;
         try {
@@ -104,6 +109,9 @@ public class ExecutionStack implements Stack {
 
     public String toString() {
         StackElement el = element;
+
+        if (element == null) return "<EMPTY>";
+
         StringAppender appender = new StringAppender();
         appender.append("[");
         do {

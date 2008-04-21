@@ -19,6 +19,7 @@
 package org.mvel.util;
 
 import org.mvel.Operator;
+import org.mvel.debug.DebugTools;
 import static org.mvel.Operator.PTABLE;
 import org.mvel.compiler.CompiledExpression;
 import org.mvel.ast.*;
@@ -72,7 +73,7 @@ public class CompilerTools {
                     int op2;
 
                     BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode());
-                    BinaryOperation first = bo;
+                    //    BinaryOperation first = bo;
 
                     tkOp2 = null;
 
@@ -83,23 +84,25 @@ public class CompilerTools {
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
                             && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 12) {
                         if (PTABLE[op2] > PTABLE[op]) {
+               //             System.out.println(DebugTools.getOperatorName(op2) + " >= " + DebugTools.getOperatorName(op));
+                 //           System.out.println("bo(old):" + bo + " >>" + DebugTools.getOperatorName(bo.getOperation()));
+                            bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode()));
+                //            System.out.println("bo(new):" + bo + " >>");
+                        }
+                        else if (PTABLE[op2] == PTABLE[op]) {
                             bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
                         }
                         else {
+                            System.out.println(DebugTools.getOperatorName(op2) + " < " + DebugTools.getOperatorName(op));
                             bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
-
-//                            if (astLinkedList.hasMoreNodes()) {
-//                                tkOp2 = astLinkedList.nextNode();
-//
-//                            }
-//
                         }
 
                         op = op2;
                         tkOp = tkOp2;
                     }
 
-                    optimizedAst.addTokenNode(first);
+                    optimizedAst.addTokenNode(bo);
+              //      System.out.println("bo=" + bo);
 
                     if (tkOp2 != null && tkOp2 != tkOp) {
                         optimizedAst.addTokenNode(tkOp2);

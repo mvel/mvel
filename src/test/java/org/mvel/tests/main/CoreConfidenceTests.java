@@ -2688,11 +2688,21 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath26() {
-        String expression = "5 + 3 * 8 * 2 ** 5";
-        double val = 5 + 3 * 2 * Math.pow(8, 5);
+        String expression = "5 + 3 * 8 * 2 ** 2";
+        double val =  5 + 3 * 8 * Math.pow(2, 2);
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
-        assertEquals(val, MVEL.eval(expression));
+        Object result = MVEL.eval(expression);
+        assertEquals((int) val, result);
+    }
+
+    public void testMath27() {
+        String expression = "50 + 30 * 80 * 20 ** 3 * 51";
+        double val =  50 + 30 * 80 * Math.pow(20, 3) * 51;
+        System.out.println("Expression: " + expression);
+        System.out.println("Expected Result: " + val);
+        Object result = MVEL.eval(expression);
+        assertEquals((int) val, result);
     }
 
     public void testNullSafe() {

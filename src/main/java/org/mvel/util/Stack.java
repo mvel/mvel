@@ -25,6 +25,8 @@ public interface Stack extends Serializable {
 
     public Object peek();
 
+    public Object peek2();
+
     public void add(Object obj);
 
     public void push(Object obj);
