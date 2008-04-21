@@ -72,6 +72,7 @@ public class CompilerTools {
                     int op2;
 
                     BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode());
+                    BinaryOperation first = bo;
 
                     tkOp2 = null;
 
@@ -86,11 +87,19 @@ public class CompilerTools {
                         }
                         else {
                             bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
+
+//                            if (astLinkedList.hasMoreNodes()) {
+//                                tkOp2 = astLinkedList.nextNode();
+//
+//                            }
+//
                         }
+
+                        op = op2;
                         tkOp = tkOp2;
                     }
 
-                    optimizedAst.addTokenNode(bo);
+                    optimizedAst.addTokenNode(first);
 
                     if (tkOp2 != null && tkOp2 != tkOp) {
                         optimizedAst.addTokenNode(tkOp2);

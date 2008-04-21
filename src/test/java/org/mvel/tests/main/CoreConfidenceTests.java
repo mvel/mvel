@@ -2619,7 +2619,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath16() {
         String ex = "100-500*200*150 + 500*800-400";
-        assertEquals(100-500*200*150 + 500*800-400, MVEL.eval(ex));
+        assertEquals(100-500*200*150 + 500*800-400, test(ex));
     }
 
     public void testMath17() {
@@ -2643,25 +2643,32 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testMath20() {
         String ex = "10-5*7-3*8-6";
         System.out.println("Expression: " + ex);
-        assertEquals(10 - 5 * 7 - 3 * 8 - 6, MVEL.eval(ex));
+        assertEquals(10 - 5 * 7 - 3 * 8 - 6, test(ex));
     }
 
     public void testMath21() {
         String expression = "100-50*70-30*80-60";
         System.out.println("Expression: " + expression);
-        assertEquals(100 - 50 * 70 - 30 * 80 - 60, MVEL.eval(expression));
+        assertEquals(100 - 50 * 70 - 30 * 80 - 60, test(expression));
     }
 
     public void testMath22() {
         String expression = "(100-50)*70-30*(20-9)**3";
         System.out.println("Expression: " + expression);
-        assertEquals((int) ((100-50)*70-30*Math.pow(20-9, 3)), MVEL.eval(expression));
+        assertEquals((int) ((100-50)*70-30*Math.pow(20-9, 3)), test(expression));
     }
+
+    public void testMath22b() {
+        String expression = "a = 100; b = 50; c = 70; d = 30; e = 20; f = 9; g = 3; (a-b)*c-d*(e-f)**g";
+        System.out.println("Expression: " + expression);
+        assertEquals((int) ((100-50)*70-30*Math.pow(20-9, 3)), testCompiledSimple(expression, new HashMap()));
+    }
+
 
     public void testMath23() {
         String expression = "10 ** (3)*10**3";
         System.out.println("Expression: " + expression);
-        assertEquals((int) (Math.pow(10, 3) * Math.pow(10, 3)), MVEL.eval(expression));
+        assertEquals((int) (Math.pow(10, 3) * Math.pow(10, 3)), test(expression));
     }
 
     public void testMath24() {
@@ -2675,6 +2682,14 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testMath25() {
         String expression = "51 * (4 - 100 * 5) + 10 + 5 * 2 / 1 + 0 + 0 - 80";
         int val = 51 * (4 - 100 * 5) + 10 + 5 * 2 / 1 + 0 + 0 - 80;
+        System.out.println("Expression: " + expression);
+        System.out.println("Expected Result: " + val);
+        assertEquals(val, MVEL.eval(expression));
+    }
+
+    public void testMath26() {
+        String expression = "5 + 3 * 8 * 2 ** 5";
+        double val = 5 + 3 * 2 * Math.pow(8, 5);
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
         assertEquals(val, MVEL.eval(expression));
