@@ -1812,11 +1812,11 @@ public class AbstractParser implements Serializable {
 
                         if (x) xswap();
                         /**
-                         * This operator has even higher precedence.  push to the RHS.
+                         * This operator is of higher precedence, or the same level precedence.  push to the RHS.
                          */
 
                         dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
-                        x = true;
+               //         x = true;
                         continue;
                     }
                     else if (tk != null) {
@@ -1825,27 +1825,28 @@ public class AbstractParser implements Serializable {
                          */
 
                         if (!dStack.isEmpty()) {
-                            while (!dStack.isEmpty()) {
+                            do {
                                 dreduce();
                             }
-                        }
-                        else {
-                            reduce();
+                            while (!dStack.isEmpty());
                         }
 
                         operator = tk.getOperator();
 
-                        while (stk.size() > 1) {
+                        while (stk.size() != 1) {
                             xswap();
                             reduce();
                         }
                     }
                     else {
-                        System.out.println("");
-
                         x = false;
-                        while (dStack.size() > 1) {
-                            dreduce2();
+
+                        if (dStack.size() > 1) {
+                            do {
+                                dreduce2();
+                            }
+                            while (dStack.size() > 1);
+
                             x = true;
                         }
 
@@ -1863,20 +1864,6 @@ public class AbstractParser implements Serializable {
                     if (tk != null && (tk = nextToken()) != null) {
                         stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
                     }
-                    else {
-                        while (dStack.size() > 1) {
-                            dreduce2();
-                        }
-
-                        if (!dStack.isEmpty()) {
-                            stk.push(dStack.pop());
-                        }
-                        else if (!x) xswap();
-
-                        // nothing more to do.
-                        break;
-                    }
-
 
                     x = true;
                 }
@@ -1925,9 +1912,6 @@ public class AbstractParser implements Serializable {
     }
 
     private void dreduce() {
-        // load the lesser precedent operator off the top of the stack
-        //     Object o1 = stk.pop();
-
         // push the right value from the dStack onto the stack
         stk.push(dStack.pop());
 
@@ -1944,55 +1928,6 @@ public class AbstractParser implements Serializable {
         stk.push(o1);
         stk.push(o2);
 
-        reduce();
-    }
-
-
-    private void leftReduce() {
-        stk.showStack();
-        // while any values remain on the stack
-        // keep XSWAPing and reducing, until there is nothing left.
-        while (stk.size() > 1) {
-            xswap();
-            reduce();
-            if (stk.size() > 3) xxswap();
-        }
-    }
-
-    private void xxswap() {
-        Object o1 = stk.pop();
-        Object o2 = stk.pop();
-        xswap();
-        stk.push(o2, o1);
-    }
-
-    /**
-     * A more efficient RHS reduction, to avoid the need
-     * to XSWAP directly on the stack.
-     */
-    private void reduceRightXSwap() {
-        Object o = stk.pop();
-        Object o2 = stk.pop();
-
-        stk.push(o);
-        stk.push(o2);
-        stk.push(dStack.pop());
-        stk.push(dStack.pop());
-        reduce();
-    }
-
-    /**
-     * Same as reduceRightXSwap, except this is an inverted
-     * operator, or XXSWAP.
-     */
-    private void reduceRightXXSwap() {
-        Object o = stk.pop();
-        Object o2 = stk.pop();
-
-        stk.push(o2);
-        stk.push(o);
-        stk.push(dStack.pop());
-        stk.push(dStack.pop());
         reduce();
     }
 
@@ -2021,7 +1956,7 @@ public class AbstractParser implements Serializable {
             v1 = stk.pop();
             v2 = stk.pop();
 
-            System.out.print("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
+         //   System.out.print("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
 
             switch (operator) {
                 case ADD:
@@ -2151,7 +2086,7 @@ public class AbstractParser implements Serializable {
             throw new CompileException("failed to subEval expression", e);
         }
 
-        System.out.println(" = " + stk.peek());
+  //     System.out.println(" = " + stk.peek());
 
     }
 
