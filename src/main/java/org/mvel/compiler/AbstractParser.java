@@ -19,6 +19,7 @@
 package org.mvel.compiler;
 
 import org.mvel.*;
+import org.mvel.debug.DebugTools;
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
 import org.mvel.integration.VariableResolverFactory;
@@ -1785,7 +1786,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected void arithmeticFunctionReduction(int operator) {
-        ASTNode tk2;
+        ASTNode tk;
         int operator2;
 
         boolean x = false;
@@ -1795,43 +1796,104 @@ public class AbstractParser implements Serializable {
          * precdence.
          */
 
-        if ((tk2 = nextToken()) != null && tk2.isOperator()) {
-            if (isArithmeticOperator(operator2 = tk2.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
-                do {
-                    dStack.push(tk2.getOperator(), nextToken().getReducedValue(ctx, ctx, variableFactory));
-                    if (x = !x)
-                        reduceRightXSwap(); // reduce from the RHS and XSWAP
-                    else
-                        reduceRightXXSwap(); // reduce from the RHS and XXSWAP
-                }
-                while (((tk2 = nextToken()) != null && tk2.isOperator()
-                        && isArithmeticOperator(operator2 = tk2.getOperator())
-                        && (PTABLE[operator2] > PTABLE[operator])));
+        if ((tk = nextToken()) != null && tk.isOperator()) {
+            if (isArithmeticOperator(operator2 = tk.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
+                xswap();
+                /**
+                 * The current arith. operator is of higher precedence the last.
+                 */
+                dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
 
-                xswap(); // XSWAP the stack.
-                reduce(); // reduce the stack.
+                while (true) {
+                    // look ahead again
+                    if ((tk = nextToken()) != null
+                            && tk.isOperator()
+                            && PTABLE[operator2 = tk.getOperator()] >= PTABLE[operator]) {
 
-                // Record the current operator value to the stack.
-                if (tk2 != null) stk.push(operator2);
+                        if (x) xswap();
+                        /**
+                         * This operator has even higher precedence.  push to the RHS.
+                         */
 
-                // Evaluate the next token and push the value to the stack.
-                if ((tk2 = nextToken()) != null) {
-                    stk.push(tk2.getReducedValue(ctx, ctx, variableFactory));
+                        dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+                        x = true;
+                        continue;
+                    }
+                    else if (tk != null) {
+                        /**
+                         * The operator doesn't have higher precedence. Therfore reduce the LHS.
+                         */
+
+                        if (!dStack.isEmpty()) {
+                            while (!dStack.isEmpty()) {
+                                dreduce();
+                            }
+                        }
+                        else {
+                            reduce();
+                        }
+
+                        operator = tk.getOperator();
+
+                        while (stk.size() > 1) {
+                            xswap();
+                            reduce();
+                        }
+                    }
+                    else {
+                        System.out.println("");
+
+                        x = false;
+                        while (dStack.size() > 1) {
+                            dreduce2();
+                            x = true;
+                        }
+
+                        if (!dStack.isEmpty()) {
+                            stk.push(dStack.pop());
+                        }
+                        else if (x) {
+                            xswap();
+                        }
+
+                        break;
+                    }
+
+
+                    if (tk != null && (tk = nextToken()) != null) {
+                        stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
+                    }
+                    else {
+                        while (dStack.size() > 1) {
+                            dreduce2();
+                        }
+
+                        if (!dStack.isEmpty()) {
+                            stk.push(dStack.pop());
+                        }
+                        else if (!x) xswap();
+
+                        // nothing more to do.
+                        break;
+                    }
+
+
+                    x = true;
                 }
             }
             else {
                 reduce();
-                splitAccumulator.push(tk2);
+                splitAccumulator.push(tk);
             }
         }
-        else if (tk2 != null) {
+        else if (tk != null) {
             reduce();  // reduce the stack.
-            operator = tk2.getOperator();
+            operator = tk.getOperator();
 
             // if there is another token, then this statement must continue
             // push the values down and reduce.
-            if ((tk2 = nextToken()) != null) {
-                stk.push(tk2.getReducedValue(ctx, ctx, variableFactory), operator);
+            if ((tk = nextToken()) != null) {
+                stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
                 reduce();
             }
 
@@ -1846,17 +1908,62 @@ public class AbstractParser implements Serializable {
              * Push tk2 back into the accumulator.
              */
         }
-        else {
-            reduce();
 
-            // while any values remain on the stack
-            // keep XSWAPing and reducing, until there is nothing left.
-            while (stk.size() > 1) {
-                xswap();
-                reduce();
-            }
-
+        if (!dStack.isEmpty()) {
+            while (!dStack.isEmpty()) dreduce();
+            xswap();
         }
+
+        // while any values remain on the stack
+        // keep XSWAPing and reducing, until there is nothing left.
+        while (stk.size() > 1) {
+            reduce();
+            if (stk.size() > 1) xswap();
+        }
+
+
+    }
+
+    private void dreduce() {
+        // load the lesser precedent operator off the top of the stack
+        //     Object o1 = stk.pop();
+
+        // push the right value from the dStack onto the stack
+        stk.push(dStack.pop());
+
+        // push the higher precedent operator to the top of the stack
+        stk.push(dStack.pop());
+
+        // reduce the top of the stack
+        reduce();
+    }
+
+    private void dreduce2() {
+        Object o1 = dStack.pop(), o2 = dStack.pop();
+        if (!dStack.isEmpty()) stk.push(dStack.pop());
+        stk.push(o1);
+        stk.push(o2);
+
+        reduce();
+    }
+
+
+    private void leftReduce() {
+        stk.showStack();
+        // while any values remain on the stack
+        // keep XSWAPing and reducing, until there is nothing left.
+        while (stk.size() > 1) {
+            xswap();
+            reduce();
+            if (stk.size() > 3) xxswap();
+        }
+    }
+
+    private void xxswap() {
+        Object o1 = stk.pop();
+        Object o2 = stk.pop();
+        xswap();
+        stk.push(o2, o1);
     }
 
     /**
@@ -1868,8 +1975,8 @@ public class AbstractParser implements Serializable {
         Object o2 = stk.pop();
 
         stk.push(o);
-        stk.push(dStack.pop());
         stk.push(o2);
+        stk.push(dStack.pop());
         stk.push(dStack.pop());
         reduce();
     }
@@ -1883,8 +1990,8 @@ public class AbstractParser implements Serializable {
         Object o2 = stk.pop();
 
         stk.push(o2);
-        stk.push(dStack.pop());
         stk.push(o);
+        stk.push(dStack.pop());
         stk.push(dStack.pop());
         reduce();
     }
@@ -1909,11 +2016,12 @@ public class AbstractParser implements Serializable {
         Object v1 = null, v2 = null;
         Integer operator;
         try {
+
             operator = (Integer) stk.pop();
             v1 = stk.pop();
             v2 = stk.pop();
 
-            //      System.out.println("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
+            System.out.print("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
 
             switch (operator) {
                 case ADD:
@@ -2042,6 +2150,8 @@ public class AbstractParser implements Serializable {
         catch (Exception e) {
             throw new CompileException("failed to subEval expression", e);
         }
+
+        System.out.println(" = " + stk.peek());
 
     }
 

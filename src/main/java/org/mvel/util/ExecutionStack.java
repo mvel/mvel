@@ -101,4 +101,19 @@ public class ExecutionStack implements Stack {
         }
         while ((el = el.next) != null);
     }
+
+    public String toString() {
+        StackElement el = element;
+        StringAppender appender = new StringAppender();
+        appender.append("[");
+        do {
+            appender.append(String.valueOf(el.value));
+            if (el.next != null) appender.append(", ");
+        } while ((el = el.next) != null);
+
+        appender.append("]");
+
+        return appender.toString();
+    }
+
 }

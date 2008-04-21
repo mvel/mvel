@@ -149,8 +149,20 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
     }
 
+    public void testMath4a() {
+        String expression = "(100 % 90) * 20 - 15 / 16 + 80 + (50 * 21)";
+        System.out.println("Expression: " + expression);
+        assertEquals((float) ((100d % 90d) * 20d - 15d / 16d + 80d + (50d * 21d)), MVEL.eval(expression));
+    }
+
     public void testMath5() {
         assertEquals(300.5 / 5.3 / 2.1 / 1.5, test("300.5 / 5.3 / 2.1 / 1.5"));
+    }
+
+    public void testMath5a() {
+        String expression = "300.5 / 5.3 / 2.1 / 1.5";
+        System.out.println("Expression: " + expression);
+        assertEquals(300.5 / 5.3 / 2.1 / 1.5, MVEL.eval(expression));
     }
 
     public void testMath6() {
@@ -2607,7 +2619,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testHigherOrderMathTest3() {
         String ex = "100-500*200*150 + 500*800-400";
-        assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, test(ex));
+        assertEquals(100-500*200*150 + 500*800-400, MVEL.eval(ex));
     }
 
     public void testHigherOrderMathTest4() {
@@ -2628,6 +2640,29 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, testCompiledSimple(ex, new HashMap()));
     }
 
+    public void testHigherOrderMathTest7() {
+        String ex = "10-5*7-3*8-6";
+        System.out.println("Expression: " + ex);
+        assertEquals(10 - 5 * 7 - 3 * 8 - 6, MVEL.eval(ex));
+    }
+
+    public void testMath11() {
+        String expression = "100-50*70-30*80-60";
+        System.out.println("Expression: " + expression);
+        assertEquals(100 - 50 * 70 - 30 * 80 - 60, MVEL.eval(expression));
+    }
+
+    public void testMath12() {
+        String expression = "(100-50)*70-30*(20-9)**3";
+        System.out.println("Expression: " + expression);
+        assertEquals((int) ((100-50)*70-30*Math.pow(20-9, 3)), MVEL.eval(expression));
+    }
+
+    public void testMath13() {
+        String expression = "10 ** (3)*10**3";
+        System.out.println("Expression: " + expression);
+        assertEquals((int) (Math.pow(10, 3) * Math.pow(10, 3)), MVEL.eval(expression));
+    }
 
     public void testNullSafe() {
         Foo foo = new Foo();

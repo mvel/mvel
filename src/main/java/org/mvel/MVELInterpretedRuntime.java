@@ -87,7 +87,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
     private void parseAndExecuteInterpreted() {
         ASTNode tk = null;
         int operator;
-        //   Object holdOverRegister = null;
 
         lastWasIdentifier = false;
 
@@ -111,7 +110,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                      * proper execution order.
                      */
                     if (tk instanceof Substatement) {
-                        reduceRight();
+                        //          reduceRight();
 
                         if ((tk = nextToken()) != null) {
                             if (isArithmeticOperator(operator = tk.getOperator())) {
@@ -125,14 +124,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         }
                     }
                 }
-
-//                if (!tk.isOperator()) {
-//                    /**
-//                     * There is no operator following the previous token, which means this either a naked identifier
-//                     * or method call, etc.
-//                     */
-//                    continue;
-//                }
 
                 switch (procBooleanOperator(operator = tk.getOperator())) {
                     case -1:
@@ -152,11 +143,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 stk.push(holdOverRegister);
             }
 
-            if (dStack != null) {
-                while (!dStack.isEmpty()) {
-                    reduceRight();
-                }
-            }
+//            while (stk.size() > 1) {
+//                reduce();
+//            }
         }
         catch (CompileException e) {
             CompileException c = new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0, e);
@@ -167,7 +156,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
         catch (NullPointerException e) {
             if (tk != null && tk.isOperator() && cursor >= length) {
                 throw new CompileException("incomplete statement: "
-                        + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")");
+                        + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")", e);
             }
             else {
                 throw e;

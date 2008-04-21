@@ -203,7 +203,8 @@ public class IEEEFloatingPointMath implements MathProcessor {
                     case DIV:
                         return new BigDecimal((Integer) val1).divide(new BigDecimal((Integer) val2), MATH_CONTEXT);
                     case MULT:
-                        return ((Integer) val1) * ((Integer) val2);
+                      //  return ((Integer) val1) * ((Integer) val2);
+                        return new BigDecimal((Integer) val1).multiply(new BigDecimal((Integer) val2), MATH_CONTEXT);
                     case POWER:
                         double d = Math.pow((Integer) val1, (Integer) val2);
                         if (d > Integer.MAX_VALUE) return d;
