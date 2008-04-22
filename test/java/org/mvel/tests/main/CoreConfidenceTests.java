@@ -3173,6 +3173,10 @@ public class CoreConfidenceTests extends AbstractTest {
         Collection<String> collection = Collections.singleton("I CAN HAS CHEEZBURGER");
         assertEquals(collection.size(), MVEL.eval("size()", collection));
     }
+
+    public void testCharComparison() {
+        assertEquals(true, test("'z' > 'a'"));
+    }
 }
 
 
