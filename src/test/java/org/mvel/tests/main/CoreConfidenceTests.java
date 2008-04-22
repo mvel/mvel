@@ -2713,6 +2713,26 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals((int) val, result);
     }
 
+    public void testMath29() {
+        String expression = "10 + 20 / 4 / 4";
+        System.out.println("Expression: " + expression);
+        float val = 10f + 20f / 4f / 4f;
+        
+        assertEquals(val, MVEL.eval(expression));
+    }
+
+    public void testMath30() {
+        String expression = "40 / 20 + 10 + 6 / 2";
+        float val = 40f / 20f + 10f + 6f / 2f;
+        assertEquals((int) val, MVEL.eval(expression));
+    }
+
+    public void testMath31() {
+        String expression = "40 / 20 + 5 - 4 + 8 / 2 * 2 * 6 ** 2 + 6 - 8";
+        double val = 40f / 20f + 5f - 4f + 8f / 2f * 2f * Math.pow(6, 2) + 6f - 8f;
+        assertEquals((int) val, MVEL.eval(expression));
+    }
+
     public void testNullSafe() {
         Foo foo = new Foo();
         foo.setBar(null);
