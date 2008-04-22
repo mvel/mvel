@@ -182,6 +182,113 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(225, MVEL.executeExpression( expr ) );
     }
 
+       public void testMath14() {
+        assertEquals(10 - 5 * 2 + 5 * 8 - 4, test("10-5*2 + 5*8-4"));
+    }
+
+    public void testMath15() {
+        String ex = "100-500*200 + 500*800-400";
+        //   System.out.println("Expression: " + ex);
+
+        assertEquals(100 - 500 * 200 + 500 * 800 - 400, test(ex));
+    }
+
+    public void testMath16() {
+        String ex = "100-500*200*150 + 500*800-400";
+        assertEquals(100-500*200*150 + 500*800-400, test(ex));
+    }
+
+    public void testMath17() {
+        String ex = "(100 * 50) * 20 / 30 * 2";
+        //    System.out.println("Expression: " + ex);
+        assertEquals((100d * 50d) * 20d / 30d * 2d, test(ex));
+    }
+
+    public void testMath18() {
+        String ex = "a = 100; b = 50; c = 20; d = 30; e = 2; (a * b) * c / d * e";
+        System.out.println("Expression: " + ex);
+        assertEquals((100d * 50d) * 20d / 30d * 2d, testCompiledSimple(ex, new HashMap()));
+    }
+
+    public void testMath19() {
+        String ex = "a = 100; b = 500; c = 200; d = 150; e = 500; f = 800; g = 400; a-b*c*d + e*f-g";
+        System.out.println("Expression: " + ex);
+        assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, testCompiledSimple(ex, new HashMap()));
+    }
+
+    public void testMath20() {
+        String ex = "10-5*7-3*8-6";
+        System.out.println("Expression: " + ex);
+        assertEquals(10 - 5 * 7 - 3 * 8 - 6, test(ex));
+    }
+
+    public void testMath21() {
+        String expression = "100-50*70-30*80-60";
+        System.out.println("Expression: " + expression);
+        assertEquals(100 - 50 * 70 - 30 * 80 - 60, test(expression));
+    }
+
+    public void testMath22() {
+        String expression = "(100-50)*70-30*(20-9)**3";
+        System.out.println("Expression: " + expression);
+        assertEquals((int) ((100-50)*70-30*Math.pow(20-9, 3)), test(expression));
+    }
+
+    public void testMath22b() {
+        String expression = "a = 100; b = 50; c = 70; d = 30; e = 20; f = 9; g = 3; (a-b)*c-d*(e-f)**g";
+        System.out.println("Expression: " + expression);
+        assertEquals((int) ((100-50)*70-30*Math.pow(20-9, 3)), testCompiledSimple(expression, new HashMap()));
+    }
+
+
+    public void testMath23() {
+        String expression = "10 ** (3)*10**3";
+        System.out.println("Expression: " + expression);
+        assertEquals((int) (Math.pow(10, 3) * Math.pow(10, 3)), test(expression));
+    }
+
+    public void testMath24() {
+        String expression = "51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19";
+        float val = 51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19;
+        System.out.println("Expression: " + expression);
+        System.out.println("Expected Result: " + val);
+        assertEquals(val, test(expression));
+    }
+
+    public void testMath25() {
+        String expression = "51 * (4 - 100 * 5) + 10 + 5 * 2 / 1 + 0 + 0 - 80";
+        int val = 51 * (4 - 100 * 5) + 10 + 5 * 2 / 1 + 0 + 0 - 80;
+        System.out.println("Expression: " + expression);
+        System.out.println("Expected Result: " + val);
+        assertEquals(val, test(expression));
+    }
+
+    public void testMath26() {
+        String expression = "5 + 3 * 8 * 2 ** 2";
+        double val =  5 + 3 * 8 * Math.pow(2, 2);
+        System.out.println("Expression: " + expression);
+        System.out.println("Expected Result: " + val);
+        Object result = test(expression);
+        assertEquals((int) val, result);
+    }
+
+    public void testMath27() {
+        String expression = "50 + 30 * 80 * 20 ** 3 * 51";
+        double val =  50 + 30 * 80 * Math.pow(20, 3) * 51;
+        System.out.println("Expression: " + expression);
+        System.out.println("Expected Result: " + val);
+        Object result = test(expression);
+        assertEquals((int) val, result);
+    }
+
+    public void testMath28() {
+        String expression =  "50 + 30 + 80 + 11 ** 2 ** 2 * 51";
+        double val = 50 + 30 + 80 + Math.pow(Math.pow(11 , 2), 2) * 51;
+        Object result = test(expression);
+
+        assertEquals((int) val, result);
+    }
+
     public void testPowerOf() {
         assertEquals(25, test("5 ** 2"));
     }
@@ -3061,6 +3168,10 @@ public class CoreConfidenceTests extends AbstractTest {
         ExpressionCompiler compiler = new ExpressionCompiler( expression );
         CompiledExpression expr = compiler.compile();
         return expr;
+    }
+
+    public void testStringEquals() {
+        assertEquals(true, test("ipaddr == '10.1.1.2'"));
     }
 
 }

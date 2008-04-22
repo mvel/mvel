@@ -1,3 +1,21 @@
+/**
+ * MVEL (The MVFLEX Expression Language)
+ *
+ * Copyright (C) 2007 Christopher Brock, MVFLEX/Valhalla Project and the Codehaus
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package org.mvel.util;
 
 public class ExecutionStack implements Stack {
@@ -20,21 +38,6 @@ public class ExecutionStack implements Stack {
         else {
             element = new StackElement(null, o);
         }
-    }
-
-    public void swap() {
-        StackElement temp = element.next;
-        element.next = temp.next;
-        element = temp;
-    }
-
-    public void xswap() {
-        StackElement temp = element.next.next;
-        StackElement temp2 = temp.next;
-
-        element.next.next = temp2;
-        temp.next = temp2.next;
-        temp2.next = temp;
     }
 
     public void push(Object o) {
@@ -62,6 +65,11 @@ public class ExecutionStack implements Stack {
     public Object peek() {
         if (size == 0) return null;
         else return element.value;
+    }
+
+    public Object peek2() {
+        if (size < 2) return null;
+        return element.next.value;
     }
 
     public Object pop() {
@@ -93,10 +101,27 @@ public class ExecutionStack implements Stack {
 
     public void showStack() {
         StackElement el = element;
-        if (el == null) return;
         do {
             System.out.println("->" + el.value);
         }
         while ((el = el.next) != null);
     }
+
+    public String toString() {
+        StackElement el = element;
+
+        if (element == null) return "<EMPTY>";
+
+        StringAppender appender = new StringAppender();
+        appender.append("[");
+        do {
+            appender.append(String.valueOf(el.value));
+            if (el.next != null) appender.append(", ");
+        } while ((el = el.next) != null);
+
+        appender.append("]");
+
+        return appender.toString();
+    }
+
 }
