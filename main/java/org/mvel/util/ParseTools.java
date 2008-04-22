@@ -242,22 +242,26 @@ public class ParseTools {
 
     public static Method getWidenedTarget(Method method) {
         Class cls = method.getDeclaringClass();
-        Method m = method;
+        Method m = method, best = method;
         Class[] args = method.getParameterTypes();
         String name = method.getName();
         Class rt = m.getReturnType();
 
         do {
             for (Class iface : cls.getInterfaces()) {
-                if ((m = getExactMatch(name, args, rt, iface)) != null && m.getDeclaringClass().getSuperclass() != null) {
-                    cls = m.getDeclaringClass();
+                if ((m = getExactMatch(name, args, rt, iface)) != null) {
+                    best = m;
+                    if (m.getDeclaringClass().getSuperclass() != null) {
+                        cls = m.getDeclaringClass();
+                    }
                 }
             }
         }
         while ((cls = cls.getSuperclass()) != null);
 
-        return m != null ? m : method;
+        return best;
     }
+
 
     private static Map<Class, Map<Integer, Constructor>> RESOLVED_CONST_CACHE = new WeakHashMap<Class, Map<Integer, Constructor>>(10);
     private static Map<Constructor, Class[]> CONSTRUCTOR_PARMS_CACHE = new WeakHashMap<Constructor, Class[]>(10);
