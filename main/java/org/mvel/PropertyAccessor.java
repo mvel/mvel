@@ -639,7 +639,19 @@ public class PropertyAccessor {
             /**
              * Invoke the target method and return the response.
              */
-            return m.invoke(ctx, args);
+            try {
+                return m.invoke(ctx, args);
+            }
+            catch (IllegalAccessException e) {
+                try {
+                    m = getWidenedTarget(m);
+
+                    return m.invoke(ctx, args);
+                }
+                catch (Exception e2) {
+                    throw e;
+                }
+            }
         }
     }
 
