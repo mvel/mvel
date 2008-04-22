@@ -62,11 +62,11 @@ public class ParseTools {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
-                MATH_PROCESSOR = (MathProcessor)  Class.forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) Class.forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
                 JDK_14_COMPATIBILITY = true;
             }
             else if (version > 1.4) {
-                MATH_PROCESSOR = (MathProcessor)  Class.forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) Class.forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
                 JDK_14_COMPATIBILITY = false;
             }
             else {
@@ -261,21 +261,24 @@ public class ParseTools {
 
     public static Method getWidenedTarget(Method method) {
         Class cls = method.getDeclaringClass();
-        Method m = method;
+        Method m = method, best = method;
         Class[] args = method.getParameterTypes();
         String name = method.getName();
         Class rt = m.getReturnType();
 
         do {
             for (Class iface : cls.getInterfaces()) {
-                if ((m = getExactMatch(name, args, rt, iface)) != null && m.getDeclaringClass().getSuperclass() != null) {
-                    cls = m.getDeclaringClass();
+                if ((m = getExactMatch(name, args, rt, iface)) != null) {
+                    best = m;
+                    if (m.getDeclaringClass().getSuperclass() != null) {
+                        cls = m.getDeclaringClass();
+                    }
                 }
             }
         }
         while ((cls = cls.getSuperclass()) != null);
 
-        return m != null ? m : method;
+        return best;
     }
 
     private static Map<Class, Map<Integer, Constructor>> RESOLVED_CONST_CACHE = new WeakHashMap<Class, Map<Integer, Constructor>>(10);
@@ -451,7 +454,7 @@ public class ParseTools {
                     continue;
                 case ')':
                     if (1 == depth--) {
-                         return new String[]{new String(cs, 0, ++i), createStringTrimmed(cs, i, cs.length - i)};
+                        return new String[]{new String(cs, 0, ++i), createStringTrimmed(cs, i, cs.length - i)};
                     }
             }
         }
@@ -1210,7 +1213,7 @@ public class ParseTools {
     }
 
     public static boolean isWhitespace(char c) {
-       return c <= '\u0020';
+        return c <= '\u0020';
     }
 
     public static String repeatChar(char c, int times) {
