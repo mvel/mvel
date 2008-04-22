@@ -166,23 +166,23 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath11() {
         String expression = "10-5*7-3*8-6";
-        CompiledExpression expr = compileSimpleExpression( expression );
-        assertEquals(10-5*7-3*8-6, MVEL.executeExpression( expr ) );
+        CompiledExpression expr = compileSimpleExpression(expression);
+        assertEquals(10 - 5 * 7 - 3 * 8 - 6, MVEL.executeExpression(expr));
     }
 
     public void testMath12() {
         String expression = "(10-5)*7-3*(8-6)**3";
-        CompiledExpression expr = compileSimpleExpression( expression );
-        assertEquals(11, MVEL.executeExpression( expr ) );
+        CompiledExpression expr = compileSimpleExpression(expression);
+        assertEquals(11, MVEL.executeExpression(expr));
     }
 
     public void testMath13() {
         String expression = "3** (2)*5**2";
-        CompiledExpression expr = compileSimpleExpression( expression );
-        assertEquals(225, MVEL.executeExpression( expr ) );
+        CompiledExpression expr = compileSimpleExpression(expression);
+        assertEquals(225, MVEL.executeExpression(expr));
     }
 
-       public void testMath14() {
+    public void testMath14() {
         assertEquals(10 - 5 * 2 + 5 * 8 - 4, test("10-5*2 + 5*8-4"));
     }
 
@@ -195,7 +195,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath16() {
         String ex = "100-500*200*150 + 500*800-400";
-        assertEquals(100-500*200*150 + 500*800-400, test(ex));
+        assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, test(ex));
     }
 
     public void testMath17() {
@@ -231,13 +231,13 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testMath22() {
         String expression = "(100-50)*70-30*(20-9)**3";
         System.out.println("Expression: " + expression);
-        assertEquals((int) ((100-50)*70-30*Math.pow(20-9, 3)), test(expression));
+        assertEquals((int) ((100 - 50) * 70 - 30 * Math.pow(20 - 9, 3)), test(expression));
     }
 
     public void testMath22b() {
         String expression = "a = 100; b = 50; c = 70; d = 30; e = 20; f = 9; g = 3; (a-b)*c-d*(e-f)**g";
         System.out.println("Expression: " + expression);
-        assertEquals((int) ((100-50)*70-30*Math.pow(20-9, 3)), testCompiledSimple(expression, new HashMap()));
+        assertEquals((int) ((100 - 50) * 70 - 30 * Math.pow(20 - 9, 3)), testCompiledSimple(expression, new HashMap()));
     }
 
 
@@ -265,7 +265,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath26() {
         String expression = "5 + 3 * 8 * 2 ** 2";
-        double val =  5 + 3 * 8 * Math.pow(2, 2);
+        double val = 5 + 3 * 8 * Math.pow(2, 2);
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
         Object result = test(expression);
@@ -274,7 +274,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath27() {
         String expression = "50 + 30 * 80 * 20 ** 3 * 51";
-        double val =  50 + 30 * 80 * Math.pow(20, 3) * 51;
+        double val = 50 + 30 * 80 * Math.pow(20, 3) * 51;
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
         Object result = test(expression);
@@ -282,8 +282,8 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath28() {
-        String expression =  "50 + 30 + 80 + 11 ** 2 ** 2 * 51";
-        double val = 50 + 30 + 80 + Math.pow(Math.pow(11 , 2), 2) * 51;
+        String expression = "50 + 30 + 80 + 11 ** 2 ** 2 * 51";
+        double val = 50 + 30 + 80 + Math.pow(Math.pow(11, 2), 2) * 51;
         Object result = test(expression);
 
         assertEquals((int) val, result);
@@ -3165,7 +3165,7 @@ public class CoreConfidenceTests extends AbstractTest {
      * @return
      */
     private CompiledExpression compileSimpleExpression(String expression) {
-        ExpressionCompiler compiler = new ExpressionCompiler( expression );
+        ExpressionCompiler compiler = new ExpressionCompiler(expression);
         CompiledExpression expr = compiler.compile();
         return expr;
     }
@@ -3174,6 +3174,23 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("ipaddr == '10.1.1.2'"));
     }
 
+    public void testArrayList() throws SecurityException, NoSuchMethodException {
+        Collection<String> collection = new ArrayList<String>();
+        collection.add("I CAN HAS CHEEZBURGER");
+        assertEquals(collection.size(), MVEL.eval("size()", collection));
+    }
+
+    public void testUnmodifiableCollection() throws SecurityException, NoSuchMethodException {
+        Collection<String> collection = new ArrayList<String>();
+        collection.add("I CAN HAS CHEEZBURGER");
+        collection = Collections.unmodifiableCollection(collection);
+        assertEquals(collection.size(), MVEL.eval("size()", collection));
+    }
+
+    public void testSingleton() throws SecurityException, NoSuchMethodException {
+        Collection<String> collection = Collections.singleton("I CAN HAS CHEEZBURGER");
+        assertEquals(collection.size(), MVEL.eval("size()", collection));
+    }
 }
 
 
