@@ -1806,8 +1806,10 @@ public class AbstractParser implements Serializable {
                 while (true) {
                     // look ahead again
                     if ((tk = nextToken()) != null && PTABLE[operator2 = tk.getOperator()] > PTABLE[operator]) {
-
-                        if (x) xswap();
+                        // if we have back to back operations on the stack, we don't xswap
+                        if (x) {
+                            xswap();
+                        }
                         /**
                          * This operator is of higher precedence, or the same level precedence.  push to the RHS.
                          */
@@ -1818,7 +1820,10 @@ public class AbstractParser implements Serializable {
                     }
                     else if (tk != null) {
                         if (PTABLE[operator2] == PTABLE[operator]) {
-                            if (x) xswap();
+                            // if we have back to back operations on the stack, we don't xswap             
+                            if (x) {
+                                xswap();
+                            }
 
                             /**
                              * Reduce any operations waiting now.
