@@ -24,6 +24,10 @@ import static org.mvel.DataConversion.convert;
 import org.mvel.DataTypes;
 import static org.mvel.DataTypes.EMPTY;
 import org.mvel.Operator;
+import static org.mvel.Operator.GTHAN;
+import static org.mvel.Operator.GETHAN;
+import static org.mvel.Operator.LTHAN;
+import static org.mvel.Operator.LETHAN;
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
 
@@ -133,15 +137,52 @@ public class JDK14CompatabilityMath implements MathProcessor {
             case Operator.DIV:
             case Operator.MULT:
             case Operator.MOD:
-            case Operator.GTHAN:
-            case Operator.GETHAN:
-            case Operator.LTHAN:
-            case Operator.LETHAN:
-                throw new CompileException("could not perform numeric operation on non-numeric types: left-type="
-                        + (val1 != null ? val1.getClass().getName() : "null") + "; right-type=" + (val2 != null ? val2.getClass().getName() : "null"));
+            case GTHAN:
+                if (val1 instanceof String && ((String) val1).length() == 1 && String.valueOf(val2).length() == 1) {
+                    return ((String) val1).charAt(0) > ((String) val2).charAt(0);
+                }
+                else if (val1 instanceof Comparable) {
+                    //noinspection unchecked
+                    return ((Comparable) val1).compareTo(val2) == 1 ? Boolean.TRUE : Boolean.FALSE;
+                }
+                break;
+
+            case GETHAN:
+                  if (val1 instanceof String && ((String) val1).length() == 1 && String.valueOf(val2).length() == 1) {
+                    return ((String) val1).charAt(0) >= ((String) val2).charAt(0);
+                }
+                else if (val1 instanceof Comparable) {
+                    //noinspection unchecked
+                    return ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
+                }
+
+                break;
+
+            case LTHAN:
+                if (val1 instanceof String && ((String) val1).length() == 1 && String.valueOf(val2).length() == 1) {
+                    return ((String) val1).charAt(0) < ((String) val2).charAt(0);
+                }
+                else if (val1 instanceof Comparable) {
+                    //noinspection unchecked
+                    return ((Comparable) val1).compareTo(val2) == -1 ? Boolean.TRUE : Boolean.FALSE;
+                }
+
+                break;
+
+            case LETHAN:
+                if (val1 instanceof String && ((String) val1).length() == 1 && String.valueOf(val2).length() == 1) {
+                    return ((String) val1).charAt(0) <= ((String) val2).charAt(0);
+                }
+                else if (val1 instanceof Comparable) {
+                    //noinspection unchecked
+                    return ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
+                }
+
+                break;
         }
 
-        throw new CompileException("unable to perform operation");
+                throw new CompileException("could not perform numeric operation on non-numeric types: left-type="
+                        + (val1 != null ? val1.getClass().getName() : "null") + "; right-type=" + (val2 != null ? val2.getClass().getName() : "null"));
     }
 
     private static Boolean safeEquals(Object val1, Object val2) {

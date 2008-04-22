@@ -3264,6 +3264,9 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(collection.size(), MVEL.eval("size()", collection));
     }
 
+    public void testCharComparison() {
+        assertEquals(true, test("'z' > 'a'"));
+    }
 }
 
 

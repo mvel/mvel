@@ -32,32 +32,30 @@ public class LiteralNode extends ASTNode {
     }
 
     public LiteralNode(Object literal) {
-        super();
+    //    super();
         this.fields |= LITERAL;
-      //  if (literal instanceof String) {                                                                    
-        //    this.literal = ((String) literal).intern();
-
-       // }
-        //else
         if (literal instanceof Integer) {
             this.fields |= INTEGER32;
             this.intRegister = ((Integer) (this.literal = literal));
         }
+//        else if (literal instanceof String && ((String)literal).length() == 1) {
+//            this.literal = ((String) literal).charAt(0);
+//        }
         else {
             this.literal = literal;
         }
     }
 
-    public LiteralNode(Object literal, int fields) {
-        super();
-        this.fields = fields;
-        if (literal instanceof String) {
-            this.literal = ((String) literal).intern();
-        }
-        else {
-            this.literal = literal;
-        }
-    }
+//    public LiteralNode(Object literal, int fields) {
+//        super();
+//        this.fields = fields;
+//        if (literal instanceof String) {
+//            this.literal = ((String) literal).intern();
+//        }
+//        else {
+//            this.literal = literal;
+//        }
+//    }
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
