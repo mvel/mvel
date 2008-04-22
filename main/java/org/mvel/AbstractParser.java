@@ -1469,7 +1469,7 @@ public class AbstractParser implements Serializable {
                          */
                         dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
 
-                        y++;
+                        y = 1;
                         continue;
                     }
                     else if (tk != null) {
@@ -1500,7 +1500,7 @@ public class AbstractParser implements Serializable {
                              */
                             if (!dStack.isEmpty()) {
                                 do {
-                                    if (y > 1) {
+                                    if (y == 1) {
                                         dreduce2();
                                         y = 0;
                                     }
@@ -1534,7 +1534,7 @@ public class AbstractParser implements Serializable {
 
                         if (dStack.size() > 1) {
                             do {
-                                if (y > 0) {
+                                if (y == 1) {
                                     dreduce2();
                                     y = 0;
                                 }
