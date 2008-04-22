@@ -71,6 +71,8 @@ public abstract class AbstractTest extends TestCase {
 
         map.put("derived", new DerivedClass());
 
+        map.put("ipaddr", "10.1.1.2");
+
         map.put("dt1", new Date(currentTimeMillis() - 100000));
         map.put("dt2", new Date(currentTimeMillis()));
         return map;
