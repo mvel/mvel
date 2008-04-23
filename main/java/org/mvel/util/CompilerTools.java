@@ -41,7 +41,7 @@ public class CompilerTools {
 
                     optimizedAst.addTokenNode(tkOp);
                 }
-                else if (tkOp.isOperator() && tkOp.getOperator() < 12) {
+                else if (tkOp.isOperator() && tkOp.getOperator() < 20) {
                     int op;
                     int op2;
 
@@ -54,7 +54,7 @@ public class CompilerTools {
                      * right here.
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                            && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 12) {
+                            && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 20) {
                         if (PTABLE[op2] > PTABLE[op]) {
                             bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode()));
                         }

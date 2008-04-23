@@ -135,6 +135,13 @@ public class IntegerCH implements ConversionHandler {
                 }
         );
 
+        CNV.put(Character.class,
+                new Converter() {
+                    public Integer convert(Object o) {
+                        return (int) ((Character) o).charValue();
+                    }
+                }
+        );
 
     }
 
