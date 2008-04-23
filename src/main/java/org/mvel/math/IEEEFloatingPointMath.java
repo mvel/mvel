@@ -453,7 +453,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
                     case NEQUAL:
                         return ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0 ? Boolean.TRUE : Boolean.FALSE;
 
-                                        case BW_AND:
+                    case BW_AND:
                     case BW_OR:
                     case BW_SHIFT_LEFT:
                     case BW_SHIFT_RIGHT:
