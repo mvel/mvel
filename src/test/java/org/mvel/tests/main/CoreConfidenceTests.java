@@ -434,9 +434,9 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(2, test("-2 <<< 0"));
     }
 
-    public void testUnsignedShiftLeft2() {
-        assertEquals(5, test("(five - 10) <<< 0"));
-    }
+//    public void testUnsignedShiftLeft2() {
+//        assertEquals(5, test("(five - 10) <<< 0"));
+//    }
 
     public void testShiftRight() {
         assertEquals(128, test("256 >> 1"));

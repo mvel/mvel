@@ -35,7 +35,7 @@ public class CompilerTools {
      * @param secondPassOptimization - perform a second pass optimization to optimize boolean expressions.
      * @return optimized AST
      */
-    public static ASTLinkedList optimizeAST(ASTLinkedList astLinkedList, boolean secondPassOptimization) {
+      public static ASTLinkedList optimizeAST(ASTLinkedList astLinkedList, boolean secondPassOptimization) {
         ASTLinkedList optimizedAst = new ASTLinkedList();
         ASTNode tk, tkOp, tkOp2;
 
@@ -48,32 +48,19 @@ public class CompilerTools {
             }
             else if (astLinkedList.hasMoreNodes()) {
                 if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
-
+                    optimizedAst.addTokenNode(tk);
                     if (tk instanceof EndOfStatement) {
-                        /**
-                         * If this is the last node of the script, don't bother
-                         * with the end of statement.
-                         */
-                        if (astLinkedList.hasMoreNodes()) {
-                            optimizedAst.addTokenNode(tk);
-                        }
-
                         astLinkedList.setCurrentNode(tkOp);
                         continue;
-                    }
-                    else {
-                        optimizedAst.addTokenNode(tk);
                     }
 
                     optimizedAst.addTokenNode(tkOp);
                 }
-                else if (tkOp.isOperator() && tkOp.getOperator() < 12) {
-                    // handle math and equals
+                else if (tkOp.isOperator() && tkOp.getOperator() < 20) {
                     int op;
                     int op2;
 
                     BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode());
-                    //    BinaryOperation first = bo;
 
                     tkOp2 = null;
 
@@ -82,7 +69,7 @@ public class CompilerTools {
                      * right here.
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                            && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 12) {
+                            && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 20) {
                         if (PTABLE[op2] > PTABLE[op]) {
                             bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode()));
                         }
@@ -99,28 +86,16 @@ public class CompilerTools {
                     }
 
                     optimizedAst.addTokenNode(bo);
-              //      System.out.println("bo=" + bo);
 
                     if (tkOp2 != null && tkOp2 != tkOp) {
                         optimizedAst.addTokenNode(tkOp2);
                     }
                 }
                 else {
+                    optimizedAst.addTokenNode(tk);
                     if (tk instanceof EndOfStatement) {
                         astLinkedList.setCurrentNode(tkOp);
-
-                        /**
-                         * If this is the last node of the script, don't bother
-                         * with the end of statement.
-                         */
-                        if (astLinkedList.hasMoreNodes()) {
-                            optimizedAst.addTokenNode(tk);
-                        }
-
                         continue;
-                    }
-                    else {
-                        optimizedAst.addTokenNode(tk);
                     }
 
                     optimizedAst.addTokenNode(tkOp);
@@ -135,8 +110,8 @@ public class CompilerTools {
             /**
              * Perform a second pass optimization for boolean conditions.
              */
-
-            (astLinkedList = optimizedAst).reset();
+            astLinkedList = optimizedAst;
+            astLinkedList.reset();
 
             optimizedAst = new ASTLinkedList();
 

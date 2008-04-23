@@ -27,9 +27,43 @@ public interface Operator {
      * SUB is PTABLE[1] and so on.
      */
     public static final int[] PTABLE = {
-            0, 0, 1, 1, 1, 2
-    };
+            10,   // ADD
+            10,   // SUB
+            11,   // MULT
+            11,   // DIV
+            11,   // MOD
+            12,   // POWER
 
+
+            6,   // BW_AND
+            4,   // BW_OR
+            5,   // BW_XOR
+            9,   // BW_SHIFT_RIGHT
+            9,   // BW_SHIFT_LEFT
+            9,   // BW_USHIFT_LEFT
+            5,   // BW_NOT
+
+            8,   // LTHAN
+            8,   // GTHAN
+            8,   // LETHAN
+            8,   // GETHAN
+
+            7,   // EQUAL
+            7,   // NEQUAL
+            3,   // AND
+            2,   // OR
+            2,   // CHOR
+            13,   // REGEX
+            8,   // INSTANCEOF
+            13,   // CONTAINS
+            13,   // STR_APPEND
+            13,   // SOUNDEX
+            13,   // SIMILARITY
+
+            0,  // TERNARY
+            0,  // TERNARY ELSE
+            13,   // ASSIGN
+    };
 
     public static final int ADD = 0;
     public static final int SUB = 1;
@@ -37,48 +71,52 @@ public interface Operator {
     public static final int DIV = 3;
     public static final int MOD = 4;
     public static final int POWER = 5;
-    public static final int LTHAN = 6;
-    public static final int GTHAN = 7;
-    public static final int LETHAN = 8;
-    public static final int GETHAN = 9;
 
-    public static final int EQUAL = 10;
-    public static final int NEQUAL = 11;
+    public static final int BW_AND = 6;
+    public static final int BW_OR = 7;
+    public static final int BW_XOR = 8;
+    public static final int BW_SHIFT_RIGHT = 9;
+    public static final int BW_SHIFT_LEFT = 10;
+    public static final int BW_USHIFT_RIGHT = 11;
+    public static final int BW_USHIFT_LEFT = 12;
+    public static final int BW_NOT = 13;
 
-    public static final int AND = 12;
-    public static final int OR = 13;
-    public static final int CHOR = 14;
-    public static final int REGEX = 15;
-    public static final int INSTANCEOF = 16;
-    public static final int CONTAINS = 17;
-    public static final int STR_APPEND = 18;
-    public static final int SOUNDEX = 19;
-    public static final int SIMILARITY = 20;
-    public static final int BW_AND = 21;
-    public static final int BW_OR = 22;
-    public static final int BW_XOR = 23;
-    public static final int BW_SHIFT_RIGHT = 24;
-    public static final int BW_SHIFT_LEFT = 25;
-    public static final int BW_USHIFT_RIGHT = 26;
-    public static final int BW_USHIFT_LEFT = 27;
-    public static final int TERNARY = 28;
-    public static final int TERNARY_ELSE = 29;
-    public static final int ASSIGN = 30;
-    public static final int INC_ASSIGN = 31;
-    public static final int DEC_ASSIGN = 32;
-    public static final int NEW = 33;
-    public static final int PROJECTION = 34;
-    public static final int CONVERTABLE_TO = 35;
-    public static final int END_OF_STMT = 36;
+    public static final int LTHAN = 14;
+    public static final int GTHAN = 15;
+    public static final int LETHAN = 16;
+    public static final int GETHAN = 17;
 
-    public static final int FOREACH = 37;
-    public static final int IF = 38;
-    public static final int ELSE = 39;
-    public static final int WHILE = 40;
-    public static final int FOR = 41;
-    public static final int SWITCH = 42;
-    public static final int DO = 43;
-    public static final int WITH = 44;
+    public static final int EQUAL = 18;
+    public static final int NEQUAL = 19;
+
+    public static final int AND = 20;
+    public static final int OR = 21;
+    public static final int CHOR = 22;
+    public static final int REGEX = 23;
+    public static final int INSTANCEOF = 24;
+    public static final int CONTAINS = 25;
+    public static final int STR_APPEND = 26;
+    public static final int SOUNDEX = 27;
+    public static final int SIMILARITY = 28;
+
+    public static final int TERNARY = 29;
+    public static final int TERNARY_ELSE = 30;
+    public static final int ASSIGN = 31;
+    public static final int INC_ASSIGN = 32;
+    public static final int DEC_ASSIGN = 33;
+    public static final int NEW = 34;
+    public static final int PROJECTION = 35;
+    public static final int CONVERTABLE_TO = 36;
+    public static final int END_OF_STMT = 37;
+
+    public static final int FOREACH = 38;
+    public static final int IF = 39;
+    public static final int ELSE = 40;
+    public static final int WHILE = 41;
+    public static final int FOR = 42;
+    public static final int SWITCH = 43;
+    public static final int DO = 44;
+    public static final int WITH = 45;
 
     public static final int INC = 50;
     public static final int DEC = 51;

@@ -145,35 +145,35 @@ public class MVELRuntime {
                                 stk.push(containsCheck(v2, v1));
                                 break;
 
-                            case BW_AND:
-                                stk.push((Integer) v2 & (Integer) v1);
-                                break;
-
-                            case BW_OR:
-                                stk.push((Integer) v2 | (Integer) v1);
-                                break;
-
-                            case BW_XOR:
-                                stk.push((Integer) v2 ^ (Integer) v1);
-                                break;
-
-                            case BW_SHIFT_LEFT:
-                                stk.push((Integer) v2 << (Integer) v1);
-                                break;
-
-                            case BW_USHIFT_LEFT:
-                                int iv2 = (Integer) v2;
-                                if (iv2 < 0) iv2 *= -1;
-                                stk.push(iv2 << (Integer) v1);
-                                break;
-
-                            case BW_SHIFT_RIGHT:
-                                stk.push((Integer) v2 >> (Integer) v1);
-                                break;
-
-                            case BW_USHIFT_RIGHT:
-                                stk.push((Integer) v2 >>> (Integer) v1);
-                                break;
+//                            case BW_AND:
+//                                stk.push((Integer) v2 & (Integer) v1);
+//                                break;
+//
+//                            case BW_OR:
+//                                stk.push((Integer) v2 | (Integer) v1);
+//                                break;
+//
+//                            case BW_XOR:
+//                                stk.push((Integer) v2 ^ (Integer) v1);
+//                                break;
+//
+//                            case BW_SHIFT_LEFT:
+//                                stk.push((Integer) v2 << (Integer) v1);
+//                                break;
+//
+//                            case BW_USHIFT_LEFT:
+//                                int iv2 = (Integer) v2;
+//                                if (iv2 < 0) iv2 *= -1;
+//                                stk.push(iv2 << (Integer) v1);
+//                                break;
+//
+//                            case BW_SHIFT_RIGHT:
+//                                stk.push((Integer) v2 >> (Integer) v1);
+//                                break;
+//
+//                            case BW_USHIFT_RIGHT:
+//                                stk.push((Integer) v2 >>> (Integer) v1);
+//                                break;
 
                             case SOUNDEX:
                                 stk.push(soundex(valueOf(v1)).equals(soundex(valueOf(v2))));

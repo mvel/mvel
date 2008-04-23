@@ -95,7 +95,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
     }
 
     private static Object _doOperations(final int type1, final Object val1, final int operation, final int type2, final Object val2) {
-        if (operation < 10 || operation == EQUAL || operation == NEQUAL) {
+        if (operation < 20) {
             if (type1 > 99 && type1 == type2) {
                 return doOperationsSameType(type1, val1, operation, val2);
             }
@@ -145,7 +145,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 break;
 
             case GETHAN:
-                  if (val1 instanceof String && ((String) val1).length() == 1 && String.valueOf(val2).length() == 1) {
+                if (val1 instanceof String && ((String) val1).length() == 1 && String.valueOf(val2).length() == 1) {
                     return ((String) val1).charAt(0) >= ((String) val2).charAt(0);
                 }
                 else if (val1 instanceof Comparable) {
@@ -174,7 +174,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
-              
+
                 break;
         }
 
@@ -238,6 +238,18 @@ public class IEEEFloatingPointMath implements MathProcessor {
                     case NEQUAL:
                         return ((Integer) val1).intValue() != ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
 
+                    case BW_AND:
+                        return (Integer) val1 & (Integer) val2;
+                    case BW_OR:
+                        return (Integer) val1 | (Integer) val2;
+                    case BW_SHIFT_LEFT:
+                        return (Integer) val1 << (Integer) val2;
+                    case BW_SHIFT_RIGHT:
+                        return (Integer) val1 >> (Integer) val2;
+                    case BW_USHIFT_RIGHT:
+                        return (Integer) val1 >>> (Integer) val2;
+                    case BW_XOR:
+                        return (Integer) val1 ^ (Integer) val2;
                 }
 
             case DataTypes.SHORT:
@@ -270,6 +282,19 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((Short) val1).shortValue() == ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
                     case NEQUAL:
                         return ((Short) val1).shortValue() != ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
+
+                    case BW_AND:
+                        return (Short) val1 & (Short) val2;
+                    case BW_OR:
+                        return (Short) val1 | (Short) val2;
+                    case BW_SHIFT_LEFT:
+                        return (Short) val1 << (Short) val2;
+                    case BW_SHIFT_RIGHT:
+                        return (Short) val1 >> (Short) val2;
+                    case BW_USHIFT_RIGHT:
+                        return (Short) val1 >>> (Short) val2;
+                    case BW_XOR:
+                        return (Short) val1 ^ (Short) val2;
                 }
 
             case DataTypes.LONG:
@@ -302,6 +327,22 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((Long) val1).longValue() == ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
                     case NEQUAL:
                         return ((Long) val1).longValue() != ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
+
+                    case BW_AND:
+                        return (Long) val1 & (Long) val2;
+                    case BW_OR:
+                        return (Long) val1 | (Long) val2;
+                    case BW_SHIFT_LEFT:
+                        return (Long) val1 << (Long) val2;
+                    case BW_USHIFT_LEFT:
+                        throw new UnsupportedOperationException("unsigned left-shift not supported");
+
+                    case BW_SHIFT_RIGHT:
+                        return (Long) val1 >> (Long) val2;
+                    case BW_USHIFT_RIGHT:
+                        return (Long) val1 >>> (Long) val2;
+                    case BW_XOR:
+                        return (Long) val1 ^ (Long) val2;
                 }
 
             case DataTypes.UNIT:
@@ -336,6 +377,14 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((Double) val1).doubleValue() == ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
                     case NEQUAL:
                         return ((Double) val1).doubleValue() != ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+
+                    case BW_AND:
+                    case BW_OR:
+                    case BW_SHIFT_LEFT:
+                    case BW_SHIFT_RIGHT:
+                    case BW_USHIFT_RIGHT:
+                    case BW_XOR:
+                        throw new CompileException("bitwise operation on a non-fixed-point number.");
                 }
 
             case DataTypes.FLOAT:
@@ -366,6 +415,14 @@ public class IEEEFloatingPointMath implements MathProcessor {
                         return ((Float) val1).floatValue() == ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
                     case NEQUAL:
                         return ((Float) val1).floatValue() != ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
+
+                    case BW_AND:
+                    case BW_OR:
+                    case BW_SHIFT_LEFT:
+                    case BW_SHIFT_RIGHT:
+                    case BW_USHIFT_RIGHT:
+                    case BW_XOR:
+                        throw new CompileException("bitwise operation on a non-fixed-point number.");
                 }
 
             case DataTypes.BIG_INTEGER:
@@ -396,6 +453,13 @@ public class IEEEFloatingPointMath implements MathProcessor {
                     case NEQUAL:
                         return ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0 ? Boolean.TRUE : Boolean.FALSE;
 
+                                        case BW_AND:
+                    case BW_OR:
+                    case BW_SHIFT_LEFT:
+                    case BW_SHIFT_RIGHT:
+                    case BW_USHIFT_RIGHT:
+                    case BW_XOR:
+                        throw new CompileException("bitwise operation on a number greater than 32-bits not possible");
                 }
 
 
