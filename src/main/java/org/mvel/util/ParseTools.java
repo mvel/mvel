@@ -26,6 +26,7 @@ import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel.compiler.AbstractParser.isReservedWord;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
+import static org.mvel.integration.ResolverTools.insertFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.integration.impl.TypeInjectionResolverFactoryImpl;
@@ -41,6 +42,7 @@ import static java.lang.Thread.currentThread;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import static java.lang.Class.forName;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -62,11 +64,11 @@ public class ParseTools {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
-                MATH_PROCESSOR = (MathProcessor) Class.forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
                 JDK_14_COMPATIBILITY = true;
             }
             else if (version > 1.4) {
-                MATH_PROCESSOR = (MathProcessor) Class.forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
                 JDK_14_COMPATIBILITY = false;
             }
             else {
@@ -269,8 +271,7 @@ public class ParseTools {
         do {
             for (Class iface : cls.getInterfaces()) {
                 if ((m = getExactMatch(name, args, rt, iface)) != null) {
-                    best = m;
-                    if (m.getDeclaringClass().getSuperclass() != null) {
+                    if ((best = m).getDeclaringClass().getSuperclass() != null) {
                         cls = m.getDeclaringClass();
                     }
                 }
@@ -405,7 +406,7 @@ public class ParseTools {
                 /**
                  * Now try the system classloader.
                  */
-                cls = Class.forName(className);
+                cls = forName(className);
             }
 
             cache.put(className, cls);
@@ -672,7 +673,7 @@ public class ParseTools {
             throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
         }
         else {
-            return ResolverTools.insertFactory(factory, new ClassImportResolverFactory());
+            return insertFactory(factory, new ClassImportResolverFactory());
         }
     }
 
@@ -689,7 +690,7 @@ public class ParseTools {
             throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
         }
         else {
-            return ResolverTools.insertFactory(factory, new StaticMethodImportResolverFactory());
+            return insertFactory(factory, new StaticMethodImportResolverFactory());
         }
     }
 
@@ -866,7 +867,6 @@ public class ParseTools {
     }
 
     public static Object handleParserEgress(Object result, boolean returnBigDecimal) {
-
         if (result instanceof BigDecimal) {
             int scale = ((BigDecimal) result).scale();
             if (returnBigDecimal) return result;
@@ -883,9 +883,9 @@ public class ParseTools {
                 return ((BigDecimal) result).intValue();
             }
         }
-        else
+        else {
             return result;
-
+        }
     }
 
     public static Method determineActualTargetMethod(Method method) {
@@ -1080,8 +1080,6 @@ public class ParseTools {
             }
         }
 
-        //     return new int[]{-1, 0};
-
         switch (type) {
             case '[':
                 throw new CompileException("unbalanced braces [ ... ]", chars, start);
@@ -1206,7 +1204,6 @@ public class ParseTools {
             }
             return tk.canSerializeAccessor() ? new ExecutableAccessorSafe(tk, false, compiled.getKnownEgressType()) :
                     new ExecutableAccessor(tk, false, compiled.getKnownEgressType());
-
         }
 
         return compiled;

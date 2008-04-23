@@ -61,8 +61,6 @@ public class IEEEFloatingPointMath implements MathProcessor {
         else {
             return _doOperations(type1, val1, operation, type2, val2);
         }
-
-
     }
 
     private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2) {

@@ -86,13 +86,13 @@ public class AbstractParser implements Serializable {
         /**
          * Setup the basic literals
          */
-        AbstractParser.LITERALS.put("true", TRUE);
-        AbstractParser.LITERALS.put("false", FALSE);
+        LITERALS.put("true", TRUE);
+        LITERALS.put("false", FALSE);
 
-        AbstractParser.LITERALS.put("null", null);
-        AbstractParser.LITERALS.put("nil", null);
+        LITERALS.put("null", null);
+        LITERALS.put("nil", null);
 
-        AbstractParser.LITERALS.put("empty", BlankLiteral.INSTANCE);
+        LITERALS.put("empty", BlankLiteral.INSTANCE);
 
         /**
          * Add System and all the class wrappers from the JCL.
@@ -563,7 +563,7 @@ public class AbstractParser implements Serializable {
                         }
 
                         case '=':
-                            return createOperator(expr, start, (cursor += 2), fields);
+                            return createOperator(expr, start, (cursor += 2));
 
                         case '-':
                             if (isNext('-')) {
@@ -578,7 +578,7 @@ public class AbstractParser implements Serializable {
                                 }
                             }
                             else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
-                                return createOperator(expr, start, cursor++ + 1, fields);
+                                return createOperator(expr, start, cursor++ + 1);
                             }
                             else if ((cursor - 1) != 0 || (!isDigit(lookBehind())) && isDigit(lookAhead())) {
                                 cursor++;
@@ -597,13 +597,13 @@ public class AbstractParser implements Serializable {
                                     return lastNode = new PreFixIncNode(name);
                                 }
                             }
-                            return createOperator(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1);
 
                         case '*':
                             if (isNext('*')) {
                                 cursor++;
                             }
-                            return createOperator(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1);
 
                         case ';':
                             cursor++;
@@ -684,7 +684,7 @@ public class AbstractParser implements Serializable {
                         case ':':
                         case '^':
                         case '%': {
-                            return createOperator(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1);
                         }
 
                         case '(': {
@@ -763,12 +763,7 @@ public class AbstractParser implements Serializable {
                             char[] _subset = null;
                             if (singleToken) {
                                 int st;
-
-                                //String tokenStr = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st));
-
-                                name = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st));
-
-                                if (pCtx.hasImport(name)) {
+                                if (pCtx.hasImport(name = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st)))) {
                                     start = cursor;
                                     captureToEOS();
                                     return lastNode = new TypeCast(subset(expr, start, cursor - start), pCtx.getImport(name), fields);
@@ -810,26 +805,26 @@ public class AbstractParser implements Serializable {
                         case '>': {
                             if (expr[cursor + 1] == '>') {
                                 if (expr[cursor += 2] == '>') cursor++;
-                                return createOperator(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
                             else if (expr[cursor + 1] == '=') {
-                                return createOperator(expr, start, cursor += 2, fields);
+                                return createOperator(expr, start, cursor += 2);
                             }
                             else {
-                                return createOperator(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor);
                             }
                         }
 
                         case '<': {
                             if (expr[++cursor] == '<') {
                                 if (expr[++cursor] == '<') cursor++;
-                                return createOperator(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
                             else if (expr[cursor] == '=') {
-                                return createOperator(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor);
                             }
                             else {
-                                return createOperator(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
                         }
 
@@ -850,10 +845,10 @@ public class AbstractParser implements Serializable {
 
                         case '&': {
                             if (expr[cursor++ + 1] == '&') {
-                                return createOperator(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor);
                             }
                             else {
-                                return createOperator(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
                         }
 
@@ -862,7 +857,7 @@ public class AbstractParser implements Serializable {
                                 return new OperatorNode(OPERATORS.get(new String(expr, start, ++cursor - start)));
                             }
                             else {
-                                return createOperator(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
                         }
 
@@ -880,7 +875,7 @@ public class AbstractParser implements Serializable {
                             }
                             else {
                                 if (expr[cursor] == '=') cursor++;
-                                return createOperator(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
 
                         case '!': {
@@ -897,8 +892,7 @@ public class AbstractParser implements Serializable {
                             else if (expr[cursor] != '=')
                                 throw new CompileException("unexpected operator '!'", expr, cursor, null);
                             else {
-                                return createOperator(expr, start, ++cursor, fields);
-                                //   return new OperatorNode(OPERATORS.get("!="));
+                                return createOperator(expr, start, ++cursor);
                             }
                         }
 
@@ -906,7 +900,6 @@ public class AbstractParser implements Serializable {
                         case '{':
                             cursor = balancedCapture(expr, cursor, expr[cursor]) + 1;
                             if (tokenContinues()) {
-                                //   if (lookAhead(1) == '.') {
                                 lastNode = new InlineCollectionNode(expr, start, start = cursor, fields);
                                 captureToEOT();
                                 return lastNode = new Union(expr, start + 1, cursor, fields, lastNode);
@@ -922,6 +915,7 @@ public class AbstractParser implements Serializable {
             }
 
             if (start == cursor) return null;
+
             return createPropertyToken(start, cursor);
         }
         catch (CompileException e) {
@@ -972,10 +966,10 @@ public class AbstractParser implements Serializable {
         return lastNode;
     }
 
-    private ASTNode createOperator(final char[] expr, final int start, final int end, int fields) {
-        char[] e = subset(expr, start, end - start);
+    private ASTNode createOperator(final char[] expr, final int start, final int end) {
+     //   char[] e = subset(expr, start, end - start);
         lastWasIdentifier = false;
-        return lastNode = new OperatorNode(OPERATORS.get(new String(e)));
+        return lastNode = new OperatorNode(OPERATORS.get(new String(expr, start, end - start)));
     }
 
     private char[] subArray(final int start, final int end) {
@@ -1079,17 +1073,13 @@ public class AbstractParser implements Serializable {
                     }
                 }
                 while (ifThenElseblockContinues());
+
                 return first;
             }
 
             default: // either BLOCK_WITH or BLOCK_FOREACH
                 captureToNextTokenJunction();
-                //         if (debugSymbols) {
                 skipWhitespaceWithLineAccounting();
-                //             }
-//                else {
-//                    skipWhitespace();
-//                }
                 return _captureBlock(null, expr, true, type);
         }
 
@@ -1200,8 +1190,6 @@ public class AbstractParser implements Serializable {
             /**
              * This block is an: IF, FOREACH or WHILE node.
              */
-
-//            if (debugSymbols) {
             int[] cap = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(');
 
             endCond = cursor = cap[0];
@@ -1210,14 +1198,6 @@ public class AbstractParser implements Serializable {
             cursor++;
 
             pCtx.incrementLineCount(cap[1]);
-
-            //getParserContext().setLineCount(line = getParserContext().getLineCount() + cap[1]);
-//            }
-//            else {
-//                endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
-//                startCond++;
-//                cursor++;
-//            }
         }
 
         skipWhitespace();
@@ -1227,19 +1207,10 @@ public class AbstractParser implements Serializable {
         }
         else if (expr[cursor] == '{') {
             blockStart = cursor;
-
-//            if (debugSymbols) {
             int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '{');
             blockEnd = cursor = cap[0];
 
             pCtx.incrementLineCount(cap[1]);
-
-            //   getParserContext().setLineCount((line = getParserContext().getLineCount() + cap[1]));
-
-            //           }
-//            else {
-//                blockEnd = cursor = balancedCapture(expr, cursor, '{');
-//            }
         }
         else {
             blockStart = cursor - 1;
@@ -1481,8 +1452,7 @@ public class AbstractParser implements Serializable {
 
     protected void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
-            this.expr = EX_PRECACHE.get(expression);
-            if (this.expr == null) {
+            if ((this.expr = EX_PRECACHE.get(expression)) == null) {
                 length = (this.expr = expression.toCharArray()).length;
 
                 // trim any whitespace.
