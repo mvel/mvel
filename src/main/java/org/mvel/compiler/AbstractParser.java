@@ -146,13 +146,10 @@ public class AbstractParser implements Serializable {
                 throw new RuntimeException("cannot resolve a built-in literal", e);
             }
         }
-
         //LITERALS.putAll(Units.MEASUREMENTS_ALL);
-
         //loadLanguageFeaturesByLevel(5);
         setLanguageLevel(5);
     }
-
 
     public static void configureFactory() {
         if (MVEL.THREAD_SAFE) {
@@ -162,7 +159,6 @@ public class AbstractParser implements Serializable {
             EX_PRECACHE = new WeakHashMap<String, char[]>(10);
         }
     }
-
 
     protected ASTNode nextTokenSkipSymbols() {
         ASTNode n = nextToken();
@@ -402,7 +398,7 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case '*':
-                                if (isNext('=')) {
+                                if (lookAhead() == '=') {
                                     name = new String(expr, start, trimLeft(cursor) - start);
 
                                     start = cursor += 2;
@@ -419,7 +415,7 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case '/':
-                                if (isNext('=')) {
+                                if (lookAhead() == '=') {
                                     name = new String(expr, start, trimLeft(cursor) - start);
 
                                     start = cursor += 2;
@@ -444,7 +440,7 @@ public class AbstractParser implements Serializable {
                                 continue;
 
                             case '~':
-                                if (isNext('=')) {
+                                if (lookAhead() == '=') {
                                     char[] stmt = subArray(start, trimLeft(cursor));
 
                                     start = cursor += 2;
@@ -455,7 +451,7 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case '=':
-                                if (isNext('+')) {
+                                if (lookAhead() == '+') {
                                     name = new String(expr, start, trimLeft(cursor) - start);
 
                                     start = cursor += 2;
@@ -469,7 +465,7 @@ public class AbstractParser implements Serializable {
                                     }
                                 }
 
-                                if (greedy && !isNext('=')) {
+                                if (greedy && lookAhead() != '=') {
                                     cursor++;
 
                                     captureToEOS();
@@ -485,12 +481,12 @@ public class AbstractParser implements Serializable {
                                         if (lastNode.getLiteralValue() instanceof String) {
                                             if (pCtx.hasImport((String) lastNode.getLiteralValue())) {
                                                 lastNode.setLiteralValue(pCtx.getImport((String) lastNode.getLiteralValue()));
-                                                lastNode.setAsLiteral();
+                                             //   lastNode.setAsLiteral();
                                                 lastNode.discard();
                                             }
                                             else if (stk != null && stk.peek() instanceof Class) {
                                                 lastNode.setLiteralValue(stk.pop());
-                                                lastNode.setAsLiteral();
+                                          //      lastNode.setAsLiteral();
                                                 lastNode.discard();
                                             }
                                             else {
@@ -499,7 +495,7 @@ public class AbstractParser implements Serializable {
                                                      *  take a stab in the dark and try and load the class
                                                      */
                                                     lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
-                                                    lastNode.setAsLiteral();
+                                             //       lastNode.setAsLiteral();
                                                     lastNode.discard();
                                                 }
                                                 catch (ClassNotFoundException e) {
@@ -566,7 +562,7 @@ public class AbstractParser implements Serializable {
                             return createOperator(expr, start, (cursor += 2));
 
                         case '-':
-                            if (isNext('-')) {
+                            if (lookAhead() == '-') {
                                 start = cursor += 2;
                                 captureToEOT();
 
@@ -586,7 +582,7 @@ public class AbstractParser implements Serializable {
                             }
 
                         case '+':
-                            if (isNext('+')) {
+                            if (lookAhead() == '+') {
                                 start = cursor += 2;
                                 captureToEOT();
 
@@ -600,7 +596,7 @@ public class AbstractParser implements Serializable {
                             return createOperator(expr, start, cursor++ + 1);
 
                         case '*':
-                            if (isNext('*')) {
+                            if (lookAhead() == '*') {
                                 cursor++;
                             }
                             return createOperator(expr, start, cursor++ + 1);
@@ -612,7 +608,7 @@ public class AbstractParser implements Serializable {
 
                         case '#':
                         case '/':
-                            if (isNext(expr[cursor])) {
+                            if (lookAhead() == expr[cursor]) {
                                 /**
                                  * Handle single line comments.
                                  */
@@ -636,7 +632,7 @@ public class AbstractParser implements Serializable {
 
                                 continue;
                             }
-                            else if (expr[cursor] == '/' && isNext('*')) {
+                            else if (expr[cursor] == '/' && lookAhead() == '*') {
                                 /**
                                  * Handle multi-line comments.
                                  */
@@ -660,7 +656,7 @@ public class AbstractParser implements Serializable {
                                     if (cursor == len) {
                                         throw new CompileException("unterminated block comment", expr, cursor);
                                     }
-                                    if (expr[cursor] == '*' && isNext('/')) {
+                                    if (expr[cursor] == '*' && lookAhead() == '/') {
                                         if ((cursor += 2) >= length) return null;
                                         skipWhitespaceWithLineAccounting();
                                         start = cursor;
@@ -708,9 +704,8 @@ public class AbstractParser implements Serializable {
                                     case '"':
                                         cursor = captureStringLiteral('"', expr, cursor, length);
                                         break;
-
                                     case 'i':
-                                        if (isNext('n') && isWhitespace(lookAhead(2)) && !isIdentifierPart(lookBehind())) {
+                                        if (lookAhead() == 'n' && isWhitespace(lookAhead(2)) && !isIdentifierPart(lookBehind())) {
                                             fields |= ASTNode.FOLD;
                                             for (int level = brace; cursor != length; cursor++) {
                                                 switch (expr[cursor]) {
@@ -1115,7 +1110,6 @@ public class AbstractParser implements Serializable {
              */
             if (isReservedWord(functionName) || !isValidNameorLabel(functionName))
                 throw new CompileException("illegal function name or use of reserved word", expr, cursor);
-
 
             if (expr[cursor] == '(') {
                 /**
@@ -1545,9 +1539,9 @@ public class AbstractParser implements Serializable {
      * @param c
      * @return
      */
-    protected boolean isNext(char c) {
-        return lookAhead() == c;
-    }
+//    protected boolean isNext(char c) {
+//        return lookAhead() == c;
+//    }
 
     protected ParserContext getParserContext() {
         if (parserContext == null || parserContext.get() == null) {

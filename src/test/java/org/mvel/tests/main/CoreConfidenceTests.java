@@ -206,8 +206,6 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testShortPathExpression() {
         assertEquals(null, MVEL.eval("3 > 4 && foo.toUC('test'); foo.register", new Base(), createTestMap()));
-
-        //   assertEquals(null, test("3 > 4 && foo.toUC('test'); foo.register"));
     }
 
     public void testShortPathExpression2() {

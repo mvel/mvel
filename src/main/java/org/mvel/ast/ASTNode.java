@@ -300,28 +300,8 @@ public class ASTNode implements Cloneable, Serializable {
 
     public void setLiteralValue(Object literal) {
         this.literal = literal;
+        this.fields |= LITERAL;
     }
-
-//    protected Object valRet(final Object value) {
-//        if ((fields & NEGATION) != 0) {
-//            try {
-//                return !((Boolean) value);
-//            }
-//            catch (Exception e) {
-//                throw new CompileException("illegal negation of non-boolean value");
-//            }
-//        }
-//        else if ((fields & INVERT) != 0) {
-//            try {
-//                return ~((Integer) value);
-//            }
-//            catch (Exception e) {
-//                throw new CompileException("bitwise (~) operator can only be applied to integers");
-//            }
-//        }
-//
-//        return value;
-//    }
 
     protected Object tryStaticAccess(Object thisRef, VariableResolverFactory factory) {
         try {
@@ -450,14 +430,12 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public Integer getOperator() {
-     //   return (Integer) literal;
         return Operator.NOOP;
     }
 
     protected boolean isCollection() {
         return (fields & COLLECTION) != 0;
     }
-
 
     public boolean isAssignment() {
         return ((fields & ASSIGN) != 0);
@@ -516,7 +494,6 @@ public class ASTNode implements Cloneable, Serializable {
         return safeAccessor != null;
     }
 
-
     public ASTNode() {
     }
 
@@ -537,10 +514,7 @@ public class ASTNode implements Cloneable, Serializable {
 
     public String toString() {
         return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" : String.valueOf(literal);
-
     }
-
-
 }
 
 
