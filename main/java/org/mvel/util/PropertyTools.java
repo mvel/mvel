@@ -157,23 +157,6 @@ public class PropertyTools {
 
     }
 
-    public static boolean isNumber(char[] val) {
-        int len = val.length;
-        char c;
-        int i = 0;
-        if (len > 1) {
-            if (val[0] == '-') i++;
-            else if (val[0] == '~') {
-                i++;
-                if (val[1] == '-') i++;
-            }
-        }
-        for (; i < len; i++) {
-            if (!isDigit(c = val[i]) && c != '.') return false;
-        }
-
-        return len > 0;
-    }
 
     public static Object handleNumericConversion(final char[] val) {
         switch (numericTest(val)) {
@@ -257,10 +240,11 @@ public class PropertyTools {
                 || val instanceof Short || val instanceof Character;
     }
 
+
     public static boolean isNumber(final String val) {
         int len = val.length();
-        //  char[] a = val.toCharArray();
         char c;
+        boolean f = true;
         int i = 0;
         if (len > 1) {
             if (val.charAt(0) == '-') i++;
@@ -270,11 +254,45 @@ public class PropertyTools {
             }
         }
         for (; i < len; i++) {
-            if (!isDigit(c = val.charAt(i)) && c != '.') return false;
+            if (!isDigit(c = val.charAt(i))) {
+                if (c == '.' && f) {
+                    f = false;
+                }
+                else {
+                    return false;
+                }
+            }
         }
 
         return len > 0;
     }
+
+    public static boolean isNumber(char[] val) {
+        int len = val.length;
+        char c;
+        boolean f = true;
+        int i = 0;
+        if (len > 1) {
+            if (val[0] == '-') i++;
+            else if (val[0] == '~') {
+                i++;
+                if (val[1] == '-') i++;
+            }
+        }
+        for (; i < len; i++) {
+            if (!isDigit(c = val[i])) {
+                if (c == '.' && f) {
+                    f = false;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+
+        return len > 0;
+    }
+
 
     public static boolean contains(Object toCompare, Object testValue) {
         if (toCompare == null)

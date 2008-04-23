@@ -78,7 +78,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
     }
 
     private static Object _doOperations(final int type1, final Object val1, final int operation, final int type2, final Object val2) {
-        if (operation < 10 || operation == EQUAL || operation == NEQUAL) {
+        if (operation < 20) {
             if (type1 > 99 && type1 == type2) {
                 return doOperationsSameType(type1, val1, operation, val2);
             }
@@ -118,31 +118,46 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case MULT:
             case MOD:
             case GTHAN:
-                if (val1 instanceof Comparable) {
+                if (val1 instanceof String && ((String) val1).length() == 1 && String.valueOf(val2).length() == 1) {
+                    return ((String) val1).charAt(0) > ((String) val2).charAt(0);
+                }
+                else if (val1 instanceof Comparable) {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) == 1 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 break;
 
             case GETHAN:
-                if (val1 instanceof Comparable) {
+                  if (val1 instanceof String && ((String) val1).length() == 1 && String.valueOf(val2).length() == 1) {
+                    return ((String) val1).charAt(0) >= ((String) val2).charAt(0);
+                }
+                else if (val1 instanceof Comparable) {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
+
                 break;
 
             case LTHAN:
-                if (val1 instanceof Comparable) {
+                if (val1 instanceof String && ((String) val1).length() == 1 && String.valueOf(val2).length() == 1) {
+                    return ((String) val1).charAt(0) < ((String) val2).charAt(0);
+                }
+                else if (val1 instanceof Comparable) {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) == -1 ? Boolean.TRUE : Boolean.FALSE;
                 }
+
                 break;
 
             case LETHAN:
-                if (val1 instanceof Comparable) {
+                if (val1 instanceof String && ((String) val1).length() == 1 && String.valueOf(val2).length() == 1) {
+                    return ((String) val1).charAt(0) <= ((String) val2).charAt(0);
+                }
+                else if (val1 instanceof Comparable) {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
+
                 break;
         }
 

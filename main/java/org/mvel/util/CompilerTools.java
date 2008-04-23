@@ -3,6 +3,7 @@ package org.mvel.util;
 import org.mvel.ASTLinkedList;
 import org.mvel.ASTNode;
 import org.mvel.Operator;
+import org.mvel.debug.DebugTools;
 import static org.mvel.Operator.PTABLE;
 import org.mvel.ast.And;
 import org.mvel.ast.BinaryOperation;
@@ -40,7 +41,7 @@ public class CompilerTools {
 
                     optimizedAst.addTokenNode(tkOp);
                 }
-                else if (tkOp.isOperator() && tkOp.getOperator() < 12) {
+                else if (tkOp.isOperator() && tkOp.getOperator() < 20) {
                     int op;
                     int op2;
 
@@ -53,15 +54,22 @@ public class CompilerTools {
                      * right here.
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                            && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 12) {
+                            && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 20) {
                         if (PTABLE[op2] > PTABLE[op]) {
+                            bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode()));
+                        }
+                        else if (PTABLE[op2] == PTABLE[op]) {
                             bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
                         }
                         else {
+                            System.out.println(DebugTools.getOperatorName(op2) + " < " + DebugTools.getOperatorName(op));
                             bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
                         }
+
+                        op = op2;
                         tkOp = tkOp2;
                     }
+
                     optimizedAst.addTokenNode(bo);
 
                     if (tkOp2 != null && tkOp2 != tkOp) {
