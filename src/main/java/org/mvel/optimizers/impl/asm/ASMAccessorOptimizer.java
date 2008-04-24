@@ -46,6 +46,7 @@ import java.io.IOException;
 import static java.lang.System.getProperty;
 import static java.lang.reflect.Array.getLength;
 import java.lang.reflect.*;
+import static java.lang.Thread.currentThread;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -457,6 +458,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else {
             Object ts = tryStaticAccess();
+            //todo: inline final literals
+
 
             if (ts != null) {
                 if (ts instanceof Class) {
@@ -468,10 +471,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     return ts;
                 }
                 else {
-                    assert debug("GETSTATIC " + getDescriptor(((Field) ts).getDeclaringClass()) + "."
+                    assert debug("GETSTATIC " + getInternalName(((Field) ts).getDeclaringClass()) + "."
                             + ((Field) ts).getName() + "::" + getDescriptor(((Field) ts).getType()));
 
-                    mv.visitFieldInsn(GETSTATIC, getDescriptor(((Field) ts).getDeclaringClass()),
+                    mv.visitFieldInsn(GETSTATIC, getInternalName(((Field) ts).getDeclaringClass()),
                             ((Field) ts).getName(), getDescriptor(returnType = ((Field) ts).getType()));
 
 
@@ -1049,15 +1052,18 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         mv.visitMethodInsn(INVOKESTATIC, "org/mvel/DataConversion", "convert", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
     }
 
-    private static final ClassLoader classLoader;
-    private static final Method defineClass;
+    private static final JITClassLoader classLoader;
+   // private static final Method defineClass;
 
     static {
         try {
-            classLoader = Thread.currentThread().getContextClassLoader();
+         //   classLoader = Thread.currentThread().getContextClassLoader();
+
+            classLoader = new JITClassLoader(currentThread().getContextClassLoader());
+
             //noinspection RedundantArrayCreation
-            defineClass = ClassLoader.class.getDeclaredMethod("defineClass",
-                    new Class[]{String.class, byte[].class, int.class, int.class});
+//            defineClass = ClassLoader.class.getDeclaredMethod("defineClass",
+//                    new Class[]{String.class, byte[].class, int.class, int.class});
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -1068,20 +1074,23 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         /**
          * This must be synchronized.  Two classes cannot be simultaneously deployed in the JVM.
          */
-        synchronized (defineClass) {
-            defineClass.setAccessible(true);
-            try {
-                //noinspection RedundantArrayCreation
-                return (Class) defineClass.invoke(classLoader, new Object[]{className, b, 0, (b.length)});
-            }
-            catch (Exception t) {
-                dumpAdvancedDebugging();
-                throw t;
-            }
-            finally {
-                defineClass.setAccessible(false);
-            }
-        }
+
+       return classLoader.defineClassX(className, b, 0, b.length);
+
+//        synchronized (defineClass) {
+//            defineClass.setAccessible(true);
+//            try {
+//                //noinspection RedundantArrayCreation
+//                return (Class) defineClass.invoke(classLoader, new Object[]{className, b, 0, (b.length)});
+//            }
+//            catch (Exception t) {
+//                dumpAdvancedDebugging();
+//                throw t;
+//            }
+//            finally {
+//                defineClass.setAccessible(false);
+//            }
+//        }
     }
 
 
