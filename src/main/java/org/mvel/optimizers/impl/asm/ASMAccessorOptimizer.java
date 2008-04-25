@@ -361,11 +361,22 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             if (((member.getModifiers() & Modifier.STATIC) != 0)) {
-                assert debug("GETSTATIC " + getDescriptor(member.getDeclaringClass()) + "."
-                        + member.getName() + "::" + getDescriptor(((Field) member).getType()));
+                if ((member.getModifiers() & Modifier.FINAL) != 0) {
+                    Object finalVal = ((Field) member).get(null);
+                    assert debug("LDC " + String.valueOf(finalVal));
+                    mv.visitLdcInsn(finalVal);
+                    wrapPrimitive(finalVal.getClass());
+                    return finalVal;
+                }
+                else {
+                    assert debug("GETSTATIC " + getDescriptor(member.getDeclaringClass()) + "."
+                            + member.getName() + "::" + getDescriptor(((Field) member).getType()));
 
-                mv.visitFieldInsn(GETSTATIC, getInternalName(member.getDeclaringClass()),
-                        member.getName(), getDescriptor(returnType = ((Field) member).getType()));
+                    mv.visitFieldInsn(GETSTATIC, getInternalName(member.getDeclaringClass()),
+                            member.getName(), getDescriptor(returnType = ((Field) member).getType()));
+                }
+
+
             }
             else {
                 assert debug("CHECKCAST " + getInternalName(cls));
@@ -471,14 +482,26 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     return ts;
                 }
                 else {
-                    assert debug("GETSTATIC " + getInternalName(((Field) ts).getDeclaringClass()) + "."
-                            + ((Field) ts).getName() + "::" + getDescriptor(((Field) ts).getType()));
+                    Field f = (Field) ts;
 
-                    mv.visitFieldInsn(GETSTATIC, getInternalName(((Field) ts).getDeclaringClass()),
-                            ((Field) ts).getName(), getDescriptor(returnType = ((Field) ts).getType()));
+                    if ((f.getModifiers() & Modifier.FINAL) != 0) {
+                        Object finalVal = f.get(null);
+                        assert debug("LDC " + String.valueOf(finalVal));
+                        mv.visitLdcInsn(finalVal);
+                        wrapPrimitive(finalVal.getClass());
+                        return finalVal;
+                    }
+                    else {
+
+                        assert debug("GETSTATIC " + getInternalName(f.getDeclaringClass()) + "."
+                                + ((Field) ts).getName() + "::" + getDescriptor(f.getType()));
+
+                        mv.visitFieldInsn(GETSTATIC, getInternalName(f.getDeclaringClass()),
+                                f.getName(), getDescriptor(returnType = f.getType()));
 
 
-                    return ((Field) ts).get(null);
+                        return f.get(null);
+                    }
                 }
             }
             else if (ctx instanceof Class) {
@@ -731,7 +754,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 }
 
 
-                if (variableFactory.isIndexedFactory()  && variableFactory.isTarget(name)) {
+                if (variableFactory.isIndexedFactory() && variableFactory.isTarget(name)) {
                     loadVariableByIndex(variableFactory.variableIndexOf(name));
                 }
                 else {
@@ -1053,11 +1076,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private static final JITClassLoader classLoader;
-   // private static final Method defineClass;
+    // private static final Method defineClass;
 
     static {
         try {
-         //   classLoader = Thread.currentThread().getContextClassLoader();
+            //   classLoader = Thread.currentThread().getContextClassLoader();
 
             classLoader = new JITClassLoader(currentThread().getContextClassLoader());
 
@@ -1075,7 +1098,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          * This must be synchronized.  Two classes cannot be simultaneously deployed in the JVM.
          */
 
-       return classLoader.defineClassX(className, b, 0, b.length);
+        return classLoader.defineClassX(className, b, 0, b.length);
 
 //        synchronized (defineClass) {
 //            defineClass.setAccessible(true);
