@@ -3148,6 +3148,11 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testCharComparison() {
         assertEquals(true, test("'z' > 'a'"));
     }
+
+    public void testCharComparison2() {
+        assertEquals(false, test("'z' < 'a'"));
+    }
+
 }
 
 
