@@ -147,7 +147,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     public Accessor optimizeAccessor(char[] property, Object staticContext, Object thisRef, VariableResolverFactory factory, boolean root) {
         time = System.currentTimeMillis();
 
-        //inputs = 0;
         compiledInputs = new ArrayList<ExecutableStatement>();
 
         start = cursor = 0;
@@ -286,7 +285,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw new PropertyAccessException(new String(expr), e);
         }
         catch (PropertyAccessException e) {
-            //    throw new PropertyAccessException(e.getMessage(), e);
             throw new CompileException(e.getMessage(), e);
         }
         catch (CompileException e) {
@@ -299,7 +297,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw e;
         }
         catch (Exception e) {
-            //  throw new PropertyAccessException(new String(expr), e);
             throw new CompileException(e.getMessage(), e);
         }
     }
@@ -462,7 +459,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 ldcClassConstant((Class) lit);
             }
 
-            return LITERALS.get(property);
+            return lit;
         }
         else if (ctx == null) {
             throw new NullPointerException("parent field of '" + property + "' is null in: " + new String(expr));
@@ -492,7 +489,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         return finalVal;
                     }
                     else {
-
                         assert debug("GETSTATIC " + getInternalName(f.getDeclaringClass()) + "."
                                 + ((Field) ts).getName() + "::" + getDescriptor(f.getType()));
 
@@ -1080,13 +1076,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     static {
         try {
-            //   classLoader = Thread.currentThread().getContextClassLoader();
-
             classLoader = new JITClassLoader(currentThread().getContextClassLoader());
-
-            //noinspection RedundantArrayCreation
-//            defineClass = ClassLoader.class.getDeclaredMethod("defineClass",
-//                    new Class[]{String.class, byte[].class, int.class, int.class});
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -1099,26 +1089,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          */
 
         return classLoader.defineClassX(className, b, 0, b.length);
-
-//        synchronized (defineClass) {
-//            defineClass.setAccessible(true);
-//            try {
-//                //noinspection RedundantArrayCreation
-//                return (Class) defineClass.invoke(classLoader, new Object[]{className, b, 0, (b.length)});
-//            }
-//            catch (Exception t) {
-//                dumpAdvancedDebugging();
-//                throw t;
-//            }
-//            finally {
-//                defineClass.setAccessible(false);
-//            }
-//        }
     }
 
 
     private boolean debug(String instruction) {
-        // assert ParseTools.debug(instruction);
         if (buildLog != null) {
             buildLog.append(instruction).append("\n");
         }
@@ -1510,39 +1484,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         mv.visitFieldInsn(GETFIELD, className, "p" + number, "Lorg/mvel/compiler/ExecutableStatement;");
     }
 
-//    private void writeOutLiteral(Object lit) {
-//        if (lit instanceof Integer) {
-//            intPush((Integer) lit);
-//            return;
-//        }
-//
-//
-//        debug("LDC " + lit);
-//        if (lit instanceof String) {
-//            mv.visitLdcInsn(lit);
-//        }
-//        else if (lit instanceof Long) {
-//            mv.visitLdcInsn(lit);
-//        }
-//        else if (lit instanceof Float) {
-//            mv.visitLdcInsn(lit);
-//        }
-//        else if (lit instanceof Double) {
-//            mv.visitLdcInsn(lit);
-//        }
-//        else if (lit instanceof Short) {
-//            mv.visitLdcInsn(lit);
-//        }
-//        else if (lit instanceof Character) {
-//            mv.visitLdcInsn(lit);
-//        }
-//        else if (lit instanceof Boolean) {
-//            mv.visitLdcInsn(lit);
-//        }
-//        else if (lit instanceof Byte) {
-//            mv.visitLdcInsn(lit);
-//        }
-//    }
 
 
     private void ldcClassConstant(Class cls) {
