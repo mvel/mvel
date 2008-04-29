@@ -21,15 +21,17 @@ package org.mvel.optimizers;
 import org.mvel.CompileException;
 import org.mvel.optimizers.impl.asm.ASMAccessorOptimizer;
 import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
+import org.mvel.optimizers.dynamic.DynamicOptimizer;
 
 import static java.lang.Thread.currentThread;
 import java.util.HashMap;
 import java.util.Map;
 
 public class OptimizerFactory {
+    public static String DYNAMIC = "dynamic";
     public static String SAFE_REFLECTIVE = "reflective";
 
-    private static String defaultOptimizer = "ASM";
+    private static String defaultOptimizer;
     private static final Map<String, AccessorOptimizer> accessorCompilers = new HashMap<String, AccessorOptimizer>();
 
     private static ThreadLocal<Class<? extends AccessorOptimizer>> threadOptimizer
@@ -37,6 +39,7 @@ public class OptimizerFactory {
 
     static {
         accessorCompilers.put(SAFE_REFLECTIVE, new ReflectiveAccessorOptimizer());
+        accessorCompilers.put(DYNAMIC, new DynamicOptimizer());
         /**
          * By default, activate the JIT if ASM is present in the classpath
          */
@@ -56,7 +59,9 @@ public class OptimizerFactory {
         }
 
         if (Boolean.getBoolean("mvel.disable.jit"))
-            defaultOptimizer = SAFE_REFLECTIVE;
+            setDefaultOptimizer(SAFE_REFLECTIVE);
+        else
+            setDefaultOptimizer(DYNAMIC);
     }
 
     public static AccessorOptimizer getDefaultAccessorCompiler() {
@@ -91,9 +96,6 @@ public class OptimizerFactory {
     }
 
     public static void setThreadAccessorOptimizer(Class<? extends AccessorOptimizer> optimizer) {
-//        if (threadOptimizer == null) {
-//            threadOptimizer = new ThreadLocal<Class<? extends AccessorOptimizer>>();
-//        }
         if (optimizer == null) throw new RuntimeException("null optimizer");
         threadOptimizer.set(optimizer);
     }
@@ -101,7 +103,9 @@ public class OptimizerFactory {
     public static void setDefaultOptimizer(String name) {
         try {
             //noinspection unchecked
-            setThreadAccessorOptimizer(accessorCompilers.get(defaultOptimizer = name).getClass());
+            AccessorOptimizer ao = accessorCompilers.get(defaultOptimizer = name);
+            ao.init();
+            setThreadAccessorOptimizer(ao.getClass());
         }
         catch (Exception e) {
             throw new CompileException("unable to instantiate accessor compiler", e);

@@ -247,7 +247,7 @@ public abstract class AbstractTest extends TestCase {
 
         if (!Boolean.getBoolean("mvel.disable.jit")) {
 
-            setDefaultOptimizer("ASM");
+            setDefaultOptimizer("dynamic");
 
             try {
                 first = executeExpression(compiled, new Base(), createTestMap());

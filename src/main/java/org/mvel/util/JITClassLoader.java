@@ -1,6 +1,6 @@
 package org.mvel.util;
 
-public class JITClassLoader extends ClassLoader {
+public class JITClassLoader extends ClassLoader implements MVELClassLoader {
     public JITClassLoader(ClassLoader classLoader) {
         super(classLoader);
     }
