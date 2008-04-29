@@ -1053,6 +1053,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         classLoader = cl;
     }
 
+    public static MVELClassLoader getMVELClassLoader() {
+        return classLoader;
+    }
+
     public void init() {
         try {
             classLoader = new JITClassLoader(currentThread().getContextClassLoader());

@@ -17,7 +17,6 @@ public class DynamicAccessor implements Accessor {
     private boolean opt = false;
     private Accessor _accessor;
 
-
     public DynamicAccessor(char[] property, int type, Accessor _accessor) {
         this._accessor = _accessor;
         this.type = type;
@@ -30,7 +29,6 @@ public class DynamicAccessor implements Accessor {
             if (++runcount > DynamicOptimizer.tenuringThreshold) {
                 if ((System.currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
                     opt = true;
-   //                 System.out.println("[JIT]:TenureThreshold Exceeded. Compiling <<" + new String(property) + ">>");
                     return optimize(ctx, elCtx, variableFactory);
                 }
                 else {
@@ -39,7 +37,6 @@ public class DynamicAccessor implements Accessor {
                 }
             }
         }
-
 
         return _accessor.getValue(ctx, elCtx, variableFactory);
     }

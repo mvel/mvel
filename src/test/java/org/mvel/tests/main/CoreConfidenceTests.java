@@ -19,9 +19,12 @@ import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
+import org.mvel.optimizers.dynamic.DynamicClassLoader;
+import org.mvel.optimizers.impl.asm.ASMAccessorOptimizer;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.MethodStub;
 import org.mvel.util.CompilerTools;
+import org.mvel.util.MVELClassLoader;
 import static org.mvel.util.ParseTools.loadFromFile;
 
 import java.awt.*;
@@ -3152,7 +3155,6 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testCharComparison2() {
         assertEquals(false, test("'z' < 'a'"));
     }
-
 }
 
 

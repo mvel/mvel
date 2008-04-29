@@ -20,11 +20,12 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
     public static int maximumTenure = 2000;
 
     public void init() {
-        setMVELClassLoader(classLoader = new DynamicClassLoader(currentThread().getContextClassLoader()));
+         setMVELClassLoader(classLoader = new DynamicClassLoader(currentThread().getContextClassLoader()));
     }
 
     private void enforceTenureLimit() {
         if (classLoader.getTotalClasses() > maximumTenure) {
+            classLoader = null;
             init();
         }
     }
