@@ -957,6 +957,14 @@ public class AbstractParser implements Serializable {
      * @return -
      */
     private ASTNode createToken(final char[] expr, final int start, final int end, int fields) {
+        try {
+            throw new Throwable();
+        }
+        catch (Throwable t) {
+            System.out.println("[[" + new String(expr) + "]]");
+            t.printStackTrace();
+        }
+
         lastWasIdentifier = (lastNode = new ASTNode(expr, start, end, fields)).isIdentifier();
         return lastNode;
     }

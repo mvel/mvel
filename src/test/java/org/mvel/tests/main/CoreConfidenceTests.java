@@ -617,11 +617,15 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testSoundex3() {
-        assertEquals(true, test("c soundslike 'kat'"));
+        assertEquals(true, test("(c soundslike 'kat')"));
     }
 
     public void testSoundex4() {
-        assertEquals(true, test("_xx1 = 'cat'; _xx2 = 'katt'; _xx1 soundslike _xx2"));
+        assertEquals(true, test("_xx1 = 'cat'; _xx2 = 'katt'; (_xx1 soundslike _xx2)"));
+    }
+
+    public void testSoundex5() {
+        assertEquals(true, test("_type = 'fubar';_type soundslike \"foobar\""));
     }
 
     public void testSimilarity1() {
