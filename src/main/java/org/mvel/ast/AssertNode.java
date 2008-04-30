@@ -31,8 +31,6 @@ public class AssertNode extends ASTNode {
     public ExecutableStatement assertion;
 
     public AssertNode(char[] expr, int fields) {
-        //    super(expr, fields);
-
         this.name = expr;
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             assertion = (ExecutableStatement) subCompileExpression(expr);
@@ -59,6 +57,5 @@ public class AssertNode extends ASTNode {
         catch (ClassCastException e) {
             throw new CompileException("assertion does not contain a boolean statement");
         }
-        //   return getReducedValueAccelerated(ctx, thisValue, factory);
     }
 }

@@ -1,9 +1,12 @@
 package org.mvel.ast;
 
+import org.mvel.integration.VariableResolverFactory;
+
 public class OperatorNode extends ASTNode {
     private Integer operator;
 
     public OperatorNode(Integer operator) {
+      //  assert operator != null;
         this.literal = this.operator = operator;
     }
 
@@ -17,5 +20,13 @@ public class OperatorNode extends ASTNode {
 
     public Integer getOperator() {
         return operator;
+    }
+
+    public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        return literal;
+    }
+
+    public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        return literal;
     }
 }

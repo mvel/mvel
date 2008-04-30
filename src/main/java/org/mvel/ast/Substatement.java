@@ -47,4 +47,8 @@ public class Substatement extends ASTNode {
     public ExecutableStatement getStatement() {
         return statement;
     }
+
+    public String toString() {
+        return "(" + new String(name) + ")";
+    }
 }
