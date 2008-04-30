@@ -30,7 +30,9 @@ import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.StringAppender;
 
 import static java.lang.Character.isJavaIdentifierPart;
+
 import static org.mvel.util.ParseTools.isWhitespace;
+
 import java.lang.reflect.*;
 import static java.lang.reflect.Array.getLength;
 import java.util.*;
@@ -413,7 +415,6 @@ public class PropertyAccessor {
     }
 
 
-
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
@@ -657,7 +658,20 @@ public class PropertyAccessor {
             /**
              * Invoke the target method and return the response.
              */
-            return m.invoke(ctx, args);
+            try {
+                return m.invoke(ctx, args);
+            }
+            catch (IllegalAccessException e) {
+                try {
+                    m = getWidenedTarget(m);
+                    addMethodCache(cls, createSignature(name, tk), m);
+                                       
+                    return m.invoke(ctx, args);
+                }
+                catch (Exception e2) {
+                    throw e;
+                }
+            }
         }
     }
 
