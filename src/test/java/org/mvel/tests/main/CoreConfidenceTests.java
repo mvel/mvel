@@ -620,6 +620,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("c soundslike 'kat'"));
     }
 
+    public void testSoundex4() {
+        assertEquals(true, test("_xx1 = 'cat'; _xx2 = 'katt'; _xx1 soundslike _xx2"));
+    }
+
     public void testSimilarity1() {
         assertEquals(0.6666667f, test("c strsim 'kat'"));
     }

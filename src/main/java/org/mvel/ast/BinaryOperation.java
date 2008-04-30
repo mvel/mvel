@@ -31,6 +31,7 @@ public class BinaryOperation extends ASTNode {
     private ASTNode right;
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right) {
+        assert operation != -1;
         this.operation = operation;
         this.left = left;
         this.right = right;
@@ -50,6 +51,7 @@ public class BinaryOperation extends ASTNode {
     }
 
     public void setOperation(int operation) {
+        assert operation != -1;
         this.operation = operation;
     }
 

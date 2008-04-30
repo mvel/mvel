@@ -164,13 +164,13 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 break;
 
             case SOUNDEX:
-                return soundex(String.valueOf(val1)).equals(soundex(String.valueOf(val2))); 
+                return soundex(String.valueOf(val1)).equals(soundex(String.valueOf(val2)));
         }
 
         throw new CompileException("could not perform numeric operation on non-numeric types: left-type="
                 + (val1 != null ? val1.getClass().getName() : "null") + "; right-type="
                 + (val2 != null ? val2.getClass().getName() : "null")
-                + " [vals (" + valueOf(val1) + ", " + valueOf(val2) + ") operation=" + DebugTools.getOperatorName(operation) + " ]");
+                + " [vals (" + valueOf(val1) + ", " + valueOf(val2) + ") operation=" + DebugTools.getOperatorName(operation) + " (opcode:" + operation + ") ]");
 
     }
 

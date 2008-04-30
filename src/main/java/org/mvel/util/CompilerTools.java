@@ -77,7 +77,7 @@ public class CompilerTools {
                             bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
                         }
                         else {
-                            System.out.println(DebugTools.getOperatorName(op2) + " < " + DebugTools.getOperatorName(op));
+               //             System.out.println(DebugTools.getOperatorName(op2) + " < " + DebugTools.getOperatorName(op));
                             bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
                         }
 
