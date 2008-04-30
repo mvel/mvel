@@ -18,13 +18,11 @@
  */
 package org.mvel.math;
 
-import org.mvel.CompileException;
-import org.mvel.ConversionException;
 import static org.mvel.DataConversion.convert;
-import org.mvel.DataTypes;
 import static org.mvel.DataTypes.EMPTY;
 import static org.mvel.Operator.*;
-import org.mvel.Unit;
+import org.mvel.*;
+import static org.mvel.Soundex.soundex;
 import org.mvel.debug.DebugTools;
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
@@ -164,6 +162,9 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 }
 
                 break;
+
+            case SOUNDEX:
+                return soundex(String.valueOf(val1)).equals(soundex(String.valueOf(val2))); 
         }
 
         throw new CompileException("could not perform numeric operation on non-numeric types: left-type="

@@ -24,6 +24,7 @@ import static org.mvel.DataConversion.convert;
 import org.mvel.DataTypes;
 import static org.mvel.DataTypes.EMPTY;
 import org.mvel.Operator;
+import static org.mvel.Soundex.soundex;
 import static org.mvel.Operator.GTHAN;
 import static org.mvel.Operator.GETHAN;
 import static org.mvel.Operator.LTHAN;
@@ -35,6 +36,7 @@ import static org.mvel.Operator.BW_SHIFT_RIGHT;
 import static org.mvel.Operator.BW_USHIFT_RIGHT;
 import static org.mvel.Operator.BW_XOR;
 import static org.mvel.Operator.BW_USHIFT_LEFT;
+import static org.mvel.Operator.SOUNDEX;
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
 
@@ -174,6 +176,9 @@ public class JDK14CompatabilityMath implements MathProcessor {
                 }
 
                 break;
+
+            case SOUNDEX:
+                return soundex(String.valueOf(val1)).equals(soundex(String.valueOf(val2)));
         }
 
         throw new CompileException("could not perform numeric operation on non-numeric types: left-type="
