@@ -481,12 +481,12 @@ public class AbstractParser implements Serializable {
                                         if (lastNode.getLiteralValue() instanceof String) {
                                             if (pCtx.hasImport((String) lastNode.getLiteralValue())) {
                                                 lastNode.setLiteralValue(pCtx.getImport((String) lastNode.getLiteralValue()));
-                                             //   lastNode.setAsLiteral();
+                                                //   lastNode.setAsLiteral();
                                                 lastNode.discard();
                                             }
                                             else if (stk != null && stk.peek() instanceof Class) {
                                                 lastNode.setLiteralValue(stk.pop());
-                                          //      lastNode.setAsLiteral();
+                                                //      lastNode.setAsLiteral();
                                                 lastNode.discard();
                                             }
                                             else {
@@ -495,7 +495,7 @@ public class AbstractParser implements Serializable {
                                                      *  take a stab in the dark and try and load the class
                                                      */
                                                     lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
-                                             //       lastNode.setAsLiteral();
+                                                    //       lastNode.setAsLiteral();
                                                     lastNode.discard();
                                                 }
                                                 catch (ClassNotFoundException e) {
@@ -957,20 +957,12 @@ public class AbstractParser implements Serializable {
      * @return -
      */
     private ASTNode createToken(final char[] expr, final int start, final int end, int fields) {
-        try {
-            throw new Throwable();
-        }
-        catch (Throwable t) {
-            System.out.println("[[" + new String(expr) + "]]");
-            t.printStackTrace();
-        }
-
         lastWasIdentifier = (lastNode = new ASTNode(expr, start, end, fields)).isIdentifier();
         return lastNode;
     }
 
     private ASTNode createOperator(final char[] expr, final int start, final int end) {
-     //   char[] e = subset(expr, start, end - start);
+        //   char[] e = subset(expr, start, end - start);
         lastWasIdentifier = false;
         return lastNode = new OperatorNode(OPERATORS.get(new String(expr, start, end - start)));
     }
@@ -1008,10 +1000,11 @@ public class AbstractParser implements Serializable {
                 }
 
                 lastWasIdentifier = true;
-                return lastNode = new ASTNode(_subset, 0, _subset.length, fields);
+                //      return lastNode = new ASTNode(_subset, 0, _subset.length, fields);
             }
         }
-        else if ((fields & ASTNode.METHOD) != 0) {
+
+        if ((fields & ASTNode.METHOD) != 0) {
             return lastNode = new ASTNode(expr, start, end, fields);
         }
         else if (LITERALS.containsKey(tmp = new String(expr, start, end - start))) {
@@ -1550,7 +1543,6 @@ public class AbstractParser implements Serializable {
 //    protected boolean isNext(char c) {
 //        return lookAhead() == c;
 //    }
-
     protected ParserContext getParserContext() {
         if (parserContext == null || parserContext.get() == null) {
             newContext();
