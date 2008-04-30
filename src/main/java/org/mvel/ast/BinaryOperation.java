@@ -20,6 +20,10 @@ package org.mvel.ast;
 
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.doOperations;
+import org.mvel.debug.DebugTools;
+import static org.mvel.debug.DebugTools.getOperatorName;
+import org.mvel.Operator;
+import static org.mvel.Operator.PTABLE;
 
 public class BinaryOperation extends ASTNode {
     private int operation;
@@ -34,7 +38,6 @@ public class BinaryOperation extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return doOperations(left.getReducedValueAccelerated(ctx, thisValue, factory), operation, right.getReducedValueAccelerated(ctx, thisValue, factory));
-
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -62,7 +65,39 @@ public class BinaryOperation extends ASTNode {
         return right;
     }
 
+    public ASTNode getRightMost() {
+        BinaryOperation n = this;
+        while (n.right != null && n.right instanceof BinaryOperation) {
+            n = (BinaryOperation) n.right;
+        }
+        return n.right;
+    }
+
+    public BinaryOperation getRightBinary() {
+        return right != null && right instanceof BinaryOperation ? (BinaryOperation) right : null;
+    }
+
     public void setRight(ASTNode right) {
         this.right = right;
+    }
+
+    public void setRightMost(ASTNode right) {
+        BinaryOperation n = this;
+        while (n.right != null && n.right instanceof BinaryOperation) {
+            n = (BinaryOperation) n.right;
+        }
+        n.right = right;
+    }
+
+    public int getPrecedence() {
+        return PTABLE[operation];
+    }
+
+    public boolean isGreaterPrecedence(BinaryOperation o) {
+        return o.getPrecedence() > PTABLE[operation];
+    }
+
+    public String toString() {
+        return "(" + left.toString() + " [" + getOperatorName(operation) + "] " + right.toString() + ")";
     }
 }

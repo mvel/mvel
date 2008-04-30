@@ -21,11 +21,13 @@ package org.mvel.compiler;
 import org.mvel.*;
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
+import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
+import org.mvel.util.StringAppender;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -74,6 +76,9 @@ public class AbstractParser implements Serializable {
 
     protected static ThreadLocal<ParserContext> parserContext;
     protected ParserContext pCtx;
+    protected ExecutionStack dStack;
+    protected Object ctx;
+    protected VariableResolverFactory variableFactory;
 
     static {
         configureFactory();
@@ -81,15 +86,13 @@ public class AbstractParser implements Serializable {
         /**
          * Setup the basic literals
          */
-        AbstractParser.LITERALS.put("true", TRUE);
-        AbstractParser.LITERALS.put("false", FALSE);
+        LITERALS.put("true", TRUE);
+        LITERALS.put("false", FALSE);
 
-        AbstractParser.LITERALS.put("null", null);
-        AbstractParser.LITERALS.put("nil", null);
+        LITERALS.put("null", null);
+        LITERALS.put("nil", null);
 
-        AbstractParser.LITERALS.put("empty", BlankLiteral.INSTANCE);
-
-        //    AbstractParser.LITERALS.put("this", ThisLiteral.class);
+        LITERALS.put("empty", BlankLiteral.INSTANCE);
 
         /**
          * Add System and all the class wrappers from the JCL.
@@ -143,13 +146,10 @@ public class AbstractParser implements Serializable {
                 throw new RuntimeException("cannot resolve a built-in literal", e);
             }
         }
-
         //LITERALS.putAll(Units.MEASUREMENTS_ALL);
-
         //loadLanguageFeaturesByLevel(5);
         setLanguageLevel(5);
     }
-
 
     public static void configureFactory() {
         if (MVEL.THREAD_SAFE) {
@@ -159,7 +159,6 @@ public class AbstractParser implements Serializable {
             EX_PRECACHE = new WeakHashMap<String, char[]>(10);
         }
     }
-
 
     protected ASTNode nextTokenSkipSymbols() {
         ASTNode n = nextToken();
@@ -174,7 +173,6 @@ public class AbstractParser implements Serializable {
      */
     protected ASTNode nextToken() {
         try {
-
             /**
              * If the cursor is at the end of the expression, we have nothing more to do:
              * return null.
@@ -400,7 +398,7 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case '*':
-                                if (isNext('=')) {
+                                if (lookAhead() == '=') {
                                     name = new String(expr, start, trimLeft(cursor) - start);
 
                                     start = cursor += 2;
@@ -417,7 +415,7 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case '/':
-                                if (isNext('=')) {
+                                if (lookAhead() == '=') {
                                     name = new String(expr, start, trimLeft(cursor) - start);
 
                                     start = cursor += 2;
@@ -442,7 +440,7 @@ public class AbstractParser implements Serializable {
                                 continue;
 
                             case '~':
-                                if (isNext('=')) {
+                                if (lookAhead() == '=') {
                                     char[] stmt = subArray(start, trimLeft(cursor));
 
                                     start = cursor += 2;
@@ -453,7 +451,7 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case '=':
-                                if (isNext('+')) {
+                                if (lookAhead() == '+') {
                                     name = new String(expr, start, trimLeft(cursor) - start);
 
                                     start = cursor += 2;
@@ -467,7 +465,7 @@ public class AbstractParser implements Serializable {
                                     }
                                 }
 
-                                if (greedy && !isNext('=')) {
+                                if (greedy && lookAhead() != '=') {
                                     cursor++;
 
                                     captureToEOS();
@@ -483,12 +481,12 @@ public class AbstractParser implements Serializable {
                                         if (lastNode.getLiteralValue() instanceof String) {
                                             if (pCtx.hasImport((String) lastNode.getLiteralValue())) {
                                                 lastNode.setLiteralValue(pCtx.getImport((String) lastNode.getLiteralValue()));
-                                                lastNode.setAsLiteral();
+                                             //   lastNode.setAsLiteral();
                                                 lastNode.discard();
                                             }
                                             else if (stk != null && stk.peek() instanceof Class) {
                                                 lastNode.setLiteralValue(stk.pop());
-                                                lastNode.setAsLiteral();
+                                          //      lastNode.setAsLiteral();
                                                 lastNode.discard();
                                             }
                                             else {
@@ -497,7 +495,7 @@ public class AbstractParser implements Serializable {
                                                      *  take a stab in the dark and try and load the class
                                                      */
                                                     lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
-                                                    lastNode.setAsLiteral();
+                                             //       lastNode.setAsLiteral();
                                                     lastNode.discard();
                                                 }
                                                 catch (ClassNotFoundException e) {
@@ -561,10 +559,10 @@ public class AbstractParser implements Serializable {
                         }
 
                         case '=':
-                            return createToken(expr, start, (cursor += 2), fields);
+                            return createOperator(expr, start, (cursor += 2));
 
                         case '-':
-                            if (isNext('-')) {
+                            if (lookAhead() == '-') {
                                 start = cursor += 2;
                                 captureToEOT();
 
@@ -576,7 +574,7 @@ public class AbstractParser implements Serializable {
                                 }
                             }
                             else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
-                                return createToken(expr, start, cursor++ + 1, fields);
+                                return createOperator(expr, start, cursor++ + 1);
                             }
                             else if ((cursor - 1) != 0 || (!isDigit(lookBehind())) && isDigit(lookAhead())) {
                                 cursor++;
@@ -584,7 +582,7 @@ public class AbstractParser implements Serializable {
                             }
 
                         case '+':
-                            if (isNext('+')) {
+                            if (lookAhead() == '+') {
                                 start = cursor += 2;
                                 captureToEOT();
 
@@ -595,13 +593,13 @@ public class AbstractParser implements Serializable {
                                     return lastNode = new PreFixIncNode(name);
                                 }
                             }
-                            return createToken(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1);
 
                         case '*':
-                            if (isNext('*')) {
+                            if (lookAhead() == '*') {
                                 cursor++;
                             }
-                            return createToken(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1);
 
                         case ';':
                             cursor++;
@@ -610,15 +608,13 @@ public class AbstractParser implements Serializable {
 
                         case '#':
                         case '/':
-                            if (isNext(expr[cursor])) {
+                            if (lookAhead() == expr[cursor]) {
                                 /**
                                  * Handle single line comments.
                                  */
-                                // while (cursor != length && expr[cursor] != '\n') cursor++;
 
                                 captureToEOL();
 
-                                //                             if (debugSymbols) {
                                 line = pCtx.getLineCount();
 
                                 skipWhitespaceWithLineAccounting();
@@ -631,16 +627,12 @@ public class AbstractParser implements Serializable {
                                 lastWasComment = true;
 
                                 pCtx.setLineCount(line);
-                                //                              }
-                                //                               else if (cursor != length) {
-                                //                                  skipWhitespace();
-                                //                              }
 
                                 if ((start = cursor) >= length) return null;
 
                                 continue;
                             }
-                            else if (expr[cursor] == '/' && isNext('*')) {
+                            else if (expr[cursor] == '/' && lookAhead() == '*') {
                                 /**
                                  * Handle multi-line comments.
                                  */
@@ -651,9 +643,7 @@ public class AbstractParser implements Serializable {
                                  * source will spawn a new compiler, and we need to sync this with the
                                  * parser context;
                                  */
-                                //                   if (debugSymbols) {
                                 line = pCtx.getLineCount();
-                                //                   }
 
                                 while (true) {
                                     cursor++;
@@ -661,14 +651,12 @@ public class AbstractParser implements Serializable {
                                      * Since multi-line comments may cross lines, we must keep track of any line-break
                                      * we encounter.
                                      */
-                                    //                       if (debugSymbols) {
                                     skipWhitespaceWithLineAccounting();
-                                    //                       }
 
                                     if (cursor == len) {
                                         throw new CompileException("unterminated block comment", expr, cursor);
                                     }
-                                    if (expr[cursor] == '*' && isNext('/')) {
+                                    if (expr[cursor] == '*' && lookAhead() == '/') {
                                         if ((cursor += 2) >= length) return null;
                                         skipWhitespaceWithLineAccounting();
                                         start = cursor;
@@ -676,7 +664,6 @@ public class AbstractParser implements Serializable {
                                     }
                                 }
 
-                                //                      if (debugSymbols) {
                                 pCtx.setLineCount(line);
 
                                 if (lastNode instanceof LineLabel) {
@@ -685,7 +672,6 @@ public class AbstractParser implements Serializable {
                                 }
 
                                 lastWasComment = true;
-                                //                      }
 
                                 continue;
                             }
@@ -694,7 +680,7 @@ public class AbstractParser implements Serializable {
                         case ':':
                         case '^':
                         case '%': {
-                            return createToken(expr, start, cursor++ + 1, fields);
+                            return createOperator(expr, start, cursor++ + 1);
                         }
 
                         case '(': {
@@ -718,9 +704,8 @@ public class AbstractParser implements Serializable {
                                     case '"':
                                         cursor = captureStringLiteral('"', expr, cursor, length);
                                         break;
-
                                     case 'i':
-                                        if (isNext('n') && isWhitespace(lookAhead(2)) && !isIdentifierPart(lookBehind())) {
+                                        if (lookAhead() == 'n' && isWhitespace(lookAhead(2)) && !isIdentifierPart(lookBehind())) {
                                             fields |= ASTNode.FOLD;
                                             for (int level = brace; cursor != length; cursor++) {
                                                 switch (expr[cursor]) {
@@ -773,28 +758,27 @@ public class AbstractParser implements Serializable {
                             char[] _subset = null;
                             if (singleToken) {
                                 int st;
-                                String tokenStr = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st));
-
-                                if (pCtx.hasImport(tokenStr)) {
+                                if (pCtx.hasImport(name = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st)))) {
                                     start = cursor;
                                     captureToEOS();
-                                    return lastNode = new TypeCast(subset(expr, start, cursor - start), pCtx.getImport(tokenStr), fields);
+                                    return lastNode = new TypeCast(subset(expr, start, cursor - start), pCtx.getImport(name), fields);
                                 }
                                 else {
+                                    int rewind = cursor;
                                     try {
                                         /**
                                          *
                                          *  take a stab in the dark and try and load the class
                                          */
-                                        int _start = cursor;
                                         captureToEOS();
-                                        return lastNode = new TypeCast(subset(expr, _start, cursor - _start), createClass(tokenStr), fields);
+                                        return lastNode = new TypeCast(subset(expr, rewind, cursor - rewind), createClass(name), fields);
 
                                     }
                                     catch (ClassNotFoundException e) {
                                         /**
                                          * Just fail through.
                                          */
+                                        cursor = rewind;
                                     }
                                 }
                             }
@@ -816,26 +800,26 @@ public class AbstractParser implements Serializable {
                         case '>': {
                             if (expr[cursor + 1] == '>') {
                                 if (expr[cursor += 2] == '>') cursor++;
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
                             else if (expr[cursor + 1] == '=') {
-                                return createToken(expr, start, cursor += 2, fields);
+                                return createOperator(expr, start, cursor += 2);
                             }
                             else {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor);
                             }
                         }
 
                         case '<': {
                             if (expr[++cursor] == '<') {
                                 if (expr[++cursor] == '<') cursor++;
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
                             else if (expr[cursor] == '=') {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor);
                             }
                             else {
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
                         }
 
@@ -854,22 +838,21 @@ public class AbstractParser implements Serializable {
 
                             return lastNode;
 
-
                         case '&': {
                             if (expr[cursor++ + 1] == '&') {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor);
                             }
                             else {
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
                         }
 
                         case '|': {
                             if (expr[cursor++ + 1] == '|') {
-                                return createToken(expr, start, ++cursor, fields);
+                                return new OperatorNode(OPERATORS.get(new String(expr, start, ++cursor - start)));
                             }
                             else {
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
                         }
 
@@ -887,7 +870,7 @@ public class AbstractParser implements Serializable {
                             }
                             else {
                                 if (expr[cursor] == '=') cursor++;
-                                return createToken(expr, start, cursor, fields);
+                                return createOperator(expr, start, cursor);
                             }
 
                         case '!': {
@@ -904,7 +887,7 @@ public class AbstractParser implements Serializable {
                             else if (expr[cursor] != '=')
                                 throw new CompileException("unexpected operator '!'", expr, cursor, null);
                             else {
-                                return createToken(expr, start, ++cursor, fields);
+                                return createOperator(expr, start, ++cursor);
                             }
                         }
 
@@ -912,7 +895,6 @@ public class AbstractParser implements Serializable {
                         case '{':
                             cursor = balancedCapture(expr, cursor, expr[cursor]) + 1;
                             if (tokenContinues()) {
-                                //   if (lookAhead(1) == '.') {
                                 lastNode = new InlineCollectionNode(expr, start, start = cursor, fields);
                                 captureToEOT();
                                 return lastNode = new Union(expr, start + 1, cursor, fields, lastNode);
@@ -928,6 +910,7 @@ public class AbstractParser implements Serializable {
             }
 
             if (start == cursor) return null;
+
             return createPropertyToken(start, cursor);
         }
         catch (CompileException e) {
@@ -940,7 +923,7 @@ public class AbstractParser implements Serializable {
 
     public ASTNode handleSubstatement(Substatement stmt) {
         if (stmt.getStatement() != null && stmt.getStatement().isLiteralOnly()) {
-            return new LiteralNode(stmt.getStatement().getValue(null, null, null), fields);
+            return new LiteralNode(stmt.getStatement().getValue(null, null, null));
         }
         else {
             return stmt;
@@ -976,6 +959,12 @@ public class AbstractParser implements Serializable {
     private ASTNode createToken(final char[] expr, final int start, final int end, int fields) {
         lastWasIdentifier = (lastNode = new ASTNode(expr, start, end, fields)).isIdentifier();
         return lastNode;
+    }
+
+    private ASTNode createOperator(final char[] expr, final int start, final int end) {
+     //   char[] e = subset(expr, start, end - start);
+        lastWasIdentifier = false;
+        return lastNode = new OperatorNode(OPERATORS.get(new String(expr, start, end - start)));
     }
 
     private char[] subArray(final int start, final int end) {
@@ -1079,17 +1068,13 @@ public class AbstractParser implements Serializable {
                     }
                 }
                 while (ifThenElseblockContinues());
+
                 return first;
             }
 
             default: // either BLOCK_WITH or BLOCK_FOREACH
                 captureToNextTokenJunction();
-                //         if (debugSymbols) {
                 skipWhitespaceWithLineAccounting();
-                //             }
-//                else {
-//                    skipWhitespace();
-//                }
                 return _captureBlock(null, expr, true, type);
         }
 
@@ -1125,7 +1110,6 @@ public class AbstractParser implements Serializable {
              */
             if (isReservedWord(functionName) || !isValidNameorLabel(functionName))
                 throw new CompileException("illegal function name or use of reserved word", expr, cursor);
-
 
             if (expr[cursor] == '(') {
                 /**
@@ -1200,8 +1184,6 @@ public class AbstractParser implements Serializable {
             /**
              * This block is an: IF, FOREACH or WHILE node.
              */
-
-//            if (debugSymbols) {
             int[] cap = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(');
 
             endCond = cursor = cap[0];
@@ -1210,14 +1192,6 @@ public class AbstractParser implements Serializable {
             cursor++;
 
             pCtx.incrementLineCount(cap[1]);
-
-            //getParserContext().setLineCount(line = getParserContext().getLineCount() + cap[1]);
-//            }
-//            else {
-//                endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
-//                startCond++;
-//                cursor++;
-//            }
         }
 
         skipWhitespace();
@@ -1227,19 +1201,10 @@ public class AbstractParser implements Serializable {
         }
         else if (expr[cursor] == '{') {
             blockStart = cursor;
-
-//            if (debugSymbols) {
             int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '{');
             blockEnd = cursor = cap[0];
 
             pCtx.incrementLineCount(cap[1]);
-
-            //   getParserContext().setLineCount((line = getParserContext().getLineCount() + cap[1]));
-
-            //           }
-//            else {
-//                blockEnd = cursor = balancedCapture(expr, cursor, '{');
-//            }
         }
         else {
             blockStart = cursor - 1;
@@ -1481,8 +1446,7 @@ public class AbstractParser implements Serializable {
 
     protected void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
-            this.expr = EX_PRECACHE.get(expression);
-            if (this.expr == null) {
+            if ((this.expr = EX_PRECACHE.get(expression)) == null) {
                 length = (this.expr = expression.toCharArray()).length;
 
                 // trim any whitespace.
@@ -1575,9 +1539,9 @@ public class AbstractParser implements Serializable {
      * @param c
      * @return
      */
-    protected boolean isNext(char c) {
-        return lookAhead() == c;
-    }
+//    protected boolean isNext(char c) {
+//        return lookAhead() == c;
+//    }
 
     protected ParserContext getParserContext() {
         if (parserContext == null || parserContext.get() == null) {
@@ -1777,5 +1741,348 @@ public class AbstractParser implements Serializable {
      */
     public static void resetParserContext() {
         contextControl(REMOVE, null, null);
+    }
+
+    protected static boolean isArithmeticOperator(int operator) {
+        //  return operator == ADD || operator == MULT || operator == SUB || operator == DIV;
+        return operator < 6;
+    }
+
+    protected void arithmeticFunctionReduction(int operator) {
+        ASTNode tk;
+        int operator2;
+
+        boolean x = false;
+        int y = 0;
+
+        /**
+         * If the next token is an operator, we check to see if it has a higher
+         * precdence.
+         */
+        if ((tk = nextToken()) != null && tk.isOperator()) {
+            if (isArithmeticOperator(operator2 = tk.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
+                xswap();
+                /**
+                 * The current arith. operator is of higher precedence the last.
+                 */
+                dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+
+                while (true) {
+                    // look ahead again
+                    if ((tk = nextToken()) != null && PTABLE[operator2 = tk.getOperator()] > PTABLE[operator]) {
+                        // if we have back to back operations on the stack, we don't xswap
+                        if (x) {
+                            xswap();
+                        }
+                        /**
+                         * This operator is of higher precedence, or the same level precedence.  push to the RHS.
+                         */
+                        dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+
+                        y = 1;
+                        continue;
+                    }
+                    else if (tk != null) {
+                        if (PTABLE[operator2] == PTABLE[operator]) {
+                            // if we have back to back operations on the stack, we don't xswap             
+                            if (x) {
+                                xswap();
+                            }
+
+                            /**
+                             * Reduce any operations waiting now.
+                             */
+                            while (!dStack.isEmpty()) {
+                                dreduce();
+                            }
+
+                            /**
+                             * This operator is of the same level precedence.  push to the RHS.
+                             */
+                            dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+
+                            y++;
+                            continue;
+                        }
+                        else {
+                            /**
+                             * The operator doesn't have higher precedence. Therfore reduce the LHS.
+                             */
+                            if (!dStack.isEmpty()) {
+                                do {
+                                    if (y == 1) {
+                                        dreduce2();
+                                        y = 0;
+                                    }
+                                    else {
+                                        dreduce();
+                                    }
+                                }
+                                while (dStack.size() > 1);
+                            }
+
+                            if (!dStack.isEmpty()) {
+                                stk.push(dStack.pop());
+                                xswap();
+                            }
+
+                            operator = tk.getOperator();
+                            // Reduce the lesser or equal precedence operations.
+                            while (stk.size() != 1 && PTABLE[((Integer) stk.peek2())] >= PTABLE[operator]) {
+                                xswap();
+                                reduce();
+                            }
+
+                            y = 0;
+                        }
+                    }
+                    else {
+                        /**
+                         * There are no more tokens.
+                         */
+                        x = false;
+
+                        if (dStack.size() > 1) {
+                            do {
+                                if (y == 1) {
+                                    dreduce2();
+                                    y = 0;
+                                }
+                                else {
+                                    dreduce();
+                                }
+                            }
+                            while (dStack.size() > 1);
+
+                            x = true;
+                        }
+
+                        if (!dStack.isEmpty()) {
+                            stk.push(dStack.pop());
+                        }
+                        else if (x) {
+                            xswap();
+                        }
+
+                        y = 0;
+                        break;
+                    }
+
+                    if (tk != null && (tk = nextToken()) != null) {
+                        stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
+                    }
+
+                    x = true;
+                    y = 0;
+                }
+            }
+            else {
+                reduce();
+                splitAccumulator.push(tk);
+            }
+        }
+
+        // while any values remain on the stack
+        // keep XSWAPing and reducing, until there is nothing left.
+        while (stk.size() > 1) {
+            reduce();
+            if (stk.size() > 1) xswap();
+        }
+    }
+
+    private void dreduce() {
+        // push the right value from the dStack onto the stack
+        stk.push(dStack.pop());
+
+        // push the higher precedent operator to the top of the stack
+        stk.push(dStack.pop());
+
+        // reduce the top of the stack
+        reduce();
+    }
+
+    private void dreduce2() {
+        Object o1, o2;
+        boolean x = false;
+
+        do {
+            if (x = !x) {
+                o1 = dStack.pop();
+                o2 = dStack.pop();
+                if (!dStack.isEmpty()) stk.push(dStack.pop());
+            }
+            else {
+                o2 = dStack.pop();
+                o1 = dStack.pop();
+            }
+
+            stk.push(o1);
+            stk.push(o2);
+
+            reduce();
+        }
+        while (dStack.size() > 1);
+    }
+
+    /**
+     * XSWAP.
+     */
+    private void xswap() {
+        Object o = stk.pop();
+        Object o2 = stk.pop();
+        stk.push(o);
+        stk.push(o2);
+    }
+
+    /**
+     * This method is called when we reach the point where we must subEval a trinary operation in the expression.
+     * (ie. val1 op val2).  This is not the same as a binary operation, although binary operations would appear
+     * to have 3 structures as well.  A binary structure (or also a junction in the expression) compares the
+     * current state against 2 downrange structures (usually an op and a val).
+     */
+    protected void reduce() {
+        Object v1 = null, v2 = null;
+        Integer operator;
+        try {
+
+            operator = (Integer) stk.pop();
+            v1 = stk.pop();
+            v2 = stk.pop();
+
+            //     System.out.print("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
+
+            switch (operator) {
+                case ADD:
+                case SUB:
+                case DIV:
+                case MULT:
+                case MOD:
+                case EQUAL:
+                case NEQUAL:
+                case GTHAN:
+                case LTHAN:
+                case GETHAN:
+                case LETHAN:
+                case POWER:
+                    stk.push(doOperations(v2, operator, v1));
+                    break;
+
+                case AND:
+                    stk.push(((Boolean) v2) && ((Boolean) v1));
+                    break;
+
+                case OR:
+                    stk.push(((Boolean) v2) || ((Boolean) v1));
+                    break;
+
+                case CHOR:
+                    if (!isEmpty(v2) || !isEmpty(v1)) {
+                        stk.clear();
+                        stk.push(!isEmpty(v2) ? v2 : v1);
+                        return;
+                    }
+                    else stk.push(null);
+                    break;
+
+                case REGEX:
+                    stk.push(java.util.regex.Pattern.compile(java.lang.String.valueOf(v1)).matcher(java.lang.String.valueOf(v2)).matches());
+                    break;
+
+                case INSTANCEOF:
+                    if (v1 instanceof Class)
+                        stk.push(((Class) v1).isInstance(v2));
+                    else
+                        stk.push(currentThread().getContextClassLoader().loadClass(java.lang.String.valueOf(v1)).isInstance(v2));
+
+                    break;
+
+                case CONVERTABLE_TO:
+                    if (v1 instanceof Class)
+                        stk.push(org.mvel.DataConversion.canConvert(v2.getClass(), (Class) v1));
+                    else
+                        stk.push(org.mvel.DataConversion.canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(java.lang.String.valueOf(v1))));
+                    break;
+
+                case CONTAINS:
+                    stk.push(containsCheck(v2, v1));
+                    break;
+
+                case BW_AND:
+                    stk.push(asInt(v2) & asInt(v1));
+                    break;
+
+                case BW_OR:
+                    stk.push(asInt(v2) | asInt(v1));
+                    break;
+
+                case BW_XOR:
+                    stk.push(asInt(v2) ^ asInt(v1));
+                    break;
+
+                case BW_SHIFT_LEFT:
+                    stk.push(asInt(v2) << asInt(v1));
+                    break;
+
+                case BW_USHIFT_LEFT:
+                    int iv2 = asInt(v2);
+                    if (iv2 < 0) iv2 *= -1;
+                    stk.push(iv2 << asInt(v1));
+                    break;
+
+                case BW_SHIFT_RIGHT:
+                    stk.push(asInt(v2) >> asInt(v1));
+                    break;
+
+                case BW_USHIFT_RIGHT:
+                    stk.push(asInt(v2) >>> asInt(v1));
+                    break;
+
+                case STR_APPEND:
+                    stk.push(new StringAppender(java.lang.String.valueOf(v2)).append(java.lang.String.valueOf(v1)).toString());
+                    break;
+
+                case SOUNDEX:
+                    stk.push(Soundex.soundex(java.lang.String.valueOf(v1)).equals(Soundex.soundex(java.lang.String.valueOf(v2))));
+                    break;
+
+                case SIMILARITY:
+                    stk.push(similarity(java.lang.String.valueOf(v1), java.lang.String.valueOf(v2)));
+                    break;
+
+            }
+        }
+        catch (ClassCastException e) {
+            if ((fields & ASTNode.LOOKAHEAD) == 0) {
+                /**
+                 * This will allow for some developers who like messy expressions to compileAccessor
+                 * away with some messy constructs like: a + b < c && e + f > g + q instead
+                 * of using brackets like (a + b < c) && (e + f > g + q)
+                 */
+
+                fields |= ASTNode.LOOKAHEAD;
+
+                ASTNode tk = nextToken();
+                if (tk != null) {
+                    stk.push(v1, nextToken(), tk.getOperator());
+
+                    reduce();
+                    return;
+                }
+            }
+            throw new CompileException("syntax error or incomptable types (left=" +
+                    (v1 != null ? v1.getClass().getName() : "null") + ", right=" +
+                    (v2 != null ? v2.getClass().getName() : "null") + ")", expr, cursor, e);
+
+        }
+        catch (Exception e) {
+            throw new CompileException("failed to subEval expression", e);
+        }
+
+//        System.out.println(" = " + stk.peek());
+
+    }
+
+    private static int asInt(final Object o) {
+        return (Integer) o;
     }
 }

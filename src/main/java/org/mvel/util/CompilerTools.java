@@ -19,6 +19,8 @@
 package org.mvel.util;
 
 import org.mvel.Operator;
+import org.mvel.debug.DebugTools;
+import static org.mvel.Operator.PTABLE;
 import org.mvel.compiler.CompiledExpression;
 import org.mvel.ast.*;
 
@@ -26,8 +28,6 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 
 public class CompilerTools {
-
-
     /**
      * Optimize the AST, by reducing any stack-based-operations to dedicated nodes where possible.
      *
@@ -35,7 +35,7 @@ public class CompilerTools {
      * @param secondPassOptimization - perform a second pass optimization to optimize boolean expressions.
      * @return optimized AST
      */
-    public static ASTLinkedList optimizeAST(ASTLinkedList astLinkedList, boolean secondPassOptimization) {
+      public static ASTLinkedList optimizeAST(ASTLinkedList astLinkedList, boolean secondPassOptimization) {
         ASTLinkedList optimizedAst = new ASTLinkedList();
         ASTNode tk, tkOp, tkOp2;
 
@@ -48,28 +48,20 @@ public class CompilerTools {
             }
             else if (astLinkedList.hasMoreNodes()) {
                 if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
-
+                    optimizedAst.addTokenNode(tk);
                     if (tk instanceof EndOfStatement) {
-                        /**
-                         * If this is the last node of the script, don't bother
-                         * with the end of statement.
-                         */
-                        if (astLinkedList.hasMoreNodes()) {
-                            optimizedAst.addTokenNode(tk);
-                        }
-
                         astLinkedList.setCurrentNode(tkOp);
                         continue;
-                    }
-                    else {
-                        optimizedAst.addTokenNode(tk);
                     }
 
                     optimizedAst.addTokenNode(tkOp);
                 }
-                else if (tkOp.isOperator() && tkOp.getOperator() < 12) {
-                    // handle math and equals
-                    BinaryOperation bo = new BinaryOperation(tkOp.getOperator(), tk, astLinkedList.nextNode());
+                else if (tkOp.isOperator() && tkOp.getOperator() < 20) {
+                    int op;
+                    int op2;
+
+                    BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode());
+
                     tkOp2 = null;
 
                     /**
@@ -77,9 +69,22 @@ public class CompilerTools {
                      * right here.
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                            && tkOp2.getFields() != -1 && tkOp2.getOperator() < 12) {
-                        bo = new BinaryOperation(((tkOp = tkOp2).getOperator()), bo, astLinkedList.nextNode());
+                            && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 20) {
+                        if (PTABLE[op2] > PTABLE[op]) {
+                            bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode()));
+                        }
+                        else if (PTABLE[op2] == PTABLE[op]) {
+                            bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
+                        }
+                        else {
+                            System.out.println(DebugTools.getOperatorName(op2) + " < " + DebugTools.getOperatorName(op));
+                            bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
+                        }
+
+                        op = op2;
+                        tkOp = tkOp2;
                     }
+
                     optimizedAst.addTokenNode(bo);
 
                     if (tkOp2 != null && tkOp2 != tkOp) {
@@ -87,21 +92,10 @@ public class CompilerTools {
                     }
                 }
                 else {
+                    optimizedAst.addTokenNode(tk);
                     if (tk instanceof EndOfStatement) {
                         astLinkedList.setCurrentNode(tkOp);
-
-                        /**
-                         * If this is the last node of the script, don't bother
-                         * with the end of statement.
-                         */
-                        if (astLinkedList.hasMoreNodes()) {
-                            optimizedAst.addTokenNode(tk);
-                        }
-
                         continue;
-                    }
-                    else {
-                        optimizedAst.addTokenNode(tk);
                     }
 
                     optimizedAst.addTokenNode(tkOp);

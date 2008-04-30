@@ -71,6 +71,8 @@ public abstract class AbstractTest extends TestCase {
 
         map.put("derived", new DerivedClass());
 
+        map.put("ipaddr", "10.1.1.2");
+
         map.put("dt1", new Date(currentTimeMillis() - 100000));
         map.put("dt2", new Date(currentTimeMillis()));
         return map;
@@ -245,11 +247,11 @@ public abstract class AbstractTest extends TestCase {
 
         if (!Boolean.getBoolean("mvel.disable.jit")) {
 
-            setDefaultOptimizer("ASM");
+            setDefaultOptimizer("dynamic");
 
             try {
                 first = executeExpression(compiled, new Base(), createTestMap());
-            }
+            }                                      
             catch (Exception e) {
                 failErrors.append("\nFIRST TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 

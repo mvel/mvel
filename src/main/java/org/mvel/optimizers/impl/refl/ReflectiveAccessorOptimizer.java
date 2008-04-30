@@ -77,6 +77,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     public ReflectiveAccessorOptimizer() {
     }
 
+    public void init() {
+    }
+
     private ReflectiveAccessorOptimizer(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableFactory) {
         this.expr = property;
         this.length = property != null ? property.length : 0;
