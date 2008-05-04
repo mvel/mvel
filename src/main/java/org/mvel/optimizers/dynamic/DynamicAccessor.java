@@ -7,6 +7,7 @@ import org.mvel.optimizers.AccessorOptimizer;
 
 import static java.lang.System.currentTimeMillis;
 
+//todo: de-optimize in this class.
 public class DynamicAccessor implements Accessor {
     private char[] property;
     private long stamp;
@@ -15,10 +16,12 @@ public class DynamicAccessor implements Accessor {
     private int runcount;
 
     private boolean opt = false;
+
+    private Accessor _safeAccessor;
     private Accessor _accessor;
 
     public DynamicAccessor(char[] property, int type, Accessor _accessor) {
-        this._accessor = _accessor;
+        this._safeAccessor = this._accessor = _accessor;
         this.type = type;
         this.property = property;
         stamp = currentTimeMillis();
@@ -27,13 +30,13 @@ public class DynamicAccessor implements Accessor {
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         if (!opt) {
             if (++runcount > DynamicOptimizer.tenuringThreshold) {
-                if ((System.currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
+                if ((currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
                     opt = true;
                     return optimize(ctx, elCtx, variableFactory);
                 }
                 else {
                     runcount = 0;
-                    stamp = System.currentTimeMillis();
+                    stamp = currentTimeMillis();
                 }
             }
         }
@@ -47,6 +50,10 @@ public class DynamicAccessor implements Accessor {
     }
 
     private Object optimize(Object ctx, Object elCtx, VariableResolverFactory variableResolverFactory) {
+        if (DynamicOptimizer.classLoader.isOverloaded()) {
+            DynamicOptimizer.enforceTenureLimit();
+        }
+
         AccessorOptimizer ao = OptimizerFactory.getAccessorCompiler("ASM");
         switch (type) {
             case DynamicOptimizer.REGULAR_ACCESSOR:
@@ -65,6 +72,11 @@ public class DynamicAccessor implements Accessor {
         return null;
     }
 
+    public void deoptimize() {
+        this._accessor = this._safeAccessor;
+        opt = false;
+        stamp = currentTimeMillis();
+    }
 
     public long getStamp() {
         return stamp;

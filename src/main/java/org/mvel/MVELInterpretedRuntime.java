@@ -42,8 +42,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
     private int roundingMode = BigDecimal.ROUND_HALF_DOWN;
 
     Object parse() {
-        setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);
         debugSymbols = false;
+
+    //    setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);        
 
         try {
             stk = new ExecutionStack();

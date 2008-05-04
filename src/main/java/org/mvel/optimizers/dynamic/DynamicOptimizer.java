@@ -15,49 +15,56 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
     private AccessorOptimizer firstStage = getAccessorCompiler(SAFE_REFLECTIVE);
 
     public static DynamicClassLoader classLoader;
-    public static int tenuringThreshold = 50;
-    public static long timeSpan = (1000 * 2); // 2 seconds
-    public static int maximumTenure = 2000;
+    public static int tenuringThreshold = 25;
+    public static long timeSpan = (500); // 1/2 second
+    public static int maximumTenure = 1;
+    public static int totalRecycled = 0;
 
     public void init() {
-         setMVELClassLoader(classLoader = new DynamicClassLoader(currentThread().getContextClassLoader()));
+        _init();
     }
 
-    private void enforceTenureLimit() {
-        if (classLoader.getTotalClasses() > maximumTenure) {
-            classLoader = null;
-            init();
+    private static void _init() {
+        setMVELClassLoader(classLoader = new DynamicClassLoader(currentThread().getContextClassLoader(), maximumTenure));
+    }
+
+    public static void enforceTenureLimit() {
+        if (classLoader.isOverloaded()) {
+            classLoader.deoptimizeAll();
+            totalRecycled =+ classLoader.getTotalClasses();
+            _init();
         }
     }
 
     public static final int REGULAR_ACCESSOR = 0;
+
     public Accessor optimizeAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef) {
-        enforceTenureLimit();
-        return new DynamicAccessor(property, 0, firstStage.optimizeAccessor(property, ctx, thisRef, factory, rootThisRef));
+        return classLoader.registerDynamicAccessor(new DynamicAccessor(property, 0, firstStage.optimizeAccessor(property, ctx, thisRef, factory, rootThisRef)));
     }
 
     public static final int SET_ACCESSOR = 1;
+
     public SetAccessor optimizeSetAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value) {
-        //    enforceTenureLimit();
         return firstStage.optimizeSetAccessor(property, ctx, thisRef, factory, rootThisRef, value);
     }
 
     public static final int COLLECTION = 2;
+
     public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        enforceTenureLimit();
-        return new DynamicAccessor(property, 2, firstStage.optimizeCollection(property, ctx, thisRef, factory));
+        return classLoader.registerDynamicAccessor(new DynamicAccessor(property, 2, firstStage.optimizeCollection(property, ctx, thisRef, factory)));
     }
 
     public static final int OBJ_CREATION = 3;
+
     public Accessor optimizeObjectCreation(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        enforceTenureLimit();
-        return new DynamicAccessor(property, 3, firstStage.optimizeObjectCreation(property, ctx, thisRef, factory));
+        return classLoader.registerDynamicAccessor(new DynamicAccessor(property, 3, firstStage.optimizeObjectCreation(property, ctx, thisRef, factory)));
     }
 
     public static final int FOLD = 4;
+
     public Accessor optimizeFold(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         enforceTenureLimit();
-        return new DynamicAccessor(property, 4, firstStage.optimizeFold(property, ctx, thisRef, factory));
+        return classLoader.registerDynamicAccessor(new DynamicAccessor(property, 4, firstStage.optimizeFold(property, ctx, thisRef, factory)));
     }
 
     public Object getResultOptPass() {
