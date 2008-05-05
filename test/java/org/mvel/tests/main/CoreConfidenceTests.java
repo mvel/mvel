@@ -3145,6 +3145,22 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(p1, p2);
     }
+    
+    public void testCompileMatches() {
+        ExpressionCompiler compiler = new ExpressionCompiler("String source = \"abc\"; String pat = \"abc\"; source ~= pat ");
+        Serializable s = compiler.compile();
+        Boolean result = (Boolean) executeExpression(s, new DefaultLocalVariableResolverFactory());
+
+        assertEquals(Boolean.TRUE, result);
+    }
+
+    public void testCompileMatches2() {
+        ExpressionCompiler compiler = new ExpressionCompiler("source = \"abc\"; pat = \"abc\"; source ~= pat ");
+        Serializable s = compiler.compile();
+        Boolean result = (Boolean) executeExpression(s, new DefaultLocalVariableResolverFactory());
+
+        assertEquals(Boolean.TRUE, result);
+    }
 
 
     /**
