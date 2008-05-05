@@ -4,6 +4,7 @@ import org.mvel.ast.LineLabel;
 import org.mvel.integration.Interceptor;
 import org.mvel.util.MethodStub;
 import org.mvel.util.PropertyTools;
+import static org.mvel.util.PropertyTools.contains;
 import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.io.Serializable;
@@ -131,7 +132,7 @@ public class ParserContext implements Serializable {
                 // do nothing.
             }
             catch (NoClassDefFoundError e) {
-               if (PropertyTools.contains(e.getMessage(), "wrong name")) {
+               if (contains(e.getMessage(), "wrong name")) {
               //  if (e.getMessage().contains("wrong name")) {
                     // do nothing.  this is a weirdness in the jvm.
                     // see MVEL-43
