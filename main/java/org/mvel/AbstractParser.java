@@ -365,12 +365,8 @@ public class AbstractParser implements Serializable {
                                 if (isNext('=')) {
                                     char[] stmt = subArray(start, trimLeft(cursor));
                                     start = cursor += 2;
-                                    skipWhitespace();
-                                    captureToEOS();
+                                    captureToEOT();
                                     return lastNode = new RegExMatch(stmt, fields, subArray(start, cursor));
-
-
-                                 //   return lastNode = new RegExMatch(stmt, fields, subArray(start, (cursor = balancedCapture(expr, cursor, expr[cursor]) + 1)));
                                 }
                                 break;
 
@@ -1097,7 +1093,7 @@ public class AbstractParser implements Serializable {
 
     protected void captureToEOT() {
         skipWhitespace();
-        while (++cursor != length) {
+        while (cursor != length) {
             switch (expr[cursor]) {
                 case '(':
                 case '[':
@@ -1117,6 +1113,13 @@ public class AbstractParser implements Serializable {
                     skipWhitespace();
                     break;
 
+                case '\'':
+                    cursor = captureStringLiteral('\'', expr, cursor, length);
+                    break;
+                case '"':
+                    cursor = captureStringLiteral('"', expr, cursor, length);
+                    break;
+
                 default:
                     if (isWhitespace(expr[cursor])) {
                         skipWhitespace();
@@ -1132,6 +1135,7 @@ public class AbstractParser implements Serializable {
                         }
                     }
             }
+            cursor++;
         }
     }
 
