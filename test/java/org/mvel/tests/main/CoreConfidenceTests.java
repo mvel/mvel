@@ -3198,6 +3198,10 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testCharComparison() {
         assertEquals(true, test("'z' > 'a'"));
     }
+
+    public void testRegExMatch() {
+        assertEquals(true, MVEL.eval("$test = 'foo'; $ex = 'f.*'; $test ~= $ex", new HashMap()));
+    }
 }
 
 
