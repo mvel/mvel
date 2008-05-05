@@ -1306,12 +1306,14 @@ public class AbstractParser implements Serializable {
      */
     protected void captureToEOT() {
         skipWhitespace();
-        while (++cursor != length) {
+        do {
             switch (expr[cursor]) {
                 case '(':
                 case '[':
                 case '{':
-                    cursor = balancedCapture(expr, cursor, expr[cursor]);
+                    if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
+                        throw new CompileException("unbalanced braces", expr, cursor);
+                    }
                     break;
 
                 case '=':
@@ -1322,6 +1324,13 @@ public class AbstractParser implements Serializable {
 
                 case '.':
                     skipWhitespace();
+                    break;
+
+                case '\'':
+                    cursor = captureStringLiteral('\'', expr, cursor, length);
+                    break;
+                case '"':
+                    cursor = captureStringLiteral('"', expr, cursor, length);
                     break;
 
                 default:
@@ -1340,6 +1349,7 @@ public class AbstractParser implements Serializable {
                     }
             }
         }
+        while (++cursor != length);
     }
 
     /**
