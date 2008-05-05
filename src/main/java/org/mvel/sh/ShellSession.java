@@ -49,6 +49,7 @@ public class ShellSession {
         env.put("$JAVA_VERSION", System.getProperty("java.version"));
         env.put("$CWD", new File(".").getAbsolutePath());
         env.put("$ECHO", "true");
+        env.put("$SHOW_TRACES", "true");
         env.put("$USE_OPTIMIZER_ALWAYS", "false");
         env.put("$PATH", "");
 
@@ -201,9 +202,6 @@ public class ShellSession {
                                                 out.append(">").append(indent((multiIndentSize - 1) + (depth * 4)));
                                             }
 
-                                            //   printPrompt();
-
-                                            //     System.out.println("Process Exited: Returning to MVELSH - Press Enter");
                                         }
                                     });
 
@@ -288,14 +286,20 @@ public class ShellSession {
                             continue;
                         }
 
-                        System.out.println("Eval Error: " + e.getMessage());
 
                         ByteArrayOutputStream stackTraceCap = new ByteArrayOutputStream();
                         PrintStream capture = new PrintStream(stackTraceCap);
 
                         e.printStackTrace(capture);
+                        capture.flush();
 
                         env.put("$LAST_STACK_TRACE", new String(stackTraceCap.toByteArray()));
+                        if (parseBoolean(env.get("$SHOW_TRACE"))) {
+                            out.println(env.get("$LAST_STACK_TRACE"));
+                        }
+                        else {
+                            out.println("Error: " + e.toString()); 
+                        }
 
                         inBuffer.reset();
 

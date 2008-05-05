@@ -2616,7 +2616,7 @@ public class CoreConfidenceTests extends AbstractTest {
         String expression = "10 + 20 / 4 / 4";
         System.out.println("Expression: " + expression);
         float val = 10f + 20f / 4f / 4f;
-        
+
         assertEquals(val, MVEL.eval(expression));
     }
 
@@ -3163,6 +3163,10 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testCharComparison2() {
         assertEquals(false, test("'z' < 'a'"));
+    }
+
+    public void testRegExMatch() {
+        assertEquals(true, MVEL.eval("$test = 'foo'; $ex = 'f.*'; $test ~= $ex", new HashMap()));
     }
 }
 

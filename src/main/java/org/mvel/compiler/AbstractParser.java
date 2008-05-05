@@ -366,7 +366,6 @@ public class AbstractParser implements Serializable {
                                             return lastNode = new AssignmentNode(subArray(start, cursor), fields, Operator.ADD, name);
                                         }
                                 }
-
                                 break;
 
                             case '-':
@@ -444,9 +443,9 @@ public class AbstractParser implements Serializable {
                                     char[] stmt = subArray(start, trimLeft(cursor));
 
                                     start = cursor += 2;
-                                    skipWhitespace();
+                                    captureToEOT();
 
-                                    return lastNode = new RegExMatch(stmt, fields, subArray(start, (cursor = balancedCapture(expr, cursor, expr[cursor]) + 1)));
+                                    return lastNode = new RegExMatch(stmt, fields, subArray(start, cursor));
                                 }
                                 break;
 
@@ -516,8 +515,9 @@ public class AbstractParser implements Serializable {
 
                                         throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
                                     }
-                                    else
-                                    if (pCtx != null && ((idx = pCtx.variableIndexOf(t)) != -1 || (pCtx.isIndexAllocation()))) {
+                                    else if (pCtx != null
+                                            && ((idx = pCtx.variableIndexOf(t)) != -1
+                                            || (pCtx.isIndexAllocation()))) {
                                         IndexedAssignmentNode ian = new IndexedAssignmentNode(subArray(start, cursor), ASTNode.ASSIGN, idx);
 
                                         if (idx == -1) {
@@ -612,7 +612,6 @@ public class AbstractParser implements Serializable {
                                 /**
                                  * Handle single line comments.
                                  */
-
                                 captureToEOL();
 
                                 line = pCtx.getLineCount();
@@ -767,7 +766,6 @@ public class AbstractParser implements Serializable {
                                     int rewind = cursor;
                                     try {
                                         /**
-                                         *
                                          *  take a stab in the dark and try and load the class
                                          */
                                         captureToEOS();
@@ -962,7 +960,6 @@ public class AbstractParser implements Serializable {
     }
 
     private ASTNode createOperator(final char[] expr, final int start, final int end) {
-        //   char[] e = subset(expr, start, end - start);
         lastWasIdentifier = false;
         return lastNode = new OperatorNode(OPERATORS.get(new String(expr, start, end - start)));
     }
@@ -1000,7 +997,6 @@ public class AbstractParser implements Serializable {
                 }
 
                 lastWasIdentifier = true;
-                //      return lastNode = new ASTNode(_subset, 0, _subset.length, fields);
             }
         }
 
@@ -1078,7 +1074,6 @@ public class AbstractParser implements Serializable {
                 skipWhitespaceWithLineAccounting();
                 return _captureBlock(null, expr, true, type);
         }
-
     }
 
     private ASTNode _captureBlock(ASTNode node, final char[] expr, boolean cond, int type) {
@@ -1944,12 +1939,9 @@ public class AbstractParser implements Serializable {
         Object v1 = null, v2 = null;
         Integer operator;
         try {
-
             operator = (Integer) stk.pop();
             v1 = stk.pop();
             v2 = stk.pop();
-
-            //     System.out.print("reduce [" + v2 + " <" + DebugTools.getOperatorName(operator) + "> " + v1 + "]");
 
             switch (operator) {
                 case ADD:
@@ -2048,7 +2040,6 @@ public class AbstractParser implements Serializable {
                 case SIMILARITY:
                     stk.push(similarity(java.lang.String.valueOf(v1), java.lang.String.valueOf(v2)));
                     break;
-
             }
         }
         catch (ClassCastException e) {
@@ -2077,9 +2068,6 @@ public class AbstractParser implements Serializable {
         catch (Exception e) {
             throw new CompileException("failed to subEval expression", e);
         }
-
-//        System.out.println(" = " + stk.peek());
-
     }
 
     private static int asInt(final Object o) {

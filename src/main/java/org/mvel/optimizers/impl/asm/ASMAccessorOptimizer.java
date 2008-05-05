@@ -46,6 +46,8 @@ import java.io.IOException;
 import static java.lang.System.getProperty;
 import static java.lang.reflect.Array.getLength;
 import java.lang.reflect.*;
+import static java.lang.reflect.Modifier.STATIC;
+import static java.lang.reflect.Modifier.FINAL;
 import static java.lang.Thread.currentThread;
 import static java.lang.String.valueOf;
 import java.util.ArrayList;
@@ -172,7 +174,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private void _finishJIT() {
         if (!deferFinish) {
-
             if (returnType != null && returnType.isPrimitive()) {
                 //noinspection unchecked
                 wrapPrimitive(returnType);
@@ -190,7 +191,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         assert debug("\n{METHOD STATS (maxstack=" + stacksize + ")}\n");
         mv.visitMaxs(stacksize, maxlocals);
-
         mv.visitEnd();
 
         buildInputs();
@@ -351,8 +351,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitVarInsn(ALOAD, 1);
             }
 
-            if (((member.getModifiers() & Modifier.STATIC) != 0)) {
-                if ((member.getModifiers() & Modifier.FINAL) != 0) {
+            if (((member.getModifiers() & (STATIC|FINAL)) != 0)) {
+                // Check if the static field reference is a constant and a primitive.
+                if ((member.getModifiers() & FINAL) != 0 && (o instanceof String || o.getClass().isPrimitive())) {
                     o = ((Field) member).get(null);
                     assert debug("LDC " + valueOf(o));
                     mv.visitLdcInsn(o);
@@ -472,7 +473,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 else {
                     Field f = (Field) ts;
 
-                    if ((f.getModifiers() & Modifier.FINAL) != 0) {
+                    if ((f.getModifiers() & FINAL) != 0) {
                         Object finalVal = f.get(null);
                         assert debug("LDC " + valueOf(finalVal));
                         mv.visitLdcInsn(finalVal);
@@ -874,7 +875,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             if (m.getParameterTypes().length == 0) {
-                if ((m.getModifiers() & Modifier.STATIC) != 0) {
+                if ((m.getModifiers() & STATIC) != 0) {
                     assert debug("INVOKESTATIC " + m.getName());
                     mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(), getMethodDescriptor(m));
                 }
@@ -900,7 +901,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 stacksize++;
             }
             else {
-                if ((m.getModifiers() & Modifier.STATIC) == 0) {
+                if ((m.getModifiers() & STATIC) == 0) {
                     assert debug("CHECKCAST " + getInternalName(cls));
                     mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
                 }
@@ -1015,7 +1016,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     }
                 }
 
-                if ((m.getModifiers() & Modifier.STATIC) != 0) {
+                if ((m.getModifiers() & STATIC) != 0) {
                     assert debug("INVOKESTATIC: " + m.getName());
                     mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(), getMethodDescriptor(m));
                 }
