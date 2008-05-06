@@ -3,9 +3,8 @@ package org.mvel;
 import org.mvel.ast.LineLabel;
 import org.mvel.integration.Interceptor;
 import org.mvel.util.MethodStub;
-import org.mvel.util.PropertyTools;
-import static org.mvel.util.PropertyTools.contains;
 import static org.mvel.util.ParseTools.getSimpleClassName;
+import static org.mvel.util.PropertyTools.contains;
 
 import java.io.Serializable;
 import static java.lang.Thread.currentThread;
