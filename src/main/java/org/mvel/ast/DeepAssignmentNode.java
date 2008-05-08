@@ -81,14 +81,11 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
             statement = (ExecutableStatement) subCompileExpression(stmt);
             set = (CompiledSetExpression) compileSetExpression(property.toCharArray());
         }
-
-        //    Object val;
         set.setValue(ctx, factory, ctx = statement.getValue(ctx, thisValue, factory));
         return ctx;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        //  Object val;
         set(ctx, factory, property, ctx = eval(stmt, ctx, factory));
         return ctx;
     }

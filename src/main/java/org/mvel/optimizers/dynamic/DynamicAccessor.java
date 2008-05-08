@@ -50,6 +50,7 @@ public class DynamicAccessor implements Accessor {
     }
 
     private Object optimize(Object ctx, Object elCtx, VariableResolverFactory variableResolverFactory) {
+
         if (DynamicOptimizer.classLoader.isOverloaded()) {
             DynamicOptimizer.enforceTenureLimit();
         }
