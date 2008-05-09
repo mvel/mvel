@@ -308,7 +308,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals((int) val, test(expression));
     }
 
- 
 
     public void testPowerOf() {
         assertEquals(25, test("5 ** 2"));
@@ -3145,7 +3144,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(p1, p2);
     }
-    
+
     public void testCompileMatches() {
         ExpressionCompiler compiler = new ExpressionCompiler("String source = \"abc\"; String pat = \"abc\"; source ~= pat ");
         Serializable s = compiler.compile();
@@ -3201,6 +3200,22 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testRegExMatch() {
         assertEquals(true, MVEL.eval("$test = 'foo'; $ex = 'f.*'; $test ~= $ex", new HashMap()));
+    }
+
+    public static class TestClass2 {
+        public void addEqualAuthorizationConstraint(Foo leg, Bar ctrlClass, Integer authorization) {
+        }
+    }
+
+    public void testJIRA93() {
+        Map testMap = createTestMap();
+        testMap.put("testClass2", new TestClass2());
+
+        Serializable s = MVEL.compileExpression("testClass2.addEqualAuthorizationConstraint(foo, foo.bar, 5)");
+
+        for (int i = 0; i < 3; i++) {
+            MVEL.executeExpression(s, testMap);
+        }
     }
 }
 

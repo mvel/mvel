@@ -157,7 +157,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 }
 
 
-                break;
+        //        break;
         }
 
         throw new CompileException("could not perform numeric operation on non-numeric types: left-type="

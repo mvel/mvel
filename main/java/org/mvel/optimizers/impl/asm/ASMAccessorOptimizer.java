@@ -750,7 +750,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 parameterTypes = m.getParameterTypes();
             }
         }
-                                    
+
         if (m == null) {
             StringAppender errorBuild = new StringAppender();
 
@@ -876,6 +876,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                             else if (canConvert(parameterTypes[i], lit.getClass())) {
                                 debug("LDC " + lit + " (" + lit.getClass().getName() + ")");
                                 mv.visitLdcInsn(convert(lit, parameterTypes[i]));
+
+                                if (isPrimitiveWrapper(parameterTypes[i])) {
+                                    wrapPrimitive(lit.getClass());
+                                }
+
                                 continue;
                             }
                         }
