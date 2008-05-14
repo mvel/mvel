@@ -674,6 +674,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             preConvArgs = new Object[es.length];
 
             for (int i = 0; i < subtokens.length; i++) {
+                assert debug("subtoken[" + i + "] { " + subtokens[i] + " }");
                 preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i])).getValue(this.ctx, this.thisRef, variableFactory);
             }
         }
@@ -953,6 +954,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                             else if (canConvert(parameterTypes[i], lit.getClass())) {
                                 assert debug("LDC " + lit + " (" + lit.getClass().getName() + ")");
                                 mv.visitLdcInsn(convert(lit, parameterTypes[i]));
+
+                                if (isPrimitiveWrapper(parameterTypes[i])) {
+                                    wrapPrimitive(lit.getClass());
+                                }
+
                                 continue;
                             }
                         }

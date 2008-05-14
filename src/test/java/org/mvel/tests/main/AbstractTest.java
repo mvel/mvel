@@ -11,6 +11,7 @@ import static org.mvel.debug.DebugTools.decompile;
 import org.mvel.debug.DebugTools;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setDefaultOptimizer;
+import org.mvel.optimizers.dynamic.DynamicOptimizer;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.StringAppender;
 
@@ -25,6 +26,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public abstract class AbstractTest extends TestCase {
+
+    static {
+        // Modify the dynamic optimizer to ensure it always engages the JIT
+        DynamicOptimizer.tenuringThreshold = 0;
+    }
 
 
     private boolean silentTests = Boolean.getBoolean("mvel.tests.silent");

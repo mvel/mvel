@@ -857,10 +857,8 @@ public class ParseTools {
         Class boxedTarget = target.isPrimitive() ? boxPrimitive(target) : target;
 
         if (boxedTarget != null && Number.class.isAssignableFrom(target)) {
-            Class boxedParm = parm.isPrimitive() ? boxPrimitive(parm) : parm;
-
-            if (boxedParm != null) {
-                return Number.class.isAssignableFrom(boxedParm);
+            if ((boxedTarget = parm.isPrimitive() ? boxPrimitive(parm) : parm) != null) {
+                return Number.class.isAssignableFrom(boxedTarget);
             }
         }
         return false;

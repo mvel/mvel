@@ -62,7 +62,7 @@ public class DynamicAccessor implements Accessor {
                 return ao.getResultOptPass();
             case DynamicOptimizer.OBJ_CREATION:
                 _accessor = ao.optimizeObjectCreation(property, ctx, elCtx, variableResolverFactory);
-                return ao.getResultOptPass();
+                return _accessor.getValue(ctx, elCtx, variableResolverFactory);
             case DynamicOptimizer.COLLECTION:
                 _accessor = ao.optimizeCollection(property, ctx, elCtx, variableResolverFactory);
                 return _accessor.getValue(ctx, elCtx, variableResolverFactory);

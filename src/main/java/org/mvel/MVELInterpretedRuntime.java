@@ -44,8 +44,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
     Object parse() {
         debugSymbols = false;
 
-    //    setThreadAccessorOptimizer(ReflectiveAccessorOptimizer.class);        
-
         try {
             stk = new ExecutionStack();
             dStack = new ExecutionStack();
@@ -111,8 +109,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
                      * proper execution order.
                      */
                     if (tk instanceof Substatement) {
-                        //          reduceRight();
-
                         if ((tk = nextToken()) != null) {
                             if (isArithmeticOperator(operator = tk.getOperator())) {
                                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
@@ -166,6 +162,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
         switch (operator) {
             case NOOP:
                 return 0;
+
             case AND:
                 reduceRight();
 
@@ -233,7 +230,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 }
 
                 return 0;
-
         }
 
         return 1;

@@ -1120,7 +1120,7 @@ public class AbstractParser implements Serializable {
                 skipWhitespace();
 
                 if (cursor >= length) {
-                    throw new CompileException("unbalanced braces", expr, cursor);
+                    throw new CompileException("incomplete statement", expr, cursor);
                 }
                 else if (expr[cursor] == '{') {
                     blockStart = cursor;
