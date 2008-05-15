@@ -201,6 +201,10 @@ public class DebugTools {
                 return "NOT_EQUAL";
             case Operator.NEW:
                 return "NEW_OBJECT";
+
+            case Operator.AND:
+                return "AND";
+
             case Operator.OR:
                 return "OR";
             case Operator.POWER:
@@ -227,6 +231,8 @@ public class DebugTools {
                 return "WHILE";
             case Operator.CHOR:
                 return "CHAINED_OR";
+
+
         }
 
 

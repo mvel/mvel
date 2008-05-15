@@ -75,8 +75,9 @@ public class FastList extends AbstractList {
 
     public Object remove(int i) {
         Object old = elements[i];
-        for (int c = i + 1; c != size; c--) {
+        for (int c = i + 1; c < size; c++) {
             elements[c - 1] = elements[c];
+            elements[c] = null;
         }
         size--;
         return old;

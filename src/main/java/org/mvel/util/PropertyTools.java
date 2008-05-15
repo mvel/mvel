@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 public class PropertyTools {
 //    private static final Pattern truePattern = compile("(on|yes|true|1|hi|high|y)");
@@ -126,11 +127,17 @@ public class PropertyTools {
         return getSetter(clazz, property);
     }
 
+    private static final Map<String, Field> FIELD_CACHE = new WeakHashMap<String, Field>();
+
     public static Member getFieldOrAccessor(Class clazz, String property) {
         if (property.charAt(property.length() - 1) == ')') return getGetter(clazz, property);
 
         try {
-            Field fld = clazz.getField(property);
+            String key = clazz.hashCode() + property;
+            Field fld = FIELD_CACHE.get(key);
+            if (fld == null) {
+                FIELD_CACHE.put(key, fld = clazz.getField(property));
+            }
 
             if ((fld.getModifiers() & PUBLIC) != 0) return fld;
         }
@@ -175,23 +182,6 @@ public class PropertyTools {
 
     }
 
-    public static boolean isNumber(char[] val) {
-        int len = val.length;
-        char c;
-        int i = 0;
-        if (len > 1) {
-            if (val[0] == '-') i++;
-            else if (val[0] == '~') {
-                i++;
-                if (val[1] == '-') i++;
-            }
-        }
-        for (; i < len; i++) {
-            if (!isDigit(c = val[i]) && c != '.') return false;
-        }
-
-        return len > 0;
-    }
 
     public static Object handleNumericConversion(final char[] val) {
         switch (numericTest(val)) {
@@ -277,8 +267,8 @@ public class PropertyTools {
 
     public static boolean isNumber(final String val) {
         int len = val.length();
-        //  char[] a = val.toCharArray();
         char c;
+        boolean f = true;
         int i = 0;
         if (len > 1) {
             if (val.charAt(0) == '-') i++;
@@ -288,11 +278,45 @@ public class PropertyTools {
             }
         }
         for (; i < len; i++) {
-            if (!isDigit(c = val.charAt(i)) && c != '.') return false;
+            if (!isDigit(c = val.charAt(i))) {
+                if (c == '.' && f) {
+                    f = false;
+                }
+                else {
+                    return false;
+                }
+            }
         }
 
         return len > 0;
     }
+
+    public static boolean isNumber(char[] val) {
+        int len = val.length;
+        char c;
+        boolean f = true;
+        int i = 0;
+        if (len > 1) {
+            if (val[0] == '-') i++;
+            else if (val[0] == '~') {
+                i++;
+                if (val[1] == '-') i++;
+            }
+        }
+        for (; i < len; i++) {
+            if (!isDigit(c = val[i])) {
+                if (c == '.' && f) {
+                    f = false;
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+
+        return len > 0;
+    }
+
 
     public static boolean contains(Object toCompare, Object testValue) {
         if (toCompare == null)

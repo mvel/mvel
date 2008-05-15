@@ -25,16 +25,16 @@ import org.mvel.integration.VariableResolverFactory;
  * @author Christopher Brock
  */
 public class EndOfStatement extends ASTNode {
-    private static final char[] LIT = new char[]{';'};
-
     public EndOfStatement() {
-        // super(LIT, OPERATOR);
-        this.name = LIT;
         this.literal = getOperator();
     }
 
     public boolean isOperator() {
         return true;
+    }
+
+    public boolean isOperator(Integer operator) {
+        return operator == Operator.END_OF_STMT;
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

@@ -6,12 +6,15 @@ import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.sh.command.basic.BasicCommandSet;
 import org.mvel.sh.command.file.FileCommandSet;
 import org.mvel.util.StringAppender;
+import org.mvel.util.PropertyTools;
+import static org.mvel.util.PropertyTools.contains;
 import org.mvel.templates.TemplateRuntime;
 
 import java.io.*;
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.arraycopy;
+import static java.lang.System.getProperty;
 import java.util.*;
 import static java.util.ResourceBundle.getBundle;
 
@@ -44,11 +47,12 @@ public class ShellSession {
         commands.putAll(new FileCommandSet().load());
 
         env.put(PROMPT_VAR, DefaultEnvironment.PROMPT);
-        env.put("$OS_NAME", System.getProperty("os.name"));
-        env.put("$OS_VERSION", System.getProperty("os.version"));
-        env.put("$JAVA_VERSION", System.getProperty("java.version"));
+        env.put("$OS_NAME", getProperty("os.name"));
+        env.put("$OS_VERSION", getProperty("os.version"));
+        env.put("$JAVA_VERSION", getProperty("java.version"));
         env.put("$CWD", new File(".").getAbsolutePath());
         env.put("$ECHO", "true");
+        env.put("$SHOW_TRACES", "true");
         env.put("$USE_OPTIMIZER_ALWAYS", "false");
         env.put("$PATH", "");
 
@@ -64,7 +68,7 @@ public class ShellSession {
         catch (MissingResourceException e) {
             System.out.println("No config file found.  Loading default config.");
 
-            if (!System.getProperty("os.name").toLowerCase().contains("windows")) {
+            if (!contains(getProperty("os.name").toLowerCase(), "windows")) {
                 env.put("$PATH", "/bin:/usr/bin:/sbin:/usr/sbin");
             }
 
@@ -201,9 +205,6 @@ public class ShellSession {
                                                 out.append(">").append(indent((multiIndentSize - 1) + (depth * 4)));
                                             }
 
-                                            //   printPrompt();
-
-                                            //     System.out.println("Process Exited: Returning to MVELSH - Press Enter");
                                         }
                                     });
 
@@ -288,14 +289,20 @@ public class ShellSession {
                             continue;
                         }
 
-                        System.out.println("Eval Error: " + e.getMessage());
 
                         ByteArrayOutputStream stackTraceCap = new ByteArrayOutputStream();
                         PrintStream capture = new PrintStream(stackTraceCap);
 
                         e.printStackTrace(capture);
+                        capture.flush();
 
                         env.put("$LAST_STACK_TRACE", new String(stackTraceCap.toByteArray()));
+                        if (parseBoolean(env.get("$SHOW_TRACE"))) {
+                            out.println(env.get("$LAST_STACK_TRACE"));
+                        }
+                        else {
+                            out.println("Error: " + e.toString()); 
+                        }
 
                         inBuffer.reset();
 
