@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 public class PropertyTools {
 //    private static final Pattern truePattern = compile("(on|yes|true|1|hi|high|y)");
@@ -126,11 +127,17 @@ public class PropertyTools {
         return getSetter(clazz, property);
     }
 
+    private static final Map<String, Field> FIELD_CACHE = new WeakHashMap<String, Field>();
+
     public static Member getFieldOrAccessor(Class clazz, String property) {
         if (property.charAt(property.length() - 1) == ')') return getGetter(clazz, property);
 
         try {
-            Field fld = clazz.getField(property);
+            String key = clazz.hashCode() + property;
+            Field fld = FIELD_CACHE.get(key);
+            if (fld == null) {
+                FIELD_CACHE.put(key, fld = clazz.getField(property));
+            }
 
             if ((fld.getModifiers() & PUBLIC) != 0) return fld;
         }
