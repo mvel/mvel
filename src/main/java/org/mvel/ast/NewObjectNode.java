@@ -262,10 +262,9 @@ public class NewObjectNode extends ASTNode {
                         return cns.newInstance(parms);
                     }
                 }
-
                 else {
                     Constructor<?> cns = currentThread().getContextClassLoader()
-                            .loadClass(new String(name)).getConstructor(EMPTYCLS);
+                            .loadClass(className).getConstructor(EMPTYCLS);
 
                     if (cnsRes.length > 1) {
                         return PropertyAccessor.get(cnsRes[1], cns.newInstance(), factory, thisValue);

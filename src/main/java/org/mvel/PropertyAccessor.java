@@ -224,7 +224,7 @@ public class PropertyAccessor {
                 if (cursor == length)
                     throw new PropertyAccessException("unterminated '['");
 
-                if (!scanTo(']'))
+                if (scanTo(']'))
                     throw new PropertyAccessException("unterminated '['");
 
                 String ex = new String(property, start, cursor - start);
@@ -478,13 +478,19 @@ public class PropertyAccessor {
             while (isWhitespace(property[cursor]) && ++cursor < length) ;
     }
 
+
+    /**
+     *
+     * @param c
+     * @return - returns true is end of statement is hit, false if the scan scar is countered.
+     */
     private boolean scanTo(char c) {
         for (; cursor < length; cursor++) {
             if (property[cursor] == c) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -509,7 +515,7 @@ public class PropertyAccessor {
 
         Object item;
 
-        if (!scanTo(']'))
+        if (scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
         // String ex = new String(property, start, cursor++ - start);

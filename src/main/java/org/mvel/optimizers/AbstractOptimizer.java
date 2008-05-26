@@ -156,13 +156,17 @@ public class AbstractOptimizer extends AbstractParser {
             while (isWhitespace(expr[cursor]) && ++cursor != length) ;
     }
 
+    /**
+     * @param c
+     * @return true if end of char[] is reached, false is the character is encountered.
+     */
     protected boolean scanTo(char c) {
         for (; cursor != length; cursor++) {
             if (expr[cursor] == c) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     protected int containsStringLiteralTermination() {

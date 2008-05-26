@@ -1020,7 +1020,7 @@ public class AbstractParser implements Serializable {
 
         cursor++;
 
-        if (!isStatementManuallyTerminated()) {
+        if (isStatementNotManuallyTerminated()) {
             splitAccumulator.add(new EndOfStatement());
         }
 
@@ -1104,7 +1104,7 @@ public class AbstractParser implements Serializable {
             /**
              * Check to see if the name is legal.
              */
-            if (isReservedWord(functionName) || !isValidNameorLabel(functionName))
+            if (isReservedWord(functionName) || isNotValidNameorLabel(functionName))
                 throw new CompileException("illegal function name or use of reserved word", expr, cursor);
 
             if (expr[cursor] == '(') {
@@ -1164,7 +1164,7 @@ public class AbstractParser implements Serializable {
             /**
              * Check if the function is manually terminated.
              */
-            if (!isStatementManuallyTerminated()) {
+            if (isStatementNotManuallyTerminated()) {
                 /**
                  * Add an EndOfStatement to the split accumulator in the parser.
                  */
@@ -1442,12 +1442,12 @@ public class AbstractParser implements Serializable {
      * @param name
      * @return
      */
-    public static boolean isValidNameorLabel(String name) {
+    public static boolean isNotValidNameorLabel(String name) {
         for (char c : name.toCharArray()) {
-            if (c == '.') return false;
-            else if (!isIdentifierPart(c)) return false;
+            if (c == '.') return true;
+            else if (!isIdentifierPart(c)) return true;
         }
-        return true;
+        return false;
     }
 
     protected void setExpression(String expression) {
@@ -1532,11 +1532,11 @@ public class AbstractParser implements Serializable {
      *
      * @return
      */
-    protected boolean isStatementManuallyTerminated() {
-        if (cursor >= length) return true;
+    protected boolean isStatementNotManuallyTerminated() {
+        if (cursor >= length) return false;
         int c = cursor;
         while (c != length && isWhitespace(expr[c])) c++;
-        return (c != length && expr[c] == ';');
+        return !(c != length && expr[c] == ';');
     }
 
     /**

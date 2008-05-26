@@ -26,8 +26,6 @@ import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.EndWithValue;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
-import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.findClassImportResolverFactory;
 import static org.mvel.util.ParseTools.handleParserEgress;
@@ -224,7 +222,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                  * statement, because that top stack value is the value we want back from the parser.
                  */
 
-                if (!hasNoMore()) {
+                if (hasMore()) {
                     holdOverRegister = stk.pop();
                     stk.clear();
                 }
@@ -249,6 +247,10 @@ public class MVELInterpretedRuntime extends AbstractParser {
         stk.push(dStack.pop());
 
         reduce();
+    }
+
+    private boolean hasMore() {
+        return cursor <= length;
     }
 
     private boolean hasNoMore() {

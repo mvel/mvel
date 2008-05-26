@@ -40,12 +40,8 @@ public class ForEachNode extends BlockNode {
     protected ExecutableStatement compiledBlock;
 
     public ForEachNode(char[] condition, char[] block, int fields) {
-        //    super(condition, fields);
-
         this.fields = fields;
-
         handleCond(this.name = condition);
-
         this.block = block;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
@@ -124,7 +120,7 @@ public class ForEachNode extends BlockNode {
                 itemR.setValue(i);
                 cBlockLocal.getValue(ctx, thisValue, itemFactory);
             }
-        }
+        }                                     
         else {
             throw new CompileException("non-iterable type: " + iterCond.getClass().getName());
         }

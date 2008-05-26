@@ -568,7 +568,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (cursor == length)
             throw new CompileException("unterminated '['");
 
-        if (!scanTo(']'))
+        if (scanTo(']'))
             throw new CompileException("unterminated '['");
 
         String tk = new String(expr, start, cursor - start);

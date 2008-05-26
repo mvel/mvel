@@ -245,7 +245,8 @@ public class ASTNode implements Cloneable, Serializable {
         if ((fields & (DEEP_PROPERTY | COLLECTION)) != 0) {
             return new String(name, 0, getAbsoluteFirstPart());
         }
-        return new String(name);
+      //  return new String(name);
+        return nameCache;
     }
 
     public Class getEgressType() {
