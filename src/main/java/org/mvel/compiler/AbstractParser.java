@@ -480,12 +480,10 @@ public class AbstractParser implements Serializable {
                                         if (lastNode.getLiteralValue() instanceof String) {
                                             if (pCtx.hasImport((String) lastNode.getLiteralValue())) {
                                                 lastNode.setLiteralValue(pCtx.getImport((String) lastNode.getLiteralValue()));
-                                                //   lastNode.setAsLiteral();
                                                 lastNode.discard();
                                             }
                                             else if (stk != null && stk.peek() instanceof Class) {
                                                 lastNode.setLiteralValue(stk.pop());
-                                                //      lastNode.setAsLiteral();
                                                 lastNode.discard();
                                             }
                                             else {
@@ -494,7 +492,6 @@ public class AbstractParser implements Serializable {
                                                      *  take a stab in the dark and try and load the class
                                                      */
                                                     lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
-                                                    //       lastNode.setAsLiteral();
                                                     lastNode.discard();
                                                 }
                                                 catch (ClassNotFoundException e) {
@@ -1064,7 +1061,7 @@ public class AbstractParser implements Serializable {
                         cursor++;
                     }
                 }
-                while (ifThenElseblockContinues());
+                while (ifThenElseBlockContinues());
 
                 return first;
             }
@@ -1237,7 +1234,7 @@ public class AbstractParser implements Serializable {
      *
      * @return boolean value
      */
-    protected boolean ifThenElseblockContinues() {
+    protected boolean ifThenElseBlockContinues() {
         if ((cursor + 4) < length) {
             if (expr[cursor] != ';') cursor--;
             skipWhitespace();

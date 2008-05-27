@@ -253,10 +253,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
         return cursor <= length;
     }
 
-    private boolean hasNoMore() {
-        return cursor >= length;
-    }
-
     /**
      * This method is called to unwind the current statement without any reduction or further parsing.
      *
