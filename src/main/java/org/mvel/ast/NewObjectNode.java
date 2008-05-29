@@ -31,17 +31,13 @@ import org.mvel.optimizers.AccessorOptimizer;
 import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import org.mvel.util.ArrayTools;
 import static org.mvel.util.ArrayTools.findFirst;
-import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.getBaseComponentType;
 
 import java.io.Serializable;
-import static org.mvel.util.ParseTools.isWhitespace;
 import static java.lang.Thread.currentThread;
-import java.lang.reflect.Array;
+import static java.lang.reflect.Array.newInstance;
 import java.lang.reflect.Constructor;
-import java.util.Iterator;
-import java.util.LinkedList;
 
 /**
  * @author Christopher Brock
@@ -49,23 +45,19 @@ import java.util.LinkedList;
 @SuppressWarnings({"ManualArrayCopy"})
 public class NewObjectNode extends ASTNode {
     private transient Accessor newObjectOptimizer;
-    private String className;
-
-    private ArraySize[] arraySize;
-    private ExecutableStatement[] compiledArraySize;
+    private TypeDescriptor typeDescr;
 
     public NewObjectNode(char[] expr, int fields) {
-        this.name = expr;
-        updateClassName(this.fields = fields);
+        typeDescr = new TypeDescriptor(this.name = expr, this.fields = fields);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             ParserContext pCtx = getCurrentThreadParserContext();
-            if (pCtx != null && pCtx.hasImport(className)) {
-                egressType = pCtx.getImport(className);
+            if (pCtx != null && pCtx.hasImport(typeDescr.getClassName())) {
+                egressType = pCtx.getImport(typeDescr.getClassName());
             }
             else {
                 try {
-                    egressType = currentThread().getContextClassLoader().loadClass(className);
+                    egressType = currentThread().getContextClassLoader().loadClass(typeDescr.getClassName());
                 }
                 catch (ClassNotFoundException e) {
                     // do nothing.
@@ -74,9 +66,9 @@ public class NewObjectNode extends ASTNode {
 
             if (egressType != null) {
                 rewriteClassReferenceToFQCN(fields);
-                if (arraySize != null) {
+                if (typeDescr.isArray()) {
                     try {
-                        egressType = findClass(null, repeatChar('[', arraySize.length) + "L" + egressType.getName() + ";");
+                        egressType = findClass(null, repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";");
                     }
                     catch (Exception e) {
                         e.printStackTrace();
@@ -84,15 +76,13 @@ public class NewObjectNode extends ASTNode {
                     }
                 }
             }
-
         }
-
     }
 
     private void rewriteClassReferenceToFQCN(int fields) {
         String FQCN = egressType.getName();
 
-        if (className.indexOf('.') == -1) {
+        if (typeDescr.getClassName().indexOf('.') == -1) {
             int idx = ArrayTools.findFirst('(', name);
 
             char[] fqcn = FQCN.toCharArray();
@@ -115,54 +105,9 @@ public class NewObjectNode extends ASTNode {
 
                 this.name = newName;
             }
-            updateClassName(fields);
+
+            this.typeDescr.updateClassName(name, fields);
         }
-    }
-
-    private void updateClassName(int fields) {
-        int endRange = findFirst('(', name);
-        if (endRange == -1) {
-            if ((endRange = findFirst('[', name)) != -1) {
-                className = new String(name, 0, endRange);
-                int to;
-
-                LinkedList<char[]> sizes = new LinkedList<char[]>();
-
-                while (endRange < name.length) {
-                    while (endRange < name.length && isWhitespace(name[endRange])) endRange++;
-
-                    if (endRange == name.length) break;
-
-                    if (name[endRange] != '[')
-                        throw new CompileException("unexpected token in contstructor", name, endRange);
-
-                    to = balancedCapture(name, endRange, '[');
-
-                    sizes.add(ParseTools.subset(name, ++endRange, to - endRange));
-                    endRange = to + 1;
-                }
-
-                Iterator<char[]> iter = sizes.iterator();
-                arraySize = new ArraySize[sizes.size()];
-                for (int i = 0; i < arraySize.length; i++)
-                    arraySize[i] = new ArraySize(iter.next());
-
-
-                if ((fields & COMPILE_IMMEDIATE) != 0) {
-                    compiledArraySize = new ExecutableStatement[arraySize.length];
-                    for (int i = 0; i < compiledArraySize.length; i++)
-                        compiledArraySize[i] = (ExecutableStatement) subCompileExpression(arraySize[i].value);
-                }
-
-                return;
-            }
-
-            className = new String(name);
-        }
-        else {
-            className = new String(name, 0, endRange);
-        }
-
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -173,14 +118,14 @@ public class NewObjectNode extends ASTNode {
                  * we have to attempt runtime resolution.
                  */
 
-                if (factory != null && factory.isResolveable(className)) {
+                if (factory != null && factory.isResolveable(typeDescr.getClassName())) {
                     try {
-                        egressType = (Class) factory.getVariableResolver(className).getValue();
+                        egressType = (Class) factory.getVariableResolver(typeDescr.getClassName()).getValue();
                         rewriteClassReferenceToFQCN(COMPILE_IMMEDIATE);
 
-                        if (arraySize != null) {
+                        if (typeDescr.isArray()) {
                             try {
-                                egressType = findClass(factory, repeatChar('[', arraySize.length) + "L" + egressType.getName() + ";");
+                                egressType = findClass(factory, repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";");
                             }
                             catch (Exception e) {
                                 // for now, don't handle this.
@@ -189,18 +134,15 @@ public class NewObjectNode extends ASTNode {
 
                     }
                     catch (ClassCastException e) {
-                        throw new CompileException("cannot construct object: " + className + " is not a class reference", e);
+                        throw new CompileException("cannot construct object: " + typeDescr.getClassName() + " is not a class reference", e);
                     }
                 }
             }
 
-            Class cls = Class[].class;
-
-            if (arraySize != null) {
-                return (newObjectOptimizer = new NewObjectArray(getBaseComponentType(egressType.getComponentType()), compiledArraySize))
+            if (typeDescr.isArray()) {
+                return (newObjectOptimizer = new NewObjectArray(getBaseComponentType(egressType.getComponentType()), typeDescr.getCompiledArraySize()))
                         .getValue(ctx, thisValue, factory);
             }
-
 
             AccessorOptimizer optimizer = getThreadAccessorOptimizer();
             newObjectOptimizer = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
@@ -221,17 +163,18 @@ public class NewObjectNode extends ASTNode {
     private static final Class[] EMPTYCLS = new Class[0];
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-
         try {
-            if (arraySize != null) {
-                Class cls = findClass(factory, className);
+            if (typeDescr.isArray()) {
+                Class cls = findClass(factory, typeDescr.getClassName());
 
-                int[] s = new int[arraySize.length];
+                int[] s = new int[typeDescr.getArrayLength()];
+                ArraySize[] arraySize = typeDescr.getArraySize();
+
                 for (int i = 0; i < s.length; i++) {
                     s[i] = convert(eval(arraySize[i].value, ctx, factory), Integer.class);
                 }
 
-                return Array.newInstance(cls, s);
+                return newInstance(cls, s);
             }
             else {
                 String[] cnsRes = captureContructorAndResidual(name);
@@ -264,7 +207,7 @@ public class NewObjectNode extends ASTNode {
                 }
                 else {
                     Constructor<?> cns = currentThread().getContextClassLoader()
-                            .loadClass(className).getConstructor(EMPTYCLS);
+                            .loadClass(typeDescr.getClassName()).getConstructor(EMPTYCLS);
 
                     if (cnsRes.length > 1) {
                         return PropertyAccessor.get(cnsRes[1], cns.newInstance(), factory, thisValue);
@@ -286,17 +229,8 @@ public class NewObjectNode extends ASTNode {
         }
     }
 
-
     public Accessor getNewObjectOptimizer() {
         return newObjectOptimizer;
-    }
-
-    public static class ArraySize implements Serializable {
-        public ArraySize(char[] value) {
-            this.value = value;
-        }
-
-        public char[] value;
     }
 
     public static class NewObjectArray implements Accessor, Serializable {
@@ -314,7 +248,7 @@ public class NewObjectNode extends ASTNode {
                 s[i] = convert(sizes[i].getValue(ctx, elCtx, variableFactory), Integer.class);
             }
 
-            return Array.newInstance(arrayType, s);
+            return newInstance(arrayType, s);
         }
 
         public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {

@@ -751,6 +751,8 @@ public class AbstractParser implements Serializable {
                                 throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
                             }
 
+                            //todo: support typecast to array types
+
                             char[] _subset = null;
                             if (singleToken) {
                                 int st;
