@@ -39,6 +39,7 @@ import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.impl.refl.Union;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.*;
+import static org.mvel.util.PropertyTools.getBaseComponentType;
 import static org.mvel.util.ParseTools.*;
 
 import java.io.FileWriter;
@@ -351,7 +352,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitVarInsn(ALOAD, 1);
             }
 
-            if (((member.getModifiers() & (STATIC|FINAL)) != 0)) {
+            if (((member.getModifiers() & (STATIC | FINAL)) != 0)) {
                 // Check if the static field reference is a constant and a primitive.
                 if ((member.getModifiers() & FINAL) != 0 && (o instanceof String || o.getClass().isPrimitive())) {
                     o = ((Field) member).get(null);
@@ -606,16 +607,58 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return ((List) ctx).get(convert(item, Integer.class));
 
         }
-        else if (ctx instanceof Object[]) {
-            assert debug("CHECKCAST [Ljava/lang/Object;");
-            mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
+        else if (ctx.getClass().isArray()) {
+            //       assert debug("CHECKCAST [Ljava/lang/Object;");
+            //
+            //        mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
+            assert debug("CHECKCAST " + getDescriptor(ctx.getClass()));
+            mv.visitTypeInsn(CHECKCAST, getDescriptor(ctx.getClass()));
 
             writeLiteralOrSubexpression(compiled, int.class, item.getClass());
 
-            assert debug("AALOAD");
-            mv.visitInsn(AALOAD);
+            Class cls = getBaseComponentType(ctx.getClass());
+            if (cls.isPrimitive()) {
+                if (cls == int.class) {
+                    assert debug("IALOAD");
+                    mv.visitInsn(IALOAD);
+                }
+                else if (cls == char.class) {
+                    assert debug("CALOAD");
+                    mv.visitInsn(CALOAD);
+                }
+                else if (cls == boolean.class) {
+                    assert debug("BALOAD");
+                    mv.visitInsn(BALOAD);
+                }
+                else if (cls == double.class) {
+                    assert debug("DALOAD");
+                    mv.visitInsn(DALOAD);
+                }
+                else if (cls == float.class) {
+                    assert debug("FALOAD");
+                    mv.visitInsn(FALOAD);
+                }
+                else if (cls == short.class) {
+                    assert debug("SALOAD");
+                    mv.visitInsn(SALOAD);
+                }
+                else if (cls == long.class) {
+                    assert debug("LALOAD");
+                    mv.visitInsn(LALOAD);
+                }
+                else if (cls == byte.class) {
+                    assert debug("BALOAD");
+                    mv.visitInsn(BALOAD);
+                }
 
-            return ((Object[]) ctx)[convert(item, Integer.class)];
+                wrapPrimitive(cls);
+            }
+            else {
+                assert debug("AALOAD");
+                mv.visitInsn(AALOAD);
+            }
+
+            return Array.get(ctx, convert(item, Integer.class));
         }
         else if (ctx instanceof CharSequence) {
             assert debug("CHECKCAST java/lang/CharSequence");
@@ -1077,7 +1120,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         /**
          * This must be synchronized.  Two classes cannot be simultaneously deployed in the JVM.
          */
-
 
 
         return classLoader.defineClassX(className, b, 0, b.length);

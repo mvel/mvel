@@ -3184,6 +3184,17 @@ public class CoreConfidenceTests extends AbstractTest {
             MVEL.executeExpression(s, testMap);
         }
     }
+
+    public void testStringToArrayCast() {
+        Object o = test("(char[]) 'abcd'");
+
+        assertTrue(o instanceof char[]);
+    }
+
+    public void testStringToArrayCast2() {
+        assertTrue((Boolean) test("_xyxy = (char[]) 'abcd'; _xyxy[0] == 'a'"));
+    }
+
 }
 
 

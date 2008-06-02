@@ -370,6 +370,7 @@ public class PropertyAccessor {
         if (nestedMap == null) {
             READ_PROPERTY_RESOLVER_CACHE.put(cls, nestedMap = new WeakHashMap<Integer, Member>());
         }
+
         nestedMap.put(property, member);
     }
 
@@ -458,7 +459,7 @@ public class PropertyAccessor {
             return ((Map) ctx).get(property);
         }
         else if ("length".equals(property) && ctx.getClass().isArray()) {
-            return Array.getLength(ctx);
+            return getLength(ctx);
         }
         else if (ctx instanceof Class) {
             Class c = (Class) ctx;
@@ -536,8 +537,8 @@ public class PropertyAccessor {
             for (int i = 0; i < count; i++) iter.next();
             return iter.next();
         }
-        else if (ctx instanceof Object[]) {
-            return ((Object[]) ctx)[(Integer) item];
+        else if (ctx.getClass().isArray()) {
+            return Array.get(ctx, (Integer) item);
         }
         else if (ctx instanceof CharSequence) {
             return ((CharSequence) ctx).charAt((Integer) item);
@@ -626,7 +627,6 @@ public class PropertyAccessor {
             /**
              * Try to find an instance method from the class target.
              */
-
             if ((m = getBestCandidate(args, name, cls, cls.getMethods())) != null) {
                 addMethodCache(cls, createSignature(name, tk), m);
                 parameterTypes = m.getParameterTypes();

@@ -50,7 +50,6 @@ public class ExecutableAccessor implements ExecutableStatement {
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         return handleParserEgress(node.getReducedValueAccelerated(staticContext, staticContext, factory),
                 returnBigDecimal);
-
     }
 
 

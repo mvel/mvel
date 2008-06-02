@@ -3,12 +3,13 @@ package org.mvel.optimizers.dynamic;
 import org.mvel.util.MVELClassLoader;
 
 import java.util.LinkedList;
+import java.util.ConcurrentModificationException;
 
 
 public class DynamicClassLoader extends ClassLoader implements MVELClassLoader {
     private int totalClasses;
     private int tenureLimit;
-    private LinkedList<DynamicAccessor> allAccessors = new LinkedList<DynamicAccessor>();
+    private final LinkedList<DynamicAccessor> allAccessors = new LinkedList<DynamicAccessor>();
 
     public DynamicClassLoader(ClassLoader classLoader, int tenureLimit) {
         super(classLoader);
@@ -30,8 +31,15 @@ public class DynamicClassLoader extends ClassLoader implements MVELClassLoader {
     }
 
     public void deoptimizeAll() {
-        for (DynamicAccessor a : allAccessors) {
-            a.deoptimize();
+        synchronized (allAccessors) {
+            try {
+                for (DynamicAccessor a : allAccessors) {
+                    if (a != null) a.deoptimize();
+                }
+            }
+            catch (ConcurrentModificationException e) {
+                // just back out.
+            }
         }
     }
 

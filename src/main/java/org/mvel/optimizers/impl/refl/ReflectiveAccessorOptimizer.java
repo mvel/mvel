@@ -110,6 +110,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return accessor.getValue(ctx, null, null);
         }
     }
+
     public Accessor optimizeAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean root) {
         this.rootNode = this.currNode = null;
         this.start = this.cursor = 0;
@@ -473,7 +474,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             return ((List) ctx).get((Integer) idx);
         }
-        else if (ctx instanceof Object[]) {
+        else if (ctx.getClass().isArray()) {
             if (itemSubExpr) {
                 addAccessorNode(new ArrayAccessorNest(itemStmt));
             }
@@ -481,7 +482,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 addAccessorNode(new ArrayAccessor(parseInt(item)));
             }
 
-            return ((Object[]) ctx)[(Integer) idx];
+            return Array.get(ctx, (Integer) idx);
         }
         else if (ctx instanceof CharSequence) {
             if (itemSubExpr) {

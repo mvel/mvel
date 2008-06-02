@@ -82,7 +82,6 @@ public class AbstractParser implements Serializable {
 
     static {
         configureFactory();
-
         /**
          * Setup the basic literals
          */
@@ -313,7 +312,6 @@ public class AbstractParser implements Serializable {
                         }
                     }
 
-
                     skipWhitespace();
 
                     /**
@@ -515,6 +513,7 @@ public class AbstractParser implements Serializable {
                                     else if (pCtx != null
                                             && ((idx = pCtx.variableIndexOf(t)) != -1
                                             || (pCtx.isIndexAllocation()))) {
+
                                         IndexedAssignmentNode ian = new IndexedAssignmentNode(subArray(start, cursor), ASTNode.ASSIGN, idx);
 
                                         if (idx == -1) {
@@ -736,8 +735,19 @@ public class AbstractParser implements Serializable {
                                          * Check to see if we should disqualify this current token as a potential
                                          * type-cast candidate.
                                          */
-                                        if ((lastWS && expr[cursor] != '.') || !(isIdentifierPart(expr[cursor]) || expr[cursor] == '.')) {
-                                            singleToken = false;
+
+
+                                        if (lastWS && expr[cursor] != '.') {
+                                            switch (expr[cursor]) {
+                                                case '[':
+                                                case ']':
+                                                    break;
+
+                                                default:
+                                                    if (!(isIdentifierPart(expr[cursor]) || expr[cursor] == '.')) {
+                                                        singleToken = false;
+                                                    }
+                                            }
                                         }
                                         else if (isWhitespace(expr[cursor])) {
                                             lastWS = true;
@@ -752,24 +762,48 @@ public class AbstractParser implements Serializable {
                             }
 
                             //todo: support typecast to array types
-
                             char[] _subset = null;
+
                             if (singleToken) {
                                 int st;
-                                if (pCtx.hasImport(name = new String(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st)))) {
+                                TypeDescriptor tDescr = new TypeDescriptor(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st), fields);
+
+                                Class cls;
+                                if (pCtx.hasImport(tDescr.getClassName())) {
+                                    cls = pCtx.getImport(tDescr.getClassName());
+
                                     start = cursor;
                                     captureToEOS();
-                                    return lastNode = new TypeCast(subset(expr, start, cursor - start), pCtx.getImport(name), fields);
+
+                                    if (tDescr.isArray()) {
+                                        try {
+                                            cls = findClass(null, repeatChar('[', tDescr.getArrayLength()) + "L" + cls.getName() + ";");
+                                        }
+                                        catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+
+                                    return lastNode = new TypeCast(subset(expr, start, cursor - start), cls, fields);
                                 }
                                 else {
                                     int rewind = cursor;
                                     try {
+                                        cls = createClass(tDescr.getClassName());
+                                        if (tDescr.isArray()) {
+                                            try {
+                                                cls = findClass(null, repeatChar('[', tDescr.getArrayLength()) + "L" + cls.getName() + ";");
+                                            }
+                                            catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+
                                         /**
                                          *  take a stab in the dark and try and load the class
                                          */
                                         captureToEOS();
-                                        return lastNode = new TypeCast(subset(expr, rewind, cursor - rewind), createClass(name), fields);
-
+                                        return lastNode = new TypeCast(subset(expr, rewind, cursor - rewind), cls, fields);
                                     }
                                     catch (ClassNotFoundException e) {
                                         /**
@@ -967,8 +1001,9 @@ public class AbstractParser implements Serializable {
         if (start >= end) return new char[0];
 
         char[] newA = new char[end - start];
-        for (int i = 0; i != newA.length; i++)
+        for (int i = 0; i != newA.length; i++) {
             newA[i] = expr[i + start];
+        }
 
         return newA;
     }
@@ -1278,7 +1313,6 @@ public class AbstractParser implements Serializable {
                 case ';':
                 case '}':
                     return;
-
             }
             cursor++;
         }
@@ -1748,7 +1782,6 @@ public class AbstractParser implements Serializable {
     }
 
     protected static boolean isArithmeticOperator(int operator) {
-        //  return operator == ADD || operator == MULT || operator == SUB || operator == DIV;
         return operator < 6;
     }
 
