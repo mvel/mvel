@@ -131,8 +131,6 @@ public class AbstractParser implements Serializable {
             }
         }
 
-        //LITERALS.putAll(Units.MEASUREMENTS_ALL);
-
         _loadLanguageFeaturesByLevel(5);
     }
 
@@ -387,7 +385,6 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields | ASTNode.ASSIGN);
                                     }
                                     else if (lastWasIdentifier) {
-
                                         /**
                                          * Check for typing information.
                                          */
@@ -974,7 +971,6 @@ public class AbstractParser implements Serializable {
                 }
                 return _captureBlock(null, expr, true, type);
         }
-
     }
 
     private ASTNode _captureBlock(ASTNode node, final char[] expr, boolean cond, int type) {

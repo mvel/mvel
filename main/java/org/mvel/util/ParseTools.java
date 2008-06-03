@@ -99,7 +99,6 @@ public class ParseTools {
                     i = captureStringLiteral('\'', parm, i, parm.length);
                     continue;
 
-
                 case '"':
                     i = captureStringLiteral('"', parm, i, parm.length);
                     continue;
@@ -212,7 +211,6 @@ public class ParseTools {
           }
 
           if (bestCandidate != null) {
-              //        methCache = RESOLVED_METH_CACHE.get(method);
               if (methCache == null) {
                   RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, Method>());
               }
@@ -1129,7 +1127,6 @@ public class ParseTools {
                 }
             }
             return new ExecutableAccessor(tk, false, compiled.getKnownEgressType());
-
         }
 
         return compiled;
