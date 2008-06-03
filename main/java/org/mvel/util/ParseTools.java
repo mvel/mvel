@@ -952,7 +952,17 @@ public class ParseTools {
             }
         }
 
-        return -1;
+        switch (type) {
+            case '[':
+                throw new CompileException("unbalanced braces [ ... ]", chars, start);
+            case '{':
+                throw new CompileException("unbalanced braces { ... }", chars, start);
+            case '(':
+                throw new CompileException("unbalanced braces ( ... )", chars, start);
+            default:
+                throw new CompileException("unterminated string literal", chars, start);
+
+        }
     }
 
     public static int[] balancedCaptureWithLineAccounting(char[] chars, int start, char type) {
@@ -1003,8 +1013,19 @@ public class ParseTools {
             }
         }
 
-        return new int[]{-1, 0};
+        switch (type) {
+            case '[':
+                throw new CompileException("unbalanced braces [ ... ]", chars, start);
+            case '{':
+                throw new CompileException("unbalanced braces { ... }", chars, start);
+            case '(':
+                throw new CompileException("unbalanced braces ( ... )", chars, start);
+            default:
+                throw new CompileException("unterminated string literal", chars, start);
+
+        }
     }
+
 
     public static String handleStringEscapes(char[] input) {
         int escapes = 0;

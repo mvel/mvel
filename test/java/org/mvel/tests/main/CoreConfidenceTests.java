@@ -3217,6 +3217,18 @@ public class CoreConfidenceTests extends AbstractTest {
             MVEL.executeExpression(s, testMap);
         }
     }
+
+    public void testParserErrorHandling() {
+        try {
+            final ParserContext ctx = new ParserContext();
+            ExpressionCompiler compiler = new ExpressionCompiler("a[");
+            compiler.compile(ctx);
+        }
+        catch (Exception e) {
+            return;
+        }
+        assertTrue(false);
+    }
 }
 
 
