@@ -99,7 +99,6 @@ public class ParseTools {
                     i = captureStringLiteral('\'', parm, i, parm.length);
                     continue;
 
-
                 case '"':
                     i = captureStringLiteral('"', parm, i, parm.length);
                     continue;
@@ -212,7 +211,6 @@ public class ParseTools {
           }
 
           if (bestCandidate != null) {
-              //        methCache = RESOLVED_METH_CACHE.get(method);
               if (methCache == null) {
                   RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, Method>());
               }
@@ -952,7 +950,17 @@ public class ParseTools {
             }
         }
 
-        return -1;
+        switch (type) {
+            case '[':
+                throw new CompileException("unbalanced braces [ ... ]", chars, start);
+            case '{':
+                throw new CompileException("unbalanced braces { ... }", chars, start);
+            case '(':
+                throw new CompileException("unbalanced braces ( ... )", chars, start);
+            default:
+                throw new CompileException("unterminated string literal", chars, start);
+
+        }
     }
 
     public static int[] balancedCaptureWithLineAccounting(char[] chars, int start, char type) {
@@ -1003,8 +1011,19 @@ public class ParseTools {
             }
         }
 
-        return new int[]{-1, 0};
+        switch (type) {
+            case '[':
+                throw new CompileException("unbalanced braces [ ... ]", chars, start);
+            case '{':
+                throw new CompileException("unbalanced braces { ... }", chars, start);
+            case '(':
+                throw new CompileException("unbalanced braces ( ... )", chars, start);
+            default:
+                throw new CompileException("unterminated string literal", chars, start);
+
+        }
     }
+
 
     public static String handleStringEscapes(char[] input) {
         int escapes = 0;
@@ -1108,7 +1127,6 @@ public class ParseTools {
                 }
             }
             return new ExecutableAccessor(tk, false, compiled.getKnownEgressType());
-
         }
 
         return compiled;

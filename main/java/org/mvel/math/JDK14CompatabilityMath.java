@@ -124,30 +124,40 @@ public class JDK14CompatabilityMath implements MathProcessor {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE;
                 }
-                break;
+                else {
+                    return Boolean.FALSE;
+                }
+                //     break;
 
             case GETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
+                else {
+                    return Boolean.FALSE;
+                }
 
-                break;
 
             case LTHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
                 }
+                else {
+                    return Boolean.FALSE;
+                }
 
-                break;
 
             case LETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
                     return ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
-                break;
+                else {
+                    return Boolean.FALSE;
+                }
+
         }
 
         throw new CompileException("could not perform numeric operation on non-numeric types: left-type="

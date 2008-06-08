@@ -308,7 +308,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals((int) val, test(expression));
     }
 
- 
 
     public void testPowerOf() {
         assertEquals(25, test("5 ** 2"));
@@ -330,6 +329,26 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testComplexAnd() {
         assertEquals(true, test("(pi * hour) > 0 && foo.happy() == 'happyBar'"));
+    }
+
+    public void testOperatorPrecedence() {
+        String ex = "_x_001 = 500.2; _x_002 = 200.8; _r_001 = 701; _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.1";
+        assertEquals(true, test(ex));
+    }
+
+    public void testOperatorPrecedence2() {
+        String ex = "_x_001 = 500.2; _x_002 = 200.8; _r_001 = 701; _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2";
+        assertEquals(true, test(ex));
+    }
+
+    public void testOperatorPrecedence3() {
+        String ex = "_x_001 = 500.2; _x_002 = 200.9; _r_001 = 701; _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2";
+        assertEquals(false, test(ex));
+    }
+
+    public void testOperatorPrecedence4() {
+        String ex = "_x_001 = 500.2; _x_002 = 200.9; _r_001 = 701; _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.2";
+        assertEquals(true, test(ex));
     }
 
     public void testShortPathExpression() {
@@ -3145,7 +3164,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(p1, p2);
     }
-    
+
     public void testCompileMatches() {
         ExpressionCompiler compiler = new ExpressionCompiler("String source = \"abc\"; String pat = \"abc\"; source ~= pat ");
         Serializable s = compiler.compile();
@@ -3197,6 +3216,38 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testCharComparison() {
         assertEquals(true, test("'z' > 'a'"));
+    }
+
+    public void testRegExMatch() {
+        assertEquals(true, MVEL.eval("$test = 'foo'; $ex = 'f.*'; $test ~= $ex", new HashMap()));
+    }
+
+    public static class TestClass2 {
+        public void addEqualAuthorizationConstraint(Foo leg, Bar ctrlClass, Integer authorization) {
+        }
+    }
+
+    public void testJIRA93() {
+        Map testMap = createTestMap();
+        testMap.put("testClass2", new TestClass2());
+
+        Serializable s = MVEL.compileExpression("testClass2.addEqualAuthorizationConstraint(foo, foo.bar, 5)");
+
+        for (int i = 0; i < 3; i++) {
+            MVEL.executeExpression(s, testMap);
+        }
+    }
+
+    public void testParserErrorHandling() {
+        try {
+            final ParserContext ctx = new ParserContext();
+            ExpressionCompiler compiler = new ExpressionCompiler("a[");
+            compiler.compile(ctx);
+        }
+        catch (Exception e) {
+            return;
+        }
+        assertTrue(false);
     }
 }
 
