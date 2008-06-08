@@ -209,8 +209,22 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testOperatorPrecedence() {
         String ex = "_x_001 = 500.2; _x_002 = 200.8; _r_001 = 701; _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.1";
-        System.out.println(":: " + ex);
-        assertEquals(true, MVEL.eval(ex, new HashMap()));
+        assertEquals(true, test(ex));
+    }
+
+    public void testOperatorPrecedence2() {
+        String ex = "_x_001 = 500.2; _x_002 = 200.8; _r_001 = 701; _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2";
+        assertEquals(true, test(ex));
+    }
+
+    public void testOperatorPrecedence3() {
+        String ex = "_x_001 = 500.2; _x_002 = 200.9; _r_001 = 701; _r_001 == _x_001 + _x_002 && _x_001 == 500 + 0.2";
+        assertEquals(false, test(ex));
+    }
+
+    public void testOperatorPrecedence4() {
+        String ex = "_x_001 = 500.2; _x_002 = 200.9; _r_001 = 701; _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.2";
+        assertEquals(true, test(ex));
     }
 
     public void testShortPathExpression() {

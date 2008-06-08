@@ -1907,27 +1907,20 @@ public class AbstractParser implements Serializable {
                     if (tk != null && (tk = nextToken()) != null) {
                         switch (operator) {
                             case AND: {
-                                if (!((Boolean) stk.peek())) return -1;
+                                if (!((Boolean) stk.peek())) return -2;
                                 else {
                                     splitAccumulator.add(tk);
                                     return AND;
-
-//                                    stk.discard();
-//                                    stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
                                 }
-                           //     break;
                             }
                             case OR: {
 
-                                if (((Boolean) stk.peek())) return -1;
+                                if (((Boolean) stk.peek())) return -2;
                                 else {
                                     splitAccumulator.add(tk);
                                     return OR;
-
-//                                    stk.discard();
-//                                    stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
                                 }
-                         //       break;
+
                             }
 
                             default:

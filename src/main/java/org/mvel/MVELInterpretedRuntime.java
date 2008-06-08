@@ -111,13 +111,19 @@ public class MVELInterpretedRuntime extends AbstractParser {
                             if (isArithmeticOperator(operator = tk.getOperator())) {
                                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 
-                                if ((operator = arithmeticFunctionReduction(operator)) != -1) {
-                                    switch (procBooleanOperator(operator)) {
-                                        case -1:
-                                            return;
-                                        case 0:
-                                            continue;
-                                        case 1:
+                                switch ((operator = arithmeticFunctionReduction(operator))) {
+                                    case -2:
+                                        return;
+                                    case -1:
+                                        continue;
+                                    default: {
+                                        switch (procBooleanOperator(operator)) {
+                                            case -1:
+                                                return;
+                                            case 0:
+                                                continue;
+                                            case 1:
+                                        }
                                     }
                                 }
 
@@ -140,13 +146,19 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 
-                if ((operator = arithmeticFunctionReduction(operator)) != -1) {
-                    switch (procBooleanOperator(operator)) {
-                        case -1:
-                            return;
-                        case 0:
-                            continue;
-                        case 1:
+                switch ((operator = arithmeticFunctionReduction(operator))) {
+                    case -2:
+                        return;
+                    case -1:
+                        continue;
+                    default: {
+                        switch (procBooleanOperator(operator)) {
+                            case -1:
+                                return;
+                            case 0:
+                                continue;
+                            case 1:
+                        }
                     }
                 }
 
