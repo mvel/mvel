@@ -1442,147 +1442,168 @@ public class AbstractParser implements Serializable {
         return operator < 6;
     }
 
-    protected void arithmeticFunctionReduction(int operator) {
-        ASTNode tk;
-        int operator2;
+    protected int arithmeticFunctionReduction(int operator) {
+         ASTNode tk;
+         int operator2;
 
-        boolean x = false;
-        int y = 0;
+         boolean x = false;
+         int y = 0;
 
-        /**
-         * If the next token is an operator, we check to see if it has a higher
-         * precdence.
-         */
-        if ((tk = nextToken()) != null && tk.isOperator()) {
-            if (isArithmeticOperator(operator2 = tk.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
-                xswap();
-                /**
-                 * The current arith. operator is of higher precedence the last.
-                 */
-                dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+         /**
+          * If the next token is an operator, we check to see if it has a higher
+          * precdence.
+          */
+         if ((tk = nextToken()) != null && tk.isOperator()) {
+             if (isArithmeticOperator(operator2 = tk.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
+                 xswap();
+                 /**
+                  * The current arith. operator is of higher precedence the last.
+                  */
+                 dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
 
-                while (true) {
-                    // look ahead again
-                    if ((tk = nextToken()) != null && PTABLE[operator2 = tk.getOperator()] > PTABLE[operator]) {
-                        // if we have back to back operations on the stack, we don't xswap
-                        if (x) {
-                            xswap();
-                        }
-                        /**
-                         * This operator is of higher precedence, or the same level precedence.  push to the RHS.
-                         */
-                        dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+                 while (true) {
+                     // look ahead again
+                     if ((tk = nextToken()) != null && PTABLE[operator2 = tk.getOperator()] > PTABLE[operator]) {
+                         // if we have back to back operations on the stack, we don't xswap
+                         if (x) {
+                             xswap();
+                         }
+                         /**
+                          * This operator is of higher precedence, or the same level precedence.  push to the RHS.
+                          */
+                         dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+                         y = 1;
+                         continue;
+                     }
+                     else if (tk != null) {
+                         if (PTABLE[operator2] == PTABLE[operator]) {
+                             // if we have back to back operations on the stack, we don't xswap
+                             if (x) {
+                                 xswap();
+                             }
 
-                        y = 1;
-                        continue;
-                    }
-                    else if (tk != null) {
-                        if (PTABLE[operator2] == PTABLE[operator]) {
-                            // if we have back to back operations on the stack, we don't xswap
-                            if (x) {
-                                xswap();
-                            }
+                             /**
+                              * Reduce any operations waiting now.
+                              */
+                             while (!dStack.isEmpty()) {
+                                 dreduce();
+                             }
 
-                            /**
-                             * Reduce any operations waiting now.
-                             */
-                            while (!dStack.isEmpty()) {
-                                dreduce();
-                            }
+                             /**
+                              * This operator is of the same level precedence.  push to the RHS.
+                              */
+                             dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
 
-                            /**
-                             * This operator is of the same level precedence.  push to the RHS.
-                             */
-                            dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+                             y++;
+                             continue;
+                         }
+                         else {
+                             /**
+                              * The operator doesn't have higher precedence. Therfore reduce the LHS.
+                              */
+                             if (!dStack.isEmpty()) {
+                                 do {
+                                     if (y == 1) {
+                                         dreduce2();
+                                         y = 0;
+                                     }
+                                     else {
+                                         dreduce();
+                                     }
+                                 }
+                                 while (dStack.size() > 1);
+                             }
 
-                            y++;
-                            continue;
-                        }
-                        else {
-                            /**
-                             * The operator doesn't have higher precedence. Therfore reduce the LHS.
-                             */
-                            if (!dStack.isEmpty()) {
-                                do {
-                                    if (y == 1) {
-                                        dreduce2();
-                                        y = 0;
-                                    }
-                                    else {
-                                        dreduce();
-                                    }
-                                }
-                                while (dStack.size() > 1);
-                            }
+                             if (!dStack.isEmpty()) {
+                                 stk.push(dStack.pop());
+                                 xswap();
+                             }
 
-                            if (!dStack.isEmpty()) {
-                                stk.push(dStack.pop());
-                                xswap();
-                            }
+                             operator = tk.getOperator();
+                             // Reduce the lesser or equal precedence operations.
+                             while (stk.size() != 1 && PTABLE[((Integer) stk.peek2())] >= PTABLE[operator]) {
+                                 xswap();
+                                 reduce();
+                             }
 
-                            operator = tk.getOperator();
-                            // Reduce the lesser or equal precedence operations.
-                            while (stk.size() != 1 && PTABLE[((Integer) stk.peek2())] >= PTABLE[operator]) {
-                                xswap();
-                                reduce();
-                            }
+                             y = 0;
+                         }
+                     }
+                     else {
+                         /**
+                          * There are no more tokens.
+                          */
+                         x = false;
 
-                            y = 0;
-                        }
-                    }
-                    else {
-                        /**
-                         * There are no more tokens.
-                         */
-                        x = false;
+                         if (dStack.size() > 1) {
+                             do {
+                                 if (y == 1) {
+                                     dreduce2();
+                                     y = 0;
+                                 }
+                                 else {
+                                     dreduce();
+                                 }
+                             }
+                             while (dStack.size() > 1);
 
-                        if (dStack.size() > 1) {
-                            do {
-                                if (y == 1) {
-                                    dreduce2();
-                                    y = 0;
-                                }
-                                else {
-                                    dreduce();
-                                }
-                            }
-                            while (dStack.size() > 1);
+                             x = true;
+                         }
 
-                            x = true;
-                        }
+                         if (!dStack.isEmpty()) {
+                             stk.push(dStack.pop());
+                         }
+                         else if (x) {
+                             xswap();
+                         }
 
-                        if (!dStack.isEmpty()) {
-                            stk.push(dStack.pop());
-                        }
-                        else if (x) {
-                            xswap();
-                        }
+                         y = 0;
+                         break;
+                     }
 
-                        y = 0;
-                        break;
-                    }
+                     if (tk != null && (tk = nextToken()) != null) {
+                         switch (operator) {
+                             case AND: {
+                                 if (!((Boolean) stk.peek())) return -2;
+                                 else {
+                                     splitAccumulator.add(tk);
+                                     return AND;
+                                 }
+                             }
+                             case OR: {
 
-                    if (tk != null && (tk = nextToken()) != null) {
-                        stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
-                    }
+                                 if (((Boolean) stk.peek())) return -2;
+                                 else {
+                                     splitAccumulator.add(tk);
+                                     return OR;
+                                 }
 
-                    x = true;
-                    y = 0;
-                }
-            }
-            else {
-                reduce();
-                splitAccumulator.push(tk);
-            }
-        }
+                             }
 
-        // while any values remain on the stack
-        // keep XSWAPing and reducing, until there is nothing left.
-        while (stk.size() > 1) {
-            reduce();
-            if (stk.size() > 1) xswap();
-        }
-    }
+                             default:
+                                 stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
+                         }
+                     }
+
+                     x = true;
+                     y = 0;
+                 }
+             }
+             else {
+                 reduce();
+                 splitAccumulator.push(tk);
+             }
+         }
+
+         // while any values remain on the stack
+         // keep XSWAPing and reducing, until there is nothing left.
+         while (stk.size() > 1) {
+             reduce();
+             if (stk.size() > 1) xswap();
+         }
+
+         return -1;
+     }
 
     private void dreduce() {
         // push the right value from the dStack onto the stack

@@ -112,8 +112,22 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         if ((tk = nextToken()) != null) {
                             if (isArithmeticOperator(operator = tk.getOperator())) {
                                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
-                                arithmeticFunctionReduction(operator);
-                                continue;
+
+                                switch ((operator = arithmeticFunctionReduction(operator))) {
+                                    case -2:
+                                        return;
+                                    case -1:
+                                        continue;
+                                    default: {
+                                        switch (procBooleanOperator(operator)) {
+                                            case -1:
+                                                return;
+                                            case 0:
+                                                continue;
+                                            case 1:
+                                        }
+                                    }
+                                }
                             }
                         }
                         else {
@@ -139,7 +153,22 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 }
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
-                arithmeticFunctionReduction(operator);
+
+                switch ((operator = arithmeticFunctionReduction(operator))) {
+                    case -2:
+                        return;
+                    case -1:
+                        continue;
+                    default: {
+                        switch (procBooleanOperator(operator)) {
+                            case -1:
+                                return;
+                            case 0:
+                                continue;
+                            case 1:
+                        }
+                    }
+                }
             }
 
             if (holdOverRegister != null) {
