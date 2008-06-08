@@ -1785,7 +1785,7 @@ public class AbstractParser implements Serializable {
         return operator < 6;
     }
 
-    protected void arithmeticFunctionReduction(int operator) {
+    protected int arithmeticFunctionReduction(int operator) {
         ASTNode tk;
         int operator2;
 
@@ -1815,7 +1815,6 @@ public class AbstractParser implements Serializable {
                          * This operator is of higher precedence, or the same level precedence.  push to the RHS.
                          */
                         dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
-
                         y = 1;
                         continue;
                     }
@@ -1906,7 +1905,34 @@ public class AbstractParser implements Serializable {
                     }
 
                     if (tk != null && (tk = nextToken()) != null) {
-                        stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
+                        switch (operator) {
+                            case AND: {
+                                if (!((Boolean) stk.peek())) return -1;
+                                else {
+                                    splitAccumulator.add(tk);
+                                    return AND;
+
+//                                    stk.discard();
+//                                    stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
+                                }
+                           //     break;
+                            }
+                            case OR: {
+
+                                if (((Boolean) stk.peek())) return -1;
+                                else {
+                                    splitAccumulator.add(tk);
+                                    return OR;
+
+//                                    stk.discard();
+//                                    stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
+                                }
+                         //       break;
+                            }
+
+                            default:
+                                stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
+                        }
                     }
 
                     x = true;
@@ -1925,6 +1951,8 @@ public class AbstractParser implements Serializable {
             reduce();
             if (stk.size() > 1) xswap();
         }
+
+        return -1;
     }
 
     private void dreduce() {

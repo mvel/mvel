@@ -207,6 +207,12 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("(pi * hour) > 0 && foo.happy() == 'happyBar'"));
     }
 
+    public void testOperatorPrecedence() {
+        String ex = "_x_001 = 500.2; _x_002 = 200.8; _r_001 = 701; _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.1";
+        System.out.println(":: " + ex);
+        assertEquals(true, MVEL.eval(ex, new HashMap()));
+    }
+
     public void testShortPathExpression() {
         assertEquals(null, MVEL.eval("3 > 4 && foo.toUC('test'); foo.register", new Base(), createTestMap()));
     }
@@ -3193,6 +3199,18 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testStringToArrayCast2() {
         assertTrue((Boolean) test("_xyxy = (char[]) 'abcd'; _xyxy[0] == 'a'"));
+    }
+
+    public void testParserErrorHandling() {
+        final ParserContext ctx = new ParserContext();
+        ExpressionCompiler compiler = new ExpressionCompiler("a[");
+        try {
+            compiler.compile(ctx);
+        }
+        catch (Exception e) {
+            return;
+        }
+        assertTrue(false);
     }
 
 }

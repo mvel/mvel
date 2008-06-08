@@ -110,7 +110,17 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         if ((tk = nextToken()) != null) {
                             if (isArithmeticOperator(operator = tk.getOperator())) {
                                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
-                                arithmeticFunctionReduction(operator);
+
+                                if ((operator = arithmeticFunctionReduction(operator)) != -1) {
+                                    switch (procBooleanOperator(operator)) {
+                                        case -1:
+                                            return;
+                                        case 0:
+                                            continue;
+                                        case 1:
+                                    }
+                                }
+
                                 continue;
                             }
                         }
@@ -129,7 +139,17 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 }
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
-                arithmeticFunctionReduction(operator);
+
+                if ((operator = arithmeticFunctionReduction(operator)) != -1) {
+                    switch (procBooleanOperator(operator)) {
+                        case -1:
+                            return;
+                        case 0:
+                            continue;
+                        case 1:
+                    }
+                }
+
                 // Don't remove the "stk.push(operator); ruduce();" code duplication.
                 // It results in 3 GOTO instructions in the bytecode vs. one.
             }
