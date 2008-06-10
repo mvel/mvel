@@ -50,6 +50,10 @@ public class AbstractParser implements Serializable {
     protected int length;
     protected int fields;
 
+    protected static final int OP_TERMINATE = -1;
+    protected static final int OP_RESET_FRAME = 0;
+    protected static final int OP_CONTINUE = 1;
+
     protected boolean greedy = true;
     protected boolean lastWasIdentifier = false;
     protected boolean lastWasLineLabel = false;
@@ -1907,7 +1911,7 @@ public class AbstractParser implements Serializable {
                     if (tk != null && (tk = nextToken()) != null) {
                         switch (operator) {
                             case AND: {
-                                if (!((Boolean) stk.peek())) return -2;
+                                if (!((Boolean) stk.peek())) return OP_TERMINATE;
                                 else {
                                     splitAccumulator.add(tk);
                                     return AND;
@@ -1915,7 +1919,7 @@ public class AbstractParser implements Serializable {
                             }
                             case OR: {
 
-                                if (((Boolean) stk.peek())) return -2;
+                                if (((Boolean) stk.peek())) return OP_TERMINATE;
                                 else {
                                     splitAccumulator.add(tk);
                                     return OR;
@@ -1945,7 +1949,7 @@ public class AbstractParser implements Serializable {
             if (stk.size() > 1) xswap();
         }
 
-        return -1;
+        return OP_RESET_FRAME;
     }
 
     private void dreduce() {
