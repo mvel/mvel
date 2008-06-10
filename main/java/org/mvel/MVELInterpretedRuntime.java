@@ -113,21 +113,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
                             if (isArithmeticOperator(operator = tk.getOperator())) {
                                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 
-                                switch ((operator = arithmeticFunctionReduction(operator))) {
-                                    case -2:
-                                        return;
-                                    case -1:
-                                        continue;
-                                    default: {
-                                        switch (procBooleanOperator(operator)) {
-                                            case -1:
-                                                return;
-                                            case 0:
-                                                continue;
-                                            case 1:
-                                        }
-                                    }
-                                }
+                               if (procBooleanOperator(arithmeticFunctionReduction(operator)) == -1) return;
+                                else continue;
                             }
                         }
                         else {
@@ -149,7 +136,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         return;
                     case 0:
                         continue;
-                    case 1:
                 }
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
@@ -159,16 +145,10 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         return;
                     case -1:
                         continue;
-                    default: {
-                        switch (procBooleanOperator(operator)) {
-                            case -1:
-                                return;
-                            case 0:
-                                continue;
-                            case 1:
-                        }
-                    }
+
                 }
+
+                if (procBooleanOperator(operator) == -1) return;
             }
 
             if (holdOverRegister != null) {

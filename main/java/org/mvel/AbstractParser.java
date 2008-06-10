@@ -1571,7 +1571,6 @@ public class AbstractParser implements Serializable {
                                  }
                              }
                              case OR: {
-
                                  if (((Boolean) stk.peek())) return -2;
                                  else {
                                      splitAccumulator.add(tk);
