@@ -145,7 +145,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         return;
                     case -1:
                         continue;
-
                 }
 
                 if (procBooleanOperator(operator) == -1) return;

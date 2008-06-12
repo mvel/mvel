@@ -1605,12 +1605,8 @@ public class AbstractParser implements Serializable {
      }
 
     private void dreduce() {
-        // push the right value from the dStack onto the stack
-        stk.push(dStack.pop());
-
-        // push the higher precedent operator to the top of the stack
-        stk.push(dStack.pop());
-
+        stk.push(dStack.pop(), dStack.pop());
+        
         // reduce the top of the stack
         reduce();
     }
@@ -1640,43 +1636,10 @@ public class AbstractParser implements Serializable {
 
 
     /**
-     * A more efficient RHS reduction, to avoid the need
-     * to XSWAP directly on the stack.
-     */
-    private void reduceRightXSwap() {
-        Object o = stk.pop();
-        Object o2 = stk.pop();
-
-        stk.push(o);
-        stk.push(dStack.pop());
-        stk.push(o2);
-        stk.push(dStack.pop());
-        reduce();
-    }
-
-    /**
-     * Same as reduceRightXSwap, except this is an inverted
-     * operator, or XXSWAP.
-     */
-    private void reduceRightXXSwap() {
-        Object o = stk.pop();
-        Object o2 = stk.pop();
-
-        stk.push(o2);
-        stk.push(dStack.pop());
-        stk.push(o);
-        stk.push(dStack.pop());
-        reduce();
-    }
-
-    /**
      * XSWAP.
      */
     private void xswap() {
-        Object o = stk.pop();
-        Object o2 = stk.pop();
-        stk.push(o);
-        stk.push(o2);
+        stk.push(stk.pop(), stk.pop());
     }
 
     /**
