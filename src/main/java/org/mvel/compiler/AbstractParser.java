@@ -475,7 +475,6 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields | ASTNode.ASSIGN);
                                     }
                                     else if (lastWasIdentifier) {
-
                                         /**
                                          * Check for typing information.
                                          */
@@ -1576,15 +1575,6 @@ public class AbstractParser implements Serializable {
         return !(c != length && expr[c] == ';');
     }
 
-    /**
-     * Returns true of if the detal 1 of the cursor matches the specified character.
-     *
-     * @param c
-     * @return
-     */
-//    protected boolean isNext(char c) {
-//        return lookAhead() == c;
-//    }
     protected ParserContext getParserContext() {
         if (parserContext == null || parserContext.get() == null) {
             newContext();
@@ -1918,13 +1908,11 @@ public class AbstractParser implements Serializable {
                                 }
                             }
                             case OR: {
-
                                 if (((Boolean) stk.peek())) return OP_TERMINATE;
                                 else {
                                     splitAccumulator.add(tk);
                                     return OR;
                                 }
-
                             }
 
                             default:
@@ -1953,11 +1941,7 @@ public class AbstractParser implements Serializable {
     }
 
     private void dreduce() {
-        // push the right value from the dStack onto the stack
-        stk.push(dStack.pop());
-
-        // push the higher precedent operator to the top of the stack
-        stk.push(dStack.pop());
+        stk.push(dStack.pop(), dStack.pop());
 
         // reduce the top of the stack
         reduce();
@@ -1990,10 +1974,7 @@ public class AbstractParser implements Serializable {
      * XSWAP.
      */
     private void xswap() {
-        Object o = stk.pop();
-        Object o2 = stk.pop();
-        stk.push(o);
-        stk.push(o2);
+        stk.push(stk.pop(), stk.pop());
     }
 
     /**

@@ -59,7 +59,9 @@ public class Function extends ASTNode implements Safe {
             ctx.addIndexedVariable(s);
         }
 
-
+        /**
+         * Compile the expression so we can determine the input-output delta.
+         */
         subCompileExpression(block, ctx);
 
         /**
@@ -90,16 +92,13 @@ public class Function extends ASTNode implements Safe {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (name.length() != 0) {
-            factory.createVariable(name, this);
-        }
+        factory.createVariable(name, this);
         return this;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (name.length() != 0) {
-            factory.createVariable(name, this);
-        }
+
+        factory.createVariable(name, this);
         return this;
     }
 
