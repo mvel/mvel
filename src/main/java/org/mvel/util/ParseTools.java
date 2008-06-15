@@ -19,11 +19,13 @@
 package org.mvel.util;
 
 import org.mvel.*;
+import static org.mvel.MVEL.getDebuggingOutputFileName;
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.ast.ASTNode;
 import org.mvel.compiler.*;
 import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel.compiler.AbstractParser.isReservedWord;
+import static org.mvel.compiler.AbstractParser.LITERALS;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.integration.ResolverTools.insertFactory;
@@ -696,8 +698,8 @@ public class ParseTools {
 
     public static Class findClass(VariableResolverFactory factory, String name) throws ClassNotFoundException {
         try {
-            if (AbstractParser.LITERALS.containsKey(name)) {
-                return (Class) AbstractParser.LITERALS.get(name);
+            if (LITERALS.containsKey(name)) {
+                return (Class) LITERALS.get(name);
             }
             else if (factory != null && factory.isResolveable(name)) {
                 return (Class) factory.getVariableResolver(name).getValue();
@@ -738,7 +740,6 @@ public class ParseTools {
 
     public static char[] subset(char[] array, int start) {
         char[] newArray = new char[array.length - start];
-        //    arraycopy(array, start, newArray, 0, newArray.length);
 
         for (int i = 0; i < newArray.length; i++) {
             newArray[i] = array[i + start];
@@ -841,7 +842,6 @@ public class ParseTools {
 
         if (BlankLiteral.class == cls)
             return DataTypes.EMPTY;
-
 
         if (Unit.class.isAssignableFrom(cls))
             return DataTypes.UNIT;
@@ -962,7 +962,6 @@ public class ParseTools {
         return allParms;
     }
 
-
     /**
      * This is an important aspect of the core parser tools.  This method is used throughout the core parser
      * and sub-lexical parsers to capture a balanced capture between opening and terminating tokens such as:
@@ -1026,7 +1025,6 @@ public class ParseTools {
                 throw new CompileException("unbalanced braces ( ... )", chars, start);
             default:
                 throw new CompileException("unterminated string literal", chars, start);
-
         }
     }
 
@@ -1087,7 +1085,6 @@ public class ParseTools {
                 throw new CompileException("unbalanced braces ( ... )", chars, start);
             default:
                 throw new CompileException("unterminated string literal", chars, start);
-
         }
     }
 
@@ -1158,7 +1155,7 @@ public class ParseTools {
     }
 
     public static FileWriter getDebugFileWriter() throws IOException {
-        return new FileWriter(new File(MVEL.getDebuggingOutputFileName()), true);
+        return new FileWriter(new File(getDebuggingOutputFileName()), true);
     }
 
     public static boolean isPrimitiveWrapper(Class clazz) {

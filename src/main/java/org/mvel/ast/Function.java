@@ -97,7 +97,6 @@ public class Function extends ASTNode implements Safe {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-
         factory.createVariable(name, this);
         return this;
     }
@@ -105,7 +104,6 @@ public class Function extends ASTNode implements Safe {
     public Object call(Object ctx, Object thisValue, VariableResolverFactory factory, Object[] parms) {
         try {
             if (parms != null && parms.length != 0) {
-                //   VariableResolverFactory f = ;
                 return compiledBlock.getValue(ctx, thisValue, new FunctionVariableResolverFactory(factory, parameters, parms));
             }
             else {
@@ -140,6 +138,5 @@ public class Function extends ASTNode implements Safe {
     public String toString() {
         return "FunctionDef:" + name;
     }
-
 }
 

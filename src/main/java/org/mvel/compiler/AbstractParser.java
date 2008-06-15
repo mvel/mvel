@@ -1984,14 +1984,10 @@ public class AbstractParser implements Serializable {
      * current state against 2 downrange structures (usually an op and a val).
      */
     protected void reduce() {
-        Object v1 = null, v2 = null;
-        Integer operator;
+        Object v1, v2;
+        int operator;
         try {
-            operator = (Integer) stk.pop();
-            v1 = stk.pop();
-            v2 = stk.pop();
-
-            switch (operator) {
+            switch (operator = (Integer) stk.pop()) {
                 case ADD:
                 case SUB:
                 case DIV:
@@ -2004,19 +2000,23 @@ public class AbstractParser implements Serializable {
                 case GETHAN:
                 case LETHAN:
                 case POWER:
-                    stk.push(doOperations(v2, operator, v1));
+                    v1 = stk.pop();
+                    stk.push(doOperations(stk.pop(), operator, v1));
                     break;
 
                 case AND:
-                    stk.push(((Boolean) v2) && ((Boolean) v1));
+                    v1 = stk.pop();
+                    stk.push(((Boolean) stk.pop()) && ((Boolean) v1));
                     break;
 
                 case OR:
-                    stk.push(((Boolean) v2) || ((Boolean) v1));
+                    v1 = stk.pop();
+                    stk.push(((Boolean) stk.pop()) || ((Boolean) v1));
                     break;
 
                 case CHOR:
-                    if (!isEmpty(v2) || !isEmpty(v1)) {
+                    v1 = stk.pop();
+                    if (!isEmpty(v2 = stk.pop()) || !isEmpty(v1)) {
                         stk.clear();
                         stk.push(!isEmpty(v2) ? v2 : v1);
                         return;
@@ -2025,92 +2025,82 @@ public class AbstractParser implements Serializable {
                     break;
 
                 case REGEX:
-                    stk.push(java.util.regex.Pattern.compile(java.lang.String.valueOf(v1)).matcher(java.lang.String.valueOf(v2)).matches());
+                    stk.push(java.util.regex.Pattern.compile(java.lang.String.valueOf(stk.pop())).matcher(java.lang.String.valueOf(stk.pop())).matches());
                     break;
 
                 case INSTANCEOF:
-                    if (v1 instanceof Class)
-                        stk.push(((Class) v1).isInstance(v2));
+                    if ((v1 = stk.pop()) instanceof Class)
+                        stk.push(((Class) v1).isInstance(stk.pop()));
                     else
-                        stk.push(currentThread().getContextClassLoader().loadClass(java.lang.String.valueOf(v1)).isInstance(v2));
+                        stk.push(currentThread().getContextClassLoader().loadClass(java.lang.String.valueOf(v1)).isInstance(stk.pop()));
 
                     break;
 
                 case CONVERTABLE_TO:
-                    if (v1 instanceof Class)
-                        stk.push(org.mvel.DataConversion.canConvert(v2.getClass(), (Class) v1));
+                    if ((v1 = stk.pop()) instanceof Class)
+                        stk.push(org.mvel.DataConversion.canConvert(stk.pop().getClass(), (Class) v1));
                     else
-                        stk.push(org.mvel.DataConversion.canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(java.lang.String.valueOf(v1))));
+                        stk.push(org.mvel.DataConversion.canConvert(stk.pop().getClass(), currentThread().getContextClassLoader().loadClass(java.lang.String.valueOf(v1))));
                     break;
 
                 case CONTAINS:
-                    stk.push(containsCheck(v2, v1));
+                    v1 = stk.pop();
+                    stk.push(containsCheck(stk.pop(), v1));
                     break;
 
                 case BW_AND:
-                    stk.push(asInt(v2) & asInt(v1));
+                    v1 = stk.pop();
+                    stk.push(asInt(stk.pop()) & asInt(v1));
                     break;
 
                 case BW_OR:
-                    stk.push(asInt(v2) | asInt(v1));
+                    v1 = stk.pop();
+                    stk.push(asInt(stk.pop()) | asInt(v1));
                     break;
 
                 case BW_XOR:
-                    stk.push(asInt(v2) ^ asInt(v1));
+                    v1 = stk.pop();
+                    stk.push(asInt(stk.pop()) ^ asInt(v1));
                     break;
 
                 case BW_SHIFT_LEFT:
-                    stk.push(asInt(v2) << asInt(v1));
+                    v1 = stk.pop();
+                    stk.push(asInt(stk.pop()) << asInt(v1));
                     break;
 
                 case BW_USHIFT_LEFT:
-                    int iv2 = asInt(v2);
+                    v1 = stk.pop();
+                    int iv2 = asInt(stk.pop());
                     if (iv2 < 0) iv2 *= -1;
                     stk.push(iv2 << asInt(v1));
                     break;
 
                 case BW_SHIFT_RIGHT:
-                    stk.push(asInt(v2) >> asInt(v1));
+                    v1 = stk.pop();
+                    stk.push(asInt(stk.pop()) >> asInt(v1));
                     break;
 
                 case BW_USHIFT_RIGHT:
-                    stk.push(asInt(v2) >>> asInt(v1));
+                    v1 = stk.pop();
+                    stk.push(asInt(stk.pop()) >>> asInt(v1));
                     break;
 
                 case STR_APPEND:
-                    stk.push(new StringAppender(java.lang.String.valueOf(v2)).append(java.lang.String.valueOf(v1)).toString());
+                    v1 = stk.pop();
+                    stk.push(new StringAppender(java.lang.String.valueOf(stk.pop())).append(java.lang.String.valueOf(v1)).toString());
                     break;
 
                 case SOUNDEX:
-                    stk.push(Soundex.soundex(java.lang.String.valueOf(v1)).equals(Soundex.soundex(java.lang.String.valueOf(v2))));
+                    stk.push(Soundex.soundex(java.lang.String.valueOf(stk.pop())).equals(Soundex.soundex(java.lang.String.valueOf(stk.pop()))));
                     break;
 
                 case SIMILARITY:
-                    stk.push(similarity(java.lang.String.valueOf(v1), java.lang.String.valueOf(v2)));
+                    stk.push(similarity(java.lang.String.valueOf(stk.pop()), java.lang.String.valueOf(stk.pop())));
                     break;
             }
         }
         catch (ClassCastException e) {
-            if ((fields & ASTNode.LOOKAHEAD) == 0) {
-                /**
-                 * This will allow for some developers who like messy expressions to compileAccessor
-                 * away with some messy constructs like: a + b < c && e + f > g + q instead
-                 * of using brackets like (a + b < c) && (e + f > g + q)
-                 */
-
-                fields |= ASTNode.LOOKAHEAD;
-
-                ASTNode tk = nextToken();
-                if (tk != null) {
-                    stk.push(v1, nextToken(), tk.getOperator());
-
-                    reduce();
-                    return;
-                }
-            }
-            throw new CompileException("syntax error or incomptable types (left=" +
-                    (v1 != null ? v1.getClass().getName() : "null") + ", right=" +
-                    (v2 != null ? v2.getClass().getName() : "null") + ")", expr, cursor, e);
+            throw new CompileException("syntax error or incomptable types", expr, cursor, e);
 
         }
         catch (Exception e) {

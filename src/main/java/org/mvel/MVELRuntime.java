@@ -114,11 +114,12 @@ public class MVELRuntime {
                 try {
                     while (stk.size() > 1) {
                         operator = (Integer) stk.pop();
-                        v1 = stk.pop();
-                        v2 = stk.pop();
 
                         switch (operator) {
                             case CHOR:
+                                v1 = stk.pop();
+                                v2 = stk.pop();
+
                                 if (!isEmpty(v2) || !isEmpty(v1)) {
                                     stk.clear();
                                     stk.push(!isEmpty(v2) ? v2 : v1);
@@ -127,30 +128,31 @@ public class MVELRuntime {
                                 break;
 
                             case INSTANCEOF:
-                                if (v1 instanceof Class)
-                                    stk.push(((Class) v1).isInstance(v2));
+                                if ((v1 = stk.pop()) instanceof Class)
+                                    stk.push(((Class) v1).isInstance(stk.pop()));
                                 else
-                                    stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(v2));
+                                    stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(stk.pop()));
 
                                 break;
 
                             case CONVERTABLE_TO:
-                                if (v1 instanceof Class)
-                                    stk.push(canConvert(v2.getClass(), (Class) v1));
+                                if ((v1 = stk.pop()) instanceof Class)
+                                    stk.push(canConvert((stk.pop()).getClass(), (Class) v1));
                                 else
-                                    stk.push(canConvert(v2.getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
+                                    stk.push(canConvert((stk.pop()).getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
                                 break;
 
                             case CONTAINS:
-                                stk.push(containsCheck(v2, v1));
+                                v1 = stk.pop();
+                                stk.push(containsCheck(stk.pop(), v1));
                                 break;
 
                             case SOUNDEX:
-                                stk.push(soundex(valueOf(v1)).equals(soundex(valueOf(v2))));
+                                stk.push(soundex(valueOf(stk.pop())).equals(soundex(valueOf(stk.pop()))));
                                 break;
 
                             case SIMILARITY:
-                                stk.push(similarity(valueOf(v1), valueOf(v2)));
+                                stk.push(similarity(valueOf(stk.pop()), valueOf(stk.pop())));
                                 break;
                         }
                     }

@@ -19,13 +19,12 @@
 package org.mvel.util;
 
 import org.mvel.Operator;
-import org.mvel.debug.DebugTools;
 import static org.mvel.Operator.PTABLE;
-import org.mvel.compiler.CompiledExpression;
 import org.mvel.ast.*;
+import org.mvel.compiler.CompiledExpression;
 
-import java.util.Map;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class CompilerTools {
     /**
@@ -77,7 +76,6 @@ public class CompilerTools {
                             bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
                         }
                         else {
-               //             System.out.println(DebugTools.getOperatorName(op2) + " < " + DebugTools.getOperatorName(op));
                             bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
                         }
 
@@ -110,9 +108,7 @@ public class CompilerTools {
             /**
              * Perform a second pass optimization for boolean conditions.
              */
-            astLinkedList = optimizedAst;
-            astLinkedList.reset();
-
+            (astLinkedList = optimizedAst).reset();
             optimizedAst = new ASTLinkedList();
 
             while (astLinkedList.hasMoreNodes()) {
