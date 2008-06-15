@@ -1011,6 +1011,7 @@ public class AbstractParser implements Serializable {
         return newA;
     }
 
+    //todo: improve performance of this method
     private ASTNode createPropertyToken(int start, int end) {
         lastWasIdentifier = true;
         String tmp;
