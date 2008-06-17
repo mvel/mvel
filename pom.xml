@@ -93,11 +93,11 @@
 
     <distributionManagement>
         <!-- use the following if you're not using a snapshot version. -->
-        <!--<repository>-->
-        <!--<id>repository.codehaus.org</id>-->
-        <!--<name>Codehaus Maven Repository</name>-->
-        <!--<url>dav:https://dav.codehaus.org/repository/mvel/</url>-->
-        <!--</repository>-->
+        <repository>
+        <id>repository.codehaus.org</id>
+        <name>Codehaus Maven Repository</name>
+        <url>dav:https://dav.codehaus.org/repository/mvel/</url>
+        </repository>
         <!-- use the following if you ARE using a snapshot version. -->
         <snapshotRepository>
             <id>codehaus.org</id>
