@@ -3,6 +3,7 @@ package org.mvel;
 import org.mvel.integration.Interceptor;
 import org.mvel.compiler.AbstractParser;
 import org.mvel.util.MethodStub;
+import org.mvel.util.PropertyTools;
 import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.util.*;
@@ -76,7 +77,7 @@ public class ParserConfiguration implements Serializable {
                 // do nothing.
             }
             catch (NoClassDefFoundError e) {
-                if (e.getMessage().contains("wrong name")) {
+                if (PropertyTools.contains(e.getMessage(), "wrong name")) {
                     // do nothing.  this is a weirdness in the jvm.
                     // see MVEL-43
                 }

@@ -11,6 +11,7 @@ import static org.mvel.debug.DebugTools.decompile;
 import org.mvel.debug.DebugTools;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setDefaultOptimizer;
+import org.mvel.optimizers.dynamic.DynamicOptimizer;
 import org.mvel.tests.main.res.*;
 import org.mvel.util.StringAppender;
 
@@ -25,6 +26,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public abstract class AbstractTest extends TestCase {
+
+    static {
+        // Modify the dynamic optimizer to ensure it always engages the JIT
+        DynamicOptimizer.tenuringThreshold = 0;
+    }
 
 
     private boolean silentTests = Boolean.getBoolean("mvel.tests.silent");
@@ -71,6 +77,8 @@ public abstract class AbstractTest extends TestCase {
 
         map.put("derived", new DerivedClass());
 
+        map.put("ipaddr", "10.1.1.2");
+
         map.put("dt1", new Date(currentTimeMillis() - 100000));
         map.put("dt2", new Date(currentTimeMillis()));
         return map;
@@ -93,7 +101,6 @@ public abstract class AbstractTest extends TestCase {
             threads = new Thread[5];
         }
 
-        final AbstractTest aTest = this;
         final Collection<Object> results = Collections.synchronizedCollection(new LinkedList<Object>());
         long time = currentTimeMillis();
 
@@ -159,22 +166,22 @@ public abstract class AbstractTest extends TestCase {
                     }
                     else if (!o.equals(last)) {
                         if (o.getClass().isArray()) {
-                            Object[] a1 = (Object[]) o;
-                            Object[] a2 = (Object[]) last;
-
-                            if (a1.length == a2.length) {
-                                for (int i = 0; i < a1.length; i++) {
-                                    if (a1[i] == null && a2[i] == null) {
-                                        continue;
-                                    }
-                                    else if (!a1[i].equals(a2[i])) {
-                                        throw new AssertionError("differing result in multi-thread test (first array has: " + valueOf(last) + "; second has: " + valueOf(o) + ")");
-                                    }
-                                }
-                            }
-                            else {
-                                throw new AssertionError("differing result in multi-thread test: array sizes differ.");
-                            }
+//                            Object[] a1 = (Object[]) o;
+//                            Object[] a2 = (Object[]) last;
+//
+//                            if (a1.length == a2.length) {
+//                                for (int i = 0; i < a1.length; i++) {
+//                                    if (a1[i] == null && a2[i] == null) {
+//                                        continue;
+//                                    }
+//                                    else if (!a1[i].equals(a2[i])) {
+//                                        throw new AssertionError("differing result in multi-thread test (first array has: " + valueOf(last) + "; second has: " + valueOf(o) + ")");
+//                                    }
+//                                }
+//                            }
+//                            else {
+//                                throw new AssertionError("differing result in multi-thread test: array sizes differ.");
+//                            }
                         }
                         else {
                             throw new AssertionError("differing result in multi-thread test (last was: " + valueOf(last) + "; current is: " + valueOf(o) + ")");
@@ -245,11 +252,11 @@ public abstract class AbstractTest extends TestCase {
 
         if (!Boolean.getBoolean("mvel.disable.jit")) {
 
-            setDefaultOptimizer("ASM");
+            setDefaultOptimizer("dynamic");
 
             try {
                 first = executeExpression(compiled, new Base(), createTestMap());
-            }
+            }                                      
             catch (Exception e) {
                 failErrors.append("\nFIRST TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
@@ -321,6 +328,7 @@ public abstract class AbstractTest extends TestCase {
             fifth = executeExpression(compiled2, new Base(), createTestMap());
         }
         catch (Exception e) {
+            e.printStackTrace();
             if (failErrors == null) failErrors = new StringAppender();
             failErrors.append("\nFIFTH TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
@@ -332,13 +340,14 @@ public abstract class AbstractTest extends TestCase {
 
         if (fourth != null && !fourth.getClass().isArray()) {
             if (!fourth.equals(fifth)) {
-                throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
-                        + valueOf(first) + "; second: " + valueOf(second) + "]");
+                throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run X2) [fourth: "
+                        + valueOf(fourth) + "; fifth: " + valueOf(fifth) + "]");
             }
         }
 
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("unittest");
+        
         ExpressionCompiler debuggingCompiler = new ExpressionCompiler(ex);
         debuggingCompiler.setDebugSymbols(true);
 
@@ -547,7 +556,6 @@ public abstract class AbstractTest extends TestCase {
         public void setAge(int age) {
             this.age = age;
         }
-
     }
 
     public static class Address {
@@ -557,7 +565,6 @@ public abstract class AbstractTest extends TestCase {
             super();
             this.street = street;
         }
-
 
         public String getStreet() {
             return street;

@@ -27,14 +27,23 @@ public class UtilsTests extends TestCase {
         list.add("One");
         list.add("Two");
         list.add("Three");
+        list.add("Five");
 
         list.add(1, "Four");
 
-
+        String[] zz1 = {"One", "Four", "Two", "Three", "Five"};
+        int i = 0;
         for (Object o : list) {
-            System.out.println(o);
+            if (!zz1[i++].equals(o)) throw new AssertionError("problem with list!");
         }
 
+        list.remove(2);
+
+        String[] zz2 = {"One", "Four", "Three", "Five"};
+        i = 0;
+        for (Object o : list) {
+            if (!zz2[i++].equals(o)) throw new AssertionError("problem with list!");
+        }
     }
 
 //    public void testMainPerf() {

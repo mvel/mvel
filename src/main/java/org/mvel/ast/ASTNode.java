@@ -19,13 +19,12 @@
 
 package org.mvel.ast;
 
-import org.mvel.CompileException;
-import org.mvel.OptimizationFailure;
-import org.mvel.PropertyAccessException;
+import org.mvel.*;
 import static org.mvel.PropertyAccessor.get;
-import org.mvel.UnresolveablePropertyException;
 import org.mvel.compiler.AbstractParser;
+import static org.mvel.compiler.AbstractParser.LITERALS;
 import org.mvel.compiler.Accessor;
+import org.mvel.debug.DebugTools;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
@@ -65,6 +64,9 @@ public class ASTNode implements Cloneable, Serializable {
 
     public static final int INTEGER32 = 1 << 23;
 
+    public static final int NOJIT = 1 << 24;
+    public static final int DEOP = 1 << 25;
+
     protected int firstUnion;
     protected int endOfName;
 
@@ -90,9 +92,28 @@ public class ASTNode implements Cloneable, Serializable {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (accessor != null) {
-            return accessor.getValue(ctx, thisValue, factory);
+            try {
+                return accessor.getValue(ctx, thisValue, factory);
+            }
+            catch (ClassCastException ce) {
+                if ((fields & DEOP) == 0) {
+                    accessor = null;
+                    fields |= DEOP | NOJIT;
+
+                    synchronized (this) {
+                        return getReducedValueAccelerated(ctx, thisValue, factory);
+                    }
+                }
+                else {
+                    throw ce;
+                }
+            }
         }
         else {
+            if ((fields & DEOP) != 0) {
+                fields ^= DEOP;
+            }
+
             AccessorOptimizer optimizer;
             Object retVal = null;
 
@@ -100,8 +121,15 @@ public class ASTNode implements Cloneable, Serializable {
                 retVal = (setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeFold(name, ctx, thisValue, factory)).getValue(ctx, thisValue, factory));
             }
             else {
+                if ((fields & NOJIT) != 0) {
+                    optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
+                }
+                else {
+                    optimizer = getDefaultAccessorCompiler();
+                }
+
                 try {
-                    setAccessor((optimizer = getThreadAccessorOptimizer()).optimizeAccessor(name, ctx, thisValue, factory, true));
+                    setAccessor(optimizer.optimizeAccessor(name, ctx, thisValue, factory, true));
                 }
                 catch (OptimizationNotSupported ne) {
                     setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeAccessor(name, ctx, thisValue, factory, true));
@@ -141,18 +169,17 @@ public class ASTNode implements Cloneable, Serializable {
              * The token is a DEEP PROPERTY (meaning it contains unions) in which case we need to traverse an object
              * graph.
              */
-            if (AbstractParser.LITERALS.containsKey(s = getAbsoluteRootElement())) {
+            if (LITERALS.containsKey(s = getAbsoluteRootElement())) {
                 /**
                  * The root of the DEEP PROPERTY is a literal.
                  */
-                return get(getAbsoluteRemainder(), AbstractParser.LITERALS.get(s), factory, thisValue);
+                return get(getAbsoluteRemainder(), LITERALS.get(s), factory, thisValue);
             }
             else if (factory != null && factory.isResolveable(s)) {
                 /**
                  * The root of the DEEP PROPERTY is a local or global var.
                  */
                 return get(name, ctx, factory, thisValue);
-
             }
             else if (ctx != null) {
                 /**
@@ -189,7 +216,6 @@ public class ASTNode implements Cloneable, Serializable {
                     return get(new String(name, endOfName, name.length - endOfName),
                             factory.getVariableResolver(s).getValue(), factory, thisValue);
                 }
-
 
                 return factory.getVariableResolver(s).getValue();
             }
@@ -247,7 +273,7 @@ public class ASTNode implements Cloneable, Serializable {
         if ((fields & (DEEP_PROPERTY | COLLECTION)) != 0) {
             return new String(name, 0, getAbsoluteFirstPart());
         }
-        return new String(name);
+        return nameCache;
     }
 
     public Class getEgressType() {
@@ -278,7 +304,6 @@ public class ASTNode implements Cloneable, Serializable {
         else {
             return -1;
         }
-
     }
 
     public String getAbsoluteName() {
@@ -302,28 +327,8 @@ public class ASTNode implements Cloneable, Serializable {
 
     public void setLiteralValue(Object literal) {
         this.literal = literal;
+        this.fields |= LITERAL;
     }
-
-//    protected Object valRet(final Object value) {
-//        if ((fields & NEGATION) != 0) {
-//            try {
-//                return !((Boolean) value);
-//            }
-//            catch (Exception e) {
-//                throw new CompileException("illegal negation of non-boolean value");
-//            }
-//        }
-//        else if ((fields & INVERT) != 0) {
-//            try {
-//                return ~((Integer) value);
-//            }
-//            catch (Exception e) {
-//                throw new CompileException("bitwise (~) operator can only be applied to integers");
-//            }
-//        }
-//
-//        return value;
-//    }
 
     protected Object tryStaticAccess(Object thisRef, VariableResolverFactory factory) {
         try {
@@ -372,12 +377,11 @@ public class ASTNode implements Cloneable, Serializable {
         return null;
     }
 
-
     @SuppressWarnings({"SuspiciousMethodCalls"})
     protected void setName(char[] name) {
-        if (AbstractParser.LITERALS.containsKey(this.literal = new String(this.name = name))) {
+        if (LITERALS.containsKey(this.literal = new String(this.name = name))) {
             fields |= LITERAL | IDENTIFIER;
-            if ((literal = AbstractParser.LITERALS.get(literal)) == ThisLiteral.class) fields |= THISREF;
+            if ((literal = LITERALS.get(literal)) == ThisLiteral.class) fields |= THISREF;
             if (literal != null) egressType = literal.getClass();
         }
         else if (AbstractParser.OPERATORS.containsKey(literal)) {
@@ -400,7 +404,6 @@ public class ASTNode implements Cloneable, Serializable {
                 intRegister = (Integer) literal;
                 fields |= INTEGER32;
             }
-
             return;
         }
         else if ((fields & INLINE_COLLECTION) != 0) {
@@ -418,7 +421,6 @@ public class ASTNode implements Cloneable, Serializable {
             else {
                 fields |= DEEP_PROPERTY | IDENTIFIER;
             }
-
         }
         else {
             fields |= IDENTIFIER;
@@ -452,13 +454,12 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public Integer getOperator() {
-        return (Integer) literal;
+        return Operator.NOOP;
     }
 
     protected boolean isCollection() {
         return (fields & COLLECTION) != 0;
     }
-
 
     public boolean isAssignment() {
         return ((fields & ASSIGN) != 0);
@@ -504,7 +505,6 @@ public class ASTNode implements Cloneable, Serializable {
         this.intRegister = intRegister;
     }
 
-
     public int getFields() {
         return fields;
     }
@@ -516,7 +516,6 @@ public class ASTNode implements Cloneable, Serializable {
     public boolean canSerializeAccessor() {
         return safeAccessor != null;
     }
-
 
     public ASTNode() {
     }
@@ -534,6 +533,10 @@ public class ASTNode implements Cloneable, Serializable {
     public ASTNode(char[] expr, int fields) {
         this.fields = fields;
         this.name = expr;
+    }
+
+    public String toString() {
+        return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" : String.valueOf(literal);
     }
 }
 

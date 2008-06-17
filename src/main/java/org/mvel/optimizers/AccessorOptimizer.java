@@ -23,6 +23,8 @@ import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 
 public interface AccessorOptimizer {
+    public void init();
+
     public Accessor optimizeAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef);
 
     public SetAccessor optimizeSetAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value);

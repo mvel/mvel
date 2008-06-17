@@ -44,7 +44,6 @@ public class MVELThreadTest {
             };
             t.start();
         }
-        ;
     }
 
     //by synchronizing the testMvel method, the exception does not occur

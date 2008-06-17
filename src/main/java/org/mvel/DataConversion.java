@@ -60,7 +60,8 @@ public class DataConversion {
 
         CONVERTERS.put(Object.class, new ObjectCH());
 
-        CONVERTERS.put(char[].class, new CharArrayCH());
+        CONVERTERS.put(char[].class, ch = new CharArrayCH());
+        CONVERTERS.put(Character[].class, ch);
 
         CONVERTERS.put(String[].class, new StringArrayCH());
 

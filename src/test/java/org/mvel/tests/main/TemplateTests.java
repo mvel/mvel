@@ -148,7 +148,6 @@ public class TemplateTests extends TestCase {
         catch (CompileException e) {
             System.out.println(e.toString()
             );
-            //   assertTrue(true);
             return;
         }
         assertTrue(false);

@@ -26,7 +26,6 @@ public class VariableAccessor implements AccessorNode {
     private AccessorNode nextNode;
     private String property;
 
-
     public VariableAccessor(String property) {
         this.property = property;
     }

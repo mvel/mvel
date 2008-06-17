@@ -28,6 +28,7 @@ import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
 import static org.mvel.util.PropertyTools.find;
+import org.mvel.util.PropertyTools;
 
 /**
  * @author Christopher Brock
@@ -37,7 +38,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
     private transient CompiledSetExpression setExpr;
 
     private char[] indexTarget;
-    private char[] index;
+    private String index;
 
     private char[] stmt;
     private ExecutableStatement statement;
@@ -70,7 +71,8 @@ public class AssignmentNode extends ASTNode implements Assignment {
                 }
 
                 this.varName = new String(expr, 0, endOfName);
-                index = subset(indexTarget, endOfName, indexTarget.length - endOfName);
+               index = new String(indexTarget, endOfName, indexTarget.length - endOfName);
+               // index = subset(indexTarget, endOfName, indexTarget.length - endOfName);
             }
 
             checkNameSafety(this.varName);
@@ -118,7 +120,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
         checkNameSafety(varName);
 
         if (col) {
-            MVEL.setProperty(factory.getVariableResolver(varName).getValue(), new String(index), ctx = MVEL.eval(stmt, ctx, factory));
+            MVEL.setProperty(factory.getVariableResolver(varName).getValue(), index, ctx = MVEL.eval(stmt, ctx, factory));
         }
         else {
             factory.createVariable(varName, ctx = MVEL.eval(stmt, ctx, factory));

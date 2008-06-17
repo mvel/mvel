@@ -77,6 +77,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     public ReflectiveAccessorOptimizer() {
     }
 
+    public void init() {
+    }
+
     private ReflectiveAccessorOptimizer(char[] property, Object ctx, Object thisRef, VariableResolverFactory variableFactory) {
         this.expr = property;
         this.length = property != null ? property.length : 0;
@@ -107,6 +110,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return accessor.getValue(ctx, null, null);
         }
     }
+
     public Accessor optimizeAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean root) {
         this.rootNode = this.currNode = null;
         this.start = this.cursor = 0;
@@ -175,7 +179,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 if (cursor == length)
                     throw new PropertyAccessException("unterminated '['");
 
-                if (!scanTo(']'))
+                if (scanTo(']'))
                     throw new PropertyAccessException("unterminated '['");
 
                 String ex = new String(property, start, cursor - start);
@@ -426,7 +430,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         String item;
 
-        if (!scanTo(']'))
+        if (scanTo(']'))
             throw new CompileException("unterminated '['");
 
         item = new String(expr, start, cursor - start);
@@ -470,7 +474,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             return ((List) ctx).get((Integer) idx);
         }
-        else if (ctx instanceof Object[]) {
+        else if (ctx.getClass().isArray()) {
             if (itemSubExpr) {
                 addAccessorNode(new ArrayAccessorNest(itemStmt));
             }
@@ -478,7 +482,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 addAccessorNode(new ArrayAccessor(parseInt(item)));
             }
 
-            return ((Object[]) ctx)[(Integer) idx];
+            return Array.get(ctx, (Integer) idx);
         }
         else if (ctx instanceof CharSequence) {
             if (itemSubExpr) {

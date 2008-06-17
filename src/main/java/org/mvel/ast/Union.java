@@ -51,6 +51,6 @@ public class Union extends ASTNode {
     }
 
     public String toString() {
-        return main.toString() + "-[union]->" + accessor.toString();
+        return (main != null ? main.toString() : "") + "-[union]->" +  (accessor != null ? accessor.toString() : "");
     }
 }

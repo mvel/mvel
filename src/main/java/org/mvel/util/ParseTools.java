@@ -19,22 +19,24 @@
 package org.mvel.util;
 
 import org.mvel.*;
-import static org.mvel.util.PropertyTools.createStringTrimmed;
+import static org.mvel.MVEL.getDebuggingOutputFileName;
 import static org.mvel.DataConversion.canConvert;
 import org.mvel.ast.ASTNode;
 import org.mvel.compiler.*;
 import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel.compiler.AbstractParser.isReservedWord;
+import static org.mvel.compiler.AbstractParser.LITERALS;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
+import static org.mvel.integration.ResolverTools.insertFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.integration.impl.TypeInjectionResolverFactoryImpl;
 import org.mvel.math.MathProcessor;
+import static org.mvel.util.PropertyTools.createStringTrimmed;
 import sun.misc.Unsafe;
 
 import java.io.*;
-import static org.mvel.util.ParseTools.isWhitespace;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
@@ -42,6 +44,7 @@ import static java.lang.Thread.currentThread;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import static java.lang.Class.forName;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -63,11 +66,11 @@ public class ParseTools {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
-                MATH_PROCESSOR = (MathProcessor) currentThread().getContextClassLoader().loadClass("org.mvel.math.JDK14CompatabilityMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
                 JDK_14_COMPATIBILITY = true;
             }
             else if (version > 1.4) {
-                MATH_PROCESSOR = (MathProcessor) currentThread().getContextClassLoader().loadClass("org.mvel.math.IEEEFloatingPointMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
                 JDK_14_COMPATIBILITY = false;
             }
             else {
@@ -262,21 +265,23 @@ public class ParseTools {
 
     public static Method getWidenedTarget(Method method) {
         Class cls = method.getDeclaringClass();
-        Method m = method;
+        Method m = method, best = method;
         Class[] args = method.getParameterTypes();
         String name = method.getName();
         Class rt = m.getReturnType();
 
         do {
             for (Class iface : cls.getInterfaces()) {
-                if ((m = getExactMatch(name, args, rt, iface)) != null && m.getDeclaringClass().getSuperclass() != null) {
-                    cls = m.getDeclaringClass();
+                if ((m = getExactMatch(name, args, rt, iface)) != null) {
+                    if ((best = m).getDeclaringClass().getSuperclass() != null) {
+                        cls = m.getDeclaringClass();
+                    }
                 }
             }
         }
         while ((cls = cls.getSuperclass()) != null);
 
-        return m != null ? m : method;
+        return best;
     }
 
     private static Map<Class, Map<Integer, Constructor>> RESOLVED_CONST_CACHE = new WeakHashMap<Class, Map<Integer, Constructor>>(10);
@@ -403,7 +408,7 @@ public class ParseTools {
                 /**
                  * Now try the system classloader.
                  */
-                cls = Class.forName(className);
+                cls = forName(className);
             }
 
             cache.put(className, cls);
@@ -452,7 +457,7 @@ public class ParseTools {
                     continue;
                 case ')':
                     if (1 == depth--) {
-                         return new String[]{new String(cs, 0, ++i), createStringTrimmed(cs, i, cs.length - i)};
+                        return new String[]{new String(cs, 0, ++i), createStringTrimmed(cs, i, cs.length - i)};
                     }
             }
         }
@@ -670,7 +675,7 @@ public class ParseTools {
             throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
         }
         else {
-            return ResolverTools.insertFactory(factory, new ClassImportResolverFactory());
+            return insertFactory(factory, new ClassImportResolverFactory());
         }
     }
 
@@ -687,14 +692,14 @@ public class ParseTools {
             throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
         }
         else {
-            return ResolverTools.insertFactory(factory, new StaticMethodImportResolverFactory());
+            return insertFactory(factory, new StaticMethodImportResolverFactory());
         }
     }
 
     public static Class findClass(VariableResolverFactory factory, String name) throws ClassNotFoundException {
         try {
-            if (AbstractParser.LITERALS.containsKey(name)) {
-                return (Class) AbstractParser.LITERALS.get(name);
+            if (LITERALS.containsKey(name)) {
+                return (Class) LITERALS.get(name);
             }
             else if (factory != null && factory.isResolveable(name)) {
                 return (Class) factory.getVariableResolver(name).getValue();
@@ -735,7 +740,6 @@ public class ParseTools {
 
     public static char[] subset(char[] array, int start) {
         char[] newArray = new char[array.length - start];
-        //    arraycopy(array, start, newArray, 0, newArray.length);
 
         for (int i = 0; i < newArray.length; i++) {
             newArray[i] = array[i + start];
@@ -839,7 +843,6 @@ public class ParseTools {
         if (BlankLiteral.class == cls)
             return DataTypes.EMPTY;
 
-
         if (Unit.class.isAssignableFrom(cls))
             return DataTypes.UNIT;
 
@@ -854,17 +857,14 @@ public class ParseTools {
         Class boxedTarget = target.isPrimitive() ? boxPrimitive(target) : target;
 
         if (boxedTarget != null && Number.class.isAssignableFrom(target)) {
-            Class boxedParm = parm.isPrimitive() ? boxPrimitive(parm) : parm;
-
-            if (boxedParm != null) {
-                return Number.class.isAssignableFrom(boxedParm);
+            if ((boxedTarget = parm.isPrimitive() ? boxPrimitive(parm) : parm) != null) {
+                return Number.class.isAssignableFrom(boxedTarget);
             }
         }
         return false;
     }
 
     public static Object handleParserEgress(Object result, boolean returnBigDecimal) {
-
         if (result instanceof BigDecimal) {
             int scale = ((BigDecimal) result).scale();
             if (returnBigDecimal) return result;
@@ -881,9 +881,9 @@ public class ParseTools {
                 return ((BigDecimal) result).intValue();
             }
         }
-        else
+        else {
             return result;
-
+        }
     }
 
     public static Method determineActualTargetMethod(Method method) {
@@ -962,7 +962,6 @@ public class ParseTools {
         return allParms;
     }
 
-
     /**
      * This is an important aspect of the core parser tools.  This method is used throughout the core parser
      * and sub-lexical parsers to capture a balanced capture between opening and terminating tokens such as:
@@ -1026,7 +1025,6 @@ public class ParseTools {
                 throw new CompileException("unbalanced braces ( ... )", chars, start);
             default:
                 throw new CompileException("unterminated string literal", chars, start);
-
         }
     }
 
@@ -1078,8 +1076,6 @@ public class ParseTools {
             }
         }
 
-        //     return new int[]{-1, 0};
-
         switch (type) {
             case '[':
                 throw new CompileException("unbalanced braces [ ... ]", chars, start);
@@ -1089,7 +1085,6 @@ public class ParseTools {
                 throw new CompileException("unbalanced braces ( ... )", chars, start);
             default:
                 throw new CompileException("unterminated string literal", chars, start);
-
         }
     }
 
@@ -1160,7 +1155,7 @@ public class ParseTools {
     }
 
     public static FileWriter getDebugFileWriter() throws IOException {
-        return new FileWriter(new File(MVEL.getDebuggingOutputFileName()), true);
+        return new FileWriter(new File(getDebuggingOutputFileName()), true);
     }
 
     public static boolean isPrimitiveWrapper(Class clazz) {
@@ -1204,14 +1199,13 @@ public class ParseTools {
             }
             return tk.canSerializeAccessor() ? new ExecutableAccessorSafe(tk, false, compiled.getKnownEgressType()) :
                     new ExecutableAccessor(tk, false, compiled.getKnownEgressType());
-
         }
 
         return compiled;
     }
 
     public static boolean isWhitespace(char c) {
-       return c <= '\u0020';
+        return c <= '\u0020';
     }
 
     public static String repeatChar(char c, int times) {

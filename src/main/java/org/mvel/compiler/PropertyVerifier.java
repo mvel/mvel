@@ -168,7 +168,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         if (cursor == length)
             throw new PropertyAccessException("unterminated '['");
 
-        if (!scanTo(']')) {
+        if (scanTo(']')) {
             addFatalError("unterminated [ in token");
         }
 

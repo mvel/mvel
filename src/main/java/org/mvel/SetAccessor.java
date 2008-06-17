@@ -7,6 +7,9 @@ public class SetAccessor {
     private Accessor rootAccessor;
     private Accessor setAccessor;
 
+    public SetAccessor() {
+    }
+
     public SetAccessor(Accessor rootAccessor, Accessor setAccessor) {
         this.rootAccessor = rootAccessor;
         this.setAccessor = setAccessor;

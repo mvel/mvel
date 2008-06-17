@@ -30,7 +30,9 @@ import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.StringAppender;
 
 import static java.lang.Character.isJavaIdentifierPart;
+
 import static org.mvel.util.ParseTools.isWhitespace;
+
 import java.lang.reflect.*;
 import static java.lang.reflect.Array.getLength;
 import java.util.*;
@@ -222,7 +224,7 @@ public class PropertyAccessor {
                 if (cursor == length)
                     throw new PropertyAccessException("unterminated '['");
 
-                if (!scanTo(']'))
+                if (scanTo(']'))
                     throw new PropertyAccessException("unterminated '['");
 
                 String ex = new String(property, start, cursor - start);
@@ -368,6 +370,7 @@ public class PropertyAccessor {
         if (nestedMap == null) {
             READ_PROPERTY_RESOLVER_CACHE.put(cls, nestedMap = new WeakHashMap<Integer, Member>());
         }
+
         nestedMap.put(property, member);
     }
 
@@ -413,7 +416,6 @@ public class PropertyAccessor {
     }
 
 
-
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
@@ -457,7 +459,7 @@ public class PropertyAccessor {
             return ((Map) ctx).get(property);
         }
         else if ("length".equals(property) && ctx.getClass().isArray()) {
-            return Array.getLength(ctx);
+            return getLength(ctx);
         }
         else if (ctx instanceof Class) {
             Class c = (Class) ctx;
@@ -477,13 +479,19 @@ public class PropertyAccessor {
             while (isWhitespace(property[cursor]) && ++cursor < length) ;
     }
 
+
+    /**
+     *
+     * @param c
+     * @return - returns true is end of statement is hit, false if the scan scar is countered.
+     */
     private boolean scanTo(char c) {
         for (; cursor < length; cursor++) {
             if (property[cursor] == c) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -508,7 +516,7 @@ public class PropertyAccessor {
 
         Object item;
 
-        if (!scanTo(']'))
+        if (scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
         // String ex = new String(property, start, cursor++ - start);
@@ -529,8 +537,8 @@ public class PropertyAccessor {
             for (int i = 0; i < count; i++) iter.next();
             return iter.next();
         }
-        else if (ctx instanceof Object[]) {
-            return ((Object[]) ctx)[(Integer) item];
+        else if (ctx.getClass().isArray()) {
+            return Array.get(ctx, (Integer) item);
         }
         else if (ctx instanceof CharSequence) {
             return ((CharSequence) ctx).charAt((Integer) item);
@@ -619,7 +627,6 @@ public class PropertyAccessor {
             /**
              * Try to find an instance method from the class target.
              */
-
             if ((m = getBestCandidate(args, name, cls, cls.getMethods())) != null) {
                 addMethodCache(cls, createSignature(name, tk), m);
                 parameterTypes = m.getParameterTypes();
@@ -657,7 +664,20 @@ public class PropertyAccessor {
             /**
              * Invoke the target method and return the response.
              */
-            return m.invoke(ctx, args);
+            try {
+                return m.invoke(ctx, args);
+            }
+            catch (IllegalAccessException e) {
+                try {
+                    m = getWidenedTarget(m);
+                    addMethodCache(cls, createSignature(name, tk), m);
+                                       
+                    return m.invoke(ctx, args);
+                }
+                catch (Exception e2) {
+                    throw e;
+                }
+            }
         }
     }
 

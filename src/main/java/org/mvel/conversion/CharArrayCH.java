@@ -44,7 +44,7 @@ public class CharArrayCH implements ConversionHandler {
         CNV.put(String.class,
                 new Converter() {
                     public Object convert(Object o) {
-                        return String.valueOf(o);
+                        return ((String)o).toCharArray();
                     }
                 }
         );
