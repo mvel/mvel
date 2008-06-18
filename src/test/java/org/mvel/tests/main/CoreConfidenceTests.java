@@ -3,8 +3,8 @@ package org.mvel.tests.main;
 import org.mvel.*;
 import static org.mvel.MVEL.*;
 import org.mvel.ast.ASTNode;
-import org.mvel.ast.WithNode;
 import org.mvel.ast.Function;
+import org.mvel.ast.WithNode;
 import org.mvel.compiler.CompiledExpression;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.compiler.ExpressionCompiler;
@@ -19,12 +19,9 @@ import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.optimizers.OptimizerFactory;
-import org.mvel.optimizers.dynamic.DynamicClassLoader;
-import org.mvel.optimizers.impl.asm.ASMAccessorOptimizer;
 import org.mvel.tests.main.res.*;
-import org.mvel.util.MethodStub;
 import org.mvel.util.CompilerTools;
-import org.mvel.util.MVELClassLoader;
+import org.mvel.util.MethodStub;
 import static org.mvel.util.ParseTools.loadFromFile;
 
 import java.awt.*;
@@ -33,8 +30,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import java.util.List;
 import static java.util.Collections.unmodifiableCollection;
+import java.util.List;
 
 @SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes", "UnnecessaryBoxing", "unchecked", "PointlessArithmeticExpression"})
 public class CoreConfidenceTests extends AbstractTest {
@@ -2651,6 +2648,8 @@ public class CoreConfidenceTests extends AbstractTest {
         double val = 40f / 20f + 5f - 4f + 8f / 2f * 2f * Math.pow(6, 2) + 6f - 8f;
         assertEquals((int) val, MVEL.eval(expression));
     }
+
+    
 
     public void testNullSafe() {
         Foo foo = new Foo();
