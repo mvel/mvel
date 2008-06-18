@@ -24,6 +24,7 @@ import org.mvel.ParserContext;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
+import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
@@ -93,7 +94,7 @@ public class ExpressionCompiler extends AbstractParser {
                 pCtx.initializeTables();
             }
 
-            fields |= ASTNode.COMPILE_IMMEDIATE;
+            fields |= COMPILE_IMMEDIATE;
 
             while ((tk = nextToken()) != null) {
                 /**
@@ -250,7 +251,7 @@ public class ExpressionCompiler extends AbstractParser {
             return tk;
         }
         else if (tk.isLiteral()) {
-            if ((fields & ASTNode.COMPILE_IMMEDIATE) != 0 && tk.getClass() == ASTNode.class) {
+            if ((fields & COMPILE_IMMEDIATE) != 0 && tk.getClass() == ASTNode.class) {
                 return new LiteralNode(tk.getLiteralValue());
             }
             else {

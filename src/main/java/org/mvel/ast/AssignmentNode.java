@@ -23,6 +23,7 @@ import static org.mvel.MVEL.compileSetExpression;
 import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
+import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
@@ -82,7 +83,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            AbstractParser.getCurrentThreadParserContext().addVariable(this.varName, egressType);
+            getCurrentThreadParserContext().addVariable(this.varName, egressType);
         }
 
         this.name = this.varName.toCharArray();
@@ -115,8 +116,6 @@ public class AssignmentNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        //   Object o;
-
         checkNameSafety(varName);
 
         if (col) {

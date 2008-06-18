@@ -194,7 +194,8 @@ public class AbstractParser implements Serializable {
              * certain field states.  We do not reset for assignments, boolean mode, list creation or
              * a capture only mode.
              */
-            fields = fields & (ASTNode.INLINE_COLLECTION | ASTNode.COMPILE_IMMEDIATE);
+
+      //     fields = fields & (ASTNode.COMPILE_IMMEDIATE);
 
             boolean capture = false, union = false;
 
