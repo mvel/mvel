@@ -1,6 +1,7 @@
 package org.mvel.ast;
 
 import org.mvel.CompileException;
+import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.compiler.ExecutableStatement;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
@@ -22,7 +23,6 @@ public class TypeDescriptor implements Serializable {
     }
 
     public void updateClassName(char[] name, int fields) {
-
         int endRange = findFirst('(', name);
         if (endRange == -1) {
             if ((endRange = findFirst('[', name)) != -1) {
@@ -51,7 +51,7 @@ public class TypeDescriptor implements Serializable {
                 for (int i = 0; i < arraySize.length; i++)
                     arraySize[i] = new ArraySize(iter.next());
 
-                if ((fields & ASTNode.COMPILE_IMMEDIATE) != 0) {
+                if ((fields & COMPILE_IMMEDIATE) != 0) {
                     compiledArraySize = new ExecutableStatement[arraySize.length];
                     for (int i = 0; i < compiledArraySize.length; i++)
                         compiledArraySize[i] = (ExecutableStatement) subCompileExpression(arraySize[i].value);

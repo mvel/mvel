@@ -195,8 +195,6 @@ public class AbstractParser implements Serializable {
              * a capture only mode.
              */
 
-      //     fields = fields & (ASTNode.COMPILE_IMMEDIATE);
-
             boolean capture = false, union = false;
 
             pCtx = getParserContext();
@@ -548,11 +546,11 @@ public class AbstractParser implements Serializable {
                             start++;
                             captureToEOT();
 
-                            name = new String(expr, start, cursor - start);
+                      //      name = new String(expr, start, cursor - start);
 
                             if (pCtx.getInterceptors() == null || !pCtx.getInterceptors().
-                                    containsKey(name)) {
-                                throw new CompileException("reference to undefined interceptor: " + name, expr, cursor);
+                                    containsKey(name = new String(expr, start, cursor - start))) {
+                                throw new CompileException("reference to undefined interceptor: " + new String(expr, start, cursor - start), expr, cursor);
                             }
 
                             return lastNode = new InterceptorWrapper(pCtx.getInterceptors().get(name), nextToken());

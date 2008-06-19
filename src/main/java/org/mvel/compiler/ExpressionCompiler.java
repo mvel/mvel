@@ -30,14 +30,10 @@ import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
 
 public class ExpressionCompiler extends AbstractParser {
-    //private final Stack stk = new ExecutionStack();
-
     private Class returnType;
 
     private boolean verifying = true;
     private boolean secondPassOptimization = false;
-
-    //private ParserContext pCtx;
 
     public CompiledExpression compile() {
         return compile(new ParserContext());
@@ -78,7 +74,7 @@ public class ExpressionCompiler extends AbstractParser {
         ASTNode tkLA2;
 
         int op;
-        
+
         ASTLinkedList astBuild = new ASTLinkedList();
         stk = new ExecutionStack();
         dStack = new ExecutionStack();
@@ -160,7 +156,7 @@ public class ExpressionCompiler extends AbstractParser {
                                     else {
                                         reduce();
                                     }
-                                    
+
                                     firstLA = false;
                                     literalOnly = false;
                                 }
@@ -241,10 +237,8 @@ public class ExpressionCompiler extends AbstractParser {
     }
 
     protected ASTNode verify(ParserContext pCtx, ASTNode tk) {
-        if (tk.isOperator()) {
-            if (tk.isOperator(Operator.AND) || tk.isOperator(Operator.OR)) {
-                secondPassOptimization = true;
-            }
+        if (tk.isOperator() && (tk.getOperator().equals(Operator.AND) || tk.getOperator().equals(Operator.OR))) {
+            secondPassOptimization = true;
         }
 
         if (tk.isDiscard() || tk.isOperator()) {
