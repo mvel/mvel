@@ -693,7 +693,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             TypeDescriptor tDescr = new TypeDescriptor(expr, 0);
             if (tDescr.isArray()) {
                 try {
-                    Class cls = getClassReference((Class) ctx, tDescr, variableFactory, expr);
+                    Class cls = getClassReference((Class) ctx, tDescr, variableFactory);
                     //   rootNode = new StaticReferenceAccessor(cls);
                     ldcClassConstant(cls);
                     return cls;

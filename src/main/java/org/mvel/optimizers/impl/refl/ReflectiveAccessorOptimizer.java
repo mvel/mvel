@@ -500,7 +500,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         else {
             TypeDescriptor tDescr = new TypeDescriptor(expr, 0);
             if (tDescr.isArray()) {
-                Class cls = getClassReference((Class) ctx, tDescr, variableFactory, expr);
+                Class cls = getClassReference((Class) ctx, tDescr, variableFactory);
                 rootNode = new StaticReferenceAccessor(cls);
                 return cls;
             }

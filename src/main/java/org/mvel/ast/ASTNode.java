@@ -202,7 +202,6 @@ public class ASTNode implements Cloneable, Serializable {
                      * make it a literal to prevent re-evaluation.
                      */
                     fields |= LITERAL;
-                    //  return literal = valRet(literal);
                     return literal;
                 }
             }

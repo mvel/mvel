@@ -107,8 +107,7 @@ public class TypeDescriptor implements Serializable {
 
     public static Class getClassReference(Class baseType,
                                           TypeDescriptor tDescr,
-                                          VariableResolverFactory factory,
-                                          char[] name) throws ClassNotFoundException {
+                                          VariableResolverFactory factory) throws ClassNotFoundException {
         return findClass(factory, repeatChar('[', tDescr.arraySize.length) + "L" + baseType.getName() + ";");
     }
 
