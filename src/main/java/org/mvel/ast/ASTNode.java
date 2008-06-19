@@ -20,6 +20,7 @@
 package org.mvel.ast;
 
 import org.mvel.*;
+import static org.mvel.ast.TypeDescriptor.getClassReference;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.compiler.AbstractParser;
 import static org.mvel.compiler.AbstractParser.LITERALS;
@@ -227,37 +228,44 @@ public class ASTNode implements Cloneable, Serializable {
                     return get(name, ctx, factory, thisValue);
                 }
                 catch (RuntimeException e) {
-                    e.printStackTrace();
-                    throw new UnresolveablePropertyException(this, e);
+                    // fall through
                 }
             }
-            else {
-                if (isOperator()) {
-                    throw new CompileException("incomplete statement: " + new String(name));
-                }
-                else {
-                    int mBegin = findFirst('(', name);
-                    if (mBegin != -1) {
-                        if (factory.isResolveable(s = new String(name, 0, mBegin))) {
-                            Object o = factory.getVariableResolver(s).getValue();
 
-                            if (o instanceof Method) {
-                                Method m = (Method) o;
-                                return get(m.getName() + new String(name, mBegin, name.length - mBegin),
-                                        m.getDeclaringClass(), factory, thisValue);
-                            }
-                            else {
-                                Function f = (Function) o;
-                                return get(f.getName() + new String(name, mBegin, name.length - mBegin),
-                                        null, factory, thisValue);
-                            }
-                        }
+            if (isOperator()) {
+                throw new CompileException("incomplete statement: " + new String(name));
+            }
+            else {
+                TypeDescriptor td = new TypeDescriptor(name, 0);
+                if (td.isArray()) {
+                    try {
+                        fields |= LITERAL;
+                        return literal = getClassReference(AbstractParser.getCurrentThreadParserContext(), td);
+                    }
+                    catch (Exception e) {
+                        // fall through
+                    }
+                }
+                else if (factory.isResolveable(td.getClassName())) {
+                    Object o = factory.getVariableResolver(td.getClassName()).getValue();
+
+                    if (o instanceof Method) {
+                        Method m = (Method) o;
+                        return get(m.getName() + new String(name, td.getEndRange(), name.length - td.getEndRange()),
+                                m.getDeclaringClass(), factory, thisValue);
+                    }
+                    else {
+                        Function f = (Function) o;
+                        return get(f.getName() + new String(name, td.getEndRange(), name.length - td.getEndRange()),
+                                null, factory, thisValue);
                     }
                 }
 
-                throw new CompileException("cannot resolve identifier: " + new String(name));
             }
+
+            throw new CompileException("cannot resolve identifier: " + new String(name));
         }
+
 
         if ((literal = tryStaticAccess(ctx, factory)) == null) {
             throw new UnresolveablePropertyException(this);

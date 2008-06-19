@@ -208,7 +208,7 @@ public class ArrayTools {
 
         return a;
     }
-
+   
     public static int findFirst(char c, char[] array) {
         for (int i = 0; i < array.length; i++) {
             if (array[i] == c) return i;

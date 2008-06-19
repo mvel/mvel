@@ -1,6 +1,8 @@
 package org.mvel.ast;
 
 import org.mvel.CompileException;
+import org.mvel.ParserContext;
+import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.compiler.ExecutableStatement;
 import static org.mvel.util.ArrayTools.findFirst;
@@ -9,11 +11,13 @@ import static org.mvel.util.ParseTools.*;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
+import static java.lang.Character.isDigit;
 
 public class TypeDescriptor implements Serializable {
     private String className;
     private ArraySize[] arraySize;
     private ExecutableStatement[] compiledArraySize;
+    int endRange;
 
     public TypeDescriptor() {
     }
@@ -23,7 +27,9 @@ public class TypeDescriptor implements Serializable {
     }
 
     public void updateClassName(char[] name, int fields) {
-        int endRange = findFirst('(', name);
+        if (name.length == 0 || isDigit(name[0])) return;
+
+        endRange = findFirst('(', name);
         if (endRange == -1) {
             if ((endRange = findFirst('[', name)) != -1) {
                 className = new String(name, 0, endRange);
@@ -90,4 +96,40 @@ public class TypeDescriptor implements Serializable {
     public void setClassName(String className) {
         this.className = className;
     }
+
+    public int getEndRange() {
+        return endRange;
+    }
+
+    public void setEndRange(int endRange) {
+        this.endRange = endRange;
+    }
+
+    public static Class getClassReference(Class baseType,
+                                          TypeDescriptor tDescr,
+                                          VariableResolverFactory factory,
+                                          char[] name) throws ClassNotFoundException {
+        return findClass(factory, repeatChar('[', tDescr.arraySize.length) + "L" + baseType.getName() + ";");
+    }
+
+    public static Class getClassReference(ParserContext ctx, TypeDescriptor tDescr) throws ClassNotFoundException {
+        Class cls;
+        if (ctx.hasImport(tDescr.className)) {
+            cls = ctx.getImport(tDescr.className);
+            if (tDescr.isArray()) {
+                cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";");
+            }
+        }
+        else {
+            cls = createClass(tDescr.getClassName());
+            if (tDescr.isArray()) {
+                cls = findClass(null, repeatChar('[', tDescr.getArrayLength()) + "L" + cls.getName() + ";");
+            }
+        }
+
+
+        return cls;
+    }
+
+
 }

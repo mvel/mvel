@@ -21,6 +21,7 @@ package org.mvel.compiler;
 import org.mvel.*;
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
+import static org.mvel.ast.TypeDescriptor.getClassReference;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
@@ -28,6 +29,7 @@ import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
+import org.mvel.util.PropertyTools;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -36,6 +38,7 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
+import static java.lang.Character.isDigit;
 import static java.util.Collections.synchronizedMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -478,28 +481,39 @@ public class AbstractParser implements Serializable {
                                          * Check for typing information.
                                          */
                                         if (lastNode.getLiteralValue() instanceof String) {
-                                            if (pCtx.hasImport((String) lastNode.getLiteralValue())) {
-                                                lastNode.setLiteralValue(pCtx.getImport((String) lastNode.getLiteralValue()));
+                                            TypeDescriptor tDescr = new TypeDescriptor(((String) lastNode.getLiteralValue()).toCharArray(), 0);
+
+                                            try {
+                                                lastNode.setLiteralValue(TypeDescriptor.getClassReference(pCtx, tDescr));
                                                 lastNode.discard();
                                             }
-                                            else if (stk != null && stk.peek() instanceof Class) {
-                                                lastNode.setLiteralValue(stk.pop());
-                                                lastNode.discard();
+                                            catch (Exception e) {
+                                                // fall through;
                                             }
-                                            else {
-                                                try {
-                                                    /**
-                                                     *  take a stab in the dark and try and load the class
-                                                     */
-                                                    lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
-                                                    lastNode.discard();
-                                                }
-                                                catch (ClassNotFoundException e) {
-                                                    /**
-                                                     * Just fail through.
-                                                     */
-                                                }
-                                            }
+
+
+//                                            if (pCtx.hasImport((String) lastNode.getLiteralValue())) {
+//                                                lastNode.setLiteralValue(pCtx.getImport((String) lastNode.getLiteralValue()));
+//                                                lastNode.discard();
+//                                            }
+//                                            else if (stk != null && stk.peek() instanceof Class) {
+//                                                lastNode.setLiteralValue(stk.pop());
+//                                                lastNode.discard();
+//                                            }
+//                                            else {
+//                                                try {
+//                                                    /**
+//                                                     *  take a stab in the dark and try and load the class
+//                                                     */
+//                                                    lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
+//                                                    lastNode.discard();
+//                                                }
+//                                                catch (ClassNotFoundException e) {
+//                                                    /**
+//                                                     * Just fail through.
+//                                                     */
+//                                                }
+//                                            }
                                         }
 
                                         if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
@@ -546,7 +560,7 @@ public class AbstractParser implements Serializable {
                             start++;
                             captureToEOT();
 
-                      //      name = new String(expr, start, cursor - start);
+                            //      name = new String(expr, start, cursor - start);
 
                             if (pCtx.getInterceptors() == null || !pCtx.getInterceptors().
                                     containsKey(name = new String(expr, start, cursor - start))) {
@@ -571,10 +585,12 @@ public class AbstractParser implements Serializable {
                                     return lastNode = new PreFixDecNode(name);
                                 }
                             }
-                            else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
+                            else
+                            if ((cursor != 0 && !isWhitespace(lookBehind())) || !PropertyTools.isDigit(lookAhead())) {
                                 return createOperator(expr, start, cursor++ + 1);
                             }
-                            else if ((cursor - 1) != 0 || (!isDigit(lookBehind())) && isDigit(lookAhead())) {
+                            else
+                            if ((cursor - 1) != 0 || (!PropertyTools.isDigit(lookBehind())) && PropertyTools.isDigit(lookAhead())) {
                                 cursor++;
                                 break;
                             }
@@ -771,47 +787,17 @@ public class AbstractParser implements Serializable {
                                 TypeDescriptor tDescr = new TypeDescriptor(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st), fields);
 
                                 Class cls;
-                                if (pCtx.hasImport(tDescr.getClassName())) {
-                                    cls = pCtx.getImport(tDescr.getClassName());
-
-                                    start = cursor;
-                                    captureToEOS();
-
-                                    if (tDescr.isArray()) {
-                                        try {
-                                            cls = findClass(null, repeatChar('[', tDescr.getArrayLength()) + "L" + cls.getName() + ";");
-                                        }
-                                        catch (Exception e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-
-                                    return lastNode = new TypeCast(subset(expr, start, cursor - start), cls, fields);
-                                }
-                                else {
-                                    int rewind = cursor;
+                                if (tDescr.getClassName() != null) {
                                     try {
-                                        cls = createClass(tDescr.getClassName());
-                                        if (tDescr.isArray()) {
-                                            try {
-                                                cls = findClass(null, repeatChar('[', tDescr.getArrayLength()) + "L" + cls.getName() + ";");
-                                            }
-                                            catch (Exception e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
+                                        cls = getClassReference(pCtx, tDescr);
 
-                                        /**
-                                         *  take a stab in the dark and try and load the class
-                                         */
+                                        start = cursor;
                                         captureToEOS();
-                                        return lastNode = new TypeCast(subset(expr, rewind, cursor - rewind), cls, fields);
+
+                                        return lastNode = new TypeCast(subset(expr, start, cursor - start), cls, fields);
                                     }
-                                    catch (ClassNotFoundException e) {
-                                        /**
-                                         * Just fail through.
-                                         */
-                                        cursor = rewind;
+                                    catch (Exception e) {
+                                        // fallthrough
                                     }
                                 }
                             }
@@ -891,7 +877,7 @@ public class AbstractParser implements Serializable {
 
                         case '~':
                             if ((cursor++ - 1 != 0 || !isIdentifierPart(lookBehind()))
-                                    && isDigit(expr[cursor])) {
+                                    && PropertyTools.isDigit(expr[cursor])) {
                                 start = cursor;
                                 captureToEOT();
                                 return lastNode = new Invert(subset(expr, start, cursor - start), fields);

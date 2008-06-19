@@ -24,9 +24,12 @@ import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.eval;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.Function;
+import org.mvel.ast.TypeDescriptor;
+import static org.mvel.ast.TypeDescriptor.getClassReference;
 import org.mvel.compiler.Accessor;
 import org.mvel.compiler.AccessorNode;
 import org.mvel.compiler.ExecutableStatement;
+import org.mvel.compiler.AbstractParser;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.VariableResolver;
 import org.mvel.optimizers.AbstractOptimizer;
@@ -495,6 +498,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return ((CharSequence) ctx).charAt((Integer) idx);
         }
         else {
+            TypeDescriptor tDescr = new TypeDescriptor(expr, 0);
+            if (tDescr.isArray()) {
+                Class cls = getClassReference((Class) ctx, tDescr, variableFactory, expr);
+                rootNode = new StaticReferenceAccessor(cls);
+                return cls;
+            }
+
             throw new CompileException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
         }
     }

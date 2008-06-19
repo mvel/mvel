@@ -2649,7 +2649,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals((int) val, MVEL.eval(expression));
     }
 
-    
 
     public void testNullSafe() {
         Foo foo = new Foo();
@@ -3212,6 +3211,10 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testStringToArrayCast2() {
         assertTrue((Boolean) test("_xyxy = (char[]) 'abcd'; _xyxy[0] == 'a'"));
+    }
+
+    public void testStaticallyTypedArrayVar() {
+        assertTrue((Boolean) test("char[] _c___ = new char[10]; _c___ instanceof char[]"));
     }
 
     public void testParserErrorHandling() {

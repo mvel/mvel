@@ -469,6 +469,9 @@ public class PropertyAccessor {
                 }
             }
         }
+        else {
+
+        }
 
         throw new PropertyAccessException("could not access property (" + property + ")");
     }

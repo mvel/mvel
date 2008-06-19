@@ -29,6 +29,8 @@ import org.mvel.asm.Opcodes;
 import static org.mvel.asm.Opcodes.*;
 import static org.mvel.asm.Type.*;
 import org.mvel.ast.Function;
+import org.mvel.ast.TypeDescriptor;
+import static org.mvel.ast.TypeDescriptor.getClassReference;
 import org.mvel.compiler.Accessor;
 import org.mvel.compiler.ExecutableLiteral;
 import org.mvel.compiler.ExecutableStatement;
@@ -37,6 +39,7 @@ import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.impl.refl.Union;
+import org.mvel.optimizers.impl.refl.StaticReferenceAccessor;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.*;
 import static org.mvel.util.PropertyTools.getBaseComponentType;
@@ -687,6 +690,19 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
         }
         else {
+            TypeDescriptor tDescr = new TypeDescriptor(expr, 0);
+            if (tDescr.isArray()) {
+                try {
+                    Class cls = getClassReference((Class) ctx, tDescr, variableFactory, expr);
+                    //   rootNode = new StaticReferenceAccessor(cls);
+                    ldcClassConstant(cls);
+                    return cls;
+                }
+                catch (Exception e) {
+                    //fall through
+                }
+            }
+
             throw new CompileException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
         }
     }
@@ -2009,7 +2025,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 writer.close();
             }
             catch (IOException e) {
-                // --
             }
         }
     }
