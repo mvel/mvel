@@ -3059,6 +3059,10 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testMultiLineString() throws IOException {
+        MVEL.evalFile(new File("samples/scripts/multilinestring.mvel"));
+    }
+
     public void testCompactIfElse() {
         assertEquals("foo", test("if (false) 'bar'; else 'foo';"));
     }

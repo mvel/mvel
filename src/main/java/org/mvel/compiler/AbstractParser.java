@@ -490,30 +490,6 @@ public class AbstractParser implements Serializable {
                                             catch (Exception e) {
                                                 // fall through;
                                             }
-
-
-//                                            if (pCtx.hasImport((String) lastNode.getLiteralValue())) {
-//                                                lastNode.setLiteralValue(pCtx.getImport((String) lastNode.getLiteralValue()));
-//                                                lastNode.discard();
-//                                            }
-//                                            else if (stk != null && stk.peek() instanceof Class) {
-//                                                lastNode.setLiteralValue(stk.pop());
-//                                                lastNode.discard();
-//                                            }
-//                                            else {
-//                                                try {
-//                                                    /**
-//                                                     *  take a stab in the dark and try and load the class
-//                                                     */
-//                                                    lastNode.setLiteralValue(createClass((String) lastNode.getLiteralValue()));
-//                                                    lastNode.discard();
-//                                                }
-//                                                catch (ClassNotFoundException e) {
-//                                                    /**
-//                                                     * Just fail through.
-//                                                     */
-//                                                }
-//                                            }
                                         }
 
                                         if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
@@ -559,8 +535,6 @@ public class AbstractParser implements Serializable {
                         case '@': {
                             start++;
                             captureToEOT();
-
-                            //      name = new String(expr, start, cursor - start);
 
                             if (pCtx.getInterceptors() == null || !pCtx.getInterceptors().
                                     containsKey(name = new String(expr, start, cursor - start))) {
@@ -753,7 +727,6 @@ public class AbstractParser implements Serializable {
                                          * Check to see if we should disqualify this current token as a potential
                                          * type-cast candidate.
                                          */
-
 
                                         if (lastWS && expr[cursor] != '.') {
                                             switch (expr[cursor]) {

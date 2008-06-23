@@ -109,7 +109,6 @@ public class OptimizerFactory {
         }
         catch (Exception e) {
             throw new CompileException("unable to instantiate accessor compiler", e);
-
         }
     }
 }
