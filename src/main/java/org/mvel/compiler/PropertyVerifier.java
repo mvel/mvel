@@ -28,6 +28,7 @@ import static org.mvel.util.ParseTools.getBestCandidate;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.ParseTools.balancedCapture;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
+import static org.mvel.util.PropertyTools.getSubComponentType;
 import org.mvel.util.StringAppender;
 
 import java.lang.reflect.Field;
@@ -160,24 +161,40 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
     }
 
-    private Class getCollectionProperty() {
-        int start = ++cursor;
+    private Class getCollectionProperty(Class ctx, String property) {
+        if (first) {
+            if (parserContext.hasVarOrInput(property)) {
+                ctx = getSubComponentType(parserContext.getVarOrInputType(property));
+            }
+            else if (parserContext.hasImport(property)) {
+                resolvedExternally = false;
+                ctx = getSubComponentType(parserContext.getImport(property));
+            }
+            else {
+                ctx = Object.class;
+            }
+        }
+
+
+     //   int start = ++cursor;
+
+        ++cursor;
 
         whiteSpaceSkip();
 
         if (cursor == length)
             throw new PropertyAccessException("unterminated '['");
 
-        if (scanTo(']')) {
+        if (!scanTo(']')) {
             addFatalError("unterminated [ in token");
         }
 
-        ExpressionCompiler compiler = new ExpressionCompiler(new String(expr, start, cursor - start));
-        compiler._compile();
+//        ExpressionCompiler compiler = new ExpressionCompiler(new String(expr, start, cursor - start));
+//        compiler._compile();
 
         ++cursor;
 
-        return compiler.getReturnType() == null ? Object.class : compiler.getReturnType();
+        return ctx;
     }
 
 

@@ -447,4 +447,11 @@ public class PropertyTools {
         }
         return cls;
     }
+
+        public static Class getSubComponentType(Class cls) {
+        if (cls.isArray()) {
+            cls = cls.getComponentType();
+        }
+        return cls;
+    }
 }

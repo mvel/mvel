@@ -5,10 +5,9 @@ import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.sh.command.basic.BasicCommandSet;
 import org.mvel.sh.command.file.FileCommandSet;
-import org.mvel.util.StringAppender;
-import org.mvel.util.PropertyTools;
-import static org.mvel.util.PropertyTools.contains;
 import org.mvel.templates.TemplateRuntime;
+import static org.mvel.util.PropertyTools.contains;
+import org.mvel.util.StringAppender;
 
 import java.io.*;
 import static java.lang.Boolean.parseBoolean;

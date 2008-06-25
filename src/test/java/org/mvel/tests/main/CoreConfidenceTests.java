@@ -3207,6 +3207,16 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testJIRA96() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement(true);
+
+        ctx.addInput("fooString", String[].class);
+
+        ExpressionCompiler compiler = new ExpressionCompiler("fooString[0].toUpperCase()");
+        compiler.compile(ctx);
+    }
+
     public void testStringToArrayCast() {
         Object o = test("(char[]) 'abcd'");
 

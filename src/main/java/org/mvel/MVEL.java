@@ -68,7 +68,6 @@ public class MVEL {
     public static void setThreadSafe(boolean threadSafe) {
         THREAD_SAFE = threadSafe;
         PropertyAccessor.configureFactory();
-    //    TemplateInterpreter.configureFactory();
         MVELInterpretedRuntime.configureFactory();
     }
 
@@ -138,7 +137,6 @@ public class MVEL {
                 .compile(new ParserContext(imports, interceptors, sourceName)));
     }
 
-
     /**
      * Compiles an expression and returns a Serializable object containing the compiled
      * expression.
@@ -150,7 +148,6 @@ public class MVEL {
         return compileExpression(expression, null, null, null);
     }
 
-
     public static Serializable compileExpression(String expression, Map<String, Object> imports) {
         return compileExpression(expression, imports, null, null);
     }
@@ -158,7 +155,6 @@ public class MVEL {
     public static Serializable compileExpression(String expression, Map<String, Object> imports, Map<String, Interceptor> interceptors) {
         return compileExpression(expression, imports, interceptors, null);
     }
-
 
     /**
      * Compiles an expression and returns a Serializable object containing the compiled
@@ -174,7 +170,6 @@ public class MVEL {
                                                  Map<String, Interceptor> interceptors, String sourceName) {
         return optimizeTree(new ExpressionCompiler(expression).compile(new ParserContext(imports, interceptors, sourceName)));
     }
-
 
     public static Serializable compileExpression(char[] expression) {
         return compileExpression(expression, null, null, null);
@@ -203,7 +198,6 @@ public class MVEL {
     public static void executeSetExpression(Serializable compiledSet, Object ctx, VariableResolverFactory vrf, Object value) {
         ((CompiledSetExpression) compiledSet).setValue(ctx, vrf, value);
     }
-
 
     public static Object executeExpression(Object compiledExpression) {
         try {
