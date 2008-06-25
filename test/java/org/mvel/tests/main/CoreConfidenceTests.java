@@ -3244,9 +3244,6 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ctx.addInput("fooString", String[].class);
 
-//        Map map = new HashMap();
-//        map.put("fooString", new String[] { "foobie" });
-
         ExpressionCompiler compiler = new ExpressionCompiler("fooString[0].toUpperCase()");
         compiler.compile(ctx);
     }
