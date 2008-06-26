@@ -23,10 +23,7 @@ import org.mvel.ParserContext;
 import org.mvel.PropertyAccessException;
 import org.mvel.ast.Function;
 import org.mvel.optimizers.AbstractOptimizer;
-import org.mvel.util.ParseTools;
-import static org.mvel.util.ParseTools.getBestCandidate;
-import static org.mvel.util.ParseTools.parseParameterList;
-import static org.mvel.util.ParseTools.balancedCapture;
+import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel.util.PropertyTools.getSubComponentType;
 import org.mvel.util.StringAppender;
@@ -59,7 +56,6 @@ public class PropertyVerifier extends AbstractOptimizer {
         this.parserContext = parserContext;
     }
 
-
     public List<String> getInputs() {
         return inputs;
     }
@@ -82,7 +78,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                     ctx = getMethod(ctx, capture());
                     break;
                 case COL:
-                    ctx = getCollectionProperty();
+                    ctx = getCollectionProperty(ctx, capture());
                     break;
                 case DONE:
                     break;
