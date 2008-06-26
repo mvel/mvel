@@ -148,7 +148,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
     private Class getCollectionProperty(Class ctx, String property) {
-        if (first) {
+   //     if (first) {
             if (parserContext.hasVarOrInput(property)) {
                 ctx = getSubComponentType(parserContext.getVarOrInputType(property));
             }
@@ -159,7 +159,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             else {
                 ctx = Object.class;
             }
-        }
+   //     }
 
 
      //   int start = ++cursor;
