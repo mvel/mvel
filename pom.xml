@@ -9,7 +9,7 @@
 
 
     <scm>
-        <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/mvel-2.0-SNAPSHOT</developerConnection>
+        <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/mvel-2.0-SNAPSHOT-06292008</developerConnection>
     </scm>
 
     <build>
@@ -93,12 +93,12 @@
 
     <distributionManagement>
         <!-- use the following if you're not using a snapshot version. -->
-        <repository>
+<!--        <repository>
             <id>codehaus.org</id>
             <name>Codehaus Maven Repository</name>
             <url>dav:https://dav.codehaus.org/repository/mvel/</url>
         </repository>
-        <!-- use the following if you ARE using a snapshot version. -->
+ -->       <!-- use the following if you ARE using a snapshot version. -->
         <snapshotRepository>
             <id>codehaus.org</id>
             <name>Codehaus Snapshot Maven Repository</name>
