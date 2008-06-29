@@ -23,6 +23,9 @@ import static org.mvel.util.ParseTools.doOperations;
 import org.mvel.debug.DebugTools;
 import static org.mvel.debug.DebugTools.getOperatorName;
 import org.mvel.Operator;
+import org.mvel.ParserContext;
+import org.mvel.ErrorDetail;
+import org.mvel.CompileException;
 import static org.mvel.Operator.PTABLE;
 
 public class BinaryOperation extends ASTNode {
@@ -35,6 +38,28 @@ public class BinaryOperation extends ASTNode {
         this.operation = operation;
         this.left = left;
         this.right = right;
+    }
+
+    public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
+        assert operation != -1;
+        this.operation = operation;
+        this.left = left;
+        this.right = right;
+
+        if (ctx.isStrongTyping()) {
+            switch (operation) {
+                case Operator.ADD:
+                    if (left.getEgressType() == String.class || right.getEgressType() == String.class) {
+                        break;
+                    }
+
+                default:
+                    if (!left.getEgressType().isAssignableFrom(right.getEgressType())) {
+                        throw new CompileException("incompatible types in statement: " + right.getEgressType() + " (assignment from: " + left.getEgressType() + ")");
+                    }
+            }
+        }
+
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

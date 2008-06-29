@@ -3217,6 +3217,39 @@ public class CoreConfidenceTests extends AbstractTest {
         compiler.compile(ctx);
     }
 
+    public void testStrongTyping() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+
+        try {
+            new ExpressionCompiler("blah").compile(ctx);
+        }
+        catch (Exception e) {
+            // should fail
+            return;
+        }
+
+        assertTrue(false);
+    }
+
+    public void testStrongTyping2() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        
+        ctx.addInput("blah", String.class);
+
+        try {
+            new ExpressionCompiler("1+blah").compile(ctx);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        assertTrue(false);
+
+    }
+
     public void testStringToArrayCast() {
         Object o = test("(char[]) 'abcd'");
 

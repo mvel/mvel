@@ -220,7 +220,7 @@ public class ExpressionCompiler extends AbstractParser {
 
             if (!stk.isEmpty()) throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
 
-            return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization), getCurrentSourceFileName(), returnType, pCtx, literalOnly);
+            return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), getCurrentSourceFileName(), returnType, pCtx, literalOnly);
         }
         catch (Throwable e) {
             parserContext.set(null);
@@ -256,7 +256,7 @@ public class ExpressionCompiler extends AbstractParser {
         if (verifying) {
             if (tk.isIdentifier()) {
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), pCtx);
-                returnType = propVerifier.analyze();
+                tk.setEgressType(returnType = propVerifier.analyze());
 
                 if (propVerifier.isResolvedExternally()) {
                     pCtx.addInput(tk.getAbsoluteName(), returnType);

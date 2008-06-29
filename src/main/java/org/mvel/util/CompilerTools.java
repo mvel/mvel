@@ -19,6 +19,7 @@
 package org.mvel.util;
 
 import org.mvel.Operator;
+import org.mvel.ParserContext;
 import static org.mvel.Operator.PTABLE;
 import org.mvel.ast.*;
 import org.mvel.compiler.CompiledExpression;
@@ -34,7 +35,7 @@ public class CompilerTools {
      * @param secondPassOptimization - perform a second pass optimization to optimize boolean expressions.
      * @return optimized AST
      */
-      public static ASTLinkedList optimizeAST(ASTLinkedList astLinkedList, boolean secondPassOptimization) {
+      public static ASTLinkedList optimizeAST(ASTLinkedList astLinkedList, boolean secondPassOptimization, ParserContext ctx) {
         ASTLinkedList optimizedAst = new ASTLinkedList();
         ASTNode tk, tkOp, tkOp2;
 
@@ -59,7 +60,7 @@ public class CompilerTools {
                     int op;
                     int op2;
 
-                    BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode());
+                    BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode(), ctx);
 
                     tkOp2 = null;
 
@@ -70,13 +71,13 @@ public class CompilerTools {
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
                             && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 20) {
                         if (PTABLE[op2] > PTABLE[op]) {
-                            bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode()));
+                            bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode(), ctx));
                         }
                         else if (PTABLE[op2] == PTABLE[op]) {
-                            bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
+                            bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
                         }
                         else {
-                            bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
+                            bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
                         }
 
                         op = op2;

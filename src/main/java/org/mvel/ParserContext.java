@@ -36,6 +36,8 @@ public class ParserContext implements Serializable {
 
     private boolean compiled = false;
     private boolean strictTypeEnforcement = false;
+    private boolean strongTyping = false;
+
     private boolean fatalError = false;
     private boolean retainParserState = false;
     private boolean debugSymbols = false;
@@ -231,6 +233,17 @@ public class ParserContext implements Serializable {
 
     public void setStrictTypeEnforcement(boolean strictTypeEnforcement) {
         this.strictTypeEnforcement = strictTypeEnforcement;
+    }
+
+    public boolean isStrongTyping() {
+        return strongTyping;
+    }
+
+    public void setStrongTyping(boolean strongTyping) {
+        if (this.strongTyping = strongTyping) {
+            // implies strict-type enforcement too
+            this.strictTypeEnforcement = true;
+        }
     }
 
     public boolean isRetainParserState() {

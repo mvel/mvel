@@ -99,7 +99,11 @@ public class PropertyVerifier extends AbstractOptimizer {
                 resolvedExternally = false;
                 return parserContext.getImport(property);
             }
+            else if (!parserContext.isStrongTyping()) {
+                return Object.class;
+            }
             else {
+                addFatalError("unknown or unresolveable property: " + property);
                 return Object.class;
             }
         }
@@ -158,21 +162,16 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
     private Class getCollectionProperty(Class ctx, String property) {
-        if (first) {
-            if (parserContext.hasVarOrInput(property)) {
-                ctx = getSubComponentType(parserContext.getVarOrInputType(property));
-            }
-            else if (parserContext.hasImport(property)) {
-                resolvedExternally = false;
-                ctx = getSubComponentType(parserContext.getImport(property));
-            }
-            else {
-                ctx = Object.class;
-            }
+        if (parserContext.hasVarOrInput(property)) {
+            ctx = getSubComponentType(parserContext.getVarOrInputType(property));
         }
-
-
-     //   int start = ++cursor;
+        else if (parserContext.hasImport(property)) {
+            resolvedExternally = false;
+            ctx = getSubComponentType(parserContext.getImport(property));
+        }
+        else {
+            ctx = Object.class;
+        }
 
         ++cursor;
 
@@ -181,12 +180,9 @@ public class PropertyVerifier extends AbstractOptimizer {
         if (cursor == length)
             throw new PropertyAccessException("unterminated '['");
 
-        if (!scanTo(']')) {
+        if (scanTo(']')) {
             addFatalError("unterminated [ in token");
         }
-
-//        ExpressionCompiler compiler = new ExpressionCompiler(new String(expr, start, cursor - start));
-//        compiler._compile();
 
         ++cursor;
 
