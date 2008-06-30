@@ -3235,11 +3235,11 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testStrongTyping2() {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
-        
+
         ctx.addInput("blah", String.class);
 
         try {
-            new ExpressionCompiler("1+blah").compile(ctx);
+            new ExpressionCompiler("1-blah").compile(ctx);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -3275,7 +3275,6 @@ public class CoreConfidenceTests extends AbstractTest {
         }
         assertTrue(false);
     }
-
 }
 
 
