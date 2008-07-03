@@ -464,6 +464,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
 
+                        debug("*** producing function ptr stub.");
+
                         ldcClassConstant(c);
 
                         mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getMethods", "()[Ljava/lang/reflect/Method;");
