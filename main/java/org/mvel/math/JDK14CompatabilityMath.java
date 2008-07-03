@@ -193,7 +193,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
                     case Operator.SUB:
                         return ((Integer) val1) - ((Integer) val2);
                     case Operator.DIV:
-                        return new BigDecimal((Integer) val1).divide(new BigDecimal((Integer) val2), SCALE, ROUND_MODE);
+                        return new BigDecimal(((Integer) val1).doubleValue()).divide(new BigDecimal(((Integer) val2).doubleValue()), SCALE, ROUND_MODE);
                     case Operator.MULT:
                         return ((Integer) val1) * ((Integer) val2);
                     case Operator.POWER:
@@ -226,7 +226,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
                     case Operator.SUB:
                         return ((Short) val1) - ((Short) val2);
                     case Operator.DIV:
-                        return new BigDecimal((Short) val1).divide(new BigDecimal((Short) val2), SCALE, ROUND_MODE);
+                        return new BigDecimal(((Short) val1).doubleValue()).divide(new BigDecimal(((Short) val2).doubleValue()), SCALE, ROUND_MODE);
                     case Operator.MULT:
                         return ((Short) val1) * ((Short) val2);
                     case Operator.POWER:
@@ -258,7 +258,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
                     case Operator.SUB:
                         return ((Long) val1) - ((Long) val2);
                     case Operator.DIV:
-                        return new BigDecimal((Long) val1).divide(new BigDecimal((Long) val2), SCALE, ROUND_MODE);
+                        return new BigDecimal(((Long) val1).doubleValue()).divide(new BigDecimal(((Long) val2).doubleValue()), SCALE, ROUND_MODE);
                     case Operator.MULT:
                         return ((Long) val1) * ((Long) val2);
                     case Operator.POWER:
@@ -290,7 +290,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
                     case Operator.SUB:
                         return ((Double) val1) - ((Double) val2);
                     case Operator.DIV:
-                        return new BigDecimal((Double) val1).divide(new BigDecimal((Double) val2), SCALE, ROUND_MODE);
+                        return new BigDecimal(((Double) val1).doubleValue()).divide(new BigDecimal(((Double) val2).doubleValue()), SCALE, ROUND_MODE);
                     case Operator.MULT:
                         return ((Double) val1) * ((Double) val2);
                     case Operator.POWER:
@@ -320,7 +320,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
                     case Operator.SUB:
                         return ((Float) val1) - ((Float) val2);
                     case Operator.DIV:
-                        return new BigDecimal((Float) val1).divide(new BigDecimal((Float) val2), SCALE, ROUND_MODE);
+                        return new BigDecimal(((Float) val1).doubleValue()).divide(new BigDecimal(((Float) val2).doubleValue()), SCALE, ROUND_MODE);
                     case Operator.MULT:
                         return ((Float) val1) * ((Float) val2);
                     case Operator.POWER:
@@ -393,19 +393,20 @@ public class JDK14CompatabilityMath implements MathProcessor {
             case DataTypes.BIG_DECIMAL:
                 return (BigDecimal) in;
             case DataTypes.BIG_INTEGER:
-                return new BigDecimal((BigInteger) in);
+                return new BigDecimal(((BigInteger) in).doubleValue());
             case DataTypes.W_INTEGER:
-                return BigDecimal.valueOf((Integer) in);
+                return new BigDecimal(((Integer) in).doubleValue());
             case DataTypes.W_LONG:
-                return BigDecimal.valueOf((Long) in);
+                 return new BigDecimal(((Long)in).doubleValue());
             case DataTypes.STRING:
                 return new BigDecimal((String) in);
             case DataTypes.W_FLOAT:
-                return new BigDecimal((Float) in);
+                return new BigDecimal(((Float) in).doubleValue());
             case DataTypes.W_DOUBLE:
-                return new BigDecimal((Double) in);
+                return new BigDecimal(((Double) in).doubleValue());
             case DataTypes.W_SHORT:
-                return BigDecimal.valueOf((Short) in);
+                return new BigDecimal(((Double)in).doubleValue());
+              //  return BigDecimal.valueOf((Short) in);
             case DataTypes.W_BOOLEAN:
                 return BigDecimal.valueOf(((Boolean) in) ? 1 : 0);
 
