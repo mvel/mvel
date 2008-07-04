@@ -21,7 +21,7 @@ import java.math.BigInteger;
  * @author Christopher Brock
  */
 public class JDK14CompatabilityMath implements MathProcessor {
-    public static final int ROUND_MODE = BigDecimal.ROUND_CEILING;
+    public static final int ROUND_MODE = BigDecimal.ROUND_HALF_EVEN;
     public static final int SCALE = 128;
 
 
@@ -88,7 +88,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
             else if ((type1 > 99 && (type2 > 99)) || (isNumber(val1) && isNumber(val2))) {
                 return doBigDecimalArithmetic(getBigDecimalFromType(val1, type1), operation, getBigDecimalFromType(val2, type2));
             }
-            else if ((type1 == 15 || type2 == 15) && type1 != type2 && type1 != EMPTY && type2 != EMPTY) {
+            else if (operation != Operator.ADD && (type1 == 15 || type2 == 15) && type1 != type2 && type1 != EMPTY && type2 != EMPTY) {
                 return doOperationNonNumeric(convert(val1, Boolean.class), operation, convert(val2, Boolean.class));
             }
             // Fix for: MVEL-56
@@ -107,6 +107,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
     private static Object doOperationNonNumeric(Object val1, int operation, Object val2) {
         switch (operation) {
             case Operator.ADD:
+            	System.out.println("<" + valueOf(val1) + "> + <" + valueOf(val2) + ">");
                 return valueOf(val1) + valueOf(val2);
 
             case Operator.EQUAL:

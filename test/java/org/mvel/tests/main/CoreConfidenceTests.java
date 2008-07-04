@@ -2635,11 +2635,11 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testAssignPlus() {
-        assertEquals(10, test("xx0 = 5; xx0 += 4; xx0 + 1"));
+        assertNumEquals(10, test("xx0 = 5; xx0 += 4; xx0 + 1"));
     }
 
     public void testAssignDiv() {
-        assertEquals(2, test("xx0 = 20; xx0 /= 10; xx0"));
+        assertNumEquals(2, test("xx0 = 20; xx0 /= 10; xx0"));
     }
 
     public void testAssignMult() {
@@ -2697,16 +2697,16 @@ public class CoreConfidenceTests extends AbstractTest {
         ));
     }
 
-    public void testCommentsInWith() {
-        HashMap map = new HashMap();
-        map.put("f", new JFrame());
-        System.out.println(eval(
-                "with (f) {\n" +
-                        "title = 'blah', // setting title\n" +
-                        "alwaysOnTop = false \n" +
-                        "}", map
-        ));
-    }
+//    public void testCommentsInWith() {
+//        HashMap map = new HashMap();
+//        map.put("f", new JFrame());
+//        System.out.println(eval(
+//                "with (f) {\n" +
+//                        "title = 'blah', // setting title\n" +
+//                        "alwaysOnTop = false \n" +
+//                        "}", map
+//        ));
+//    }
 
 
     public void testStaticWithExplicitParam() {

@@ -1,5 +1,6 @@
 package org.mvel.tests.main;
 
+import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 import static org.mvel.MVEL.compileExpression;
 import static org.mvel.MVEL.executeExpression;
@@ -759,15 +760,32 @@ public abstract class AbstractTest extends TestCase {
             this.number = number;
         }
     }
-
+    
     public static void assertNumEquals(Object obj, Object obj2) {
+    	assertNumEquals(obj, obj2, true);
+    }
+
+    public static void assertNumEquals(Object obj, Object obj2, boolean permitRoundingVariance) {
         if (obj == null || obj2 == null) throw new AssertionError("null value");
 
         if (obj.getClass().equals(obj2.getClass())) {
             assertEquals(obj, obj2);
         }
-        else {
-            assertEquals(DataConversion.convert(obj, obj2.getClass()), obj2);
+        else{
+        	obj = DataConversion.convert(obj, obj2.getClass());
+        	
+        	if (!obj.equals(obj2)){
+        		if (permitRoundingVariance) {
+        			obj = DataConversion.convert(obj, Integer.class);
+        			obj2 = DataConversion.convert(obj2, Integer.class);
+        			
+        			assertEquals(obj, obj2);
+        		}
+        		else {
+        			 throw new AssertionFailedError("expected <" + String.valueOf(obj) + "> but was <" + String.valueOf(obj) + ">");
+        		}
+        	}
+        	
         }
     }
 }

@@ -1184,7 +1184,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitInsn(POP);
 
                 debug("INVOKESPECIAL java/lang/Double.<init>::(D)V");
-                mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Doble", "<init>", "(D)V");
+                mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Double", "<init>", "(D)V");
 
                 returnType = Double.class;
             }
