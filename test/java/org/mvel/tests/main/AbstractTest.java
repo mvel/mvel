@@ -1,12 +1,9 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
-import org.mvel.CompiledExpression;
-import org.mvel.ExpressionCompiler;
-import org.mvel.MVEL;
 import static org.mvel.MVEL.compileExpression;
 import static org.mvel.MVEL.executeExpression;
-import org.mvel.ParserContext;
+import org.mvel.*;
 import static org.mvel.debug.DebugTools.decompile;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.optimizers.OptimizerFactory.setDefaultOptimizer;
@@ -760,6 +757,17 @@ public abstract class AbstractTest extends TestCase {
 
         public void setNumber(int number) {
             this.number = number;
+        }
+    }
+
+    public static void assertNumEquals(Object obj, Object obj2) {
+        if (obj == null || obj2 == null) throw new AssertionError("null value");
+
+        if (obj.getClass().equals(obj2.getClass())) {
+            assertEquals(obj, obj2);
+        }
+        else {
+            assertEquals(DataConversion.convert(obj, obj2.getClass()), obj2);
         }
     }
 }

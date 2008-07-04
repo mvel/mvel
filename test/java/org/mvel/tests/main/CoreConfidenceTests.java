@@ -138,117 +138,117 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath4() {
-        double val = (double) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
+        double val = ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d));
         System.out.println("val=" + val);
 
-        assertEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
+        assertNumEquals(val, test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
     }
 
     public void testMath5() {
-        assertEquals(300.5 / 5.3 / 2.1 / 1.5, test("300.5 / 5.3 / 2.1 / 1.5"));
+        assertNumEquals(300.5 / 5.3 / 2.1 / 1.5, test("300.5 / 5.3 / 2.1 / 1.5"));
     }
 
     public void testMath6() {
-        assertEquals((300 * 5 + 1) + 100 / 2 * 2, test("(300 * five + 1) + (100 / 2 * 2)"));
+        assertNumEquals((300 * 5 + 1) + 100 / 2 * 2, test("(300 * five + 1) + (100 / 2 * 2)"));
     }
 
     public void testMath7() {
-        assertEquals((int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d)), test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
+        assertNumEquals((int) ((100d % 3d) * 2d - 1d / 1d + 8d + (5d * 2d)), test("(100 % 3) * 2 - 1 / 1 + 8 + (5 * 2)"));
     }
 
     public void testMath8() {
-        assertEquals(5f * (100.56f * 30.1f), test("5 * (100.56 * 30.1)"));
+        assertNumEquals(5f * (100.56f * 30.1f), test("5 * (100.56 * 30.1)"));
     }
 
     public void testMath9() {
-        assertEquals(25, test("(five * 5) + 1 - 1"));
+        assertNumEquals(25, test("(five * 5) + 1 - 1"));
     }
 
     public void testMath10() {
-        assertEquals(5f * (0.95f / 2f), convert(test("five * (0.95 / 2)"), Float.class));
+        assertNumEquals(5f * (0.95f / 2f), convert(test("five * (0.95 / 2)"), Float.class));
     }
 
     public void testMath11() {
         String expression = "10-5*7-3*8-6";
         CompiledExpression expr = compileSimpleExpression(expression);
-        assertEquals(10 - 5 * 7 - 3 * 8 - 6, executeExpression(expr));
+        assertNumEquals(10 - 5 * 7 - 3 * 8 - 6, executeExpression(expr));
     }
 
     public void testMath12() {
         String expression = "(10-5)*7-3*(8-6)**3";
         CompiledExpression expr = compileSimpleExpression(expression);
-        assertEquals(11, executeExpression(expr));
+        assertNumEquals(11, executeExpression(expr));
     }
 
     public void testMath13() {
         String expression = "3** (2)*5**2";
         CompiledExpression expr = compileSimpleExpression(expression);
-        assertEquals(225, executeExpression(expr));
+        assertNumEquals(225, executeExpression(expr));
     }
 
     public void testMath14() {
-        assertEquals(10 - 5 * 2 + 5 * 8 - 4, test("10-5*2 + 5*8-4"));
+        assertNumEquals(10 - 5 * 2 + 5 * 8 - 4, test("10-5*2 + 5*8-4"));
     }
 
     public void testMath15() {
         String ex = "100-500*200 + 500*800-400";
         //   System.out.println("Expression: " + ex);
 
-        assertEquals(100 - 500 * 200 + 500 * 800 - 400, test(ex));
+        assertNumEquals(100 - 500 * 200 + 500 * 800 - 400, test(ex));
     }
 
     public void testMath16() {
         String ex = "100-500*200*150 + 500*800-400";
-        assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, test(ex));
+        assertNumEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, test(ex));
     }
 
     public void testMath17() {
         String ex = "(100 * 50) * 20 / 30 * 2";
         //    System.out.println("Expression: " + ex);
-        assertEquals((100d * 50d) * 20d / 30d * 2d, test(ex));
+        assertNumEquals((100d * 50d) * 20d / 30d * 2d, test(ex));
     }
 
     public void testMath18() {
         String ex = "a = 100; b = 50; c = 20; d = 30; e = 2; (a * b) * c / d * e";
         System.out.println("Expression: " + ex);
-        assertEquals((100d * 50d) * 20d / 30d * 2d, test(ex));
+        assertNumEquals((100d * 50d) * 20d / 30d * 2d, test(ex));
     }
 
     public void testMath19() {
         String ex = "a = 100; b = 500; c = 200; d = 150; e = 500; f = 800; g = 400; a-b*c*d + e*f-g";
         System.out.println("Expression: " + ex);
-        assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, test(ex));
+        assertNumEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, test(ex));
     }
 
     public void testMath20() {
         String ex = "10-5*7-3*8-6";
         System.out.println("Expression: " + ex);
-        assertEquals(10 - 5 * 7 - 3 * 8 - 6, test(ex));
+        assertNumEquals(10 - 5 * 7 - 3 * 8 - 6, test(ex));
     }
 
     public void testMath21() {
         String expression = "100-50*70-30*80-60";
         System.out.println("Expression: " + expression);
-        assertEquals(100 - 50 * 70 - 30 * 80 - 60, test(expression));
+        assertNumEquals(100 - 50 * 70 - 30 * 80 - 60, test(expression));
     }
 
     public void testMath22() {
         String expression = "(100-50)*70-30*(20-9)**3";
         System.out.println("Expression: " + expression);
-        assertEquals((int) ((100 - 50) * 70 - 30 * Math.pow(20 - 9, 3)), test(expression));
+        assertNumEquals((int) ((100 - 50) * 70 - 30 * Math.pow(20 - 9, 3)), test(expression));
     }
 
     public void testMath22b() {
         String expression = "a = 100; b = 50; c = 70; d = 30; e = 20; f = 9; g = 3; (a-b)*c-d*(e-f)**g";
         System.out.println("Expression: " + expression);
-        assertEquals((int) ((100 - 50) * 70 - 30 * Math.pow(20 - 9, 3)), testCompiledSimple(expression, new HashMap()));
+        assertNumEquals((int) ((100 - 50) * 70 - 30 * Math.pow(20 - 9, 3)), testCompiledSimple(expression, new HashMap()));
     }
 
 
     public void testMath23() {
         String expression = "10 ** (3)*10**3";
         System.out.println("Expression: " + expression);
-        assertEquals((int) (Math.pow(10, 3) * Math.pow(10, 3)), test(expression));
+        assertNumEquals((int) (Math.pow(10, 3) * Math.pow(10, 3)), test(expression));
     }
 
     public void testMath24() {
@@ -256,7 +256,7 @@ public class CoreConfidenceTests extends AbstractTest {
         float val = 51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19;
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
-        assertEquals(val, test(expression));
+        assertNumEquals(val, test(expression));
     }
 
     public void testMath25() {
@@ -264,7 +264,7 @@ public class CoreConfidenceTests extends AbstractTest {
         int val = 51 * (4 - 100 * 5) + 10 + 5 * 2 / 1 + 0 + 0 - 80;
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
-        assertEquals(val, test(expression));
+        assertNumEquals(val, test(expression));
     }
 
     public void testMath26() {
@@ -273,7 +273,7 @@ public class CoreConfidenceTests extends AbstractTest {
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
         Object result = test(expression);
-        assertEquals((int) val, result);
+        assertNumEquals((int) val, result);
     }
 
     public void testMath27() {
@@ -282,7 +282,7 @@ public class CoreConfidenceTests extends AbstractTest {
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
         Object result = test(expression);
-        assertEquals((int) val, result);
+        assertNumEquals((int) val, result);
     }
 
     public void testMath28() {
@@ -290,28 +290,28 @@ public class CoreConfidenceTests extends AbstractTest {
         double val = 50 + 30 + 80 + Math.pow(Math.pow(11, 2), 2) * 51;
         Object result = test(expression);
 
-        assertEquals((int) val, result);
+        assertNumEquals((int) val, result);
     }
 
     public void testMath29() {
-        assertEquals(1 + 20 / 2 / 2, test("1 + 20 / 2 / 2"));
+        assertNumEquals(1 + 20 / 2 / 2, test("1 + 20 / 2 / 2"));
     }
 
     public void testMath30() {
         String expression = "40 / 20 + 10 + 6 / 2";
         float val = 40f / 20f + 10f + 6f / 2f;
-        assertEquals((int) val, test(expression));
+        assertNumEquals((int) val, test(expression));
     }
 
     public void testMath31() {
         String expression = "40 / 20 + 5 - 4 + 8 / 2 * 2 * 6 ** 2 + 6 - 8";
         double val = 40f / 20f + 5f - 4f + 8f / 2f * 2f * Math.pow(6, 2) + 6f - 8f;
-        assertEquals((int) val, test(expression));
+        assertNumEquals((int) val, test(expression));
     }
 
 
     public void testPowerOf() {
-        assertEquals(25, test("5 ** 2"));
+        assertNumEquals(25, test("5 ** 2"));
     }
 
     public void testWhileUsingImports() {
