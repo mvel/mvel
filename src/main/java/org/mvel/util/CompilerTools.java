@@ -59,6 +59,8 @@ public class CompilerTools {
                 else if (tkOp.isOperator() && tkOp.getOperator() < 20) {
                     int op;
                     int op2;
+                    int lastOp = -1;
+
 
                     BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode(), ctx);
 
@@ -70,10 +72,11 @@ public class CompilerTools {
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
                             && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 20) {
+
                         if (PTABLE[op2] > PTABLE[op]) {
                             bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode(), ctx));
                         }
-                        else if (PTABLE[op2] == PTABLE[op]) {
+                        else if (bo.getOperation() != op2 && PTABLE[op] == PTABLE[op2]) {
                             bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
                         }
                         else {

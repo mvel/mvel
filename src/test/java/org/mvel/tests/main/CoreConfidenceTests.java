@@ -2557,6 +2557,18 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, testCompiledSimple(ex, new HashMap()));
     }
 
+    public void testMath32() {
+        String ex = "x = 20; y = 10; z = 5; x-y-z";
+        System.out.println("Expression: " + ex);
+        assertEquals(20 - 10 - 5, testCompiledSimple(ex, new HashMap()));
+    }
+
+    public void testMath33() {
+        String ex = "x = 20; y = 2; z = 2; x/y/z";
+        System.out.println("Expression: " + ex);
+        assertEquals(20 / 2 / 2, testCompiledSimple(ex, new HashMap()));
+    }
+
     public void testMath20() {
         String ex = "10-5*7-3*8-6";
         System.out.println("Expression: " + ex);
@@ -3274,6 +3286,24 @@ public class CoreConfidenceTests extends AbstractTest {
             return;
         }
         assertTrue(false);
+    }
+
+    public void testJIRA99_Interpreted() {
+        Map map = new HashMap();
+        map.put("x", 20);
+        map.put("y", 10);
+        map.put("z", 5);
+
+        assertEquals(20 - 10 - 5, MVEL.eval("x - y - z", map));
+    }
+
+    public void testJIRA99_Compiled() {
+        Map map = new HashMap();
+        map.put("x", 20);
+        map.put("y", 10);
+        map.put("z", 5);
+
+        assertEquals(20 - 10 - 5, testCompiledSimple("x - y - z", map));
     }
 }
 
