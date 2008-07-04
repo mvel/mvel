@@ -876,7 +876,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                                 continue;
                             }
                             else if (canConvert(parameterTypes[i], lit.getClass())) {
-                                debug("LDC " + lit + " (" + lit.getClass().getName() + ")");
+                                debug("LDC " + lit + " (" + parameterTypes[i] + ")");
                                 mv.visitLdcInsn(convert(lit, parameterTypes[i]));
 
                                 if (isPrimitiveWrapper(parameterTypes[i])) {
@@ -1122,6 +1122,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             /**
              * JAVA 1.4 SUCKS!  DIE 1.4 DIE!!!
              */
+        	
+        	debug("** Using 1.4 Bytecode **");
 
             if (cls == boolean.class || cls == Boolean.class) {
                 debug("NEW java/lang/Boolean");
@@ -1172,11 +1174,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("NEW java/lang/Double");
                 mv.visitTypeInsn(NEW, "java/lang/Double");
 
-                debug("DUP X1");
-                mv.visitInsn(DUP_X1);
+                debug("DUP X2");
+                mv.visitInsn(DUP_X2);
+                
+                debug("DUP X2");
+                mv.visitInsn(DUP_X2);
 
-                debug("SWAP");
-                mv.visitInsn(SWAP);
+                debug("POP");
+                mv.visitInsn(POP);
 
                 debug("INVOKESPECIAL java/lang/Double.<init>::(D)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Doble", "<init>", "(D)V");
