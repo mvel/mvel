@@ -3260,6 +3260,15 @@ public class CoreConfidenceTests extends AbstractTest {
         }
         assertTrue(false);
     }
+
+    public void testJIRA99() {
+        Map map = new HashMap();
+        map.put("x", 20);
+        map.put("y", 10);
+        map.put("z", 5);
+
+        assertEquals(20-10-5, testCompiledSimple("x - y - z", map));
+    }
 }
 
 
