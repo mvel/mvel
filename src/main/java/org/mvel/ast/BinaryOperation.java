@@ -70,10 +70,11 @@ public class BinaryOperation extends ASTNode {
         throw new RuntimeException("unsupported AST operation");
     }
 
-
     public int getOperation() {
         return operation;
     }
+
+
 
     public void setOperation(int operation) {
         assert operation != -1;

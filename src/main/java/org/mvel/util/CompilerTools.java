@@ -35,7 +35,7 @@ public class CompilerTools {
      * @param secondPassOptimization - perform a second pass optimization to optimize boolean expressions.
      * @return optimized AST
      */
-      public static ASTLinkedList optimizeAST(ASTLinkedList astLinkedList, boolean secondPassOptimization, ParserContext ctx) {
+    public static ASTLinkedList optimizeAST(ASTLinkedList astLinkedList, boolean secondPassOptimization, ParserContext ctx) {
         ASTLinkedList optimizedAst = new ASTLinkedList();
         ASTNode tk, tkOp, tkOp2;
 
@@ -59,8 +59,6 @@ public class CompilerTools {
                 else if (tkOp.isOperator() && tkOp.getOperator() < 20) {
                     int op;
                     int op2;
-                    int lastOp = -1;
-
 
                     BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode(), ctx);
 
@@ -77,7 +75,26 @@ public class CompilerTools {
                             bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode(), ctx));
                         }
                         else if (bo.getOperation() != op2 && PTABLE[op] == PTABLE[op2]) {
-                            bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
+                            switch (bo.getOperation()) {
+                                case Operator.ADD:
+                                    if (op2 == Operator.SUB) {
+                                        bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
+                                    }
+                                    else {
+                                        bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
+                                    }
+                                    break;
+                                case Operator.SUB:
+                                    if (op2 == Operator.ADD) {
+                                        bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
+                                    }
+                                    else {
+                                        bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
+                                    }
+                                    break;
+                                default:
+                                    bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
+                            }
                         }
                         else {
                             bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
