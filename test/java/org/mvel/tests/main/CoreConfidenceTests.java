@@ -325,7 +325,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         Serializable s = MVEL.compileExpression(expression);
 
-        assertEquals(200 + 100 - 150 * 2 * 400 / 300 - 75 + 10, MVEL.executeExpression(s, map));
+        assertNumEquals(200 + 100 - 150 * 2 * 400 / 300 - 75 + 10, MVEL.executeExpression(s, map));
 
     }
 
@@ -340,7 +340,7 @@ public class CoreConfidenceTests extends AbstractTest {
         map.put("y", "300");
         map.put("z", "75");
 
-        assertEquals(200 + 100 - 150 * 400 / 300 - 75, MVEL.eval(expression, map));
+        assertNumEquals(200 + 100 - 150 * 400 / 300 - 75, MVEL.eval(expression, map));
     }
 
 
