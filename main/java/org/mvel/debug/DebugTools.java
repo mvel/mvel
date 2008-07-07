@@ -101,6 +101,117 @@ public class DebugTools {
         return sbuf.toString();
     }
 
+        public static String getOperatorSymbol(int operator) {
+             switch (operator) {
+            case ADD:
+                return "+";
+            case SUB:
+                return "-";
+            case Operator.ASSIGN:
+                return "=";
+            case Operator.ASSIGN_ADD:
+                return "=+";
+            case Operator.ASSIGN_STR_APPEND:
+                return "=+";
+            case Operator.ASSIGN_SUB:
+                return "=";
+            case Operator.BW_AND:
+                return "&";
+            case Operator.BW_OR:
+                return "|";
+            case Operator.BW_SHIFT_LEFT:
+                return "<<";
+            case Operator.BW_SHIFT_RIGHT:
+                return ">>";
+            case Operator.BW_USHIFT_LEFT:
+                return "<<<";
+            case Operator.BW_USHIFT_RIGHT:
+                return ">>>";
+            case Operator.BW_XOR:
+                return "^";
+            case Operator.CONTAINS:
+                return "contains";
+            case Operator.CONVERTABLE_TO:
+                return "convertable_to";
+            case Operator.DEC:
+                return "--";
+            case Operator.DEC_ASSIGN:
+                return "++";
+            case Operator.DIV:
+                return "/";
+            case Operator.DO:
+                return "do";
+            case Operator.ELSE:
+                return "else";
+            case Operator.END_OF_STMT:
+                return ";";
+            case Operator.EQUAL:
+                return "==";
+            case Operator.FOR:
+                return "for";
+            case Operator.FOREACH:
+                return "foreach";
+            case Operator.FUNCTION:
+                return "function";
+            case Operator.GETHAN:
+                return ">=";
+            case Operator.GTHAN:
+                return ">";
+            case Operator.IF:
+                return "if";
+            case Operator.INC:
+                return "++";
+            case Operator.INC_ASSIGN:
+                return "++";
+            case Operator.INSTANCEOF:
+                return "instanceof";
+            case Operator.LETHAN:
+                return "<=";
+            case Operator.LTHAN:
+                return "<";
+            case Operator.MOD:
+                return "%";
+            case Operator.MULT:
+                return "*";
+            case Operator.NEQUAL:
+                return "!=";
+            case Operator.NEW:
+                return "new";
+
+            case Operator.AND:
+                return "&&";
+
+            case Operator.OR:
+                return "||";
+            case Operator.POWER:
+                return "**";
+            case Operator.PROJECTION:
+                return "PROJECT";
+            case Operator.REGEX:
+                return "REGEX";
+            case Operator.RETURN:
+                return "RETURN";
+            case Operator.SIMILARITY:
+                return "SIMILARITY";
+            case Operator.SOUNDEX:
+                return "SOUNDEX";
+            case Operator.STR_APPEND:
+                return "+";
+            case Operator.SWITCH:
+                return "SWITCH";
+            case Operator.TERNARY:
+                return "TERNARY_IF";
+            case Operator.TERNARY_ELSE:
+                return "TERNARY_ELSE";
+            case Operator.WHILE:
+                return "while";
+            case Operator.CHOR:
+                return "or";
+
+        }
+
+        return "UNKNOWN_OPERATOR";
+    }
 
     public static String getOperatorName(int operator) {
         switch (operator) {

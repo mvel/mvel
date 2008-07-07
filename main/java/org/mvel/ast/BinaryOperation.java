@@ -68,6 +68,6 @@ public class BinaryOperation extends ASTNode {
     
 
     public String toString() {
-        return left.toString() + " " + DebugTools.getOperatorName(operation) + " " + right.toString();
+        return "(" + left.toString() + " " + DebugTools.getOperatorSymbol(operation) + " " + right.toString() + ")";
     }
 }

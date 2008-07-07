@@ -436,6 +436,20 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test(ex));
     }
 
+    public void testOperatorPrecedence5() {
+        String ex = "_x_001 == _x_001 / 2 - _x_001 + _x_001 + _x_001 / 2 && _x_002 / 2 == _x_002 / 2";
+
+        Map vars = new HashMap();
+        vars.put("_x_001", 500.2);
+        vars.put("_x_002", 200.9);
+        vars.put("_r_001", 701);
+
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        Serializable s = compiler.compile();
+
+        assertEquals(true, MVEL.executeExpression(s, vars));
+    }
+
     public void testShortPathExpression() {
         assertEquals(null, test("3 > 4 && foo.toUC('test'); foo.register"));
     }
