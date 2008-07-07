@@ -21,6 +21,7 @@ package org.mvel.compiler;
 import org.mvel.CompileException;
 import org.mvel.Operator;
 import org.mvel.ParserContext;
+import static org.mvel.Operator.PTABLE;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
@@ -28,6 +29,7 @@ import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
+import com.sun.org.apache.xalan.internal.xsltc.runtime.Operators;
 
 public class ExpressionCompiler extends AbstractParser {
     private Class returnType;
@@ -73,7 +75,7 @@ public class ExpressionCompiler extends AbstractParser {
         ASTNode tkLA;
         ASTNode tkLA2;
 
-        int op;
+        int op, lastOp = -1;
 
         ASTLinkedList astBuild = new ASTLinkedList();
         stk = new ExecutionStack();
@@ -124,7 +126,9 @@ public class ExpressionCompiler extends AbstractParser {
                          * If the next token is ALSO a literal, then we have a candidate for a compile-time literal
                          * reduction.
                          */
-                        if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()) {
+                        if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()
+                                && ((lastOp == -1 || PTABLE[lastOp] < PTABLE[tkOp.getOperator()]))) {
+                            
                             stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), op = tkOp.getOperator());
 
                             /**
@@ -206,6 +210,11 @@ public class ExpressionCompiler extends AbstractParser {
                     }
                 }
                 else {
+                    if (tk.isOperator()) {
+                        lastOp = tk.getOperator();
+                    }
+
+
                     literalOnly = false;
                 }
 

@@ -82,9 +82,13 @@ public class CompilerTools {
                                 bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
                             }
                         }
-                        else {
+                        else if (PTABLE[bo.getOperation()] >= PTABLE[op2]) {
                             bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
                         }
+                        else {
+                            bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
+                        }
+
 
                         op = op2;
                         tkOp = tkOp2;
@@ -111,9 +115,8 @@ public class CompilerTools {
             }
         }
 
-        if (secondPassOptimization)
 
-        {
+        if (secondPassOptimization) {
             /**
              * Perform a second pass optimization for boolean conditions.
              */
@@ -147,10 +150,7 @@ public class CompilerTools {
                                 bool = new Or(tk, astLinkedList.nextNode());
                         }
 
-                        /**
-                         * If we have a chain of math/comparitive operators then we fill them into the tree
-                         * right here.
-                         */
+
                         while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
                                 && (tkOp2.isOperator(Operator.AND) || tkOp2.isOperator(Operator.OR))) {
 

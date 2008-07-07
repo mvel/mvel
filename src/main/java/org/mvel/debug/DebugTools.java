@@ -232,9 +232,7 @@ public class DebugTools {
             case Operator.CHOR:
                 return "or";
 
-
         }
-
 
         return "UNKNOWN_OPERATOR";
     }

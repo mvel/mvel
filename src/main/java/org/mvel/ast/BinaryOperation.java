@@ -18,15 +18,13 @@
  */
 package org.mvel.ast;
 
+import org.mvel.CompileException;
+import org.mvel.Operator;
+import static org.mvel.Operator.PTABLE;
+import org.mvel.ParserContext;
+import org.mvel.debug.DebugTools;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.doOperations;
-import org.mvel.debug.DebugTools;
-import static org.mvel.debug.DebugTools.getOperatorName;
-import org.mvel.Operator;
-import org.mvel.ParserContext;
-import org.mvel.ErrorDetail;
-import org.mvel.CompileException;
-import static org.mvel.Operator.PTABLE;
 
 public class BinaryOperation extends ASTNode {
     private int operation;
@@ -51,7 +49,7 @@ public class BinaryOperation extends ASTNode {
                 case Operator.ADD:
                     if (left.getEgressType() == String.class || right.getEgressType() == String.class) {
                         break;
-                    }
+                    }                                                                                                        
 
                 default:
                     if (!left.getEgressType().isAssignableFrom(right.getEgressType())) {

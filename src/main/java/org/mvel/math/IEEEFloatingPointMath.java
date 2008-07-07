@@ -485,25 +485,25 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case DataTypes.BIG_DECIMAL:
                 return (BigDecimal) in;
             case DataTypes.BIG_INTEGER:
-                return new BigDecimal((BigInteger) in);
+                return new BigDecimal((BigInteger) in, MATH_CONTEXT);
             case DataTypes.W_INTEGER:
-                return new BigDecimal((Integer) in);
+                return new BigDecimal((Integer) in, MATH_CONTEXT);
             case DataTypes.W_LONG:
-                return new BigDecimal((Long) in);
+                return new BigDecimal((Long) in, MATH_CONTEXT);
             case DataTypes.STRING:
-                return new BigDecimal((String) in);
+                return new BigDecimal((String) in, MATH_CONTEXT);
             case DataTypes.W_FLOAT:
-                return new BigDecimal((Float) in);
+                return new BigDecimal((Float) in, MATH_CONTEXT);
             case DataTypes.W_DOUBLE:
-                return new BigDecimal((Double) in);
+                return new BigDecimal((Double) in, MATH_CONTEXT);
             case DataTypes.W_SHORT:
-                return new BigDecimal((Short) in);
+                return new BigDecimal((Short) in, MATH_CONTEXT);
             case DataTypes.W_CHAR:
-                return new BigDecimal((Character) in);
+                return new BigDecimal((Character) in, MATH_CONTEXT);
             case DataTypes.W_BOOLEAN:
                 return BigDecimal.valueOf(((Boolean) in) ? 1 : 0);
             case DataTypes.UNIT:
-                return new BigDecimal(((Unit) in).getValue());
+                return new BigDecimal(((Unit) in).getValue(), MATH_CONTEXT);
 
         }
 
