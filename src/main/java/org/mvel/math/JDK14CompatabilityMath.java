@@ -488,19 +488,19 @@ public class JDK14CompatabilityMath implements MathProcessor {
             case DataTypes.BIG_DECIMAL:
                 return (BigDecimal) in;
             case DataTypes.BIG_INTEGER:
-                return new BigDecimal((BigInteger) in);
+                return new BigDecimal((BigInteger) in, SCALE);
             case DataTypes.W_INTEGER:
-                return BigDecimal.valueOf((Integer) in);
+                return new BigDecimal(((Integer) in).doubleValue());
             case DataTypes.W_LONG:
-                return BigDecimal.valueOf((Long) in);
+                return new BigDecimal(((Long) in).doubleValue());
             case DataTypes.STRING:
                 return new BigDecimal((String) in);
             case DataTypes.W_FLOAT:
-                return new BigDecimal((Float) in);
+                return new BigDecimal(((Float) in).doubleValue());
             case DataTypes.W_DOUBLE:
-                return new BigDecimal((Double) in);
+                return new BigDecimal(((Double) in).doubleValue());
             case DataTypes.W_SHORT:
-                return BigDecimal.valueOf((Short) in);
+                return new BigDecimal(((Short) in).doubleValue());
             case DataTypes.W_BOOLEAN:
                 return BigDecimal.valueOf(((Boolean) in) ? 1 : 0);
 
