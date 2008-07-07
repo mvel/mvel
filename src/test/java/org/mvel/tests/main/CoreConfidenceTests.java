@@ -2690,9 +2690,30 @@ public class CoreConfidenceTests extends AbstractTest {
         map.put("y", "300");
         map.put("z", "75");
 
-        assertEquals( 200 + 100 - 150 * 400 / 300 - 75,  MVEL.eval(expression, map));
+        assertEquals(200 + 100 - 150 * 400 / 300 - 75, MVEL.eval(expression, map));
     }
 
+
+    public void testMath35() {
+        String expression = "a*b*c+d+e/f/g/h/i-j-j";
+
+        Map map = new HashMap();
+        map.put("a", "10");
+        map.put("b", "20");
+        map.put("c", "3");
+        map.put("d", "100");
+        map.put("e", "400");
+        map.put("f", "2");
+        map.put("g", "2");
+        map.put("h", "2");
+        map.put("i", "2");
+        map.put("j", "1");
+
+
+        Serializable s = MVEL.compileExpression(expression);
+
+        assertEquals(10 * 20 * 3 + 100 + 400 / 2 / 2 / 2 / 2 - 1 - 1, MVEL.executeExpression(s, map));
+    }
 
     public void testNullSafe() {
         Foo foo = new Foo();
