@@ -75,25 +75,11 @@ public class CompilerTools {
                             bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode(), ctx));
                         }
                         else if (bo.getOperation() != op2 && PTABLE[op] == PTABLE[op2]) {
-                            switch (bo.getOperation()) {
-                                case Operator.ADD:
-                                    if (op2 == Operator.SUB) {
-                                        bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
-                                    }
-                                    else {
-                                        bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
-                                    }
-                                    break;
-                                case Operator.SUB:
-                                    if (op2 == Operator.ADD) {
-                                        bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
-                                    }
-                                    else {
-                                        bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
-                                    }
-                                    break;
-                                default:
-                                    bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
+                            if (PTABLE[bo.getOperation()] == PTABLE[op2]) {
+                                bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
+                            }
+                            else {
+                                bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
                             }
                         }
                         else {
@@ -125,7 +111,9 @@ public class CompilerTools {
             }
         }
 
-        if (secondPassOptimization) {
+        if (secondPassOptimization)
+
+        {
             /**
              * Perform a second pass optimization for boolean conditions.
              */

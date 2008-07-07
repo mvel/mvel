@@ -18,11 +18,14 @@
  */
 package org.mvel.math;
 
+import org.mvel.CompileException;
+import org.mvel.ConversionException;
 import static org.mvel.DataConversion.convert;
+import org.mvel.DataTypes;
 import static org.mvel.DataTypes.EMPTY;
 import static org.mvel.Operator.*;
-import org.mvel.*;
 import static org.mvel.Soundex.soundex;
+import org.mvel.Unit;
 import org.mvel.debug.DebugTools;
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
@@ -37,6 +40,7 @@ import java.math.MathContext;
  */
 public class IEEEFloatingPointMath implements MathProcessor {
     private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
+
 
     public Object doOperation(final Object val1, final int operation, final Object val2) {
         final int type1 = val1 == null ? DataTypes.NULL : resolveType(val1.getClass());
@@ -64,13 +68,13 @@ public class IEEEFloatingPointMath implements MathProcessor {
     private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2) {
         switch (operation) {
             case ADD:
-                return val1.add(val2);
+                return val1.add(val2, MATH_CONTEXT);
             case DIV:
                 return val1.divide(val2, MATH_CONTEXT);
             case SUB:
-                return val1.subtract(val2);
+                return val1.subtract(val2, MATH_CONTEXT);
             case MULT:
-                return val1.multiply(val2);
+                return val1.multiply(val2, MATH_CONTEXT);
             case POWER:
                 return Math.pow(val1.doubleValue(), val2.doubleValue());
             case MOD:
