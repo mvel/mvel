@@ -61,25 +61,11 @@ public class CompilerTools {
                             bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode()));
                         }
                         else if (bo.getOperation() != op2 && PTABLE[op] == PTABLE[op2]) {
-                            switch (bo.getOperation()) {
-                                case Operator.ADD:
-                                    if (op2 == Operator.SUB) {
-                                        bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
-                                    }
-                                    else {
-                                        bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
-                                    }
-                                    break;
-                                case Operator.SUB:
-                                    if (op2 == Operator.ADD) {
-                                        bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
-                                    }
-                                    else {
-                                        bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
-                                    }
-                                    break;
-                                default:
-                                    bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
+                            if (PTABLE[bo.getOperation()] == PTABLE[op2]) {
+                                bo = new BinaryOperation(op2, bo, astLinkedList.nextNode());
+                            }
+                            else {
+                                bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode()));
                             }
                         }
                         else {

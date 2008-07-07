@@ -24,6 +24,8 @@ import java.awt.*;
 import java.io.Serializable;
 import java.util.*;
 import java.util.List;
+import java.math.MathContext;
+import java.math.BigDecimal;
 
 @SuppressWarnings({"PointlessArithmeticExpression", "AssertEqualsBetweenInconvertibleTypes"})
 public class CoreConfidenceTests extends AbstractTest {
@@ -339,6 +341,56 @@ public class CoreConfidenceTests extends AbstractTest {
         map.put("z", "75");
 
         assertEquals(200 + 100 - 150 * 400 / 300 - 75, MVEL.eval(expression, map));
+    }
+
+
+    public void testMath35() {
+        String expression = "b/x/b/b*y+a";
+
+        Map map = new HashMap();
+        map.put("a", 10);
+        map.put("b", 20);
+        map.put("c", 30);
+        map.put("x", 40);
+        map.put("y", 50);
+        map.put("z", 60);
+
+        Serializable s = MVEL.compileExpression(expression);
+
+        assertNumEquals(20d / 40d / 20d / 20d * 50d + 10d, MVEL.executeExpression(s, map));
+    }
+
+    public void testMath35_Interpreted() {
+        String expression = "b/x/b/b*y+a";
+
+        Map map = new HashMap();
+        map.put("a", 10);
+        map.put("b", 20);
+        map.put("c", 30);
+        map.put("x", 40);
+        map.put("y", 50);
+        map.put("z", 60);
+
+        //   Serializable s = MVEL.compileExpression(expression);
+
+
+        assertNumEquals(20d / 40d / 20d / 20d * 50d + 10d, MVEL.eval(expression, map));
+    }
+
+    public void testMath36() {
+        String expression = "b/x*z/a+x-b+x-b/z+y";
+
+        Map map = new HashMap();
+        map.put("a", 10);
+        map.put("b", 20);
+        map.put("c", 30);
+        map.put("x", 40);
+        map.put("y", 50);
+        map.put("z", 60);
+
+        Serializable s = MVEL.compileExpression(expression);
+
+        assertNumEquals(20d / 40d * 60d / 10d + 40d - 20d + 40d - 20d / 60d + 50d, MVEL.executeExpression(s, map, Double.class));
     }
 
 
