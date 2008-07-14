@@ -3,7 +3,6 @@ package org.mvel.tests.main;
 import org.mvel.*;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.*;
-import static org.mvel.MVEL.executeExpression;
 import org.mvel.ast.WithNode;
 import org.mvel.debug.DebugTools;
 import org.mvel.debug.Debugger;
@@ -24,8 +23,6 @@ import java.awt.*;
 import java.io.Serializable;
 import java.util.*;
 import java.util.List;
-import java.math.MathContext;
-import java.math.BigDecimal;
 
 @SuppressWarnings({"PointlessArithmeticExpression", "AssertEqualsBetweenInconvertibleTypes"})
 public class CoreConfidenceTests extends AbstractTest {
