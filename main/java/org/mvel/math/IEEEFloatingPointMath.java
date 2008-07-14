@@ -398,25 +398,25 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case DataTypes.BIG_DECIMAL:
                 return (BigDecimal) in;
             case DataTypes.BIG_INTEGER:
-                return new BigDecimal((BigInteger) in, MATH_CONTEXT);
+                return new BigDecimal((BigInteger) in, MathContext.DECIMAL128);
             case DataTypes.W_INTEGER:
-                return new BigDecimal((Integer) in, MATH_CONTEXT);
+                return new BigDecimal((Integer) in, MathContext.DECIMAL32);
             case DataTypes.W_LONG:
-                return new BigDecimal((Long) in, MATH_CONTEXT);
+                return new BigDecimal((Long) in, MathContext.DECIMAL64);
             case DataTypes.STRING:
-                return new BigDecimal((String) in, MATH_CONTEXT);
+                return new BigDecimal((String) in, MathContext.DECIMAL64);
             case DataTypes.W_FLOAT:
-                return new BigDecimal((Float) in, MATH_CONTEXT);
+                return new BigDecimal((Float) in, MathContext.DECIMAL64);
             case DataTypes.W_DOUBLE:
-                return new BigDecimal((Double) in, MATH_CONTEXT);
+                return new BigDecimal((Double) in, MathContext.DECIMAL64);
             case DataTypes.W_SHORT:
-                return new BigDecimal((Short) in, MATH_CONTEXT);
+                return new BigDecimal((Short) in, MathContext.DECIMAL32);
             case DataTypes.W_CHAR:
-                return new BigDecimal((Character) in, MATH_CONTEXT);
+                return new BigDecimal((Character) in, MathContext.DECIMAL32);
             case DataTypes.W_BOOLEAN:
                 return BigDecimal.valueOf(((Boolean) in) ? 1 : 0);
             case DataTypes.UNIT:
-                return new BigDecimal(((Unit) in).getValue(), MATH_CONTEXT);
+                return new BigDecimal(((Unit) in).getValue(), MathContext.DECIMAL64);
 
         }
 

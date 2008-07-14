@@ -128,7 +128,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath() {
-        assertEquals(188.4f, test("pi * hour"));
+        assertEquals(188.4d, test("pi * hour"));
     }
 
     public void testMath2() {
@@ -1108,7 +1108,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testUnQualifiedStaticTyping() {
-        assertEquals(20.0f, testCompiledSimple("import java.math.BigDecimal;  BigDecimal axx = new BigDecimal( 10.0 ); BigDecimal bxx = new BigDecimal( 10.0 ); BigDecimal cxx = axx + bxx; return cxx; ", new HashMap()));
+        assertEquals(20.0d, testCompiledSimple("import java.math.BigDecimal;  BigDecimal axx = new BigDecimal( 10.0 ); BigDecimal bxx = new BigDecimal( 10.0 ); BigDecimal cxx = axx + bxx; return cxx; ", new HashMap()));
     }
 
     public void testObjectCreation() {
@@ -2976,12 +2976,10 @@ public class CoreConfidenceTests extends AbstractTest {
             final Recipient other = (Recipient) obj;
             if (email == null) {
                 if (other.email != null) return false;
-            }
-            else if (!email.equals(other.email)) return false;
+            } else if (!email.equals(other.email)) return false;
             if (name == null) {
                 if (other.name != null) return false;
-            }
-            else if (!name.equals(other.name)) return false;
+            } else if (!name.equals(other.name)) return false;
             return true;
         }
 
@@ -3035,8 +3033,7 @@ public class CoreConfidenceTests extends AbstractTest {
             final Recipients other = (Recipients) obj;
             if (list == null) {
                 if (other.list != null) return false;
-            }
-            else if (!list.equals(other.list)) return false;
+            } else if (!list.equals(other.list)) return false;
             return true;
         }
 
@@ -3085,12 +3082,10 @@ public class CoreConfidenceTests extends AbstractTest {
             final EmailMessage other = (EmailMessage) obj;
             if (from == null) {
                 if (other.from != null) return false;
-            }
-            else if (!from.equals(other.from)) return false;
+            } else if (!from.equals(other.from)) return false;
             if (recipients == null) {
                 if (other.recipients != null) return false;
-            }
-            else if (!recipients.equals(other.recipients)) return false;
+            } else if (!recipients.equals(other.recipients)) return false;
             return true;
         }
 
@@ -3367,6 +3362,23 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(20 - 10 - 5, testCompiledSimple("x - y - z", map));
     }
+
+    public void testJIRA100() {
+        assertEquals(20, test("java.math.BigDecimal axx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal bxx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal cxx = axx + bxx; return cxx; "));
+    }
+
+    public void testJIRA100a() {
+        assertEquals(233.23, test("java.math.BigDecimal axx = new java.math.BigDecimal( 109.45 ); java.math.BigDecimal bxx = new java.math.BigDecimal( 123.78 ); java.math.BigDecimal cxx = axx + bxx; return cxx; "));
+    }
+
+    public void testJIRA100b() {
+        String expression = "(8 / 10) * 100 <= 80;";
+        System.out.println("Expression: " + expression);
+
+        assertEquals((8 / 10) * 100 <= 80, testCompiledSimple(expression, new HashMap()));
+    }
+
+
 }
 
 

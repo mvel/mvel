@@ -802,11 +802,11 @@ public class ParseTools {
     public static Object handleParserEgress(Object result, boolean returnBigDecimal) {
         if (result instanceof BigDecimal) {
             if (returnBigDecimal) return result;
-            else if (((BigDecimal) result).scale() > 14) {
-                return ((BigDecimal) result).doubleValue();
-            }
+//            else if (((BigDecimal) result).scale() > 14) {
+//                return ((BigDecimal) result).doubleValue();
+//            }
             else if (((BigDecimal) result).scale() > 0) {
-                return ((BigDecimal) result).floatValue();
+                return ((BigDecimal) result).doubleValue();
             }
             else if (((BigDecimal) result).longValue() > Integer.MAX_VALUE) {
                 return ((BigDecimal) result).longValue();
