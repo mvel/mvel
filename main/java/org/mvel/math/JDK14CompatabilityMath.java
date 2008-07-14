@@ -19,7 +19,7 @@ import java.math.BigInteger;
  */
 public class JDK14CompatabilityMath implements MathProcessor {
     public static final int ROUND_MODE = BigDecimal.ROUND_HALF_EVEN;
-    public static final int SCALE = 128;
+    public static final int SCALE = 16;
 
 
     public Object doOperation(Object val1, int operation, Object val2) {
@@ -48,6 +48,8 @@ public class JDK14CompatabilityMath implements MathProcessor {
     }
 
     private static Object doBigDecimalArithmetic(BigDecimal val1, int operation, BigDecimal val2) {
+    	if (val1.scale() > 16) val1 = val1.setScale(16, ROUND_MODE);
+    	if (val2.scale() > 16) val2 = val2.setScale(16, ROUND_MODE);
         switch (operation) {
             case Operator.ADD:
                 return val1.add(val2);
@@ -401,12 +403,11 @@ public class JDK14CompatabilityMath implements MathProcessor {
             case DataTypes.STRING:
                 return new BigDecimal((String) in);
             case DataTypes.W_FLOAT:
-                return new BigDecimal(((Float) in).doubleValue());
+                return new BigDecimal(((Float) in).toString()).setScale(16, ROUND_MODE);
             case DataTypes.W_DOUBLE:
-                return new BigDecimal(((Double) in).doubleValue()).setScale(16);
+                return new BigDecimal(((Double) in).doubleValue()).setScale(16, ROUND_MODE);
             case DataTypes.W_SHORT:
-                return new BigDecimal(((Double)in).doubleValue()).setScale(16);
-              //  return BigDecimal.valueOf((Short) in);
+                return new BigDecimal(((Double)in).doubleValue());
             case DataTypes.W_BOOLEAN:
                 return BigDecimal.valueOf(((Boolean) in) ? 1 : 0);
 
