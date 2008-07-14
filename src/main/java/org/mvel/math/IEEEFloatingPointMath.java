@@ -401,7 +401,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
                     case MULT:
                         return ((Float) val1) * ((Float) val2);
                     case POWER:
-                        return new BigDecimal((Float) val1).pow(new BigDecimal((Float) val2).intValue());
+                        return new BigDecimal((Float) val1).pow(new BigDecimal((Float) val2).intValue(), MATH_CONTEXT);
                     case MOD:
                         return ((Float) val1) % ((Float) val2);
 
@@ -480,7 +480,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
 
     private static BigDecimal getBigDecimalFromType(Object in, int type) {
         if (in == null)
-            return new BigDecimal(0);
+            return new BigDecimal(0, MATH_CONTEXT);
         switch (type) {
             case DataTypes.BIG_DECIMAL:
                 return (BigDecimal) in;

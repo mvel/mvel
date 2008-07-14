@@ -27,19 +27,19 @@ import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.doOperations;
 
 public class BinaryOperation extends ASTNode {
-    private int operation;
+    private final int operation;
     private ASTNode left;
     private ASTNode right;
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right) {
-        assert operation != -1;
+     //   assert operation != -1;
         this.operation = operation;
         this.left = left;
         this.right = right;
     }
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
-        assert operation != -1;
+ //       assert operation != -1;
         this.operation = operation;
         this.left = left;
         this.right = right;
@@ -57,7 +57,6 @@ public class BinaryOperation extends ASTNode {
                     }
             }
         }
-
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -76,10 +75,10 @@ public class BinaryOperation extends ASTNode {
 
 
 
-    public void setOperation(int operation) {
-        assert operation != -1;
-        this.operation = operation;
-    }
+  //  public void setOperation(int operation) {
+   //     assert operation != -1;
+  //      this.operation = operation;
+  //  }
 
     public ASTNode getLeft() {
         return left;

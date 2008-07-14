@@ -33,6 +33,7 @@ public class CompilerTools {
      *
      * @param astLinkedList          - AST to be optimized.
      * @param secondPassOptimization - perform a second pass optimization to optimize boolean expressions.
+     * @param ctx                    - The parser context
      * @return optimized AST
      */
     public static ASTLinkedList optimizeAST(ASTLinkedList astLinkedList, boolean secondPassOptimization, ParserContext ctx) {

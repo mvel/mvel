@@ -7,13 +7,13 @@
 
 array = null;
 
-function swap(i, j) {
+def swap(i, j) {
     temp = array[i];
     array[i] = array[j];
     array[j] = temp;
 }
 
-function partition(low, high) {
+def partition(low, high) {
     pivotPoint = array[low];
 
     i = low - 1;
@@ -25,10 +25,10 @@ function partition(low, high) {
         if (i < j) swap(i, j);
     }
 
-    j;
+    j; //return j
 }
 
-function sort(low, high) {
+def sort(low, high) {
     if (low < high) {
         var p;
         sort(low, p = partition(low, high));
@@ -36,7 +36,7 @@ function sort(low, high) {
     }
 }
 
-function quicksort() {
+def quicksort() {
     sort(0, array.length - 1);
 }
 
@@ -44,8 +44,4 @@ array = {50,20,21,209,10,77,8,9,55,73,41,99};
 
 quicksort();
 
-//foreach (item : array) {
-//    System.out.println(item);
-//}
-
-array;
+array; // return array
