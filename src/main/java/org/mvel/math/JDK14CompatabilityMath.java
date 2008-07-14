@@ -149,7 +149,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
             case GTHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null && ((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 else {
                     return Boolean.FALSE;
@@ -159,7 +159,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
             case GETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null &&  ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 else {
                     return Boolean.FALSE;
@@ -169,7 +169,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
             case LTHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null && ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 else {
                     return Boolean.FALSE;
@@ -179,7 +179,7 @@ public class JDK14CompatabilityMath implements MathProcessor {
             case LETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null && ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 else {
                     return Boolean.FALSE;
