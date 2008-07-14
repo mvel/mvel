@@ -185,8 +185,6 @@ public class CompilerTools {
             }
         }
 
-        System.out.println(": " + optimizedAst.firstNode());
-
         return optimizedAst;
     }
 

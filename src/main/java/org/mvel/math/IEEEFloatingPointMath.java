@@ -76,7 +76,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case MULT:
                 return val1.multiply(val2, MATH_CONTEXT);
             case POWER:
-                return Math.pow(val1.doubleValue(), val2.doubleValue());
+                return val1.pow(val2.intValue(), MATH_CONTEXT);
             case MOD:
                 return val1.remainder(val2);
 
