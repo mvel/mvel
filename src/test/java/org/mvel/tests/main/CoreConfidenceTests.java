@@ -136,7 +136,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath() {
-        assertEquals(188.4f, test("pi * hour"));
+        assertEquals(188.4d, test("pi * hour"));
     }
 
     public void testMath2() {
@@ -155,7 +155,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testMath4a() {
         String expression = "(100 % 90) * 20 - 15 / 16 + 80 + (50 * 21)";
         System.out.println("Expression: " + expression);
-        assertEquals((float) ((100d % 90d) * 20d - 15d / 16d + 80d + (50d * 21d)), MVEL.eval(expression));
+        assertEquals(((100d % 90d) * 20d - 15d / 16d + 80d + (50d * 21d)), MVEL.eval(expression));
     }
 
     public void testMath5() {
@@ -179,7 +179,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath8() {
-        float val = 5f * (100.56f * 30.1f);
+        double val = 5d * (100.56d * 30.1d);
         assertEquals(val, test("5 * (100.56 * 30.1)"));
     }
 
@@ -903,7 +903,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testUnQualifiedStaticTyping() {
-        assertEquals(20.0f, testCompiledSimple("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ", new HashMap()));
+        assertEquals(20.0d, testCompiledSimple("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ", new HashMap()));
     }
 
     public void testObjectCreation() {
@@ -2617,7 +2617,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath24() {
         String expression = "51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19";
-        float val = 51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19;
+        double val = 51d * 52d * 33d / 24d / 15d + 45d * 66d * 47d * 28d + 19d;
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
         assertEquals(val, test(expression));
@@ -2633,11 +2633,11 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath26() {
         String expression = "5 + 3 * 8 * 2 ** 2";
-        double val = 5 + 3 * 8 * Math.pow(2, 2);
+        int val = (int) (5d + 3d * 8d * Math.pow(2, 2));
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
         Object result = test(expression);
-        assertEquals((int) val, result);
+        assertEquals(val, result);
     }
 
     public void testMath27() {
@@ -2660,7 +2660,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testMath29() {
         String expression = "10 + 20 / 4 / 4";
         System.out.println("Expression: " + expression);
-        float val = 10f + 20f / 4f / 4f;
+        double val = 10d + 20d / 4d / 4d;
 
         assertEquals(val, MVEL.eval(expression));
     }
@@ -3416,6 +3416,28 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(20 - 10 - 5, testCompiledSimple("x - y - z", map));
     }
+
+    public void testJIRA100() {
+        assertEquals(20, test("java.math.BigDecimal axx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal bxx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal cxx = axx + bxx; return cxx; "));
+    }
+
+    public void testJIRA100a() {
+        assertEquals(233.23, test("java.math.BigDecimal axx = new java.math.BigDecimal( 109.45 ); java.math.BigDecimal bxx = new java.math.BigDecimal( 123.78 ); java.math.BigDecimal cxx = axx + bxx; return cxx; "));
+    }
+
+    public void testJIRA100b() {
+        String expression = "(8 / 10) * 100 <= 80;";
+        System.out.println("Expression: " + expression + " = " + ((8 / 10) * 100 <= 80));
+
+        System.out.println("output: " + new BigDecimal(0.8d, new MathContext(16)).toString());
+
+        assertEquals((8 / 10) * 100 <= 80, testCompiledSimple(expression, new HashMap()));
+    }
+
+    public void testJIRA92() {
+        test("'stringValue' > null");
+    }
+
 }
 
 

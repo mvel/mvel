@@ -23,6 +23,7 @@ import org.mvel.Operator;
 import static org.mvel.Operator.PTABLE;
 import org.mvel.ParserContext;
 import org.mvel.debug.DebugTools;
+import static org.mvel.debug.DebugTools.getOperatorSymbol;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.doOperations;
 
@@ -125,6 +126,6 @@ public class BinaryOperation extends ASTNode {
     }
 
     public String toString() {
-        return "(" + left.toString() + " " + DebugTools.getOperatorSymbol(operation) + " " + right.toString() + ")";
+        return "(" + left + " " + getOperatorSymbol(operation) + " " + right + ")";
     }
 }

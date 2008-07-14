@@ -177,7 +177,7 @@ public class ExpressionCompiler extends AbstractParser {
                                          * We have reduced additional tokens, but we can't reduce
                                          * anymore.
                                          */
-                                        astBuild.addTokenNode(new LiteralNode(stk.pop()), tkOp);
+                                        astBuild.addTokenNode(new LiteralNode(stk.pop()), tkOp2);
 
                                         if (tkLA2 != null) astBuild.addTokenNode(tkLA2);
                                     }
