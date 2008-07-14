@@ -6,10 +6,7 @@ import static org.mvel.DataConversion.convert;
 import org.mvel.DataTypes;
 import static org.mvel.DataTypes.EMPTY;
 import org.mvel.Operator;
-import static org.mvel.Operator.GTHAN;
-import static org.mvel.Operator.GETHAN;
-import static org.mvel.Operator.LTHAN;
-import static org.mvel.Operator.LETHAN;
+import static org.mvel.Operator.*;
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
 
@@ -390,6 +387,8 @@ public class JDK14CompatabilityMath implements MathProcessor {
     public static BigDecimal getBigDecimalFromType(Object in, int type) {
         if (in == null)
             return new BigDecimal(0);
+
+
         switch (type) {
             case DataTypes.BIG_DECIMAL:
                 return (BigDecimal) in;
@@ -404,9 +403,9 @@ public class JDK14CompatabilityMath implements MathProcessor {
             case DataTypes.W_FLOAT:
                 return new BigDecimal(((Float) in).doubleValue());
             case DataTypes.W_DOUBLE:
-                return new BigDecimal(((Double) in).doubleValue());
+                return new BigDecimal(((Double) in).doubleValue()).setScale(16);
             case DataTypes.W_SHORT:
-                return new BigDecimal(((Double)in).doubleValue());
+                return new BigDecimal(((Double)in).doubleValue()).setScale(16);
               //  return BigDecimal.valueOf((Short) in);
             case DataTypes.W_BOOLEAN:
                 return BigDecimal.valueOf(((Boolean) in) ? 1 : 0);
