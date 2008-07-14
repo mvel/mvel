@@ -49,17 +49,18 @@ public class IEEEFloatingPointMath implements MathProcessor {
     private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2) {
         switch (operation) {
             case ADD:
-                return val1.add(val2);
+                return val1.add(val2, MATH_CONTEXT);
             case DIV:
                 return val1.divide(val2, MATH_CONTEXT);
             case SUB:
-                return val1.subtract(val2);
+                return val1.subtract(val2, MATH_CONTEXT);
             case MULT:
-                return val1.multiply(val2);
+                return val1.multiply(val2, MATH_CONTEXT);
             case POWER:
-                return Math.pow(val1.doubleValue(), val2.doubleValue());
+                return val1.pow(val2.intValue(), MATH_CONTEXT);
+            //    return Math.pow(val1.doubleValue(), val2.doubleValue());
             case MOD:
-                return val1.remainder(val2);
+                return val1.remainder(val2, MATH_CONTEXT);
 
             case GTHAN:
                 return val1.compareTo(val2) == 1 ? Boolean.TRUE : Boolean.FALSE;
@@ -120,7 +121,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case GTHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null && ((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 else {
                     return Boolean.FALSE;
@@ -130,7 +131,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case GETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null && ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 else {
                     return Boolean.FALSE;
@@ -140,7 +141,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case LTHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null && ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 else {
                     return Boolean.FALSE;
@@ -150,7 +151,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case LETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null && ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 else {
                     return Boolean.FALSE;
