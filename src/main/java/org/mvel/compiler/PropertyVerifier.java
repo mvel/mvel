@@ -45,7 +45,6 @@ public class PropertyVerifier extends AbstractOptimizer {
     private boolean first = true;
     private boolean resolvedExternally;
 
-
     public PropertyVerifier(char[] property, ParserContext parserContext) {
         this.length = (this.expr = property).length;
         this.parserContext = parserContext;
@@ -88,7 +87,6 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
         return ctx;
     }
-
 
     private Class getBeanProperty(Class ctx, String property) {
         if (first) {
@@ -267,7 +265,6 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         return m.getReturnType();
     }
-
 
     public boolean isResolvedExternally() {
         return resolvedExternally;
