@@ -18,11 +18,14 @@
  */
 package org.mvel.math;
 
+import org.mvel.CompileException;
+import org.mvel.ConversionException;
 import static org.mvel.DataConversion.convert;
+import org.mvel.DataTypes;
 import static org.mvel.DataTypes.EMPTY;
 import static org.mvel.Operator.*;
-import org.mvel.*;
 import static org.mvel.Soundex.soundex;
+import org.mvel.Unit;
 import org.mvel.debug.DebugTools;
 import static org.mvel.util.ParseTools.resolveType;
 import static org.mvel.util.PropertyTools.isNumber;
@@ -31,6 +34,7 @@ import static java.lang.String.valueOf;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.math.RoundingMode;
 
 /**
  * @author Christopher Brock
@@ -64,15 +68,15 @@ public class IEEEFloatingPointMath implements MathProcessor {
     private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2) {
         switch (operation) {
             case ADD:
-                return val1.add(val2);
+                return val1.add(val2, MATH_CONTEXT);
             case DIV:
                 return val1.divide(val2, MATH_CONTEXT);
             case SUB:
-                return val1.subtract(val2);
+                return val1.subtract(val2, MATH_CONTEXT);
             case MULT:
-                return val1.multiply(val2);
+                return val1.multiply(val2, MATH_CONTEXT);
             case POWER:
-                return Math.pow(val1.doubleValue(), val2.doubleValue());
+                return val1.pow(val2.intValue(), MATH_CONTEXT);
             case MOD:
                 return val1.remainder(val2);
 
@@ -134,8 +138,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case MOD:
             case GTHAN:
                 if (val1 instanceof Comparable) {
-                    //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null && (((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE);
                 }
                 else {
                     return Boolean.FALSE;
@@ -145,7 +148,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case GETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null &&  ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 else {
                     return Boolean.FALSE;
@@ -155,7 +158,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case LTHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null &&  ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 else {
                     return Boolean.FALSE;
@@ -165,7 +168,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
             case LETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
+                    return val2 != null &&  ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
                 }
                 else {
                     return Boolean.FALSE;
@@ -212,10 +215,10 @@ public class IEEEFloatingPointMath implements MathProcessor {
                     case SUB:
                         return ((Integer) val1) - ((Integer) val2);
                     case DIV:
-                        return new BigDecimal((Integer) val1).divide(new BigDecimal((Integer) val2), MATH_CONTEXT);
+                        return new BigDecimal((Integer) val1, MATH_CONTEXT).divide(new BigDecimal((Integer) val2), MATH_CONTEXT);
                     case MULT:
                         //  return ((Integer) val1) * ((Integer) val2);
-                        return new BigDecimal((Integer) val1).multiply(new BigDecimal((Integer) val2), MATH_CONTEXT);
+                        return new BigDecimal((Integer) val1, MATH_CONTEXT).multiply(new BigDecimal((Integer) val2), MATH_CONTEXT);
                     case POWER:
                         double d = Math.pow((Integer) val1, (Integer) val2);
                         if (d > Integer.MAX_VALUE) return d;
@@ -258,7 +261,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
                     case SUB:
                         return ((Short) val1) - ((Short) val2);
                     case DIV:
-                        return new BigDecimal((Short) val1).divide(new BigDecimal((Short) val2), MATH_CONTEXT);
+                        return new BigDecimal((Short) val1, MATH_CONTEXT).divide(new BigDecimal((Short) val2), MATH_CONTEXT);
                     case MULT:
                         return ((Short) val1) * ((Short) val2);
                     case POWER:
@@ -303,7 +306,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
                     case SUB:
                         return ((Long) val1) - ((Long) val2);
                     case DIV:
-                        return new BigDecimal((Long) val1).divide(new BigDecimal((Long) val2), MATH_CONTEXT);
+                        return new BigDecimal((Long) val1, MATH_CONTEXT).divide(new BigDecimal((Long) val2), MATH_CONTEXT);
                     case MULT:
                         return ((Long) val1) * ((Long) val2);
                     case POWER:
@@ -355,7 +358,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
                     case SUB:
                         return ((Double) val1) - ((Double) val2);
                     case DIV:
-                        return new BigDecimal((Double) val1).divide(new BigDecimal((Double) val2), MATH_CONTEXT);
+                        return new BigDecimal((Double) val1, MATH_CONTEXT).divide(new BigDecimal((Double) val2), MATH_CONTEXT);
                     case MULT:
                         return ((Double) val1) * ((Double) val2);
                     case POWER:
@@ -393,11 +396,11 @@ public class IEEEFloatingPointMath implements MathProcessor {
                     case SUB:
                         return ((Float) val1) - ((Float) val2);
                     case DIV:
-                        return new BigDecimal((Float) val1).divide(new BigDecimal((Float) val2), MATH_CONTEXT);
+                        return new BigDecimal((Float) val1, MATH_CONTEXT).divide(new BigDecimal((Float) val2), MATH_CONTEXT);
                     case MULT:
                         return ((Float) val1) * ((Float) val2);
                     case POWER:
-                        return new BigDecimal((Float) val1).pow(new BigDecimal((Float) val2).intValue());
+                        return new BigDecimal((Float) val1, MATH_CONTEXT).pow(new BigDecimal((Float) val2).intValue(), MATH_CONTEXT);
                     case MOD:
                         return ((Float) val1) % ((Float) val2);
 
@@ -476,30 +479,30 @@ public class IEEEFloatingPointMath implements MathProcessor {
 
     private static BigDecimal getBigDecimalFromType(Object in, int type) {
         if (in == null)
-            return new BigDecimal(0);
+            return new BigDecimal(0, MATH_CONTEXT);
         switch (type) {
             case DataTypes.BIG_DECIMAL:
                 return (BigDecimal) in;
             case DataTypes.BIG_INTEGER:
-                return new BigDecimal((BigInteger) in);
+                return new BigDecimal((BigInteger) in, MathContext.DECIMAL128);
             case DataTypes.W_INTEGER:
-                return new BigDecimal((Integer) in);
+                return new BigDecimal((Integer) in, MathContext.DECIMAL32);
             case DataTypes.W_LONG:
-                return new BigDecimal((Long) in);
+                return new BigDecimal((Long) in, MathContext.DECIMAL64);
             case DataTypes.STRING:
-                return new BigDecimal((String) in);
+                return new BigDecimal((String) in, MathContext.DECIMAL64);
             case DataTypes.W_FLOAT:
-                return new BigDecimal((Float) in);
+                return new BigDecimal((Float) in, MathContext.DECIMAL64);
             case DataTypes.W_DOUBLE:
-                return new BigDecimal((Double) in);
+                return new BigDecimal((Double) in, MathContext.DECIMAL64);
             case DataTypes.W_SHORT:
-                return new BigDecimal((Short) in);
+                return new BigDecimal((Short) in, MathContext.DECIMAL32);
             case DataTypes.W_CHAR:
-                return new BigDecimal((Character) in);
+                return new BigDecimal((Character) in, MathContext.DECIMAL32);
             case DataTypes.W_BOOLEAN:
                 return BigDecimal.valueOf(((Boolean) in) ? 1 : 0);
             case DataTypes.UNIT:
-                return new BigDecimal(((Unit) in).getValue());
+                return new BigDecimal(((Unit) in).getValue(), MathContext.DECIMAL64);
 
         }
 

@@ -3,14 +3,9 @@
     <groupId>org.mvel</groupId>
     <artifactId>mvel</artifactId>
     <packaging>jar</packaging>
-    <version>mvel-2.0-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <name>mvel</name>
     <url>http://mvel.codehaus.org/</url>
-
-
-    <scm>
-        <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/mvel-2.0-SNAPSHOT-06292008</developerConnection>
-    </scm>
 
     <build>
         <extensions>
@@ -67,6 +62,7 @@
                         <exclude>**/PerfTest.java</exclude>
                         <exclude>**/DroolsTest.java</exclude>
                         <exclude>**/FailureTests.java</exclude>
+                        <exclude>**/PerformanceTest.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>

@@ -25,17 +25,20 @@ public class And extends ASTNode {
     private ASTNode right;
 
     public And(ASTNode left, ASTNode right) {
-        
+
         this.left = left;
         this.right = right;
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-//        Boolean leftVal = (Boolean) left.getReducedValueAccelerated(ctx, thisValue, factory);
-//        Boolean rightVal = (Boolean) right.getReducedValueAccelerated(ctx, thisValue, factory);
-//        return leftVal && rightVal;
+//        Object leftVal = left.getReducedValueAccelerated(ctx, thisValue, factory);
+//        Object rightVal = right.getReducedValueAccelerated(ctx, thisValue, factory);
+//
+//
+//        return (Boolean) leftVal && (Boolean) rightVal;
 
-        return (((Boolean) left.getReducedValueAccelerated(ctx, thisValue, factory))
+
+       return (((Boolean) left.getReducedValueAccelerated(ctx, thisValue, factory))
                 && ((Boolean) right.getReducedValueAccelerated(ctx, thisValue, factory)));
     }
 
@@ -57,5 +60,9 @@ public class And extends ASTNode {
 
     public void setRight(ASTNode right) {
         this.right = right;
+    }
+
+    public String toString() {
+        return "(" + left.toString() + " && " + right.toString() + ")";
     }
 }

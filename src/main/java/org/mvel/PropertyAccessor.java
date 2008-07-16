@@ -688,4 +688,8 @@ public class PropertyAccessor {
         return name.hashCode() + args.hashCode();
     }
 
+    public int getCursorPosition() {
+        return cursor;
+    }
+
 }

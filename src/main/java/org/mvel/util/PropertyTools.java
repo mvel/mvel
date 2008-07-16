@@ -33,6 +33,7 @@ import static java.lang.reflect.Modifier.isPublic;
 import static org.mvel.util.ParseTools.isWhitespace;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -195,7 +196,7 @@ public class PropertyTools {
                 return parseDouble(new String(val));
             case DataTypes.BIG_DECIMAL:
                 // @todo: new String() only needed for jdk1.4, remove when we move to jdk1.5
-                return new BigDecimal(new String(val));
+                return new BigDecimal(new String(val), MathContext.DECIMAL128);
             default:
                 return new String(val);
         }
