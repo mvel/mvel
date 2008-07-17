@@ -25,7 +25,6 @@ import org.mvel.integration.Interceptor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
-import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.handleParserEgress;
 
@@ -569,7 +568,7 @@ public class MVEL {
 
 
     public static Object getProperty(String property, Object ctx) {
-        return ReflectiveAccessorOptimizer.get(property, ctx);
+        return PropertyAccessor.get(property, ctx);
     }
 
     public static void setProperty(Object ctx, String property, Object value) {
