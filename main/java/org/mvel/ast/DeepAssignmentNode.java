@@ -70,7 +70,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         //  Object val;
-        set(ctx, factory, property, ctx = eval(stmt, ctx, factory));
+        set(ctx, factory, property, ctx = eval(stmt, thisValue, factory));
         return ctx;
     }
 

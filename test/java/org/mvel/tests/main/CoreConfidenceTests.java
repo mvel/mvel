@@ -3389,6 +3389,20 @@ public class CoreConfidenceTests extends AbstractTest {
         test("'stringValue' > null");
     }
 
+    public void testAssignToBean() {
+        Person person = new Person();
+        MVEL.eval("this.name = 'foo'", person);
+
+        assertEquals("foo", person.getName());
+
+        Serializable s = MVEL.compileExpression("this.name = 'bar'");
+
+        MVEL.executeExpression(s, person);
+
+        assertEquals("bar", person.getName());
+    }
+
+
 }
 
 
