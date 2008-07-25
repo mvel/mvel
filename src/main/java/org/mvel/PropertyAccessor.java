@@ -421,7 +421,7 @@ public class PropertyAccessor {
 
         if (first) {
             if ("this".equals(property)) {
-                return this.thisReference;
+                return this.ctx;
             }
             else if (variableFactory != null && variableFactory.isResolveable(property)) {
                 return variableFactory.getVariableResolver(property).getValue();

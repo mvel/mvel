@@ -3427,15 +3427,24 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testJIRA100b() {
         String expression = "(8 / 10) * 100 <= 80;";
-        System.out.println("Expression: " + expression + " = " + ((8 / 10) * 100 <= 80));
-
-        System.out.println("output: " + new BigDecimal(0.8d, new MathContext(16)).toString());
-
         assertEquals((8 / 10) * 100 <= 80, testCompiledSimple(expression, new HashMap()));
     }
 
     public void testJIRA92() {
-        test("'stringValue' > null");
+        assertEquals(false, test("'stringValue' > null"));
+    }
+
+    public void testAssignToBean() {
+        Person person = new Person();
+        MVEL.eval("this.name = 'foo'", person);
+
+        assertEquals("foo", person.getName());
+
+        Serializable s = MVEL.compileExpression("this.name = 'bar'");
+
+        MVEL.executeExpression(s, person);
+
+        assertEquals("bar", person.getName());
     }
 
 }
