@@ -25,6 +25,8 @@ public class ParserContext implements Serializable {
     private ArrayList<String> indexedVariables;
     private Map<String, Class> variables;
     private Map<String, Class> inputs;
+    private Map<String, Class[]> typeParameters;
+
     private Map<String, Function> globalFunctions;
 
     private List<ErrorDetail> errorList;
@@ -178,7 +180,15 @@ public class ParserContext implements Serializable {
         if (inputs == null) inputs = new LinkedHashMap<String, Class>();
         if (inputs.containsKey(name)) return;
         if (type == null) type = Object.class;
+
         inputs.put(name, type);
+    }
+
+    public void addInput(String name, Class type, Class[] typeParameters) {
+        if (type == null) type = Object.class;
+        addInput(name, type);
+        if (this.typeParameters == null) this.typeParameters = new LinkedHashMap<String, Class[]>();
+        this.typeParameters.put(name, typeParameters);
     }
 
     public void addInputs(Map<String, Class> inputs) {
@@ -375,6 +385,11 @@ public class ParserContext implements Serializable {
 
     public boolean hasFunction() {
         return globalFunctions != null && globalFunctions.size() != 0;
+    }
+
+    public Class[] getTypeParameters(String name) {
+        if (typeParameters == null) return null;
+        return typeParameters.get(name);
     }
 
     public boolean isBlockSymbols() {

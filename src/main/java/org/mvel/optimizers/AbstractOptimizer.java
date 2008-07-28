@@ -22,6 +22,7 @@ import org.mvel.compiler.AbstractParser;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import static org.mvel.util.ParseTools.isWhitespace;
+
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
 
@@ -77,13 +78,38 @@ public class AbstractOptimizer extends AbstractParser {
                         meth = false;
                         last = i;
                         break;
+
                     case ')':
-                        if (depth++ == 0)
-                            meth = true;
+                        i--;
+
+                        for (int d = 1; i > 0 && d != 0; i--) {
+                            switch (expr[i]) {
+                                case ')':
+                                    d++;
+                                    break;
+                                case '(':
+                                    d--;
+                                    break;
+                                case '"':
+                                case '\'':
+                                    char s = expr[i];
+                                    while (i > 0 && (expr[i] != s && expr[i - 1] != '\\')) i--;
+                            }
+                        }
+
+                        meth = true;
+
+                        last = i++;
+
                         break;
-                    case '(':
-                        depth--;
-                        break;
+
+//                    case ')':
+//                        if (depth++ == 0)
+//                            meth = true;
+//                        break;
+//                    case '(':
+//                        depth--;
+//                        break;
 
                     case '\'':
                         while (--i > 0) {
@@ -118,7 +144,7 @@ public class AbstractOptimizer extends AbstractParser {
                 return COL;
             case '.':
                 skipWhitespace();
-                if ((start+1) != length && expr[cursor = ++start] == '?') {
+                if ((start + 1) != length && expr[cursor = ++start] == '?') {
                     cursor = ++start;
                     fields = -1;
                 }

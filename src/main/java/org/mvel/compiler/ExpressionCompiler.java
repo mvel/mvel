@@ -21,6 +21,7 @@ package org.mvel.compiler;
 import org.mvel.CompileException;
 import org.mvel.Operator;
 import org.mvel.ParserContext;
+import org.mvel.ErrorDetail;
 import static org.mvel.Operator.PTABLE;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.LiteralNode;
@@ -29,6 +30,7 @@ import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
+import org.mvel.util.StringAppender;
 import com.sun.org.apache.xalan.internal.xsltc.runtime.Operators;
 
 public class ExpressionCompiler extends AbstractParser {
@@ -58,7 +60,15 @@ public class ExpressionCompiler extends AbstractParser {
             if (pCtx.isFatalError()) {
                 contextControl(REMOVE, null, null);
                 //noinspection ThrowFromFinallyBlock
-                throw new CompileException("Failed to compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
+
+                StringAppender err = new StringAppender();
+
+                for (ErrorDetail e : pCtx.getErrorList()) {
+                    err.append("\n - ").append("(").append(e.getRow()).append(",").append(e.getCol()).append(")")
+                            .append(" ").append(e.getMessage());
+                }
+
+                throw new CompileException("Failed to compile: " + pCtx.getErrorList().size() + " compilation error(s): " + err.toString(), pCtx.getErrorList());
             }
         }
     }

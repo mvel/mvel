@@ -3447,6 +3447,25 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("bar", person.getName());
     }
 
+    public void testParameterizedTypeInStrictMode() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("foo", HashMap.class, new Class[] { String.class,  String.class } );
+
+        ExpressionCompiler compiler = new ExpressionCompiler("foo.get('bar').toUpperCase()");
+        compiler.compile(ctx);
+    }
+
+    public void testParameterizedTypeInStrictMode2() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("ctx", Object.class);
+
+        ExpressionCompiler compiler = new ExpressionCompiler("org.mvel.DataConversion.convert(ctx, String.class).toUpperCase()");
+        compiler.compile(ctx);
+    }
+
+
 }
 
 

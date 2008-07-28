@@ -28,9 +28,7 @@ import static org.mvel.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel.util.PropertyTools.getSubComponentType;
 import org.mvel.util.StringAppender;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -44,6 +42,8 @@ public class PropertyVerifier extends AbstractOptimizer {
     private List<String> inputs = new LinkedList<String>();
     private boolean first = true;
     private boolean resolvedExternally;
+    private Class[] paramTypes;
+
 
     public PropertyVerifier(char[] property, ParserContext parserContext) {
         this.length = (this.expr = property).length;
@@ -91,17 +91,14 @@ public class PropertyVerifier extends AbstractOptimizer {
     private Class getBeanProperty(Class ctx, String property) {
         if (first) {
             if (parserContext.hasVarOrInput(property)) {
+                paramTypes = parserContext.getTypeParameters(property);
                 return parserContext.getVarOrInputType(property);
             }
             else if (parserContext.hasImport(property)) {
                 resolvedExternally = false;
                 return parserContext.getImport(property);
-            }
-            else if (!parserContext.isStrongTyping()) {
-                return Object.class;
-            }
-            else {
-                addFatalError("unknown or unresolveable property: " + property);
+            }           
+            if (!parserContext.isStrongTyping()) {
                 return Object.class;
             }
         }
@@ -260,6 +257,17 @@ public class PropertyVerifier extends AbstractOptimizer {
                     addFatalError("unable to resolve method using strict-mode: " + ctx.getName() + "." + name + "(...)");
                 }
                 return Object.class;
+            }
+        }
+
+        if (paramTypes != null && m.getGenericReturnType() != null) {
+            Type[] genIface = ctx.getTypeParameters();
+            Type ret = m.getGenericReturnType();
+
+            for (int i = 0; i < genIface.length; i++) {
+                if (genIface[i].equals(ret)) {
+                    return paramTypes[i];
+                }
             }
         }
 

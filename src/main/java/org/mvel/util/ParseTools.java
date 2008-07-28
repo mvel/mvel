@@ -102,6 +102,36 @@ public class ParseTools {
         return null;
     }
 
+    public static String[] getMethodNameAndParms(char[] parm) {
+        int start = -1;
+        String methName = null;
+
+        for (int i = 0; i < parm.length; i++) {
+            if (parm[i] == '(') {
+                methName = new String(parm, 0, i);
+
+                start = ++i;
+                break;
+            }
+        }
+        if (start != -1) {
+            start--;
+            String[] parms =  parseParameterList(parm, start + 1, balancedCapture(parm, start, '(') - start - 1);
+            String[] nArray = new String[parms.length+1];
+            nArray[0] = methName;
+
+            for (int i = 0; i < parms.length; i++) {
+                nArray[i+1] = parms[i];
+            }
+
+            return nArray;
+        }
+
+        return null;
+
+
+    }
+
     public static String[] parseParameterList(char[] parm, int offset, int length) {
         List<String> list = new LinkedList<String>();
 
