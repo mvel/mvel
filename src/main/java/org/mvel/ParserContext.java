@@ -8,6 +8,8 @@ import static org.mvel.util.ParseTools.getSimpleClassName;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.*;
 
 /**
@@ -25,6 +27,9 @@ public class ParserContext implements Serializable {
     private ArrayList<String> indexedVariables;
     private Map<String, Class> variables;
     private Map<String, Class> inputs;
+
+    private Map<String, Map<String, Class>> typeParameters;
+
     private Map<String, Function> globalFunctions;
 
     private List<ErrorDetail> errorList;
@@ -154,7 +159,8 @@ public class ParserContext implements Serializable {
 
     public void addVariable(String name, Class type, boolean failIfNewAssignment) {
         initializeTables();
-        if (variables.containsKey(name) && failIfNewAssignment) throw new CompileException("statically-typed variable already defined in scope: " + name);
+        if (variables.containsKey(name) && failIfNewAssignment)
+            throw new CompileException("statically-typed variable already defined in scope: " + name);
         if (type == null) type = Object.class;
         variables.put(name, type);
     }
@@ -178,7 +184,27 @@ public class ParserContext implements Serializable {
         if (inputs == null) inputs = new LinkedHashMap<String, Class>();
         if (inputs.containsKey(name)) return;
         if (type == null) type = Object.class;
+
         inputs.put(name, type);
+    }
+
+    public void addInput(String name, Class type, Class[] typeParameters) {
+        if (type == null) type = Object.class;
+        addInput(name, type);
+        if (this.typeParameters == null) this.typeParameters = new LinkedHashMap<String, Map<String, Class>>();
+        if (this.typeParameters.get(name) == null) this.typeParameters.put(name, new LinkedHashMap<String, Class>());
+
+        Map<String, Class> t = this.typeParameters.get(name);
+
+        if (typeParameters.length != type.getTypeParameters().length) {
+            throw new RuntimeException("wrong number of type parameters for: " + type.getName());
+        }
+
+        TypeVariable[] tvs = type.getTypeParameters();
+
+        for (int i = 0; i < typeParameters.length; i++) {
+            t.put(tvs[i].getName(), typeParameters[i]);
+        }
     }
 
     public void addInputs(Map<String, Class> inputs) {
@@ -375,6 +401,11 @@ public class ParserContext implements Serializable {
 
     public boolean hasFunction() {
         return globalFunctions != null && globalFunctions.size() != 0;
+    }
+
+    public Map<String, Class> getTypeParameters(String name) {
+        if (typeParameters == null) return null;
+        return typeParameters.get(name);
     }
 
     public boolean isBlockSymbols() {

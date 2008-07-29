@@ -1,10 +1,12 @@
 package org.mvel.tests.main;
 
 import junit.framework.TestCase;
+import junit.framework.AssertionFailedError;
 import org.mvel.MVEL;
 import static org.mvel.MVEL.compileExpression;
 import static org.mvel.MVEL.executeExpression;
 import org.mvel.ParserContext;
+import org.mvel.DataConversion;
 import org.mvel.compiler.CompiledExpression;
 import org.mvel.compiler.ExpressionCompiler;
 import static org.mvel.debug.DebugTools.decompile;
@@ -248,7 +250,7 @@ public abstract class AbstractTest extends TestCase {
         Object first = null, second = null, third = null, fourth = null, fifth = null, sixth = null, seventh = null,
                 eighth = null;
 
-         System.out.println(DebugTools.decompile((Serializable) compiled));
+        System.out.println(DebugTools.decompile((Serializable) compiled));
 
         if (!Boolean.getBoolean("mvel.disable.jit")) {
 
@@ -256,7 +258,7 @@ public abstract class AbstractTest extends TestCase {
 
             try {
                 first = executeExpression(compiled, new Base(), createTestMap());
-            }                                      
+            }
             catch (Exception e) {
                 failErrors.append("\nFIRST TEST: { " + ex + " }: EXCEPTION REPORT: \n\n");
 
@@ -347,7 +349,7 @@ public abstract class AbstractTest extends TestCase {
 
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("unittest");
-        
+
         ExpressionCompiler debuggingCompiler = new ExpressionCompiler(ex);
         debuggingCompiler.setDebugSymbols(true);
 
@@ -768,6 +770,44 @@ public abstract class AbstractTest extends TestCase {
 
         public void setNumber(int number) {
             this.number = number;
+        }
+    }
+
+    public static void assertNumEquals(Object obj, Object obj2) {
+        assertNumEquals(obj, obj2, true);
+    }
+
+    public static void assertNumEquals(Object obj, Object obj2, boolean permitRoundingVariance) {
+        if (obj == null || obj2 == null) throw new AssertionError("null value");
+
+
+        if (obj.getClass().equals(obj2.getClass())) {
+            if (obj instanceof Number) {
+                double compare = ((Number) obj).doubleValue() - ((Number) obj2).doubleValue();
+                if (!(compare <= 0.0001d && compare >= -0.0001d)) {
+                    throw new AssertionFailedError("expected <" + String.valueOf(obj) + "> but was <" + String.valueOf(obj) + ">");
+                }
+            }
+            else {
+                assertEquals(obj, obj2);
+            }
+
+        }
+        else {
+            obj = DataConversion.convert(obj, obj2.getClass());
+
+            if (!obj.equals(obj2)) {
+                if (permitRoundingVariance) {
+                    obj = DataConversion.convert(obj, Integer.class);
+                    obj2 = DataConversion.convert(obj2, Integer.class);
+
+                    assertEquals(obj, obj2);
+                }
+                else {
+                    throw new AssertionFailedError("expected <" + String.valueOf(obj) + "> but was <" + String.valueOf(obj) + ">");
+                }
+            }
+
         }
     }
 }

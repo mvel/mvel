@@ -28,11 +28,11 @@ import static org.mvel.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel.util.PropertyTools.getSubComponentType;
 import org.mvel.util.StringAppender;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class PropertyVerifier extends AbstractOptimizer {
     private static final int DONE = -1;
@@ -44,6 +44,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     private List<String> inputs = new LinkedList<String>();
     private boolean first = true;
     private boolean resolvedExternally;
+    private Map<String, Class> paramTypes;
 
 
     public PropertyVerifier(char[] property, ParserContext parserContext) {
@@ -89,21 +90,17 @@ public class PropertyVerifier extends AbstractOptimizer {
         return ctx;
     }
 
-
     private Class getBeanProperty(Class ctx, String property) {
         if (first) {
             if (parserContext.hasVarOrInput(property)) {
+                paramTypes = parserContext.getTypeParameters(property);
                 return parserContext.getVarOrInputType(property);
             }
             else if (parserContext.hasImport(property)) {
                 resolvedExternally = false;
                 return parserContext.getImport(property);
             }
-            else if (!parserContext.isStrongTyping()) {
-                return Object.class;
-            }
-            else {
-                addFatalError("unknown or unresolveable property: " + property);
+            if (!parserContext.isStrongTyping()) {
                 return Object.class;
             }
         }
@@ -126,7 +123,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
             if (tryStaticMethodRef != null) {
                 if (tryStaticMethodRef instanceof Class) {
-                    return tryStaticMethodRef.getClass();
+                    return (Class) tryStaticMethodRef;
                 }
                 else if (tryStaticMethodRef instanceof Field) {
                     try {
@@ -218,17 +215,21 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
 
         Class[] args;
+        String[] subtokens;
 
         if (tk.length() == 0) {
             args = new Class[0];
+            subtokens = new String[0];
         }
         else {
-            String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
+            subtokens = parseParameterList(tk.toCharArray(), 0, -1);
             args = new Class[subtokens.length];
+
             ExpressionCompiler compiler;
             for (int i = 0; i < subtokens.length; i++) {
                 (compiler = new ExpressionCompiler(subtokens[i], true))._compile();
                 args[i] = compiler.getReturnType() != null ? compiler.getReturnType() : Object.class;
+
             }
         }
 
@@ -265,9 +266,39 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
         }
 
+        if (parserContext.isStrictTypeEnforcement() && m.getGenericReturnType() != null) {
+            Map<String, Class> typeArgs = new HashMap<String, Class>();
+
+            Type[] gpt = m.getGenericParameterTypes();
+            Class z;
+            ParameterizedType pt;
+
+            for (int i = 0; i < gpt.length; i++) {
+                if (gpt[i] instanceof ParameterizedType) {
+                    pt = (ParameterizedType) gpt[i];
+                    if ((z = parserContext.getImport(subtokens[i])) != null) {
+                        if (pt.getRawType().equals(Class.class)) {
+                            typeArgs.put(pt.getActualTypeArguments()[0].toString(), z);
+                        }
+                        else {
+                            typeArgs.put(gpt[i].toString(), z);
+                        }
+                    }
+                }
+            }
+
+            String returnTypeArg = m.getGenericReturnType().toString();
+
+            if (typeArgs.containsKey(returnTypeArg)) {
+                return typeArgs.get(returnTypeArg);
+            }
+            else if (paramTypes != null && paramTypes.containsKey(returnTypeArg)) {
+                return paramTypes.get(returnTypeArg);
+            }
+        }
+
         return m.getReturnType();
     }
-
 
     public boolean isResolvedExternally() {
         return resolvedExternally;
