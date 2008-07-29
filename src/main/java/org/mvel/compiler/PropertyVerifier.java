@@ -272,10 +272,10 @@ public class PropertyVerifier extends AbstractOptimizer {
             Type[] gpt = m.getGenericParameterTypes();
             Class z;
             ParameterizedType pt;
+
             for (int i = 0; i < gpt.length; i++) {
                 if (gpt[i] instanceof ParameterizedType) {
                     pt = (ParameterizedType) gpt[i];
-
                     if ((z = parserContext.getImport(subtokens[i])) != null) {
                         if (pt.getRawType().equals(Class.class)) {
                             typeArgs.put(pt.getActualTypeArguments()[0].toString(), z);

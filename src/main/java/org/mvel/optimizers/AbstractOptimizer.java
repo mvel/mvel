@@ -187,7 +187,7 @@ public class AbstractOptimizer extends AbstractParser {
      * @return true if end of char[] is reached, false is the character is encountered.
      */
     protected boolean scanTo(char c) {
-        for (; cursor != length; cursor++) {
+        for (; cursor < length; cursor++) {
             if (expr[cursor] == c) {
                 return false;
             }

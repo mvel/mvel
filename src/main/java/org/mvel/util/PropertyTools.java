@@ -30,7 +30,9 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.isPublic;
+
 import static org.mvel.util.ParseTools.isWhitespace;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -358,7 +360,7 @@ public class PropertyTools {
 
     public static String createStringTrimmed(char[] s, int start, int length) {
         int end = start + length;
-        while (start != end&& s[start] <= '\u0020') {
+        while (start != end && s[start] <= '\u0020') {
             start++;
         }
         while (end != start && s[end - 1] <= '\u0020') {
@@ -436,8 +438,16 @@ public class PropertyTools {
     }
 
     public static int findAbsoluteLast(char[] array) {
+        int depth = 0;
         for (int i = array.length - 1; i >= 0; i--) {
-            if (array[i] == '.' || array[i] == '[') return i;
+            if (array[i] == ']') {
+                depth++;
+            }
+            if (array[i] == '[') {
+                depth--;
+            }
+
+            if (depth == 0 && array[i] == '.' || array[i] == '[') return i;
         }
         return -1;
     }
@@ -449,7 +459,7 @@ public class PropertyTools {
         return cls;
     }
 
-        public static Class getSubComponentType(Class cls) {
+    public static Class getSubComponentType(Class cls) {
         if (cls.isArray()) {
             cls = cls.getComponentType();
         }
