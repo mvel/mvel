@@ -375,8 +375,16 @@ public class PropertyTools {
     }
 
     public static int findAbsoluteLast(char[] array) {
+        int depth = 0;
         for (int i = array.length - 1; i >= 0; i--) {
-            if (array[i] == '.' || array[i] == '[') return i;
+            if (array[i] == ']') {
+                depth++;
+            }
+            if (array[i] == '[') {
+                depth--;
+            }
+
+            if (depth == 0 && array[i] == '.' || array[i] == '[') return i;
         }
         return -1;
     }
@@ -392,7 +400,7 @@ public class PropertyTools {
         if (cls.isArray()) {
             cls = cls.getComponentType();
         }
-        return cls;   
+        return cls;
     }
 
 }

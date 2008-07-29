@@ -125,14 +125,24 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         boolean col = false;
 
         int split = -1;
+        int depth = 0;
+
         for (int i = property.length - 1; i != 0; i--) {
             switch (property[i]) {
+                case ']':
+                    depth++;
+                    break;
+
                 case '[':
-                    split = i;
-                    col = true;
+                    if (--depth == 0) {
+                        split = i;
+                        col = true;
+                    }
                     break;
                 case '.':
-                    split = i;
+                    if (depth == 0) {
+                        split = i;
+                    }
                     break;
             }
             if (split != -1) break;

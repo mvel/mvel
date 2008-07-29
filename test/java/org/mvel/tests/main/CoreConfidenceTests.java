@@ -3402,7 +3402,17 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("bar", person.getName());
     }
 
+    public void testMapAssignmentNestedExpression() {
+        Map map = new HashMap();
+        map.put("map", new HashMap());
 
+        String ex = "map[java.lang.Integer.MAX_VALUE] = 'bar'; map[java.lang.Integer.MAX_VALUE];";
+
+        Serializable s = MVEL.compileExpression(ex);
+
+        assertEquals("bar", MVEL.executeExpression(s, map));
+        assertEquals("bar", MVEL.eval(ex, map));
+    }
 }
 
 
