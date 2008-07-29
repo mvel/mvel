@@ -19,19 +19,18 @@
 package org.mvel.compiler;
 
 import org.mvel.CompileException;
-import org.mvel.Operator;
-import org.mvel.ParserContext;
 import org.mvel.ErrorDetail;
+import org.mvel.Operator;
 import static org.mvel.Operator.PTABLE;
+import org.mvel.ParserContext;
 import org.mvel.ast.ASTNode;
+import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
-import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.StringAppender;
-import com.sun.org.apache.xalan.internal.xsltc.runtime.Operators;
 
 public class ExpressionCompiler extends AbstractParser {
     private Class returnType;

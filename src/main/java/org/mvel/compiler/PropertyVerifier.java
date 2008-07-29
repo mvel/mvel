@@ -31,6 +31,8 @@ import org.mvel.util.StringAppender;
 import java.lang.reflect.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public class PropertyVerifier extends AbstractOptimizer {
     private static final int DONE = -1;
@@ -42,7 +44,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     private List<String> inputs = new LinkedList<String>();
     private boolean first = true;
     private boolean resolvedExternally;
-    private Class[] paramTypes;
+    private Map<String, Class> paramTypes;
 
 
     public PropertyVerifier(char[] property, ParserContext parserContext) {
@@ -97,7 +99,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             else if (parserContext.hasImport(property)) {
                 resolvedExternally = false;
                 return parserContext.getImport(property);
-            }           
+            }
             if (!parserContext.isStrongTyping()) {
                 return Object.class;
             }
@@ -121,7 +123,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
             if (tryStaticMethodRef != null) {
                 if (tryStaticMethodRef instanceof Class) {
-                    return tryStaticMethodRef.getClass();
+                    return (Class) tryStaticMethodRef;
                 }
                 else if (tryStaticMethodRef instanceof Field) {
                     try {
@@ -213,17 +215,21 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
 
         Class[] args;
+        String[] subtokens;
 
         if (tk.length() == 0) {
             args = new Class[0];
+            subtokens = new String[0];
         }
         else {
-            String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
+            subtokens = parseParameterList(tk.toCharArray(), 0, -1);
             args = new Class[subtokens.length];
+
             ExpressionCompiler compiler;
             for (int i = 0; i < subtokens.length; i++) {
                 (compiler = new ExpressionCompiler(subtokens[i], true))._compile();
                 args[i] = compiler.getReturnType() != null ? compiler.getReturnType() : Object.class;
+
             }
         }
 
@@ -260,14 +266,34 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
         }
 
-        if (paramTypes != null && m.getGenericReturnType() != null) {
-            Type[] genIface = ctx.getTypeParameters();
-            Type ret = m.getGenericReturnType();
+        if (parserContext.isStrictTypeEnforcement() && m.getGenericReturnType() != null) {
+            Map<String, Class> typeArgs = new HashMap<String, Class>();
 
-            for (int i = 0; i < genIface.length; i++) {
-                if (genIface[i].equals(ret)) {
-                    return paramTypes[i];
+            Type[] gpt = m.getGenericParameterTypes();
+            Class z;
+            ParameterizedType pt;
+            for (int i = 0; i < gpt.length; i++) {
+                if (gpt[i] instanceof ParameterizedType) {
+                    pt = (ParameterizedType) gpt[i];
+
+                    if ((z = parserContext.getImport(subtokens[i])) != null) {
+                        if (pt.getRawType().equals(Class.class)) {
+                            typeArgs.put(pt.getActualTypeArguments()[0].toString(), z);
+                        }
+                        else {
+                            typeArgs.put(gpt[i].toString(), z);
+                        }
+                    }
                 }
+            }
+
+            String returnTypeArg = m.getGenericReturnType().toString();
+
+            if (typeArgs.containsKey(returnTypeArg)) {
+                return typeArgs.get(returnTypeArg);
+            }
+            else if (paramTypes != null && paramTypes.containsKey(returnTypeArg)) {
+                return paramTypes.get(returnTypeArg);
             }
         }
 

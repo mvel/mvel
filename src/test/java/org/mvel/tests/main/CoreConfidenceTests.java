@@ -3450,7 +3450,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testParameterizedTypeInStrictMode() {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
-        ctx.addInput("foo", HashMap.class, new Class[] { String.class,  String.class } );
+        ctx.addInput("foo", HashMap.class, new Class[]{String.class, String.class});
 
         ExpressionCompiler compiler = new ExpressionCompiler("foo.get('bar').toUpperCase()");
         compiler.compile(ctx);
@@ -3461,11 +3461,21 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrongTyping(true);
         ctx.addInput("ctx", Object.class);
 
-        ExpressionCompiler compiler = new ExpressionCompiler("org.mvel.DataConversion.convert(ctx, String.class).toUpperCase()");
+        ExpressionCompiler compiler = new ExpressionCompiler("org.mvel.DataConversion.convert(ctx, String).toUpperCase()");
         compiler.compile(ctx);
     }
 
+    public void testMapAssignmentNestedExpression() {
+        Map map = new HashMap();
+        map.put("map", new HashMap());
 
+        String ex = "map[java.lang.Integer.MAX_VALUE] = 'bar'; map[java.lang.Integer.MAX_VALUE];";
+
+        Serializable s = MVEL.compileExpression(ex);
+
+        assertEquals("bar", MVEL.executeExpression(s, map));
+        assertEquals("bar", MVEL.eval(ex, map));
+    }
 }
 
 
