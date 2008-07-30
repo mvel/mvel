@@ -18,30 +18,29 @@
  */
 package org.mvel.ast;
 
+import org.mvel.CompileException;
+import org.mvel.Operator;
+import static org.mvel.Operator.PTABLE;
+import org.mvel.ParserContext;
+import org.mvel.debug.DebugTools;
+import static org.mvel.debug.DebugTools.getOperatorSymbol;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.doOperations;
-import org.mvel.debug.DebugTools;
-import static org.mvel.debug.DebugTools.getOperatorName;
-import org.mvel.Operator;
-import org.mvel.ParserContext;
-import org.mvel.ErrorDetail;
-import org.mvel.CompileException;
-import static org.mvel.Operator.PTABLE;
 
 public class BinaryOperation extends ASTNode {
-    private int operation;
+    private final int operation;
     private ASTNode left;
     private ASTNode right;
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right) {
-        assert operation != -1;
+     //   assert operation != -1;
         this.operation = operation;
         this.left = left;
         this.right = right;
     }
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
-        assert operation != -1;
+ //       assert operation != -1;
         this.operation = operation;
         this.left = left;
         this.right = right;
@@ -51,7 +50,7 @@ public class BinaryOperation extends ASTNode {
                 case Operator.ADD:
                     if (left.getEgressType() == String.class || right.getEgressType() == String.class) {
                         break;
-                    }
+                    }                                                                                                        
 
                 default:
                     if (!left.getEgressType().isAssignableFrom(right.getEgressType())) {
@@ -59,26 +58,28 @@ public class BinaryOperation extends ASTNode {
                     }
             }
         }
-
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return doOperations(left.getReducedValueAccelerated(ctx, thisValue, factory), operation, right.getReducedValueAccelerated(ctx, thisValue, factory));
+
     }
+
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         throw new RuntimeException("unsupported AST operation");
     }
 
-
     public int getOperation() {
         return operation;
     }
 
-    public void setOperation(int operation) {
-        assert operation != -1;
-        this.operation = operation;
-    }
+
+
+  //  public void setOperation(int operation) {
+   //     assert operation != -1;
+  //      this.operation = operation;
+  //  }
 
     public ASTNode getLeft() {
         return left;
@@ -125,6 +126,6 @@ public class BinaryOperation extends ASTNode {
     }
 
     public String toString() {
-        return "(" + left.toString() + " [" + getOperatorName(operation) + "] " + right.toString() + ")";
+        return "(" + left + " " + getOperatorSymbol(operation) + " " + right + ")";
     }
 }

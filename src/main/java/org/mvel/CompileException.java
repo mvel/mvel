@@ -46,11 +46,13 @@ public class CompileException extends RuntimeException {
     public CompileException(String message, List<ErrorDetail> errors) {
         super(message);
 
+
+
         this.errors = errors;
-        for (ErrorDetail error : errors) {
-            System.err.println("* " + error.toString());
-        }
-        System.err.flush();
+//        for (ErrorDetail error : errors) {
+//            System.err.println("* " + error.toString());
+//        }
+//        System.err.flush();
     }
 
     public CompileException(String message, int cursor) {

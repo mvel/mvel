@@ -1238,128 +1238,133 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    private void wrapPrimitive(Class<? extends Object> cls) {
+     private void wrapPrimitive(Class<? extends Object> cls) {
         if (OPCODES_VERSION == Opcodes.V1_4) {
             /**
              * JAVA 1.4 SUCKS!  DIE 1.4 DIE!!!
              */
 
+        	debug("** Using 1.4 Bytecode **");
+
             if (cls == boolean.class || cls == Boolean.class) {
-                assert debug("NEW java/lang/Boolean");
+                debug("NEW java/lang/Boolean");
                 mv.visitTypeInsn(NEW, "java/lang/Boolean");
 
-                assert debug("DUP X1");
+                debug("DUP X1");
                 mv.visitInsn(DUP_X1);
 
-                assert debug("SWAP");
+                debug("SWAP");
                 mv.visitInsn(SWAP);
 
-                assert debug("INVOKESPECIAL java/lang/Boolan.<init>::(Z)V");
+                debug("INVOKESPECIAL java/lang/Boolan.<init>::(Z)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Boolean", "<init>", "(Z)V");
 
                 returnType = Boolean.class;
             }
             else if (cls == int.class || cls == Integer.class) {
-                assert debug("NEW java/lang/Integer");
+                debug("NEW java/lang/Integer");
                 mv.visitTypeInsn(NEW, "java/lang/Integer");
 
-                assert debug("DUP X1");
+                debug("DUP X1");
                 mv.visitInsn(DUP_X1);
 
-                assert debug("SWAP");
+                debug("SWAP");
                 mv.visitInsn(SWAP);
 
-                assert debug("INVOKESPECIAL java/lang/Integer.<init>::(I)V");
+                debug("INVOKESPECIAL java/lang/Integer.<init>::(I)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Integer", "<init>", "(I)V");
 
                 returnType = Integer.class;
             }
             else if (cls == float.class || cls == Float.class) {
-                assert debug("NEW java/lang/Float");
+                debug("NEW java/lang/Float");
                 mv.visitTypeInsn(NEW, "java/lang/Float");
 
-                assert debug("DUP X1");
+                debug("DUP X1");
                 mv.visitInsn(DUP_X1);
 
-                assert debug("SWAP");
+                debug("SWAP");
                 mv.visitInsn(SWAP);
 
-                assert debug("INVOKESPECIAL java/lang/Float.<init>::(F)V");
+                debug("INVOKESPECIAL java/lang/Float.<init>::(F)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Float", "<init>", "(F)V");
 
                 returnType = Float.class;
             }
             else if (cls == double.class || cls == Double.class) {
-                assert debug("NEW java/lang/Double");
+                debug("NEW java/lang/Double");
                 mv.visitTypeInsn(NEW, "java/lang/Double");
 
-                assert debug("DUP X1");
-                mv.visitInsn(DUP_X1);
+                debug("DUP X2");
+                mv.visitInsn(DUP_X2);
 
-                assert debug("SWAP");
-                mv.visitInsn(SWAP);
+                debug("DUP X2");
+                mv.visitInsn(DUP_X2);
 
-                assert debug("INVOKESPECIAL java/lang/Double.<init>::(D)V");
-                mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Doble", "<init>", "(D)V");
+                debug("POP");
+                mv.visitInsn(POP);
+
+                debug("INVOKESPECIAL java/lang/Double.<init>::(D)V");
+                mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Double", "<init>", "(D)V");
 
                 returnType = Double.class;
             }
             else if (cls == short.class || cls == Short.class) {
-                assert debug("NEW java/lang/Short");
+                debug("NEW java/lang/Short");
                 mv.visitTypeInsn(NEW, "java/lang/Short");
 
-                assert debug("DUP X1");
+                debug("DUP X1");
                 mv.visitInsn(DUP_X1);
 
-                assert debug("SWAP");
+                debug("SWAP");
                 mv.visitInsn(SWAP);
 
-                assert debug("INVOKESPECIAL java/lang/Short.<init>::(S)V");
+                debug("INVOKESPECIAL java/lang/Short.<init>::(S)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Short", "<init>", "(S)V");
 
                 returnType = Short.class;
             }
             else if (cls == long.class || cls == Long.class) {
-                assert debug("NEW java/lang/Long");
+                debug("NEW java/lang/Long");
                 mv.visitTypeInsn(NEW, "java/lang/Long");
 
-                assert debug("DUP X1");
+                debug("DUP X1");
                 mv.visitInsn(DUP_X1);
 
-                assert debug("SWAP");
+                debug("SWAP");
                 mv.visitInsn(SWAP);
 
-                assert debug("INVOKESPECIAL java/lang/Long.<init>::(L)V");
+                debug("INVOKESPECIAL java/lang/Long.<init>::(L)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Float", "<init>", "(L)V");
 
                 returnType = Long.class;
             }
             else if (cls == byte.class || cls == Byte.class) {
-                assert debug("NEW java/lang/Byte");
+                debug("NEW java/lang/Byte");
                 mv.visitTypeInsn(NEW, "java/lang/Byte");
 
-                assert debug("DUP X1");
+                debug("DUP X1");
                 mv.visitInsn(DUP_X1);
 
-                assert debug("SWAP");
+                debug("SWAP");
                 mv.visitInsn(SWAP);
 
-                assert debug("INVOKESPECIAL java/lang/Byte.<init>::(B)V");
+                debug("INVOKESPECIAL java/lang/Byte.<init>::(B)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Byte", "<init>", "(B)V");
 
                 returnType = Byte.class;
             }
             else if (cls == char.class || cls == Character.class) {
-                assert debug("NEW java/lang/Character");
+                debug("NEW java/lang/Character");
                 mv.visitTypeInsn(NEW, "java/lang/Character");
 
-                assert debug("DUP X1");
+                debug("DUP X1");
                 mv.visitInsn(DUP_X1);
 
-                assert debug("SWAP");
+                debug("SWAP");
                 mv.visitInsn(SWAP);
 
-                assert debug("INVOKESPECIAL java/lang/Character.<init>::(C)V");
+                debug("INVOKESPECIAL java/lang/Character.<init>::(C)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Character", "<init>", "(C)V");
 
                 returnType = Character.class;
@@ -1367,42 +1372,42 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else {
             if (cls == boolean.class || cls == Boolean.class) {
-                assert debug("INVOKESTATIC java/lang/Boolean.valueOf");
+                debug("INVOKESTATIC java/lang/Boolean.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;");
                 returnType = Boolean.class;
             }
             else if (cls == int.class || cls == Integer.class) {
-                assert debug("INVOKESTATIC java/lang/Integer.valueOf");
+                debug("INVOKESTATIC java/lang/Integer.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
                 returnType = Integer.class;
             }
             else if (cls == float.class || cls == Float.class) {
-                assert debug("INVOKESTATIC java/lang/Float.valueOf");
+                debug("INVOKESTATIC java/lang/Float.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;");
                 returnType = Float.class;
             }
             else if (cls == double.class || cls == Double.class) {
-                assert debug("INVOKESTATIC java/lang/Double.valueOf");
+                debug("INVOKESTATIC java/lang/Double.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;");
                 returnType = Double.class;
             }
             else if (cls == short.class || cls == Short.class) {
-                assert debug("INVOKESTATIC java/lang/Short.valueOf");
+                debug("INVOKESTATIC java/lang/Short.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;");
                 returnType = Short.class;
             }
             else if (cls == long.class || cls == Long.class) {
-                assert debug("INVOKESTATIC java/lang/Long.valueOf");
+                debug("INVOKESTATIC java/lang/Long.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;");
                 returnType = Long.class;
             }
             else if (cls == byte.class || cls == Byte.class) {
-                assert debug("INVOKESTATIC java/lang/Byte.valueOf");
+                debug("INVOKESTATIC java/lang/Byte.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;");
                 returnType = Byte.class;
             }
             else if (cls == char.class || cls == Character.class) {
-                assert debug("INVOKESTATIC java/lang/Character.valueOf");
+                debug("INVOKESTATIC java/lang/Character.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;");
                 returnType = Character.class;
             }

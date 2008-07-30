@@ -29,12 +29,14 @@ import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.ParseTools.handleParserEgress;
 
 import java.io.Serializable;
+import java.util.Map;
 
 public class CompiledExpression implements Serializable, ExecutableStatement {
     private ASTIterator tokens;
 
     private Class knownEgressType;
     private Class knownIngressType;
+
 
     private boolean convertableIngressEgress;
     private boolean optimized = false;
