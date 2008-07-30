@@ -29,6 +29,7 @@ public class ParserContext implements Serializable {
     private Map<String, Class> inputs;
 
     private Map<String, Map<String, Class>> typeParameters;
+    private Type[] lastTypeParameters;
 
     private Map<String, Function> globalFunctions;
 
@@ -472,5 +473,13 @@ public class ParserContext implements Serializable {
 
     public ParserConfiguration getParserConfiguration() {
         return parserConfiguration;
+    }
+
+    public Type[] getLastTypeParameters() {
+        return lastTypeParameters;
+    }
+
+    public void setLastTypeParameters(Type[] lastTypeParameters) {
+        this.lastTypeParameters = lastTypeParameters;
     }
 }

@@ -3453,7 +3453,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addInput("foo", HashMap.class, new Class[]{String.class, String.class});
 
         ExpressionCompiler compiler = new ExpressionCompiler("foo.get('bar').toUpperCase()");
-        compiler.compile(ctx);
+        CompiledExpression e = compiler.compile(ctx);
     }
 
     public void testParameterizedTypeInStrictMode2() {
@@ -3462,6 +3462,26 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addInput("ctx", Object.class);
 
         ExpressionCompiler compiler = new ExpressionCompiler("org.mvel.DataConversion.convert(ctx, String).toUpperCase()");
+        compiler.compile(ctx);
+    }
+
+    public void testParameterizedTypeInStrictMode3() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("base", Base.class);
+
+        ExpressionCompiler compiler = new ExpressionCompiler("base.list");
+        CompiledExpression c = compiler.compile(ctx);
+
+        assertTrue(c.getParserContext().getLastTypeParameters()[0].equals(String.class));
+    }
+
+    public void testParameterizedTypeInStrictMode4() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("base", Base.class);
+
+        ExpressionCompiler compiler = new ExpressionCompiler("base.list.get('kinds').toUpperCase()");
         compiler.compile(ctx);
     }
 
@@ -3484,9 +3504,11 @@ public class CoreConfidenceTests extends AbstractTest {
         String ex = "map[x] = 'foo'; map['bar'];";
         Serializable s = MVEL.compileExpression(ex);
         assertEquals("foo", MVEL.executeExpression(s, map));
-        assertEquals("foo", MVEL.eval(ex, map));        
+        assertEquals("foo", MVEL.eval(ex, map));
     }
 }
+
+
 
 
 

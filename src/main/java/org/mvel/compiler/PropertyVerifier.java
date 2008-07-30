@@ -110,7 +110,29 @@ public class PropertyVerifier extends AbstractOptimizer {
         Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
 
         if (member instanceof Field) {
-            return ((Field) member).getType();
+            if (parserContext.isStrictTypeEnforcement()) {
+                Field f = ((Field) member);
+
+                if (f.getGenericType() != null && f.getGenericType() instanceof ParameterizedType) {
+                    ParameterizedType pt = (ParameterizedType) f.getGenericType();
+                    parserContext.setLastTypeParameters(pt.getActualTypeArguments());
+
+                    Type[] gpt = pt.getActualTypeArguments();
+                    Type[] classArgs = ((Class) pt.getRawType()).getTypeParameters();
+                    //   ParameterizedType pt;
+
+                    if (gpt.length > 0 && paramTypes == null) paramTypes = new HashMap<String, Class>();
+                    for (int i = 0; i < gpt.length; i++) {
+                        paramTypes.put(classArgs[i].toString(), (Class) gpt[i]);
+                    }
+
+                }
+
+                return f.getType();
+            }
+            else {
+                return ((Field) member).getType();
+            }
         }
         else if (member != null) {
             return ((Method) member).getReturnType();
@@ -289,11 +311,12 @@ public class PropertyVerifier extends AbstractOptimizer {
 
             String returnTypeArg = m.getGenericReturnType().toString();
 
-            if (typeArgs.containsKey(returnTypeArg)) {
-                return typeArgs.get(returnTypeArg);
-            }
-            else if (paramTypes != null && paramTypes.containsKey(returnTypeArg)) {
+
+            if (paramTypes != null && paramTypes.containsKey(returnTypeArg)) {
                 return paramTypes.get(returnTypeArg);
+            }
+            else if (typeArgs.containsKey(returnTypeArg)) {
+                return typeArgs.get(returnTypeArg);
             }
         }
 

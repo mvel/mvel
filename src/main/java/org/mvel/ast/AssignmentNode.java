@@ -42,7 +42,6 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
     private char[] stmt;
     private ExecutableStatement statement;
-
     private boolean col = false;
     //   private String index;
 
@@ -139,5 +138,4 @@ public class AssignmentNode extends ASTNode implements Assignment {
     public boolean isNewDeclaration() {
         return false;
     }
-
 }
