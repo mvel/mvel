@@ -1,9 +1,6 @@
 package org.mvel.ast;
 
-import org.mvel.ASTNode;
-import org.mvel.CompiledSetExpression;
-import org.mvel.ExecutableStatement;
-import org.mvel.MVEL;
+import org.mvel.*;
 import static org.mvel.MVEL.compileSetExpression;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
@@ -88,12 +85,10 @@ public class AssignmentNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        //   Object o;
-
         checkNameSafety(name);
 
         if (col) {
-            MVEL.setProperty(factory.getVariableResolver(name).getValue(), new String(index), ctx = MVEL.eval(stmt, ctx, factory));
+            PropertyAccessor.set(factory.getVariableResolver(name).getValue(), factory, new String(index), ctx = MVEL.eval(stmt, ctx, factory));
         }
         else {
             finalLocalVariableFactory(factory).createVariable(name, ctx = MVEL.eval(stmt, ctx, factory));
