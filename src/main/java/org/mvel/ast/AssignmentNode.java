@@ -20,16 +20,15 @@ package org.mvel.ast;
 
 import org.mvel.MVEL;
 import static org.mvel.MVEL.compileSetExpression;
-import org.mvel.compiler.AbstractParser;
+import org.mvel.PropertyAccessor;
+import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
-import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
 import static org.mvel.util.PropertyTools.find;
-import org.mvel.util.PropertyTools;
 
 /**
  * @author Christopher Brock
@@ -119,7 +118,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
         checkNameSafety(varName);
 
         if (col) {
-            MVEL.setProperty(factory.getVariableResolver(varName).getValue(), index, ctx = MVEL.eval(stmt, ctx, factory));
+            PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = MVEL.eval(stmt, ctx, factory));
         }
         else {
             factory.createVariable(varName, ctx = MVEL.eval(stmt, ctx, factory));
