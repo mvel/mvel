@@ -3424,6 +3424,32 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("foo", MVEL.executeExpression(s, map));
         assertEquals("foo", MVEL.eval(ex, map));
     }
+
+        /**
+     * MVEL-103
+     */
+    public static class MvelContext {
+        public boolean singleCalled;
+        public boolean arrayCalled;
+
+        public void methodForTest(String string) {
+            System.out.println("sigle param method called!");
+            singleCalled = true;
+        }
+
+        public void methodForTest(String[] strings) {
+            System.out.println("array param method called!");
+            arrayCalled = true;
+        }
+    }
+
+    public void testMethodResolutionOrder() {
+        MvelContext mvelContext = new MvelContext();
+        MVEL.eval("methodForTest({'1','2'})", mvelContext);
+        MVEL.eval("methodForTest('1')", mvelContext);
+
+        assertTrue(mvelContext.arrayCalled && mvelContext.singleCalled);
+    }
 }
 
 

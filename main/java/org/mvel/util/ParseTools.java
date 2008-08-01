@@ -27,8 +27,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
-import sun.net.www.ParseUtil;
-
 
 /**
  * This class contains much of the actual parsing code used by the core parser.
@@ -195,9 +193,13 @@ public class ParseTools {
                       else if (parmTypes[i].isAssignableFrom(arguments[i])) {
                           score += 2;
                       }
-                      else if (canConvert(parmTypes[i], arguments[i]) || arguments[i] == Object.class) {
-                          score += 1;
-                      }
+                    else if (canConvert(parmTypes[i], arguments[i])) {
+                        if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
+                        score += 1;
+                    }
+                    else if (arguments[i] == Object.class) {
+                        score += 1;
+                    }
                       else {
                           score = 0;
                           break;
