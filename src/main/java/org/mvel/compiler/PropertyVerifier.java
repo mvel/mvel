@@ -219,8 +219,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
             else if (parserContext.hasFunction(name)) {
                 resolvedExternally = false;
-                Function f = parserContext.getFunction(name);
-                return f.getEgressType();
+                return parserContext.getFunction(name).getEgressType();
             }
         }
 
@@ -310,7 +309,6 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
 
             String returnTypeArg = m.getGenericReturnType().toString();
-
 
             if (paramTypes != null && paramTypes.containsKey(returnTypeArg)) {
                 return paramTypes.get(returnTypeArg);

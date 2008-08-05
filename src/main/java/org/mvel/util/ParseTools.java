@@ -116,12 +116,12 @@ public class ParseTools {
         }
         if (start != -1) {
             start--;
-            String[] parms =  parseParameterList(parm, start + 1, balancedCapture(parm, start, '(') - start - 1);
-            String[] nArray = new String[parms.length+1];
+            String[] parms = parseParameterList(parm, start + 1, balancedCapture(parm, start, '(') - start - 1);
+            String[] nArray = new String[parms.length + 1];
             nArray[0] = methName;
 
             for (int i = 0; i < parms.length; i++) {
-                nArray[i+1] = parms[i];
+                nArray[i + 1] = parms[i];
             }
 
             return nArray;
@@ -249,7 +249,11 @@ public class ParseTools {
                     else if (parmTypes[i].isAssignableFrom(arguments[i])) {
                         score += 2;
                     }
-                    else if (canConvert(parmTypes[i], arguments[i]) || arguments[i] == Object.class) {
+                    else if (canConvert(parmTypes[i], arguments[i])) {
+                        if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
+                        score += 1;
+                    }
+                    else if (arguments[i] == Object.class) {
                         score += 1;
                     }
                     else {
