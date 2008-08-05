@@ -3450,6 +3450,117 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertTrue(mvelContext.arrayCalled && mvelContext.singleCalled);
     }
+
+    public void testOKQuoteComment() throws Exception {
+        // ' in comments outside of blocks seem OK
+        MVEL.compileExpression("// ' this is OK!");
+        MVEL.compileExpression("// ' this is OK!\n");
+        MVEL.compileExpression("// ' this is OK!\nif(1==1) {};");
+    }
+
+    public void testOKDblQuoteComment() throws Exception {
+        // " in comments outside of blocks seem OK
+        MVEL.compileExpression("// \" this is OK!");
+        MVEL.compileExpression("// \" this is OK!\n");
+        MVEL.compileExpression("// \" this is OK!\nif(1==1) {};");
+    }
+
+    public void testIfComment() throws Exception {
+        // No quote?  OK!
+        MVEL.compileExpression("if(1 == 1) {\n" +
+                                                "  // Quote & Double-quote seem to break this expression\n" +
+                                                "}");
+    }
+
+    public void testIfQuoteCommentBug() throws Exception {
+        // Comments in an if seem to fail if they contain a '
+        MVEL.compileExpression("if(1 == 1) {\n" +
+                                                  "  // ' seems to break this expression\n" +
+                                                  "}");
+    }
+
+    public void testIfDblQuoteCommentBug() throws Exception {
+        // Comments in a foreach seem to fail if they contain a '
+        MVEL.compileExpression("if(1 == 1) {\n" +
+                                                           "  // ' seems to break this expression\n" +
+                                                           "}");
+    }
+
+    public void testForEachQuoteCommentBug() throws Exception {
+        // Comments in a foreach seem to fail if they contain a '
+        MVEL.compileExpression("foreach ( item : 10 ) {\n" +
+                                                    "  // The ' character causes issues\n" +
+                                                    "}");
+    }
+
+    public void testForEachDblQuoteCommentBug() throws Exception {
+        // Comments in a foreach seem to fail if they contain a '
+        MVEL.compileExpression("foreach ( item : 10 ) {\n" +
+                                                            "  // The \" character causes issues\n" +
+                                                            "}");
+    }
+
+    public void testForEachCommentOK() throws Exception {
+        // No quote?  OK!
+        MVEL.compileExpression("foreach ( item : 10 ) {\n" +
+                                                    "  // The quote & double quote characters cause issues\n" +
+                                                    "}");
+    }
+
+    public void testElseIfCommentBugPreCompiled() throws Exception {
+        // Comments can't appear before else if() - compilation works, but evaluation fails
+        MVEL.executeExpression( (Object) MVEL.compileExpression("// This is never true\n" + 
+                                                       "if (1==0) {\n" +
+                                                          "  // Never reached\n" +
+                                                          "}\n" +
+                                                          "// This is always true...\n" +
+                                                          "else if (1==1) {" +
+                                                          "  System.out.println('Got here!');" +
+                                                          "}\n") );
+    }
+
+    public void testElseIfCommentBugEvaluated() throws Exception {
+        // Comments can't appear before else if()
+        MVEL.eval("// This is never true\n" +
+                                                       "if (1==0) {\n" +
+                                                          "  // Never reached\n" +
+                                                          "}\n" +
+                                                          "// This is always true...\n" +
+                                                          "else if (1==1) {" +
+                                                          "  System.out.println('Got here!');" +
+                                                          "}\n");
+    }
+
+
+    public void testRegExpOK() throws Exception {
+        // This works OK intepreted
+        assertEquals( Boolean.TRUE, MVEL.eval("'Hello'.toUpperCase() ~= '[A-Z]{0,5}'"));
+        assertEquals( Boolean.TRUE, MVEL.eval("1 == 0 || ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')"));
+        // This works OK if toUpperCase() is avoided in pre-compiled
+        Object ser = MVEL.compileExpression("'Hello' ~= '[a-zA-Z]{0,5}'");
+        assertEquals( Boolean.TRUE, MVEL.executeExpression(ser));
+    }
+
+    public void testRegExpPreCompiledBug() throws Exception {
+        // If toUpperCase() is used in the expression then this fails; returns null not
+        // a boolean.
+        Object ser = MVEL.compileExpression("'Hello'.toUpperCase() ~= '[a-zA-Z]{0,5}'");
+        assertEquals( Boolean.TRUE, MVEL.executeExpression(ser));
+    }
+
+    public void testRegExpOrBug() throws Exception {
+        // This fails during execution due to returning null, I think...
+        Object ser = MVEL.compileExpression("1 == 0 || ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')");
+        assertEquals( Boolean.TRUE, MVEL.executeExpression(ser));
+    }
+
+    public void testRegExpAndBug() throws Exception {
+        // This also fails due to returning null, I think...
+        Object ser = MVEL.compileExpression("1 == 1 && ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')");
+        assertEquals( Boolean.TRUE, MVEL.executeExpression(ser) );
+    }
+    
+
 }
 
 
