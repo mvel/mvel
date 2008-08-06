@@ -1120,6 +1120,62 @@ public class ParseTools {
         }
     }
 
+    public static int[] balancedCaptureWithLineAccountingNoNest(char[] chars, int start, char type) {
+        int depth = 1;
+        char term = type;
+        switch (type) {
+            case '[':
+                term = ']';
+                break;
+            case '{':
+                term = '}';
+                break;
+            case '(':
+                term = ')';
+                break;
+        }
+
+        if (type == term) {
+            for (start++; start < chars.length; start++) {
+                if (chars[start] == type) {
+                    return new int[]{start, 0};
+                }
+            }
+        }
+        else {
+            int lines = 0;
+
+            for (start++; start < chars.length; start++) {
+                if (isWhitespace(chars[start])) {
+                    switch (chars[start]) {
+                        case '\r':
+                            continue;
+                        case '\n':
+                            lines++;
+                    }
+                }
+                else if (chars[start] == type) {
+                    depth++;
+                }
+                else if (chars[start] == term && --depth == 0) {
+                    return new int[]{start, lines};
+                }
+
+            }
+        }
+
+        switch (type) {
+            case '[':
+                throw new CompileException("unbalanced braces [ ... ]", chars, start);
+            case '{':
+                throw new CompileException("unbalanced braces { ... }", chars, start);
+            case '(':
+                throw new CompileException("unbalanced braces ( ... )", chars, start);
+            default:
+                throw new CompileException("unterminated string literal", chars, start);
+        }
+    }
+
     public static String handleStringEscapes(char[] input) {
         int escapes = 0;
         for (int i = 0; i < input.length; i++) {

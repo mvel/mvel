@@ -64,7 +64,6 @@ public class DebugTools {
         ASTIterator iter = cExp.getInstructions();
         ASTNode tk;
 
-        //   int node = 0;
 
         StringBuffer sbuf = new StringBuffer();
 

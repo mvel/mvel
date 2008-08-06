@@ -101,6 +101,9 @@ public class CompilerTools {
                         optimizedAst.addTokenNode(tkOp2);
                     }
                 }
+                else if (tkOp.isOperator(Operator.REGEX))  {
+                    optimizedAst.addTokenNode(new RegExMatchNode(tk, astLinkedList.nextNode()));
+                }
                 else {
                     optimizedAst.addTokenNode(tk);
                     if (tk instanceof EndOfStatement) {

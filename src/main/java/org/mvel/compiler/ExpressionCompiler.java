@@ -23,6 +23,7 @@ import org.mvel.ErrorDetail;
 import org.mvel.Operator;
 import static org.mvel.Operator.PTABLE;
 import org.mvel.ParserContext;
+import org.mvel.debug.DebugTools;
 import org.mvel.ast.ASTNode;
 import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.ast.LiteralNode;
@@ -223,7 +224,6 @@ public class ExpressionCompiler extends AbstractParser {
                         lastOp = tk.getOperator();
                     }
 
-
                     literalOnly = false;
                 }
 
@@ -238,7 +238,9 @@ public class ExpressionCompiler extends AbstractParser {
 
             if (!stk.isEmpty()) throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
 
+
             return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), getCurrentSourceFileName(), returnType, pCtx, literalOnly);
+
         }
         catch (Throwable e) {
             parserContext.set(null);

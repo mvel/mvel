@@ -49,6 +49,7 @@ import java.util.WeakHashMap;
 public class AbstractParser implements Serializable {
     protected char[] expr;
     protected int cursor;
+    protected int start;
     protected int length;
     protected int fields;
 
@@ -189,7 +190,8 @@ public class AbstractParser implements Serializable {
                 return lastNode = (ASTNode) splitAccumulator.pop();
             }
 
-            int brace, start = cursor, idx;
+            int brace, idx;
+            start = cursor;
 
             /**
              * Because of parser recursion for sub-expression parsing, we sometimes need to remain
@@ -261,6 +263,9 @@ public class AbstractParser implements Serializable {
 
                             case IF:
                                 return captureCodeBlock(ASTNode.BLOCK_IF);
+
+                            case ELSE:
+                                throw new CompileException("else without if", cursor);
 
                             case FOREACH:
                                 return captureCodeBlock(ASTNode.BLOCK_FOREACH);
@@ -595,71 +600,11 @@ public class AbstractParser implements Serializable {
 
                         case '#':
                         case '/':
-                            if (lookAhead() == expr[cursor]) {
-                                /**
-                                 * Handle single line comments.
-                                 */
-                                captureToEOL();
-
-                                line = pCtx.getLineCount();
-
-                                skipWhitespaceWithLineAccounting();
-
-                                if (lastNode instanceof LineLabel) {
-                                    pCtx.getLastLineLabel().setLineNumber(line);
-                                    pCtx.addKnownLine(line);
-                                }
-
-                                lastWasComment = true;
-
-                                pCtx.setLineCount(line);
-
-                                if ((start = cursor) >= length) return null;
-
-                                continue;
-                            }
-                            else if (expr[cursor] == '/' && lookAhead() == '*') {
-                                /**
-                                 * Handle multi-line comments.
-                                 */
-                                int len = length - 1;
-
-                                /**
-                                 * This probably seems highly redundant, but sub-compilations within the same
-                                 * source will spawn a new compiler, and we need to sync this with the
-                                 * parser context;
-                                 */
-                                line = pCtx.getLineCount();
-
-                                while (true) {
-                                    cursor++;
-                                    /**
-                                     * Since multi-line comments may cross lines, we must keep track of any line-break
-                                     * we encounter.
-                                     */
-                                    skipWhitespaceWithLineAccounting();
-
-                                    if (cursor == len) {
-                                        throw new CompileException("unterminated block comment", expr, cursor);
-                                    }
-                                    if (expr[cursor] == '*' && lookAhead() == '/') {
-                                        if ((cursor += 2) >= length) return null;
-                                        skipWhitespaceWithLineAccounting();
-                                        start = cursor;
-                                        break;
-                                    }
-                                }
-
-                                pCtx.setLineCount(line);
-
-                                if (lastNode instanceof LineLabel) {
-                                    pCtx.getLastLineLabel().setLineNumber(line);
-                                    pCtx.addKnownLine(line);
-                                }
-
-                                lastWasComment = true;
-
-                                continue;
+                            switch (skipCommentBlock()) {
+                                case OP_TERMINATE:
+                                    return null;
+                                case OP_RESET_FRAME:
+                                    continue;
                             }
 
                         case '?':
@@ -1192,7 +1137,7 @@ public class AbstractParser implements Serializable {
         }
         else if (expr[cursor] == '{') {
             blockStart = cursor;
-            int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '{');
+            int[] cap = balancedCaptureWithLineAccountingNoNest(expr, cursor, '{');
             blockEnd = cursor = cap[0];
 
             pCtx.incrementLineCount(cap[1]);
@@ -1236,11 +1181,85 @@ public class AbstractParser implements Serializable {
         if ((cursor + 4) < length) {
             if (expr[cursor] != ';') cursor--;
             skipWhitespace();
+            skipCommentBlock();
+
             return expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
                     && (isWhitespace(expr[cursor + 4]) || expr[cursor + 4] == '{');
         }
         return false;
     }
+
+    protected int skipCommentBlock() {
+        if (lookAhead() == expr[cursor]) {
+            /**
+             * Handle single line comments.
+             */
+            captureToEOL();
+
+            line = pCtx.getLineCount();
+
+            skipWhitespaceWithLineAccounting();
+
+            if (lastNode instanceof LineLabel) {
+                pCtx.getLastLineLabel().setLineNumber(line);
+                pCtx.addKnownLine(line);
+            }
+
+            lastWasComment = true;
+
+            pCtx.setLineCount(line);
+
+            if ((start = cursor) >= length) return OP_TERMINATE;
+
+            return OP_RESET_FRAME;
+        }
+        else if (expr[cursor] == '/' && lookAhead() == '*') {
+            /**
+             * Handle multi-line comments.
+             */
+            int len = length - 1;
+
+            /**
+             * This probably seems highly redundant, but sub-compilations within the same
+             * source will spawn a new compiler, and we need to sync this with the
+             * parser context;
+             */
+            line = pCtx.getLineCount();
+
+            while (true) {
+                cursor++;
+                /**
+                 * Since multi-line comments may cross lines, we must keep track of any line-break
+                 * we encounter.
+                 */
+                skipWhitespaceWithLineAccounting();
+
+                if (cursor == len) {
+                    throw new CompileException("unterminated block comment", expr, cursor);
+                }
+                if (expr[cursor] == '*' && lookAhead() == '/') {
+                    if ((cursor += 2) >= length) return OP_RESET_FRAME;
+                    skipWhitespaceWithLineAccounting();
+                    start = cursor;
+                    break;
+                }
+            }
+
+            pCtx.setLineCount(line);
+
+            if (lastNode instanceof LineLabel) {
+                pCtx.getLastLineLabel().setLineNumber(line);
+                pCtx.addKnownLine(line);
+            }
+
+            lastWasComment = true;
+
+            return OP_RESET_FRAME;
+        }
+
+        return OP_CONTINUE;
+    }
+
 
     /**
      * Checking from the current cursor position, check to see if we're inside a contiguous identifier.
@@ -1391,6 +1410,13 @@ public class AbstractParser implements Serializable {
                 case '\r':
                     cursor++;
                     continue;
+                case '/':
+                    cursor++;
+                    if (cursor < length) {
+                        if (expr[cursor] == '/') {
+
+                        }
+                    }
             }
             cursor++;
         }
