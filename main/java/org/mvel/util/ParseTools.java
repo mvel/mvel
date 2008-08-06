@@ -41,11 +41,11 @@ public class ParseTools {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
             if (version == 1.4) {
-                MATH_PROCESSOR = (MathProcessor)  Class.forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) Class.forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
                 JDK_14_COMPATIBILITY = true;
             }
             else if (version > 1.4) {
-                MATH_PROCESSOR = (MathProcessor)  Class.forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
+                MATH_PROCESSOR = (MathProcessor) Class.forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
                 JDK_14_COMPATIBILITY = false;
             }
             else {
@@ -144,55 +144,55 @@ public class ParseTools {
 
 
     public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods) {
-          if (methods.length == 0) {
-              return null;
-          }
-          Class[] parmTypes;
-          Method bestCandidate = null;
-          int bestScore = 0;
-          int score = 0;
+        if (methods.length == 0) {
+            return null;
+        }
+        Class[] parmTypes;
+        Method bestCandidate = null;
+        int bestScore = 0;
+        int score = 0;
 
-          Integer hash = createClassSignatureHash(decl, arguments);
+        Integer hash = createClassSignatureHash(decl, arguments);
 
-          Map<Integer, Method> methCache = RESOLVED_METH_CACHE.get(method);
-          if (methCache != null) {
-              if ((bestCandidate = methCache.get(hash)) != null) return bestCandidate;
-          }
+        Map<Integer, Method> methCache = RESOLVED_METH_CACHE.get(method);
+        if (methCache != null) {
+            if ((bestCandidate = methCache.get(hash)) != null) return bestCandidate;
+        }
 
-          for (Method meth : methods) {
-              if (method.equals(meth.getName())) {
-                  if ((parmTypes = meth.getParameterTypes()).length != arguments.length)
-                      continue;
-                  else if (arguments.length == 0 && parmTypes.length == 0) {
-                      bestCandidate = meth;
-                      break;
-                  }
+        for (Method meth : methods) {
+            if (method.equals(meth.getName())) {
+                if ((parmTypes = meth.getParameterTypes()).length != arguments.length)
+                    continue;
+                else if (arguments.length == 0 && parmTypes.length == 0) {
+                    bestCandidate = meth;
+                    break;
+                }
 
-                  for (int i = 0; i < arguments.length; i++) {
-                      if (arguments[i] == null) {
-                          if (!parmTypes[i].isPrimitive()) {
-                              score += 5;
-                          }
-                          else {
-                              score = 0;
-                              break;
-                          }
-                      }
-                      else if (parmTypes[i] == arguments[i]) {
-                          score += 5;
-                      }
-                      else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
-                          score += 4;
-                      }
-                      else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
-                          score += 4;
-                      }
-                      else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
-                          score += 3;
-                      }
-                      else if (parmTypes[i].isAssignableFrom(arguments[i])) {
-                          score += 2;
-                      }
+                for (int i = 0; i < arguments.length; i++) {
+                    if (arguments[i] == null) {
+                        if (!parmTypes[i].isPrimitive()) {
+                            score += 5;
+                        }
+                        else {
+                            score = 0;
+                            break;
+                        }
+                    }
+                    else if (parmTypes[i] == arguments[i]) {
+                        score += 5;
+                    }
+                    else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
+                        score += 4;
+                    }
+                    else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
+                        score += 4;
+                    }
+                    else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
+                        score += 3;
+                    }
+                    else if (parmTypes[i].isAssignableFrom(arguments[i])) {
+                        score += 2;
+                    }
                     else if (canConvert(parmTypes[i], arguments[i])) {
                         if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
                         score += 1;
@@ -200,32 +200,32 @@ public class ParseTools {
                     else if (arguments[i] == Object.class) {
                         score += 1;
                     }
-                      else {
-                          score = 0;
-                          break;
-                      }
-                  }
+                    else {
+                        score = 0;
+                        break;
+                    }
+                }
 
-                  if (score != 0 && score > bestScore) {
-                      bestCandidate = meth;
-                      bestScore = score;
-                  }
-                  score = 0;
-              }
-          }
+                if (score != 0 && score > bestScore) {
+                    bestCandidate = meth;
+                    bestScore = score;
+                }
+                score = 0;
+            }
+        }
 
-          if (bestCandidate != null) {
-              if (methCache == null) {
-                  RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, Method>());
-              }
+        if (bestCandidate != null) {
+            if (methCache == null) {
+                RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, Method>());
+            }
 
-              methCache.put(hash, bestCandidate);
-          }
+            methCache.put(hash, bestCandidate);
+        }
 
-          return bestCandidate;
-      }
+        return bestCandidate;
+    }
 
-    
+
     public static Method getExactMatch(String name, Class[] args, Class returnType, Class cls) {
         for (Method meth : cls.getMethods()) {
             if (name.equals(meth.getName()) && returnType == meth.getReturnType()) {
@@ -279,7 +279,7 @@ public class ParseTools {
         }
     }
 
-   public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
+    public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
         Class[] parmTypes;
         Constructor bestCandidate = null;
         int bestScore = 0;
@@ -355,6 +355,7 @@ public class ParseTools {
 
         return bestCandidate;
     }
+
     private static Map<ClassLoader, Map<String, Class>> CLASS_RESOLVER_CACHE = new WeakHashMap<ClassLoader, Map<String, Class>>(1, 1.0f);
     private static Map<Class, Constructor[]> CLASS_CONSTRUCTOR_CACHE = new WeakHashMap<Class, Constructor[]>(10);
 
@@ -802,7 +803,7 @@ public class ParseTools {
     }
 
     public static Object handleParserEgress(Object result, boolean returnBigDecimal) {
-       if (result instanceof BigDecimal) {
+        if (result instanceof BigDecimal) {
             int scale = ((BigDecimal) result).scale();
 
             if (returnBigDecimal) return result;
@@ -942,6 +943,26 @@ public class ParseTools {
         }
         else {
             for (start++; start < chars.length; start++) {
+                if (chars[start] == '/' && start < chars.length) {
+                    if (chars[start + 1] == '/') {
+                        start++;
+                        while (start < chars.length && chars[start] != '\n') start++;
+                    }
+                    else if (chars[start + 1] == '*') {
+                        start += 2;
+                        while (start < chars.length) {
+                            switch (chars[start]) {
+                                case '*':
+                                    if (start < chars.length && chars[start + 1] == '/') {
+                                        break;
+                                    }
+                                case '\r':
+                                case '\n':
+                            }
+
+                        }
+                    }
+                }
                 if (chars[start] == '\'' || chars[start] == '"') {
                     start = captureStringLiteral(chars[start], chars, start, chars.length);
                 }
@@ -963,7 +984,6 @@ public class ParseTools {
                 throw new CompileException("unbalanced braces ( ... )", chars, start);
             default:
                 throw new CompileException("unterminated string literal", chars, start);
-
         }
     }
 
@@ -1001,7 +1021,28 @@ public class ParseTools {
                             lines++;
                     }
                 }
+                else if (chars[start] == '/' && start < chars.length) {
+                    if (chars[start + 1] == '/') {
+                        start++;
+                        while (start < chars.length && chars[start] != '\n') start++;
+                    }
+                    else if (chars[start + 1] == '*') {
+                        start += 2;
+                        while (start < chars.length) {
+                            switch (chars[start]) {
+                                case '*':
+                                    if (start < chars.length && chars[start + 1] == '/') {
+                                        break;
+                                    }
+                                case '\r':
+                                    continue;
+                                case '\n':
+                                    lines++;
+                            }
 
+                        }
+                    }
+                }
                 else if (chars[start] == '\'' || chars[start] == '"') {
                     start = captureStringLiteral(chars[start], chars, start, chars.length);
                 }
@@ -1024,7 +1065,6 @@ public class ParseTools {
                 throw new CompileException("unbalanced braces ( ... )", chars, start);
             default:
                 throw new CompileException("unterminated string literal", chars, start);
-
         }
     }
 

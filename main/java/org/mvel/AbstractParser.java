@@ -2,14 +2,14 @@ package org.mvel;
 
 import static org.mvel.Operator.*;
 import org.mvel.ast.*;
+import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
-import org.mvel.util.ThisLiteral;
 import org.mvel.util.StringAppender;
-import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.ThisLiteral;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -30,6 +30,7 @@ import java.util.WeakHashMap;
 public class AbstractParser implements Serializable {
     protected char[] expr;
     protected int cursor;
+    protected int start;
     protected int length;
     protected int fields;
 
@@ -44,6 +45,10 @@ public class AbstractParser implements Serializable {
     private int line = 1;
 
     protected ASTNode lastNode;
+
+    protected static final int OP_TERMINATE = -1;
+    protected static final int OP_RESET_FRAME = 0;
+    protected static final int OP_CONTINUE = 1;
 
     private static Map<String, char[]> EX_PRECACHE;
 
@@ -169,7 +174,8 @@ public class AbstractParser implements Serializable {
                 return lastNode = (ASTNode) splitAccumulator.pop();
             }
 
-            int brace, start = cursor;
+            int brace;
+            start = cursor;
 
             /**
              * Because of parser recursion for sub-expression parsing, we sometimes need to remain
@@ -494,82 +500,11 @@ public class AbstractParser implements Serializable {
 
                         case '#':
                         case '/':
-                            if (isNext(expr[cursor])) {
-                                /**
-                                 * Handle single line comments.
-                                 */
-                                while (cursor != length && expr[cursor] != '\n') cursor++;
-
-                                if (debugSymbols) {
-                                    line = getParserContext().getLineCount();
-
-                                    skipWhitespaceWithLineAccounting();
-
-                                    if (lastNode instanceof LineLabel) {
-                                        getParserContext().getLastLineLabel().setLineNumber(line);
-                                        getParserContext().addKnownLine(line);
-                                    }
-
-                                    lastWasComment = true;
-
-                                    getParserContext().setLineCount(line);
-                                }
-                                else if (cursor != length) {
-                                    skipWhitespace();
-                                }
-
-                                if ((start = cursor) >= length) return null;
-
-                                continue;
-                            }
-                            else if (expr[cursor] == '/' && isNext('*')) {
-                                /**
-                                 * Handle multi-line comments.
-                                 */
-                                int len = length - 1;
-
-                                /**
-                                 * This probably seems highly redundant, but sub-compilations within the same
-                                 * source will spawn a new compiler, and we need to sync this with the
-                                 * parser context;
-                                 */
-                                if (debugSymbols) {
-                                    line = getParserContext().getLineCount();
-                                }
-
-                                while (true) {
-                                    cursor++;
-                                    /**
-                                     * Since multi-line comments may cross lines, we must keep track of any line-break
-                                     * we encounter.
-                                     */
-                                    if (debugSymbols) {
-                                        skipWhitespaceWithLineAccounting();
-                                    }
-
-                                    if (cursor == len) {
-                                        throw new CompileException("unterminated block comment", expr, cursor);
-                                    }
-                                    if (expr[cursor] == '*' && isNext('/')) {
-                                        if ((cursor += 2) >= length) return null;
-                                        skipWhitespaceWithLineAccounting();
-                                        start = cursor;
-                                        break;
-                                    }
-                                }
-
-                                if (debugSymbols) {
-                                    getParserContext().setLineCount(line);
-
-                                    if (lastNode instanceof LineLabel) {
-                                        getParserContext().getLastLineLabel().setLineNumber(line);
-                                        getParserContext().addKnownLine(line);
-                                    }
-
-                                    lastWasComment = true;
-                                }
-
-                                continue;
+                            switch (skipCommentBlock()) {
+                                case OP_TERMINATE:
+                                    return null;
+                                case OP_RESET_FRAME:
+                                    continue;
                             }
 
                         case '?':
@@ -940,6 +875,7 @@ public class AbstractParser implements Serializable {
                     if (tk != null) {
                         skipToNextTokenJunction();
                         skipWhitespace();
+                        skipCommentBlock();
 
                         cond = expr[cursor] != '{' && expr[cursor] == 'i' && expr[++cursor] == 'f'
                                 && (isWhitespace(expr[++cursor]) || expr[cursor] == '(');
@@ -1000,6 +936,7 @@ public class AbstractParser implements Serializable {
         int blockEnd;
 
         skipWhitespace();
+        skipCommentBlock();
 
         if (cursor >= length) {
             throw new CompileException("unbalanced braces", expr, cursor);
@@ -1008,6 +945,7 @@ public class AbstractParser implements Serializable {
             blockStart = cursor;
 
             if (debugSymbols) {
+
                 int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '{');
                 if (cap[0] == -1) {
                     throw new CompileException("unbalanced braces { }", expr, cursor);
@@ -1055,10 +993,100 @@ public class AbstractParser implements Serializable {
         if ((cursor + 4) < length) {
             if (expr[cursor] != ';') cursor--;
             skipWhitespace();
+            skipCommentBlock();
+
             return expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
                     && (isWhitespace(expr[cursor + 4]) || expr[cursor + 4] == '{');
         }
         return false;
+    }
+
+    protected int skipCommentBlock() {
+        if (lookAhead() == expr[cursor]) {
+            /**
+             * Handle single line comments.
+             */
+            while (cursor != length && (expr[cursor] != '\n')) cursor++;
+
+            if (debugSymbols) {
+                pCtx = getParserContext();
+
+                line = pCtx.getLineCount();
+                skipWhitespaceWithLineAccounting();
+
+                if (lastNode instanceof LineLabel) {
+                    pCtx.getLastLineLabel().setLineNumber(line);
+                    pCtx.addKnownLine(line);
+                }
+
+                pCtx.setLineCount(line);
+
+            }
+            else {
+                skipWhitespace();
+            }
+
+            lastWasComment = true;
+
+            if ((start = cursor) >= length) return OP_TERMINATE;
+
+            return OP_RESET_FRAME;
+        }
+        else if (expr[cursor] == '/' && lookAhead() == '*') {
+            /**
+             * Handle multi-line comments.
+             */
+            int len = length - 1;
+
+            /**
+             * This probably seems highly redundant, but sub-compilations within the same
+             * source will spawn a new compiler, and we need to sync this with the
+             * parser context;
+             */
+            if (debugSymbols) {
+                pCtx = getParserContext();
+                line = pCtx.getLineCount();
+            }
+            while (true) {
+                cursor++;
+                /**
+                 * Since multi-line comments may cross lines, we must keep track of any line-break
+                 * we encounter.
+                 */
+
+                if (debugSymbols) {
+                    skipWhitespaceWithLineAccounting();
+                }
+                else {
+                    skipWhitespace();
+                }
+
+                if (cursor == len) {
+                    throw new CompileException("unterminated block comment", expr, cursor);
+                }
+                if (expr[cursor] == '*' && lookAhead() == '/') {
+                    if ((cursor += 2) >= length) return OP_RESET_FRAME;
+                    skipWhitespaceWithLineAccounting();
+                    start = cursor;
+                    break;
+                }
+            }
+
+            if (debugSymbols) {
+                pCtx = getParserContext();
+                pCtx.setLineCount(line);
+                if (lastNode instanceof LineLabel) {
+                    pCtx.getLastLineLabel().setLineNumber(line);
+                    pCtx.addKnownLine(line);
+                }
+            }
+
+            lastWasComment = true;
+
+            return OP_RESET_FRAME;
+        }
+
+        return OP_CONTINUE;
     }
 
 
@@ -1148,6 +1176,7 @@ public class AbstractParser implements Serializable {
     protected void skipWhitespace() {
         while (cursor != length && isWhitespace(expr[cursor])) cursor++;
     }
+
 
     protected void skipWhitespaceWithLineAccounting() {
         while (cursor != length && isWhitespace(expr[cursor])) {
@@ -1443,170 +1472,170 @@ public class AbstractParser implements Serializable {
     }
 
     protected int arithmeticFunctionReduction(int operator) {
-         ASTNode tk;
-         int operator2;
+        ASTNode tk;
+        int operator2;
 
-         boolean x = false;
-         int y = 0;
+        boolean x = false;
+        int y = 0;
 
-         /**
-          * If the next token is an operator, we check to see if it has a higher
-          * precdence.
-          */
-         if ((tk = nextToken()) != null && tk.isOperator()) {
-             if (isArithmeticOperator(operator2 = tk.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
-                 xswap();
-                 /**
-                  * The current arith. operator is of higher precedence the last.
-                  */
-                 dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+        /**
+         * If the next token is an operator, we check to see if it has a higher
+         * precdence.
+         */
+        if ((tk = nextToken()) != null && tk.isOperator()) {
+            if (isArithmeticOperator(operator2 = tk.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
+                xswap();
+                /**
+                 * The current arith. operator is of higher precedence the last.
+                 */
+                dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
 
-                 while (true) {
-                     // look ahead again
-                     if ((tk = nextToken()) != null && PTABLE[operator2 = tk.getOperator()] > PTABLE[operator]) {
-                         // if we have back to back operations on the stack, we don't xswap
-                         if (x) {
-                             xswap();
-                         }
-                         /**
-                          * This operator is of higher precedence, or the same level precedence.  push to the RHS.
-                          */
-                         dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
-                         y = 1;
-                         continue;
-                     }
-                     else if (tk != null) {
-                         if (PTABLE[operator2] == PTABLE[operator]) {
-                             // if we have back to back operations on the stack, we don't xswap
-                             if (x) {
-                                 xswap();
-                             }
+                while (true) {
+                    // look ahead again
+                    if ((tk = nextToken()) != null && PTABLE[operator2 = tk.getOperator()] > PTABLE[operator]) {
+                        // if we have back to back operations on the stack, we don't xswap
+                        if (x) {
+                            xswap();
+                        }
+                        /**
+                         * This operator is of higher precedence, or the same level precedence.  push to the RHS.
+                         */
+                        dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+                        y = 1;
+                        continue;
+                    }
+                    else if (tk != null) {
+                        if (PTABLE[operator2] == PTABLE[operator]) {
+                            // if we have back to back operations on the stack, we don't xswap
+                            if (x) {
+                                xswap();
+                            }
 
-                             /**
-                              * Reduce any operations waiting now.
-                              */
-                             while (!dStack.isEmpty()) {
-                                 dreduce();
-                             }
+                            /**
+                             * Reduce any operations waiting now.
+                             */
+                            while (!dStack.isEmpty()) {
+                                dreduce();
+                            }
 
-                             /**
-                              * This operator is of the same level precedence.  push to the RHS.
-                              */
-                             dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+                            /**
+                             * This operator is of the same level precedence.  push to the RHS.
+                             */
+                            dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
 
-                             y++;
-                             continue;
-                         }
-                         else {
-                             /**
-                              * The operator doesn't have higher precedence. Therfore reduce the LHS.
-                              */
-                             if (!dStack.isEmpty()) {
-                                 do {
-                                     if (y == 1) {
-                                         dreduce2();
-                                         y = 0;
-                                     }
-                                     else {
-                                         dreduce();
-                                     }
-                                 }
-                                 while (dStack.size() > 1);
-                             }
+                            y++;
+                            continue;
+                        }
+                        else {
+                            /**
+                             * The operator doesn't have higher precedence. Therfore reduce the LHS.
+                             */
+                            if (!dStack.isEmpty()) {
+                                do {
+                                    if (y == 1) {
+                                        dreduce2();
+                                        y = 0;
+                                    }
+                                    else {
+                                        dreduce();
+                                    }
+                                }
+                                while (dStack.size() > 1);
+                            }
 
-                             if (!dStack.isEmpty()) {
-                                 stk.push(dStack.pop());
-                                 xswap();
-                             }
+                            if (!dStack.isEmpty()) {
+                                stk.push(dStack.pop());
+                                xswap();
+                            }
 
-                             operator = tk.getOperator();
-                             // Reduce the lesser or equal precedence operations.
-                             while (stk.size() != 1 && PTABLE[((Integer) stk.peek2())] >= PTABLE[operator]) {
-                                 xswap();
-                                 reduce();
-                             }
+                            operator = tk.getOperator();
+                            // Reduce the lesser or equal precedence operations.
+                            while (stk.size() != 1 && PTABLE[((Integer) stk.peek2())] >= PTABLE[operator]) {
+                                xswap();
+                                reduce();
+                            }
 
-                             y = 0;
-                         }
-                     }
-                     else {
-                         /**
-                          * There are no more tokens.
-                          */
-                         x = false;
+                            y = 0;
+                        }
+                    }
+                    else {
+                        /**
+                         * There are no more tokens.
+                         */
+                        x = false;
 
-                         if (dStack.size() > 1) {
-                             do {
-                                 if (y == 1) {
-                                     dreduce2();
-                                     y = 0;
-                                 }
-                                 else {
-                                     dreduce();
-                                 }
-                             }
-                             while (dStack.size() > 1);
+                        if (dStack.size() > 1) {
+                            do {
+                                if (y == 1) {
+                                    dreduce2();
+                                    y = 0;
+                                }
+                                else {
+                                    dreduce();
+                                }
+                            }
+                            while (dStack.size() > 1);
 
-                             x = true;
-                         }
+                            x = true;
+                        }
 
-                         if (!dStack.isEmpty()) {
-                             stk.push(dStack.pop());
-                         }
-                         else if (x) {
-                             xswap();
-                         }
+                        if (!dStack.isEmpty()) {
+                            stk.push(dStack.pop());
+                        }
+                        else if (x) {
+                            xswap();
+                        }
 
-                         y = 0;
-                         break;
-                     }
+                        y = 0;
+                        break;
+                    }
 
-                     if (tk != null && (tk = nextToken()) != null) {
-                         switch (operator) {
-                             case AND: {
-                                 if (!((Boolean) stk.peek())) return -2;
-                                 else {
-                                     splitAccumulator.add(tk);
-                                     return AND;
-                                 }
-                             }
-                             case OR: {
-                                 if (((Boolean) stk.peek())) return -2;
-                                 else {
-                                     splitAccumulator.add(tk);
-                                     return OR;
-                                 }
+                    if (tk != null && (tk = nextToken()) != null) {
+                        switch (operator) {
+                            case AND: {
+                                if (!((Boolean) stk.peek())) return -2;
+                                else {
+                                    splitAccumulator.add(tk);
+                                    return AND;
+                                }
+                            }
+                            case OR: {
+                                if (((Boolean) stk.peek())) return -2;
+                                else {
+                                    splitAccumulator.add(tk);
+                                    return OR;
+                                }
 
-                             }
+                            }
 
-                             default:
-                                 stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
-                         }
-                     }
+                            default:
+                                stk.push(tk.getReducedValue(ctx, ctx, variableFactory), operator);
+                        }
+                    }
 
-                     x = true;
-                     y = 0;
-                 }
-             }
-             else {
-                 reduce();
-                 splitAccumulator.push(tk);
-             }
-         }
+                    x = true;
+                    y = 0;
+                }
+            }
+            else {
+                reduce();
+                splitAccumulator.push(tk);
+            }
+        }
 
-         // while any values remain on the stack
-         // keep XSWAPing and reducing, until there is nothing left.
-         while (stk.size() > 1) {
-             reduce();
-             if (stk.size() > 1) xswap();
-         }
+        // while any values remain on the stack
+        // keep XSWAPing and reducing, until there is nothing left.
+        while (stk.size() > 1) {
+            reduce();
+            if (stk.size() > 1) xswap();
+        }
 
-         return -1;
-     }
+        return -1;
+    }
 
     private void dreduce() {
         stk.push(dStack.pop(), dStack.pop());
-        
+
         // reduce the top of the stack
         reduce();
     }

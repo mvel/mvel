@@ -3,12 +3,8 @@ package org.mvel.util;
 import org.mvel.ASTLinkedList;
 import org.mvel.ASTNode;
 import org.mvel.Operator;
-import org.mvel.debug.DebugTools;
 import static org.mvel.Operator.PTABLE;
-import org.mvel.ast.And;
-import org.mvel.ast.BinaryOperation;
-import org.mvel.ast.EndOfStatement;
-import org.mvel.ast.Or;
+import org.mvel.ast.*;
 
 public class CompilerTools {
 
@@ -75,7 +71,6 @@ public class CompilerTools {
                         }
 
                         op = op2;
-                        tkOp = tkOp2;
                     }
 
 
@@ -84,6 +79,9 @@ public class CompilerTools {
                     if (tkOp2 != null && tkOp2 != tkOp) {
                         optimizedAst.addTokenNode(tkOp2);
                     }
+                }
+                else if (tkOp.isOperator(Operator.REGEX)) {
+                    optimizedAst.addTokenNode(new RegExMatchNode(tk, astLinkedList.nextNode()));
                 }
                 else {
                     optimizedAst.addTokenNode(tk);
