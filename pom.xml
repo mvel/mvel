@@ -9,7 +9,7 @@
 
 
     <scm>
-        <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/mvel-2.0-SNAPSHOT</developerConnection>
+        <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/2.0-SNAPSHOT-08072008</developerConnection>
     </scm>
 
     <build>
