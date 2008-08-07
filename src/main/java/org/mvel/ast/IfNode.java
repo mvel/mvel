@@ -90,4 +90,9 @@ public class IfNode extends ASTNode implements NestedStatement {
         elseBlock = (ExecutableStatement) subCompileExpression(block);
         return this;
     }
+
+    public String toString() {
+        return new String(name);
+
+    }
 }

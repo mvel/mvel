@@ -134,7 +134,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath() {
-        assertEquals(188.4f, test("pi * hour"));
+        assertEquals(188.4d, test("pi * hour"));
     }
 
     public void testMath2() {
@@ -153,7 +153,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testMath4a() {
         String expression = "(100 % 90) * 20 - 15 / 16 + 80 + (50 * 21)";
         System.out.println("Expression: " + expression);
-        assertEquals((float) ((100d % 90d) * 20d - 15d / 16d + 80d + (50d * 21d)), MVEL.eval(expression));
+        assertEquals(((100d % 90d) * 20d - 15d / 16d + 80d + (50d * 21d)), MVEL.eval(expression));
     }
 
     public void testMath5() {
@@ -177,7 +177,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath8() {
-        float val = 5f * (100.56f * 30.1f);
+        double val = 5d * (100.56d * 30.1d);
         assertEquals(val, test("5 * (100.56 * 30.1)"));
     }
 
@@ -222,6 +222,20 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testOperatorPrecedence4() {
         String ex = "_x_001 = 500.2; _x_002 = 200.9; _r_001 = 701; _r_001 == _x_001 + _x_002 || _x_001 == 500 + 0.2";
         assertEquals(true, test(ex));
+    }
+
+    public void testOperatorPrecedence5() {
+        String ex = "_x_001 == _x_001 / 2 - _x_001 + _x_001 + _x_001 / 2 && _x_002 / 2 == _x_002 / 2";
+
+        Map vars = new HashMap();
+        vars.put("_x_001", 500.2);
+        vars.put("_x_002", 200.9);
+        vars.put("_r_001", 701);
+
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        Serializable s = compiler.compile();
+
+        assertEquals(true, MVEL.executeExpression(s, vars));
     }
 
     public void testShortPathExpression() {
@@ -887,7 +901,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testUnQualifiedStaticTyping() {
-        assertEquals(20.0f, testCompiledSimple("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ", new HashMap()));
+        assertEquals(20.0d, testCompiledSimple("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ", new HashMap()));
     }
 
     public void testObjectCreation() {
@@ -2557,6 +2571,18 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, testCompiledSimple(ex, new HashMap()));
     }
 
+    public void testMath32() {
+        String ex = "x = 20; y = 10; z = 5; x-y-z";
+        System.out.println("Expression: " + ex);
+        assertEquals(20 - 10 - 5, testCompiledSimple(ex, new HashMap()));
+    }
+
+    public void testMath33() {
+        String ex = "x = 20; y = 2; z = 2; x/y/z";
+        System.out.println("Expression: " + ex);
+        assertEquals(20 / 2 / 2, testCompiledSimple(ex, new HashMap()));
+    }
+
     public void testMath20() {
         String ex = "10-5*7-3*8-6";
         System.out.println("Expression: " + ex);
@@ -2589,7 +2615,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath24() {
         String expression = "51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19";
-        float val = 51 * 52 * 33 / 24 / 15 + 45 * 66 * 47 * 28 + 19;
+        double val = 51d * 52d * 33d / 24d / 15d + 45d * 66d * 47d * 28d + 19d;
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
         assertEquals(val, test(expression));
@@ -2605,11 +2631,11 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath26() {
         String expression = "5 + 3 * 8 * 2 ** 2";
-        double val = 5 + 3 * 8 * Math.pow(2, 2);
+        int val = (int) (5d + 3d * 8d * Math.pow(2, 2));
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
         Object result = test(expression);
-        assertEquals((int) val, result);
+        assertEquals(val, result);
     }
 
     public void testMath27() {
@@ -2632,7 +2658,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testMath29() {
         String expression = "10 + 20 / 4 / 4";
         System.out.println("Expression: " + expression);
-        float val = 10f + 20f / 4f / 4f;
+        double val = 10d + 20d / 4d / 4d;
 
         assertEquals(val, MVEL.eval(expression));
     }
@@ -2649,6 +2675,101 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals((int) val, MVEL.eval(expression));
     }
 
+    public void testMath34() {
+        String expression = "a+b-c*d*x/y-z+10";
+
+        Map map = new HashMap();
+        map.put("a", "200");
+        map.put("b", "100");
+        map.put("c", "150");
+        map.put("d", "2");
+        map.put("x", "400");
+        map.put("y", "300");
+        map.put("z", "75");
+
+        Serializable s = MVEL.compileExpression(expression);
+
+        assertEquals(200 + 100 - 150 * 2 * 400 / 300 - 75 + 10, MVEL.executeExpression(s, map));
+
+    }
+
+    public void testMath34_Interpreted() {
+        String expression = "a+b-c*x/y-z";
+
+        Map map = new HashMap();
+        map.put("a", "200");
+        map.put("b", "100");
+        map.put("c", "150");
+        map.put("x", "400");
+        map.put("y", "300");
+        map.put("z", "75");
+
+        assertEquals(200 + 100 - 150 * 400 / 300 - 75, MVEL.eval(expression, map));
+    }
+
+
+    public void testMath35() {
+        String expression = "b/x/b/b*y+a";
+
+        Map map = new HashMap();
+        map.put("a", 10);
+        map.put("b", 20);
+        map.put("c", 30);
+        map.put("x", 40);
+        map.put("y", 50);
+        map.put("z", 60);
+
+        Serializable s = MVEL.compileExpression(expression);
+
+        assertNumEquals(20d / 40d / 20d / 20d * 50d + 10d, MVEL.executeExpression(s, map));
+    }
+
+    public void testMath35_Interpreted() {
+        String expression = "b/x/b/b*y+a";
+
+        Map map = new HashMap();
+        map.put("a", 10);
+        map.put("b", 20);
+        map.put("c", 30);
+        map.put("x", 40);
+        map.put("y", 50);
+        map.put("z", 60);
+
+
+        assertNumEquals(20d / 40d / 20d / 20d * 50d + 10d, MVEL.eval(expression, map));
+    }
+
+    public void testMath36() {
+        String expression = "b/x*z/a+x-b+x-b/z+y";
+
+        Map map = new HashMap();
+        map.put("a", 10);
+        map.put("b", 20);
+        map.put("c", 30);
+        map.put("x", 40);
+        map.put("y", 50);
+        map.put("z", 60);
+
+        Serializable s = MVEL.compileExpression(expression);
+
+        assertNumEquals(20d / 40d * 60d / 10d + 40d - 20d + 40d - 20d / 60d + 50d, MVEL.executeExpression(s, map));
+    }
+
+    public void testMath37() {
+        String expression = "x+a*a*c/x*b*z+x/y-b";
+
+        Map map = new HashMap();
+        map.put("a", 10);
+        map.put("b", 20);
+        map.put("c", 30);
+        map.put("x", 2);
+        map.put("y", 2);
+        map.put("z", 60);
+
+        Serializable s = MVEL.compileExpression(expression);
+
+        assertNumEquals(2d + 10d * 10d * 30d / 2d * 20d * 60d + 2d / 2d - 20d, MVEL.executeExpression(s, map));
+    }
 
     public void testNullSafe() {
         Foo foo = new Foo();
@@ -3235,11 +3356,11 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testStrongTyping2() {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
-        
+
         ctx.addInput("blah", String.class);
 
         try {
-            new ExpressionCompiler("1+blah").compile(ctx);
+            new ExpressionCompiler("1-blah").compile(ctx);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -3276,7 +3397,263 @@ public class CoreConfidenceTests extends AbstractTest {
         assertTrue(false);
     }
 
+    public void testJIRA99_Interpreted() {
+        Map map = new HashMap();
+        map.put("x", 20);
+        map.put("y", 10);
+        map.put("z", 5);
+
+        assertEquals(20 - 10 - 5, MVEL.eval("x - y - z", map));
+    }
+
+    public void testJIRA99_Compiled() {
+        Map map = new HashMap();
+        map.put("x", 20);
+        map.put("y", 10);
+        map.put("z", 5);
+
+        assertEquals(20 - 10 - 5, testCompiledSimple("x - y - z", map));
+    }
+
+    public void testJIRA100() {
+        assertEquals(20, test("java.math.BigDecimal axx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal bxx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal cxx = axx + bxx; return cxx; "));
+    }
+
+    public void testJIRA100a() {
+        assertEquals(233.23, test("java.math.BigDecimal axx = new java.math.BigDecimal( 109.45 ); java.math.BigDecimal bxx = new java.math.BigDecimal( 123.78 ); java.math.BigDecimal cxx = axx + bxx; return cxx; "));
+    }
+
+    public void testJIRA100b() {
+        String expression = "(8 / 10) * 100 <= 80;";
+        assertEquals((8 / 10) * 100 <= 80, testCompiledSimple(expression, new HashMap()));
+    }
+
+    public void testJIRA92() {
+        assertEquals(false, test("'stringValue' > null"));
+    }
+
+    public void testAssignToBean() {
+        Person person = new Person();
+        MVEL.eval("this.name = 'foo'", person);
+
+        assertEquals("foo", person.getName());
+
+        Serializable s = MVEL.compileExpression("this.name = 'bar'");
+
+        MVEL.executeExpression(s, person);
+
+        assertEquals("bar", person.getName());
+    }
+
+    public void testParameterizedTypeInStrictMode() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("foo", HashMap.class, new Class[]{String.class, String.class});
+
+        ExpressionCompiler compiler = new ExpressionCompiler("foo.get('bar').toUpperCase()");
+        CompiledExpression e = compiler.compile(ctx);
+    }
+
+    public void testParameterizedTypeInStrictMode2() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("ctx", Object.class);
+
+        ExpressionCompiler compiler = new ExpressionCompiler("org.mvel.DataConversion.convert(ctx, String).toUpperCase()");
+        CompiledExpression ce = compiler.compile(ctx);
+
+        assertEquals(String.class, ce.getKnownEgressType());
+    }
+
+    public void testParameterizedTypeInStrictMode3() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("base", Base.class);
+
+        ExpressionCompiler compiler = new ExpressionCompiler("base.list");
+        CompiledExpression c = compiler.compile(ctx);
+
+        assertTrue(c.getParserContext().getLastTypeParameters()[0].equals(String.class));
+    }
+
+    public void testParameterizedTypeInStrictMode4() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("base", Base.class);
+
+        ExpressionCompiler compiler = new ExpressionCompiler("base.list.get('kinds').toUpperCase()");
+        CompiledExpression ce = compiler.compile(ctx);
+
+        assertEquals(String.class, ce.getKnownEgressType());
+    }
+
+    public void testMapAssignmentNestedExpression() {
+        Map map = new HashMap();
+        map.put("map", new HashMap());
+
+        String ex = "map[java.lang.Integer.MAX_VALUE] = 'bar'; map[java.lang.Integer.MAX_VALUE];";
+
+        Serializable s = MVEL.compileExpression(ex);
+        assertEquals("bar", MVEL.executeExpression(s, map));
+        assertEquals("bar", MVEL.eval(ex, map));
+    }
+
+    public void testMapAssignmentNestedExpression2() {
+        Map map = new HashMap();
+        map.put("x", "bar");
+        map.put("map", new HashMap());
+
+        String ex = "map[x] = 'foo'; map['bar'];";
+        Serializable s = MVEL.compileExpression(ex);
+        assertEquals("foo", MVEL.executeExpression(s, map));
+        assertEquals("foo", MVEL.eval(ex, map));
+    }
+
+
+    /**
+     * MVEL-103
+     */
+    public static class MvelContext {
+        public boolean singleCalled;
+        public boolean arrayCalled;
+
+        public void methodForTest(String string) {
+            System.out.println("sigle param method called!");
+            singleCalled = true;
+        }
+
+        public void methodForTest(String[] strings) {
+            System.out.println("array param method called!");
+            arrayCalled = true;
+        }
+    }
+
+    public void testMethodResolutionOrder() {
+        MvelContext mvelContext = new MvelContext();
+        MVEL.eval("methodForTest({'1','2'})", mvelContext);
+        MVEL.eval("methodForTest('1')", mvelContext);
+
+        assertTrue(mvelContext.arrayCalled && mvelContext.singleCalled);
+    }
+
+    public void testOKQuoteComment() throws Exception {
+        // ' in comments outside of blocks seem OK
+        MVEL.compileExpression("// ' this is OK!");
+        MVEL.compileExpression("// ' this is OK!\n");
+        MVEL.compileExpression("// ' this is OK!\nif(1==1) {};");
+    }
+
+    public void testOKDblQuoteComment() throws Exception {
+        // " in comments outside of blocks seem OK
+        MVEL.compileExpression("// \" this is OK!");
+        MVEL.compileExpression("// \" this is OK!\n");
+        MVEL.compileExpression("// \" this is OK!\nif(1==1) {};");
+    }
+
+    public void testIfComment() throws Exception {
+        // No quote?  OK!
+        MVEL.compileExpression("if(1 == 1) {\n" +
+                "  // Quote & Double-quote seem to break this expression\n" +
+                "}");
+    }
+
+    public void testIfQuoteCommentBug() throws Exception {
+        // Comments in an if seem to fail if they contain a '
+        MVEL.compileExpression("if(1 == 1) {\n" +
+                "  // ' seems to break this expression\n" +
+                "}");
+    }
+
+    public void testIfDblQuoteCommentBug() throws Exception {
+        // Comments in a foreach seem to fail if they contain a '
+        MVEL.compileExpression("if(1 == 1) {\n" +
+                "  // ' seems to break this expression\n" +
+                "}");
+    }
+
+    public void testForEachQuoteCommentBug() throws Exception {
+        // Comments in a foreach seem to fail if they contain a '
+        MVEL.compileExpression("foreach ( item : 10 ) {\n" +
+                "  // The ' character causes issues\n" +
+                "}");
+    }
+
+    public void testForEachDblQuoteCommentBug() throws Exception {
+        // Comments in a foreach seem to fail if they contain a '
+        MVEL.compileExpression("foreach ( item : 10 ) {\n" +
+                "  // The \" character causes issues\n" +
+                "}");
+    }
+
+    public void testForEachCommentOK() throws Exception {
+        // No quote?  OK!
+        MVEL.compileExpression("foreach ( item : 10 ) {\n" +
+                "  // The quote & double quote characters cause issues\n" +
+                "}");
+    }
+
+    public void testElseIfCommentBugPreCompiled() throws Exception {
+        // Comments can't appear before else if() - compilation works, but evaluation fails
+        MVEL.executeExpression(MVEL.compileExpression("// This is never true\n" +
+                "if (1==0) {\n" +
+                "  // Never reached\n" +
+                "}\n" +
+                "// This is always true...\n" +
+                "else if (1==1) {" +
+                "  System.out.println('Got here!');" +
+                "}\n"));
+    }
+
+    public void testElseIfCommentBugEvaluated() throws Exception {
+        // Comments can't appear before else if()
+        MVEL.eval("// This is never true\n" +
+                "if (1==0) {\n" +
+                "  // Never reached\n" +
+                "}\n" +
+                "// This is always true...\n" +
+                "else if (1==1) {" +
+                "  System.out.println('Got here!');" +
+                "}\n");
+    }
+
+
+    public void testRegExpOK() throws Exception {
+        // This works OK intepreted
+        assertEquals(Boolean.TRUE, MVEL.eval("'Hello'.toUpperCase() ~= '[A-Z]{0,5}'"));
+        assertEquals(Boolean.TRUE, MVEL.eval("1 == 0 || ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')"));
+        // This works OK if toUpperCase() is avoided in pre-compiled
+        Object ser = MVEL.compileExpression("'Hello' ~= '[a-zA-Z]{0,5}'");
+        assertEquals(Boolean.TRUE, MVEL.executeExpression(ser));
+    }
+
+    public void testRegExpPreCompiledBug() throws Exception {
+        // If toUpperCase() is used in the expression then this fails; returns null not
+        // a boolean.
+        Object ser = MVEL.compileExpression("'Hello'.toUpperCase() ~= '[a-zA-Z]{0,5}'");
+        assertEquals(Boolean.TRUE, MVEL.executeExpression(ser));
+    }
+
+    public void testRegExpOrBug() throws Exception {
+        // This fails during execution due to returning null, I think...
+        Object ser = MVEL.compileExpression("1 == 0 || ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')");
+        assertEquals(Boolean.TRUE, MVEL.executeExpression(ser));
+    }
+
+    public void testRegExpAndBug() throws Exception {
+        // This also fails due to returning null, I think...
+        Object ser = MVEL.compileExpression("1 == 1 && ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')");
+        assertEquals(Boolean.TRUE, MVEL.executeExpression(ser));
+    }
+
+    public void testLiteralUnionWithComparison() {
+        Serializable ce = MVEL.compileExpression("'Foo'.toUpperCase() == 'FOO'");
+        assertEquals(Boolean.TRUE, MVEL.executeExpression(ce));
+    }
+
+
 }
+
+
 
 
 
