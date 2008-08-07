@@ -71,6 +71,7 @@ public class CompilerTools {
                         }
 
                         op = op2;
+                        tkOp = tkOp2;
                     }
 
 
