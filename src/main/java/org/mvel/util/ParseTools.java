@@ -1036,6 +1036,26 @@ public class ParseTools {
         }
         else {
             for (start++; start < chars.length; start++) {
+                if (chars[start] == '/' && start < chars.length) {
+                    if (chars[start + 1] == '/') {
+                        start++;
+                        while (start < chars.length && chars[start] != '\n') start++;
+                    }
+                    else if (chars[start + 1] == '*') {
+                        start += 2;
+                        while (start < chars.length) {
+                            switch (chars[start]) {
+                                case '*':
+                                    if (start < chars.length && chars[start + 1] == '/') {
+                                        break;
+                                    }
+                                case '\r':
+                                case '\n':
+                            }
+
+                        }
+                    }
+                }
                 if (chars[start] == '\'' || chars[start] == '"') {
                     start = captureStringLiteral(chars[start], chars, start, chars.length);
                 }
@@ -1094,65 +1114,30 @@ public class ParseTools {
                             lines++;
                     }
                 }
+                else if (chars[start] == '/' && start < chars.length) {
+                    if (chars[start + 1] == '/') {
+                        start++;
+                        while (start < chars.length && chars[start] != '\n') start++;
+                    }
+                    else if (chars[start + 1] == '*') {
+                        start += 2;
+                        while (start < chars.length) {
+                            switch (chars[start]) {
+                                case '*':
+                                    if (start < chars.length && chars[start + 1] == '/') {
+                                        break;
+                                    }
+                                case '\r':
+                                    continue;
+                                case '\n':
+                                    lines++;
+                            }
 
+                        }
+                    }
+                }
                 else if (chars[start] == '\'' || chars[start] == '"') {
                     start = captureStringLiteral(chars[start], chars, start, chars.length);
-                }
-                else if (chars[start] == type) {
-                    depth++;
-                }
-                else if (chars[start] == term && --depth == 0) {
-                    return new int[]{start, lines};
-                }
-
-            }
-        }
-
-        switch (type) {
-            case '[':
-                throw new CompileException("unbalanced braces [ ... ]", chars, start);
-            case '{':
-                throw new CompileException("unbalanced braces { ... }", chars, start);
-            case '(':
-                throw new CompileException("unbalanced braces ( ... )", chars, start);
-            default:
-                throw new CompileException("unterminated string literal", chars, start);
-        }
-    }
-
-    public static int[] balancedCaptureWithLineAccountingNoNest(char[] chars, int start, char type) {
-        int depth = 1;
-        char term = type;
-        switch (type) {
-            case '[':
-                term = ']';
-                break;
-            case '{':
-                term = '}';
-                break;
-            case '(':
-                term = ')';
-                break;
-        }
-
-        if (type == term) {
-            for (start++; start < chars.length; start++) {
-                if (chars[start] == type) {
-                    return new int[]{start, 0};
-                }
-            }
-        }
-        else {
-            int lines = 0;
-
-            for (start++; start < chars.length; start++) {
-                if (isWhitespace(chars[start])) {
-                    switch (chars[start]) {
-                        case '\r':
-                            continue;
-                        case '\n':
-                            lines++;
-                    }
                 }
                 else if (chars[start] == type) {
                     depth++;

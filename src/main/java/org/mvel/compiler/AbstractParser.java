@@ -1137,7 +1137,7 @@ public class AbstractParser implements Serializable {
         }
         else if (expr[cursor] == '{') {
             blockStart = cursor;
-            int[] cap = balancedCaptureWithLineAccountingNoNest(expr, cursor, '{');
+            int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '{');
             blockEnd = cursor = cap[0];
 
             pCtx.incrementLineCount(cap[1]);
@@ -1410,13 +1410,6 @@ public class AbstractParser implements Serializable {
                 case '\r':
                     cursor++;
                     continue;
-                case '/':
-                    cursor++;
-                    if (cursor < length) {
-                        if (expr[cursor] == '/') {
-
-                        }
-                    }
             }
             cursor++;
         }
