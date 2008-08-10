@@ -102,6 +102,36 @@ public class ParseTools {
         return null;
     }
 
+    public static String[] getMethodNameAndParms(char[] parm) {
+        int start = -1;
+        String methName = null;
+
+        for (int i = 0; i < parm.length; i++) {
+            if (parm[i] == '(') {
+                methName = new String(parm, 0, i);
+
+                start = ++i;
+                break;
+            }
+        }
+        if (start != -1) {
+            start--;
+            String[] parms = parseParameterList(parm, start + 1, balancedCapture(parm, start, '(') - start - 1);
+            String[] nArray = new String[parms.length + 1];
+            nArray[0] = methName;
+
+            for (int i = 0; i < parms.length; i++) {
+                nArray[i + 1] = parms[i];
+            }
+
+            return nArray;
+        }
+
+        return null;
+
+
+    }
+
     public static String[] parseParameterList(char[] parm, int offset, int length) {
         List<String> list = new LinkedList<String>();
 
@@ -219,7 +249,11 @@ public class ParseTools {
                     else if (parmTypes[i].isAssignableFrom(arguments[i])) {
                         score += 2;
                     }
-                    else if (canConvert(parmTypes[i], arguments[i]) || arguments[i] == Object.class) {
+                    else if (canConvert(parmTypes[i], arguments[i])) {
+                        if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
+                        score += 1;
+                    }
+                    else if (arguments[i] == Object.class) {
                         score += 1;
                     }
                     else {
@@ -867,12 +901,10 @@ public class ParseTools {
     public static Object handleParserEgress(Object result, boolean returnBigDecimal) {
         if (result instanceof BigDecimal) {
             int scale = ((BigDecimal) result).scale();
+
             if (returnBigDecimal) return result;
-            else if (scale > 14) {
-                return ((BigDecimal) result).doubleValue();
-            }
             else if (scale > 0) {
-                return ((BigDecimal) result).floatValue();
+                return ((BigDecimal) result).doubleValue();
             }
             else if (((BigDecimal) result).longValue() > Integer.MAX_VALUE) {
                 return ((BigDecimal) result).longValue();
@@ -1004,6 +1036,26 @@ public class ParseTools {
         }
         else {
             for (start++; start < chars.length; start++) {
+                if (chars[start] == '/' && start < chars.length) {
+                    if (chars[start + 1] == '/') {
+                        start++;
+                        while (start < chars.length && chars[start] != '\n') start++;
+                    }
+                    else if (chars[start + 1] == '*') {
+                        start += 2;
+                        while (start < chars.length) {
+                            switch (chars[start]) {
+                                case '*':
+                                    if (start < chars.length && chars[start + 1] == '/') {
+                                        break;
+                                    }
+                                case '\r':
+                                case '\n':
+                            }
+
+                        }
+                    }
+                }
                 if (chars[start] == '\'' || chars[start] == '"') {
                     start = captureStringLiteral(chars[start], chars, start, chars.length);
                 }
@@ -1062,7 +1114,28 @@ public class ParseTools {
                             lines++;
                     }
                 }
+                else if (chars[start] == '/' && start < chars.length) {
+                    if (chars[start + 1] == '/') {
+                        start++;
+                        while (start < chars.length && chars[start] != '\n') start++;
+                    }
+                    else if (chars[start + 1] == '*') {
+                        start += 2;
+                        while (start < chars.length) {
+                            switch (chars[start]) {
+                                case '*':
+                                    if (start < chars.length && chars[start + 1] == '/') {
+                                        break;
+                                    }
+                                case '\r':
+                                    continue;
+                                case '\n':
+                                    lines++;
+                            }
 
+                        }
+                    }
+                }
                 else if (chars[start] == '\'' || chars[start] == '"') {
                     start = captureStringLiteral(chars[start], chars, start, chars.length);
                 }

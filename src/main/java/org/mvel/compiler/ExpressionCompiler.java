@@ -19,15 +19,19 @@
 package org.mvel.compiler;
 
 import org.mvel.CompileException;
+import org.mvel.ErrorDetail;
 import org.mvel.Operator;
+import static org.mvel.Operator.PTABLE;
 import org.mvel.ParserContext;
+import org.mvel.debug.DebugTools;
 import org.mvel.ast.ASTNode;
+import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
-import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
+import org.mvel.util.StringAppender;
 
 public class ExpressionCompiler extends AbstractParser {
     private Class returnType;
@@ -56,7 +60,15 @@ public class ExpressionCompiler extends AbstractParser {
             if (pCtx.isFatalError()) {
                 contextControl(REMOVE, null, null);
                 //noinspection ThrowFromFinallyBlock
-                throw new CompileException("Failed to compile: " + pCtx.getErrorList().size() + " compilation error(s)", pCtx.getErrorList());
+
+                StringAppender err = new StringAppender();
+
+                for (ErrorDetail e : pCtx.getErrorList()) {
+                    err.append("\n - ").append("(").append(e.getRow()).append(",").append(e.getCol()).append(")")
+                            .append(" ").append(e.getMessage());
+                }
+
+                throw new CompileException("Failed to compile: " + pCtx.getErrorList().size() + " compilation error(s): " + err.toString(), pCtx.getErrorList());
             }
         }
     }
@@ -73,7 +85,7 @@ public class ExpressionCompiler extends AbstractParser {
         ASTNode tkLA;
         ASTNode tkLA2;
 
-        int op;
+        int op, lastOp = -1;
 
         ASTLinkedList astBuild = new ASTLinkedList();
         stk = new ExecutionStack();
@@ -124,7 +136,9 @@ public class ExpressionCompiler extends AbstractParser {
                          * If the next token is ALSO a literal, then we have a candidate for a compile-time literal
                          * reduction.
                          */
-                        if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()) {
+                        if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()
+                                && ((lastOp == -1 || PTABLE[lastOp] < PTABLE[tkOp.getOperator()]))) {
+                            
                             stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), op = tkOp.getOperator());
 
                             /**
@@ -173,7 +187,7 @@ public class ExpressionCompiler extends AbstractParser {
                                          * We have reduced additional tokens, but we can't reduce
                                          * anymore.
                                          */
-                                        astBuild.addTokenNode(new LiteralNode(stk.pop()), tkOp);
+                                        astBuild.addTokenNode(new LiteralNode(stk.pop()), tkOp2);
 
                                         if (tkLA2 != null) astBuild.addTokenNode(tkLA2);
                                     }
@@ -206,6 +220,10 @@ public class ExpressionCompiler extends AbstractParser {
                     }
                 }
                 else {
+                    if (tk.isOperator()) {
+                        lastOp = tk.getOperator();
+                    }
+
                     literalOnly = false;
                 }
 
@@ -220,7 +238,9 @@ public class ExpressionCompiler extends AbstractParser {
 
             if (!stk.isEmpty()) throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
 
+
             return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), getCurrentSourceFileName(), returnType, pCtx, literalOnly);
+
         }
         catch (Throwable e) {
             parserContext.set(null);

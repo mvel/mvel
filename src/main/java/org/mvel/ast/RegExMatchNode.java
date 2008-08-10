@@ -18,43 +18,28 @@
  */
 package org.mvel.ast;
 
+import static org.mvel.MVEL.eval;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
+import static org.mvel.util.ParseTools.subCompileExpression;
 
-public class Or extends ASTNode {
-    private ASTNode left;
-    private ASTNode right;
+import static java.lang.String.valueOf;
+import static java.util.regex.Pattern.compile;
 
-    public Or(ASTNode left, ASTNode right) {
-        this.left = left;
-        this.right = right;
+public class RegExMatchNode extends ASTNode {
+    private ASTNode node;
+    private ASTNode patternNode;
+
+    public RegExMatchNode(ASTNode matchNode, ASTNode patternNode) {
+        this.node = matchNode;
+        this.patternNode = patternNode;
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return (((Boolean) left.getReducedValueAccelerated(ctx, thisValue, factory))
-                || ((Boolean) right.getReducedValueAccelerated(ctx, thisValue, factory)));
+        return compile(valueOf(patternNode.getReducedValueAccelerated(ctx, thisValue, factory))).matcher(valueOf(node.getReducedValueAccelerated(ctx, thisValue, factory))).matches();
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        throw new RuntimeException("improper use of AST element");
-    }
-
-    public ASTNode getLeft() {
-        return left;
-    }
-
-    public void setLeft(ASTNode left) {
-        this.left = left;
-    }
-
-    public ASTNode getRight() {
-        return right;
-    }
-
-    public void setRight(ASTNode right) {
-        this.right = right;
-    }
-
-        public String toString() {
-        return "(" + left.toString() + " || " + right.toString() + ")"; 
+        return compile(valueOf(eval(name, ctx, factory))).matcher(valueOf(eval(name, ctx, factory))).matches();
     }
 }
