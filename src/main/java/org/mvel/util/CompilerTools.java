@@ -49,13 +49,7 @@ public class CompilerTools {
             }
             else if (astLinkedList.hasMoreNodes()) {
                 if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
-                    optimizedAst.addTokenNode(tk);
-                    if (tk instanceof EndOfStatement) {
-                        astLinkedList.setCurrentNode(tkOp);
-                        continue;
-                    }
-
-                    optimizedAst.addTokenNode(tkOp);
+                    optimizedAst.addTokenNode(tk, tkOp);
                 }
                 else if (tkOp.isOperator() && tkOp.getOperator() < 20) {
                     int op;
@@ -90,7 +84,6 @@ public class CompilerTools {
                             bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
                         }
 
-
                         op = op2;
                         tkOp = tkOp2;
                     }
@@ -101,17 +94,11 @@ public class CompilerTools {
                         optimizedAst.addTokenNode(tkOp2);
                     }
                 }
-                else if (tkOp.isOperator(Operator.REGEX))  {
+                else if (tkOp.isOperator(Operator.REGEX)) {
                     optimizedAst.addTokenNode(new RegExMatchNode(tk, astLinkedList.nextNode()));
                 }
                 else {
-                    optimizedAst.addTokenNode(tk);
-                    if (tk instanceof EndOfStatement) {
-                        astLinkedList.setCurrentNode(tkOp);
-                        continue;
-                    }
-
-                    optimizedAst.addTokenNode(tkOp);
+                    optimizedAst.addTokenNode(tk, tkOp);
                 }
             }
             else {
@@ -133,12 +120,7 @@ public class CompilerTools {
                 }
                 else if (astLinkedList.hasMoreNodes()) {
                     if ((tkOp = astLinkedList.nextNode()).getFields() == -1) {
-                        optimizedAst.addTokenNode(tk);
-                        if (tk instanceof EndOfStatement) {
-                            astLinkedList.setCurrentNode(tkOp);
-                        }
-
-                        optimizedAst.addTokenNode(tkOp);
+                        optimizedAst.addTokenNode(tk, tkOp);
                     }
                     else if (tkOp.isOperator()
                             && (tkOp.getOperator() == Operator.AND || tkOp.getOperator() == Operator.OR)) {
@@ -153,7 +135,6 @@ public class CompilerTools {
                             case Operator.OR:
                                 bool = new Or(tk, astLinkedList.nextNode());
                         }
-
 
                         while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
                                 && (tkOp2.isOperator(Operator.AND) || tkOp2.isOperator(Operator.OR))) {
@@ -174,12 +155,7 @@ public class CompilerTools {
                         }
                     }
                     else {
-                        optimizedAst.addTokenNode(tk);
-                        if (tk instanceof EndOfStatement) {
-                            astLinkedList.setCurrentNode(tkOp);
-                        }
-
-                        optimizedAst.addTokenNode(tkOp);
+                        optimizedAst.addTokenNode(tk, tkOp);
                     }
                 }
                 else {
@@ -187,6 +163,7 @@ public class CompilerTools {
                 }
             }
         }
+
 
         return optimizedAst;
     }

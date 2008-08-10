@@ -94,6 +94,11 @@ public class PropertyVerifier extends AbstractOptimizer {
         if (first) {
             if (parserContext.hasVarOrInput(property)) {
                 paramTypes = parserContext.getTypeParameters(property);
+
+                if (parserContext.isStrictTypeEnforcement()) {
+                    parserContext.setLastTypeParameters(parserContext.getTypeParametersAsArray(property));
+                }
+
                 return parserContext.getVarOrInputType(property);
             }
             else if (parserContext.hasImport(property)) {

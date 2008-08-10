@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 /**
@@ -206,6 +207,7 @@ public class ParserContext implements Serializable {
         for (int i = 0; i < typeParameters.length; i++) {
             t.put(tvs[i].getName(), typeParameters[i]);
         }
+
     }
 
     public void addInputs(Map<String, Class> inputs) {
@@ -408,6 +410,24 @@ public class ParserContext implements Serializable {
         if (typeParameters == null) return null;
         return typeParameters.get(name);
     }
+
+    public Type[] getTypeParametersAsArray(String name) {
+        Class c = inputs.get(name);
+        Type[] tp = c.getTypeParameters();
+        Type[] types = new Type[tp.length];
+
+        Map<String, Class> typeVars = getTypeParameters(name);
+        if (typeVars == null) {
+            return null;
+        }
+
+        for (int i = 0; i < tp.length; i++) {
+            types[i] = typeVars.get(tp[i].toString());
+        }
+
+        return types;
+    }
+
 
     public boolean isBlockSymbols() {
         return blockSymbols;

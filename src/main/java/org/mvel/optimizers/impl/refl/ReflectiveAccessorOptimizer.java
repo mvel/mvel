@@ -377,6 +377,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
             catch (IllegalAccessException e) {
                 Method iFaceMeth = determineActualTargetMethod((Method) member);
+
+                if (iFaceMeth == null) throw new PropertyAccessException("could not access field: " + cls.getName() + "." + property);
+
                 addAccessorNode(new GetterAccessor(iFaceMeth));
                 o = iFaceMeth.invoke(ctx, EMPTYARG);
             }

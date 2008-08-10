@@ -90,7 +90,7 @@ public class PropertyTools {
     public static Method getGetter(Class clazz, String property) {
         String isGet = ReflectionUtil.getIsGetter(property);
         property = ReflectionUtil.getGetter(property);
-
+   
         for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) == 0
                     || meth.getParameterTypes().length != 0

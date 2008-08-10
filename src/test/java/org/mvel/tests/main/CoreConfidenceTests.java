@@ -32,6 +32,7 @@ import java.io.Serializable;
 import java.util.*;
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
+import java.lang.reflect.Type;
 
 @SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes", "UnnecessaryBoxing", "unchecked", "PointlessArithmeticExpression"})
 public class CoreConfidenceTests extends AbstractTest {
@@ -3650,7 +3651,29 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(Boolean.TRUE, MVEL.executeExpression(ce));
     }
 
+    public static final List<String> STRINGS = Arrays.asList("hi", "there");
 
+    public static class A {
+        public List<String> getStrings() {
+            return STRINGS;
+        }
+    }
+
+
+    public final void testDetermineEgressParametricType() {
+        final ParserContext parserContext = new ParserContext();
+        parserContext.setStrongTyping(true);
+
+        parserContext.addInput("strings", List.class, new Class[]{String.class});
+
+        final CompiledExpression expr = new ExpressionCompiler("strings").compile(parserContext);
+
+        assertTrue(STRINGS.equals(MVEL.executeExpression(expr, new A())));
+
+        final Type[] typeParameters = expr.getParserContext().getLastTypeParameters();
+        assertTrue(typeParameters != null);
+        assertTrue(String.class.equals(typeParameters[0]));
+    }
 }
 
 
