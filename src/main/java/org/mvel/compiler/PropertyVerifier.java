@@ -93,9 +93,8 @@ public class PropertyVerifier extends AbstractOptimizer {
     private Class getBeanProperty(Class ctx, String property) {
         if (first) {
             if (parserContext.hasVarOrInput(property)) {
-                paramTypes = parserContext.getTypeParameters(property);
-
                 if (parserContext.isStrictTypeEnforcement()) {
+                    paramTypes = parserContext.getTypeParameters(property);
                     parserContext.setLastTypeParameters(parserContext.getTypeParametersAsArray(property));
                 }
 
