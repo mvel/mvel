@@ -413,6 +413,8 @@ public class ParserContext implements Serializable {
 
     public Type[] getTypeParametersAsArray(String name) {
         Class c = inputs.get(name);
+        if (c == null) return null;
+        
         Type[] tp = c.getTypeParameters();
         Type[] types = new Type[tp.length];
 
