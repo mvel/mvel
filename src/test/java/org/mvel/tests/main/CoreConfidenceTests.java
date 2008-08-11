@@ -3674,6 +3674,27 @@ public class CoreConfidenceTests extends AbstractTest {
         assertTrue(typeParameters != null);
         assertTrue(String.class.equals(typeParameters[0]));
     }
+
+
+    public final void testDetermineEgressParametricType2() {
+        final ParserContext parserContext = new ParserContext();
+        parserContext.setStrongTyping(true);
+        parserContext.addInput("strings", List.class, new Class[]{String.class});
+
+        final CompiledExpression expr = new ExpressionCompiler("strings", parserContext)
+                .compile();
+
+//        final CompiledExpression expr = new ExpressionCompiler("strings").compile(parserContext);
+        
+
+        assert STRINGS.equals(MVEL.executeExpression(expr, new A())) : "faulty expression eval";
+
+        final Type[] typeParameters = expr.getParserContext().getLastTypeParameters();
+
+        assert null != typeParameters : "no generic egress type";
+        assert String.class.equals(typeParameters[0]) : "wrong generic egress type";
+
+    }
 }
 
 

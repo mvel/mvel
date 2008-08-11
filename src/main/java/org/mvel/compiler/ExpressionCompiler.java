@@ -40,7 +40,7 @@ public class ExpressionCompiler extends AbstractParser {
     private boolean secondPassOptimization = false;
 
     public CompiledExpression compile() {
-        return compile(new ParserContext());
+        return compile(contextControl(GET_OR_CREATE, null, null));
     }
 
     public CompiledExpression compile(ParserContext ctx) {
@@ -289,9 +289,9 @@ public class ExpressionCompiler extends AbstractParser {
         return tk;
     }
 
-    private static int asInt(final Object o) {
-        return (Integer) o;
-    }
+//    private static int asInt(final Object o) {
+//        return (Integer) o;
+//    }
 
     public ExpressionCompiler(String expression) {
         setExpression(expression);
