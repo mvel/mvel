@@ -13,7 +13,6 @@ public class AccessorBMModel implements Accessor {
         return ((Foo) ctx).getBar().getName();
     }
 
-
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;
     }

@@ -18,7 +18,7 @@
  */
 package org.mvel;
 
-public class PropertyAccessException extends RuntimeException {
+public class PropertyAccessException extends CompileException {
 
     public PropertyAccessException() {
         super();

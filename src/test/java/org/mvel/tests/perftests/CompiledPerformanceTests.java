@@ -2,6 +2,7 @@ package org.mvel.tests.perftests;
 
 import junit.framework.TestCase;
 import org.mvel.MVEL;
+import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.main.CoreConfidenceTests;
 import org.mvel.tests.main.res.Bar;
 import org.mvel.tests.main.res.Base;
@@ -60,29 +61,35 @@ public class CompiledPerformanceTests extends TestCase {
 //    }
 
     public void testQuickSort() throws IOException {
-        //   Serializable s = MVEL.compileExpression(new String(ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"))));
+        Serializable s = MVEL.compileExpression(new String(ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"))));
 
-        for (int x = 0; x < 4; x++) {
-            Serializable s = MVEL.compileSetExpression("foo.bar.name");
-            long time = System.currentTimeMillis();
+        MapVariableResolverFactory mvrf = new MapVariableResolverFactory(new HashMap());
 
-            for (int i = 0; i < ITERATIONS; i++) {
-                MVEL.executeSetExpression(s, map, "foobie");
-            }
-
-            System.out.println("SET PERFORMANCE: " + (System.currentTimeMillis() - time));
-
-            time = System.currentTimeMillis();
-
-            s = MVEL.compileExpression("foo.bar.name");
-
-            for (int i = 0; i < ITERATIONS; i++) {
-                MVEL.executeExpression(s, map);
-            }
-
-            System.out.println("GET PERFORMANCE: " + (System.currentTimeMillis() - time));
-
+        for (int i = 0; i < 1000000; i++) {
+            MVEL.executeExpression(s, mvrf);
         }
+
+//        for (int x = 0; x < 4; x++) {
+//            Serializable s = MVEL.compileSetExpression("foo.bar.name");
+//            long time = System.currentTimeMillis();
+//
+//            for (int i = 0; i < ITERATIONS; i++) {
+//                MVEL.executeSetExpression(s, map, "foobie");
+//            }
+//
+//            System.out.println("SET PERFORMANCE: " + (System.currentTimeMillis() - time));
+//
+//            time = System.currentTimeMillis();
+//
+//            s = MVEL.compileExpression("foo.bar.name");
+//
+//            for (int i = 0; i < ITERATIONS; i++) {
+//                MVEL.executeExpression(s, map);
+//            }
+//
+//            System.out.println("GET PERFORMANCE: " + (System.currentTimeMillis() - time));
+//
+//        }
     }
 
     public void testQuickSort2() throws IOException {

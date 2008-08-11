@@ -113,9 +113,7 @@ public class MVELRuntime {
 
                 try {
                     while (stk.size() > 1) {
-                        operator = (Integer) stk.pop();
-
-                        switch (operator) {
+                        switch ((Integer) stk.pop()) {
                             case CHOR:
                                 v1 = stk.pop();
                                 v2 = stk.pop();
@@ -154,6 +152,7 @@ public class MVELRuntime {
                             case SIMILARITY:
                                 stk.push(similarity(valueOf(stk.pop()), valueOf(stk.pop())));
                                 break;
+
                         }
                     }
                 }
@@ -161,7 +160,7 @@ public class MVELRuntime {
                     throw new CompileException("syntax error or incomptable types", e);
                 }
                 catch (Exception e) {
-                    throw new CompileException("failed to subEval expression", e);
+                    throw new CompileException("failed to compile sub expression", e);
                 }
             }
 

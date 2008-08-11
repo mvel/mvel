@@ -207,7 +207,7 @@ public class MVEL {
             return handleParserEgress(e.getValue(), false);
         }
     }
-
+                                                            
     /**
      * Executes a compiled expression.
      *
@@ -592,7 +592,7 @@ public class MVEL {
 
 
     public static Object getProperty(String property, Object ctx) {
-        return ReflectiveAccessorOptimizer.get(property, ctx);
+        return PropertyAccessor.get(property, ctx);
     }
 
     public static void setProperty(Object ctx, String property, Object value) {
