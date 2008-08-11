@@ -1,11 +1,11 @@
 package org.mvel;
 
+import static org.mvel.Operator.PTABLE;
 import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
-import static org.mvel.Operator.PTABLE;
 
 public class ExpressionCompiler extends AbstractParser {
     private Class returnType;
@@ -16,7 +16,7 @@ public class ExpressionCompiler extends AbstractParser {
     private ParserContext pCtx;
 
     public CompiledExpression compile() {
-        return compile(new ParserContext());
+        return compile(contextControl(GET_OR_CREATE, null, null));
     }
 
     public CompiledExpression compile(ParserContext ctx) {
