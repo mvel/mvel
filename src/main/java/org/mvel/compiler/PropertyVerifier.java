@@ -97,7 +97,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     /**
      * Process bean property
      *
-     * @param ctx - the ingress type
+     * @param ctx      - the ingress type
      * @param property - the property component
      * @return known egress type.
      */
@@ -197,7 +197,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     /**
      * Process collection property
      *
-     * @param ctx - the ingress type
+     * @param ctx      - the ingress type
      * @param property - the property component
      * @return known egress type
      */
@@ -233,7 +233,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     /**
      * Process method
      *
-     * @param ctx - the ingress type
+     * @param ctx  - the ingress type
      * @param name - the property component
      * @return known egress type.
      */
@@ -339,7 +339,13 @@ public class PropertyVerifier extends AbstractOptimizer {
                 if (gpt[i] instanceof ParameterizedType) {
                     pt = (ParameterizedType) gpt[i];
                     if ((z = parserContext.getImport(subtokens[i])) != null) {
+                        /**
+                         * We record the value of the type parameter to our typeArgs Map.
+                         */
                         if (pt.getRawType().equals(Class.class)) {
+                            /**
+                             * If this is an instance of Class, we deal with the special parameterization case.
+                             */
                             typeArgs.put(pt.getActualTypeArguments()[0].toString(), z);
                         }
                         else {
@@ -349,12 +355,22 @@ public class PropertyVerifier extends AbstractOptimizer {
                 }
             }
 
+            /**
+             * Get the return type argument
+             */
             String returnTypeArg = m.getGenericReturnType().toString();
 
             if (paramTypes != null && paramTypes.containsKey(returnTypeArg)) {
+                /**
+                 * If the paramTypes Map contains the known type, return that ype.
+                 */
                 return paramTypes.get(returnTypeArg);
             }
             else if (typeArgs.containsKey(returnTypeArg)) {
+                /**
+                 * If the geric type was declared as part of the method, it will be in this
+                 * Map.
+                 */
                 return typeArgs.get(returnTypeArg);
             }
         }
