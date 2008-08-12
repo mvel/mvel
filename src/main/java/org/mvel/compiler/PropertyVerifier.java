@@ -65,6 +65,11 @@ public class PropertyVerifier extends AbstractOptimizer {
         this.inputs = inputs;
     }
 
+    /**
+     * Analyze the statement and return the known egress type.
+     *
+     * @return known engress type
+     */
     public Class analyze() {
         Class ctx = Object.class;
         resolvedExternally = true;
@@ -90,6 +95,13 @@ public class PropertyVerifier extends AbstractOptimizer {
         return ctx;
     }
 
+    /**
+     * Process bean property
+     *
+     * @param ctx
+     * @param property
+     * @return known egress type.
+     */
     private Class getBeanProperty(Class ctx, String property) {
         if (first) {
             if (parserContext.hasVarOrInput(property)) {
@@ -184,6 +196,13 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
     }
 
+    /**
+     * Process collection property
+     *
+     * @param ctx
+     * @param property
+     * @return known egress type
+     */
     private Class getCollectionProperty(Class ctx, String property) {
         if (parserContext.hasVarOrInput(property)) {
             ctx = getSubComponentType(parserContext.getVarOrInputType(property));
@@ -213,13 +232,32 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
 
+    /**
+     * Process method
+     *
+     * @param ctx
+     * @param name
+     * @return known egress type.
+     */
     private Class getMethod(Class ctx, String name) {
+        /**
+         * Check to see if this is the first element in the statement.
+         */
         if (first) {
+            first = false;
+
+            /**
+             * It's the first element in the statement, therefore we check to see if there is a static import of a
+             * native Java method or an MVEL function.
+             */
             if (parserContext.hasImport(name)) {
                 Method m = parserContext.getStaticImport(name).getMethod();
+
+                /**
+                 * Replace the method parameters.
+                 */
                 ctx = m.getDeclaringClass();
                 name = m.getName();
-                first = false;
             }
             else if (parserContext.hasFunction(name)) {
                 resolvedExternally = false;
@@ -229,32 +267,33 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         int st = cursor;
 
+        /**
+         * Get the arguments for the method.
+         */
         String tk = ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
 
         cursor++;
 
-        if (tk.length() > 0) {
-            for (String token : parseParameterList(tk.toCharArray(), 0, -1)) {
-                new ExpressionCompiler(token)._compile();
-            }
-        }
-
+        /**
+         * Parse out the arguments list.
+         */
         Class[] args;
-        String[] subtokens;
+        String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
 
-        if (tk.length() == 0) {
+        if (subtokens.length == 0) {
             args = new Class[0];
             subtokens = new String[0];
         }
         else {
-            subtokens = parseParameterList(tk.toCharArray(), 0, -1);
             args = new Class[subtokens.length];
 
+            /**
+             *  Subcompile all the arguments to determine their known types.
+             */
             ExpressionCompiler compiler;
             for (int i = 0; i < subtokens.length; i++) {
                 (compiler = new ExpressionCompiler(subtokens[i], true))._compile();
                 args[i] = compiler.getReturnType() != null ? compiler.getReturnType() : Object.class;
-
             }
         }
 
@@ -288,6 +327,9 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
         }
 
+        /**
+         * If we're in strict mode, we look for generic type information.
+         */
         if (parserContext.isStrictTypeEnforcement() && m.getGenericReturnType() != null) {
             Map<String, Class> typeArgs = new HashMap<String, Class>();
 
