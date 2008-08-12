@@ -268,9 +268,6 @@ public class PropertyVerifier extends AbstractOptimizer {
         /**
          * If we have not cached the method then we need to go ahead and try to resolve it.
          */
-        /**
-         * Try to find an instance method from the class target.
-         */
 
         if ((m = getBestCandidate(args, name, ctx, ctx.getMethods())) == null) {
             if ((m = getBestCandidate(args, name, ctx, ctx.getDeclaredMethods())) == null) {

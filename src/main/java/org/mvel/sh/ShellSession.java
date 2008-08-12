@@ -36,6 +36,7 @@ public class ShellSession {
     private String prompt;
     private String commandBuffer;
 
+    //todo: fix this
     public void run() {
         System.out.println("Starting session...");
 
