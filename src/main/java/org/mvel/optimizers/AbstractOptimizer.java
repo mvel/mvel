@@ -36,6 +36,10 @@ public class AbstractOptimizer extends AbstractParser {
 
     protected int start = 0;
 
+    /**
+     * Try static access of the property, and return an instance of the Field, Method of Class if successful.
+     * @return - Field, Method or Class instance.
+     */
     protected Object tryStaticAccess() {
         int begin = cursor;
         try {
@@ -103,13 +107,6 @@ public class AbstractOptimizer extends AbstractParser {
 
                         break;
 
-//                    case ')':
-//                        if (depth++ == 0)
-//                            meth = true;
-//                        break;
-//                    case '(':
-//                        depth--;
-//                        break;
 
                     case '\'':
                         while (--i > 0) {
@@ -176,6 +173,9 @@ public class AbstractOptimizer extends AbstractParser {
         return new String(expr, start = trimRight(start), trimLeft(cursor) - start);
     }
 
+    /**
+     * Skip to the next non-whitespace position.
+     */
     protected void whiteSpaceSkip() {
         if (cursor < length)
             //noinspection StatementWithEmptyBody
@@ -183,7 +183,7 @@ public class AbstractOptimizer extends AbstractParser {
     }
 
     /**
-     * @param c
+     * @param c - character to scan for.
      * @return true if end of char[] is reached, false is the character is encountered.
      */
     protected boolean scanTo(char c) {

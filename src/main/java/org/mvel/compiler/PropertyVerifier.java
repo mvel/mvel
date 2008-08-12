@@ -134,7 +134,6 @@ public class PropertyVerifier extends AbstractOptimizer {
 
                     Type[] gpt = pt.getActualTypeArguments();
                     Type[] classArgs = ((Class) pt.getRawType()).getTypeParameters();
-                    //   ParameterizedType pt;
 
                     if (gpt.length > 0 && paramTypes == null) paramTypes = new HashMap<String, Class>();
                     for (int i = 0; i < gpt.length; i++) {
