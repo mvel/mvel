@@ -21,7 +21,6 @@ package org.mvel.compiler;
 import org.mvel.CompileException;
 import org.mvel.ParserContext;
 import org.mvel.PropertyAccessException;
-import org.mvel.ast.Function;
 import org.mvel.optimizers.AbstractOptimizer;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
@@ -29,10 +28,10 @@ import static org.mvel.util.PropertyTools.getSubComponentType;
 import org.mvel.util.StringAppender;
 
 import java.lang.reflect.*;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 public class PropertyVerifier extends AbstractOptimizer {
     private static final int DONE = -1;
@@ -98,8 +97,8 @@ public class PropertyVerifier extends AbstractOptimizer {
     /**
      * Process bean property
      *
-     * @param ctx
-     * @param property
+     * @param ctx - the ingress type
+     * @param property - the property component
      * @return known egress type.
      */
     private Class getBeanProperty(Class ctx, String property) {
@@ -199,8 +198,8 @@ public class PropertyVerifier extends AbstractOptimizer {
     /**
      * Process collection property
      *
-     * @param ctx
-     * @param property
+     * @param ctx - the ingress type
+     * @param property - the property component
      * @return known egress type
      */
     private Class getCollectionProperty(Class ctx, String property) {
@@ -235,8 +234,8 @@ public class PropertyVerifier extends AbstractOptimizer {
     /**
      * Process method
      *
-     * @param ctx
-     * @param name
+     * @param ctx - the ingress type
+     * @param name - the property component
      * @return known egress type.
      */
     private Class getMethod(Class ctx, String name) {
