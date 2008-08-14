@@ -119,7 +119,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 return Object.class;
             }
         }
-
+        
         start = cursor;
 
         Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
