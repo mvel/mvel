@@ -28,10 +28,7 @@ import static org.mvel.util.PropertyTools.getSubComponentType;
 import org.mvel.util.StringAppender;
 
 import java.lang.reflect.*;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PropertyVerifier extends AbstractOptimizer {
     private static final int DONE = -1;
@@ -149,7 +146,16 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
         }
         else if (member != null) {
-            return ((Method) member).getReturnType();
+            //if not a field, then this is a property getter
+            final Method method = (Method) member;
+            Type parametricReturnType = method.getGenericReturnType();
+
+            //push return type parameters onto parser context, only if this is a parametric type
+            if (parametricReturnType instanceof ParameterizedType) {
+                parserContext.setLastTypeParameters(((ParameterizedType) parametricReturnType).getActualTypeArguments());
+            }
+
+            return method.getReturnType();
         }
         else if (parserContext.hasImport(property)) {
             return parserContext.getImport(property);
@@ -358,7 +364,13 @@ public class PropertyVerifier extends AbstractOptimizer {
             /**
              * Get the return type argument
              */
-            String returnTypeArg = m.getGenericReturnType().toString();
+            Type parametricReturnType = m.getGenericReturnType();
+            String returnTypeArg = parametricReturnType.toString();
+
+            //push return type parameters onto parser context, only if this is a parametric type
+            if (parametricReturnType instanceof ParameterizedType) {
+                parserContext.setLastTypeParameters(((ParameterizedType) parametricReturnType).getActualTypeArguments());
+            }
 
             if (paramTypes != null && paramTypes.containsKey(returnTypeArg)) {
                 /**
