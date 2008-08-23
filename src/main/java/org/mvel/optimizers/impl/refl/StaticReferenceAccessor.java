@@ -35,6 +35,11 @@ public class StaticReferenceAccessor implements AccessorNode {
         }
     }
 
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        // not implemented
+        return null;
+    }
+
     public Object getLiteral() {
         return literal;
     }
@@ -58,9 +63,4 @@ public class StaticReferenceAccessor implements AccessorNode {
         return this.nextNode = nextNode;
     }
 
-
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        // not implemented
-        return null;
-    }
 }

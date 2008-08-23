@@ -44,10 +44,14 @@ public class ArrayAccessor implements AccessorNode {
         }
     }
 
-
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        Array.set(ctx, index, value);
-        return value;
+        if (nextNode != null) {
+            return nextNode.setValue(Array.get(ctx, index), elCtx, variableFactory, value);
+        }
+        else {
+            Array.set(ctx, index, value);
+            return value;
+        }
     }
 
     public int getIndex() {

@@ -293,7 +293,7 @@ public class ClassWriter implements ClassVisitor {
     /**
      * Number of elements in the {@link #typeTable} array.
      */
-    private short typeCount; // TODO int?
+    private short typeCount; 
 
     /**
      * The access flags of this class.

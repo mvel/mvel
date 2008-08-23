@@ -1,5 +1,8 @@
 package org.mvel.tests;
 
+import java.util.HashMap;
+import java.util.List;
+
 import org.mvel.compiler.Accessor;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
@@ -11,9 +14,10 @@ public class AccessorBMModel implements Accessor {
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         return ((Foo) ctx).getBar().getName();
-    }
+       }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return null;
+       // ((List) ctx).set(55, value);
+    	return ((String[]) ctx)[(Integer) p0.getValue(ctx, variableFactory)] = (String) value;
     }
 }

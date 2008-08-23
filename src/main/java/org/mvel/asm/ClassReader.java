@@ -1053,7 +1053,7 @@ public class ClassReader {
                          * smaller than the offset of the current insn and for
                          * which no Label exist.
                          */
-                        // TODO true for frame offsets,
+                        //
                         // but for UNINITIALIZED type offsets?
                     }
                     else if (attrName.equals("StackMap")) {

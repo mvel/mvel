@@ -56,12 +56,17 @@ public class DynamicFieldAccessor implements AccessorNode {
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         try {
-            field.set(ctx, DataConversion.convert(value, targetType));
+            if (nextNode != null) {
+                return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value);
+            }
+            else {
+                field.set(ctx, DataConversion.convert(value, targetType));
+                return value;
+            }
         }
         catch (Exception e) {
             throw new CompileException("unable to access field", e);
         }
-        return value;
     }
 
     public Field getField() {

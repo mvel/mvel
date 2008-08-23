@@ -15,6 +15,8 @@ public class Foo {
 
     private Collection collectionTest;
 
+    private SampleBean sampleBean = new SampleBean();
+
     public void abc() {
     }
 
@@ -54,6 +56,14 @@ public class Foo {
 
     public void setCollectionTest(Collection collectionTest) {
         this.collectionTest = collectionTest;
+    }
+
+    public SampleBean getSampleBean() {
+        return sampleBean;
+    }
+
+    public void setSampleBean(SampleBean sampleBean) {
+        this.sampleBean = sampleBean;
     }
 
     public int getCountTest() {

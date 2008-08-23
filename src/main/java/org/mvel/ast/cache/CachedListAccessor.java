@@ -39,9 +39,6 @@ public class CachedListAccessor implements Accessor {
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        // return Arrays.asList(cached);
-
-
         return new FastList(cached);
     }
 

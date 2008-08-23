@@ -34,6 +34,9 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 
+/**
+ * The interpreted runtime.
+ */
 @SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class MVELInterpretedRuntime extends AbstractParser {
     private boolean returnBigDecimal = false;

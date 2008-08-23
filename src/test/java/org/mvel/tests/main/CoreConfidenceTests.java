@@ -14,6 +14,7 @@ import org.mvel.debug.Frame;
 import org.mvel.integration.Interceptor;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.PropertyHandlerFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
@@ -34,7 +35,7 @@ import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
 import java.lang.reflect.Type;
 
-@SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes", "UnnecessaryBoxing", "unchecked", "PointlessArithmeticExpression"})
+@SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
     public void testSingleProperty() {
         assertEquals(false, test("fun"));
@@ -347,6 +348,10 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testAssignment4() {
         assertEquals(102, test("a = 100 + 1 + 1"));
+    }
+
+    public void testAssignment6() {
+        assertEquals("blip", test("array[zero] = array[zero+1]; array[zero]"));
     }
 
     public void testOr() {
@@ -2489,6 +2494,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(10, test("xx0 = 5; xx0 += 4; xx0 + 1"));
     }
 
+    public void testAssignPlus2() {
+        assertEquals(10, test("xx0 = 5; xx0 =+ 4; xx0 + 1"));
+    }
+
     public void testAssignDiv() {
         assertEquals(2, test("xx0 = 20; xx0 /= 10; xx0"));
     }
@@ -2516,7 +2525,6 @@ public class CoreConfidenceTests extends AbstractTest {
         PojoStatic pojo = new PojoStatic("10");
         assertEquals("java.lang.String", eval("org.mvel.tests.main.res.AStatic.Process(value.getClass().getName().toString())", pojo));
     }
-
 
     public void testStringIndex() {
         assertEquals(true, test("a = 'foobar'; a[4] == 'a'"));
@@ -2691,7 +2699,6 @@ public class CoreConfidenceTests extends AbstractTest {
         Serializable s = MVEL.compileExpression(expression);
 
         assertEquals(200 + 100 - 150 * 2 * 400 / 300 - 75 + 10, MVEL.executeExpression(s, map));
-
     }
 
     public void testMath34_Interpreted() {
@@ -2707,7 +2714,6 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(200 + 100 - 150 * 400 / 300 - 75, MVEL.eval(expression, map));
     }
-
 
     public void testMath35() {
         String expression = "b/x/b/b*y+a";
@@ -2779,7 +2785,6 @@ public class CoreConfidenceTests extends AbstractTest {
         Map map = new HashMap();
         map.put("foo", foo);
 
-
         String expression = "foo.?bar.name == null";
         Serializable compiled = MVEL.compileExpression(expression);
 
@@ -2790,7 +2795,6 @@ public class CoreConfidenceTests extends AbstractTest {
         OptimizerFactory.setDefaultOptimizer("reflective");
         assertEquals(true, executeExpression(compiled, map));
         assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
-
 
         assertEquals(true, eval(expression, map));
     }
@@ -2887,7 +2891,6 @@ public class CoreConfidenceTests extends AbstractTest {
         Serializable execution = compiler.compile(context);
         EmailMessage result = (EmailMessage) MVEL.executeExpression(execution);
         assertEquals(msg, result);
-
     }
 
     public static class Recipient {
@@ -3148,6 +3151,10 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testFunctionDefAndCall5() {
         assertEquals(10, test("function testFunction(x, y) { return x + y; }; testFunction(7, 3);"));
+    }
+
+    public void testFunctionDefAndCall6() {
+        assertEquals("foo", MVEL.eval("def fooFunction(x) x; fooFunction('foo')", new HashMap()));
     }
 
     public void testDynamicImports2() {
@@ -3452,7 +3459,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addInput("foo", HashMap.class, new Class[]{String.class, String.class});
 
         ExpressionCompiler compiler = new ExpressionCompiler("foo.get('bar').toUpperCase()");
-        CompiledExpression e = compiler.compile(ctx);
+        compiler.compile(ctx);
     }
 
     public void testParameterizedTypeInStrictMode2() {
@@ -3684,16 +3691,18 @@ public class CoreConfidenceTests extends AbstractTest {
         final CompiledExpression expr = new ExpressionCompiler("strings", parserContext)
                 .compile();
 
-//        final CompiledExpression expr = new ExpressionCompiler("strings").compile(parserContext);
-        
-
-        assert STRINGS.equals(MVEL.executeExpression(expr, new A())) : "faulty expression eval";
+        assertTrue(STRINGS.equals(MVEL.executeExpression(expr, new A())));
 
         final Type[] typeParameters = expr.getParserContext().getLastTypeParameters();
 
-        assert null != typeParameters : "no generic egress type";
-        assert String.class.equals(typeParameters[0]) : "wrong generic egress type";
+        assertTrue(null != typeParameters);
+        assertTrue(String.class.equals(typeParameters[0]));
 
+    }
+
+    public void testCustomPropertyHandler() {
+        PropertyHandlerFactory.registerPropertyHandler(SampleBean.class, new SampleBeanAccessor());
+        assertEquals("dog", test("foo.sampleBean.bar.name"));
     }
 }
 

@@ -849,6 +849,12 @@ public class AbstractParser implements Serializable {
 
             return createPropertyToken(start, cursor);
         }
+        catch (ArrayIndexOutOfBoundsException e) {
+            CompileException c = new CompileException("unexpected end of statement", expr, cursor);
+            c.setLineNumber(line);
+            c.setColumn(cursor - lastLineStart);
+            throw c;
+        }
         catch (CompileException e) {
             CompileException c = new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0, e);
             c.setLineNumber(line);
@@ -1067,7 +1073,7 @@ public class AbstractParser implements Serializable {
                     blockEnd = cursor = balancedCapture(expr, cursor, '{');
                 }
                 else {
-                    blockStart = cursor;
+                    blockStart = cursor - 1;
                     captureToEOS();
                     blockEnd = cursor;
                 }
@@ -1087,7 +1093,7 @@ public class AbstractParser implements Serializable {
                     /**
                      * This is a single statement function declaration.  We only capture the statement.
                      */
-                    blockStart = cursor;
+                    blockStart = cursor - 1;
                     captureToEOS();
                     blockEnd = cursor;
                 }
@@ -1926,25 +1932,16 @@ public class AbstractParser implements Serializable {
 
     private void dreduce2() {
         Object o1, o2;
-        boolean x = false;
 
-        do {
-            if (x = !x) {
-                o1 = dStack.pop();
-                o2 = dStack.pop();
-                if (!dStack.isEmpty()) stk.push(dStack.pop());
-            }
-            else {
-                o2 = dStack.pop();
-                o1 = dStack.pop();
-            }
+        o1 = dStack.pop();
+        o2 = dStack.pop();
 
-            stk.push(o1);
-            stk.push(o2);
+        if (!dStack.isEmpty()) stk.push(dStack.pop());
 
-            reduce();
-        }
-        while (dStack.size() > 1);
+        stk.push(o1);
+        stk.push(o2);
+
+        reduce();
     }
 
     /**

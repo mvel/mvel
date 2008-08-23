@@ -53,11 +53,15 @@ public class MapAccessorNest implements AccessorNode {
         }
     }
 
-
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        //noinspection unchecked
-        ((Map) ctx).put(property.getValue(ctx, elCtx, variableFactory), value);
-        return value;
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
+        if (nextNode != null) {
+            return nextNode.setValue(((Map) ctx).get(property.getValue(ctx, elCtx, vars)), elCtx, vars, value);
+        }
+        else {
+            //noinspection unchecked
+            ((Map) ctx).put(property.getValue(ctx, elCtx, vars), value);
+            return value;
+        }
     }
 
     public ExecutableStatement getProperty() {

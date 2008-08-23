@@ -27,6 +27,7 @@ public class DynamicClassLoader extends ClassLoader implements MVELClassLoader {
 
     public DynamicAccessor registerDynamicAccessor(DynamicAccessor accessor) {
         allAccessors.add(accessor);
+        assert accessor != null;
         return accessor;
     }
 

@@ -59,6 +59,8 @@ public abstract class AbstractTest extends TestCase {
         map.put("hour", "60");
         map.put("zero", 0);
 
+        map.put("array", new String[] { "", "blip" });
+
         map.put("order", new Order());
         map.put("$id", 20);
 
@@ -220,15 +222,12 @@ public abstract class AbstractTest extends TestCase {
                 e.printStackTrace();
                 return;
             }
-
-
         }
     }
 
     protected static Object runSingleTest(final String ex) {
         return _test(ex);
     }
-
 
     protected static Object testCompiledSimple(String ex) {
         return MVEL.executeExpression(MVEL.compileExpression(ex));

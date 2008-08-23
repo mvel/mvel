@@ -25,9 +25,6 @@ import static java.lang.Thread.currentThread;
  */
 @SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class MVELRuntime {
-//    private static ThreadLocal<Map<String, Set<Integer>>> threadBreakpoints;
-//    private static ThreadLocal<Debugger> threadDebugger;
-
     private static ThreadLocal<DebuggerContext> debuggerContext;
 
     /**
@@ -106,7 +103,6 @@ public class MVELRuntime {
                         }
 
                         continue;
-
                 }
 
                 stk.push(node.nextNode().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
@@ -130,7 +126,6 @@ public class MVELRuntime {
                                     stk.push(((Class) v1).isInstance(stk.pop()));
                                 else
                                     stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(stk.pop()));
-
                                 break;
 
                             case CONVERTABLE_TO:

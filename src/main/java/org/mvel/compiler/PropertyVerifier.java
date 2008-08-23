@@ -116,7 +116,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 return Object.class;
             }
         }
-        
+
         start = cursor;
 
         Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
@@ -146,15 +146,18 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
         }
         else if (member != null) {
-            //if not a field, then this is a property getter
-            final Method method = (Method) member;
-            Type parametricReturnType = method.getGenericReturnType();
+            Method method = (Method) member;
 
-            //push return type parameters onto parser context, only if this is a parametric type
-            if (parametricReturnType instanceof ParameterizedType) {
-                parserContext.setLastTypeParameters(((ParameterizedType) parametricReturnType).getActualTypeArguments());
+            if (parserContext.isStrictTypeEnforcement()) {
+                //if not a field, then this is a property getter
+                Type parametricReturnType = method.getGenericReturnType();
+
+                //push return type parameters onto parser context, only if this is a parametric type
+                if (parametricReturnType instanceof ParameterizedType) {
+                    parserContext.setLastTypeParameters(((ParameterizedType) parametricReturnType).getActualTypeArguments());
+                }
+
             }
-
             return method.getReturnType();
         }
         else if (parserContext.hasImport(property)) {
@@ -374,13 +377,13 @@ public class PropertyVerifier extends AbstractOptimizer {
 
             if (paramTypes != null && paramTypes.containsKey(returnTypeArg)) {
                 /**
-                 * If the paramTypes Map contains the known type, return that ype.
+                 * If the paramTypes Map contains the known type, return thatt ype.
                  */
                 return paramTypes.get(returnTypeArg);
             }
             else if (typeArgs.containsKey(returnTypeArg)) {
                 /**
-                 * If the geric type was declared as part of the method, it will be in this
+                 * If the generic type was declared as part of the method, it will be in this
                  * Map.
                  */
                 return typeArgs.get(returnTypeArg);

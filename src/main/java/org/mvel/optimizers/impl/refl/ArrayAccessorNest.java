@@ -56,21 +56,25 @@ public class ArrayAccessorNest implements AccessorNode {
     }
 
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        if (baseComponentType == null) {
-            baseComponentType = getBaseComponentType(ctx.getClass());
-            requireConversion = baseComponentType != value.getClass() && !baseComponentType.isAssignableFrom(value.getClass());
-        }
-
-
-        if (requireConversion) {
-            Object o = convert(value, baseComponentType);
-            Array.set(ctx, (Integer) index.getValue(ctx, elCtx, variableFactory), o);
-            return o;
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
+        if (nextNode != null) {
+             return nextNode.setValue(((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)], elCtx, vars, value);
         }
         else {
-            Array.set(ctx, (Integer) index.getValue(ctx, elCtx, variableFactory), value);
-            return value;
+            if (baseComponentType == null) {
+                baseComponentType = getBaseComponentType(ctx.getClass());
+                requireConversion = baseComponentType != value.getClass() && !baseComponentType.isAssignableFrom(value.getClass());
+            }
+
+            if (requireConversion) {
+                Object o = convert(value, baseComponentType);
+                Array.set(ctx, (Integer) index.getValue(ctx, elCtx, vars), o);
+                return o;
+            }
+            else {
+                Array.set(ctx, (Integer) index.getValue(ctx, elCtx, vars), value);
+                return value;
+            }
         }
     }
 

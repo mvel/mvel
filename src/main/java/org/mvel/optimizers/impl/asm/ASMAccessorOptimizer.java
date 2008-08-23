@@ -22,6 +22,7 @@ import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.isAdvancedDebugging;
+import static org.mvel.MVEL.eval;
 import org.mvel.asm.ClassWriter;
 import org.mvel.asm.Label;
 import org.mvel.asm.MethodVisitor;
@@ -34,16 +35,21 @@ import static org.mvel.ast.TypeDescriptor.getClassReference;
 import org.mvel.compiler.Accessor;
 import org.mvel.compiler.ExecutableLiteral;
 import org.mvel.compiler.ExecutableStatement;
+import org.mvel.compiler.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.PropertyHandlerFactory;
+import org.mvel.integration.PropertyHandler;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
-import org.mvel.optimizers.impl.refl.Union;
-import org.mvel.optimizers.impl.refl.StaticReferenceAccessor;
+import org.mvel.optimizers.impl.refl.*;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.*;
 import static org.mvel.util.PropertyTools.getBaseComponentType;
+import static org.mvel.util.PropertyTools.getFieldOrAccessor;
+import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
 import static org.mvel.util.ParseTools.*;
+import static org.mvel.util.ParseTools.balancedCapture;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -63,7 +69,6 @@ import java.util.Map;
  * Implementation of the MVEL Just-in-Time (JIT) compiler for Property Accessors using the ASM bytecode
  * engineering library.
  * <p/>
- * TODO: This class needs serious re-factoring.
  */
 @SuppressWarnings({"TypeParameterExplicitlyExtendsObject", "unchecked", "UnusedDeclaration"})
 public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
@@ -93,6 +98,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private static final Class[] EMPTYCLS = new Class[0];
 
     private boolean first = true;
+    private boolean noinit = false;
     private boolean deferFinish = false;
     private boolean literal = false;
 
@@ -151,6 +157,36 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
+    private void _initJIT2() {
+        if (isAdvancedDebugging()) {
+            buildLog = new StringAppender();
+        }
+
+        cw = new ClassWriter(ClassWriter.COMPUTE_MAXS + ClassWriter.COMPUTE_FRAMES);
+
+        synchronized (Runtime.getRuntime()) {
+            cw.visit(OPCODES_VERSION, Opcodes.ACC_PUBLIC + Opcodes.ACC_SUPER, className = "ASMAccessorImpl_"
+                    + valueOf(cw.hashCode()).replaceAll("\\-", "_") + (System.currentTimeMillis() / 10) +
+                    ((int) Math.random() * 100),
+                    null, "java/lang/Object", new String[]{"org/mvel/compiler/Accessor"});
+        }
+
+        MethodVisitor m = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
+
+        m.visitCode();
+        m.visitVarInsn(Opcodes.ALOAD, 0);
+        m.visitMethodInsn(INVOKESPECIAL, "java/lang/Object",
+                "<init>", "()V");
+        m.visitInsn(RETURN);
+
+        m.visitMaxs(1, 1);
+        m.visitEnd();
+
+        (mv = cw.visitMethod(ACC_PUBLIC, "setValue",
+                "(Ljava/lang/Object;Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;Ljava/lang/Object;)Ljava/lang/Object;", null, null)).visitCode();
+
+    }
+
     public Accessor optimizeAccessor(char[] property, Object staticContext, Object thisRef, VariableResolverFactory factory, boolean root) {
         time = System.currentTimeMillis();
 
@@ -167,33 +203,281 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.thisRef = thisRef;
         this.variableFactory = factory;
 
-        _initJIT();
+        if (!noinit) _initJIT();
 
         return compileAccessor();
     }
 
-    public SetAccessor optimizeSetAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value) {
-        throw new RuntimeException("not implemented");
+    public Accessor optimizeSetAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value) {
+        this.start = this.cursor = 0;
+        this.first = true;
+
+        compiledInputs = new ArrayList<ExecutableStatement>();
+
+        this.length = (this.expr = property).length;
+        this.ctx = ctx;
+        this.thisRef = thisRef;
+        this.variableFactory = factory;
+
+        char[] root = null;
+
+        int split = findLastUnion();
+
+        if (split != -1) {
+            root = subset(property, 0, split++);
+            property = subset(property, split, property.length - split);
+        }
+
+        AccessorNode rootAccessor = null;
+
+        _initJIT2();
+
+        if (root != null) {
+            this.length = (this.expr = root).length;
+
+            // run the compiler but don't finish building.
+            deferFinish = true;
+            noinit = true;
+
+            compileAccessor();
+
+            //  rootAccessor = compileGetChain();
+            ctx = this.val;
+        }
+
+        try {
+            this.length = (this.expr = property).length;
+            this.cursor = this.start = 0;
+
+            whiteSpaceSkip();
+
+            if (collection) {
+                int start = cursor;
+                whiteSpaceSkip();
+
+                if (cursor == length)
+                    throw new PropertyAccessException("unterminated '['");
+
+                if (scanTo(']'))
+                    throw new PropertyAccessException("unterminated '['");
+
+                String ex = new String(property, start, cursor - start);
+
+//                assert debug("ALOAD 1");
+//                mv.visitVarInsn(ALOAD, 1);
+//
+                assert debug("CHECKCAST " + ctx.getClass().getName());
+                mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
+
+
+                if (ctx instanceof Map) {
+                    //noinspection unchecked
+                    ((Map) ctx).put(eval(ex, ctx, variableFactory), value);
+
+                    writeLiteralOrSubexpression(subCompileExpression(ex));
+
+                    assert debug("ALOAD 4");
+                    mv.visitVarInsn(ALOAD, 4);
+
+                    assert debug("DUP_X1");
+                    mv.visitInsn(DUP_X1);
+
+                    assert debug("INVOKEINTERFACE Map.put");
+                    mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+                    assert debug("POP");
+                    mv.visitInsn(POP);
+                }
+                else if (ctx instanceof List) {
+                    //noinspection unchecked
+                    ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), value);
+
+                    writeLiteralOrSubexpression(subCompileExpression(ex));
+                    unwrapPrimitive(int.class);
+
+                    assert debug("ALOAD 4");
+                    mv.visitVarInsn(ALOAD, 4);
+
+                    assert debug("DUP_X1");
+                    mv.visitInsn(DUP_X1);
+
+                    assert debug("INVOKEINTERFACE List.set");
+                    mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "set", "(ILjava/lang/Object;)Ljava/lang/Object;");
+
+                    assert debug("POP");
+                    mv.visitInsn(POP);
+
+                }
+                else if (ctx.getClass().isArray()) {
+                    Class type = getBaseComponentType(ctx.getClass());
+
+                    Object idx = eval(ex, ctx, variableFactory);
+
+                    writeLiteralOrSubexpression(subCompileExpression(ex));
+                    if (!(idx instanceof Integer)) {
+                        dataConversion(Integer.class);
+                        idx = DataConversion.convert(idx, Integer.class);
+                    }
+
+                    unwrapPrimitive(int.class);
+
+                    assert debug("ALOAD 4");
+                    mv.visitVarInsn(ALOAD, 4);
+
+                    assert debug("CHECKCAST " + getInternalName(type));
+                    mv.visitTypeInsn(CHECKCAST, getInternalName(type));
+
+                    assert debug("DUP_X2");
+                    mv.visitInsn(DUP_X2);
+
+                    if (!type.equals(value.getClass())) dataConversion(type);
+                    if (type.isPrimitive()) wrapPrimitive(type);
+
+                    arrayStore(type);
+
+                    //noinspection unchecked
+                    Array.set(ctx, (Integer) idx, convert(value, getBaseComponentType(ctx.getClass())));
+                }
+                else {
+                    throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
+                }
+
+                deferFinish = false;
+                noinit = false;
+
+                _finishJIT();
+
+                try {
+                    deferFinish = false;
+                    return _initializeAccessor();
+                }
+                catch (Exception e) {
+                    throw new CompileException("could not generate accessor", e);
+                }
+            }
+
+            String tk = new String(property);
+            Member member = getFieldOrWriteAccessor(ctx.getClass(), tk);
+
+            if (member instanceof Field) {
+                assert debug("ALOAD 1");
+                mv.visitVarInsn(ALOAD, 1);
+
+                assert debug("CHECKCAST " + ctx.getClass().getName());
+                mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
+
+
+                Field fld = (Field) member;
+
+                assert debug("ALOAD 4");
+                mv.visitVarInsn(ALOAD, 4);
+
+                assert debug("CHECKCAST " + fld.getType().getName());
+                mv.visitTypeInsn(CHECKCAST, getInternalName(fld.getType()));
+
+                assert debug("DUP_X1");
+                mv.visitInsn(DUP_X1);
+
+                if (value != null && !fld.getType().isAssignableFrom(value.getClass())) {
+                    if (!canConvert(fld.getType(), value.getClass())) {
+                        throw new ConversionException("cannot convert type: "
+                                + value.getClass() + ": to " + fld.getType());
+                    }
+
+                    dataConversion(fld.getType());
+                    fld.set(ctx, convert(value, fld.getType()));
+                }
+                else {
+                    fld.set(ctx, value);
+                }
+
+                assert debug("PUTFIELD " + getInternalName(fld.getDeclaringClass()) + "." + tk);
+                mv.visitFieldInsn(PUTFIELD, getInternalName(fld.getDeclaringClass()), tk, getDescriptor(fld.getType()));
+
+            }
+            else if (member != null) {
+                assert debug("ALOAD 1");
+                mv.visitVarInsn(ALOAD, 1);
+
+                assert debug("CHECKCAST " + ctx.getClass().getName());
+                mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
+
+                Method meth = (Method) member;
+
+                Class targetType = meth.getParameterTypes()[0];
+
+                assert debug("ALOAD 4");
+                mv.visitVarInsn(ALOAD, 4);
+
+                assert debug("CHECKCAST " + targetType);
+                mv.visitTypeInsn(CHECKCAST, getInternalName(targetType));
+
+                assert debug("DUP_X1");
+                mv.visitInsn(DUP_X1);
+
+                if (value != null && !targetType.isAssignableFrom(value.getClass())) {
+                    if (!canConvert(targetType, value.getClass())) {
+                        throw new ConversionException("cannot convert type: "
+                                + value.getClass() + ": to " + meth.getParameterTypes()[0]);
+                    }
+
+                    dataConversion(targetType);
+                    if (targetType.isPrimitive()) unwrapPrimitive(targetType);
+
+                    meth.invoke(ctx, convert(value, meth.getParameterTypes()[0]));
+                }
+                else {
+                    meth.invoke(ctx, value);
+                }
+
+                assert debug("INVOKEVIRTUAL " + getInternalName(meth.getDeclaringClass()) + "." + meth.getName());
+                mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(meth.getDeclaringClass()), meth.getName(),
+                        getMethodDescriptor(meth));
+
+            }
+            else {
+                throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
+            }
+        }
+        catch (InvocationTargetException e) {
+            throw new PropertyAccessException("could not access property", e);
+        }
+        catch (IllegalAccessException e) {
+            throw new PropertyAccessException("could not access property", e);
+        }
+
+
+        try {
+            deferFinish = false;
+            noinit = false;
+
+            _finishJIT();
+            return _initializeAccessor();
+        }
+        catch (Exception e) {
+
+            throw new CompileException("could not generate accessor", e);
+        }
     }
 
     private void _finishJIT() {
-        if (!deferFinish) {
-            if (returnType != null && returnType.isPrimitive()) {
-                //noinspection unchecked
-                wrapPrimitive(returnType);
-            }
+        if (deferFinish) return;
 
-            if (returnType == void.class) {
-                assert debug("ACONST_NULL");
-                mv.visitInsn(ACONST_NULL);
-            }
-
-            assert debug("ARETURN");
-
-            mv.visitInsn(ARETURN);
+        if (returnType != null && returnType.isPrimitive()) {
+            //noinspection unchecked
+            wrapPrimitive(returnType);
         }
 
+        if (returnType == void.class) {
+            assert debug("ACONST_NULL");
+            mv.visitInsn(ACONST_NULL);
+        }
+
+        assert debug("ARETURN");
+        mv.visitInsn(ARETURN);
+
         assert debug("\n{METHOD STATS (maxstack=" + stacksize + ")}\n");
+
         mv.visitMaxs(stacksize, maxlocals);
         mv.visitEnd();
 
@@ -205,6 +489,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private Accessor _initializeAccessor() throws Exception {
+        if (deferFinish) return null;
+
         /**
          * Hot load the class we just generated.
          */
@@ -310,7 +596,19 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
-        Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
+
+        if (PropertyHandlerFactory.hasPropertyHandler(cls)) {
+            PropertyHandler prop = PropertyHandlerFactory.getPropertyHandler(cls);
+            if (prop instanceof ProducesBytecode) {
+                ((ProducesBytecode) prop).produceBytecodeGet(mv, property, variableFactory);
+                return prop.getProperty(property, ctx, variableFactory);
+            }
+            else {
+                throw new RuntimeException("unable to compile: custom accessor does not support producing bytecode: " + prop.getClass().getName());
+            }
+        }
+
+        Member member = cls != null ? getFieldOrAccessor(cls, property) : null;
 
         if (first) {
             if ("this".equals(property)) {
@@ -408,7 +706,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
             catch (IllegalAccessException e) {
                 Method iFaceMeth = determineActualTargetMethod((Method) member);
-                if (iFaceMeth == null) throw new PropertyAccessException("could not access field: " + cls.getName() + "." + property);                
+                if (iFaceMeth == null)
+                    throw new PropertyAccessException("could not access field: " + cls.getName() + "." + property);
 
                 assert debug("CHECKCAST " + getInternalName(iFaceMeth.getDeclaringClass()));
                 mv.visitTypeInsn(CHECKCAST, getInternalName(iFaceMeth.getDeclaringClass()));
@@ -464,7 +763,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else {
             Object ts = tryStaticAccess();
-            //todo: inline final literals
 
             if (ts != null) {
                 if (ts instanceof Class) {
@@ -612,9 +910,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         }
         else if (ctx.getClass().isArray()) {
-            //       assert debug("CHECKCAST [Ljava/lang/Object;");
-            //
-            //        mv.visitTypeInsn(CHECKCAST, "[Ljava/lang/Object;");
             assert debug("CHECKCAST " + getDescriptor(ctx.getClass()));
             mv.visitTypeInsn(CHECKCAST, getDescriptor(ctx.getClass()));
 
@@ -714,7 +1009,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         assert debug("\n  **  {method: " + name + "}");
 
         int st = cursor;
-        String tk = ((cursor = ParseTools.balancedCapture(expr, cursor, '(')) - st) > 1 ?
+        String tk = ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ?
                 new String(expr, st + 1, cursor - st - 1) : "";
         cursor++;
 
@@ -782,7 +1077,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         assert debug("AASTORE");
                         mv.visitInsn(AASTORE);
                     }
-
                 }
                 else {
                     assert debug("ACONST_NULL");
@@ -794,7 +1088,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     assert debug("ASTORE 4");
                     mv.visitVarInsn(ASTORE, 4);
                 }
-
 
                 if (variableFactory.isIndexedFactory() && variableFactory.isTarget(name)) {
                     loadVariableByIndex(variableFactory.variableIndexOf(name));
@@ -1109,6 +1402,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private void dataConversion(Class target) {
+        if (target.equals(Object.class)) return;
+
         ldcClassConstant(target);
         assert debug("INVOKESTATIC org/mvel/DataConversion.convert");
         mv.visitMethodInsn(INVOKESTATIC, "org/mvel/DataConversion", "convert", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
@@ -1239,13 +1534,13 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-     private void wrapPrimitive(Class<? extends Object> cls) {
+    private void wrapPrimitive(Class<? extends Object> cls) {
         if (OPCODES_VERSION == Opcodes.V1_4) {
             /**
              * JAVA 1.4 SUCKS!  DIE 1.4 DIE!!!
              */
 
-        	debug("** Using 1.4 Bytecode **");
+            debug("** Using 1.4 Bytecode **");
 
             if (cls == boolean.class || cls == Boolean.class) {
                 debug("NEW java/lang/Boolean");
@@ -1495,6 +1790,86 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
+//    public void arrayStore(Class type, int idx, String expression) {
+//        mv.visitVarInsn(ALOAD, 1);
+//        mv.visitTypeInsn(CHECKCAST, getDescriptor(type));
+//        intPush(idx);
+//        mv.visitVarInsn(ALOAD, 4);
+//        unwrapPrimitive(type);
+//        mv.visitInsn(arrayStore(getBaseComponentType(type)));
+//    }
+
+    public void arrayStore(Class cls) {
+        if (cls.isPrimitive()) {
+            if (cls == int.class) {
+                assert debug("IASTORE");
+                mv.visitInsn(IASTORE);
+            }
+            else if (cls == char.class) {
+                assert debug("CASTORE");
+                mv.visitInsn(CASTORE);
+            }
+            else if (cls == boolean.class) {
+                assert debug("BASTORE");
+                mv.visitInsn(BASTORE);
+            }
+            else if (cls == double.class) {
+                assert debug("DASTORE");
+                mv.visitInsn(DASTORE);
+            }
+            else if (cls == float.class) {
+                assert debug("FASTORE");
+                mv.visitInsn(FASTORE);
+            }
+            else if (cls == short.class) {
+                assert debug("SASTORE");
+                mv.visitInsn(SASTORE);
+            }
+            else if (cls == long.class) {
+                assert debug("LASTORE");
+                mv.visitInsn(LASTORE);
+            }
+            else if (cls == byte.class) {
+                assert debug("BASTORE");
+                mv.visitInsn(BASTORE);
+            }
+        }
+        else {
+            assert debug("AASTORE");
+            mv.visitInsn(AASTORE);
+        }
+
+    }
+
+    public void wrapRuntimeConverstion(Class toType) {
+        ldcClassConstant(getWrapperClass(toType));
+
+        assert debug("INVOKESTATIC DataConversion.convert");
+        mv.visitMethodInsn(INVOKESTATIC, "org/mvel/DataConversion", "convert",
+                "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
+    }
+
+
+    private void addSubstatement(ExecutableStatement stmt) {
+        compiledInputs.add(stmt);
+
+        assert debug("ALOAD 0");
+        mv.visitVarInsn(ALOAD, 0);
+
+        assert debug("GETFIELD p" + (compiledInputs.size() - 1));
+        mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/compiler/ExecutableStatement;");
+
+        assert debug("ALOAD 2");
+        mv.visitVarInsn(ALOAD, 2);
+
+        assert debug("ALOAD 3");
+        mv.visitVarInsn(ALOAD, 3);
+
+        assert debug("INVOKEINTERFACE ExecutableStatement.getValue");
+        mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(ExecutableStatement.class), "getValue",
+                "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+    }
+
     private void loadVariableByName(String name) {
         assert debug("ALOAD 3");
         mv.visitVarInsn(ALOAD, 3);
@@ -1553,7 +1928,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             mv.visitMethodInsn(INVOKESPECIAL, "java/lang/NoClassDefFoundError", "<init>", "(Ljava/lang/String;)V");
             mv.visitInsn(ATHROW);
             mv.visitLabel(l4);
-
         }
         else {
             assert debug("LDC " + getType(cls));
@@ -1571,9 +1945,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         for (int i = 0; i < size; i++) {
             assert debug("ACC_PRIVATE p" + i);
-            //FieldVisitor fv =
             cw.visitField(ACC_PRIVATE, "p" + i, "Lorg/mvel/compiler/ExecutableStatement;", null, null).visitEnd();
-            // fv.visitEnd();
 
             constSig.append("Lorg/mvel/compiler/ExecutableStatement;");
         }
@@ -1588,6 +1960,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         assert debug("INVOKESPECIAL java/lang/Object.<init>");
         cv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
 
+//        cv.visitVarInsn(ALOAD, 0);
+//        cv.visitLdcInsn(buildLog.toString());
+//        cv.visitFieldInsn(PUTFIELD, className, "buildLog", "Ljava/lang/String;");
+
+        
         for (int i = 0; i < size; i++) {
             assert debug("ALOAD 0");
             cv.visitVarInsn(ALOAD, 0);
@@ -1750,23 +2127,25 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         else {
             literal = false;
 
-            compiledInputs.add((ExecutableStatement) stmt);
+            addSubstatement((ExecutableStatement) stmt);
 
-            assert debug("ALOAD 0");
-            mv.visitVarInsn(ALOAD, 0);
-
-            assert debug("GETFIELD p" + (compiledInputs.size() - 1));
-            mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/compiler/ExecutableStatement;");
-
-            assert debug("ALOAD 2");
-            mv.visitVarInsn(ALOAD, 2);
-
-            assert debug("ALOAD 3");
-            mv.visitVarInsn(ALOAD, 3);
-
-            assert debug("INVOKEINTERFACE ExecutableStatement.getValue");
-            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(ExecutableStatement.class), "getValue",
-                    "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
+//            compiledInputs.add((ExecutableStatement) stmt);
+//
+//            assert debug("ALOAD 0");
+//            mv.visitVarInsn(ALOAD, 0);
+//
+//            assert debug("GETFIELD p" + (compiledInputs.size() - 1));
+//            mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/compiler/ExecutableStatement;");
+//
+//            assert debug("ALOAD 2");
+//            mv.visitVarInsn(ALOAD, 2);
+//
+//            assert debug("ALOAD 3");
+//            mv.visitVarInsn(ALOAD, 3);
+//
+//            assert debug("INVOKEINTERFACE ExecutableStatement.getValue");
+//            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(ExecutableStatement.class), "getValue",
+//                    "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
 
             Class type;
             if (knownIngressType == null) {
@@ -2031,6 +2410,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 writer.close();
             }
             catch (IOException e) {
+                //empty
             }
         }
     }

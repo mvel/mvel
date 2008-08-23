@@ -23,6 +23,7 @@ import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.eval;
 import org.mvel.ast.Function;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.PropertyHandlerFactory;
 import org.mvel.util.MethodStub;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
@@ -469,8 +470,8 @@ public class PropertyAccessor {
                 }
             }
         }
-        else {
-
+        else if (PropertyHandlerFactory.hasPropertyHandler(cls)) {
+            return PropertyHandlerFactory.getPropertyHandler(cls).getProperty(property, ctx, variableFactory);
         }
 
         throw new PropertyAccessException("could not access property (" + property + ")");

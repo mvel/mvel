@@ -100,7 +100,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
         //   Object o;
 
         if (col) {
-            setExpr.setValue(ctx, factory, ctx = statement.getValue(ctx, thisValue, factory));
+            setExpr.setValue(ctx, thisValue, factory, ctx = statement.getValue(ctx, thisValue, factory));
         }
         else if (statement != null) {
             factory.createVariable(varName, ctx = statement.getValue(ctx, thisValue, factory));

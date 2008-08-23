@@ -64,6 +64,10 @@ public class ConstructorAccessor extends BaseAccessor {
         }
     }
 
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        return null;
+    }
+
 
     private Object[] executeAll(Object ctx, VariableResolverFactory vars) {
         if (length == 0) return GetterAccessor.EMPTY;
@@ -91,7 +95,4 @@ public class ConstructorAccessor extends BaseAccessor {
     }
 
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return null;
-    }
 }

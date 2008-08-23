@@ -192,11 +192,11 @@ public class MVEL {
     }
 
     public static void executeSetExpression(Serializable compiledSet, Object ctx, Object value) {
-        ((CompiledSetExpression) compiledSet).setValue(ctx, null, value);
+        ((CompiledSetExpression) compiledSet).setValue(ctx, ctx, null, value);
     }
 
     public static void executeSetExpression(Serializable compiledSet, Object ctx, VariableResolverFactory vrf, Object value) {
-        ((CompiledSetExpression) compiledSet).setValue(ctx, vrf, value);
+        ((CompiledSetExpression) compiledSet).setValue(ctx, ctx, vrf, value);
     }
 
     public static Object executeExpression(Object compiledExpression) {

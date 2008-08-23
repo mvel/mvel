@@ -52,12 +52,17 @@ public class FieldAccessor implements AccessorNode {
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         try {
-            field.set(ctx, value);
+            if (nextNode != null) {
+                return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value);
+            }
+            else {
+                field.set(ctx, value);
+                return value;
+            }
         }
         catch (Exception e) {
             throw new CompileException("unable to access field", e);
         }
-        return value;
     }
 
     public Field getField() {

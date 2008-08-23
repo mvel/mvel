@@ -20,15 +20,14 @@ package org.mvel.ast;
 
 import org.mvel.MVEL;
 import static org.mvel.MVEL.compileSetExpression;
+import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
-import org.mvel.compiler.AbstractParser;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.find;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
-import org.mvel.util.PropertyTools;
+import static org.mvel.util.PropertyTools.find;
 
 /**
  * @author Christopher Brock
@@ -45,16 +44,12 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
     private ExecutableStatement statement;
 
     private boolean col = false;
-    //   private String index;
 
     public IndexedAssignmentNode(char[] expr, int fields, int operation, String name, int register) {
-        //  super(expr, fields);
-
         super.name = expr;
         this.register = register;
 
         int assignStart;
-
 
         if (operation != -1) {
             checkNameSafety(this.name = name);
@@ -64,9 +59,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
         }
         else if ((assignStart = find(expr, '=')) != -1) {
             this.name = createStringTrimmed(expr, 0, assignStart);
-            stmt = subset(expr, assignStart + 1);
-
-            this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt)).getKnownEgressType();
+            this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1))).getKnownEgressType();
 
             if (col = ((endOfName = findFirst('[', indexTarget = this.name.toCharArray())) > 0)) {
                 if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
@@ -88,11 +81,9 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
         }
     }
 
-
     public IndexedAssignmentNode(char[] expr, int fields, int register) {
         this(expr, fields, -1, null, register);
     }
-
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (setExpr == null) {
@@ -100,7 +91,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
         }
 
         if (col) {
-            setExpr.setValue(ctx, factory, ctx = statement.getValue(ctx, thisValue, factory));
+            setExpr.setValue(ctx, thisValue, factory, ctx = statement.getValue(ctx, thisValue, factory));
         }
         else if (statement != null) {
             if (factory.isIndexedFactory()) {
@@ -115,7 +106,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
                 factory.createIndexedVariable(register, name, null);
             }
             else {
-                factory.createVariable(name, ctx = statement.getValue(ctx, thisValue, factory));
+                factory.createVariable(name, statement.getValue(ctx, thisValue, factory));
             }
             return Void.class;
         }
@@ -137,7 +128,6 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
         return ctx;
     }
-
 
     public String getAssignmentVar() {
         return name;

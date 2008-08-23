@@ -33,6 +33,9 @@ import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.StringAppender;
 
+/**
+ * This is the main MVEL compiler. 
+ */
 public class ExpressionCompiler extends AbstractParser {
     private Class returnType;
 

@@ -36,8 +36,12 @@ public class AbstractOptimizer extends AbstractParser {
 
     protected int start = 0;
 
+    protected boolean collection = false;
+
+
     /**
      * Try static access of the property, and return an instance of the Field, Method of Class if successful.
+     *
      * @return - Field, Method or Class instance.
      */
     protected Object tryStaticAccess() {
@@ -54,15 +58,15 @@ public class AbstractOptimizer extends AbstractParser {
              *
              */
             boolean meth = false;
-            int depth = 0;
+            //  int depth = 0;
             int last = length;
             for (int i = length - 1; i > 0; i--) {
                 switch (expr[i]) {
                     case '.':
                         if (!meth) {
                             try {
-                                cursor = last;
-                                return currentThread().getContextClassLoader().loadClass(new String(expr, 0, last));
+                                // cursor = last;
+                                return currentThread().getContextClassLoader().loadClass(new String(expr, 0, cursor = last));
                             }
                             catch (ClassNotFoundException e) {
                                 Class cls = currentThread().getContextClassLoader().loadClass(new String(expr, 0, i));
@@ -202,5 +206,33 @@ public class AbstractOptimizer extends AbstractParser {
             else if (!isWhitespace(expr[pos])) return pos;
         }
         return -1;
+    }
+
+    protected int findLastUnion() {
+        int split = -1;
+        int depth = 0;
+
+        for (int i = expr.length - 1; i != 0; i--) {
+            switch (expr[i]) {
+                case ']':
+                    depth++;
+                    break;
+
+                case '[':
+                    if (--depth == 0) {
+                        split = i;
+                        collection = true;
+                    }
+                    break;
+                case '.':
+                    if (depth == 0) {
+                        split = i;
+                    }
+                    break;
+            }
+            if (split != -1) break;
+        }
+
+        return split;
     }
 }
