@@ -1905,6 +1905,27 @@ public class CoreConfidenceTests extends AbstractTest {
         user = ( User ) list.get(1);
         assertEquals( "Bobba", user.getFirstName() );        
     }
+    
+    public void testListNestedInsideList() {
+        ParserContext ctx = new ParserContext();
+        ctx.addImport("User", User.class);        
+
+        ExpressionCompiler compiler = new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), new User('Bobba', 'Feta') ]; [ users.get( 0 ), users.get( 1 ) ]");
+        Serializable s = compiler.compile(ctx);
+        List list = ( List ) MVEL.executeExpression(s); 
+        User user = ( User ) list.get(0);
+        assertEquals( "Darth", user.getFirstName() );   
+        user = ( User ) list.get(1);
+        assertEquals( "Bobba", user.getFirstName() );  
+        
+        compiler = new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), new User('Bobba', 'Feta') ]; [ users[0], users[1] ]");
+        s = compiler.compile(ctx);
+        list = ( List ) MVEL.executeExpression(s);
+        user = ( User ) list.get(0);
+        assertEquals( "Darth", user.getFirstName() );
+        user = ( User ) list.get(1);
+        assertEquals( "Bobba", user.getFirstName() );          
+    }
 
     public void testSetSemantics() {
         Bar bar = new Bar();
