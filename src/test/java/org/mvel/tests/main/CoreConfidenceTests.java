@@ -1884,6 +1884,27 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("bar", testCompiledSimple("innermap['test']", outermap, null));
     }
+    
+    public void testMapNestedInsideList() {
+        ParserContext ctx = new ParserContext();
+        ctx.addImport("User", User.class);        
+
+        ExpressionCompiler compiler = new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar'),\n'bobba' : new User('Bobba', 'Feta') ]; [ users.get('darth'), users.get('bobba') ]");
+        Serializable s = compiler.compile(ctx);
+        List list = ( List ) MVEL.executeExpression(s);
+        User user = ( User ) list.get(0);
+        assertEquals( "Darth", user.getFirstName() );   
+        user = ( User ) list.get(1);
+        assertEquals( "Bobba", user.getFirstName() );          
+        
+        compiler = new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar'),\n'bobba' : new User('Bobba', 'Feta') ]; [ users['darth'], users['bobba'] ]");
+        s = compiler.compile(ctx);
+        list = ( List ) MVEL.executeExpression(s);
+        user = ( User ) list.get(0);
+        assertEquals( "Darth", user.getFirstName() );
+        user = ( User ) list.get(1);
+        assertEquals( "Bobba", user.getFirstName() );        
+    }
 
     public void testSetSemantics() {
         Bar bar = new Bar();
