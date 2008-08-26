@@ -28,7 +28,6 @@ public class DynamicSetAccessor implements DynamicAccessor {
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         if (!opt) {
             if (++runcount > DynamicOptimizer.tenuringThreshold) {
-                System.out.println((runcount > DynamicOptimizer.tenuringThreshold) + ":" + runcount + ">" + DynamicOptimizer.tenuringThreshold);
                 if ((currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
                     opt = true;
                     return optimize(ctx, elCtx, variableFactory, value);

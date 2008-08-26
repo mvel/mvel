@@ -36,7 +36,7 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
     }
 
     public static final int REGULAR_ACCESSOR = 0;
-
+    
     public Accessor optimizeAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef) {
         return classLoader.registerDynamicAccessor(new DynamicGetAccessor(property, 0, firstStage.optimizeAccessor(property, ctx, thisRef, factory, rootThisRef)));
     }

@@ -60,7 +60,6 @@ public class CompileException extends RuntimeException {
         this.cursor = cursor;
     }
 
-
     public String toString() {
         StringAppender appender = new StringAppender();
         appender.append("[Error: " + getMessage() + "]\n[Near : {... " + showCodeNearError(expr, cursor)  + " ....}]");

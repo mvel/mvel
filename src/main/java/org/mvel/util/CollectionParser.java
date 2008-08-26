@@ -20,6 +20,7 @@ package org.mvel.util;
 
 import static org.mvel.util.ParseTools.balancedCapture;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
+import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import static org.mvel.util.ParseTools.isWhitespace;
 import static java.lang.System.arraycopy;
@@ -99,6 +100,8 @@ public class CollectionParser {
                     }
 
                 case '[':
+                    if (cursor > 0 && isIdentifierPart(property[cursor-1])) continue;
+                    
                     if (newType == -1) {
                         newType = LIST;
                     }

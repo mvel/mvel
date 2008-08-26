@@ -244,6 +244,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             //  rootAccessor = compileGetChain();
             ctx = this.val;
         }
+        else {
+            assert debug("ALOAD 1");
+            mv.visitVarInsn(ALOAD, 1);
+        }
 
         try {
             this.length = (this.expr = property).length;
@@ -263,12 +267,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 String ex = new String(property, start, cursor - start);
 
-//                assert debug("ALOAD 1");
-//                mv.visitVarInsn(ALOAD, 1);
-//
                 assert debug("CHECKCAST " + ctx.getClass().getName());
                 mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
-
 
                 if (ctx instanceof Map) {
                     //noinspection unchecked
@@ -360,8 +360,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             Member member = getFieldOrWriteAccessor(ctx.getClass(), tk);
 
             if (member instanceof Field) {
-                assert debug("ALOAD 1");
-                mv.visitVarInsn(ALOAD, 1);
+//                assert debug("ALOAD 1");
+//                mv.visitVarInsn(ALOAD, 1);
 
                 assert debug("CHECKCAST " + ctx.getClass().getName());
                 mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
@@ -396,24 +396,23 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             }
             else if (member != null) {
-                assert debug("ALOAD 1");
-                mv.visitVarInsn(ALOAD, 1);
+//                assert debug("ALOAD 1");
+//                mv.visitVarInsn(ALOAD, 1);
 
-                assert debug("CHECKCAST " + ctx.getClass().getName());
+                assert debug("CHECKCAST " + getInternalName(ctx.getClass()));
                 mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
 
                 Method meth = (Method) member;
 
-                Class targetType = meth.getParameterTypes()[0];
 
                 assert debug("ALOAD 4");
                 mv.visitVarInsn(ALOAD, 4);
 
-                assert debug("CHECKCAST " + targetType);
-                mv.visitTypeInsn(CHECKCAST, getInternalName(targetType));
+                Class targetType = meth.getParameterTypes()[0];
 
                 assert debug("DUP_X1");
                 mv.visitInsn(DUP_X1);
+
 
                 if (value != null && !targetType.isAssignableFrom(value.getClass())) {
                     if (!canConvert(targetType, value.getClass())) {
@@ -421,12 +420,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                                 + value.getClass() + ": to " + meth.getParameterTypes()[0]);
                     }
 
-                    dataConversion(targetType);
+                    dataConversion(getWrapperClass(targetType));
                     if (targetType.isPrimitive()) unwrapPrimitive(targetType);
 
                     meth.invoke(ctx, convert(value, meth.getParameterTypes()[0]));
                 }
                 else {
+                                   assert debug("CHECKCAST " + getInternalName(targetType));
+                mv.visitTypeInsn(CHECKCAST, getInternalName(targetType));
+
                     meth.invoke(ctx, value);
                 }
 
@@ -434,6 +436,28 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(meth.getDeclaringClass()), meth.getName(),
                         getMethodDescriptor(meth));
 
+            }
+            else if (ctx instanceof Map) {
+                assert debug("CHECKCAST " + getInternalName(ctx.getClass()));
+                mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
+
+                assert debug("LDC '" + tk + "'");
+                mv.visitLdcInsn(tk);
+
+                assert debug("ALOAD 4");
+                mv.visitVarInsn(ALOAD, 4);
+
+                assert debug("DUP_X2");
+                mv.visitInsn(DUP_X2);
+
+                assert debug("INVOKEVIRTUAL java/util/HashMap.put");
+                mv.visitMethodInsn(INVOKEVIRTUAL, "java/util/HashMap", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+                assert debug("POP");
+                mv.visitInsn(POP);
+
+                //noinspection unchecked
+                ((Map) ctx).put(tk, value);
             }
             else {
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
@@ -1964,7 +1988,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 //        cv.visitLdcInsn(buildLog.toString());
 //        cv.visitFieldInsn(PUTFIELD, className, "buildLog", "Ljava/lang/String;");
 
-        
+
         for (int i = 0; i < size; i++) {
             assert debug("ALOAD 0");
             cv.visitVarInsn(ALOAD, 0);

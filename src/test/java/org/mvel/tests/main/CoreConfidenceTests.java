@@ -12,9 +12,9 @@ import org.mvel.debug.DebugTools;
 import org.mvel.debug.Debugger;
 import org.mvel.debug.Frame;
 import org.mvel.integration.Interceptor;
+import org.mvel.integration.PropertyHandlerFactory;
 import org.mvel.integration.ResolverTools;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.integration.PropertyHandlerFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
@@ -30,10 +30,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.*;
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
-import java.lang.reflect.Type;
 
 @SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
@@ -1653,7 +1653,6 @@ public class CoreConfidenceTests extends AbstractTest {
         CompiledExpression compiled = compiler.compile(ctx);
 
         MVEL.executeExpression(compiled, null, vars);
-
         MVEL.executeExpression(compiled, null, vars);
     }
 
@@ -1810,6 +1809,8 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testVirtProperty() {
+     //   OptimizerFactory.setDefaultOptimizer("ASM");
+
         Map<String, Object> testMap = new HashMap<String, Object>();
         testMap.put("test", "foo");
 
@@ -3203,6 +3204,9 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("FoobarFoobar", MVEL.executeExpression(s, new HashMap()));
         assertEquals("FoobarFoobar", MVEL.executeExpression(s, new HashMap()));
+
+        OptimizerFactory.setDefaultOptimizer("dynamic");
+
     }
 
     public void testFunctionDefAndCall3() {
