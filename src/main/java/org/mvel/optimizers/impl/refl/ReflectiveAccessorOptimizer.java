@@ -699,15 +699,15 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
     }
 
-    public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        CollectionParser parser = new CollectionParser();
-        ctx = ((List) parser.parseCollection(property)).get(0);
+    public Accessor optimizeCollection(Object o, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+//        CollectionParser parser = new CollectionParser();
+//        ctx = ((List) parser.parseCollection(property, false)).get(0);
 
-        Accessor root = _getAccessor(ctx);
-        int end = parser.getCursor() + 2;
+        Accessor root = _getAccessor(o);
+   //     int end = parser.getCursor() + 2;
 
-        if (end < property.length) {
-            return new Union(root, subset(property, end));
+        if (property != null && property.length > 0) {
+            return new Union(root, property);
         }
         else {
             return root;

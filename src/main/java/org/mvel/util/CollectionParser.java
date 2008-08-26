@@ -23,6 +23,8 @@ import static org.mvel.util.PropertyTools.createStringTrimmed;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import static org.mvel.util.ParseTools.isWhitespace;
+import static org.mvel.util.ParseTools.subCompileExpression;
+
 import static java.lang.System.arraycopy;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,17 +60,17 @@ public class CollectionParser {
         this.type = type;
     }
 
-    public Object parseCollection(char[] property) {
+    public Object parseCollection(char[] property, boolean subcompile) {
         this.cursor = 0;
         if ((this.length = (this.property = property).length) > 0)
             while (length > 0 && isWhitespace(property[length - 1]))
                 length--;
 
-        return parseCollection();
+        return parseCollection(subcompile);
     }
 
 
-    private Object parseCollection() {
+    private Object parseCollection(boolean subcompile) {
         if (length == 0) {
             if (type == LIST) return new ArrayList();
             else return EMPTY_ARRAY;
@@ -76,6 +78,7 @@ public class CollectionParser {
 
         Map<Object, Object> map = null;
         List<Object> list = null;
+        String ex = null;
 
         if (type != -1) {
             switch (type) {
@@ -110,7 +113,7 @@ public class CollectionParser {
                      * Sub-parse nested collections.
                      */
                     Object o = new CollectionParser(newType).parseCollection(subset(property, (start = cursor) + 1,
-                            cursor = balancedCapture(property, start, property[start])));
+                            cursor = balancedCapture(property, start, property[start])), subcompile);
 
                     if (type == MAP) {
                         map.put(curr, o);
@@ -139,11 +142,13 @@ public class CollectionParser {
 
                 case ',':
                     if (type != MAP) {
-                        list.add(new String(property, start, cursor - start));
+                        list.add(ex = new String(property, start, cursor - start));
                     }
                     else {
-                        map.put(curr, createStringTrimmed(property, start, cursor - start));
+                        map.put(curr, ex = createStringTrimmed(property, start, cursor - start));
                     }
+
+                    if (subcompile) subCompileExpression(ex);
 
                     start = cursor + 1;
 
@@ -156,6 +161,8 @@ public class CollectionParser {
                     }
                     curr = createStringTrimmed(property, start, cursor - start);
 
+                    if (subcompile) subCompileExpression((String) curr);
+
                     start = cursor + 1;
                     break;
             }
@@ -165,12 +172,14 @@ public class CollectionParser {
             if (cursor < (length - 1)) cursor++;
 
             if (type == MAP) {
-                map.put(curr, createStringTrimmed(property, start, cursor - start));
+                map.put(curr, ex = createStringTrimmed(property, start, cursor - start));
             }
             else {
                 if (cursor < length) cursor++;
-                list.add(createStringTrimmed(property, start, cursor - start));
+                list.add(ex = createStringTrimmed(property, start, cursor - start));
             }
+
+            if (subcompile) subCompileExpression(ex);
         }
 
         switch (type) {

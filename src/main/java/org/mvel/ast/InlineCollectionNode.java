@@ -24,6 +24,9 @@ import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
 import static org.mvel.optimizers.OptimizerFactory.getAccessorCompiler;
+import org.mvel.util.CollectionParser;
+import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.subset;
 
 import java.util.List;
 
@@ -31,8 +34,15 @@ import java.util.List;
  * @author Christopher Brock
  */
 public class InlineCollectionNode extends ASTNode {
+    private Object collectionGraph;
+    private char[] trailing;
+
     public InlineCollectionNode(char[] expr, int start, int end, int fields) {
         super(expr, start, end, fields | INLINE_COLLECTION);
+
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            parseGraph(true);
+        }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -41,7 +51,9 @@ public class InlineCollectionNode extends ASTNode {
         }
         else {
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-            accessor = ao.optimizeCollection(name, ctx, thisValue, factory);
+            if (collectionGraph == null) parseGraph(true);
+
+            accessor = ao.optimizeCollection(collectionGraph, trailing, ctx, thisValue, factory);
             egressType = ao.getEgressType();
 
             if (ao.isLiteralOnly()) {
@@ -57,6 +69,20 @@ public class InlineCollectionNode extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getAccessorCompiler(SAFE_REFLECTIVE).optimizeCollection(name, ctx, thisValue, factory).getValue(ctx, thisValue, factory);
+//        CollectionParser parser = new CollectionParser();
+//        Object o = ((List) parser.parseCollection(name, false)).get(0);
+
+        parseGraph(false);
+
+        return getAccessorCompiler(SAFE_REFLECTIVE)
+                .optimizeCollection(collectionGraph, trailing, ctx, thisValue, factory).getValue(ctx, thisValue, factory);
+    }
+
+    private void parseGraph(boolean compile) {
+        CollectionParser parser = new CollectionParser();
+        collectionGraph = ((List) parser.parseCollection(name, compile)).get(0);
+
+        if (parser.getCursor() + 2 < name.length)
+            trailing = subset(name, parser.getCursor() + 2);
     }
 }

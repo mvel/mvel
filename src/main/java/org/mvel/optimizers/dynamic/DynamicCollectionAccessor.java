@@ -8,7 +8,8 @@ import org.mvel.optimizers.AccessorOptimizer;
 import static java.lang.System.currentTimeMillis;
 
 //todo: de-optimize in this class.
-public class DynamicGetAccessor implements DynamicAccessor {
+public class DynamicCollectionAccessor implements DynamicAccessor {
+    private Object rootObject;
     private char[] property;
     private long stamp;
     private int type;
@@ -20,7 +21,8 @@ public class DynamicGetAccessor implements DynamicAccessor {
     private Accessor _safeAccessor;
     private Accessor _accessor;
 
-    public DynamicGetAccessor(char[] property, int type, Accessor _accessor) {
+    public DynamicCollectionAccessor(Object rootObject, char[] property, int type, Accessor _accessor) {
+        this.rootObject = rootObject;
         this._safeAccessor = this._accessor = _accessor;
         this.type = type;
         this.property = property;
@@ -55,23 +57,11 @@ public class DynamicGetAccessor implements DynamicAccessor {
             DynamicOptimizer.enforceTenureLimit();
         }
 
-        AccessorOptimizer ao = OptimizerFactory.getAccessorCompiler("ASM");
-        switch (type) {
-            case DynamicOptimizer.REGULAR_ACCESSOR:
-                _accessor = ao.optimizeAccessor(property, ctx, elCtx, variableResolverFactory, false);
-                return ao.getResultOptPass();
-            case DynamicOptimizer.OBJ_CREATION:
-                _accessor = ao.optimizeObjectCreation(property, ctx, elCtx, variableResolverFactory);
-                return _accessor.getValue(ctx, elCtx, variableResolverFactory);
-            case DynamicOptimizer.COLLECTION:
-                _accessor = ao.optimizeCollection(null, property, ctx, elCtx, variableResolverFactory);
-                return _accessor.getValue(ctx, elCtx, variableResolverFactory);
-            case DynamicOptimizer.FOLD:
-                _accessor = ao.optimizeFold(property, ctx, elCtx, variableResolverFactory);
-                return ao.getResultOptPass();
-        }
-        return null;
+        _accessor = OptimizerFactory.getAccessorCompiler("ASM").optimizeCollection(rootObject, property, ctx, elCtx, variableResolverFactory);
+        return _accessor.getValue(ctx, elCtx, variableResolverFactory);
+
     }
+
 
     public void deoptimize() {
         this._accessor = this._safeAccessor;

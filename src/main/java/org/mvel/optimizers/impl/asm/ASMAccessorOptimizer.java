@@ -2201,17 +2201,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+    public Accessor optimizeCollection(Object o, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         this.cursor = 0;
-        this.length = (this.expr = property).length;
+        if (property != null) this.length = (this.expr = property).length;
         this.compiledInputs = new ArrayList<ExecutableStatement>();
 
         this.ctx = ctx;
         this.thisRef = thisRef;
         this.variableFactory = factory;
-
-        CollectionParser parser = new CollectionParser();
-        Object o = ((List) parser.parseCollection(property)).get(0);
 
         _initJIT();
 
@@ -2231,12 +2228,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         _finishJIT();
 
-        int end = parser.getCursor() + 2;
+     //   int end = parser.getCursor() + 2;
         try {
             Accessor compiledAccessor = _initializeAccessor();
 
-            if (end < property.length) {
-                return new Union(compiledAccessor, subset(property, end));
+            if (property != null && property.length > 0) {
+                return new Union(compiledAccessor, property);
             }
             else {
                 return compiledAccessor;

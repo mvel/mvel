@@ -28,7 +28,7 @@ public interface AccessorOptimizer {
 
     public Accessor optimizeSetAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value);
 
-    public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
+    public Accessor optimizeCollection(Object collectionGraph, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
 
     public Accessor optimizeObjectCreation(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
 
