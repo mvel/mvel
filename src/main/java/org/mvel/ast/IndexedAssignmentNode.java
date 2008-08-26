@@ -130,7 +130,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
     }
 
     public String getAssignmentVar() {
-        return name;
+        return new String(indexTarget);
     }
 
     public char[] getExpression() {

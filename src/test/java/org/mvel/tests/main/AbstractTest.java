@@ -31,7 +31,7 @@ public abstract class AbstractTest extends TestCase {
 
     static {
         // Modify the dynamic optimizer to ensure it always engages the JIT
-        DynamicOptimizer.tenuringThreshold = 0;
+        DynamicOptimizer.tenuringThreshold = 1;
     }
 
 

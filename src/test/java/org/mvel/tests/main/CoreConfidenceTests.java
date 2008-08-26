@@ -1809,7 +1809,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testVirtProperty() {
-     //   OptimizerFactory.setDefaultOptimizer("ASM");
+        //   OptimizerFactory.setDefaultOptimizer("ASM");
 
         Map<String, Object> testMap = new HashMap<String, Object>();
         testMap.put("test", "foo");
@@ -1885,47 +1885,47 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("bar", testCompiledSimple("innermap['test']", outermap, null));
     }
-    
+
     public void testMapNestedInsideList() {
         ParserContext ctx = new ParserContext();
-        ctx.addImport("User", User.class);        
+        ctx.addImport("User", User.class);
 
         ExpressionCompiler compiler = new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar'),\n'bobba' : new User('Bobba', 'Feta') ]; [ users.get('darth'), users.get('bobba') ]");
         Serializable s = compiler.compile(ctx);
-        List list = ( List ) MVEL.executeExpression(s);
-        User user = ( User ) list.get(0);
-        assertEquals( "Darth", user.getFirstName() );   
-        user = ( User ) list.get(1);
-        assertEquals( "Bobba", user.getFirstName() );          
-        
+        List list = (List) MVEL.executeExpression(s);
+        User user = (User) list.get(0);
+        assertEquals("Darth", user.getFirstName());
+        user = (User) list.get(1);
+        assertEquals("Bobba", user.getFirstName());
+
         compiler = new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar'),\n'bobba' : new User('Bobba', 'Feta') ]; [ users['darth'], users['bobba'] ]");
         s = compiler.compile(ctx);
-        list = ( List ) MVEL.executeExpression(s);
-        user = ( User ) list.get(0);
-        assertEquals( "Darth", user.getFirstName() );
-        user = ( User ) list.get(1);
-        assertEquals( "Bobba", user.getFirstName() );        
+        list = (List) MVEL.executeExpression(s);
+        user = (User) list.get(0);
+        assertEquals("Darth", user.getFirstName());
+        user = (User) list.get(1);
+        assertEquals("Bobba", user.getFirstName());
     }
-    
+
     public void testListNestedInsideList() {
         ParserContext ctx = new ParserContext();
-        ctx.addImport("User", User.class);        
+        ctx.addImport("User", User.class);
 
         ExpressionCompiler compiler = new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), new User('Bobba', 'Feta') ]; [ users.get( 0 ), users.get( 1 ) ]");
         Serializable s = compiler.compile(ctx);
-        List list = ( List ) MVEL.executeExpression(s); 
-        User user = ( User ) list.get(0);
-        assertEquals( "Darth", user.getFirstName() );   
-        user = ( User ) list.get(1);
-        assertEquals( "Bobba", user.getFirstName() );  
-        
+        List list = (List) MVEL.executeExpression(s);
+        User user = (User) list.get(0);
+        assertEquals("Darth", user.getFirstName());
+        user = (User) list.get(1);
+        assertEquals("Bobba", user.getFirstName());
+
         compiler = new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), new User('Bobba', 'Feta') ]; [ users[0], users[1] ]");
         s = compiler.compile(ctx);
-        list = ( List ) MVEL.executeExpression(s);
-        user = ( User ) list.get(0);
-        assertEquals( "Darth", user.getFirstName() );
-        user = ( User ) list.get(1);
-        assertEquals( "Bobba", user.getFirstName() );          
+        list = (List) MVEL.executeExpression(s);
+        user = (User) list.get(0);
+        assertEquals("Darth", user.getFirstName());
+        user = (User) list.get(1);
+        assertEquals("Bobba", user.getFirstName());
     }
 
     public void testSetSemantics() {
@@ -1964,28 +1964,28 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(0, MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory()));
     }
-    
+
     public void testDynamicImportsInList() {
         ParserContext ctx = new ParserContext();
-        ctx.addPackageImport("org.mvel.tests.main.res");        
+        ctx.addPackageImport("org.mvel.tests.main.res");
 
         ExpressionCompiler compiler = new ExpressionCompiler("[ new User('Bobba', 'Feta') ]");
         Serializable s = compiler.compile(ctx);
-        List list = ( List ) MVEL.executeExpression(s);
-        User user = ( User ) list.get( 0 );
-        assertEquals( "Bobba", user.getFirstName() );
-    }    
-    
+        List list = (List) MVEL.executeExpression(s);
+        User user = (User) list.get(0);
+        assertEquals("Bobba", user.getFirstName());
+    }
+
     public void testDynamicImportsInMap() {
         ParserContext ctx = new ParserContext();
-        ctx.addPackageImport("org.mvel.tests.main.res");        
+        ctx.addPackageImport("org.mvel.tests.main.res");
 
         ExpressionCompiler compiler = new ExpressionCompiler("[ 'bobba' : new User('Bobba', 'Feta') ]");
         Serializable s = compiler.compile(ctx);
-        Map map = ( Map ) MVEL.executeExpression(s);
-        User user = ( User ) map.get( "bobba" );
-        assertEquals( "Bobba", user.getFirstName() );
-    }        
+        Map map = (Map) MVEL.executeExpression(s);
+        User user = (User) map.get("bobba");
+        assertEquals("Bobba", user.getFirstName());
+    }
 
     public void testDynamicImportsOnNestedExpressions() {
         ParserContext ctx = new ParserContext();
@@ -3771,6 +3771,24 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testCustomPropertyHandler() {
         PropertyHandlerFactory.registerPropertyHandler(SampleBean.class, new SampleBeanAccessor());
         assertEquals("dog", test("foo.sampleBean.bar.name"));
+    }
+
+    public void testSetAccessorOverloadedEqualsStrictMode() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("foo", Foo.class);
+
+        try {
+            CompiledExpression expr = new ExpressionCompiler("foo.bar = 0").compile(ctx);
+        }
+        catch (CompileException e) {
+            // should fail.
+
+            e.printStackTrace();
+            return;
+        }
+
+        assertTrue(false);
     }
 }
 

@@ -101,4 +101,8 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
     public boolean isNewDeclaration() {
         return false;
     }
+
+    public boolean isAssignment() {
+        return true;
+    }
 }

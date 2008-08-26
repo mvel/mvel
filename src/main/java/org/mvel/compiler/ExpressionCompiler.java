@@ -28,13 +28,16 @@ import org.mvel.ast.ASTNode;
 import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
+import org.mvel.ast.Assignment;
 import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
 import org.mvel.util.StringAppender;
+import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.subCompileExpression;
 
 /**
- * This is the main MVEL compiler. 
+ * This is the main MVEL compiler.
  */
 public class ExpressionCompiler extends AbstractParser {
     private Class returnType;
@@ -141,7 +144,7 @@ public class ExpressionCompiler extends AbstractParser {
                          */
                         if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()
                                 && ((lastOp == -1 || PTABLE[lastOp] < PTABLE[tkOp.getOperator()]))) {
-                            
+
                             stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), op = tkOp.getOperator());
 
                             /**
@@ -284,6 +287,33 @@ public class ExpressionCompiler extends AbstractParser {
                 if (propVerifier.isResolvedExternally()) {
                     pCtx.addInput(tk.getAbsoluteName(), returnType);
                 }
+            }
+            else if (tk.isAssignment()) {
+                Assignment a = (Assignment) tk;
+
+                if (a.getAssignmentVar() != null) {
+
+                    PropertyVerifier propVerifier = new PropertyVerifier(a.getAssignmentVar(), pCtx);
+                    tk.setEgressType(returnType = propVerifier.analyze());
+
+                    if (propVerifier.isResolvedExternally()) {
+                        pCtx.addInput(tk.getAbsoluteName(), returnType);
+                    }
+
+                    ExecutableStatement c = (ExecutableStatement) subCompileExpression(a.getExpression());
+
+                    if (pCtx.isStrictTypeEnforcement()) {
+                        if (!returnType.isAssignableFrom(c.getKnownEgressType())) {
+                            throw new CompileException(
+                                    "cannot assign type " + c.getKnownEgressType().getName()
+                                            + " to " + returnType.getName());
+                        }
+                    }
+                }
+                else {
+                    returnType = tk.getEgressType();
+                }
+
             }
             else {
                 returnType = tk.getEgressType();

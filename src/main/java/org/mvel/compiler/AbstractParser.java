@@ -1605,7 +1605,7 @@ public class AbstractParser implements Serializable {
                 case SET:
                     pCtx.setRootParser(parser);
                     parserContext.set(pCtx);
-                    return null;
+                    return pCtx;
 
                 case REMOVE:
                     parserContext.set(null);
