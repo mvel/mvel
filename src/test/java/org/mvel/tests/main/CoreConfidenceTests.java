@@ -1921,6 +1921,28 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(0, MVEL.executeExpression(s, new DefaultLocalVariableResolverFactory()));
     }
+    
+    public void testDynamicImportsInList() {
+        ParserContext ctx = new ParserContext();
+        ctx.addPackageImport("org.mvel.tests.main.res");        
+
+        ExpressionCompiler compiler = new ExpressionCompiler("[ new User('Bobba', 'Feta') ]");
+        Serializable s = compiler.compile(ctx);
+        List list = ( List ) MVEL.executeExpression(s);
+        User user = ( User ) list.get( 0 );
+        assertEquals( "Bobba", user.getFirstName() );
+    }    
+    
+    public void testDynamicImportsInMap() {
+        ParserContext ctx = new ParserContext();
+        ctx.addPackageImport("org.mvel.tests.main.res");        
+
+        ExpressionCompiler compiler = new ExpressionCompiler("[ 'bobba' : new User('Bobba', 'Feta') ]");
+        Serializable s = compiler.compile(ctx);
+        Map map = ( Map ) MVEL.executeExpression(s);
+        User user = ( User ) map.get( "bobba" );
+        assertEquals( "Bobba", user.getFirstName() );
+    }        
 
     public void testDynamicImportsOnNestedExpressions() {
         ParserContext ctx = new ParserContext();
