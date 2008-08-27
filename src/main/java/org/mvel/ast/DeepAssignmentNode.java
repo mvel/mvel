@@ -21,16 +21,14 @@ package org.mvel.ast;
 import static org.mvel.MVEL.compileSetExpression;
 import static org.mvel.MVEL.eval;
 import static org.mvel.PropertyAccessor.set;
+import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.Accessor;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
-import org.mvel.compiler.AbstractParser;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.find;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
-import org.mvel.util.ParseTools;
-import org.mvel.util.PropertyTools;
+import static org.mvel.util.PropertyTools.find;
 
 /**
  * @author Christopher Brock

@@ -18,10 +18,9 @@
  */
 package org.mvel.ast;
 
+import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.checkNameSafety;
-import org.mvel.compiler.AbstractParser;
-import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 
 /**
  * @author Christopher Brock

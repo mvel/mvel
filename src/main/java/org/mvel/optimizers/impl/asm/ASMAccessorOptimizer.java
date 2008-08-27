@@ -240,8 +240,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             noinit = true;
 
             compileAccessor();
-
-            //  rootAccessor = compileGetChain();
             ctx = this.val;
         }
         else {
@@ -360,9 +358,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             Member member = getFieldOrWriteAccessor(ctx.getClass(), tk);
 
             if (member instanceof Field) {
-//                assert debug("ALOAD 1");
-//                mv.visitVarInsn(ALOAD, 1);
-
                 assert debug("CHECKCAST " + ctx.getClass().getName());
                 mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
 
@@ -396,9 +391,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             }
             else if (member != null) {
-//                assert debug("ALOAD 1");
-//                mv.visitVarInsn(ALOAD, 1);
-
                 assert debug("CHECKCAST " + getInternalName(ctx.getClass()));
                 mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
 
@@ -470,7 +462,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw new PropertyAccessException("could not access property", e);
         }
 
-
         try {
             deferFinish = false;
             noinit = false;
@@ -520,7 +511,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          */
         Class cls = loadClass(className, cw.toByteArray());
 
-        assert debug("[MVEL JIT Completed Optimization <<" + new String(expr) + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
+        assert debug("[MVEL JIT Completed Optimization <<" + (expr != null ? new String(expr):"") + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
 
         Object o;
 
@@ -1457,7 +1448,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          * This must be synchronized.  Two classes cannot be simultaneously deployed in the JVM.
          */
 
-
         return classLoader.defineClassX(className, b, 0, b.length);
     }
 
@@ -1984,11 +1974,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         assert debug("INVOKESPECIAL java/lang/Object.<init>");
         cv.visitMethodInsn(INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
 
-//        cv.visitVarInsn(ALOAD, 0);
-//        cv.visitLdcInsn(buildLog.toString());
-//        cv.visitFieldInsn(PUTFIELD, className, "buildLog", "Ljava/lang/String;");
-
-
         for (int i = 0; i < size; i++) {
             assert debug("ALOAD 0");
             cv.visitVarInsn(ALOAD, 0);
@@ -2153,24 +2138,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             addSubstatement((ExecutableStatement) stmt);
 
-//            compiledInputs.add((ExecutableStatement) stmt);
-//
-//            assert debug("ALOAD 0");
-//            mv.visitVarInsn(ALOAD, 0);
-//
-//            assert debug("GETFIELD p" + (compiledInputs.size() - 1));
-//            mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "Lorg/mvel/compiler/ExecutableStatement;");
-//
-//            assert debug("ALOAD 2");
-//            mv.visitVarInsn(ALOAD, 2);
-//
-//            assert debug("ALOAD 3");
-//            mv.visitVarInsn(ALOAD, 3);
-//
-//            assert debug("INVOKEINTERFACE ExecutableStatement.getValue");
-//            mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(ExecutableStatement.class), "getValue",
-//                    "(Ljava/lang/Object;Lorg/mvel/integration/VariableResolverFactory;)Ljava/lang/Object;");
-
             Class type;
             if (knownIngressType == null) {
                 type = ((ExecutableStatement) stmt).getKnownEgressType();
@@ -2228,7 +2195,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         _finishJIT();
 
-     //   int end = parser.getCursor() + 2;
         try {
             Accessor compiledAccessor = _initializeAccessor();
 
