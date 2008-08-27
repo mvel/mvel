@@ -94,17 +94,17 @@
 
     <distributionManagement>
         <!-- use the following if you're not using a snapshot version. -->
-<!--        <repository>
+        <repository>
             <id>codehaus.org</id>
             <name>Codehaus Maven Repository</name>
             <url>dav:https://dav.codehaus.org/repository/mvel/</url>
         </repository>
- -->       <!-- use the following if you ARE using a snapshot version. -->
-        <snapshotRepository>
+       <!-- use the following if you ARE using a snapshot version. -->
+<!--        <snapshotRepository>
             <id>codehaus.org</id>
             <name>Codehaus Snapshot Maven Repository</name>
             <url>dav:https://dav.codehaus.org/snapshots.repository/mvel/</url>
             <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository>
+        </snapshotRepository> -->
     </distributionManagement>
 </project>
