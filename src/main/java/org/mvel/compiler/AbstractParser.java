@@ -444,7 +444,19 @@ public class AbstractParser implements Serializable {
                             case '.':
                                 union = true;
                                 cursor++;
+                                skipWhitespaceWithLineAccounting();
                                 continue;
+
+                            case '{':
+                                if (union) {
+                                    char[] prop = subArray(start, cursor-1);
+
+                                    start = cursor;
+                                    cursor = balancedCapture(expr, cursor, '{') + 1;
+
+                                    return lastNode = new WithNode(prop, subArray(start + 1, cursor - 1), fields);
+                                }
+                                break;
 
                             case '~':
                                 if (lookAhead() == '=') {

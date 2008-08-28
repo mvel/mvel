@@ -28,6 +28,7 @@ import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
 import org.mvel.util.PropertyTools;
+import org.mvel.util.StringAppender;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
 
 import java.io.Serializable;
@@ -148,12 +149,12 @@ public class WithNode extends BlockNode implements NestedStatement {
                     if (end == -1) end = i;
 
                     if (parm == null) {
-                        parms.add(new ParmValuePair(
-                                null,
-                                (ExecutableStatement) subCompileExpression(
-                                        createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper)
-                                )
-                        ));
+                        parms.add(
+                                new ParmValuePair(null, (ExecutableStatement)
+                                        subCompileExpression(
+                                                new StringAppender(nestParm).append('.')
+                                                        .append(subset(block, start, end - start)).toString()))
+                        );
 
                         oper = -1;
                         start = ++i;
@@ -178,14 +179,23 @@ public class WithNode extends BlockNode implements NestedStatement {
         }
 
 
-        if (parm != null && start != (end = block.length)) {
-            parms.add(new ParmValuePair(
-                    parm,
-                    (ExecutableStatement) subCompileExpression(
-                            createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper)
+        if (start != (end = block.length)) {
+            if (parm == null) {
+                parms.add(
+                        new ParmValuePair(null, (ExecutableStatement)
+                                subCompileExpression(new StringAppender(nestParm).append('.')
+                                                .append(subset(block, start, end - start)).toString()))
+                );
+            }
+            else {
+                parms.add(new ParmValuePair(
+                        parm,
+                        (ExecutableStatement) subCompileExpression(
+                                createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper)
 
-                    )
-            ));
+                        )
+                ));
+            }
         }
 
         parms.toArray(withExpressions = new ParmValuePair[parms.size()]);
@@ -208,7 +218,7 @@ public class WithNode extends BlockNode implements NestedStatement {
         }
 
         public ParmValuePair(String parameter, ExecutableStatement statement) {
-            this.setExpression = MVEL.compileSetExpression(parameter);
+            if (parameter != null) this.setExpression = MVEL.compileSetExpression(parameter);
             this.statement = statement;
         }
 

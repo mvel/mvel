@@ -282,7 +282,7 @@ public class TemplateTests extends TestCase {
     }
 
     public void testMath() {
-        assertEquals(188.4f, test("@{pi * hour}"));
+        assertEquals(188.4, test("@{pi * hour}"));
     }
 
     public void testTemplating() {

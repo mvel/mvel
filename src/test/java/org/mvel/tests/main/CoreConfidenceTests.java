@@ -45,6 +45,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("DOG", test("foo.bar.name.toUpperCase()"));
     }
 
+    public void testMethodOnValue2() {
+        assertEquals("DOG", test("foo. bar. name.toUpperCase()"));
+    }
+
     public void testSimpleProperty() {
         assertEquals("dog", test("foo.bar.name"));
     }
@@ -3789,6 +3793,21 @@ public class CoreConfidenceTests extends AbstractTest {
         }
 
         assertTrue(false);
+    }
+
+    public void testInlineWith() {
+        CompiledExpression expr = new ExpressionCompiler("foo.{name = 'poopy', aValue = 'bar'}").compile();
+        Foo f =  (Foo) MVEL.executeExpression(expr, createTestMap());
+        assertEquals("poopy", f.getName());
+        assertEquals("bar", f.aValue);
+    }
+
+    public void testInlineWith2() {
+        CompiledExpression expr = new ExpressionCompiler("foo.{name = 'poopy', aValue = 'bar', bar.{name = 'foobie'}}").compile();
+        Foo f =  (Foo) MVEL.executeExpression(expr, createTestMap());
+        assertEquals("poopy", f.getName());
+        assertEquals("bar", f.aValue);
+        assertEquals("foobie", f.getBar().getName());
     }
 }
 
