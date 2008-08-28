@@ -3799,15 +3799,28 @@ public class CoreConfidenceTests extends AbstractTest {
         CompiledExpression expr = new ExpressionCompiler("foo.{name = 'poopy', aValue = 'bar'}").compile();
         Foo f =  (Foo) MVEL.executeExpression(expr, createTestMap());
         assertEquals("poopy", f.getName());
-        assertEquals("bar", f.aValue);
+        assertEquals("bar", f.aValue);                                                                
     }
 
     public void testInlineWith2() {
         CompiledExpression expr = new ExpressionCompiler("foo.{name = 'poopy', aValue = 'bar', bar.{name = 'foobie'}}").compile();
+
         Foo f =  (Foo) MVEL.executeExpression(expr, createTestMap());
+
         assertEquals("poopy", f.getName());
         assertEquals("bar", f.aValue);
         assertEquals("foobie", f.getBar().getName());
+    }
+
+    public void testInlineWith3() {
+        CompiledExpression expr = new ExpressionCompiler("foo.{name = 'poopy', aValue = 'bar', bar.{name = 'foobie'}, toUC('doopy')}").compile();
+
+        Foo f =  (Foo) MVEL.executeExpression(expr, createTestMap());
+
+        assertEquals("poopy", f.getName());
+        assertEquals("bar", f.aValue);
+        assertEquals("foobie", f.getBar().getName());
+        assertEquals("doopy", f.register);
     }
 }
 
