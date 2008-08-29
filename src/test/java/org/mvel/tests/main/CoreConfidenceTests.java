@@ -3817,6 +3817,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         Foo f =  (Foo) MVEL.executeExpression(expr, createTestMap());
 
+        
         assertEquals("poopy", f.getName());
         assertEquals("bar", f.aValue);
         assertEquals("foobie", f.getBar().getName());
@@ -3824,7 +3825,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 }
 
-
+                                                                                   
 
 
 
