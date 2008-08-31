@@ -1,6 +1,7 @@
 package org.mvel.tests.main.res;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /*
  * Copyright 2005 JBoss Inc
@@ -30,7 +31,8 @@ public class Cheese
     private static final long serialVersionUID = -1187540653710115339L;
     private String            type;
     private int               price;
-
+    private Date              useBy;
+    
     public Cheese() {
 
     }
@@ -56,6 +58,14 @@ public class Cheese
 
     public void setPrice(final int price) {
         this.price = price;
+    }        
+
+    public Date getUseBy() {
+        return useBy;
+    }
+
+    public void setUseBy(Date useBy) {
+        this.useBy = useBy;
     }
 
     public String toString() {

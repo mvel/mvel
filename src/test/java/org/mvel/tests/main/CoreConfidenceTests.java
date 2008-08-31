@@ -1,6 +1,7 @@
 package org.mvel.tests.main;
 
 import org.mvel.*;
+
 import static org.mvel.MVEL.*;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.Function;
@@ -31,7 +32,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.*;
+
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
 
@@ -1914,7 +1917,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testListNestedInsideList() {
         ParserContext ctx = new ParserContext();
         ctx.addImport("User", User.class);
-
+        
         ExpressionCompiler compiler = new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), new User('Bobba', 'Feta') ]; [ users.get( 0 ), users.get( 1 ) ]");
         Serializable s = compiler.compile(ctx);
         List list = (List) MVEL.executeExpression(s);
@@ -1929,7 +1932,23 @@ public class CoreConfidenceTests extends AbstractTest {
         user = (User) list.get(0);
         assertEquals("Darth", user.getFirstName());
         user = (User) list.get(1);
-        assertEquals("Bobba", user.getFirstName());
+        assertEquals("Bobba", user.getFirstName());        
+    }
+    
+    public void testWithNestedInList() {
+        ParserContext ctx = new ParserContext();
+        ctx.addImport("User", User.class);
+        ctx.addImport("Task", Task.class);
+        
+        String str = "[";
+        str += "(with( new Task() ) { priority = 100, users = [ new User( 'bobba', 'fet'), new User( 'darth', 'vadar' ) ], names = ['name1', 'name2'] }),";
+        str += "(with( new Task() ) { priority = 45, users = [ new User( 'luke', 'cage'), new User( 'tony', 'stark' ) ], names = ['name3', 'name4'] })";
+        str += "]";
+        
+        ExpressionCompiler compiler = new ExpressionCompiler( str );
+        Serializable s = compiler.compile(ctx);
+        List list = (List) MVEL.executeExpression(s);
+        System.out.println( list );
     }
 
     public void testSetSemantics() {
@@ -3823,6 +3842,51 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("foobie", f.getBar().getName());
         assertEquals("doopy", f.register);
     }
+
+
+    public void testDataConverterStrictMode() throws Exception {
+        DataConversion.addConversionHandler( Date.class, new MVELDateCoercion() );
+        
+        ParserContext ctx = new ParserContext();
+        ctx.addImport( "Cheese", Cheese.class );
+        ctx.setStrongTyping(true);
+        ctx.setStrictTypeEnforcement( true );     
+        
+        Cheese expectedCheese = new Cheese();
+        expectedCheese.setUseBy( new SimpleDateFormat("dd-MMM-yyyy").parse( "10-Jul-1974" ) );     
+
+        ExpressionCompiler compiler = new ExpressionCompiler("c = new Cheese(); c.useBy = '10-Jul-1974'; return c");
+        Serializable expr = compiler.compile(ctx);
+        Cheese actualCheese = (Cheese) executeExpression(expr, createTestMap());                   
+        
+        assertEquals(expectedCheese.getUseBy(), actualCheese.getUseBy() );
+    }
+    
+    public static class MVELDateCoercion implements ConversionHandler {
+
+        public boolean canConvertFrom(Class cls) {
+            if (cls == String.class || cls.isAssignableFrom( Date.class )) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public Object convertFrom(Object o) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
+                if (o instanceof String) {
+                    return sdf.parse( (String) o);
+                } else {
+                    return o;
+                }
+            } catch ( Exception e) {
+                throw new RuntimeException( "Exception was thrown", e);
+            }
+        }
+
+    }    
+
 }
 
                                                                                    
