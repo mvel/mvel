@@ -1935,14 +1935,14 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("Bobba", user.getFirstName());        
     }
     
-    public void testWithNestedInList() {
+    public void testWithNestedInListWithDot() {
         ParserContext ctx = new ParserContext();
         ctx.addImport("User", User.class);
         ctx.addImport("Task", Task.class);
         
         String str = "[";
-        str += "(with( new Task() ) { priority = 100, users = [ new User( 'bobba', 'fet'), new User( 'darth', 'vadar' ) ], names = ['name1', 'name2'] }),";
-        str += "(with( new Task() ) { priority = 45, users = [ new User( 'luke', 'cage'), new User( 'tony', 'stark' ) ], names = ['name3', 'name4'] })";
+        str += "with( new Task() ).{ priority = 100, users = [ new User( 'bobba', 'fet'), new User( 'darth', 'vadar' ) ], names = ['name1', 'name2'] },";
+        str += "with( new Task() ).{ priority = 45, users = [ new User( 'luke', 'cage'), new User( 'tony', 'stark' ) ], names = ['name3', 'name4'] }";
         str += "]";
         
         ExpressionCompiler compiler = new ExpressionCompiler( str );
@@ -1950,6 +1950,22 @@ public class CoreConfidenceTests extends AbstractTest {
         List list = (List) MVEL.executeExpression(s);
         System.out.println( list );
     }
+    
+    public void testWithNestedInListWithBracketsAndWithoutDot() {
+        ParserContext ctx = new ParserContext();
+        ctx.addImport("User", User.class);
+        ctx.addImport("Task", Task.class);
+        
+        String str = "[";
+        str += "with( new Task() ) { priority = 100, users = [ new User( 'bobba', 'fet'), new User( 'darth', 'vadar' ) ], names = ['name1', 'name2'] },";
+        str += "with( new Task() ) { priority = 45, users = [ new User( 'luke', 'cage'), new User( 'tony', 'stark' ) ], names = ['name3', 'name4'] }";
+        str += "]";
+        
+        ExpressionCompiler compiler = new ExpressionCompiler( str );
+        Serializable s = compiler.compile(ctx);
+        List list = (List) MVEL.executeExpression(s);
+        System.out.println( list );
+    }    
 
     public void testSetSemantics() {
         Bar bar = new Bar();
