@@ -1935,23 +1935,41 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("Bobba", user.getFirstName());        
     }
     
-    public void testWithNestedInListWithDot() {
+    public void testNestedInListUsingDotConstructor() {
         ParserContext ctx = new ParserContext();
         ctx.addImport("User", User.class);
         ctx.addImport("Task", Task.class);
         
         String str = "[";
-        str += "with( new Task() ).{ priority = 100, users = [ new User( 'bobba', 'fet'), new User( 'darth', 'vadar' ) ], names = ['name1', 'name2'] },";
-        str += "with( new Task() ).{ priority = 45, users = [ new User( 'luke', 'cage'), new User( 'tony', 'stark' ) ], names = ['name3', 'name4'] }";
+        str += "new Task().{ priority = 100, users = [ new User( 'bobba', 'fet'), new User( 'darth', 'vadar' ) ], names = ['name1', 'name2'] },";
+        str += "new Task().{ priority = 45, users = [ new User( 'luke', 'cage'), new User( 'tony', 'stark' ) ], names = ['name3', 'name4'] }";
         str += "]";
         
         ExpressionCompiler compiler = new ExpressionCompiler( str );
         Serializable s = compiler.compile(ctx);
-        List list = (List) MVEL.executeExpression(s);
-        System.out.println( list );
+        List<Task> list = (List<Task>) MVEL.executeExpression(s);
+        
+        assertEquals( 2, list.size() );
+        
+        assertTrue( list.get(0) instanceof Task );
+        assertTrue( list.get(1) instanceof Task );
+        
+        Task task0 = list.get(0);
+        assertEquals( 100, task0.getPriority() );
+        assertEquals( "bobba", task0.getUsers().get( 0 ).getFirstName() );
+        assertEquals( "darth", task0.getUsers().get( 1 ).getFirstName() );
+        assertEquals( "name1", task0.getNames().get( 0 ) );
+        assertEquals( "name2", task0.getNames().get( 1 ) );
+        
+        Task task1 = list.get(1);
+        assertEquals( 45, task1.getPriority() );
+        assertEquals( "luke", task1.getUsers().get( 0 ).getFirstName() );
+        assertEquals( "tony", task1.getUsers().get( 1 ).getFirstName() );
+        assertEquals( "name3", task1.getNames().get( 0 ) );
+        assertEquals( "name4", task1.getNames().get( 1 ) );        
     }
     
-    public void testWithNestedInListWithBracketsAndWithoutDot() {
+    public void testWithNestedInListWithoutBrackets() {
         ParserContext ctx = new ParserContext();
         ctx.addImport("User", User.class);
         ctx.addImport("Task", Task.class);
@@ -1963,9 +1981,62 @@ public class CoreConfidenceTests extends AbstractTest {
         
         ExpressionCompiler compiler = new ExpressionCompiler( str );
         Serializable s = compiler.compile(ctx);
-        List list = (List) MVEL.executeExpression(s);
-        System.out.println( list );
+        List<Task> list = (List<Task>) MVEL.executeExpression(s);
+
+        assertEquals( 2, list.size() );
+        
+        assertTrue( list.get(0) instanceof Task );
+        assertTrue( list.get(1) instanceof Task );
+        
+        Task task0 = list.get(0);
+        assertEquals( 100, task0.getPriority() );
+        assertEquals( "bobba", task0.getUsers().get( 0 ).getFirstName() );
+        assertEquals( "darth", task0.getUsers().get( 1 ).getFirstName() );
+        assertEquals( "name1", task0.getNames().get( 0 ) );
+        assertEquals( "name2", task0.getNames().get( 1 ) );
+        
+        Task task1 = list.get(1);
+        assertEquals( 45, task1.getPriority() );
+        assertEquals( "luke", task1.getUsers().get( 0 ).getFirstName() );
+        assertEquals( "tony", task1.getUsers().get( 1 ).getFirstName() );
+        assertEquals( "name3", task1.getNames().get( 0 ) );
+        assertEquals( "name4", task1.getNames().get( 1 ) );        
     }    
+    
+    public void testWithNestedInListUsingBrackets() {
+        ParserContext ctx = new ParserContext();
+        ctx.addImport("User", User.class);
+        ctx.addImport("Task", Task.class);
+        
+        String str = "[";
+        str += "(with( new Task() ) { priority = 100, users = [ new User( 'bobba', 'fet'), new User( 'darth', 'vadar' ) ], names = ['name1', 'name2'] }),";
+        str += "(with( new Task() ) { priority = 45, users = [ new User( 'luke', 'cage'), new User( 'tony', 'stark' ) ], names = ['name3', 'name4'] })";
+        str += "]";
+        
+        ExpressionCompiler compiler = new ExpressionCompiler( str );
+        Serializable s = compiler.compile(ctx);
+
+        List<Task> list = (List<Task>) MVEL.executeExpression(s);
+
+        assertEquals( 2, list.size() );
+        
+        assertTrue( list.get(0) instanceof Task );
+        assertTrue( list.get(1) instanceof Task );
+        
+        Task task0 = list.get(0);
+        assertEquals( 100, task0.getPriority() );
+        assertEquals( "bobba", task0.getUsers().get( 0 ).getFirstName() );
+        assertEquals( "darth", task0.getUsers().get( 1 ).getFirstName() );
+        assertEquals( "name1", task0.getNames().get( 0 ) );
+        assertEquals( "name2", task0.getNames().get( 1 ) );
+        
+        Task task1 = list.get(1);
+        assertEquals( 45, task1.getPriority() );
+        assertEquals( "luke", task1.getUsers().get( 0 ).getFirstName() );
+        assertEquals( "tony", task1.getUsers().get( 1 ).getFirstName() );
+        assertEquals( "name3", task1.getNames().get( 0 ) );
+        assertEquals( "name4", task1.getNames().get( 1 ) );                
+    }     
 
     public void testSetSemantics() {
         Bar bar = new Bar();
