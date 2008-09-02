@@ -18,8 +18,11 @@
  */
 package org.mvel.ast;
 
+import org.mvel.compiler.ExecutableStatement;
+
 public interface Assignment {
     public String getAssignmentVar();
     public char[] getExpression();
     public boolean isNewDeclaration();
+    public void setValueStatement(ExecutableStatement stmt);
 }

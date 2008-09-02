@@ -37,7 +37,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private Class knownEgressType;
     private Class knownIngressType;
 
-
     private boolean convertableIngressEgress;
     private boolean optimized = false;
     private boolean importInjectionRequired = false;

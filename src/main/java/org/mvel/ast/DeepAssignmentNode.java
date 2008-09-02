@@ -38,7 +38,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
     private char[] stmt;
 
     private CompiledSetExpression set;
-    private transient Accessor statement;
+    private ExecutableStatement statement;
 
     public DeepAssignmentNode(char[] expr, int fields, int operation, String name) {
         //  super(expr, fields);
@@ -47,7 +47,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         int mark;
 
         if (operation != -1) {
-            this.egressType = ((ExecutableStatement) (statement =
+            this.egressType = ((statement =
                     (ExecutableStatement) subCompileExpression(stmt =
                             createShortFormOperativeAssignment(this.property = name, expr, operation)))).getKnownEgressType();
 
@@ -102,5 +102,9 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
 
     public boolean isAssignment() {
         return true;
+    }
+
+    public void setValueStatement(ExecutableStatement stmt) {
+        this.statement = stmt;
     }
 }

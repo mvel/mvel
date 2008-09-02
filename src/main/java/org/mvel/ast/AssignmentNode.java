@@ -138,4 +138,8 @@ public class AssignmentNode extends ASTNode implements Assignment {
     public boolean isNewDeclaration() {
         return false;
     }
+
+    public void setValueStatement(ExecutableStatement stmt) {
+        this.statement = stmt;
+    }
 }

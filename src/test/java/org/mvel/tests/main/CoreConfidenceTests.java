@@ -1,7 +1,6 @@
 package org.mvel.tests.main;
 
 import org.mvel.*;
-
 import static org.mvel.MVEL.*;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.Function;
@@ -32,11 +31,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
 import java.util.*;
-
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
+import java.text.SimpleDateFormat;
 
 @SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
@@ -1917,7 +1915,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testListNestedInsideList() {
         ParserContext ctx = new ParserContext();
         ctx.addImport("User", User.class);
-        
+
         ExpressionCompiler compiler = new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), new User('Bobba', 'Feta') ]; [ users.get( 0 ), users.get( 1 ) ]");
         Serializable s = compiler.compile(ctx);
         List list = (List) MVEL.executeExpression(s);
@@ -1932,111 +1930,8 @@ public class CoreConfidenceTests extends AbstractTest {
         user = (User) list.get(0);
         assertEquals("Darth", user.getFirstName());
         user = (User) list.get(1);
-        assertEquals("Bobba", user.getFirstName());        
+        assertEquals("Bobba", user.getFirstName());
     }
-    
-    public void testNestedInListUsingDotConstructor() {
-        ParserContext ctx = new ParserContext();
-        ctx.addImport("User", User.class);
-        ctx.addImport("Task", Task.class);
-        
-        String str = "[";
-        str += "new Task().{ priority = 100, users = [ new User( 'bobba', 'fet'), new User( 'darth', 'vadar' ) ], names = ['name1', 'name2'] },";
-        str += "new Task().{ priority = 45, users = [ new User( 'luke', 'cage'), new User( 'tony', 'stark' ) ], names = ['name3', 'name4'] }";
-        str += "]";
-        
-        ExpressionCompiler compiler = new ExpressionCompiler( str );
-        Serializable s = compiler.compile(ctx);
-        List<Task> list = (List<Task>) MVEL.executeExpression(s);
-        
-        assertEquals( 2, list.size() );
-        
-        assertTrue( list.get(0) instanceof Task );
-        assertTrue( list.get(1) instanceof Task );
-        
-        Task task0 = list.get(0);
-        assertEquals( 100, task0.getPriority() );
-        assertEquals( "bobba", task0.getUsers().get( 0 ).getFirstName() );
-        assertEquals( "darth", task0.getUsers().get( 1 ).getFirstName() );
-        assertEquals( "name1", task0.getNames().get( 0 ) );
-        assertEquals( "name2", task0.getNames().get( 1 ) );
-        
-        Task task1 = list.get(1);
-        assertEquals( 45, task1.getPriority() );
-        assertEquals( "luke", task1.getUsers().get( 0 ).getFirstName() );
-        assertEquals( "tony", task1.getUsers().get( 1 ).getFirstName() );
-        assertEquals( "name3", task1.getNames().get( 0 ) );
-        assertEquals( "name4", task1.getNames().get( 1 ) );        
-    }
-    
-    public void testWithNestedInListWithoutBrackets() {
-        ParserContext ctx = new ParserContext();
-        ctx.addImport("User", User.class);
-        ctx.addImport("Task", Task.class);
-        
-        String str = "[";
-        str += "with( new Task() ) { priority = 100, users = [ new User( 'bobba', 'fet'), new User( 'darth', 'vadar' ) ], names = ['name1', 'name2'] },";
-        str += "with( new Task() ) { priority = 45, users = [ new User( 'luke', 'cage'), new User( 'tony', 'stark' ) ], names = ['name3', 'name4'] }";
-        str += "]";
-        
-        ExpressionCompiler compiler = new ExpressionCompiler( str );
-        Serializable s = compiler.compile(ctx);
-        List<Task> list = (List<Task>) MVEL.executeExpression(s);
-
-        assertEquals( 2, list.size() );
-        
-        assertTrue( list.get(0) instanceof Task );
-        assertTrue( list.get(1) instanceof Task );
-        
-        Task task0 = list.get(0);
-        assertEquals( 100, task0.getPriority() );
-        assertEquals( "bobba", task0.getUsers().get( 0 ).getFirstName() );
-        assertEquals( "darth", task0.getUsers().get( 1 ).getFirstName() );
-        assertEquals( "name1", task0.getNames().get( 0 ) );
-        assertEquals( "name2", task0.getNames().get( 1 ) );
-        
-        Task task1 = list.get(1);
-        assertEquals( 45, task1.getPriority() );
-        assertEquals( "luke", task1.getUsers().get( 0 ).getFirstName() );
-        assertEquals( "tony", task1.getUsers().get( 1 ).getFirstName() );
-        assertEquals( "name3", task1.getNames().get( 0 ) );
-        assertEquals( "name4", task1.getNames().get( 1 ) );        
-    }    
-    
-    public void testWithNestedInListUsingBrackets() {
-        ParserContext ctx = new ParserContext();
-        ctx.addImport("User", User.class);
-        ctx.addImport("Task", Task.class);
-        
-        String str = "[";
-        str += "(with( new Task() ) { priority = 100, users = [ new User( 'bobba', 'fet'), new User( 'darth', 'vadar' ) ], names = ['name1', 'name2'] }),";
-        str += "(with( new Task() ) { priority = 45, users = [ new User( 'luke', 'cage'), new User( 'tony', 'stark' ) ], names = ['name3', 'name4'] })";
-        str += "]";
-        
-        ExpressionCompiler compiler = new ExpressionCompiler( str );
-        Serializable s = compiler.compile(ctx);
-
-        List<Task> list = (List<Task>) MVEL.executeExpression(s);
-
-        assertEquals( 2, list.size() );
-        
-        assertTrue( list.get(0) instanceof Task );
-        assertTrue( list.get(1) instanceof Task );
-        
-        Task task0 = list.get(0);
-        assertEquals( 100, task0.getPriority() );
-        assertEquals( "bobba", task0.getUsers().get( 0 ).getFirstName() );
-        assertEquals( "darth", task0.getUsers().get( 1 ).getFirstName() );
-        assertEquals( "name1", task0.getNames().get( 0 ) );
-        assertEquals( "name2", task0.getNames().get( 1 ) );
-        
-        Task task1 = list.get(1);
-        assertEquals( 45, task1.getPriority() );
-        assertEquals( "luke", task1.getUsers().get( 0 ).getFirstName() );
-        assertEquals( "tony", task1.getUsers().get( 1 ).getFirstName() );
-        assertEquals( "name3", task1.getNames().get( 0 ) );
-        assertEquals( "name4", task1.getNames().get( 1 ) );                
-    }     
 
     public void testSetSemantics() {
         Bar bar = new Bar();
@@ -3905,7 +3800,7 @@ public class CoreConfidenceTests extends AbstractTest {
         CompiledExpression expr = new ExpressionCompiler("foo.{name = 'poopy', aValue = 'bar'}").compile();
         Foo f =  (Foo) MVEL.executeExpression(expr, createTestMap());
         assertEquals("poopy", f.getName());
-        assertEquals("bar", f.aValue);                                                                
+        assertEquals("bar", f.aValue);
     }
 
     public void testInlineWith2() {
@@ -3923,7 +3818,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         Foo f =  (Foo) MVEL.executeExpression(expr, createTestMap());
 
-        
+
         assertEquals("poopy", f.getName());
         assertEquals("bar", f.aValue);
         assertEquals("foobie", f.getBar().getName());
@@ -3933,22 +3828,22 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testDataConverterStrictMode() throws Exception {
         DataConversion.addConversionHandler( Date.class, new MVELDateCoercion() );
-        
+
         ParserContext ctx = new ParserContext();
         ctx.addImport( "Cheese", Cheese.class );
         ctx.setStrongTyping(true);
-        ctx.setStrictTypeEnforcement( true );     
-        
+        ctx.setStrictTypeEnforcement( true );
+
         Cheese expectedCheese = new Cheese();
-        expectedCheese.setUseBy( new SimpleDateFormat("dd-MMM-yyyy").parse( "10-Jul-1974" ) );     
+        expectedCheese.setUseBy( new SimpleDateFormat("dd-MMM-yyyy").parse( "10-Jul-1974" ) );
 
         ExpressionCompiler compiler = new ExpressionCompiler("c = new Cheese(); c.useBy = '10-Jul-1974'; return c");
         Serializable expr = compiler.compile(ctx);
-        Cheese actualCheese = (Cheese) executeExpression(expr, createTestMap());                   
-        
+        Cheese actualCheese = (Cheese) executeExpression(expr, createTestMap());
+
         assertEquals(expectedCheese.getUseBy(), actualCheese.getUseBy() );
     }
-    
+
     public static class MVELDateCoercion implements ConversionHandler {
 
         public boolean canConvertFrom(Class cls) {
@@ -3972,11 +3867,11 @@ public class CoreConfidenceTests extends AbstractTest {
             }
         }
 
-    }    
+    }
 
 }
 
-                                                                                   
+
 
 
 

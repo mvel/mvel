@@ -34,7 +34,7 @@ public class TypedVarNode extends ASTNode implements Assignment {
     private String name;
     private char[] stmt;
 
-    private transient ExecutableStatement statement;
+    private ExecutableStatement statement;
 
     public TypedVarNode(char[] expr, int fields, Class type) {
         this.egressType = type;
@@ -89,5 +89,9 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
     public boolean isNewDeclaration() {
         return true;
+    }
+
+    public void setValueStatement(ExecutableStatement stmt) {
+        this.statement = stmt;
     }
 }

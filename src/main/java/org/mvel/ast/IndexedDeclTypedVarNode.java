@@ -20,6 +20,7 @@ package org.mvel.ast;
 
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.compiler.AbstractParser;
+import org.mvel.compiler.ExecutableStatement;
 
 /**
  * @author Christopher Brock
@@ -56,5 +57,9 @@ public class IndexedDeclTypedVarNode extends ASTNode implements Assignment {
 
     public boolean isNewDeclaration() {
         return true;
+    }
+
+    public void setValueStatement(ExecutableStatement stmt) {
+        throw new RuntimeException("illegal operation");
     }
 }

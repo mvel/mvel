@@ -18,11 +18,8 @@
  */
 package org.mvel.compiler;
 
-import org.mvel.CompileException;
-import org.mvel.ErrorDetail;
-import org.mvel.Operator;
 import static org.mvel.Operator.PTABLE;
-import org.mvel.ParserContext;
+import org.mvel.*;
 import org.mvel.debug.DebugTools;
 import org.mvel.ast.ASTNode;
 import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
@@ -303,7 +300,17 @@ public class ExpressionCompiler extends AbstractParser {
                     ExecutableStatement c = (ExecutableStatement) subCompileExpression(a.getExpression());
 
                     if (pCtx.isStrictTypeEnforcement()) {
-                        if (!returnType.isAssignableFrom(c.getKnownEgressType())) {
+                        if (!returnType.isAssignableFrom(c.getKnownEgressType()) && c.isLiteralOnly()) {
+                            if (DataConversion.canConvert(c.getKnownEgressType(), returnType)) {
+                                try {
+                                     a.setValueStatement(new ExecutableLiteral(DataConversion.convert(c.getValue(null, null), returnType)));
+                                     return tk;
+                                }
+                                catch (Exception e) {
+                                    // fall through.
+                                }
+                            }
+
                             throw new CompileException(
                                     "cannot assign type " + c.getKnownEgressType().getName()
                                             + " to " + returnType.getName());

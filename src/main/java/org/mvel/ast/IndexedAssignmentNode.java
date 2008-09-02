@@ -152,4 +152,8 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
     public boolean isNewDeclaration() {
         return false;
     }
+
+    public void setValueStatement(ExecutableStatement stmt) {
+        this.statement = stmt;
+    }
 }

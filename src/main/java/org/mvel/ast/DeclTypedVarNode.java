@@ -19,6 +19,7 @@
 package org.mvel.ast;
 
 import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.checkNameSafety;
 
@@ -65,5 +66,9 @@ public class DeclTypedVarNode extends ASTNode implements Assignment {
 
     public boolean isNewDeclaration() {
         return true;
+    }
+
+    public void setValueStatement(ExecutableStatement stmt) {
+        throw new RuntimeException("illegal operation");
     }
 }
