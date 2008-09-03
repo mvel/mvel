@@ -31,10 +31,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
-import java.text.SimpleDateFormat;
 
 @SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
@@ -3261,7 +3261,7 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
-        public void testQuickSortScript3() throws IOException {
+    public void testQuickSortScript3() throws IOException {
         Object[] sorted = (Object[]) test(new String(loadFromFile(new File("samples/scripts/quicksort2.mvel"))));
         int last = -1;
         for (Object o : sorted) {
@@ -3812,7 +3812,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testInlineWith() {
         CompiledExpression expr = new ExpressionCompiler("foo.{name = 'poopy', aValue = 'bar'}").compile();
-        Foo f =  (Foo) MVEL.executeExpression(expr, createTestMap());
+        Foo f = (Foo) MVEL.executeExpression(expr, createTestMap());
         assertEquals("poopy", f.getName());
         assertEquals("bar", f.aValue);
     }
@@ -3820,7 +3820,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testInlineWith2() {
         CompiledExpression expr = new ExpressionCompiler("foo.{name = 'poopy', aValue = 'bar', bar.{name = 'foobie'}}").compile();
 
-        Foo f =  (Foo) MVEL.executeExpression(expr, createTestMap());
+        Foo f = (Foo) MVEL.executeExpression(expr, createTestMap());
 
         assertEquals("poopy", f.getName());
         assertEquals("bar", f.aValue);
@@ -3830,7 +3830,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testInlineWith3() {
         CompiledExpression expr = new ExpressionCompiler("foo.{name = 'poopy', aValue = 'bar', bar.{name = 'foobie'}, toUC('doopy')}").compile();
 
-        Foo f =  (Foo) MVEL.executeExpression(expr, createTestMap());
+        Foo f = (Foo) MVEL.executeExpression(expr, createTestMap());
 
 
         assertEquals("poopy", f.getName());
@@ -3841,29 +3841,30 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testDataConverterStrictMode() throws Exception {
-        DataConversion.addConversionHandler( Date.class, new MVELDateCoercion() );
+        DataConversion.addConversionHandler(Date.class, new MVELDateCoercion());
 
         ParserContext ctx = new ParserContext();
-        ctx.addImport( "Cheese", Cheese.class );
+        ctx.addImport("Cheese", Cheese.class);
         ctx.setStrongTyping(true);
-        ctx.setStrictTypeEnforcement( true );
+        ctx.setStrictTypeEnforcement(true);
 
         Cheese expectedCheese = new Cheese();
-        expectedCheese.setUseBy( new SimpleDateFormat("dd-MMM-yyyy").parse( "10-Jul-1974" ) );
+        expectedCheese.setUseBy(new SimpleDateFormat("dd-MMM-yyyy").parse("10-Jul-1974"));
 
         ExpressionCompiler compiler = new ExpressionCompiler("c = new Cheese(); c.useBy = '10-Jul-1974'; return c");
         Serializable expr = compiler.compile(ctx);
         Cheese actualCheese = (Cheese) executeExpression(expr, createTestMap());
 
-        assertEquals(expectedCheese.getUseBy(), actualCheese.getUseBy() );
+        assertEquals(expectedCheese.getUseBy(), actualCheese.getUseBy());
     }
 
     public static class MVELDateCoercion implements ConversionHandler {
 
         public boolean canConvertFrom(Class cls) {
-            if (cls == String.class || cls.isAssignableFrom( Date.class )) {
+            if (cls == String.class || cls.isAssignableFrom(Date.class)) {
                 return true;
-            } else {
+            }
+            else {
                 return false;
             }
         }
@@ -3872,12 +3873,14 @@ public class CoreConfidenceTests extends AbstractTest {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
                 if (o instanceof String) {
-                    return sdf.parse( (String) o);
-                } else {
+                    return sdf.parse((String) o);
+                }
+                else {
                     return o;
                 }
-            } catch ( Exception e) {
-                throw new RuntimeException( "Exception was thrown", e);
+            }
+            catch (Exception e) {
+                throw new RuntimeException("Exception was thrown", e);
             }
         }
 
