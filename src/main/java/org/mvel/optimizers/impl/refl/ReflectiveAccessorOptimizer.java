@@ -292,7 +292,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             throw new PropertyAccessException(new String(expr), e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException(new String(expr), e);
+            throw new PropertyAccessException(new String(expr) + ": array index out of bounds." , e);
         }
         catch (PropertyAccessException e) {
             throw new CompileException(e.getMessage(), e);
@@ -704,7 +704,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 //        ctx = ((List) parser.parseCollection(property, false)).get(0);
 
         Accessor root = _getAccessor(o);
-   //     int end = parser.getCursor() + 2;
+        //     int end = parser.getCursor() + 2;
 
         if (property != null && property.length > 0) {
             return new Union(root, property);

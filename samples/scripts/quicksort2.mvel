@@ -21,7 +21,7 @@ def partition(low, high) {
 
     while (i < j) {
         i += 1; while (array[i] < pivotPoint) i += 1;
-        j += 1; while (array[j] > pivotPoint) j += 1;
+        j -= 1; while (array[j] > pivotPoint) j -= 1;
         if (i < j) swap(i, j);
     }
 
