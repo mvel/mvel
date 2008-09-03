@@ -4,7 +4,6 @@
  * by: Christopher Michael Brock
  */
 
-
 array = null;
 
 def swap(i, j) {
