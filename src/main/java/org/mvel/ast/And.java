@@ -31,13 +31,6 @@ public class And extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-//        Object leftVal = left.getReducedValueAccelerated(ctx, thisValue, factory);
-//        Object rightVal = right.getReducedValueAccelerated(ctx, thisValue, factory);
-//
-//
-//        return (Boolean) leftVal && (Boolean) rightVal;
-
-
        return (((Boolean) left.getReducedValueAccelerated(ctx, thisValue, factory))
                 && ((Boolean) right.getReducedValueAccelerated(ctx, thisValue, factory)));
     }

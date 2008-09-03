@@ -31,11 +31,6 @@ public class ExecutableAccessor implements ExecutableStatement {
 
     private boolean returnBigDecimal;
 
-    public ExecutableAccessor(ASTNode node, boolean returnBigDecimal) {
-        this.node = node;
-        this.returnBigDecimal = returnBigDecimal;
-    }
-
     public ExecutableAccessor(ASTNode node, boolean returnBigDecimal, Class egress) {
         this.node = node;
         this.returnBigDecimal = returnBigDecimal;

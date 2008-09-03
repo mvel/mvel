@@ -1081,8 +1081,8 @@ public class AbstractParser implements Serializable {
                     throw new CompileException("incomplete statement", expr, cursor);
                 }
                 else if (expr[cursor] == '{') {
-                    blockStart = cursor;
-                    blockEnd = cursor = balancedCapture(expr, cursor, '{');
+                   // blockStart = cursor;
+                    blockEnd = cursor = balancedCapture(expr, blockStart = cursor, '{');
                 }
                 else {
                     blockStart = cursor - 1;

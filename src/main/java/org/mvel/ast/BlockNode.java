@@ -26,16 +26,5 @@ public class BlockNode extends ASTNode {
 
     public BlockNode() {
     }
-
-    public BlockNode(char[] expr, int fields) {
-        //  super(expr, fields);
-        this.name = expr;
-    }
-
-    public BlockNode(char[] expr, int fields, char[] block) {
-        //   super(expr, fields);
-        this.name = expr;
-        this.block = block;
-    }
 }
 
