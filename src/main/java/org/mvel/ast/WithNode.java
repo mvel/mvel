@@ -18,7 +18,6 @@
  */
 package org.mvel.ast;
 
-import org.mvel.CompileException;
 import org.mvel.MVEL;
 import static org.mvel.MVEL.executeSetExpression;
 import org.mvel.Operator;
@@ -44,7 +43,6 @@ public class WithNode extends BlockNode implements NestedStatement {
     private ParmValuePair[] withExpressions;
 
     public WithNode(char[] expr, char[] block, int fields) {
-        //  super(expr, fields, block);
         this.name = expr;
         this.block = block;
 

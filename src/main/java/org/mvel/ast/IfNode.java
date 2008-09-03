@@ -93,6 +93,5 @@ public class IfNode extends ASTNode implements NestedStatement {
 
     public String toString() {
         return new String(name);
-
     }
 }

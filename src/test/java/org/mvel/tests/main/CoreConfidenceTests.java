@@ -3261,6 +3261,20 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+        public void testQuickSortScript3() throws IOException {
+        Object[] sorted = (Object[]) test(new String(loadFromFile(new File("samples/scripts/quicksort2.mvel"))));
+        int last = -1;
+        for (Object o : sorted) {
+            if (last == -1) {
+                last = (Integer) o;
+            }
+            else {
+                assertTrue(((Integer) o) > last);
+                last = (Integer) o;
+            }
+        }
+    }
+
     public void testMultiLineString() throws IOException {
         MVEL.evalFile(new File("samples/scripts/multilinestring.mvel"));
     }
