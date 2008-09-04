@@ -32,7 +32,6 @@ public class ItemResolverFactory extends BaseVariableResolverFactory {
         }
     }
 
-
     public VariableResolver getVariableResolver(String name) {
         return isTarget(name) ? resolver : nextFactory.getVariableResolver(name);
     }

@@ -104,7 +104,6 @@ public class MapVariableResolver implements VariableResolver {
         return 0;
     }
 
-
     public boolean isCache() {
         return cache;
     }

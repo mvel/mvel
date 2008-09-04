@@ -98,11 +98,11 @@
             <url>dav:https://dav.codehaus.org/repository/mvel/</url>
         </repository>
        <!-- use the following if you ARE using a snapshot version. -->
-<!--        <snapshotRepository>
+        <snapshotRepository>
             <id>codehaus.org</id>
             <name>Codehaus Snapshot Maven Repository</name>
             <url>dav:https://dav.codehaus.org/snapshots.repository/mvel/</url>
             <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository> -->
+        </snapshotRepository>
     </distributionManagement>
 </project>

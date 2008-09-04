@@ -33,15 +33,11 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
      * Holds the instance of the variables.
      */
     protected Map<String, Object> variables;
-
-    //   private VariableResolverFactory nextFactory;
-
     private boolean cachingSafe = false;
 
     public MapVariableResolverFactory(Map variables) {
         this.variables = variables;
     }
-
 
     public MapVariableResolverFactory(Map<String, Object> variables, VariableResolverFactory nextFactory) {
         this.variables = variables;
@@ -110,7 +106,6 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     public boolean isTarget(String name) {
         return variableResolvers != null && variableResolvers.containsKey(name);
     }
-
 
     public Set<String> getKnownVariables() {
         Set<String> knownVars = new HashSet<String>();

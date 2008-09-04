@@ -22,10 +22,7 @@ public class DefaultLocalVariableResolverFactory extends MapVariableResolverFact
         super(variables, cachingSafe);
     }
 
-
     public DefaultLocalVariableResolverFactory(VariableResolverFactory nextFactory) {
         super(new HashMap<String, Object>(), nextFactory);
     }
-
-
 }
