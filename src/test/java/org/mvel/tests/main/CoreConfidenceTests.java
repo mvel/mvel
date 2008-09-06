@@ -3816,9 +3816,14 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testAnalysisCompile() {
+        CompiledExpression ce = new ExpressionCompiler("foo.aValue = 'bar'").compile();
+        assertTrue(ce.getParserContext().getInputs().keySet().contains("foo"));
+    }
+
 
     public void testInlineWith() {
-        CompiledExpression expr = new ExpressionCompiler("foo.{name = 'poopy', aValue = 'bar'}").compile();
+        CompiledExpression expr = new ExpressionCompiler("foo.{name='poopy', aValue='bar'}").compile();
         Foo f = (Foo) MVEL.executeExpression(expr, createTestMap());
         assertEquals("poopy", f.getName());
         assertEquals("bar", f.aValue);
@@ -3866,7 +3871,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public static class MVELDateCoercion implements ConversionHandler {
-
         public boolean canConvertFrom(Class cls) {
             if (cls == String.class || cls.isAssignableFrom(Date.class)) {
                 return true;
@@ -3888,7 +3892,6 @@ public class CoreConfidenceTests extends AbstractTest {
                 throw new RuntimeException("Exception was thrown", e);
             }
         }
-
     }
 
 }

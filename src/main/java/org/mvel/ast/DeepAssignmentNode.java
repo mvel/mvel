@@ -22,10 +22,10 @@ import static org.mvel.MVEL.compileSetExpression;
 import static org.mvel.MVEL.eval;
 import static org.mvel.PropertyAccessor.set;
 import org.mvel.compiler.AbstractParser;
-import org.mvel.compiler.Accessor;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
+import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
 import static org.mvel.util.PropertyTools.find;
@@ -42,8 +42,9 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
 
     public DeepAssignmentNode(char[] expr, int fields, int operation, String name) {
         //  super(expr, fields);
+        this.fields |= DEEP_PROPERTY | fields;
+        firstUnion = findFirst('.', this.name = expr);
 
-        this.name = expr;
         int mark;
 
         if (operation != -1) {

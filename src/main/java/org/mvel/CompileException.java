@@ -45,14 +45,7 @@ public class CompileException extends RuntimeException {
 
     public CompileException(String message, List<ErrorDetail> errors) {
         super(message);
-
-
-
         this.errors = errors;
-//        for (ErrorDetail error : errors) {
-//            System.err.println("* " + error.toString());
-//        }
-//        System.err.flush();
     }
 
     public CompileException(String message, int cursor) {
@@ -112,7 +105,6 @@ public class CompileException extends RuntimeException {
         }
 
         while (start < end && isWhitespace(expr[start])) start++;
-        //   while (end > start && isWhitespace(expr[end])) end--;
 
         return copyValueOf(expr, start, end - start);
     }
