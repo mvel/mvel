@@ -41,10 +41,11 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
     private ExecutableStatement statement;
 
     public DeepAssignmentNode(char[] expr, int fields, int operation, String name) {
-        //  super(expr, fields);
         this.fields |= DEEP_PROPERTY | fields;
-        firstUnion = findFirst('.', this.name = expr);
 
+      //  firstUnion = findFirst('.', this.name);
+
+        this.name = expr;
         int mark;
 
         if (operation != -1) {
@@ -87,6 +88,11 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         set(ctx, factory, property, ctx = eval(stmt, ctx, factory));
         return ctx;
+    }
+
+    @Override
+    public String getAbsoluteName() {
+        return property.substring(0, property.indexOf('.'));
     }
 
     public String getAssignmentVar() {
