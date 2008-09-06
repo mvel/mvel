@@ -9,7 +9,7 @@
 
     There exist several targets which are by default empty and which can be 
     used for execution of your tasks. These targets are usually executed 
-    before and after some main targets. They are: 
+    before and after some core targets. They are:
 
       -pre-init:                 called before initialization of project properties
       -post-init:                called after initialization of project properties
@@ -39,7 +39,7 @@
     nbproject/build-impl.xml file. 
 
 
-    Another way to customize the build is by overriding existing main targets.
+    Another way to customize the build is by overriding existing core targets.
     The targets of interest are: 
 
       -init-macrodef-javac:     defines macro for javac compilation

@@ -3,10 +3,10 @@ package org.mvel.tests.perftests;
 import junit.framework.TestCase;
 import org.mvel.MVEL;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.tests.main.CoreConfidenceTests;
-import org.mvel.tests.main.res.Bar;
-import org.mvel.tests.main.res.Base;
-import org.mvel.tests.main.res.Foo;
+import org.mvel.tests.core.CoreConfidenceTests;
+import org.mvel.tests.core.res.Bar;
+import org.mvel.tests.core.res.Base;
+import org.mvel.tests.core.res.Foo;
 import org.mvel.util.ParseTools;
 
 import java.io.File;

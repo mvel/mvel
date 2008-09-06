@@ -1,12 +1,9 @@
 package org.mvel.tests;
 
-import java.util.HashMap;
-import java.util.List;
-
 import org.mvel.compiler.Accessor;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.tests.main.res.Foo;
+import org.mvel.tests.core.res.Foo;
 
 
 public class AccessorBMModel implements Accessor {

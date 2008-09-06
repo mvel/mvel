@@ -1346,7 +1346,7 @@ class MethodWriter implements MethodVisitor {
                  * 0x1000 to 0x80000000 (so there must be at most 20 subroutines
                  * in a method).
                  */
-                // finds the basic blocks that belong to the "main" subroutine
+                // finds the basic blocks that belong to the "core" subroutine
                 int id = 0x1000;
                 findSubroutine(labels, id);
                 // finds the basic blocks that belong to the real subroutines
