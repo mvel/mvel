@@ -1,4 +1,4 @@
-package org.mvel.tests;
+package org.mvel.tests.core;
 
 import junit.framework.TestCase;
 import org.mvel.MVEL;
