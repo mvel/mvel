@@ -1,6 +1,5 @@
 package org.mvel.tests.perftests;
 
-import junit.framework.TestCase;
 import org.mvel.MVEL;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.tests.core.CoreConfidenceTests;
@@ -16,8 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CompiledPerformanceTests {
-    private static final int ITERATIONS = 100;
-
     protected Foo foo = new Foo();
     protected Map<String, Object> map = new HashMap<String, Object>();
     protected Base base = new Base();
@@ -37,28 +34,6 @@ public class CompiledPerformanceTests {
         map.put("zero", 0);
     }
 
-//    public void testToListBenchmark() {
-//        String text = "misc.toList(foo.bar.name, 'hello', 42, ['key1' : 'value1', c : [ foo.bar.age, 'car', 42 ]], [42, [c : 'value1']] )";
-//
-//        MapVariableResolverFactory variableTable = new MapVariableResolverFactory(map);
-//
-//        Serializable compiled = MVEL.compileExpression(text);
-//
-//        for (int i = 0; i < ITERATIONS; i++) {
-//            executeExpression(compiled, variableTable);
-//        }
-//
-//        assertEquals(ITERATIONS, ((CoreConfidenceTests.MiscTestClass) map.get("misc")).getExec());
-//    }
-//
-//
-//    public void testToListBenchmark2() {
-//        testToListBenchmark();
-//    }
-//
-//    public void testToListBenchmark3() {
-//        testToListBenchmark();
-//    }
 
     public void testQuickSort() throws IOException {
         Serializable s = MVEL.compileExpression(new String(ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"))));
