@@ -3000,10 +3000,12 @@ public class CoreConfidenceTests extends AbstractTest {
             final Recipient other = (Recipient) obj;
             if (email == null) {
                 if (other.email != null) return false;
-            } else if (!email.equals(other.email)) return false;
+            }
+            else if (!email.equals(other.email)) return false;
             if (name == null) {
                 if (other.name != null) return false;
-            } else if (!name.equals(other.name)) return false;
+            }
+            else if (!name.equals(other.name)) return false;
             return true;
         }
     }
@@ -3055,7 +3057,8 @@ public class CoreConfidenceTests extends AbstractTest {
             final Recipients other = (Recipients) obj;
             if (list == null) {
                 if (other.list != null) return false;
-            } else if (!list.equals(other.list)) return false;
+            }
+            else if (!list.equals(other.list)) return false;
             return true;
         }
     }
@@ -3102,10 +3105,12 @@ public class CoreConfidenceTests extends AbstractTest {
             final EmailMessage other = (EmailMessage) obj;
             if (from == null) {
                 if (other.from != null) return false;
-            } else if (!from.equals(other.from)) return false;
+            }
+            else if (!from.equals(other.from)) return false;
             if (recipients == null) {
                 if (other.recipients != null) return false;
-            } else if (!recipients.equals(other.recipients)) return false;
+            }
+            else if (!recipients.equals(other.recipients)) return false;
             return true;
         }
     }
@@ -3248,7 +3253,8 @@ public class CoreConfidenceTests extends AbstractTest {
         for (Object o : sorted) {
             if (last == -1) {
                 last = (Integer) o;
-            } else {
+            }
+            else {
                 assertTrue(((Integer) o) > last);
                 last = (Integer) o;
             }
@@ -3261,7 +3267,8 @@ public class CoreConfidenceTests extends AbstractTest {
         for (Object o : sorted) {
             if (last == -1) {
                 last = (Integer) o;
-            } else {
+            }
+            else {
                 assertTrue(((Integer) o) > last);
                 last = (Integer) o;
             }
@@ -3873,7 +3880,8 @@ public class CoreConfidenceTests extends AbstractTest {
         public boolean canConvertFrom(Class cls) {
             if (cls == String.class || cls.isAssignableFrom(Date.class)) {
                 return true;
-            } else {
+            }
+            else {
                 return false;
             }
         }
@@ -3883,7 +3891,8 @@ public class CoreConfidenceTests extends AbstractTest {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
                 if (o instanceof String) {
                     return sdf.parse((String) o);
-                } else {
+                }
+                else {
                     return o;
                 }
             }
@@ -3894,173 +3903,184 @@ public class CoreConfidenceTests extends AbstractTest {
 
     }
 
-      private static final KnowledgeHelperFixer fixer = new KnowledgeHelperFixer();
+    private static final KnowledgeHelperFixer fixer = new KnowledgeHelperFixer();
 
     public void testSingleLineCommentSlash() {
-        String result = fixer.fix( "        //System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );" );
-        assertEquals( "        //System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );",
-                      result );
+        String result = fixer.fix("        //System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );");
+        assertEquals("        //System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );",
+                result);
     }
 
     public void testSingleLineCommentHash() {
-        String result = fixer.fix( "        #System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );" );
-        assertEquals( "        #System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );",
-                      result );
+        String result = fixer.fix("        #System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );");
+        assertEquals("        #System.out.println( \"help\" );\r\n        System.out.println( \"help\" );  \r\n     list.add( $person );",
+                result);
     }
 
     public void testMultiLineComment() {
-        String result = fixer.fix("        /*System.out.println( \"help\" );\r\n*/       System.out.println( \"help\" );  \r\n     list.add( $person );" );
-        assertEquals( "        /*System.out.println( \"help\" );\r\n*/       System.out.println( \"help\" );  \r\n     list.add( $person );",
-                      result );
+        String result = fixer.fix("        /*System.out.println( \"help\" );\r\n*/       System.out.println( \"help\" );  \r\n     list.add( $person );");
+        assertEquals("        /*System.out.println( \"help\" );\r\n*/       System.out.println( \"help\" );  \r\n     list.add( $person );",
+                result);
 
     }
 
     public void testAdd__Handle__Simple() {
-        String result = fixer.fix( "update(myObject );" );
-        assertEqualsIgnoreWhitespace( "drools.update(myObject );",
-                                      result );
+        String result = fixer.fix("update(myObject );");
+        assertEqualsIgnoreWhitespace("drools.update(myObject );",
+                result);
 
-        result = fixer.fix( "update ( myObject );" );
-        assertEqualsIgnoreWhitespace( "drools.update( myObject );",
-                                      result );
+        result = fixer.fix("update ( myObject );");
+        assertEqualsIgnoreWhitespace("drools.update( myObject );",
+                result);
     }
 
     public void testAdd__Handle__withNewLines() {
-        final String result = fixer.fix( "\n\t\n\tupdate( myObject );" );
-        assertEqualsIgnoreWhitespace( "\n\t\n\tdrools.update( myObject );",
-                                      result );
+        final String result = fixer.fix("\n\t\n\tupdate( myObject );");
+        assertEqualsIgnoreWhitespace("\n\t\n\tdrools.update( myObject );",
+                result);
     }
 
     public void testAdd__Handle__rComplex() {
-        String result = fixer.fix( "something update( myObject); other" );
-        assertEqualsIgnoreWhitespace( "something drools.update( myObject); other",
-                                      result );
+        String result = fixer.fix("something update( myObject); other");
+        assertEqualsIgnoreWhitespace("something drools.update( myObject); other",
+                result);
 
-        result = fixer.fix( "something update ( myObject );" );
-        assertEqualsIgnoreWhitespace( "something drools.update( myObject );",
-                                      result );
+        result = fixer.fix("something update ( myObject );");
+        assertEqualsIgnoreWhitespace("something drools.update( myObject );",
+                result);
 
-        result = fixer.fix( " update( myObject ); x" );
-        assertEqualsIgnoreWhitespace( " drools.update( myObject ); x",
-                                      result );
+        result = fixer.fix(" update( myObject ); x");
+        assertEqualsIgnoreWhitespace(" drools.update( myObject ); x",
+                result);
 
         //should not touch, as it is not a stand alone word
-        result = fixer.fix( "xxupdate(myObject ) x" );
-        assertEqualsIgnoreWhitespace( "xxupdate(myObject ) x",
-                                      result );
+        result = fixer.fix("xxupdate(myObject ) x");
+        assertEqualsIgnoreWhitespace("xxupdate(myObject ) x",
+                result);
     }
 
     public void testMultipleMatches() {
-        String result = fixer.fix( "update(myObject); update(myObject );" );
-        assertEqualsIgnoreWhitespace( "drools.update(myObject); drools.update(myObject );",
-                                      result );
+        String result = fixer.fix("update(myObject); update(myObject );");
+        assertEqualsIgnoreWhitespace("drools.update(myObject); drools.update(myObject );",
+                result);
 
-        result = fixer.fix( "xxx update(myObject ); update( myObject ); update( yourObject ); yyy" );
-        assertEqualsIgnoreWhitespace( "xxx drools.update(myObject ); drools.update( myObject ); drools.update( yourObject ); yyy",
-                                      result );
+        result = fixer.fix("xxx update(myObject ); update( myObject ); update( yourObject ); yyy");
+        assertEqualsIgnoreWhitespace("xxx drools.update(myObject ); drools.update( myObject ); drools.update( yourObject ); yyy",
+                result);
 
     }
 
     public void testAssert1() {
         final String raw = "insert( foo );";
         final String result = "drools.insert( foo );";
-        assertEqualsIgnoreWhitespace( result,
-                                      fixer.fix( raw ) );
+        assertEqualsIgnoreWhitespace(result,
+                fixer.fix(raw));
     }
 
     public void testAssert2() {
         final String raw = "some code; insert( new String(\"foo\") );\n More();";
         final String result = "some code; drools.insert( new String(\"foo\") );\n More();";
-        assertEqualsIgnoreWhitespace( result,
-                                      fixer.fix( raw ) );
+        assertEqualsIgnoreWhitespace(result,
+                fixer.fix(raw));
     }
 
     public void testAssertLogical() {
         final String raw = "some code; insertLogical(new String(\"foo\"));\n More();";
         final String result = "some code; drools.insertLogical(new String(\"foo\"));\n More();";
-        assertEqualsIgnoreWhitespace( result,
-                                      fixer.fix( raw ) );
+        assertEqualsIgnoreWhitespace(result,
+                fixer.fix(raw));
     }
 
     public void testModifyRetractModifyInsert() {
         final String raw = "some code; insert( bar ); modifyRetract( foo );\n More(); retract( bar ); modifyInsert( foo );";
         final String result = "some code; drools.insert( bar ); drools.modifyRetract( foo );\n More(); drools.retract( bar ); drools.modifyInsert( foo );";
-        assertEqualsIgnoreWhitespace( result,
-                                      fixer.fix( raw ) );
+        assertEqualsIgnoreWhitespace(result,
+                fixer.fix(raw));
     }
 
     public void testAllActionsMushedTogether() {
-        String result = fixer.fix( "insert(myObject ); update(ourObject);\t retract(herObject);" );
-        assertEqualsIgnoreWhitespace( "drools.insert(myObject ); drools.update(ourObject);\t drools.retract(herObject);",
-                                      result );
+        String result = fixer.fix("insert(myObject ); update(ourObject);\t retract(herObject);");
+        assertEqualsIgnoreWhitespace("drools.insert(myObject ); drools.update(ourObject);\t drools.retract(herObject);",
+                result);
 
-        result = fixer.fix( "insert( myObject ); update(ourObject);\t retract(herObject  );\ninsert(  myObject ); update(ourObject);\t retract(  herObject  );" );
-        assertEqualsIgnoreWhitespace( "drools.insert( myObject ); drools.update(ourObject);\t drools.retract(herObject  );\ndrools.insert(  myObject ); drools.update(ourObject);\t drools.retract(  herObject  );",
-                                      result );
+        result = fixer.fix("insert( myObject ); update(ourObject);\t retract(herObject  );\ninsert(  myObject ); update(ourObject);\t retract(  herObject  );");
+        assertEqualsIgnoreWhitespace("drools.insert( myObject ); drools.update(ourObject);\t drools.retract(herObject  );\ndrools.insert(  myObject ); drools.update(ourObject);\t drools.retract(  herObject  );",
+                result);
     }
 
     public void testLeaveLargeAlone() {
         final String original = "yeah yeah yeah minsert( xxx ) this is a long() thing Person (name=='drools') modify a thing";
-        final String result = fixer.fix( original );
-        assertEqualsIgnoreWhitespace( original,
-                                      result );
+        final String result = fixer.fix(original);
+        assertEqualsIgnoreWhitespace(original,
+                result);
     }
 
     public void testWithNull() {
         final String original = null;
-        final String result = fixer.fix( original );
-        assertEqualsIgnoreWhitespace( original,
-                                      result );
+        final String result = fixer.fix(original);
+        assertEqualsIgnoreWhitespace(original,
+                result);
     }
 
     public void testLeaveAssertAlone() {
         final String original = "drools.insert(foo)";
-        assertEqualsIgnoreWhitespace( original,
-                                      fixer.fix( original ) );
+        assertEqualsIgnoreWhitespace(original,
+                fixer.fix(original));
     }
 
     public void testLeaveAssertLogicalAlone() {
         final String original = "drools.insertLogical(foo)";
-        assertEqualsIgnoreWhitespace( original,
-                                      fixer.fix( original ) );
+        assertEqualsIgnoreWhitespace(original,
+                fixer.fix(original));
     }
 
     public void testWackyAssert() {
         final String raw = "System.out.println($person1.getName() + \" and \" + $person2.getName() +\" are sisters\");\n" + "insert($person1.getName(\"foo\") + \" and \" + $person2.getName() +\" are sisters\"); yeah();";
         final String expected = "System.out.println($person1.getName() + \" and \" + $person2.getName() +\" are sisters\");\n" + "drools.insert($person1.getName(\"foo\") + \" and \" + $person2.getName() +\" are sisters\"); yeah();";
 
-        assertEqualsIgnoreWhitespace( expected,
-                                      fixer.fix( raw ) );
+        assertEqualsIgnoreWhitespace(expected,
+                fixer.fix(raw));
     }
 
     public void testMoreAssertCraziness() {
         final String raw = "foobar(); (insert(new String(\"blah\").get()); bangBangYudoHono();)";
-        assertEqualsIgnoreWhitespace( "foobar(); (drools.insert(new String(\"blah\").get()); bangBangYudoHono();)",
-                                      fixer.fix( raw ) );
+        assertEqualsIgnoreWhitespace("foobar(); (drools.insert(new String(\"blah\").get()); bangBangYudoHono();)",
+                fixer.fix(raw));
     }
 
     public void testRetract() {
         final String raw = "System.out.println(\"some text\");retract(object);";
-        assertEqualsIgnoreWhitespace( "System.out.println(\"some text\");drools.retract(object);",
-                                      fixer.fix( raw ) );
+        assertEqualsIgnoreWhitespace("System.out.println(\"some text\");drools.retract(object);",
+                fixer.fix(raw));
     }
 
     private void assertEqualsIgnoreWhitespace(final String expected,
                                               final String actual) {
-        if ( expected == null || actual == null ) {
-            assertEquals( expected,
-                          actual );
+        if (expected == null || actual == null) {
+            assertEquals(expected,
+                    actual);
             return;
         }
-        final String cleanExpected = expected.replaceAll( "\\s+",
-                                                          "" );
-        final String cleanActual = actual.replaceAll( "\\s+",
-                                                      "" );
+        final String cleanExpected = expected.replaceAll("\\s+",
+                "");
+        final String cleanActual = actual.replaceAll("\\s+",
+                "");
 
-        assertEquals( cleanExpected,
-                      cleanActual );
+        assertEquals(cleanExpected,
+                cleanActual);
     }
 
+    public void testIsDefOperator() {
+        assertEquals(true, test("_v1 = 'bar'; isdef _v1"));
+    }
+
+    public void testIsDefOperator2() {
+        assertEquals(false, test("isdef _v1"));
+    }
+
+    public void testIsDefOperator3() {
+        assertEquals(true, test("!(isdef _v1)"));
+    }
 }
 
 
