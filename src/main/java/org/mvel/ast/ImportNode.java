@@ -21,8 +21,6 @@ package org.mvel.ast;
 import org.mvel.CompileException;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.findClassImportResolverFactory;
-import org.mvel.util.ParseTools;
-import org.mvel.util.PropertyTools;
 import static org.mvel.util.PropertyTools.endsWith;
 import static org.mvel.util.PropertyTools.findLast;
 

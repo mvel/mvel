@@ -117,6 +117,7 @@ public interface Operator {
     public static final int SWITCH = 43;
     public static final int DO = 44;
     public static final int WITH = 45;
+    public static final int ISDEF = 46;
 
     public static final int INC = 50;
     public static final int DEC = 51;

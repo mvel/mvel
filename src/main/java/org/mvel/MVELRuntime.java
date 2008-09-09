@@ -2,6 +2,7 @@ package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
+import static org.mvel.Operator.TERNARY_ELSE;
 import static org.mvel.Soundex.soundex;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.LineLabel;
@@ -84,7 +85,7 @@ public class MVELRuntime {
                     case TERNARY:
                         if (!(Boolean) stk.pop()) {
                             //noinspection StatementWithEmptyBody
-                            while (node.hasMoreNodes() && !node.nextNode().isOperator(Operator.TERNARY_ELSE)) ;
+                            while (node.hasMoreNodes() && !node.nextNode().isOperator(TERNARY_ELSE)) ;
                         }
                         stk.clear();
                         continue;

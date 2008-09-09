@@ -276,6 +276,11 @@ public class AbstractParser implements Serializable {
                             case WITH:
                                 return captureCodeBlock(ASTNode.BLOCK_WITH);
 
+                            case ISDEF:
+                                start = cursor = trimRight(cursor);
+                                captureToEOS();
+                                return lastNode = new IsDef(subArray(start, cursor));
+
                             case IMPORT:
                                 start = cursor = trimRight(cursor);
                                 captureToEOS();
@@ -1692,6 +1697,7 @@ public class AbstractParser implements Serializable {
                 operatorsTable.put("switch", SWITCH);
                 operatorsTable.put("function", FUNCTION);
                 operatorsTable.put("def", FUNCTION);
+                operatorsTable.put("isdef", ISDEF);
 
             case 4: // assignment
                 operatorsTable.put("=", ASSIGN);
