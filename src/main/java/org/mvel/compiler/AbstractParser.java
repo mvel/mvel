@@ -827,7 +827,8 @@ public class AbstractParser implements Serializable {
                             }
 
                         case '!': {
-                            if (isIdentifierPart(expr[++cursor])) {
+                             ++cursor;
+                            if (isIdentifierPart(expr[cursor = nextNonBlack()])) {
                                 start = cursor;
                                 captureToEOT();
                                 return lastNode = new Negation(subset(expr, start, cursor - start), fields);
@@ -1558,6 +1559,15 @@ public class AbstractParser implements Serializable {
         else {
             return expr[cursor + range];
         }
+    }
+
+    public int nextNonBlack() {
+        if ((cursor + 1) >= length) {
+            return -1;
+        }
+        int i = cursor;
+        while (i != length && isWhitespace(expr[i])) i++;
+        return i;
     }
 
     /**

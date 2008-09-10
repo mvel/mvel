@@ -6,13 +6,6 @@ import static org.mvel.util.ParseTools.findClassImportResolverFactory;
 import org.mvel.CompileException;
 import org.mvel.integration.VariableResolverFactory;
 
-/**
- * Created by IntelliJ IDEA.
- * User: christopherbrock
- * Date: Sep 8, 2008
- * Time: 9:50:04 PM
- * To change this template use File | Settings | File Templates.
- */
 public class IsDef extends ASTNode {
     private String varName;
 

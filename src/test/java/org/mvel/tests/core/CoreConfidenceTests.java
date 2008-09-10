@@ -4081,6 +4081,11 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testIsDefOperator3() {
         assertEquals(true, test("!(isdef _v1)"));
     }
+
+    public void testIsDefOperator4() {
+        assertEquals(true, test("! (isdef _v1)"));
+    }
+
 }
 
 
