@@ -631,7 +631,7 @@ public class PropertyAccessor {
             /**
              * Try to find an instance method from the class target.
              */
-            if ((m = getBestCandidate(args, name, cls, cls.getMethods())) != null) {
+            if ((m = getBestCandidate(args, name, cls, cls.getMethods(), false)) != null) {
                 addMethodCache(cls, createSignature(name, tk), m);
                 parameterTypes = m.getParameterTypes();
             }
@@ -640,7 +640,7 @@ public class PropertyAccessor {
                 /**
                  * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
                  */
-                if ((m = getBestCandidate(args, name, cls, cls.getClass().getDeclaredMethods())) != null) {
+                if ((m = getBestCandidate(args, name, cls, cls.getClass().getDeclaredMethods(), false)) != null) {
                     addMethodCache(cls, createSignature(name, tk), m);
                     parameterTypes = m.getParameterTypes();
                 }

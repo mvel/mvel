@@ -30,9 +30,6 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import static java.lang.reflect.Modifier.PUBLIC;
 import static java.lang.reflect.Modifier.isPublic;
-
-import static org.mvel.util.ParseTools.isWhitespace;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -222,7 +219,7 @@ public class PropertyTools {
         for (; i < len; i++) {
             if (!isDigit(c = val[i])) {
                 if (c == '.') {
-                    len = 0;
+          //          len = 0;
                     fp = true;
                     // continue;
                 }

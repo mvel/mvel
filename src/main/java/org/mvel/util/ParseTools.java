@@ -190,16 +190,16 @@ public class ParseTools {
 
     private static Map<String, Map<Integer, Method>> RESOLVED_METH_CACHE = new WeakHashMap<String, Map<Integer, Method>>(10);
 
-    public static Method getBestCandidate(Object[] arguments, String method, Class decl, Method[] methods) {
+    public static Method getBestCandidate(Object[] arguments, String method, Class decl, Method[] methods, boolean requireExact) {
         Class[] targetParms = new Class[arguments.length];
         for (int i = 0; i < arguments.length; i++) {
             targetParms[i] = arguments[i] != null ? arguments[i].getClass() : null;
         }
-        return getBestCandidate(targetParms, method, decl, methods);
+        return getBestCandidate(targetParms, method, decl, methods, requireExact);
     }
 
 
-    public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods) {
+    public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods, boolean requireExact) {
         if (methods.length == 0) {
             return null;
         }
@@ -249,7 +249,7 @@ public class ParseTools {
                     else if (parmTypes[i].isAssignableFrom(arguments[i])) {
                         score += 2;
                     }
-                    else if (canConvert(parmTypes[i], arguments[i])) {
+                    else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
                         if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
                         score += 1;
                     }
@@ -261,6 +261,7 @@ public class ParseTools {
                         break;
                     }
                 }
+
 
                 if (score != 0 && score > bestScore) {
                     bestCandidate = meth;

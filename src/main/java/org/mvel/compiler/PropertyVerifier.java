@@ -36,7 +36,6 @@ public class PropertyVerifier extends AbstractOptimizer {
     private static final int METH = 1;
     private static final int COL = 2;
 
-    private ParserContext parserContext;
     private List<String> inputs = new LinkedList<String>();
     private boolean first = true;
     private boolean resolvedExternally;
@@ -45,12 +44,12 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     public PropertyVerifier(char[] property, ParserContext parserContext) {
         this.length = (this.expr = property).length;
-        this.parserContext = parserContext;
+        this.pCtx = parserContext;
     }
 
     public PropertyVerifier(String property, ParserContext parserContext) {
         this.length = (this.expr = property.toCharArray()).length;
-        this.parserContext = parserContext;
+        this.pCtx = parserContext;
     }
 
     public List<String> getInputs() {
@@ -100,19 +99,19 @@ public class PropertyVerifier extends AbstractOptimizer {
      */
     private Class getBeanProperty(Class ctx, String property) {
         if (first) {
-            if (parserContext.hasVarOrInput(property)) {
-                if (parserContext.isStrictTypeEnforcement()) {
-                    paramTypes = parserContext.getTypeParameters(property);
-                    parserContext.setLastTypeParameters(parserContext.getTypeParametersAsArray(property));
+            if (pCtx.hasVarOrInput(property)) {
+                if (pCtx.isStrictTypeEnforcement()) {
+                    paramTypes = pCtx.getTypeParameters(property);
+                    pCtx.setLastTypeParameters(pCtx.getTypeParametersAsArray(property));
                 }
 
-                return parserContext.getVarOrInputType(property);
+                return pCtx.getVarOrInputType(property);
             }
-            else if (parserContext.hasImport(property)) {
+            else if (pCtx.hasImport(property)) {
                 resolvedExternally = false;
-                return parserContext.getImport(property);
+                return pCtx.getImport(property);
             }
-            if (!parserContext.isStrongTyping()) {
+            if (!pCtx.isStrongTyping()) {
                 return Object.class;
             }
         }
@@ -122,12 +121,12 @@ public class PropertyVerifier extends AbstractOptimizer {
         Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
 
         if (member instanceof Field) {
-            if (parserContext.isStrictTypeEnforcement()) {
+            if (pCtx.isStrictTypeEnforcement()) {
                 Field f = ((Field) member);
 
                 if (f.getGenericType() != null && f.getGenericType() instanceof ParameterizedType) {
                     ParameterizedType pt = (ParameterizedType) f.getGenericType();
-                    parserContext.setLastTypeParameters(pt.getActualTypeArguments());
+                    pCtx.setLastTypeParameters(pt.getActualTypeArguments());
 
                     Type[] gpt = pt.getActualTypeArguments();
                     Type[] classArgs = ((Class) pt.getRawType()).getTypeParameters();
@@ -148,20 +147,20 @@ public class PropertyVerifier extends AbstractOptimizer {
         else if (member != null) {
             Method method = (Method) member;
 
-            if (parserContext.isStrictTypeEnforcement()) {
+            if (pCtx.isStrictTypeEnforcement()) {
                 //if not a field, then this is a property getter
                 Type parametricReturnType = method.getGenericReturnType();
 
                 //push return type parameters onto parser context, only if this is a parametric type
                 if (parametricReturnType instanceof ParameterizedType) {
-                    parserContext.setLastTypeParameters(((ParameterizedType) parametricReturnType).getActualTypeArguments());
+                    pCtx.setLastTypeParameters(((ParameterizedType) parametricReturnType).getActualTypeArguments());
                 }
 
             }
             return method.getReturnType();
         }
-        else if (parserContext.hasImport(property)) {
-            return parserContext.getImport(property);
+        else if (pCtx.hasImport(property)) {
+            return pCtx.getImport(property);
         }
         else {
             Object tryStaticMethodRef = tryStaticAccess();
@@ -196,7 +195,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 }
             }
 
-            if (parserContext.isStrictTypeEnforcement()) {
+            if (pCtx.isStrictTypeEnforcement()) {
                 addFatalError("unqualified type in strict mode for: " + property);
             }
             return Object.class;
@@ -211,12 +210,12 @@ public class PropertyVerifier extends AbstractOptimizer {
      * @return known egress type
      */
     private Class getCollectionProperty(Class ctx, String property) {
-        if (parserContext.hasVarOrInput(property)) {
-            ctx = getSubComponentType(parserContext.getVarOrInputType(property));
+        if (pCtx.hasVarOrInput(property)) {
+            ctx = getSubComponentType(pCtx.getVarOrInputType(property));
         }
-        else if (parserContext.hasImport(property)) {
+        else if (pCtx.hasImport(property)) {
             resolvedExternally = false;
-            ctx = getSubComponentType(parserContext.getImport(property));
+            ctx = getSubComponentType(pCtx.getImport(property));
         }
         else {
             ctx = Object.class;
@@ -257,8 +256,8 @@ public class PropertyVerifier extends AbstractOptimizer {
              * It's the first element in the statement, therefore we check to see if there is a static import of a
              * native Java method or an MVEL function.
              */
-            if (parserContext.hasImport(name)) {
-                Method m = parserContext.getStaticImport(name).getMethod();
+            if (pCtx.hasImport(name)) {
+                Method m = pCtx.getStaticImport(name).getMethod();
 
                 /**
                  * Replace the method parameters.
@@ -266,9 +265,9 @@ public class PropertyVerifier extends AbstractOptimizer {
                 ctx = m.getDeclaringClass();
                 name = m.getName();
             }
-            else if (parserContext.hasFunction(name)) {
+            else if (pCtx.hasFunction(name)) {
                 resolvedExternally = false;
-                return parserContext.getFunction(name).getEgressType();
+                return pCtx.getFunction(name).getEgressType();
             }
         }
 
@@ -315,8 +314,8 @@ public class PropertyVerifier extends AbstractOptimizer {
          * If we have not cached the method then we need to go ahead and try to resolve it.
          */
 
-        if ((m = getBestCandidate(args, name, ctx, ctx.getMethods())) == null) {
-            if ((m = getBestCandidate(args, name, ctx, ctx.getDeclaredMethods())) == null) {
+        if ((m = getBestCandidate(args, name, ctx, ctx.getMethods(), pCtx.isStrongTyping())) == null) {
+            if ((m = getBestCandidate(args, name, ctx, ctx.getDeclaredMethods(), pCtx.isStrongTyping())) == null) {
                 StringAppender errorBuild = new StringAppender();
                 for (int i = 0; i < args.length; i++) {
                     errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
@@ -327,7 +326,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                     return Integer.class;
                 }
 
-                if (parserContext.isStrictTypeEnforcement()) {
+                if (pCtx.isStrictTypeEnforcement()) {
                     addFatalError("unable to resolve method using strict-mode: " + ctx.getName() + "." + name + "(...)");
                 }
                 return Object.class;
@@ -337,7 +336,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         /**
          * If we're in strict mode, we look for generic type information.
          */
-        if (parserContext.isStrictTypeEnforcement() && m.getGenericReturnType() != null) {
+        if (pCtx.isStrictTypeEnforcement() && m.getGenericReturnType() != null) {
             Map<String, Class> typeArgs = new HashMap<String, Class>();
 
             Type[] gpt = m.getGenericParameterTypes();
@@ -347,7 +346,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             for (int i = 0; i < gpt.length; i++) {
                 if (gpt[i] instanceof ParameterizedType) {
                     pt = (ParameterizedType) gpt[i];
-                    if ((z = parserContext.getImport(subtokens[i])) != null) {
+                    if ((z = pCtx.getImport(subtokens[i])) != null) {
                         /**
                          * We record the value of the type parameter to our typeArgs Map.
                          */
@@ -372,7 +371,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
             //push return type parameters onto parser context, only if this is a parametric type
             if (parametricReturnType instanceof ParameterizedType) {
-                parserContext.setLastTypeParameters(((ParameterizedType) parametricReturnType).getActualTypeArguments());
+                pCtx.setLastTypeParameters(((ParameterizedType) parametricReturnType).getActualTypeArguments());
             }
 
             if (paramTypes != null && paramTypes.containsKey(returnTypeArg)) {

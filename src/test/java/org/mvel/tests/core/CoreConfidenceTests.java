@@ -912,7 +912,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testUnQualifiedStaticTyping() {
-        assertEquals(20.0d, testCompiledSimple("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ", new HashMap()));
+        assertEquals(20, testCompiledSimple("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ", new HashMap()));
     }
 
     public void testObjectCreation() {
@@ -3576,7 +3576,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrongTyping(true);
         ctx.addInput("base", Base.class);
 
-        ExpressionCompiler compiler = new ExpressionCompiler("base.list.get('kinds').toUpperCase()");
+        ExpressionCompiler compiler = new ExpressionCompiler("base.list.get(1).toUpperCase()");
         CompiledExpression ce = compiler.compile(ctx);
 
         assertEquals(String.class, ce.getKnownEgressType());
@@ -4084,6 +4084,29 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testIsDefOperator4() {
         assertEquals(true, test("! (isdef _v1)"));
+    }
+
+    public void testReturnType1() {
+        assertEquals(Double.class, new ExpressionCompiler("100.5").compile().getKnownEgressType());
+    }
+
+    public void testReturnType2() {
+        assertEquals(Integer.class, new ExpressionCompiler("1").compile().getKnownEgressType());
+    }
+
+    public void testStrongTyping3() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+
+        try {
+            new ExpressionCompiler("foo.toUC(100.5").compile(ctx);
+        }
+        catch (Exception e) {
+            // should fail.
+            return;
+        }
+
+        assertTrue(false);
     }
 
 }
