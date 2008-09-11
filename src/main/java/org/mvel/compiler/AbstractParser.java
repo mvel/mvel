@@ -152,8 +152,7 @@ public class AbstractParser implements Serializable {
                 throw new RuntimeException("cannot resolve a built-in literal", e);
             }
         }
-        //LITERALS.putAll(Units.MEASUREMENTS_ALL);
-        //loadLanguageFeaturesByLevel(5);
+
         setLanguageLevel(5);
     }
 

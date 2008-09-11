@@ -18,7 +18,24 @@
  */
 package org.mvel;
 
+/**
+ * The conversion handler interface defines the basic interface for implementing conversion handlers in MVEL.
+ *
+ * @see org.mvel.DataConversion
+ */
 public interface ConversionHandler {
+    /**
+     * Converts the passed argument to the type represented by the handler.
+     * @param in - the input type
+     * @return - the converted type
+     */
     public Object convertFrom(Object in);
+
+    /**
+     * This method is used to indicate to the runtime whehter or not the handler knows how to convert
+     * from the specified type.
+     * @param cls - the source type
+     * @return - true if the converter supports converting from the specified type.
+     */
     public boolean canConvertFrom(Class cls);
 }

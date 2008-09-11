@@ -20,6 +20,7 @@ package org.mvel.compiler;
 
 import static org.mvel.Operator.PTABLE;
 import org.mvel.*;
+import static org.mvel.DataConversion.convert;
 import org.mvel.debug.DebugTools;
 import org.mvel.ast.ASTNode;
 import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
@@ -242,7 +243,7 @@ public class ExpressionCompiler extends AbstractParser {
             if (!stk.isEmpty()) throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
 
 
-            return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), getCurrentSourceFileName(), returnType, pCtx, literalOnly);
+            return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly);
 
         }
         catch (Throwable e) {
@@ -252,7 +253,6 @@ public class ExpressionCompiler extends AbstractParser {
                 throw new CompileException(e.getMessage(), e);
             }
         }
-
     }
 
     private static boolean isBooleanOperator(int operator) {
@@ -289,7 +289,6 @@ public class ExpressionCompiler extends AbstractParser {
                 Assignment a = (Assignment) tk;
 
                 if (a.getAssignmentVar() != null) {
-
                     PropertyVerifier propVerifier = new PropertyVerifier(a.getAssignmentVar(), pCtx);
                     tk.setEgressType(returnType = propVerifier.analyze());
 
@@ -303,7 +302,7 @@ public class ExpressionCompiler extends AbstractParser {
                         if (!returnType.isAssignableFrom(c.getKnownEgressType()) && c.isLiteralOnly()) {
                             if (DataConversion.canConvert(c.getKnownEgressType(), returnType)) {
                                 try {
-                                     a.setValueStatement(new ExecutableLiteral(DataConversion.convert(c.getValue(null, null), returnType)));
+                                     a.setValueStatement(new ExecutableLiteral(convert(c.getValue(null, null), returnType)));
                                      return tk;
                                 }
                                 catch (Exception e) {
@@ -328,10 +327,6 @@ public class ExpressionCompiler extends AbstractParser {
         }
         return tk;
     }
-
-//    private static int asInt(final Object o) {
-//        return (Integer) o;
-//    }
 
     public ExpressionCompiler(String expression) {
         setExpression(expression);

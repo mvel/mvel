@@ -4108,7 +4108,6 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertTrue(false);
     }
-
 }
 
 

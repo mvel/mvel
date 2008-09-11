@@ -40,7 +40,10 @@ public class FastList extends AbstractList implements Externalizable {
     public FastList(Object[] elements) {
         this.size = (this.elements = elements).length;
     }
-    
+
+    public FastList() {
+    }
+
     public void writeExternal(ObjectOutput out) throws IOException {
         out.writeInt( size );
         for ( int i = 0; i < size; i++) {

@@ -25,6 +25,11 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The DataConversion factory is where all of MVEL's type converters are registered with the runtime.
+ *
+ * @see ConversionHandler
+ */
 public class DataConversion {
     private static final Map<Class, ConversionHandler> CONVERTERS
             = new HashMap<Class, ConversionHandler>();
@@ -92,6 +97,11 @@ public class DataConversion {
         return (T) CONVERTERS.get(toType).convertFrom(in);
     }
 
+    /**
+     * Register a new {@link ConversionHandler} with the factory.
+     * @param type - Target type represented by the conversion handler.
+     * @param handler - An instance of the handler.
+     */
     public static void addConversionHandler(Class type, ConversionHandler handler) {
         CONVERTERS.put(type, handler);
     }
