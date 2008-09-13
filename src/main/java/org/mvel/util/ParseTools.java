@@ -207,7 +207,7 @@ public class ParseTools {
         Method bestCandidate = null;
         int bestScore = 0;
         int score = 0;
-
+        
         Integer hash = createClassSignatureHash(decl, arguments);
 
         Map<Integer, Method> methCache = RESOLVED_METH_CACHE.get(method);

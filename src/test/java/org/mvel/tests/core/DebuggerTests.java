@@ -24,10 +24,10 @@ public class DebuggerTests extends TestCase {
         MVELRuntime.resetDebugger();
         MVELRuntime.setThreadDebugger(new Debugger() {
             public int onBreak(Frame frame) {
-                if (frame.getFactory().getVariableResolver("a1") != null) {
+                if (frame.getFactory().isResolveable("a1")) {
                     a1++;
                 }
-                if (frame.getFactory().getVariableResolver("a4") != null) {
+                if (frame.getFactory().isResolveable("a4")) {
                     a4++;
                     System.out.println("HEI " + frame.getLineNumber());
                 }

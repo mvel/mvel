@@ -50,7 +50,15 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver createVariable(String name, Object value) {
-        VariableResolver vr = getVariableResolver(name);
+        VariableResolver vr;
+
+        try {
+            vr = getVariableResolver(name);
+        }
+        catch (CompileException e) {
+            vr = null;
+        }
+
         if (vr != null) {
             vr.setValue(value);
             return vr;
@@ -62,7 +70,14 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
-        VariableResolver vr = getVariableResolver(name);
+        VariableResolver vr;
+        try {
+            vr = getVariableResolver(name);
+        }
+        catch (CompileException e) {
+            vr = null;
+        }
+        
         if (vr != null && vr.getType() != null) {
             throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
         }
@@ -81,7 +96,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         else if (nextFactory != null) {
             return nextFactory.getVariableResolver(name);
         }
-        return null;
+        throw new CompileException("unable to resolve variable '" + name + "'");
     }
 
     public boolean isResolveable(String name) {

@@ -26,4 +26,15 @@ public class FailureTests extends AbstractTest {
 //        throw new AssertionError();
 //
 //    }
+
+
+    public void testBadParserConstruct() {
+       try {
+          test("a = 0; a =+++ 5;");
+       }
+       catch (Exception e) {
+           System.out.println(e);
+       }
+
+    }
 }

@@ -26,7 +26,6 @@ import org.mvel.integration.Interceptor;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.optimizers.impl.refl.GetterAccessor;
-import org.mvel.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 import static org.mvel.util.ParseTools.*;
 
 import java.io.File;
