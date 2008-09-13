@@ -502,6 +502,24 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new OperativeAssign(name, subArray(start, cursor), ADD, fields);
                                     }
                                 }
+                                else if (lookAhead() == '-') {
+                                    name = new String(expr, start, trimLeft(cursor) - start);
+
+                                    start = cursor += 2;
+
+                                    if (!isNextIdentifierOrLiteral()) {
+                                        throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, cursor);
+                                    }
+
+                                    captureToEOS();
+
+                                    if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), SUB, idx, fields);
+                                    }
+                                    else {
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), SUB, fields);
+                                    }
+                                }
 
                                 if (greedy && lookAhead() != '=') {
                                     cursor++;
@@ -612,7 +630,7 @@ public class AbstractParser implements Serializable {
                                 skipWhitespace();
                                 start = cursor;
                                 captureIdentifier();
-                                
+
                                 if ((idx = pCtx.variableIndexOf(name = new String(subArray(start, cursor)))) != -1) {
                                     return lastNode = new IndexedPreFixIncNode(idx);
                                 }
@@ -1320,7 +1338,6 @@ public class AbstractParser implements Serializable {
         return false;
     }
 
-
     protected void expectEOS() {
         skipWhitespace();
         if (cursor != length && expr[cursor] != ';') {
@@ -1367,17 +1384,18 @@ public class AbstractParser implements Serializable {
     }
 
     protected void captureIdentifier() {
+        if (cursor == length) throw new CompileException("unexpected end of statement: EOF", expr, cursor);
         while (cursor != length) {
             switch (expr[cursor]) {
                 case ';':
                     return;
                 default: {
                     if (!isIdentifierPart(expr[cursor])) {
-                        throw new CompileException("unexpected symbol (was expecting an identifier): " + expr[cursor]);
+                        throw new CompileException("unexpected symbol (was expecting an identifier): " + expr[cursor], expr, cursor);
                     }
                 }
             }
-           cursor++;
+            cursor++;
         }
     }
 
@@ -2157,7 +2175,7 @@ public class AbstractParser implements Serializable {
             }
         }
         catch (ClassCastException e) {
-            throw new CompileException("syntax error or incomptable types", expr, cursor, e);
+            throw new CompileException("syntax error or incompatable types", expr, cursor, e);
 
         }
         catch (Exception e) {

@@ -2580,6 +2580,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(11, test("xx0 = 15; xx0 -= 4; xx0"));
     }
 
+    public void testAssignSub2() {
+        assertEquals(-95, test("xx0 = 5; xx0 =- 100"));
+    }
+
 
     public void testStaticWithExplicitParam() {
         PojoStatic pojo = new PojoStatic("10");
@@ -4108,6 +4112,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertTrue(false);
     }
+
+
 }
 
 
