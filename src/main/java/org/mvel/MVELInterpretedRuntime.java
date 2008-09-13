@@ -159,7 +159,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
             throw c;
         }
         catch (NullPointerException e) {
-            if (tk != null && tk.isOperator() && cursor >= length) {
+            if (tk != null && tk.isOperator()) {
                 throw new CompileException("incomplete statement: "
                         + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")", e);
             }
