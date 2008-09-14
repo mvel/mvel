@@ -125,7 +125,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public ASTIterator getTokenIterator() {
-        //return new ASTArrayList(tokens);
         return tokens;
     }
 

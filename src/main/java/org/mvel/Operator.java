@@ -113,11 +113,12 @@ public interface Operator {
     public static final int IF = 39;
     public static final int ELSE = 40;
     public static final int WHILE = 41;
-    public static final int FOR = 42;
-    public static final int SWITCH = 43;
-    public static final int DO = 44;
-    public static final int WITH = 45;
-    public static final int ISDEF = 46;
+    public static final int UNTIL = 42;
+    public static final int FOR = 43;
+    public static final int SWITCH = 44;
+    public static final int DO = 45;
+    public static final int WITH = 46;
+    public static final int ISDEF = 47;
 
     public static final int INC = 50;
     public static final int DEC = 51;

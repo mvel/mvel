@@ -4113,6 +4113,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertTrue(false);
     }
 
+    public void testDoLoop() {
+        assertEquals(10, test("i = 0; do { i++ } while (i != 10); i"));
+    }
+
 
 }
 

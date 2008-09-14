@@ -273,8 +273,14 @@ public class AbstractParser implements Serializable {
                             case WHILE:
                                 return captureCodeBlock(ASTNode.BLOCK_WHILE);
 
+                            case UNTIL:
+                                return captureCodeBlock(ASTNode.BLOCK_UNTIL);
+
                             case WITH:
                                 return captureCodeBlock(ASTNode.BLOCK_WITH);
+
+                            case DO:
+                                return captureCodeBlock(ASTNode.BLOCK_DO);
 
                             case ISDEF:
                                 start = cursor = trimRight(cursor);
@@ -396,7 +402,7 @@ public class AbstractParser implements Serializable {
                                         cursor += 2;
 
                                         expectEOS();
-                                        
+
                                         return lastNode;
 
                                     case '=':
@@ -1032,7 +1038,14 @@ public class AbstractParser implements Serializable {
             case ASTNode.BLOCK_FOREACH:
                 return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
             case ASTNode.BLOCK_WHILE:
-                return new WhileNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+                return new WhileNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd));
+            case ASTNode.BLOCK_UNTIL:
+                return new UntilNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd));
+            case ASTNode.BLOCK_DO:
+                return new DoNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd));
+            case ASTNode.BLOCK_DO_UNTIL:
+                return new DoUntilNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd));
+
             default:
                 return new WithNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
@@ -1071,6 +1084,11 @@ public class AbstractParser implements Serializable {
                 return first;
             }
 
+            case ASTNode.BLOCK_DO:
+                skipWhitespaceWithLineAccounting();
+                return _captureBlock(null, expr, false, type);
+
+
             default: // either BLOCK_WITH or BLOCK_FOREACH
                 captureToNextTokenJunction();
                 skipWhitespaceWithLineAccounting();
@@ -1085,6 +1103,8 @@ public class AbstractParser implements Serializable {
 
         int blockStart;
         int blockEnd;
+
+        String name;
 
         /**
          * Functions are a special case we handle differently from the rest of block parsing
@@ -1101,12 +1121,12 @@ public class AbstractParser implements Serializable {
             /**
              * Grabe the function name.
              */
-            String functionName = createStringTrimmed(expr, start, (startCond = cursor) - start);
+            name = createStringTrimmed(expr, start, (startCond = cursor) - start);
 
             /**
              * Check to see if the name is legal.
              */
-            if (isReservedWord(functionName) || isNotValidNameorLabel(functionName))
+            if (isReservedWord(name) || isNotValidNameorLabel(name))
                 throw new CompileException("illegal function name or use of reserved word", expr, cursor);
 
             if (expr[cursor] == '(') {
@@ -1176,7 +1196,7 @@ public class AbstractParser implements Serializable {
             /**
              * Produce the funciton node.
              */
-            return new Function(functionName, subArray(startCond, endCond), subArray(blockStart, blockEnd));
+            return new Function(name, subArray(startCond, endCond), subArray(blockStart, blockEnd));
         }
         else if (cond) {
             /**
@@ -1226,6 +1246,36 @@ public class AbstractParser implements Serializable {
                 return createBlockToken(startCond, endCond, blockStart + 1, blockEnd, type);
             }
         }
+        else if (type == ASTNode.BLOCK_DO) {
+            cursor++;
+            skipWhitespaceWithLineAccounting();
+            start = cursor;
+            captureToNextTokenJunction();
+
+            name = new String(expr, start, cursor - start);
+
+            if ("while".equals(name)) {
+                skipWhitespaceWithLineAccounting();
+                startCond = cursor + 1;
+                int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '(');
+                endCond = cursor = cap[0];
+                pCtx.incrementLineCount(cap[1]);
+                return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd), type);
+
+            }
+            else if ("until".equals(name)) {
+                skipWhitespaceWithLineAccounting();
+                startCond = cursor + 1;
+                int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '(');
+                endCond = cursor = cap[0];
+                pCtx.incrementLineCount(cap[1]);
+                return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd), ASTNode.BLOCK_DO_UNTIL);
+
+            }
+            else {
+                throw new CompileException("expected 'while' or 'until' but encountered: " + name, expr, cursor);
+            }
+        }
         // DON"T REMOVE THIS COMMENT!
         // else if (isFlag(ASTNode.BLOCK_FOREACH) || isFlag(ASTNode.BLOCK_WITH)) {
         else {
@@ -1242,7 +1292,7 @@ public class AbstractParser implements Serializable {
     protected boolean ifThenElseBlockContinues() {
         if ((cursor + 4) < length) {
             if (expr[cursor] != ';') cursor--;
-            skipWhitespace();
+            skipWhitespaceWithLineAccounting();
             skipCommentBlock();
 
             return expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
@@ -1793,6 +1843,7 @@ public class AbstractParser implements Serializable {
             case 3: // iteration
                 operatorsTable.put("foreach", FOREACH);
                 operatorsTable.put("while", WHILE);
+                operatorsTable.put("until", UNTIL);
                 operatorsTable.put("for", FOR);
                 operatorsTable.put("do", DO);
 
