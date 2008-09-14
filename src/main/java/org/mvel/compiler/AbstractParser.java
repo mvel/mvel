@@ -394,7 +394,8 @@ public class AbstractParser implements Serializable {
                                         }
                                         cursor += 2;
 
-
+                                        expectEOS();
+                                        
                                         return lastNode;
 
                                     case '=':
