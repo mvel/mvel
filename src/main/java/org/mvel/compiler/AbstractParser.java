@@ -369,6 +369,7 @@ public class AbstractParser implements Serializable {
                                     case '=':
                                         name = createStringTrimmed(expr, start, cursor - start);
                                         start = cursor += 2;
+
                                         captureToEOS();
 
                                         if (union) {

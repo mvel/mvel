@@ -301,7 +301,7 @@ public class ShellSession {
                             out.println(env.get("$LAST_STACK_TRACE"));
                         }
                         else {
-                            out.println("Error: " + e.toString()); 
+                            out.println(e.toString()); 
                         }
 
                         inBuffer.reset();
