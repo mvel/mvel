@@ -21,7 +21,10 @@ package org.mvel.ast;
 import static org.mvel.MVEL.eval;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
+
+import java.util.HashMap;
 
 /**
  * @author Christopher Brock
@@ -45,14 +48,16 @@ public class IfNode extends ASTNode implements NestedStatement {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+     //   VariableResolverFactory lc = new MapVariableResolverFactory(new HashMap(0), factory);
+
         if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
-            return nestedStatement.getValue(ctx, thisValue, factory);
+            return nestedStatement.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else if (elseIf != null) {
-            return elseIf.getReducedValueAccelerated(ctx, thisValue, factory);
+            return elseIf.getReducedValueAccelerated(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else if (elseBlock != null) {
-            return elseBlock.getValue(ctx, thisValue, factory);
+            return elseBlock.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else {
             return Void.class;
@@ -61,13 +66,13 @@ public class IfNode extends ASTNode implements NestedStatement {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((Boolean) eval(name, ctx, factory)) {
-            return eval(block, ctx, factory);
+            return eval(block, ctx, new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else if (elseIf != null) {
-            return elseIf.getReducedValue(ctx, thisValue, factory);
+            return elseIf.getReducedValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else if (elseBlock != null) {
-            return elseBlock.getValue(ctx, thisValue, factory);
+            return elseBlock.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else {
             return Void.class;

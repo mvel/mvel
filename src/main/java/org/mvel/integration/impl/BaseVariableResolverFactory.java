@@ -100,20 +100,23 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     }
 
     public VariableResolver createIndexedVariable(int index, String name, Object value) {
-        throw new RuntimeException("cannot create indexed variable: " + name + "(" + index + "). operation not supported by resolver: " + this.getClass().getName());
+        if (nextFactory != null) return nextFactory.createIndexedVariable(index, name, value);
+        else throw new RuntimeException("cannot create indexed variable: " + name + "(" + index + "). operation not supported by resolver: " + this.getClass().getName());
     }
 
     public VariableResolver getIndexedVariableResolver(int index) {
-        throw new RuntimeException("cannot access indexed variable: " + index + ".  operation not supported by resolver: " + this.getClass().getName());
+        if (nextFactory != null) return nextFactory.getIndexedVariableResolver(index);
+        else throw new RuntimeException("cannot access indexed variable: " + index + ".  operation not supported by resolver: " + this.getClass().getName());
     }
 
     public VariableResolver createIndexedVariable(int index, String name, Object value, Class<?> type) {
-        throw new RuntimeException("cannot access indexed variable: " + name + "(" + index + ").  operation not supported by resolver.: " + this.getClass().getName());
+        if (nextFactory != null) return nextFactory.createIndexedVariable(index, name, value, type);
+        else throw new RuntimeException("cannot access indexed variable: " + name + "(" + index + ").  operation not supported by resolver.: " + this.getClass().getName());
     }
 
     public Map<String, VariableResolver> getVariableResolvers() {
         return variableResolvers;
-    }
+    }                      
 
     public void setVariableResolvers(Map<String, VariableResolver> variableResolvers) {
         this.variableResolvers = variableResolvers;
