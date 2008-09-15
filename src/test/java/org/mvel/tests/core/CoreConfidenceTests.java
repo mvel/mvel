@@ -2762,13 +2762,13 @@ public class CoreConfidenceTests extends AbstractTest {
         String expression = "a+b-c*d*x/y-z+10";
 
         Map map = new HashMap();
-        map.put("a", "200");
-        map.put("b", "100");
-        map.put("c", "150");
-        map.put("d", "2");
-        map.put("x", "400");
-        map.put("y", "300");
-        map.put("z", "75");
+        map.put("a", 200);
+        map.put("b", 100);
+        map.put("c", 150);
+        map.put("d", 2);
+        map.put("x", 400);
+        map.put("y", 300);
+        map.put("z", 75);
 
         Serializable s = MVEL.compileExpression(expression);
 
@@ -2779,12 +2779,12 @@ public class CoreConfidenceTests extends AbstractTest {
         String expression = "a+b-c*x/y-z";
 
         Map map = new HashMap();
-        map.put("a", "200");
-        map.put("b", "100");
-        map.put("c", "150");
-        map.put("x", "400");
-        map.put("y", "300");
-        map.put("z", "75");
+        map.put("a", 200);
+        map.put("b", 100);
+        map.put("c", 150);
+        map.put("x", 400);
+        map.put("y", 300);
+        map.put("z", 75);
 
         assertEquals(200 + 100 - 150 * 400 / 300 - 75, MVEL.eval(expression, map));
     }
@@ -4115,6 +4115,19 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testDoLoop() {
         assertEquals(10, test("i = 0; do { i++ } while (i != 10); i"));
+    }
+
+    public void testDoLoop2() {
+        assertEquals(50, test("i=100;do{i--}until(i==50); i"));
+    }
+
+    public void testForLoop() {
+        assertEquals("012345", test("String str = ''; for(i=0;i<6;i++) { str += i }; str"));
+    }
+
+    public void testForLoop2() {
+        assertEquals("012345", MVEL.eval("String str = ''; for(i=0;i<6;i++) { str += i }; str", new HashMap()));
+
     }
 
 

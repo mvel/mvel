@@ -100,7 +100,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
             if (type1 > 99 && type1 == type2) {
                 return doOperationsSameType(type1, val1, operation, val2);
             }
-            else if ((type1 > 99 && (type2 > 99)) || (isNumber(val1) && isNumber(val2))) {
+            else if ((type1 > 99 && (type2 > 99)) || (operation != 0 && isNumber(val1) && isNumber(val2))) {
                 return doBigDecimalArithmetic(getBigDecimalFromType(val1, type1), operation, getBigDecimalFromType(val2, type2));
             }
             else
@@ -176,6 +176,9 @@ public class IEEEFloatingPointMath implements MathProcessor {
 
             case SOUNDEX:
                 return soundex(String.valueOf(val1)).equals(soundex(String.valueOf(val2)));
+
+            case STR_APPEND:
+                return valueOf(val1) + valueOf(val2);
         }
 
         throw new CompileException("could not perform numeric operation on non-numeric types: left-type="

@@ -33,14 +33,12 @@ public class BinaryOperation extends ASTNode {
     private ASTNode right;
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right) {
-     //   assert operation != -1;
         this.operation = operation;
         this.left = left;
         this.right = right;
     }
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
- //       assert operation != -1;
         this.operation = operation;
         this.left = left;
         this.right = right;
@@ -62,7 +60,6 @@ public class BinaryOperation extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return doOperations(left.getReducedValueAccelerated(ctx, thisValue, factory), operation, right.getReducedValueAccelerated(ctx, thisValue, factory));
-
     }
 
 

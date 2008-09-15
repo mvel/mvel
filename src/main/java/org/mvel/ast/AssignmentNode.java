@@ -21,6 +21,8 @@ package org.mvel.ast;
 import org.mvel.MVEL;
 import static org.mvel.MVEL.compileSetExpression;
 import org.mvel.PropertyAccessor;
+import org.mvel.Operator;
+import org.mvel.ParserContext;
 import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
@@ -53,6 +55,11 @@ public class AssignmentNode extends ASTNode implements Assignment {
         if (operation != -1) {
             checkNameSafety(this.varName = name);
 
+            if ((fields & COMPILE_IMMEDIATE) != 0 && operation == Operator.ADD) {
+                if (getCurrentThreadParserContext().getVariables().get(name) == String.class)
+                    operation = Operator.STR_APPEND;
+            }
+
             this.egressType = (statement = (ExecutableStatement)
                     subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation))).getKnownEgressType();
         }
@@ -70,8 +77,8 @@ public class AssignmentNode extends ASTNode implements Assignment {
                 }
 
                 this.varName = new String(expr, 0, endOfName);
-               index = new String(indexTarget, endOfName, indexTarget.length - endOfName);
-               // index = subset(indexTarget, endOfName, indexTarget.length - endOfName);
+                index = new String(indexTarget, endOfName, indexTarget.length - endOfName);
+                // index = subset(indexTarget, endOfName, indexTarget.length - endOfName);
             }
 
             checkNameSafety(this.varName);
@@ -94,10 +101,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (setExpr == null) {
             setExpr = (CompiledSetExpression) compileSetExpression(indexTarget);
-            //      statement = (ExecutableStatement) subCompileExpression(stmt);
         }
-
-        //   Object o;
 
         if (col) {
             setExpr.setValue(ctx, thisValue, factory, ctx = statement.getValue(ctx, thisValue, factory));

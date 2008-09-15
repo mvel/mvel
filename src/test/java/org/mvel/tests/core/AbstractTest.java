@@ -56,7 +56,7 @@ public abstract class AbstractTest extends TestCase {
         map.put("misc", new MiscTestClass());
 
         map.put("pi", "3.14");
-        map.put("hour", "60");
+        map.put("hour", 60);
         map.put("zero", 0);
 
         map.put("array", new String[] { "", "blip" });

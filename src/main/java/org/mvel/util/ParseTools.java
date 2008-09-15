@@ -654,6 +654,9 @@ public class ParseTools {
             case Operator.ADD:
                 op = '+';
                 break;
+            case Operator.STR_APPEND:
+                op = '#';
+                break;
             case Operator.SUB:
                 op = '-';
                 break;

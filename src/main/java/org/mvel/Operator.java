@@ -50,13 +50,14 @@ public interface Operator {
 
             7,   // EQUAL
             7,   // NEQUAL
+
+           13,    // STR_APPEND
             3,   // AND
             2,   // OR
             2,   // CHOR
             13,   // REGEX
             8,   // INSTANCEOF
             13,   // CONTAINS
-            13,   // STR_APPEND
             13,   // SOUNDEX
             13,   // SIMILARITY
 
@@ -89,13 +90,13 @@ public interface Operator {
     public static final int EQUAL = 18;
     public static final int NEQUAL = 19;
 
-    public static final int AND = 20;
-    public static final int OR = 21;
-    public static final int CHOR = 22;
-    public static final int REGEX = 23;
-    public static final int INSTANCEOF = 24;
-    public static final int CONTAINS = 25;
-    public static final int STR_APPEND = 26;
+    public static final int STR_APPEND = 20;
+    public static final int AND = 21;
+    public static final int OR = 22;
+    public static final int CHOR = 23;
+    public static final int REGEX = 24;
+    public static final int INSTANCEOF = 25;
+    public static final int CONTAINS = 26;
     public static final int SOUNDEX = 27;
     public static final int SIMILARITY = 28;
 
