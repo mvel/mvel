@@ -83,8 +83,8 @@ public class ASTNode implements Cloneable, Serializable {
 
     protected Object literal;
 
-    protected transient Accessor accessor;
-    protected Accessor safeAccessor;
+    protected transient volatile Accessor accessor;
+    protected volatile Accessor safeAccessor;
 
     protected int cursorPosition;
     public ASTNode nextASTNode;
