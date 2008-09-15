@@ -41,7 +41,6 @@ public class ForEachNode extends BlockNode {
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
 
-
     private static final int COLLECTION = 0;
     private static final int ARRAY = 1;
     private static final int CHARSEQUENCE = 2;
@@ -79,7 +78,6 @@ public class ForEachNode extends BlockNode {
               }
               else if (iterCond instanceof CharSequence) {
                   type = CHARSEQUENCE;
-
               }
               else if (iterCond instanceof Integer) {
                   type = INTEGER;
@@ -94,7 +92,6 @@ public class ForEachNode extends BlockNode {
                   }
               }
           }
-
 
           switch (type) {
               case COLLECTION:
@@ -135,7 +132,6 @@ public class ForEachNode extends BlockNode {
       }
 
       public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-
           ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver(item);
           ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, new DefaultLocalVariableResolverFactory(factory));
 

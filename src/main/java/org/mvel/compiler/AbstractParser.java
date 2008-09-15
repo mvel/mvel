@@ -1026,9 +1026,7 @@ public class AbstractParser implements Serializable {
 
     private ASTNode createBlockToken(final int condStart,
                                      final int condEnd, final int blockStart, final int blockEnd, int type) {
-
         lastWasIdentifier = false;
-
         cursor++;
 
         if (isStatementNotManuallyTerminated()) {
@@ -1041,7 +1039,7 @@ public class AbstractParser implements Serializable {
             case ASTNode.BLOCK_FOREACH:
                 return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
             case ASTNode.BLOCK_FOR:
-                return new ForNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+                return new ForNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd));
             case ASTNode.BLOCK_WHILE:
                 return new WhileNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd));
             case ASTNode.BLOCK_UNTIL:
@@ -1257,16 +1255,13 @@ public class AbstractParser implements Serializable {
             start = cursor;
             captureToNextTokenJunction();
 
-            name = new String(expr, start, cursor - start);
-
-            if ("while".equals(name)) {
+            if ("while".equals(name = new String(expr, start, cursor - start))) {
                 skipWhitespaceWithLineAccounting();
                 startCond = cursor + 1;
                 int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '(');
                 endCond = cursor = cap[0];
                 pCtx.incrementLineCount(cap[1]);
                 return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd), type);
-
             }
             else if ("until".equals(name)) {
                 skipWhitespaceWithLineAccounting();
@@ -1275,7 +1270,6 @@ public class AbstractParser implements Serializable {
                 endCond = cursor = cap[0];
                 pCtx.incrementLineCount(cap[1]);
                 return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd), ASTNode.BLOCK_DO_UNTIL);
-
             }
             else {
                 throw new CompileException("expected 'while' or 'until' but encountered: " + name, expr, cursor);

@@ -32,18 +32,14 @@ import java.util.HashMap;
 public class ForNode extends BlockNode {
     protected String item;
 
-    // protected char[] init;
     protected ExecutableStatement initializer;
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
     protected ExecutableStatement after;
 
-
-    public ForNode(char[] condition, char[] block, int fields) {
+    public ForNode(char[] condition, char[] block) {
         handleCond(this.name = condition);
-        this.block = block;
-
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -67,15 +63,8 @@ public class ForNode extends BlockNode {
         int cursor = nextCondPart(condition, start);
 
         this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start));
-
-        start = cursor;
-        cursor = nextCondPart(condition, start);
-
-        this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start));
-        start = cursor;
-        cursor = nextCondPart(condition, start);
-
-        this.after = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start));
+        this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor, (cursor = nextCondPart(condition, start)) - start));
+        this.after = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start)) - start));
     }
 
     private int nextCondPart(char[] condition, int cursor) {
