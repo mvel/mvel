@@ -56,17 +56,11 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
             vr = getVariableResolver(name);
         }
         catch (CompileException e) {
-            vr = null;
+            (vr = new MapVariableResolver(variables, name, cachingSafe)).setValue(value);
         }
 
-        if (vr != null) {
-            vr.setValue(value);
-            return vr;
-        }
-        else {
-            (vr = new MapVariableResolver(variables, name, cachingSafe)).setValue(value);
-            return vr;
-        }
+        vr.setValue(value);
+        return vr;
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
@@ -77,7 +71,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         catch (CompileException e) {
             vr = null;
         }
-        
+
         if (vr != null && vr.getType() != null) {
             throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
         }
