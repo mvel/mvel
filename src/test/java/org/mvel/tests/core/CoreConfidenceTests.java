@@ -4127,10 +4127,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testForLoop2() {
         assertEquals("012345", MVEL.eval("String str = ''; for(i=0;i<6;i++) { str += i }; str", new HashMap()));
-
     }
-
-
 }
 
 
