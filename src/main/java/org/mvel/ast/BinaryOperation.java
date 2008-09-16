@@ -82,9 +82,11 @@ public class BinaryOperation extends ASTNode {
             case Operator.MULT:
             case Operator.DIV:
             case Operator.POWER:
+                boolean foo = !!true;
+
                 egressType = bestFitType(left.egressType, right.egressType);
                 break;
-
+                
             case Operator.BW_AND:
             case Operator.BW_OR:
             case Operator.BW_XOR:

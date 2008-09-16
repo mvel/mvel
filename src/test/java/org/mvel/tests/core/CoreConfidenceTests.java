@@ -4149,6 +4149,9 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(Boolean.class,  ce.getKnownEgressType());
     }
 
+    public void testIncrementInBooleanStatement() {
+        assertEquals(true, test("hour++ < 61 && hour == 61"));
+    }
 
 }
 

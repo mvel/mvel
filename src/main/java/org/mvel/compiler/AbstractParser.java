@@ -20,7 +20,6 @@ package org.mvel.compiler;
 
 import org.mvel.*;
 import static org.mvel.Operator.*;
-import static org.mvel.Operator.ADD;
 import org.mvel.ast.*;
 import static org.mvel.ast.TypeDescriptor.getClassReference;
 import org.mvel.integration.VariableResolverFactory;
@@ -1392,6 +1391,39 @@ public class AbstractParser implements Serializable {
     protected void expectEOS() {
         skipWhitespace();
         if (cursor != length && expr[cursor] != ';') {
+            switch (expr[cursor]) {
+                case '&':
+                    if (lookAhead() == '&') return;
+                    else break;
+                case '|':
+                    if (lookAhead() == '|') return;
+                    else break;
+                case '!':
+                    if (lookAhead() == '=') return;
+                    else break;
+                case '<':
+                case '>':
+                    return;
+
+                case '=': {
+                    switch (lookAhead()) {
+                        case '=':
+                        case '+':
+                        case '-':
+                        case '*':
+                            return;
+                    }
+                    break;
+                }
+
+                case '+':
+                case '-':
+                case '/':
+                case '*':
+                    if (lookAhead() == '=') return;
+                    else break;
+            }
+
             throw new CompileException("expected end of statement but encountered: "
                     + (cursor == length ? "<end of stream>" : expr[cursor]), expr, cursor);
         }
