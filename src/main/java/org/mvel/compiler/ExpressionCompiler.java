@@ -246,6 +246,9 @@ public class ExpressionCompiler extends AbstractParser {
             return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly);
 
         }
+        catch (NullPointerException e)  {
+           throw new CompileException("not a statement, or badly formed structure"); 
+        }
         catch (Throwable e) {
             parserContext.set(null);
             if (e instanceof RuntimeException) throw (RuntimeException) e;

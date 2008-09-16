@@ -319,7 +319,10 @@ public class AbstractParser implements Serializable {
                                 int end = cursor;
 
                                 skipWhitespace();
+                                
                                 if (expr[cursor] == '=') {
+                                    if (end == start) throw new CompileException("illegal use of reserved word: var");
+                                    
                                     cursor = start;
                                     continue;
                                 }
@@ -1201,6 +1204,10 @@ public class AbstractParser implements Serializable {
             return new Function(name, subArray(startCond, endCond), subArray(blockStart, blockEnd));
         }
         else if (cond) {
+            if (expr[cursor] != '(') {
+                throw new CompileException("expected '(' but encountered: " + expr[cursor]);
+            }
+
             /**
              * This block is an: IF, FOREACH or WHILE node.
              */
