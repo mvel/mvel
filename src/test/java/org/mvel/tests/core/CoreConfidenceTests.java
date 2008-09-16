@@ -335,6 +335,15 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(false, test("!true"));
     }
 
+    public void testNegation7() {
+        assertEquals(true, test("s = false; t = !s; t"));
+    }
+
+    public void testNegation8() {
+        assertEquals(true, test("s = false; t =! s; t"));
+    }
+
+
     public void testMultiStatement() {
         assertEquals(true, test("populate(); barfoo == 'sarah'"));
     }
@@ -4128,6 +4137,19 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testForLoop2() {
         assertEquals("012345", MVEL.eval("String str = ''; for(i=0;i<6;i++) { str += i }; str", new HashMap()));
     }
+
+    public void testXX() {
+        test("foo = 100; !foo");
+    }
+
+    public void testEgressType1() {
+        ExpressionCompiler c = new ExpressionCompiler("foo != null");
+        CompiledExpression ce = c.compile();
+
+        assertEquals(Boolean.class,  ce.getKnownEgressType());
+    }
+
+
 }
 
 

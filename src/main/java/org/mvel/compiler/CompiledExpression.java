@@ -52,16 +52,9 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     public CompiledExpression(ASTIterator astMap, String sourceName, Class egressType, ParserContext ctx, boolean literalOnly) {
         this.tokens = astMap;
         this.sourceName = sourceName;
-        this.knownEgressType = egressType;
+        this.knownEgressType = astMap.size() == 1 ? astMap.firstNode().getEgressType() : egressType;
         this.literalOnly = literalOnly;
         setParserContext(ctx);
-    }
-
-
-    public CompiledExpression(ASTIterator astMap, String sourceName, boolean literalOnly) {
-        this.tokens = astMap;
-        this.sourceName = sourceName;
-        this.literalOnly = literalOnly;
     }
 
     public ASTIterator getInstructions() {

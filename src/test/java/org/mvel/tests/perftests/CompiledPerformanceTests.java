@@ -16,7 +16,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-public class CompiledPerformanceTests extends TestCase {
+public class CompiledPerformanceTests {
     protected Foo foo = new Foo();
     protected Map<String, Object> map = new HashMap<String, Object>();
     protected Base base = new Base();

@@ -36,6 +36,8 @@ public class BinaryOperation extends ASTNode {
         this.operation = operation;
         this.left = left;
         this.right = right;
+
+        setReturnType();
     }
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
@@ -48,7 +50,7 @@ public class BinaryOperation extends ASTNode {
                 case Operator.ADD:
                     if (left.getEgressType() == String.class || right.getEgressType() == String.class) {
                         break;
-                    }                                                                                                        
+                    }
 
                 default:
                     if (!left.getEgressType().isAssignableFrom(right.getEgressType())) {
@@ -56,7 +58,57 @@ public class BinaryOperation extends ASTNode {
                     }
             }
         }
+
+        setReturnType();
     }
+
+    private void setReturnType() {
+        switch (operation) {
+            case Operator.LETHAN:
+            case Operator.LTHAN:
+            case Operator.GETHAN:
+            case Operator.GTHAN:
+            case Operator.EQUAL:
+            case Operator.NEQUAL:
+            case Operator.AND:
+            case Operator.OR:
+            case Operator.CONTAINS:
+            case Operator.CONVERTABLE_TO:
+                egressType = Boolean.class;
+                break;
+
+            case Operator.ADD:
+            case Operator.SUB:
+            case Operator.MULT:
+            case Operator.DIV:
+            case Operator.POWER:
+                egressType = bestFitType(left.egressType, right.egressType);
+                break;
+
+            case Operator.BW_AND:
+            case Operator.BW_OR:
+            case Operator.BW_XOR:
+            case Operator.BW_SHIFT_RIGHT:
+            case Operator.BW_SHIFT_LEFT:
+            case Operator.BW_USHIFT_LEFT:
+            case Operator.BW_USHIFT_RIGHT:
+            case Operator.BW_NOT:
+                egressType = Integer.class;
+                break;
+
+            case Operator.STR_APPEND:
+                egressType = String.class;
+                break;
+
+            default:
+                throw new RuntimeException("unknown type: " + operation);
+        }
+    }
+
+    private static Class bestFitType(Class a, Class b) {
+        return a;
+    }
+
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         return doOperations(left.getReducedValueAccelerated(ctx, thisValue, factory), operation, right.getReducedValueAccelerated(ctx, thisValue, factory));
@@ -71,12 +123,10 @@ public class BinaryOperation extends ASTNode {
         return operation;
     }
 
-
-
-  //  public void setOperation(int operation) {
-   //     assert operation != -1;
-  //      this.operation = operation;
-  //  }
+    //  public void setOperation(int operation) {
+    //     assert operation != -1;
+    //      this.operation = operation;
+    //  }
 
     public ASTNode getLeft() {
         return left;

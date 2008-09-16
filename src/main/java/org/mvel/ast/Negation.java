@@ -1,6 +1,7 @@
 package org.mvel.ast;
 
 import org.mvel.MVEL;
+import org.mvel.CompileException;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
@@ -13,6 +14,10 @@ public class Negation extends ASTNode {
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             this.stmt = (ExecutableStatement) subCompileExpression(name);
+
+            if (stmt.getKnownEgressType() != null && !stmt.getKnownEgressType().isAssignableFrom(Boolean.class)) {
+                throw new CompileException("negation operator cannot be applied to non-boolean type");
+            }
         }
     }
 
@@ -21,6 +26,15 @@ public class Negation extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return !((Boolean) MVEL.eval(name, ctx, factory));
+        try {
+            return !((Boolean) MVEL.eval(name, ctx, factory));
+        }
+        catch (ClassCastException e) {
+            throw new CompileException("negation operator applied to non-boolean expression");
+        }
+    }
+
+    public Class getEgressType() {
+        return Boolean.class;
     }
 }
