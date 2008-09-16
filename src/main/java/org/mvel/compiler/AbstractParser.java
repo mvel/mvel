@@ -364,7 +364,7 @@ public class AbstractParser implements Serializable {
                             case '+':
                                 switch (lookAhead()) {
                                     case '+':
-                                        if ((idx = pCtx.variableIndexOf(name = new String(subArray(start, cursor)))) != -1) {
+                                        if ((idx = pCtx.variableIndexOf(name = new String(subArray(start, trimLeft(cursor))))) != -1) {
                                             lastNode = new IndexedPostFixIncNode(idx);
                                         }
                                         else {
@@ -398,7 +398,7 @@ public class AbstractParser implements Serializable {
                             case '-':
                                 switch (lookAhead()) {
                                     case '-':
-                                        if ((idx = pCtx.variableIndexOf(name = new String(subArray(start, cursor)))) != -1) {
+                                        if ((idx = pCtx.variableIndexOf(name = new String(subArray(start, trimLeft(cursor))))) != -1) {
                                             lastNode = new IndexedPostFixDecNode(idx);
                                         }
                                         else {
