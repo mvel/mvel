@@ -192,12 +192,7 @@ public class IEEEFloatingPointMath implements MathProcessor {
         if (val1 != null) {
             return val1.equals(val2) ? Boolean.TRUE : Boolean.FALSE;
         }
-        else if (val2 != null) {
-            return val2.equals(val1) ? Boolean.TRUE : Boolean.FALSE;
-        }
-        else {
-            return val1 == val2;
-        }
+        else return val2 == null || (val2.equals(val1) ? Boolean.TRUE : Boolean.FALSE);
     }
 
     private static Boolean safeNotEquals(final Object val1, final Object val2) {

@@ -23,12 +23,13 @@ public class ParserConfiguration implements Serializable {
         if (imports != null) {
             this.imports = new HashMap<String, Object>();
             Object o;
-            for (String key : imports.keySet()) {
-                if ((o = imports.get(key)) instanceof Method) {
-                    this.imports.put(key, new MethodStub((Method) o));
+
+            for (Map.Entry<String,Object> entry : imports.entrySet()) {
+                if ((o = entry.getValue()) instanceof Method) {
+                    this.imports.put(entry.getKey(), new MethodStub((Method) o));
                 }
                 else {
-                    this.imports.put(key, o);
+                    this.imports.put(entry.getKey(), o);
                 }
             }
         }
@@ -142,18 +143,19 @@ public class ParserConfiguration implements Serializable {
         if (imports == null) return;
 
         Object val;
-        for (String name : imports.keySet()) {
-            if ((val = imports.get(name)) instanceof Class) {
-                addImport(name, (Class) val);
+
+        for (Map.Entry<String, Object> entry : imports.entrySet()) {
+            if ((val = entry.getValue()) instanceof Class) {
+                addImport(entry.getKey(), (Class) val);
             }
             else if (val instanceof Method) {
-                addImport(name, (Method) val);
+                addImport(entry.getKey(), (Method) val);
             }
             else if (val instanceof MethodStub) {
-                addImport(name, (MethodStub) val);
+                addImport(entry.getKey(), (MethodStub) val);
             }
             else {
-                throw new RuntimeException("invalid element in imports map: " + name + " (" + val + ")");
+                throw new RuntimeException("invalid element in imports map: " + entry.getKey() + " (" + val + ")");
             }
         }
     }

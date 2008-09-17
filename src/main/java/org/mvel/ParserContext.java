@@ -177,8 +177,8 @@ public class ParserContext implements Serializable {
     public void addVariables(Map<String, Class> variables) {
         if (variables == null) return;
         initializeTables();
-        for (String name : variables.keySet()) {
-            addVariable(name, variables.get(name));
+        for (Map.Entry<String,Class> entry : variables.entrySet()) {
+            addVariable(entry.getKey(), entry.getValue());
         }
     }
 
@@ -212,8 +212,8 @@ public class ParserContext implements Serializable {
 
     public void addInputs(Map<String, Class> inputs) {
         if (inputs == null) return;
-        for (String name : inputs.keySet()) {
-            addInput(name, inputs.get(name));
+        for (Map.Entry<String,Class> entry : inputs.entrySet()) {
+            addInput(entry.getKey(),entry.getValue());
         }
     }
 
@@ -316,18 +316,18 @@ public class ParserContext implements Serializable {
         if (imports == null) return;
 
         Object val;
-        for (String name : imports.keySet()) {
-            if ((val = imports.get(name)) instanceof Class) {
-                addImport(name, (Class) val);
+        for (Map.Entry<String, Object> entry : imports.entrySet()) {
+            if ((val = entry.getValue()) instanceof Class) {
+                addImport(entry.getKey(), (Class) val);
             }
             else if (val instanceof Method) {
-                addImport(name, (Method) val);
+                addImport(entry.getKey(), (Method) val);
             }
             else if (val instanceof MethodStub) {
-                addImport(name, (MethodStub) val);
+                addImport(entry.getKey(), (MethodStub) val);
             }
             else {
-                throw new RuntimeException("invalid element in imports map: " + name + " (" + val + ")");
+                throw new RuntimeException("invalid element in imports map: " + entry.getKey() + " (" + val + ")");
             }
         }
     }

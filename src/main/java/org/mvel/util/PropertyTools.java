@@ -336,7 +336,7 @@ public class PropertyTools {
             return false;
         else if (toCompare instanceof String)
             // @todo use String.contains once we move to jdk1.5
-            return ((String) toCompare).indexOf(valueOf(testValue).toString()) > -1;
+            return ((String) toCompare).indexOf(valueOf(testValue)) > -1;
         else if (toCompare instanceof Collection)
             return ((Collection) toCompare).contains(testValue);
         else if (toCompare instanceof Map)

@@ -4143,10 +4143,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testEgressType1() {
-        ExpressionCompiler c = new ExpressionCompiler("foo != null");
-        CompiledExpression ce = c.compile();
-
-        assertEquals(Boolean.class,  ce.getKnownEgressType());
+        assertEquals(Boolean.class, new ExpressionCompiler("foo != null").compile().getKnownEgressType());
     }
 
     public void testIncrementInBooleanStatement() {

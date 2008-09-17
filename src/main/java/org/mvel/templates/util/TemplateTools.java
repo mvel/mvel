@@ -65,6 +65,8 @@ public class TemplateTools {
                 }
             }
 
+            fc.close();
+
             return appender.toString();
         }
         catch (FileNotFoundException e) {

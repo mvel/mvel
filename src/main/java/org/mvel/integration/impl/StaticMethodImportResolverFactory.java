@@ -17,9 +17,9 @@ public class StaticMethodImportResolverFactory extends BaseVariableResolverFacto
         this();
 
         Map<String, Object> imports = ctx.getImports();
-        for (String name : imports.keySet()) {
-            if (imports.get(name) instanceof Method) {
-                createVariable(name, imports.get(name));
+        for (Map.Entry<String,Object> entry : imports.entrySet()) {
+            if (entry.getValue() instanceof Method) {
+                createVariable(entry.getKey(), entry.getValue());
             }
         }
     }

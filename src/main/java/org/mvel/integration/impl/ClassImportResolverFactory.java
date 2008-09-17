@@ -25,10 +25,7 @@ import static org.mvel.util.ParseTools.getSimpleClassName;
 import org.mvel.ParserContext;
 import org.mvel.ParserConfiguration;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     private Set<String> packageImports;
@@ -44,10 +41,10 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
         Map<String, Object> classes = ctx.getImports();
 
         this.nextFactory = nextFactory;
-
         this.variableResolvers = new HashMap<String,VariableResolver>();
-        for (String s : classes.keySet()) {
-            variableResolvers.put(s, new SimpleValueResolver(classes.get(s)));
+
+        for (Map.Entry<String, Object> e : classes.entrySet()) {
+            variableResolvers.put(e.getKey(), new SimpleValueResolver(e.getValue()));
         }
     }
 
