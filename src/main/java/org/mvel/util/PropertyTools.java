@@ -87,7 +87,7 @@ public class PropertyTools {
     public static Method getGetter(Class clazz, String property) {
         String isGet = ReflectionUtil.getIsGetter(property);
         property = ReflectionUtil.getGetter(property);
-   
+
         for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) == 0
                     || meth.getParameterTypes().length != 0
@@ -127,23 +127,36 @@ public class PropertyTools {
         return getSetter(clazz, property);
     }
 
-    private static final Map<String, Field> FIELD_CACHE = new WeakHashMap<String, Field>();
+  //  private static final Map<String, Field> FIELD_CACHE = new WeakHashMap<String, Field>();
+
+//    public static Member getFieldOrAccessor(Class clazz, String property) {
+//        if (property.charAt(property.length() - 1) == ')') return getGetter(clazz, property);
+//
+//        try {
+//            String key = clazz.hashCode() + property;
+//            Field fld = FIELD_CACHE.get(key);
+//            if (fld == null) {
+//                FIELD_CACHE.put(key, fld = clazz.getField(property));
+//            }
+//
+//            if ((fld.getModifiers() & PUBLIC) != 0) return fld;
+//        }
+//        catch (Exception e) {
+//            // do nothing.
+//        }
+//        return getGetter(clazz, property);
+//    }
 
     public static Member getFieldOrAccessor(Class clazz, String property) {
         if (property.charAt(property.length() - 1) == ')') return getGetter(clazz, property);
 
-        try {
-            String key = clazz.hashCode() + property;
-            Field fld = FIELD_CACHE.get(key);
-            if (fld == null) {
-                FIELD_CACHE.put(key, fld = clazz.getField(property));
+        for (Field f : clazz.getFields()) {
+            if (property.equals(f.getName())) {
+                if ((f.getModifiers() & PUBLIC) != 0) return f;
+                break;
             }
+        }
 
-            if ((fld.getModifiers() & PUBLIC) != 0) return fld;
-        }
-        catch (Exception e) {
-            // do nothing.
-        }
         return getGetter(clazz, property);
     }
 
@@ -219,7 +232,7 @@ public class PropertyTools {
         for (; i < len; i++) {
             if (!isDigit(c = val[i])) {
                 if (c == '.') {
-          //          len = 0;
+                    //          len = 0;
                     fp = true;
                     // continue;
                 }
