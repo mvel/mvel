@@ -50,7 +50,7 @@ public class GetterAccessor implements AccessorNode {
                 return nextNode.getValue(MVEL.getProperty(method.getName() + "()", ctx), elCtx, vars);
             }
             else {
-                MVEL.getProperty(method.getName() + "()", ctx);
+                return MVEL.getProperty(method.getName() + "()", ctx);
             }
         }
         catch (Exception e) {
