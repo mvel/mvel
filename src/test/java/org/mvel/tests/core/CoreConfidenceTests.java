@@ -2975,6 +2975,78 @@ public class CoreConfidenceTests extends AbstractTest {
         EmailMessage result = (EmailMessage) MVEL.executeExpression(execution);
         assertEquals(msg, result);
     }
+    
+    public void testNestedWithInComplexGraph2() {
+        Recipients recipients = new Recipients();
+
+        Recipient recipient1 = new Recipient();
+        recipient1.setName("user1");
+        recipient1.setEmail("user1@domain.com");
+        recipients.addRecipient(recipient1);
+
+        Recipient recipient2 = new Recipient();
+        recipient2.setName("user2");
+        recipient2.setEmail("user2@domain.com");
+        recipients.addRecipient(recipient2);
+
+        EmailMessage msg = new EmailMessage();
+        msg.setRecipients(recipients);
+        msg.setFrom("from@domain.com");
+
+        String text = ""; 
+        text += "with( new EmailMessage() ) { ";
+        text += "     recipients = with( new Recipients() ){ ";
+        text += "         recipients = [ with( new Recipient() ) { name = 'user1', email = 'user1@domain.com' }, ";
+        text += "                        with( new Recipient() ) { name = 'user2', email = 'user2@domain.com' } ] ";
+        text += "     }, ";
+        text += "     from = 'from@domain.com' }";
+        ParserContext context;
+        context = new ParserContext();
+        context.addImport(Recipient.class);
+        context.addImport(Recipients.class);
+        context.addImport(EmailMessage.class);
+
+        ExpressionCompiler compiler = new ExpressionCompiler(text);
+        Serializable execution = compiler.compile(context);
+        EmailMessage result = (EmailMessage) MVEL.executeExpression(execution);
+        assertEquals(msg, result);
+    }     
+    
+    public void testNestedWithInComplexGraph3() {
+        Recipients recipients = new Recipients();
+
+        Recipient recipient1 = new Recipient();
+        recipient1.setName("user1");
+        recipient1.setEmail("user1@domain.com");
+        recipients.addRecipient(recipient1);
+
+        Recipient recipient2 = new Recipient();
+        recipient2.setName("user2");
+        recipient2.setEmail("user2@domain.com");
+        recipients.addRecipient(recipient2);
+
+        EmailMessage msg = new EmailMessage();
+        msg.setRecipients(recipients);
+        msg.setFrom("from@domain.com");
+
+        String text = ""; 
+        text += "new EmailMessage().{ ";
+        text += "     recipients = new Recipients().{ ";
+        text += "         recipients = [ new Recipient().{ name = 'user1', email = 'user1@domain.com' }, ";
+        text += "                        new Recipient().{ name = 'user2', email = 'user2@domain.com' } ] ";
+        text += "     }, ";
+        text += "     from = 'from@domain.com' }";
+        ParserContext context;
+        context = new ParserContext();
+        context.addImport(Recipient.class);
+        context.addImport(Recipients.class);
+        context.addImport(EmailMessage.class);
+
+        ExpressionCompiler compiler = new ExpressionCompiler(text);
+        Serializable execution = compiler.compile(context);
+        EmailMessage result = (EmailMessage) MVEL.executeExpression(execution);
+        assertEquals(msg, result);
+    }    
 
     public static class Recipient {
         private String name;
