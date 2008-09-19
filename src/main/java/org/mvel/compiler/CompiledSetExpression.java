@@ -23,20 +23,63 @@ import org.mvel.optimizers.OptimizerFactory;
 
 import java.io.Serializable;
 
-public class CompiledSetExpression implements Serializable {
+public class CompiledSetExpression implements ExecutableStatement, Serializable {
     private char[] expression;
     private transient Accessor accessor;
 
     public CompiledSetExpression(char[] expression) {
+     //   assert expression != null && expression.length != 0;
         this.expression = expression;
     }
 
-    public void setValue(Object ctx, Object elCtx, VariableResolverFactory vrf, Object value) {
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vrf, Object value) {
         if (accessor == null) {
             accessor = OptimizerFactory.getThreadAccessorOptimizer().optimizeSetAccessor(expression, ctx, ctx, vrf, false, value);
         }
         else {
             accessor.setValue(ctx, elCtx, vrf, value);
         }
+        return value;
+    }
+
+    public Object getValue(Object staticContext, VariableResolverFactory factory) {
+        throw new RuntimeException("not supported");
+    }
+
+    public void setKnownIngressType(Class type) {
+    }
+
+    public void setKnownEgressType(Class type) {
+    }
+
+    public Class getKnownIngressType() {
+        return null;
+    }
+
+    public Class getKnownEgressType() {
+        return null;
+    }
+
+    public boolean isConvertableIngressEgress() {
+        return false;
+    }
+
+    public void computeTypeConversionRule() {
+    }
+
+    public boolean intOptimized() {
+        return false;
+    }
+
+    public boolean isLiteralOnly() {
+        return false;
+    }
+
+    public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+        throw new RuntimeException("not supported");
+    }
+
+    public Accessor getAccessor() {
+        return accessor;
     }
 }

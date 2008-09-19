@@ -22,6 +22,7 @@ import org.mvel.MVEL;
 import static org.mvel.MVEL.executeSetExpression;
 import org.mvel.Operator;
 import org.mvel.ParserContext;
+import org.mvel.CompileException;
 import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
@@ -38,9 +39,9 @@ import java.util.List;
  * @author Christopher Brock
  */
 public class WithNode extends BlockNode implements NestedStatement {
-    private String nestParm;
-    private ExecutableStatement nestedStatement;
-    private ParmValuePair[] withExpressions;
+    protected String nestParm;
+    protected ExecutableStatement nestedStatement;
+    protected ParmValuePair[] withExpressions;
 
     public WithNode(char[] expr, char[] block, int fields) {
         this.name = expr;
@@ -61,6 +62,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         Object ctxObject = nestedStatement.getValue(ctx, thisValue, factory);
+        if (ctxObject == null) throw new CompileException("with-block against null pointer");
 
         for (ParmValuePair pvp : withExpressions) {
             if (pvp.getSetExpression() != null) {

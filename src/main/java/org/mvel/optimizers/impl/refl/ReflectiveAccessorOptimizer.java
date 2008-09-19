@@ -29,27 +29,22 @@ import static org.mvel.ast.TypeDescriptor.getClassReference;
 import org.mvel.compiler.Accessor;
 import org.mvel.compiler.AccessorNode;
 import org.mvel.compiler.ExecutableStatement;
-import org.mvel.compiler.AbstractParser;
-import org.mvel.integration.VariableResolverFactory;
-import org.mvel.integration.VariableResolver;
-import org.mvel.integration.PropertyHandlerFactory;
-import static org.mvel.integration.PropertyHandlerFactory.hasPropertyHandler;
 import static org.mvel.integration.PropertyHandlerFactory.getPropertyHandler;
+import static org.mvel.integration.PropertyHandlerFactory.hasPropertyHandler;
+import org.mvel.integration.VariableResolver;
+import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.impl.refl.collection.ArrayCreator;
 import org.mvel.optimizers.impl.refl.collection.ExprValueAccessor;
 import org.mvel.optimizers.impl.refl.collection.ListCreator;
 import org.mvel.optimizers.impl.refl.collection.MapCreator;
-import org.mvel.util.*;
+import org.mvel.util.ArrayTools;
+import org.mvel.util.MethodStub;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.ParseTools.getWidenedTarget;
-import static org.mvel.util.ParseTools.determineActualTargetMethod;
-import static org.mvel.util.ParseTools.getBestCandidate;
-import static org.mvel.util.ParseTools.balancedCapture;
-import static org.mvel.util.PropertyTools.getBaseComponentType;
-import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
-import static org.mvel.util.PropertyTools.getFieldOrAccessor;
+import static org.mvel.util.PropertyTools.*;
+import org.mvel.util.StringAppender;
 
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
@@ -274,6 +269,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     case COL:
                         curr = getCollectionProperty(curr, capture());
                         break;
+                    case WITH:
+                        curr = getWithProperty(curr);
+                        break;
+
                     case DONE:
                         break;
                 }
@@ -292,7 +291,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             throw new PropertyAccessException(new String(expr), e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException(new String(expr) + ": array index out of bounds." , e);
+            throw new PropertyAccessException(new String(expr) + ": array index out of bounds.", e);
         }
         catch (PropertyAccessException e) {
             throw new CompileException(e.getMessage(), e);
@@ -314,6 +313,19 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         else {
             currNode = currNode.setNextNode(an);
         }
+    }
+
+    private Object getWithProperty(Object ctx) {
+        int start = cursor + 1;
+        int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{');
+        cursor = res[0];
+        getParserContext().incrementLineCount(res[1]);
+
+        WithAccessor wa = new WithAccessor(subset(expr, start, cursor++ - start));
+
+        addAccessorNode(wa);
+
+        return wa.getValue(ctx, thisRef, variableFactory);
     }
 
     private Object getBeanProperty(Object ctx, String property)

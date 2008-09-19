@@ -8,10 +8,12 @@ import org.mvel.tests.core.res.Foo;
 
 public class AccessorBMModel implements Accessor {
     private ExecutableStatement p0;
+    private ExecutableStatement p1;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        return ((Foo) ctx).getBar().getName();
-       }
+        p0.setValue(ctx, elCtx, variableFactory, p1.getValue(ctx, elCtx, variableFactory));  
+        return ctx;
+    }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
        // ((List) ctx).set(55, value);

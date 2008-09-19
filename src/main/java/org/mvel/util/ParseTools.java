@@ -207,7 +207,7 @@ public class ParseTools {
         Method bestCandidate = null;
         int bestScore = 0;
         int score = 0;
-        
+
         Integer hash = createClassSignatureHash(decl, arguments);
 
         Map<Integer, Method> methCache = RESOLVED_METH_CACHE.get(method);
@@ -1200,6 +1200,144 @@ public class ParseTools {
     }
 
 
+    public static WithStatementPair[] parseWithExpressions(char[] block) {
+        List<WithStatementPair> parms = new ArrayList<WithStatementPair>();
+        String nestParm = null;
+
+        int start = 0;
+        String parm = "";
+        int end = -1;
+
+        int oper = -1;
+        for (int i = 0; i < block.length; i++) {
+            switch (block[i]) {
+                case '{':
+                case '[':
+                case '(':
+                    i = balancedCapture(block, i, block[i]);
+                    continue;
+
+                case '*':
+                    if (i < block.length && block[i + 1] == '=') {
+                        oper = Operator.MULT;
+                    }
+                    continue;
+
+                case '/':
+                    if (i < block.length && block[i + 1] == '/') {
+                        end = i;
+                        while (i < block.length && block[i] != '\n') i++;
+                        if (parm == null) start = i;
+                    }
+                    else if (i < block.length && block[i + 1] == '*') {
+                        end = i;
+
+                        while (i < block.length) {
+                            switch (block[i++]) {
+                                case '*':
+                                    if (i < block.length) {
+                                        if (block[i] == '/') break;
+                                    }
+                            }
+                        }
+
+                        if (parm == null) start = i;
+                    }
+                    else if (i < block.length && block[i + 1] == '=') {
+                        oper = Operator.DIV;
+                    }
+                    continue;
+
+                case '-':
+                    if (i < block.length && block[i + 1] == '=') {
+                        oper = Operator.SUB;
+                    }
+                    continue;
+
+                case '+':
+                    if (i < block.length && block[i + 1] == '=') {
+                        oper = Operator.ADD;
+                    }
+                    continue;
+
+                case '=':
+                    parm = createStringTrimmed(block, start, i - start - (oper != -1 ? 1 : 0));
+                    start = ++i;
+                    continue;
+
+                case ',':
+                    if (end == -1) end = i;
+
+                    if (parm == null) {
+                        parms.add(
+                                new WithStatementPair(null, new StringAppender(nestParm).append('.')
+                                        .append(subset(block, start, end - start)).toString())
+                        );
+
+                        oper = -1;
+                        start = ++i;
+                    }
+                    else {
+                        parms.add(new WithStatementPair(parm, new String(createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper))));
+
+                        parm = null;
+                        oper = -1;
+                        start = ++i;
+                    }
+
+                    end = -1;
+
+                    break;
+            }
+        }
+
+        if (start != (end = block.length)) {
+            if (parm == null) {
+                parms.add(new WithStatementPair(null, new StringAppender(nestParm).append('.')
+                        .append(subset(block, start, end - start)).toString()));
+
+            }
+            else {
+                parms.add(new WithStatementPair(
+                        parm,
+                        new String(createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper))
+                ));
+            }
+        }
+
+        WithStatementPair[] ret;
+        parms.toArray(ret = new WithStatementPair[parms.size()]);
+        return ret;
+    }
+
+    public static final class WithStatementPair implements Serializable {
+        private String parm;
+        private String value;
+
+        public WithStatementPair(String parm, String value) {
+            this.parm = parm;
+            this.value = value;
+
+        }
+
+        public String getParm() {
+            return parm;
+        }
+
+        public void setParm(String parm) {
+            this.parm = parm;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+    }
+
+
     /**
      * REMOVE THIS WITH JDK1.4 COMPATIBILITY!  COMPENSATES FOR LACK OF getSimpleName IN java.lang.Class -- DIE 1.4!
      *
@@ -1243,7 +1381,6 @@ public class ParseTools {
     public static Serializable subCompileExpression(String expression) {
         return optimizeTree(new ExpressionCompiler(expression)._compile());
     }
-
 
     public static Serializable subCompileExpression(char[] expression) {
         return optimizeTree(new ExpressionCompiler(expression)._compile());

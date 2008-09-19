@@ -24,6 +24,7 @@ import org.mvel.ParserContext;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
+import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
 import org.mvel.util.ASTIterator;
 import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.ParseTools.handleParserEgress;
@@ -113,7 +114,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     private void setupOptimizers() {
-        if (accessorOptimizer != null) OptimizerFactory.setThreadAccessorOptimizer(accessorOptimizer);
+        if (accessorOptimizer != null) setThreadAccessorOptimizer(accessorOptimizer);
         optimized = true;
     }
 

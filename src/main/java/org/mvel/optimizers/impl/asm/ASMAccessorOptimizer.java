@@ -21,8 +21,8 @@ package org.mvel.optimizers.impl.asm;
 import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
-import static org.mvel.MVEL.isAdvancedDebugging;
 import static org.mvel.MVEL.eval;
+import static org.mvel.MVEL.isAdvancedDebugging;
 import org.mvel.asm.ClassWriter;
 import org.mvel.asm.Label;
 import org.mvel.asm.MethodVisitor;
@@ -32,34 +32,31 @@ import static org.mvel.asm.Type.*;
 import org.mvel.ast.Function;
 import org.mvel.ast.TypeDescriptor;
 import static org.mvel.ast.TypeDescriptor.getClassReference;
-import org.mvel.compiler.Accessor;
-import org.mvel.compiler.ExecutableLiteral;
-import org.mvel.compiler.ExecutableStatement;
-import org.mvel.compiler.AccessorNode;
-import org.mvel.integration.VariableResolverFactory;
-import org.mvel.integration.PropertyHandlerFactory;
+import org.mvel.compiler.*;
 import org.mvel.integration.PropertyHandler;
+import static org.mvel.integration.PropertyHandlerFactory.getPropertyHandler;
+import static org.mvel.integration.PropertyHandlerFactory.hasPropertyHandler;
+import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
-import org.mvel.optimizers.impl.refl.*;
+import org.mvel.optimizers.impl.refl.Union;
+import org.mvel.optimizers.impl.refl.WithAccessor;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.*;
-import static org.mvel.util.PropertyTools.getBaseComponentType;
-import static org.mvel.util.PropertyTools.getFieldOrAccessor;
-import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.ParseTools.balancedCapture;
+import static org.mvel.util.ParseTools.parseWithExpressions;
+import static org.mvel.util.PropertyTools.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import static java.lang.System.getProperty;
-import static java.lang.reflect.Array.getLength;
-import java.lang.reflect.*;
-import static java.lang.reflect.Modifier.STATIC;
-import static java.lang.reflect.Modifier.FINAL;
-import static java.lang.Thread.currentThread;
 import static java.lang.String.valueOf;
+import static java.lang.System.getProperty;
+import static java.lang.Thread.currentThread;
+import java.lang.reflect.*;
+import static java.lang.reflect.Array.getLength;
+import static java.lang.reflect.Modifier.FINAL;
+import static java.lang.reflect.Modifier.STATIC;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -428,8 +425,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     meth.invoke(ctx, convert(value, meth.getParameterTypes()[0]));
                 }
                 else {
-                                   assert debug("CHECKCAST " + getInternalName(targetType));
-                mv.visitTypeInsn(CHECKCAST, getInternalName(targetType));
+                    assert debug("CHECKCAST " + getInternalName(targetType));
+                    mv.visitTypeInsn(CHECKCAST, getInternalName(targetType));
 
                     meth.invoke(ctx, value);
                 }
@@ -521,7 +518,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          */
         Class cls = loadClass(className, cw.toByteArray());
 
-        assert debug("[MVEL JIT Completed Optimization <<" + (expr != null ? new String(expr):"") + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
+        assert debug("[MVEL JIT Completed Optimization <<" + (expr != null ? new String(expr) : "") + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
 
         Object o;
 
@@ -562,6 +559,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         break;
                     case COL:
                         curr = getCollectionProperty(curr, capture());
+                        break;
+                    case WITH:
+                        curr = getWithProperty(curr);
                         break;
                 }
 
@@ -610,10 +610,24 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
+    private Object getWithProperty(Object ctx) {
+        assert debug("\n  ** ENTER -> {with}");
+
+        if (first) {
+            assert debug("ALOAD 1");
+            mv.visitVarInsn(ALOAD, 1);
+            first = false;
+        }
+
+        return generateInlineWithBytecode(ctx);
+
+    }
+
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
 
         assert debug("\n  **  ENTER -> {bean: " + property + "; ctx=" + ctx + "}");
+
 
         if (returnType != null && returnType.isPrimitive()) {
             //noinspection unchecked
@@ -622,14 +636,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
 
-        if (PropertyHandlerFactory.hasPropertyHandler(cls)) {
-            PropertyHandler prop = PropertyHandlerFactory.getPropertyHandler(cls);
+        if (hasPropertyHandler(cls)) {
+            PropertyHandler prop = getPropertyHandler(cls);
             if (prop instanceof ProducesBytecode) {
                 ((ProducesBytecode) prop).produceBytecodeGet(mv, property, variableFactory);
                 return prop.getProperty(property, ctx, variableFactory);
             }
             else {
-                throw new RuntimeException("unable to compile: custom accessor does not support producing bytecode: " + prop.getClass().getName());
+                throw new RuntimeException("unable to compile: custom accessor does not support producing bytecode: "
+                        + prop.getClass().getName());
             }
         }
 
@@ -836,6 +851,63 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             throw new PropertyAccessException(property);
         }
+    }
+
+    private Object generateInlineWithBytecode(Object ctx) {
+        int start = cursor + 1;
+        int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{');
+        cursor = res[0];
+        getParserContext().incrementLineCount(res[1]);
+
+        WithStatementPair[] pvp = parseWithExpressions(subset(expr, start, cursor++ - start));
+
+        for (WithStatementPair aPvp : pvp) {
+            assert debug("DUP");
+            mv.visitInsn(DUP);
+            if (aPvp.getParm() == null) {
+                // Execute this interpretively now.
+                MVEL.eval(aPvp.getValue(), ctx, variableFactory);
+
+                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue()));
+            }
+            else {
+                // Execute interpretively.
+                MVEL.setProperty(ctx, aPvp.getParm(), MVEL.eval(aPvp.getValue(), ctx, variableFactory));
+
+                compiledInputs.add(((ExecutableStatement) MVEL.compileSetExpression(aPvp.getParm())));
+
+                assert debug("ALOAD 0");
+                mv.visitVarInsn(ALOAD, 0);
+
+                assert debug("GETFIELD p" + (compiledInputs.size() - 1));
+                mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "L" + NAMESPACE + "compiler/ExecutableStatement;");
+
+                assert debug("ALOAD 1");
+                mv.visitVarInsn(ALOAD, 1);
+
+                assert debug("ALOAD 2");
+                mv.visitVarInsn(ALOAD, 2);
+
+                assert debug("ALOAD 3");
+                mv.visitVarInsn(ALOAD, 3);
+
+                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue()));
+
+//                assert debug("CHECKCAST " + getInternalName(Accessor.class));
+//                mv.visitTypeInsn(CHECKCAST, getInternalName(Accessor.class));
+
+                assert debug("INVOKEINTERFACE Accessor.setValue");
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/compiler/ExecutableStatement",
+                        "setValue",
+                        "(Ljava/lang/Object;Ljava/lang/Object;L"
+                                + NAMESPACE + "integration/VariableResolverFactory;Ljava/lang/Object;)Ljava/lang/Object;");
+
+                assert debug("POP");
+                mv.visitInsn(POP);
+            }
+        }
+
+        return ctx;
     }
 
     private void writeFunctionPointerStub(Class c, Method m) {
@@ -1893,6 +1965,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(ExecutableStatement.class), "getValue",
                 "(Ljava/lang/Object;L" + NAMESPACE + "integration/VariableResolverFactory;)Ljava/lang/Object;");
     }
+
 
     private void loadVariableByName(String name) {
         assert debug("ALOAD 3");

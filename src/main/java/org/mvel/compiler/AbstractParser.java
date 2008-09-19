@@ -319,10 +319,10 @@ public class AbstractParser implements Serializable {
                                 int end = cursor;
 
                                 skipWhitespace();
-                                
+
                                 if (expr[cursor] == '=') {
                                     if (end == start) throw new CompileException("illegal use of reserved word: var");
-                                    
+
                                     cursor = start;
                                     continue;
                                 }
@@ -469,16 +469,21 @@ public class AbstractParser implements Serializable {
                                 continue;
 
                             case '{':
-                                if (union) {
-                                    char[] prop = subArray(start, cursor - 1);
+                                if (!union) break;
+                                cursor = balancedCapture(expr, cursor, '{') + 1;
+                                continue;
 
-                                    start = cursor;
-
-                                    cursor = balancedCapture(expr, cursor, '{') + 1;
-
-                                    return lastNode = new WithNode(prop, subArray(start + 1, cursor - 1), fields);
-                                }
-                                break;
+//                            case '{':
+//                                if (union) {
+//                                    char[] prop = subArray(start, cursor - 1);
+//
+//                                    start = cursor;
+//
+//                                    cursor = balancedCapture(expr, cursor, '{') + 1;
+//
+//                                    return lastNode = new WithNode(prop, subArray(start + 1, cursor - 1), fields);
+//                                }
+//                                break;
 
                             case '~':
                                 if (lookAhead() == '=') {
@@ -598,6 +603,17 @@ public class AbstractParser implements Serializable {
                     String name;
 
                     switch (expr[cursor]) {
+                        case '.': {
+                            cursor++;
+                            expectNextChar_IW('{');
+
+                            char[] prop = subArray(start, cursor - 1);
+                            start = cursor;
+                            cursor = balancedCapture(expr, cursor, '{') + 1;
+
+                            return lastNode = new ThisWithNode(prop, subArray(start + 1, cursor - 1), fields);
+                        }
+
                         case '@': {
                             start++;
                             captureToEOT();
@@ -1736,6 +1752,13 @@ public class AbstractParser implements Serializable {
         int i = cursor;
         while (i != length && isWhitespace(expr[i])) i++;
         return i;
+    }
+
+    public void expectNextChar_IW(char c) {
+        nextNonBlank();
+        if (cursor == length) throw new CompileException("unexpected end of statement", expr, cursor);
+        if (expr[cursor] != c)
+            throw new CompileException("unexpected character ('" + expr[cursor] + "'); was expecting: " + c);
     }
 
     /**

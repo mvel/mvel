@@ -33,6 +33,7 @@ public class AbstractOptimizer extends AbstractParser {
     protected static final int BEAN = 0;
     protected static final int METH = 1;
     protected static final int COL = 2;
+    protected static final int WITH = 3;
 
     protected int start = 0;
 
@@ -145,9 +146,16 @@ public class AbstractOptimizer extends AbstractParser {
                 return COL;
             case '.':
                 skipWhitespace();
-                if ((start + 1) != length && expr[cursor = ++start] == '?') {
-                    cursor = ++start;
-                    fields = -1;
+                if ((start + 1) != length) {
+                    switch (expr[cursor = ++start]) {
+                        case '?':
+                            cursor = ++start;
+                            fields = -1;
+                            break;
+                        case '{':
+                            return WITH;
+                    }
+
                 }
                 break;
         }
@@ -162,6 +170,7 @@ public class AbstractOptimizer extends AbstractParser {
                     return COL;
                 case '(':
                     return METH;
+
                 default:
                     return BEAN;
             }
@@ -174,6 +183,7 @@ public class AbstractOptimizer extends AbstractParser {
         /**
          * Trim off any whitespace.
          */
+
         return new String(expr, start = trimRight(start), trimLeft(cursor) - start);
     }
 
@@ -214,10 +224,12 @@ public class AbstractOptimizer extends AbstractParser {
 
         for (int i = expr.length - 1; i != 0; i--) {
             switch (expr[i]) {
+                case '}':
                 case ']':
                     depth++;
                     break;
 
+                case '{':
                 case '[':
                     if (--depth == 0) {
                         split = i;
