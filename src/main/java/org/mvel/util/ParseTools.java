@@ -19,16 +19,14 @@
 package org.mvel.util;
 
 import org.mvel.*;
-import static org.mvel.MVEL.getDebuggingOutputFileName;
 import static org.mvel.DataConversion.canConvert;
+import static org.mvel.MVEL.getDebuggingOutputFileName;
 import org.mvel.ast.ASTNode;
+import static org.mvel.compiler.AbstractParser.*;
 import org.mvel.compiler.*;
-import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
-import static org.mvel.compiler.AbstractParser.isReservedWord;
-import static org.mvel.compiler.AbstractParser.LITERALS;
 import org.mvel.integration.ResolverTools;
-import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.integration.ResolverTools.insertFactory;
+import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.integration.impl.TypeInjectionResolverFactoryImpl;
@@ -37,6 +35,7 @@ import static org.mvel.util.PropertyTools.createStringTrimmed;
 import sun.misc.Unsafe;
 
 import java.io.*;
+import static java.lang.Class.forName;
 import static java.lang.Double.parseDouble;
 import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
@@ -44,7 +43,6 @@ import static java.lang.Thread.currentThread;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import static java.lang.Class.forName;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -1310,7 +1308,7 @@ public class ParseTools {
         return ret;
     }
 
-    public static final class WithStatementPair implements Serializable {
+    public static final class WithStatementPair implements java.io.Serializable {
         private String parm;
         private String value;
 
