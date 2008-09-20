@@ -3143,8 +3143,8 @@ public class CoreConfidenceTests extends AbstractTest {
             if (list == null) {
                 if (other.list != null) return false;
             }
-            else if (!list.equals(other.list)) return false;
-            return true;
+
+            return list.equals(other.list);
         }
     }
 

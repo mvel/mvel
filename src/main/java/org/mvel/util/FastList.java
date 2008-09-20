@@ -45,17 +45,17 @@ public class FastList extends AbstractList implements Externalizable {
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeInt( size );
-        for ( int i = 0; i < size; i++) {
-            out.writeObject( elements[i] );
+        out.writeInt(size);
+        for (int i = 0; i < size; i++) {
+            out.writeObject(elements[i]);
         }
     }
-    
+
     public void readExternal(ObjectInput in) throws IOException,
-                                            ClassNotFoundException {
+            ClassNotFoundException {
         size = in.readInt();
         elements = new Object[size];
-        for ( int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             elements[i] = in.readObject();
         }
     }
@@ -163,7 +163,45 @@ public class FastList extends AbstractList implements Externalizable {
     }
 
     public ListIterator listIterator() {
-        return super.listIterator();    //To change body of overridden methods use File | Settings | File Templates.
+        return new ListIterator() {
+            private int i = 0;
+
+            public boolean hasNext() {
+                return i < size;
+            }
+
+            public Object next() {
+                return elements[i++];
+            }
+
+            public boolean hasPrevious() {
+                return i > 0;
+            }
+
+            public Object previous() {
+                return elements[i--];
+            }
+
+            public int nextIndex() {
+                return i++;
+            }
+
+            public int previousIndex() {
+                return i--;
+            }
+
+            public void remove() {
+                throw new java.lang.UnsupportedOperationException();
+            }
+
+            public void set(Object o) {
+                elements[i] = 0;
+            }
+
+            public void add(Object o) {
+                throw new java.lang.UnsupportedOperationException();
+            }
+        };
     }
 
     public ListIterator listIterator(int i) {
@@ -175,7 +213,20 @@ public class FastList extends AbstractList implements Externalizable {
     }
 
     public boolean equals(Object o) {
-        return super.equals(o);    //To change body of overridden methods use File | Settings | File Templates.
+        if (o == this)
+            return true;
+        if (!(o instanceof List))
+            return false;
+
+        ListIterator e1 = listIterator();
+        ListIterator e2 = ((List) o).listIterator();
+        while (e1.hasNext() && e2.hasNext()) {
+            Object o1 = e1.next();
+            Object o2 = e2.next();
+            if (!(o1 == null ? o2 == null : o1.equals(o2)))
+                return false;
+        }
+        return !(e1.hasNext() || e2.hasNext());
     }
 
     public int hashCode() {

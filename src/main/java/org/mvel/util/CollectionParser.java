@@ -165,6 +165,14 @@ public class CollectionParser {
 
                     start = cursor + 1;
                     break;
+
+                case '.':
+                    cursor++;
+                    while (cursor != length && isWhitespace(property[cursor])) cursor++;
+                    if (property[cursor] == '{') {
+                        cursor = balancedCapture(property, cursor, '{');                        
+                    }
+                    break;
             }
         }
 
