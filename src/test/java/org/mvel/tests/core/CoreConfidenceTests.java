@@ -68,6 +68,23 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("crap", testCompiledSimple("foo.bar.assignTest", map));
     }
 
+    public void testDeepAssignment2() {
+        Map map = createTestMap();
+
+
+        ExpressionCompiler compiler = new ExpressionCompiler("foo.bar.age = 21");
+        ParserContext ctx = new ParserContext();
+
+        ctx.addInput("foo", Foo.class);
+        ctx.setStrongTyping(true);
+
+        CompiledExpression ce = compiler.compile(ctx);
+
+        MVEL.executeExpression(ce, map);
+
+        assertEquals(((Foo) map.get("foo")).getBar().getAge(), 21);
+    }
+
     public void testThroughInterface() {
         assertEquals("FOOBAR!", test("testImpl.name"));
     }
@@ -4265,6 +4282,8 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testIncrementInBooleanStatement() {
         assertEquals(true, test("hour++ < 61 && hour == 61"));
     }
+
+
 
 }
 

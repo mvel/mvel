@@ -33,6 +33,7 @@ import org.mvel.util.ExecutionStack;
 import org.mvel.util.StringAppender;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.subCompileExpression;
+import static org.mvel.util.ParseTools.unboxPrimitive;
 
 /**
  * This is the main MVEL compiler.
@@ -311,6 +312,9 @@ public class ExpressionCompiler extends AbstractParser {
                                 catch (Exception e) {
                                     // fall through.
                                 }
+                            }
+                            else if (returnType.isPrimitive() && unboxPrimitive(c.getKnownEgressType()).equals(returnType)) {
+                                return tk;
                             }
 
                             throw new CompileException(

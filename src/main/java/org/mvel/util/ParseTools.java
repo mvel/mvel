@@ -590,7 +590,7 @@ public class ParseTools {
             return byte[].class;
         }
 
-        return null;
+        return cls;
     }
 
     public static boolean containsCheck(Object compareTo, Object compareTest) {
