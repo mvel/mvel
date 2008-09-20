@@ -32,7 +32,10 @@ import static org.mvel.asm.Type.*;
 import org.mvel.ast.Function;
 import org.mvel.ast.TypeDescriptor;
 import static org.mvel.ast.TypeDescriptor.getClassReference;
-import org.mvel.compiler.*;
+import org.mvel.compiler.Accessor;
+import org.mvel.compiler.AccessorNode;
+import org.mvel.compiler.ExecutableLiteral;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.PropertyHandler;
 import static org.mvel.integration.PropertyHandlerFactory.getPropertyHandler;
 import static org.mvel.integration.PropertyHandlerFactory.hasPropertyHandler;
@@ -41,11 +44,9 @@ import org.mvel.optimizers.AbstractOptimizer;
 import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import org.mvel.optimizers.impl.refl.Union;
-import org.mvel.optimizers.impl.refl.WithAccessor;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.ParseTools.parseWithExpressions;
 import static org.mvel.util.PropertyTools.*;
 
 import java.io.FileWriter;
@@ -854,12 +855,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private Object generateInlineWithBytecode(Object ctx) {
+        String root = new String(expr, 0, cursor-1).trim();
+
         int start = cursor + 1;
         int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{');
         cursor = res[0];
         getParserContext().incrementLineCount(res[1]);
 
-        WithStatementPair[] pvp = parseWithExpressions(subset(expr, start, cursor++ - start));
+        WithStatementPair[] pvp = parseWithExpressions(root, subset(expr, start, cursor++ - start));
 
         for (WithStatementPair aPvp : pvp) {
             assert debug("DUP");

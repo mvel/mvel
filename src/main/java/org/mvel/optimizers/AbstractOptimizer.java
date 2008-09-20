@@ -36,7 +36,6 @@ public class AbstractOptimizer extends AbstractParser {
     protected static final int WITH = 3;
 
     protected int start = 0;
-
     protected boolean collection = false;
 
 
@@ -170,7 +169,6 @@ public class AbstractOptimizer extends AbstractParser {
                     return COL;
                 case '(':
                     return METH;
-
                 default:
                     return BEAN;
             }
@@ -184,7 +182,7 @@ public class AbstractOptimizer extends AbstractParser {
          * Trim off any whitespace.
          */
 
-        return new String(expr, start = trimRight(start), trimLeft(cursor) - start);
+        return  new String(expr, start = trimRight(start), trimLeft(cursor) - start);
     }
 
     /**

@@ -1200,9 +1200,8 @@ public class ParseTools {
     }
 
 
-    public static WithStatementPair[] parseWithExpressions(char[] block) {
+    public static WithStatementPair[] parseWithExpressions(String nestParm, char[] block) {
         List<WithStatementPair> parms = new ArrayList<WithStatementPair>();
-        String nestParm = null;
 
         int start = 0;
         String parm = "";
@@ -1278,7 +1277,8 @@ public class ParseTools {
                         start = ++i;
                     }
                     else {
-                        parms.add(new WithStatementPair(parm, new String(createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper))));
+                        parms.add(new WithStatementPair(parm, new String(createShortFormOperativeAssignment(nestParm + "." + parm, 
+                                subset(block, start, end - start), oper))));
 
                         parm = null;
                         oper = -1;

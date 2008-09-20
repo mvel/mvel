@@ -144,7 +144,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             property = subset(property, split, property.length - split);
         }
 
-
         if (root != null) {
             this.length = (this.expr = root).length;
 
@@ -193,7 +192,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     return rootNode;
                 }
                 else {
-                    throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
+                    throw new PropertyAccessException("cannot bind to collection property: " + new String(property) +
+                            ": not a recognized collection type: " + ctx.getClass());
                 }
             }
 
@@ -316,12 +316,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     private Object getWithProperty(Object ctx) {
+        String root = new String(expr, 0, cursor-1).trim();
+
         int start = cursor + 1;
         int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{');
         cursor = res[0];
         getParserContext().incrementLineCount(res[1]);
 
-        WithAccessor wa = new WithAccessor(subset(expr, start, cursor++ - start));
+        WithAccessor wa = new WithAccessor(root, subset(expr, start, cursor++ - start));
 
         addAccessorNode(wa);
 

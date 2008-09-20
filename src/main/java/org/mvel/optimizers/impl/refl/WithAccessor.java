@@ -19,11 +19,11 @@ public class WithAccessor implements AccessorNode {
     protected ExecutableStatement nestedStatement;
     protected ExecutablePairs[] withExpressions;
 
-    public WithAccessor(char[] block) {
+    public WithAccessor(String property, char[] block) {
         ParserContext pCtx = getCurrentThreadParserContext();
         pCtx.setBlockSymbols(true);
 
-        ParseTools.WithStatementPair[] pvp = ParseTools.parseWithExpressions(block);
+        ParseTools.WithStatementPair[] pvp = ParseTools.parseWithExpressions(property, block);
         withExpressions = new ExecutablePairs[pvp.length];
 
         for (int i = 0; i < pvp.length; i++) {
