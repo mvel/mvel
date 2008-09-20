@@ -3011,7 +3011,7 @@ public class CoreConfidenceTests extends AbstractTest {
 //        EmailMessage result = (EmailMessage) MVEL.executeExpression(execution);
 //        assertEquals(msg, result);
 //    }
-    
+
     public void testNestedWithInComplexGraph3() {
         Recipients recipients = new Recipients();
 
@@ -3029,7 +3029,7 @@ public class CoreConfidenceTests extends AbstractTest {
         msg.setRecipients(recipients);
         msg.setFrom("from@domain.com");
 
-        String text = ""; 
+        String text = "";
         text += "new EmailMessage().{ ";
         text += "     recipients = new Recipients().{ ";
         text += "         recipients = [ new Recipient().{ name = 'user1', email = 'user1@domain.com' }, ";
@@ -3042,11 +3042,25 @@ public class CoreConfidenceTests extends AbstractTest {
         context.addImport(Recipients.class);
         context.addImport(EmailMessage.class);
 
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
         ExpressionCompiler compiler = new ExpressionCompiler(text);
         Serializable execution = compiler.compile(context);
-        EmailMessage result = (EmailMessage) MVEL.executeExpression(execution);
-        assertEquals(msg, result);
-    }    
+
+        assertEquals(msg, MVEL.executeExpression(execution));
+        assertEquals(msg, MVEL.executeExpression(execution));
+        assertEquals(msg, MVEL.executeExpression(execution));
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+
+        context = new ParserContext(context.getParserConfiguration());
+        compiler = new ExpressionCompiler(text);
+        execution = compiler.compile(context);
+
+        assertEquals(msg, MVEL.executeExpression(execution));
+        assertEquals(msg, MVEL.executeExpression(execution));
+        assertEquals(msg, MVEL.executeExpression(execution));
+    }
 
     public static class Recipient {
         private String name;
