@@ -620,7 +620,60 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             first = false;
         }
 
-        return generateInlineWithBytecode(ctx);
+        String root = new String(expr, 0, cursor - 1).trim();
+
+        int start = cursor + 1;
+        int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{');
+        cursor = res[0];
+        getParserContext().incrementLineCount(res[1]);
+
+        WithStatementPair[] pvp = parseWithExpressions(root, subset(expr, start, cursor++ - start));
+
+        for (WithStatementPair aPvp : pvp) {
+            assert debug("DUP");
+            mv.visitInsn(DUP);
+            if (aPvp.getParm() == null) {
+                // Execute this interpretively now.
+                MVEL.eval(aPvp.getValue(), ctx, variableFactory);
+
+                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue()));
+            }
+            else {
+                // Execute interpretively.
+                MVEL.setProperty(ctx, aPvp.getParm(), MVEL.eval(aPvp.getValue(), ctx, variableFactory));
+
+                compiledInputs.add(((ExecutableStatement) MVEL.compileSetExpression(aPvp.getParm())));
+
+                assert debug("ALOAD 0");
+                mv.visitVarInsn(ALOAD, 0);
+
+                assert debug("GETFIELD p" + (compiledInputs.size() - 1));
+                mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "L" + NAMESPACE + "compiler/ExecutableStatement;");
+
+                assert debug("ALOAD 1");
+                mv.visitVarInsn(ALOAD, 1);
+
+                assert debug("ALOAD 2");
+                mv.visitVarInsn(ALOAD, 2);
+
+                assert debug("ALOAD 3");
+                mv.visitVarInsn(ALOAD, 3);
+
+                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue()));
+
+
+                assert debug("INVOKEINTERFACE Accessor.setValue");
+                mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/compiler/ExecutableStatement",
+                        "setValue",
+                        "(Ljava/lang/Object;Ljava/lang/Object;L"
+                                + NAMESPACE + "integration/VariableResolverFactory;Ljava/lang/Object;)Ljava/lang/Object;");
+
+                assert debug("POP");
+                mv.visitInsn(POP);
+            }
+        }
+
+        return ctx;
 
     }
 
@@ -854,64 +907,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    private Object generateInlineWithBytecode(Object ctx) {
-        String root = new String(expr, 0, cursor-1).trim();
-
-        int start = cursor + 1;
-        int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{');
-        cursor = res[0];
-        getParserContext().incrementLineCount(res[1]);
-
-        WithStatementPair[] pvp = parseWithExpressions(root, subset(expr, start, cursor++ - start));
-
-        for (WithStatementPair aPvp : pvp) {
-            assert debug("DUP");
-            mv.visitInsn(DUP);
-            if (aPvp.getParm() == null) {
-                // Execute this interpretively now.
-                MVEL.eval(aPvp.getValue(), ctx, variableFactory);
-
-                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue()));
-            }
-            else {
-                // Execute interpretively.
-                MVEL.setProperty(ctx, aPvp.getParm(), MVEL.eval(aPvp.getValue(), ctx, variableFactory));
-
-                compiledInputs.add(((ExecutableStatement) MVEL.compileSetExpression(aPvp.getParm())));
-
-                assert debug("ALOAD 0");
-                mv.visitVarInsn(ALOAD, 0);
-
-                assert debug("GETFIELD p" + (compiledInputs.size() - 1));
-                mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "L" + NAMESPACE + "compiler/ExecutableStatement;");
-
-                assert debug("ALOAD 1");
-                mv.visitVarInsn(ALOAD, 1);
-
-                assert debug("ALOAD 2");
-                mv.visitVarInsn(ALOAD, 2);
-
-                assert debug("ALOAD 3");
-                mv.visitVarInsn(ALOAD, 3);
-
-                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue()));
-
-//                assert debug("CHECKCAST " + getInternalName(Accessor.class));
-//                mv.visitTypeInsn(CHECKCAST, getInternalName(Accessor.class));
-
-                assert debug("INVOKEINTERFACE Accessor.setValue");
-                mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel/compiler/ExecutableStatement",
-                        "setValue",
-                        "(Ljava/lang/Object;Ljava/lang/Object;L"
-                                + NAMESPACE + "integration/VariableResolverFactory;Ljava/lang/Object;)Ljava/lang/Object;");
-
-                assert debug("POP");
-                mv.visitInsn(POP);
-            }
-        }
-
-        return ctx;
-    }
 
     private void writeFunctionPointerStub(Class c, Method m) {
         ldcClassConstant(c);

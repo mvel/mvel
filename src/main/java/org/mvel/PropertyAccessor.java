@@ -22,8 +22,8 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.eval;
 import org.mvel.ast.Function;
-import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.PropertyHandlerFactory;
+import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.MethodStub;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
@@ -31,9 +31,6 @@ import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.StringAppender;
 
 import static java.lang.Character.isJavaIdentifierPart;
-
-import static org.mvel.util.ParseTools.isWhitespace;
-
 import java.lang.reflect.*;
 import static java.lang.reflect.Array.getLength;
 import java.util.*;
@@ -60,6 +57,7 @@ public class PropertyAccessor {
     private static final int NORM = 0;
     private static final int METH = 1;
     private static final int COL = 2;
+    private static final int WITH = 3;
 
     private static final Object[] EMPTYARG = new Object[0];
 
@@ -164,6 +162,10 @@ public class PropertyAccessor {
                     case COL:
                         curr = getCollectionProperty(curr, capture());
                         break;
+                    case WITH:
+                        curr = getWithProperty(curr);
+                        break;
+
                     case DONE:
                 }
 
@@ -309,9 +311,16 @@ public class PropertyAccessor {
                 return COL;
             case '.':
                 // ++cursor;
-                if (property[cursor = ++start] == '?') {
-                    cursor = ++start;
-                    nullHandle = true;
+                while (cursor < length && isWhitespace(property[cursor])) cursor++;
+                if ((start + 1) != length) {
+                    switch (property[cursor = ++start]) {
+                        case '?':
+                            cursor = ++start;
+                            break;
+                        case '{':
+                            return WITH;
+                    }
+
                 }
         }
 
@@ -485,8 +494,7 @@ public class PropertyAccessor {
 
 
     /**
-     *
-     * @param c
+     * @param c - character to scan to.
      * @return - returns true is end of statement is hit, false if the scan scar is countered.
      */
     private boolean scanTo(char c) {
@@ -496,6 +504,31 @@ public class PropertyAccessor {
             }
         }
         return true;
+    }
+
+
+    private Object getWithProperty(Object ctx) {
+        String root = new String(property, 0, cursor - 1).trim();
+
+        int start = cursor + 1;
+        int[] res = balancedCaptureWithLineAccounting(property, cursor, '{');
+        cursor = res[0];
+
+        WithStatementPair[] pvp = parseWithExpressions(root, subset(property, start, cursor++ - start));
+
+        for (WithStatementPair aPvp : pvp) {
+            if (aPvp.getParm() == null) {
+                // Execute this interpretively now.
+                MVEL.eval(aPvp.getValue(), ctx, variableFactory);
+            }
+            else {
+                // Execute interpretively.
+                MVEL.setProperty(ctx, aPvp.getParm(), MVEL.eval(aPvp.getValue(), ctx, variableFactory));
+
+            }
+        }
+
+        return ctx;
     }
 
     /**
@@ -675,7 +708,7 @@ public class PropertyAccessor {
                 try {
                     m = getWidenedTarget(m);
                     addMethodCache(cls, createSignature(name, tk), m);
-                                       
+
                     return m.invoke(ctx, args);
                 }
                 catch (Exception e2) {
