@@ -316,6 +316,7 @@ public class PropertyAccessor {
                     switch (property[cursor = ++start]) {
                         case '?':
                             cursor = ++start;
+                            nullHandle = true;
                             break;
                         case '{':
                             return WITH;
