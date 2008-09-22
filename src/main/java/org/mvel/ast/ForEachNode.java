@@ -51,7 +51,7 @@ public class ForEachNode extends BlockNode {
 
     public ForEachNode(char[] condition, char[] block, int fields) {
         this.fields = fields;
-        handleCond(this.name = condition);
+        handleCond(this.name = condition, fields);
         this.block = block;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
@@ -179,7 +179,7 @@ public class ForEachNode extends BlockNode {
           return null;
       }
   
-    private void handleCond(char[] condition) {
+    private void handleCond(char[] condition, int fields) {
         int cursor = 0;
         while (cursor < condition.length && condition[cursor] != ':') cursor++;
 

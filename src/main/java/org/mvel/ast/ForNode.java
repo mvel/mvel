@@ -23,6 +23,7 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
 import static org.mvel.util.ParseTools.subset;
+import org.mvel.util.CompilerTools;
 
 import java.util.HashMap;
 
@@ -37,33 +38,39 @@ public class ForNode extends BlockNode {
     protected ExecutableStatement compiledBlock;
     protected ExecutableStatement after;
 
-    public ForNode(char[] condition, char[] block) {
-        handleCond(this.name = condition);
+    public ForNode(char[] condition, char[] block, int fields) {
+        handleCond(this.name = condition, fields);
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolverFactory lc = new MapVariableResolverFactory(new HashMap(0), factory);
-        for (initializer.getValue(ctx, thisValue, lc); (Boolean) condition.getValue(ctx, thisValue, lc); after.getValue(ctx, thisValue, lc)) {
-            compiledBlock.getValue(ctx, thisValue, lc);
+        factory = new MapVariableResolverFactory(new HashMap(0), factory);
+        for (initializer.getValue(ctx, thisValue, factory); (Boolean) condition.getValue(ctx, thisValue, factory); after.getValue(ctx, thisValue, factory)) {
+            compiledBlock.getValue(ctx, thisValue, factory);
         }
         return null;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolverFactory lc = new MapVariableResolverFactory(new HashMap(0), factory);
-        for (initializer.getValue(ctx, thisValue, lc); (Boolean) condition.getValue(ctx, thisValue, lc); after.getValue(ctx, thisValue, lc)) {
-            compiledBlock.getValue(ctx, thisValue, lc);
+        factory = new MapVariableResolverFactory(new HashMap(0), factory);
+        for (initializer.getValue(ctx, thisValue, factory); (Boolean) condition.getValue(ctx, thisValue, factory); after.getValue(ctx, thisValue, factory)) {
+            compiledBlock.getValue(ctx, thisValue, factory);
         }
         return null;
     }
 
-    private void handleCond(char[] condition) {
+    private void handleCond(char[] condition, int fields) {
         int start = 0;
         int cursor = nextCondPart(condition, start);
 
-        this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start));
-        this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor, (cursor = nextCondPart(condition, start)) - start));
+        this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start - 1));
+        this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor,
+                        (cursor = nextCondPart(condition, start)) - start - 1));
+        
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            CompilerTools.expectType(this.condition, Boolean.class);
+        }
+
         this.after = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start)) - start));
     }
 

@@ -20,7 +20,11 @@ package org.mvel.ast;
 
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
+import org.mvel.util.CompilerTools;
+
+import java.util.HashMap;
 
 /**
  * @author Christopher Brock
@@ -30,12 +34,18 @@ public class UntilNode extends BlockNode {
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
 
-    public UntilNode(char[] condition, char[] block) {
+    public UntilNode(char[] condition, char[] block, int fields) {
         this.condition = (ExecutableStatement) subCompileExpression(this.name = condition);
+
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            CompilerTools.expectType(this.condition,  Boolean.class);
+        }
+
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        factory = new MapVariableResolverFactory(new HashMap(0), factory);
         while (!(Boolean) condition.getValue(ctx, thisValue, factory)) {
             compiledBlock.getValue(ctx, thisValue, factory);
         }
@@ -44,6 +54,8 @@ public class UntilNode extends BlockNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        factory = new MapVariableResolverFactory(new HashMap(0), factory);
+        
         while (!(Boolean) condition.getValue(ctx, thisValue, factory)) {
             compiledBlock.getValue(ctx, thisValue, factory);
         }

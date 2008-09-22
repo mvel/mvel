@@ -59,7 +59,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testPropertyViaDerivedClass() {
-        assertEquals("cat", test("derived.data"));
+        assertEquals("cat", test("derived.data"));                                                                      
     }
 
     public void testDeepAssignment() {
@@ -4282,9 +4282,6 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testIncrementInBooleanStatement() {
         assertEquals(true, test("hour++ < 61 && hour == 61"));
     }
-
-
-
 }
 
 

@@ -18,11 +18,14 @@
  */
 package org.mvel.util;
 
+import org.mvel.CompileException;
 import org.mvel.Operator;
-import org.mvel.ParserContext;
 import static org.mvel.Operator.PTABLE;
+import org.mvel.ParserContext;
 import org.mvel.ast.*;
+import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.compiler.CompiledExpression;
+import org.mvel.compiler.ExecutableStatement;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -189,5 +192,19 @@ public class CompilerTools {
         }
 
         return allFunctions;
+    }
+
+    public static void expectType(ExecutableStatement expression, Class type) {
+        Class retType = expression.getKnownEgressType();
+        if (getCurrentThreadParserContext().isStrictTypeEnforcement()) {
+            if (retType == null || !type.isAssignableFrom(retType)) {
+                throw new CompileException("was expecting boolean, but found type: "
+                        + retType.getName());
+            }
+        }
+        else if (retType == null || !Object.class.equals(retType) &&  !type.isAssignableFrom(retType)) {
+                           throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
+                        + (retType != null ? retType.getName() : "null"));
+        }
     }
 }
