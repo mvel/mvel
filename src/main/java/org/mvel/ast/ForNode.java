@@ -24,6 +24,7 @@ import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
 import static org.mvel.util.ParseTools.subset;
 import org.mvel.util.CompilerTools;
+import static org.mvel.util.CompilerTools.expectType;
 
 import java.util.HashMap;
 
@@ -67,9 +68,7 @@ public class ForNode extends BlockNode {
         this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor,
                         (cursor = nextCondPart(condition, start)) - start - 1));
         
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            CompilerTools.expectType(this.condition, Boolean.class);
-        }
+        expectType(this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
         this.after = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start)) - start));
     }

@@ -194,13 +194,12 @@ public class CompilerTools {
         return allFunctions;
     }
 
-    public static void expectType(ExecutableStatement expression, Class type) {
+    public static void expectType(ExecutableStatement expression, Class type, boolean compileMode) {
         Class retType = expression.getKnownEgressType();
-        if (getCurrentThreadParserContext().isStrictTypeEnforcement()) {
+        if (compileMode && getCurrentThreadParserContext().isStrictTypeEnforcement()) {
             if (retType == null || !type.isAssignableFrom(retType)) {
-                throw new CompileException("was expecting boolean, but found type: "
-                        + retType.getName());
-            }
+                           throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
+                        + (retType != null ? retType.getName() : "null"));            }
         }
         else if (retType == null || !Object.class.equals(retType) &&  !type.isAssignableFrom(retType)) {
                            throw new CompileException("was expecting type: " + type.getName() + "; but found type: "

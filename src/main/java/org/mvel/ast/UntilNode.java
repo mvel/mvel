@@ -23,6 +23,7 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
 import org.mvel.util.CompilerTools;
+import static org.mvel.util.CompilerTools.expectType;
 
 import java.util.HashMap;
 
@@ -37,9 +38,8 @@ public class UntilNode extends BlockNode {
     public UntilNode(char[] condition, char[] block, int fields) {
         this.condition = (ExecutableStatement) subCompileExpression(this.name = condition);
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            CompilerTools.expectType(this.condition,  Boolean.class);
-        }
+        expectType(this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+
 
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }

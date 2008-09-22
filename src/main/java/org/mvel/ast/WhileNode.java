@@ -35,11 +35,9 @@ public class WhileNode extends BlockNode {
     protected ExecutableStatement compiledBlock;
 
     public WhileNode(char[] condition, char[] block, int fields) {
-       this.condition = (ExecutableStatement) subCompileExpression(this.name = condition);
+        this.condition = (ExecutableStatement) subCompileExpression(this.name = condition);
 
-        if ((fields & COMPILE_IMMEDIATE) != 0) {
-            expectType(this.condition, Boolean.class);
-        }
+        expectType(this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }
