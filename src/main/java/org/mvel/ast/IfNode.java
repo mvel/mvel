@@ -48,8 +48,6 @@ public class IfNode extends ASTNode implements NestedStatement {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-     //   VariableResolverFactory lc = new MapVariableResolverFactory(new HashMap(0), factory);
-
         if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
             return nestedStatement.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
         }
