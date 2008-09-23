@@ -4,21 +4,12 @@ import org.mvel.CompileException;
 import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
 
-public class FunctionVariableResolverFactory extends MapVariableResolverFactory implements LocalVariableResolverFactory {
+public class FunctionVariableResolverFactory extends BaseVariableResolverFactory implements LocalVariableResolverFactory {
 
-
-    public FunctionVariableResolverFactory() {
-        super(null);
-    }
-
-    public FunctionVariableResolverFactory(VariableResolverFactory nextFactory) {
-        super(null, nextFactory);
-    }
 
     public FunctionVariableResolverFactory(VariableResolverFactory nextFactory, String[] indexedVariables, Object[] parameters) {
-        super(null, nextFactory);
-        this.indexedVariableNames = indexedVariables;
-        this.indexedVariableResolvers = new VariableResolver[indexedVariableNames.length];
+        this.nextFactory = nextFactory;
+        this.indexedVariableResolvers = new VariableResolver[(this.indexedVariableNames = indexedVariables).length];
         for (int i = 0; i < parameters.length; i++) {
             this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]);
         }
@@ -28,7 +19,9 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
         for (String s : indexedVariableNames) {
             if (name.equals(s)) return true;
         }
-        return super.isResolveable(name);
+
+        return (variableResolvers != null && variableResolvers.containsKey(name))
+                || (nextFactory != null && nextFactory.isResolveable(name));
     }
 
     public VariableResolver createVariable(String name, Object value) {
@@ -36,12 +29,12 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
         if (resolver == null) {
             int idx = increaseRegisterTableSize();
             this.indexedVariableNames[idx] = name;
-            resolver = this.indexedVariableResolvers[idx] = new SimpleValueResolver(value);
+            return this.indexedVariableResolvers[idx] = new SimpleValueResolver(value);
         }
         else {
             resolver.setValue(value);
+            return resolver;
         }
-        return resolver;
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
@@ -59,9 +52,7 @@ public class FunctionVariableResolverFactory extends MapVariableResolverFactory 
             indexedVariableResolvers[index].setValue(value);
         }
         else {
-            VariableResolver resolver = new SimpleValueResolver(value);
-            resolver.setValue(value);
-            indexedVariableResolvers[index] = resolver;
+            indexedVariableResolvers[index] = new SimpleValueResolver(value);
         }
         return indexedVariableResolvers[index];
     }

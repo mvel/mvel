@@ -219,7 +219,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
         try {
-            return ((ExecutableStatement) compiledExpression).getValue(ctx, new MapVariableResolverFactory(vars));
+            return ((ExecutableStatement) compiledExpression).getValue(ctx, vars != null ? new MapVariableResolverFactory(vars): null);
         }
 
         catch (EndWithValue end) {

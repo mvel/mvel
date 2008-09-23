@@ -96,6 +96,8 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
         }
     }
 
+   
+
     public VariableResolver createIndexedVariable(int index, String name, Object value) {
         if (nextFactory != null) return nextFactory.createIndexedVariable(index, name, value);
         else throw new RuntimeException("cannot create indexed variable: " + name + "(" + index + "). operation not supported by resolver: " + this.getClass().getName());
