@@ -54,13 +54,14 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
 
         try {
             vr = getVariableResolver(name);
+            vr.setValue(value);
+            return vr;
         }
         catch (CompileException e) {
             (vr = new MapVariableResolver(variables, name, cachingSafe)).setValue(value);
+            return vr;
         }
-
-        vr.setValue(value);
-        return vr;
+    //    vr.setValue(value);
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {

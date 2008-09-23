@@ -23,14 +23,12 @@ import static org.mvel.MVELRuntime.execute;
 import org.mvel.ParserContext;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.optimizers.AccessorOptimizer;
-import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
 import org.mvel.util.ASTIterator;
 import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.ParseTools.handleParserEgress;
 
 import java.io.Serializable;
-import java.util.Map;
 
 public class CompiledExpression implements Serializable, ExecutableStatement {
     private ASTIterator tokens;

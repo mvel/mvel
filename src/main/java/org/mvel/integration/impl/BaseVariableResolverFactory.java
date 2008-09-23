@@ -18,12 +18,13 @@
  */
 package org.mvel.integration.impl;
 
+import org.mvel.CompileException;
 import org.mvel.integration.VariableResolver;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.UnresolveablePropertyException;
-import org.mvel.CompileException;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Use this class to extend you own VariableResolverFactories. It contains most of the baseline implementation needed
@@ -62,11 +63,12 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     }
 
     public void appendFactory(VariableResolverFactory resolverFactory) {
-        VariableResolverFactory vrf = nextFactory;
-        if (vrf == null) {
+   //     VariableResolverFactory vrf = nextFactory;
+        if (resolverFactory == null) {
             nextFactory = resolverFactory;
         }
         else {
+            VariableResolverFactory vrf = nextFactory;
             while (vrf.getNextFactory() != null) {
                 vrf = vrf.getNextFactory();
             }
@@ -95,8 +97,6 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
             return new HashSet<String>(0);
         }
     }
-
-   
 
     public VariableResolver createIndexedVariable(int index, String name, Object value) {
         if (nextFactory != null) return nextFactory.createIndexedVariable(index, name, value);
