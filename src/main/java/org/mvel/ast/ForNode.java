@@ -45,17 +45,17 @@ public class ForNode extends BlockNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory = new MapVariableResolverFactory(new HashMap(0), factory);
+        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
         for (initializer.getValue(ctx, thisValue, factory); (Boolean) condition.getValue(ctx, thisValue, factory); after.getValue(ctx, thisValue, factory)) {
-            compiledBlock.getValue(ctx, thisValue, factory);
+            compiledBlock.getValue(ctx, thisValue, ctxFactory);
         }
         return null;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory = new MapVariableResolverFactory(new HashMap(0), factory);
+        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
         for (initializer.getValue(ctx, thisValue, factory); (Boolean) condition.getValue(ctx, thisValue, factory); after.getValue(ctx, thisValue, factory)) {
-            compiledBlock.getValue(ctx, thisValue, factory);
+            compiledBlock.getValue(ctx, thisValue, ctxFactory);
         }
         return null;
     }

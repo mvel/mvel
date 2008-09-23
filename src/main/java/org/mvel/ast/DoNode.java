@@ -44,10 +44,10 @@ public class DoNode extends BlockNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory = new MapVariableResolverFactory(new HashMap(0), factory);
+        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
 
         do {
-            compiledBlock.getValue(ctx, thisValue, factory);
+            compiledBlock.getValue(ctx, thisValue, ctxFactory);
         }
         while ((Boolean) condition.getValue(ctx, thisValue, factory));
 
@@ -55,10 +55,10 @@ public class DoNode extends BlockNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory = new MapVariableResolverFactory(new HashMap(0), factory);
+        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
 
         do {
-            compiledBlock.getValue(ctx, thisValue, factory);
+            compiledBlock.getValue(ctx, thisValue, ctxFactory);
         }
         while ((Boolean) condition.getValue(ctx, thisValue, factory));
 
