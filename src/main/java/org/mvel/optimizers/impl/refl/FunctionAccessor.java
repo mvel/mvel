@@ -38,7 +38,7 @@ public class FunctionAccessor extends BaseAccessor {
 
         if (parameters != null && parameters.length != 0) {
             parms = new Object[parameters.length];
-            for (int i = 0; i < parms.length; i++) {
+            for (int i = parms.length - 1; i != -1; i--) {
                 parms[i] = parameters[i].getValue(ctx, elCtx, variableFactory);
             }
         }
