@@ -94,16 +94,9 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     }
 
     public boolean isResolveable(String name) {
-        if (variableResolvers != null && variableResolvers.containsKey(name)) {
-            return true;
-        }
-        else if (variables != null && variables.containsKey(name)) {
-            return true;
-        }
-        else if (nextFactory != null) {
-            return nextFactory.isResolveable(name);
-        }
-        return false;
+        return (variableResolvers != null && variableResolvers.containsKey(name))
+                || (variables != null && variables.containsKey(name))
+                || (nextFactory != null && nextFactory.isResolveable(name));
     }
 
     protected void addResolver(String name, VariableResolver vr) {
