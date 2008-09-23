@@ -117,16 +117,13 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     }
 
     public Set<String> getKnownVariables() {
-        Set<String> knownVars = new HashSet<String>();
-
         if (nextFactory == null) {
-            if (variables != null) knownVars.addAll(variables.keySet());
-            return knownVars;
+            if (variables != null) return new HashSet<String>(variables.keySet());
+            return new HashSet<String>(0);
         }
         else {
-            if (variables != null) knownVars.addAll(variables.keySet());
-            knownVars.addAll(nextFactory.getKnownVariables());
-            return knownVars;
+            if (variables != null) return new HashSet<String>(variables.keySet());
+            return new HashSet<String>(0);
         }
     }
 }

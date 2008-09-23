@@ -86,16 +86,13 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
 
     public Set<String> getKnownVariables() {
-        Set<String> knownVars = new HashSet<String>();
-
         if (nextFactory == null) {
-            if (variableResolvers != null) knownVars.addAll(variableResolvers.keySet());
-            return knownVars;
+            if (variableResolvers != null) return new HashSet<String>(variableResolvers.keySet());
+            return new HashSet<String>(0);
         }
         else {
-            if (variableResolvers != null) knownVars.addAll(variableResolvers.keySet());
-            knownVars.addAll(nextFactory.getKnownVariables());
-            return knownVars;
+            if (variableResolvers != null) return new HashSet<String>(variableResolvers.keySet());
+            return new HashSet<String>(0);
         }
     }
 

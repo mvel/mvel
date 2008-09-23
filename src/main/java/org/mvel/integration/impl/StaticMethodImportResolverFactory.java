@@ -15,9 +15,7 @@ public class StaticMethodImportResolverFactory extends BaseVariableResolverFacto
 
     public StaticMethodImportResolverFactory(ParserContext ctx) {
         this();
-
-        Map<String, Object> imports = ctx.getImports();
-        for (Map.Entry<String,Object> entry : imports.entrySet()) {
+        for (Map.Entry<String,Object> entry : ctx.getImports().entrySet()) {
             if (entry.getValue() instanceof Method) {
                 createVariable(entry.getKey(), entry.getValue());
             }

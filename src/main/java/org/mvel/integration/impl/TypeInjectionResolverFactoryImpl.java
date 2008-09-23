@@ -54,14 +54,11 @@ public class TypeInjectionResolverFactoryImpl extends MapVariableResolverFactory
     }
 
     public Set<String> getKnownVariables() {
-        Set<String> knownVars = new HashSet<String>();
-
         if (nextFactory == null) {
-            return knownVars;
+            return new HashSet<String>(0);
         }
         else {
-            knownVars.addAll(nextFactory.getKnownVariables());
-            return knownVars;
+            return nextFactory.getKnownVariables();
         }
     }
 }
