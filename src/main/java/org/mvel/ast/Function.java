@@ -28,6 +28,8 @@ import org.mvel.integration.impl.FunctionVariableResolverFactory;
 import static org.mvel.util.ParseTools.parseParameterList;
 import static org.mvel.util.ParseTools.subCompileExpression;
 
+import java.util.Map;
+
 
 @SuppressWarnings({"unchecked"})
 public class Function extends ASTNode implements Safe {
@@ -68,8 +70,8 @@ public class Function extends ASTNode implements Safe {
          * Add globals as inputs
          */
         if (old.getVariables() != null) {
-            for (String s : old.getVariables().keySet()) {
-                ctx.addInput(s, old.getVariables().get(s));
+            for (Map.Entry<String,Class> e : old.getVariables().entrySet()) {
+                ctx.addInput(e.getKey(), e.getValue());
             }
 
             ctx.processTables();

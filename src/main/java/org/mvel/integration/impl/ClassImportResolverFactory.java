@@ -102,17 +102,18 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
 
     public void setImportedClasses(Map<String, Class> imports) {
         if (imports == null) return;
-        for (String var : imports.keySet()) {
-            variableResolvers.put(var, new SimpleValueResolver(imports.get(var)));
+        for (Map.Entry<String, Class> e : imports.entrySet()) {
+            variableResolvers.put(e.getKey(), new SimpleValueResolver(e.getValue()));
         }
     }
 
     public Map<String, Object> getImportedClasses() {
         Map<String, Object> imports = new HashMap<String, Object>();
-        for (String var : variableResolvers.keySet()) {
-            imports.put(var, variableResolvers.get(var).getValue());
-        }
 
+        for (Map.Entry<String, VariableResolver> e : variableResolvers.entrySet()) {
+            imports.put(e.getKey(), e.getValue().getValue());
+        }
+        
         return imports;
     }
 

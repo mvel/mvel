@@ -50,8 +50,8 @@ public class StaticMethodImportResolverFactory extends BaseVariableResolverFacto
 
     public Map<String, Method> getImportedMethods() {
         Map<String, Method> im = new HashMap<String, Method>();
-        for (String name : this.variableResolvers.keySet()) {
-            im.put(name, (Method) (this.variableResolvers.get(name)).getValue());
+        for (Map.Entry<String, VariableResolver> e : this.variableResolvers.entrySet()) {
+            im.put(e.getKey(), (Method) e.getValue().getValue());
         }
         return im;
     }
