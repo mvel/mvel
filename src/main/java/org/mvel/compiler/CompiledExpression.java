@@ -64,7 +64,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         this.tokens = tokens;
     }
 
-
     public Class getKnownEgressType() {
         return knownEgressType;
     }
@@ -73,7 +72,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         this.knownEgressType = knownEgressType;
     }
 
-
     public Class getKnownIngressType() {
         return knownIngressType;
     }
@@ -81,7 +79,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     public void setKnownIngressType(Class knownIngressType) {
         this.knownIngressType = knownIngressType;
     }
-
 
     public boolean isConvertableIngressEgress() {
         return convertableIngressEgress;
@@ -158,7 +155,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
                     parserContext.getImports() != null && parserContext.getImports().size() != 0;
         }
     }
-
 
     public boolean isReturnBigDecimal() {
         return returnBigDecimal;
