@@ -28,7 +28,6 @@ public class CompiledSetExpression implements ExecutableStatement, Serializable 
     private transient Accessor accessor;
 
     public CompiledSetExpression(char[] expression) {
-     //   assert expression != null && expression.length != 0;
         this.expression = expression;
     }
 
