@@ -1492,9 +1492,10 @@ public class AbstractParser implements Serializable {
      */
     protected void captureToEOL() {
         while (cursor != length && (expr[cursor] != '\n')) cursor++;
-    }
+    }                                                                                   
 
     protected void captureIdentifier() {
+        boolean captured = false;
         if (cursor == length) throw new CompileException("unexpected end of statement: EOF", expr, cursor);
         while (cursor != length) {
             switch (expr[cursor]) {
@@ -1502,7 +1503,11 @@ public class AbstractParser implements Serializable {
                     return;
                 default: {
                     if (!isIdentifierPart(expr[cursor])) {
+                        if (captured) return;
                         throw new CompileException("unexpected symbol (was expecting an identifier): " + expr[cursor], expr, cursor);
+                    }
+                    else {
+                        captured = true;
                     }
                 }
             }

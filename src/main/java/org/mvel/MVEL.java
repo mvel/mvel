@@ -162,7 +162,7 @@ public class MVEL {
      * @param expression   - the expression to be compiled
      * @param imports      -
      * @param interceptors -
-     * @param sourceName -
+     * @param sourceName   -
      * @return -
      */
     public static Serializable compileExpression(char[] expression, Map<String, Object> imports,
@@ -206,7 +206,7 @@ public class MVEL {
             return handleParserEgress(e.getValue(), false);
         }
     }
-                                                            
+
     /**
      * Executes a compiled expression.
      *
@@ -219,7 +219,7 @@ public class MVEL {
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
         try {
-            return ((ExecutableStatement) compiledExpression).getValue(ctx, vars != null ? new MapVariableResolverFactory(vars): null);
+            return ((ExecutableStatement) compiledExpression).getValue(ctx, vars != null ? new MapVariableResolverFactory(vars) : null);
         }
 
         catch (EndWithValue end) {
@@ -342,7 +342,7 @@ public class MVEL {
         }
     }
 
-        public static void executeExpression(Iterable<CompiledExpression> compiledExpression) {
+    public static void executeExpression(Iterable<CompiledExpression> compiledExpression) {
         for (CompiledExpression ce : compiledExpression) {
             ce.getValue(null, null);
         }
