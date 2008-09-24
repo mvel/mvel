@@ -64,7 +64,7 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
     public void appendFactory(VariableResolverFactory resolverFactory) {
    //     VariableResolverFactory vrf = nextFactory;
-        if (resolverFactory == null) {
+        if (nextFactory == null) {
             nextFactory = resolverFactory;
         }
         else {
