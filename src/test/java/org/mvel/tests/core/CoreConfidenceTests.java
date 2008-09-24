@@ -59,7 +59,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testPropertyViaDerivedClass() {
-        assertEquals("cat", test("derived.data"));                                                                      
+        assertEquals("cat", test("derived.data"));
     }
 
     public void testDeepAssignment() {
@@ -4283,20 +4283,14 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("hour++ < 61 && hour == 61"));
     }
 
-    public void testDeepNestedLoopsInFunction() { 
+    public void testIncrementInBooleanStatement2() {
+        assertEquals(true, test("++hour == 61"));
+    }
+
+    public void testDeepNestedLoopsInFunction() {
         assertEquals(10, test("def increment(i) { i + 1 }; def ff(i) { x = 0; while (i < 1) { " +
                 "x++; while (i < 10) { i = increment(i); } }; if (x == 1) return i; else -1; }; i = 0; ff(i);"));
     }
-
-    public void testLoop2() {
-        int total = 0;
-        int i = 0;
-        while (++i != 100000) {
-            total += i;
-        }
-        System.out.println(total);
-    }
-
 }
 
 
