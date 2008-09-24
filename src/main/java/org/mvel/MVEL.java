@@ -342,6 +342,33 @@ public class MVEL {
         }
     }
 
+        public static void executeExpression(Iterable<CompiledExpression> compiledExpression) {
+        for (CompiledExpression ce : compiledExpression) {
+            ce.getValue(null, null);
+        }
+    }
+
+    public static void executeExpression(Iterable<CompiledExpression> compiledExpression, Object ctx) {
+        for (CompiledExpression ce : compiledExpression) {
+            ce.getValue(ctx, null);
+        }
+    }
+
+    public static void executeExpression(Iterable<CompiledExpression> compiledExpression, Map vars) {
+        executeExpression(compiledExpression, null, new MapVariableResolverFactory(vars));
+
+    }
+
+    public static void executeExpression(Iterable<CompiledExpression> compiledExpression, Object ctx, Map vars) {
+        executeExpression(compiledExpression, ctx, new MapVariableResolverFactory(vars));
+    }
+
+    public static void executeExpression(Iterable<CompiledExpression> compiledExpression, Object ctx, VariableResolverFactory vars) {
+        for (CompiledExpression ce : compiledExpression) {
+            ce.getValue(ctx, vars);
+        }
+    }
+
     public static Object[] executeAllExpression(Serializable[] compiledExpressions, Object ctx, VariableResolverFactory vars) {
         if (compiledExpressions == null) return GetterAccessor.EMPTY;
 
