@@ -207,7 +207,6 @@ public class ParserContext implements Serializable {
         for (int i = 0; i < typeParameters.length; i++) {
             t.put(tvs[i].getName(), typeParameters[i]);
         }
-
     }
 
     public void addInputs(Map<String, Class> inputs) {
@@ -222,9 +221,6 @@ public class ParserContext implements Serializable {
             inputs.remove(name);
         }
     }
-
-    // accessors -- start here
-
 
     public Map<String, Class> getInputs() {
         return inputs;

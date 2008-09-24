@@ -41,7 +41,6 @@ public class PropertyVerifier extends AbstractOptimizer {
     private boolean resolvedExternally;
     private Map<String, Class> paramTypes;
 
-
     public PropertyVerifier(char[] property, ParserContext parserContext) {
         this.length = (this.expr = property).length;
         this.pCtx = parserContext;
@@ -51,7 +50,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         this.length = (this.expr = property.toCharArray()).length;
         this.pCtx = parserContext;
     }
-
+    
     public List<String> getInputs() {
         return inputs;
     }
@@ -337,7 +336,7 @@ public class PropertyVerifier extends AbstractOptimizer {
          * If we're in strict mode, we look for generic type information.
          */
         if (pCtx.isStrictTypeEnforcement() && m.getGenericReturnType() != null) {
-            Map<String, Class> typeArgs = new HashMap<String, Class>();
+            Map<String, Class> typeArgs = new LinkedHashMap<String, Class>();
 
             Type[] gpt = m.getGenericParameterTypes();
             Class z;
@@ -376,7 +375,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
             if (paramTypes != null && paramTypes.containsKey(returnTypeArg)) {
                 /**
-                 * If the paramTypes Map contains the known type, return thatt ype.
+                 * If the paramTypes Map contains the known type, return that type.
                  */
                 return paramTypes.get(returnTypeArg);
             }

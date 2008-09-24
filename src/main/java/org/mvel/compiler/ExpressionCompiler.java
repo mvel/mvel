@@ -18,22 +18,24 @@
  */
 package org.mvel.compiler;
 
-import static org.mvel.Operator.PTABLE;
-import org.mvel.*;
+import org.mvel.CompileException;
+import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
-import org.mvel.debug.DebugTools;
+import org.mvel.ErrorDetail;
+import org.mvel.Operator;
+import static org.mvel.Operator.PTABLE;
+import org.mvel.ParserContext;
 import org.mvel.ast.ASTNode;
 import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
+import org.mvel.ast.Assignment;
 import org.mvel.ast.LiteralNode;
 import org.mvel.ast.Substatement;
-import org.mvel.ast.Assignment;
 import org.mvel.util.ASTLinkedList;
 import static org.mvel.util.CompilerTools.optimizeAST;
 import org.mvel.util.ExecutionStack;
-import org.mvel.util.StringAppender;
-import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.subCompileExpression;
 import static org.mvel.util.ParseTools.unboxPrimitive;
+import org.mvel.util.StringAppender;
 
 /**
  * This is the main MVEL compiler.
@@ -61,10 +63,12 @@ public class ExpressionCompiler extends AbstractParser {
             return _compile();
         }
         finally {
+            //noinspection ThrowFromFinallyBlock
+
             removeContext();
+
             if (pCtx.isFatalError()) {
                 contextControl(REMOVE, null, null);
-                //noinspection ThrowFromFinallyBlock
 
                 StringAppender err = new StringAppender();
 
@@ -243,12 +247,11 @@ public class ExpressionCompiler extends AbstractParser {
 
             if (!stk.isEmpty()) throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
 
-
             return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly);
 
         }
-        catch (NullPointerException e)  {
-           throw new CompileException("not a statement, or badly formed structure"); 
+        catch (NullPointerException e) {
+            throw new CompileException("not a statement, or badly formed structure");
         }
         catch (Throwable e) {
             parserContext.set(null);
@@ -303,17 +306,28 @@ public class ExpressionCompiler extends AbstractParser {
                     ExecutableStatement c = (ExecutableStatement) subCompileExpression(a.getExpression());
 
                     if (pCtx.isStrictTypeEnforcement()) {
+                        /**
+                         * If we're using strict type enforcement, we need to see if this coercion can be done now,
+                         * or fail epicly.
+                         */
                         if (!returnType.isAssignableFrom(c.getKnownEgressType()) && c.isLiteralOnly()) {
-                            if (DataConversion.canConvert(c.getKnownEgressType(), returnType)) {
+                            if (canConvert(c.getKnownEgressType(), returnType)) {
+                                /**
+                                 * We convert the literal to the proper type.
+                                 */
                                 try {
-                                     a.setValueStatement(new ExecutableLiteral(convert(c.getValue(null, null), returnType)));
-                                     return tk;
+                                    a.setValueStatement(new ExecutableLiteral(convert(c.getValue(null, null), returnType)));
+                                    return tk;
                                 }
                                 catch (Exception e) {
                                     // fall through.
                                 }
                             }
-                            else if (returnType.isPrimitive() && unboxPrimitive(c.getKnownEgressType()).equals(returnType)) {
+                            else if (returnType.isPrimitive()
+                                    && unboxPrimitive(c.getKnownEgressType()).equals(returnType)) {
+                                /**
+                                 * We ignore boxed primitive cases, since MVEL does not recognize primitives.
+                                 */
                                 return tk;
                             }
 
@@ -323,14 +337,8 @@ public class ExpressionCompiler extends AbstractParser {
                         }
                     }
                 }
-                else {
-                    returnType = tk.getEgressType();
-                }
-
             }
-            else {
-                returnType = tk.getEgressType();
-            }
+            returnType = tk.getEgressType();
         }
         return tk;
     }
