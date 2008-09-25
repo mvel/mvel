@@ -894,6 +894,10 @@ public class AbstractParser implements Serializable {
                         case '!': {
                             ++cursor;
                             if (isNextIdentifier()) {
+                                if (lastNode != null && !lastNode.isOperator()) {
+                                    throw new CompileException("unexpected operator '!'", expr, cursor);
+                                }
+
                                 start = cursor;
                                 captureToEOT();
                                 return lastNode = new Negation(subset(expr, start, cursor - start), fields);
@@ -1492,7 +1496,7 @@ public class AbstractParser implements Serializable {
      */
     protected void captureToEOL() {
         while (cursor != length && (expr[cursor] != '\n')) cursor++;
-    }                                                                                   
+    }
 
     protected void captureIdentifier() {
         boolean captured = false;
@@ -1765,6 +1769,7 @@ public class AbstractParser implements Serializable {
         if (expr[cursor] != c)
             throw new CompileException("unexpected character ('" + expr[cursor] + "'); was expecting: " + c);
     }
+
 
     /**
      * NOTE: This method assumes that the current position of the cursor is at the end of a logical statement, to

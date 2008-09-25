@@ -19,6 +19,7 @@
 package org.mvel;
 
 public interface Operator {
+  
     public static final int NOOP = -1;
 
     /**

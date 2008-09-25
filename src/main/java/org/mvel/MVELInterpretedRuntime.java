@@ -114,13 +114,18 @@ public class MVELInterpretedRuntime extends AbstractParser {
                             if (isArithmeticOperator(operator = tk.getOperator())) {
                                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 
-                                if (procBooleanOperator(arithmeticFunctionReduction(operator)) == -1) return;
-                                else continue;
+                                if (procBooleanOperator(arithmeticFunctionReduction(operator)) == -1)
+                                    return;
+                                else
+                                    continue;
                             }
                         }
                         else {
                             continue;
                         }
+                    }
+                    else {
+                        continue;
                     }
                 }
 
@@ -130,6 +135,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                     case OP_RESET_FRAME:
                         continue;
                 }
+
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 

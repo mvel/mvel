@@ -2,6 +2,7 @@ package org.mvel.ast;
 
 import org.mvel.MVEL;
 import org.mvel.CompileException;
+import org.mvel.Operator;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
@@ -37,4 +38,5 @@ public class Negation extends ASTNode {
     public Class getEgressType() {
         return Boolean.class;
     }
+
 }
