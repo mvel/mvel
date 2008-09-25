@@ -1365,6 +1365,9 @@ public class ParseTools {
         if (isReservedWord(name)) {
             throw new CompileException("illegal use of reserved word: " + name);
         }
+        else if (Character.isDigit(name.charAt(0))) {
+            throw new CompileException("illegal assignment");
+        }
     }
 
     public static FileWriter getDebugFileWriter() throws IOException {
