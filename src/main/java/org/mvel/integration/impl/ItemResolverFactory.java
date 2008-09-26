@@ -49,13 +49,17 @@ public class ItemResolverFactory extends BaseVariableResolverFactory {
         private Class type = Object.class;
         private Object value;
 
+        public ItemResolver(String name, Class type) {
+            this.name = name;
+            this.type = type;
+        }
 
         public ItemResolver(String name) {
             this.name = name;
         }
 
         public String getName() {
-            return name;  //To change body of implemented methods use File | Settings | File Templates.
+            return name;  
         }
 
         public Class getType() {

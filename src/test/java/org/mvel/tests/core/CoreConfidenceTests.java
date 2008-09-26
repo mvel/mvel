@@ -4292,9 +4292,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 "x++; while (i < 10) { i = increment(i); } }; if (x == 1) return i; else -1; }; i = 0; ff(i);"));
     }
 
-
     public void testArrayDefinitionWithInitializer() {
-
         String[] compareTo = new String[] { "foo", "bar"};
         String[] results = (String[]) test("new String[] { 'foo', 'bar' }");
 

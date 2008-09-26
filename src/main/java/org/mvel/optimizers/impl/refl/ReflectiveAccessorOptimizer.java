@@ -42,6 +42,7 @@ import org.mvel.optimizers.impl.refl.collection.MapCreator;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
+import static org.mvel.util.PropertyTools.getBaseComponentType;
 
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
@@ -702,7 +703,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             try {
                 if (returnType != null) {
-                    returnType = findClass(null, repeatChar('[', 1) + "L" + getBaseComponentType(returnType).getName() + ";");
+                    returnType = findClass(null, repeatChar('[', 1)
+                            + "L" + getBaseComponentType(returnType).getName() + ";");
                 }
                 else {
                     returnType = Object[].class;
@@ -712,7 +714,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 throw new CompileException("cannot instantiate class", e);
             }
 
-            return new ArrayCreator(a, PropertyTools.getBaseComponentType(returnType));
+            return new ArrayCreator(a, getBaseComponentType(returnType));
         }
         else {
             if (returnType == null) returnType = Object.class;
@@ -721,9 +723,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     public Accessor optimizeCollection(Object o, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-
         this.returnType = type;
-
         Accessor root = _getAccessor(o);
 
         if (property != null && property.length > 0) {

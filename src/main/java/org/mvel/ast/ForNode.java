@@ -18,13 +18,13 @@
  */
 package org.mvel.ast;
 
+import org.mvel.CompileException;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
+import static org.mvel.util.CompilerTools.expectType;
 import static org.mvel.util.ParseTools.subCompileExpression;
 import static org.mvel.util.ParseTools.subset;
-import org.mvel.util.CompilerTools;
-import static org.mvel.util.CompilerTools.expectType;
 
 import java.util.HashMap;
 
@@ -65,9 +65,16 @@ public class ForNode extends BlockNode {
         int cursor = nextCondPart(condition, start);
 
         this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start - 1));
-        this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor,
-                        (cursor = nextCondPart(condition, start)) - start - 1));
-        
+
+        try {
+            this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor,
+                    (cursor = nextCondPart(condition, start)) - start - 1));
+        }
+        catch (NegativeArraySizeException e) {
+            throw new CompileException("wrong syntax; did you mean to use 'foreach'?");
+
+        }
+
         expectType(this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
         this.after = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start)) - start));
