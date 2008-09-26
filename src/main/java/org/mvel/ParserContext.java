@@ -10,7 +10,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 /**
@@ -115,12 +114,10 @@ public class ParserContext implements Serializable {
     }
 
     public Class getImport(String name) {
-        //   return (imports != null && imports.containsKey(name) ? (Class) imports.get(name) : (Class) AbstractParser.LITERALS.get(name));
         return parserConfiguration.getImport(name);
     }
 
     public MethodStub getStaticImport(String name) {
-        //return imports != null ? (MethodStub) imports.get(name) : null;
         return parserConfiguration.getStaticImport(name);
     }
 
@@ -132,11 +129,9 @@ public class ParserContext implements Serializable {
         parserConfiguration.addPackageImport(packageName);
     }
 
-
     public boolean hasImport(String name) {
         return parserConfiguration.hasImport(name);
     }
-
 
     public void addImport(Class cls) {
         addImport(getSimpleClassName(cls), cls);
@@ -344,7 +339,6 @@ public class ParserContext implements Serializable {
         this.compiled = compiled;
     }
 
-
     public boolean isDebugSymbols() {
         return debugSymbols;
     }
@@ -425,7 +419,6 @@ public class ParserContext implements Serializable {
 
         return types;
     }
-
 
     public boolean isBlockSymbols() {
         return blockSymbols;
