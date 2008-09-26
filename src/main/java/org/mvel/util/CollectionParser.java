@@ -18,14 +18,13 @@
  */
 package org.mvel.util;
 
-import static org.mvel.util.ParseTools.balancedCapture;
+import org.mvel.CompileException;
+import org.mvel.compiler.ExecutableStatement;
+import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 
-import static org.mvel.util.ParseTools.isWhitespace;
-import static org.mvel.util.ParseTools.subCompileExpression;
-
-import static java.lang.System.arraycopy;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,6 +50,8 @@ public class CollectionParser {
     public static final int ARRAY = 1;
     public static final int MAP = 2;
 
+    private Class colType;
+
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     public CollectionParser() {
@@ -69,6 +70,15 @@ public class CollectionParser {
         return parseCollection(subcompile);
     }
 
+    public Object parseCollection(char[] property, boolean subcompile, Class colType) {
+        if (colType != null) this.colType = PropertyTools.getBaseComponentType(colType);
+        this.cursor = 0;
+        if ((this.length = (this.property = property).length) > 0)
+            while (length > 0 && isWhitespace(property[length - 1]))
+                length--;
+
+        return parseCollection(subcompile);
+    }
 
     private Object parseCollection(boolean subcompile) {
         if (length == 0) {
@@ -78,7 +88,7 @@ public class CollectionParser {
 
         Map<Object, Object> map = null;
         List<Object> list = null;
-        String ex = null;
+        String ex;
 
         if (type != -1) {
             switch (type) {
@@ -103,8 +113,8 @@ public class CollectionParser {
                     }
 
                 case '[':
-                    if (cursor > 0 && isIdentifierPart(property[cursor-1])) continue;
-                    
+                    if (cursor > 0 && isIdentifierPart(property[cursor - 1])) continue;
+
                     if (newType == -1) {
                         newType = LIST;
                     }
@@ -113,7 +123,7 @@ public class CollectionParser {
                      * Sub-parse nested collections.
                      */
                     Object o = new CollectionParser(newType).parseCollection(subset(property, (start = cursor) + 1,
-                            cursor = balancedCapture(property, start, property[start])), subcompile);
+                            cursor = balancedCapture(property, start, property[start])), subcompile, colType);
 
                     if (type == MAP) {
                         map.put(curr, o);
@@ -148,7 +158,9 @@ public class CollectionParser {
                         map.put(curr, ex = createStringTrimmed(property, start, cursor - start));
                     }
 
-                    if (subcompile) subCompileExpression(ex);
+                    if (subcompile) {
+                        subCompile(ex);
+                    }
 
                     start = cursor + 1;
 
@@ -161,7 +173,9 @@ public class CollectionParser {
                     }
                     curr = createStringTrimmed(property, start, cursor - start);
 
-                    if (subcompile) subCompileExpression((String) curr);
+                    if (subcompile) {
+                        subCompile((String) curr);
+                    }
 
                     start = cursor + 1;
                     break;
@@ -170,7 +184,7 @@ public class CollectionParser {
                     cursor++;
                     while (cursor != length && isWhitespace(property[cursor])) cursor++;
                     if (property[cursor] == '{') {
-                        cursor = balancedCapture(property, cursor, '{');                        
+                        cursor = balancedCapture(property, cursor, '{');
                     }
                     break;
             }
@@ -194,9 +208,32 @@ public class CollectionParser {
             case MAP:
                 return map;
             case ARRAY:
-                return list.toArray();
+                if (colType == null) {
+                    return list.toArray();
+                }
+                else {
+                    Object a = Array.newInstance(colType, list.size());
+                    int i = 0;
+                    for (Object item : list) {
+                        Array.set(a, i++, item);
+                    }
+                    return a;
+
+                }
             default:
                 return list;
+        }
+    }
+
+    private void subCompile(String ex) {
+        if (colType == null) {
+            subCompileExpression(ex);
+        }
+        else {
+            Class r = ((ExecutableStatement) subCompileExpression(ex)).getKnownEgressType();
+            if (!colType.isAssignableFrom(r)) {
+                throw new CompileException("expected type: " + colType.getName() + "; but found:" + r.getName());
+            }
         }
     }
 

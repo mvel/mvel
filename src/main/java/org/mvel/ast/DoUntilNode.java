@@ -22,6 +22,7 @@ import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
+import static org.mvel.util.CompilerTools.expectType;
 
 import java.util.HashMap;
 
@@ -34,7 +35,9 @@ public class DoUntilNode extends BlockNode {
     protected ExecutableStatement compiledBlock;
 
     public DoUntilNode(char[] condition, char[] block) {
-        this.condition = (ExecutableStatement) subCompileExpression(this.name = condition);
+        expectType(this.condition = (ExecutableStatement) subCompileExpression(this.name = condition),
+                Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }
 

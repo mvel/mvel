@@ -21,24 +21,39 @@ package org.mvel.optimizers.impl.refl.collection;
 import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 
+import java.lang.reflect.Array;
+
 /**
  * @author Christopher Brock
  */
 public class ArrayCreator implements Accessor {
     public Accessor[] template;
+    private Class arrayType;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         // return null;
-        Object[] newArray = new Object[template.length];
 
-        for (int i = 0; i < newArray.length; i++)
-            newArray[i] = template[i].getValue(ctx, elCtx, variableFactory);
+        if (Object.class.equals(arrayType)) {
+            Object[] newArray = new Object[template.length];
 
-        return newArray;
+            for (int i = 0; i < newArray.length; i++)
+                newArray[i] = template[i].getValue(ctx, elCtx, variableFactory);
+
+            return newArray;
+        }
+        else {
+            Object newArray = Array.newInstance(arrayType, template.length);
+
+            for (int i = 0; i < template.length; i++)
+                Array.set(newArray, i, template[i].getValue(ctx, elCtx, variableFactory));
+
+            return newArray;
+        }
     }
 
-    public ArrayCreator(Accessor[] template) {
+    public ArrayCreator(Accessor[] template, Class arrayType) {
         this.template = template;
+        this.arrayType = arrayType;
     }
 
 

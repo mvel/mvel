@@ -25,7 +25,6 @@ import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
 import static org.mvel.optimizers.OptimizerFactory.getAccessorCompiler;
 import org.mvel.util.CollectionParser;
-import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.subset;
 
 import java.util.List;
@@ -41,7 +40,17 @@ public class InlineCollectionNode extends ASTNode {
         super(expr, start, end, fields | INLINE_COLLECTION);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            parseGraph(true);
+            parseGraph(true,null);
+        }
+    }
+
+    public InlineCollectionNode(char[] expr, int start, int end, int fields, Class type) {
+        super(expr, start, end, fields | INLINE_COLLECTION);
+
+        this.egressType = type;
+
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            parseGraph(true,type);
         }
     }
 
@@ -51,7 +60,7 @@ public class InlineCollectionNode extends ASTNode {
         }
         else {
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-            if (collectionGraph == null) parseGraph(true);
+            if (collectionGraph == null) parseGraph(true,null);
 
             accessor = ao.optimizeCollection(collectionGraph, trailing, ctx, thisValue, factory);
             egressType = ao.getEgressType();
@@ -69,18 +78,22 @@ public class InlineCollectionNode extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-//        CollectionParser parser = new CollectionParser();
-//        Object o = ((List) parser.parseCollection(name, false)).get(0);
 
-        parseGraph(false);
+        parseGraph(false,egressType);
 
         return getAccessorCompiler(SAFE_REFLECTIVE)
                 .optimizeCollection(collectionGraph, trailing, ctx, thisValue, factory).getValue(ctx, thisValue, factory);
     }
 
-    private void parseGraph(boolean compile) {
+    private void parseGraph(boolean compile, Class type) {
         CollectionParser parser = new CollectionParser();
-        collectionGraph = ((List) parser.parseCollection(name, compile)).get(0);
+
+        if (type == null) {
+            collectionGraph = ((List) parser.parseCollection(name, compile)).get(0);
+        }
+        else {
+            collectionGraph = ((List) parser.parseCollection(name, compile, type)).get(0);
+        }
 
         if (parser.getCursor() + 2 < name.length)
             trailing = subset(name, parser.getCursor() + 2);

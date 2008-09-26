@@ -248,7 +248,37 @@ public class AbstractParser implements Serializable {
                             case NEW:
                                 start = cursor = trimRight(cursor);
                                 captureToEOT();
-                                return lastNode = new NewObjectNode(subArray(start, cursor), fields);
+                                lastNode = new NewObjectNode(subArray(start, cursor), fields);
+
+                                skipWhitespaceWithLineAccounting();
+                                if (cursor != length && expr[cursor] == '{') {
+
+                                    Class egressType = ((NewObjectNode) lastNode).getEgressType();
+
+                                    if (egressType == null) {
+                                        try {
+                                        egressType = TypeDescriptor.getClassReference(pCtx, ((NewObjectNode) lastNode).getTypeDescr());
+                                        }
+                                        catch (ClassNotFoundException e) {
+                                            throw new CompileException("could not instantiate class" ,e);
+                                        }
+                                    }
+
+                                    cursor = balancedCapture(expr, cursor, expr[cursor]) + 1;
+                                    if (tokenContinues()) {
+                                        lastNode = new InlineCollectionNode(expr, start, start = cursor, fields,
+                                                egressType);
+                                        captureToEOT();
+                                        return lastNode = new Union(expr, start + 1, cursor, fields, lastNode);
+                                    }
+                                    else {
+                                        return lastNode = new InlineCollectionNode(expr, start, cursor, fields,
+                                                egressType);
+                                    }
+
+                                }
+
+                                return lastNode;
 
                             case ASSERT:
                                 start = cursor = trimRight(cursor);

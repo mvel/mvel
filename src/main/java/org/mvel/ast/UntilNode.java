@@ -40,7 +40,6 @@ public class UntilNode extends BlockNode {
 
         expectType(this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
-
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }
 

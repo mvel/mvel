@@ -255,4 +255,8 @@ public class NewObjectNode extends ASTNode {
             return null;
         }
     }
+
+    public TypeDescriptor getTypeDescr() {
+        return typeDescr;
+    }
 }

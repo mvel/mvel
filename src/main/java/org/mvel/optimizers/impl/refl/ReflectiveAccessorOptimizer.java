@@ -39,12 +39,9 @@ import org.mvel.optimizers.impl.refl.collection.ArrayCreator;
 import org.mvel.optimizers.impl.refl.collection.ExprValueAccessor;
 import org.mvel.optimizers.impl.refl.collection.ListCreator;
 import org.mvel.optimizers.impl.refl.collection.MapCreator;
-import org.mvel.util.ArrayTools;
-import org.mvel.util.MethodStub;
-import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
-import org.mvel.util.StringAppender;
+import org.mvel.util.*;
 
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
@@ -703,9 +700,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 a[i++] = _getAccessor(item); // item
             }
 
-            returnType = Object[].class;
+            returnType = o.getClass();
 
-            return new ArrayCreator(a);
+            return new ArrayCreator(a, PropertyTools.getBaseComponentType(returnType));
         }
         else {
             returnType = Object.class;
