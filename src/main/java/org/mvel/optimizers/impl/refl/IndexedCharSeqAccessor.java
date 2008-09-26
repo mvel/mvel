@@ -26,7 +26,6 @@ public class IndexedCharSeqAccessor implements AccessorNode {
 
     private int index;
 
-
     public IndexedCharSeqAccessor() {
     }
 
@@ -42,7 +41,6 @@ public class IndexedCharSeqAccessor implements AccessorNode {
             return ((String) ctx).charAt(index);
         }
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         // not implemented
@@ -64,7 +62,6 @@ public class IndexedCharSeqAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
-
 
     public String toString() {
         return "Array Accessor -> [" + index + "]";

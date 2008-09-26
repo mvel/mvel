@@ -59,7 +59,6 @@ public class Frame {
         this.lineNumber = lineNumber;
     }
 
-
     public VariableResolverFactory getFactory() {
         return factory;
     }

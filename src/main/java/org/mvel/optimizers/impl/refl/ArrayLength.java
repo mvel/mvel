@@ -21,6 +21,7 @@ package org.mvel.optimizers.impl.refl;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Array;
+import static java.lang.reflect.Array.getLength;
 
 /**
  * @author Christopher Brock
@@ -29,13 +30,12 @@ public class ArrayLength extends BaseAccessor {
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         if (nextNode != null) {
-            return nextNode.getValue(Array.getLength(ctx), elCtx, variableFactory);
+            return nextNode.getValue(getLength(ctx), elCtx, variableFactory);
         }
         else {
-            return Array.getLength(ctx);
+            return getLength(ctx);
         }
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;

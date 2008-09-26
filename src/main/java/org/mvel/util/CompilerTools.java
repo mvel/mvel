@@ -112,7 +112,6 @@ public class CompilerTools {
             }
         }
 
-
         if (secondPassOptimization) {
             /**
              * Perform a second pass optimization for boolean conditions.
@@ -169,7 +168,6 @@ public class CompilerTools {
                 }
             }
         }
-
 
         return optimizedAst;
     }

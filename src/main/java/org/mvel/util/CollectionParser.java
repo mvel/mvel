@@ -207,18 +207,7 @@ public class CollectionParser {
             case MAP:
                 return map;
             case ARRAY:
-      //          if (colType == null) {
-                    return list.toArray();
-//                }
-//                else {
-//                    Object a = Array.newInstance(colType, list.size());
-//                    int i = 0;
-//                    for (Object item : list) {
-//                        Array.set(a, i++, item);
-//                    }
-//                    return a;
-//
-//                }
+                return list.toArray();
             default:
                 return list;
         }

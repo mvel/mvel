@@ -29,7 +29,6 @@ public class IndexedCharSeqAccessorNest implements AccessorNode {
     public IndexedCharSeqAccessorNest() {
     }
 
-
     public IndexedCharSeqAccessorNest(ExecutableStatement index) {
         this.index = index;
     }
@@ -42,7 +41,6 @@ public class IndexedCharSeqAccessorNest implements AccessorNode {
             return ((String) ctx).charAt((Integer) index.getValue(ctx, elCtx, vars));
         }
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;
@@ -63,7 +61,6 @@ public class IndexedCharSeqAccessorNest implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
-
 
     public String toString() {
         return "Array Accessor -> [" + index + "]";

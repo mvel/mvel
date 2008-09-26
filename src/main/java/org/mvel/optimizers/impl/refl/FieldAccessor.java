@@ -47,7 +47,6 @@ public class FieldAccessor implements AccessorNode {
         catch (Exception e) {
             throw new CompileException("unable to access field", e);
         }
-
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
@@ -80,6 +79,4 @@ public class FieldAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
-
-
 }

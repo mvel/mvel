@@ -38,8 +38,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 public class PropertyTools {
-//    private static final Pattern truePattern = compile("(on|yes|true|1|hi|high|y)");
-
     public static boolean isEmpty(Object o) {
         if (o != null) {
             if (o instanceof Object[]) {
@@ -56,7 +54,6 @@ public class PropertyTools {
         return true;
     }
 
-
     public static Method getSetter(Class clazz, String property) {
         property = ReflectionUtil.getSetter(property);
 
@@ -70,7 +67,6 @@ public class PropertyTools {
         }
 
         return null;
-
     }
 
     public static boolean hasGetter(Field field) {
@@ -127,26 +123,6 @@ public class PropertyTools {
         return getSetter(clazz, property);
     }
 
-  //  private static final Map<String, Field> FIELD_CACHE = new WeakHashMap<String, Field>();
-
-//    public static Member getFieldOrAccessor(Class clazz, String property) {
-//        if (property.charAt(property.length() - 1) == ')') return getGetter(clazz, property);
-//
-//        try {
-//            String key = clazz.hashCode() + property;
-//            Field fld = FIELD_CACHE.get(key);
-//            if (fld == null) {
-//                FIELD_CACHE.put(key, fld = clazz.getField(property));
-//            }
-//
-//            if ((fld.getModifiers() & PUBLIC) != 0) return fld;
-//        }
-//        catch (Exception e) {
-//            // do nothing.
-//        }
-//        return getGetter(clazz, property);
-//    }
-
     public static Member getFieldOrAccessor(Class clazz, String property) {
         if (property.charAt(property.length() - 1) == ')') return getGetter(clazz, property);
 
@@ -192,7 +168,6 @@ public class PropertyTools {
 
         return clz == int.class || clz == long.class || clz == short.class || clz == double.class ||
                 clz == float.class || Number.class.isAssignableFrom(clz);
-
     }
 
 
@@ -268,7 +243,6 @@ public class PropertyTools {
         return -1;
     }
 
-
     public static boolean isNumber(Object val) {
         if (val == null) return false;
         if (val instanceof String) return isNumber((String) val);
@@ -330,7 +304,6 @@ public class PropertyTools {
         return len > 0;
     }
 
-
     public static boolean contains(Object toCompare, Object testValue) {
         if (toCompare == null)
             return false;
@@ -364,7 +337,6 @@ public class PropertyTools {
         int start = 0, end = s.length;
         while (start != end && s[start] <= '\u0020') start++;
         while (end != start && s[end - 1] <= '\u0020') end--;
-
         return new String(s, start, end - start);
     }
 

@@ -51,7 +51,6 @@ public class ExecutionStack implements Stack {
         return o;
     }
 
-
     public void push(Object obj1, Object obj2) {
         size += 2;
         element = new StackElement(new StackElement(element, obj1), obj2);
@@ -98,7 +97,6 @@ public class ExecutionStack implements Stack {
         element = null;
     }
 
-
     public void showStack() {
         StackElement el = element;
         do {
@@ -123,5 +121,4 @@ public class ExecutionStack implements Stack {
 
         return appender.toString();
     }
-
 }

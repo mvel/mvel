@@ -27,7 +27,6 @@ public class MapAccessor implements AccessorNode {
     private AccessorNode nextNode;
     private Object property;
 
-
     public MapAccessor() {
     }
 
@@ -43,7 +42,6 @@ public class MapAccessor implements AccessorNode {
             return ((Map) ctx).get(property);
         }
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
         if (nextNode != null) {
@@ -71,7 +69,6 @@ public class MapAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
-
 
     public String toString() {
         return "Map Accessor -> [" + property + "]";

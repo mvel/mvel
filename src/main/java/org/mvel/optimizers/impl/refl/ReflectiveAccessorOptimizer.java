@@ -270,7 +270,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     case WITH:
                         curr = getWithProperty(curr);
                         break;
-
                     case DONE:
                         break;
                 }

@@ -79,7 +79,6 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
             return true;
         }
         else if (packageImports != null) {
-
             for (String s : packageImports) {
                 try {
                     addClass(createClass(s + "." + name));

@@ -41,12 +41,10 @@ public class MapCreator implements Accessor {
         return map;
     }
 
-
     public MapCreator(Accessor[] keys, Accessor[] vals) {
         this.size = (this.keys = keys).length;
         this.vals = vals;
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         // not implemented

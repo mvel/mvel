@@ -31,7 +31,6 @@ public class DynamicFieldAccessor implements AccessorNode {
     private Field field;
     private Class targetType;
 
-
     public DynamicFieldAccessor() {
     }
 
@@ -85,6 +84,4 @@ public class DynamicFieldAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
-
-
 }

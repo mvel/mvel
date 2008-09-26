@@ -64,8 +64,6 @@ public class ClassImportResolver implements VariableResolver {
         return 0;
     }
 
-
     public void setValue(Object value) {
-
     }
 }

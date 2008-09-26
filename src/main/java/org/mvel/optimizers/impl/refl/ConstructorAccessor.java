@@ -68,7 +68,6 @@ public class ConstructorAccessor extends BaseAccessor {
         return null;
     }
 
-
     private Object[] executeAll(Object ctx, VariableResolverFactory vars) {
         if (length == 0) return GetterAccessor.EMPTY;
 
@@ -93,6 +92,4 @@ public class ConstructorAccessor extends BaseAccessor {
         this.length = (this.parmTypes = constructor.getParameterTypes()).length;
         this.parms = parms;
     }
-
-
 }

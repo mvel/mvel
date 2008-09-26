@@ -80,8 +80,7 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
             nextFactory = resolverFactory;
         }
         else {
-            resolverFactory.setNextFactory(resolverFactory);
-            nextFactory = resolverFactory;
+            resolverFactory.setNextFactory(nextFactory = resolverFactory);
         }
     }
 

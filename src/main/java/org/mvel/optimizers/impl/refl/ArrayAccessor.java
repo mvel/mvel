@@ -25,7 +25,6 @@ import java.lang.reflect.Array;
 
 public class ArrayAccessor implements AccessorNode {
     private AccessorNode nextNode;
-
     private int index;
 
     public ArrayAccessor() {
@@ -69,7 +68,6 @@ public class ArrayAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
-
 
     public String toString() {
         return "Array Accessor -> [" + index + "]";

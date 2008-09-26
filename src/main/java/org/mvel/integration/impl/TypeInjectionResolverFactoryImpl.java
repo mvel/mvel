@@ -12,11 +12,11 @@ import java.util.Set;
 
 public class TypeInjectionResolverFactoryImpl extends MapVariableResolverFactory implements TypeInjectionResolverFactory {
     public TypeInjectionResolverFactoryImpl() {
-        super(new HashMap());
+        this.variables = new HashMap();
     }
 
     public TypeInjectionResolverFactoryImpl(Map<String, Object> variables) {
-        super(variables);
+        this.variables = variables;
     }
 
     public TypeInjectionResolverFactoryImpl(ParserContext ctx, VariableResolverFactory nextVariableResolverFactory) {

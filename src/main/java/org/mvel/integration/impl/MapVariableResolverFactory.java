@@ -35,6 +35,9 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     protected Map<String, Object> variables;
     private boolean cachingSafe = false;
 
+    public MapVariableResolverFactory() {
+    }
+
     public MapVariableResolverFactory(Map variables) {
         this.variables = variables;
     }
@@ -53,8 +56,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         VariableResolver vr;
 
         try {
-            vr = getVariableResolver(name);
-            vr.setValue(value);
+            (vr = getVariableResolver(name)).setValue(value);
             return vr;
         }
         catch (CompileException e) {

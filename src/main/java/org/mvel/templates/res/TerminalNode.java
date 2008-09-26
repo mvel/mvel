@@ -6,11 +6,9 @@ import org.mvel.templates.TemplateRuntime;
 
 public class TerminalNode extends Node {
     public TerminalNode() {
-        super();    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     public TerminalNode(int begin, int end) {
-        super();    //To change body of overridden methods use File | Settings | File Templates.
         this.begin = begin;
         this.end = end;
     }
@@ -22,5 +20,4 @@ public class TerminalNode extends Node {
     public boolean demarcate(Node terminatingNode, char[] template) {
         return false; 
     }
-
 }

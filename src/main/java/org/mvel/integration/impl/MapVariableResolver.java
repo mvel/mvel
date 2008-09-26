@@ -29,7 +29,6 @@ public class MapVariableResolver implements VariableResolver {
     private String name;
     private Class<?> knownType;
     private Map<String, Object> variableMap;
-
     private boolean cache = false;
 
     public MapVariableResolver(Map<String, Object> variableMap, String name) {
@@ -55,7 +54,6 @@ public class MapVariableResolver implements VariableResolver {
         this.variableMap = variableMap;
         this.cache = cache;
     }
-
 
     public void setName(String name) {
         this.name = name;

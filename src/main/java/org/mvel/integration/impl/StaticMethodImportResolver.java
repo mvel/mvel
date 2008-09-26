@@ -10,7 +10,6 @@ public class StaticMethodImportResolver implements VariableResolver {
     private String name;
     private MethodStub method;
 
-
     public StaticMethodImportResolver(String name, MethodStub method) {
         this.name = name;
         this.method = method;
@@ -25,7 +24,6 @@ public class StaticMethodImportResolver implements VariableResolver {
     }
 
     public void setStaticType(Class type) {
-
     }
 
     public int getFlags() {

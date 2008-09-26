@@ -22,9 +22,11 @@ public class DeclareNode extends Node {
             runtime.setNamedTemplateRegistry(new SimpleTemplateRegistry());
         }
 
-        String name = MVEL.eval(contents, ctx, factory, String.class);
+    //   String name = MVEL.eval(contents, ctx, factory, String.class);
 
-        runtime.getNamedTemplateRegistry().addNamedTemplate(name, new CompiledTemplate(runtime.getTemplate(), nestedNode));
+        runtime.getNamedTemplateRegistry()
+                .addNamedTemplate(MVEL.eval(contents, ctx, factory, String.class),
+                        new CompiledTemplate(runtime.getTemplate(), nestedNode));
 
         return next != null ? next.eval(runtime, appender, ctx, factory) : null;
     }

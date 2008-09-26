@@ -32,7 +32,6 @@ public class Union implements Accessor {
     private char[] nextExpr;
     private Accessor nextAccessor;
 
-
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         if (nextAccessor == null) {
             Object o = accessor.getValue(ctx, elCtx, variableFactory);
@@ -52,7 +51,6 @@ public class Union implements Accessor {
         this.accessor = accessor;
         this.nextExpr = nextAccessor;
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;

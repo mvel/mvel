@@ -35,7 +35,6 @@ public class SetterAccessor implements AccessorNode {
         catch (Exception e) {
             throw new CompileException("error binding property", e);
         }
-
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {

@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class Fold implements Accessor {
-
     private char[] expr;
     private Accessor collection;
     private Accessor propAccessor;
@@ -51,7 +50,6 @@ public class Fold implements Accessor {
         this.expr = expr;
         this.collection = collection;
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         // not implemented

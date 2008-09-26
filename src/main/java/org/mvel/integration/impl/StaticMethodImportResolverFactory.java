@@ -12,9 +12,8 @@ import java.util.Map;
  * @author Christopher Brock
  */
 public class StaticMethodImportResolverFactory extends BaseVariableResolverFactory {
-
     public StaticMethodImportResolverFactory(ParserContext ctx) {
-        this();
+        this.variableResolvers = new HashMap<String, VariableResolver>();
         for (Map.Entry<String,Object> entry : ctx.getImports().entrySet()) {
             if (entry.getValue() instanceof Method) {
                 createVariable(entry.getKey(), entry.getValue());

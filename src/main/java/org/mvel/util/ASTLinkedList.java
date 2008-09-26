@@ -145,9 +145,7 @@ public class ASTLinkedList implements ASTIterator {
         ASTNode curr;
 
         while (hasMoreNodes()) {
-            curr = nextNode();
-
-            if (curr.isDiscard()) {
+            if ((curr = nextNode()).isDiscard()) {
                 if (last == null) {
                     firstASTNode = nextNode();
                 }

@@ -222,6 +222,4 @@ public class ArrayTools {
         }
         return -1;
     }
-
-
 }

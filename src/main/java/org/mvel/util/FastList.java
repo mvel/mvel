@@ -29,8 +29,6 @@ import java.util.*;
 public class FastList extends AbstractList implements Externalizable {
     private Object[] elements;
     private int size = 0;
-
-    //    private float threshold = 1.0f;
     private boolean updated = false;
 
     public FastList(int size) {
@@ -53,8 +51,7 @@ public class FastList extends AbstractList implements Externalizable {
 
     public void readExternal(ObjectInput in) throws IOException,
             ClassNotFoundException {
-        size = in.readInt();
-        elements = new Object[size];
+        elements = new Object[size = in.readInt()];
         for (int i = 0; i < size; i++) {
             elements[i] = in.readObject();
         }

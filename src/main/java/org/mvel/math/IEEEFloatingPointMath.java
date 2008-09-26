@@ -500,7 +500,6 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 return BigDecimal.valueOf(((Boolean) in) ? 1 : 0);
             case DataTypes.UNIT:
                 return new BigDecimal(((Unit) in).getValue(), MathContext.DECIMAL64);
-
         }
 
         throw new ConversionException("cannot convert <" + in + "> to a numeric type");

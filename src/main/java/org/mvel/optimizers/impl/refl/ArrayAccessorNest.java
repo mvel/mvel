@@ -45,7 +45,6 @@ public class ArrayAccessorNest implements AccessorNode {
         this.index = stmt;
     }
 
-
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (nextNode != null) {
             return nextNode.getValue(((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)], elCtx, vars);
@@ -54,7 +53,6 @@ public class ArrayAccessorNest implements AccessorNode {
             return ((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)];
         }
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
         if (nextNode != null) {
@@ -93,7 +91,6 @@ public class ArrayAccessorNest implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
-
 
     public String toString() {
         return "Array Accessor -> [" + index + "]";

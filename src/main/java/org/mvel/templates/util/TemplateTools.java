@@ -93,6 +93,5 @@ public class TemplateTools {
         catch (IOException e) {
             throw new TemplateError("unknown I/O exception while including (stacktrace nested)", e);
         }
-
     }
 }

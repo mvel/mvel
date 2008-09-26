@@ -27,7 +27,6 @@ import org.mvel.util.ParseTools;
  * @author Christopher Brock
  */
 public class ExprValueAccessor implements Accessor {
-
     public ExecutableStatement stmt;
 
     public ExprValueAccessor(String ex) {
@@ -37,7 +36,6 @@ public class ExprValueAccessor implements Accessor {
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         return stmt.getValue(elCtx, variableFactory);
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         // not implemented

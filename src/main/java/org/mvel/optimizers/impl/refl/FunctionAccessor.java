@@ -27,7 +27,6 @@ public class FunctionAccessor extends BaseAccessor {
     private Function function;
     private Accessor[] parameters;
 
-
     public FunctionAccessor(Function function, Accessor[] parms) {
         this.function = function;
         this.parameters = parms;

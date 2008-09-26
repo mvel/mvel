@@ -22,6 +22,7 @@ import static java.lang.System.arraycopy;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Arrays;
 
 /**
  * Utilities for working with reflection.
@@ -32,7 +33,7 @@ public class ReflectionUtil {
      * essentially a perfect example of me wasting my time and a
      * premature optimization.  But what the hell...
      *
-     * @param s
+     * @param s -
      * @return String
      */
     public static String getSetter(String s) {
@@ -154,7 +155,7 @@ public class ReflectionUtil {
 
     public static Set<Field> getAllFields(Class cls) {
         Set<Field> allFields = new HashSet<Field>(cls.getFields().length, 1.0f);
-        for (Field fld : cls.getFields()) allFields.add(fld);
+        allFields.addAll(Arrays.asList(cls.getFields()));
         return allFields;
     }
 }

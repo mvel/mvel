@@ -59,7 +59,6 @@ public class StringAppender implements CharSequence {
         for (int i = 0; i < chars.length; size++) {
             str[size] = chars[i++];
         }
-  //      size += chars.length;
         return this;
     }
 
@@ -127,12 +126,10 @@ public class StringAppender implements CharSequence {
         return chars;
     }
 
-
     public String toString() {
         if (size == capacity) return new String(str);
         else return new String(str, 0, size);
     }
-
 
     public void getChars(int start, int count, char[] target, int offset) {
         int delta = offset;
@@ -152,7 +149,5 @@ public class StringAppender implements CharSequence {
     public CharSequence subSequence(int start, int end) {
         return new String(str, start, (end - start));
     }
-
-
 }
 

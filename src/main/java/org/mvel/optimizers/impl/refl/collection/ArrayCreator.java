@@ -22,6 +22,7 @@ import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
 
 import java.lang.reflect.Array;
+import static java.lang.reflect.Array.newInstance;
 
 /**
  * @author Christopher Brock
@@ -31,8 +32,6 @@ public class ArrayCreator implements Accessor {
     private Class arrayType;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        // return null;
-
         if (Object.class.equals(arrayType)) {
             Object[] newArray = new Object[template.length];
 
@@ -42,7 +41,7 @@ public class ArrayCreator implements Accessor {
             return newArray;
         }
         else {
-            Object newArray = Array.newInstance(arrayType, template.length);
+            Object newArray = newInstance(arrayType, template.length);
 
             for (int i = 0; i < template.length; i++)
                 Array.set(newArray, i, template[i].getValue(ctx, elCtx, variableFactory));

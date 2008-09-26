@@ -64,7 +64,6 @@ public class DebugTools {
         ASTIterator iter = cExp.getInstructions();
         ASTNode tk;
 
-
         StringBuffer sbuf = new StringBuffer();
 
         if (!nest) {
@@ -72,11 +71,9 @@ public class DebugTools {
         }
 
         while (iter.hasMoreNodes()) {
-            tk = iter.nextNode();
-
             sbuf.append("(").append(context.node++).append(") ");
 
-            if (tk instanceof NestedStatement
+            if ((tk = iter.nextNode()) instanceof NestedStatement
                     && ((NestedStatement) tk).getNestedStatement() instanceof CompiledExpression) {
                 //noinspection StringConcatenationInsideStringBufferAppend
                 sbuf.append("NEST [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }\n");

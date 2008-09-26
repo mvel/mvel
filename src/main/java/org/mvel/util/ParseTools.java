@@ -81,7 +81,6 @@ public class ParseTools {
         catch (Exception e) {
             throw new RuntimeException("unable to initialize math processor", e);
         }
-
     }
 
     public static String[] parseMethodOrConstructor(char[] parm) {
@@ -126,8 +125,6 @@ public class ParseTools {
         }
 
         return null;
-
-
     }
 
     public static String[] parseParameterList(char[] parm, int offset, int length) {
@@ -151,7 +148,6 @@ public class ParseTools {
                 case '\'':
                     i = captureStringLiteral('\'', parm, i, parm.length);
                     continue;
-
 
                 case '"':
                     i = captureStringLiteral('"', parm, i, parm.length);
@@ -196,11 +192,11 @@ public class ParseTools {
         return getBestCandidate(targetParms, method, decl, methods, requireExact);
     }
 
-
     public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods, boolean requireExact) {
         if (methods.length == 0) {
             return null;
         }
+
         Class[] parmTypes;
         Method bestCandidate = null;
         int bestScore = 0;
@@ -215,8 +211,9 @@ public class ParseTools {
 
         for (Method meth : methods) {
             if (method.equals(meth.getName())) {
-                if ((parmTypes = meth.getParameterTypes()).length != arguments.length)
+                if ((parmTypes = meth.getParameterTypes()).length != arguments.length) {
                     continue;
+                }
                 else if (arguments.length == 0 && parmTypes.length == 0) {
                     bestCandidate = meth;
                     break;
@@ -260,7 +257,6 @@ public class ParseTools {
                     }
                 }
 
-
                 if (score != 0 && score > bestScore) {
                     bestCandidate = meth;
                     bestScore = score;
@@ -270,7 +266,6 @@ public class ParseTools {
         }
 
         if (bestCandidate != null) {
-            //        methCache = RESOLVED_METH_CACHE.get(method);
             if (methCache == null) {
                 RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, Method>());
             }
@@ -352,10 +347,12 @@ public class ParseTools {
         }
 
         for (Constructor construct : getConstructors(cls)) {
-            if ((parmTypes = getConstructors(construct)).length != arguments.length)
+            if ((parmTypes = getConstructors(construct)).length != arguments.length) {
                 continue;
-            else if (arguments.length == 0 && parmTypes.length == 0)
+            }
+            else if (arguments.length == 0 && parmTypes.length == 0) {
                 return construct;
+            }
 
             for (int i = 0; i < arguments.length; i++) {
                 if (targetParms[i] == null) {
@@ -813,12 +810,10 @@ public class ParseTools {
         t.put(byte.class, DataTypes.BYTE);
         t.put(Byte.class, DataTypes.W_BYTE);
 
-
         t.put(char.class, DataTypes.CHAR);
         t.put(Character.class, DataTypes.W_CHAR);
 
         t.put(BlankLiteral.class, DataTypes.EMPTY);
-
     }
 
     public static int resolveType(Class cls) {
@@ -961,7 +956,6 @@ public class ParseTools {
             throw new CompileException("unable to increment type: " + (o != null ? o.getClass().getName() : "null"));
         }
     }
-
 
     public static Map<String, String> parseParameters(char[] parms) {
         Map<String, String> allParms = new HashMap<String, String>();
@@ -1147,7 +1141,6 @@ public class ParseTools {
                 else if (chars[start] == term && --depth == 0) {
                     return new int[]{start, lines};
                 }
-
             }
         }
 
@@ -1275,7 +1268,7 @@ public class ParseTools {
                         start = ++i;
                     }
                     else {
-                        parms.add(new WithStatementPair(parm, new String(createShortFormOperativeAssignment(nestParm + "." + parm, 
+                        parms.add(new WithStatementPair(parm, new String(createShortFormOperativeAssignment(nestParm + "." + parm,
                                 subset(block, start, end - start), oper))));
 
                         parm = null;
@@ -1284,7 +1277,6 @@ public class ParseTools {
                     }
 
                     end = -1;
-
                     break;
             }
         }
@@ -1315,7 +1307,6 @@ public class ParseTools {
         public WithStatementPair(String parm, String value) {
             this.parm = parm;
             this.value = value;
-
         }
 
         public String getParm() {
@@ -1485,5 +1476,4 @@ public class ParseTools {
     public static Unsafe getUnsafe() {
         return unsafe__;
     }
-
 }

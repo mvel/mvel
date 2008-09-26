@@ -22,6 +22,7 @@ import org.mvel.compiler.AccessorNode;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
+import static org.mvel.util.ParseTools.subCompileExpression;
 
 import java.util.Map;
 
@@ -39,9 +40,8 @@ public class MapAccessorNest implements AccessorNode {
         this.property = property;
     }
 
-
     public MapAccessorNest(String property) {
-        this.property = (ExecutableStatement) ParseTools.subCompileExpression(property);
+        this.property = (ExecutableStatement) subCompileExpression(property);
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
@@ -79,7 +79,6 @@ public class MapAccessorNest implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
-
 
     public String toString() {
         return "Map Accessor -> [" + property + "]";

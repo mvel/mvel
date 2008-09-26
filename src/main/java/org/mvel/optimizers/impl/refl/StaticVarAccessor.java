@@ -27,7 +27,6 @@ import java.lang.reflect.Field;
 
 public class StaticVarAccessor implements AccessorNode {
     private AccessorNode nextNode;
-
     Field field;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
@@ -44,7 +43,6 @@ public class StaticVarAccessor implements AccessorNode {
         }
     }
 
-
     public StaticVarAccessor(Field field) {
         this.field = field;
     }
@@ -56,7 +54,6 @@ public class StaticVarAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         try {

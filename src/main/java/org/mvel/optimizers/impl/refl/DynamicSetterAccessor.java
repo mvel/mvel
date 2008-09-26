@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
 
 @SuppressWarnings({"unchecked"})
 public class DynamicSetterAccessor implements AccessorNode {
-    private AccessorNode nextNode;
+  //  private AccessorNode nextNode;
 
     private final Method method;
     private Class targetType;
@@ -41,13 +41,11 @@ public class DynamicSetterAccessor implements AccessorNode {
         catch (Exception e) {
             throw new CompileException("error binding property", e);
         }
-
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
         return null;
     }
-
 
     public DynamicSetterAccessor(Method method) {
         this.method = method;
@@ -59,16 +57,14 @@ public class DynamicSetterAccessor implements AccessorNode {
     }
 
     public AccessorNode setNextNode(AccessorNode nextNode) {
-        return this.nextNode = nextNode;
+        return null;
     }
 
     public AccessorNode getNextNode() {
-        return nextNode;
+        return null;
     }
 
     public String toString() {
         return method.getDeclaringClass().getName() + "." + method.getName();
     }
-
-
 }

@@ -123,7 +123,8 @@ public class ASTNode implements Cloneable, Serializable {
             Object retVal = null;
 
             if ((fields & FOLD) != 0) {
-                retVal = (setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeFold(name, ctx, thisValue, factory)).getValue(ctx, thisValue, factory));
+                retVal = (setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
+                        .optimizeFold(name, ctx, thisValue, factory)).getValue(ctx, thisValue, factory));
             }
             else {
                 if ((fields & NOJIT) != 0) {
@@ -137,7 +138,8 @@ public class ASTNode implements Cloneable, Serializable {
                     setAccessor(optimizer.optimizeAccessor(name, ctx, thisValue, factory, true));
                 }
                 catch (OptimizationNotSupported ne) {
-                    setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE)).optimizeAccessor(name, ctx, thisValue, factory, true));
+                    setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
+                            .optimizeAccessor(name, ctx, thisValue, factory, true));
                 }
             }
 

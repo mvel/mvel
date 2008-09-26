@@ -20,6 +20,7 @@ package org.mvel.optimizers.impl.refl;
 
 import org.mvel.CompileException;
 import org.mvel.MVEL;
+import static org.mvel.MVEL.getProperty;
 import org.mvel.compiler.AccessorNode;
 import org.mvel.integration.VariableResolverFactory;
 
@@ -47,10 +48,10 @@ public class GetterAccessor implements AccessorNode {
              */
 
             if (nextNode != null) {
-                return nextNode.getValue(MVEL.getProperty(method.getName() + "()", ctx), elCtx, vars);
+                return nextNode.getValue(getProperty(method.getName() + "()", ctx), elCtx, vars);
             }
             else {
-                return MVEL.getProperty(method.getName() + "()", ctx);
+                return getProperty(method.getName() + "()", ctx);
             }
         }
         catch (Exception e) {
@@ -59,7 +60,6 @@ public class GetterAccessor implements AccessorNode {
                     + (ctx != null ? ctx.getClass().getName() : "null") + "]", e);
         }
     }
-
 
     public GetterAccessor(Method method) {
         this.method = method;
@@ -80,7 +80,6 @@ public class GetterAccessor implements AccessorNode {
     public String toString() {
         return method.getDeclaringClass().getName() + "." + method.getName();
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         // not implemented

@@ -24,7 +24,6 @@ public class ItemResolverFactory extends BaseVariableResolverFactory {
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
         if (isTarget(name)) {
-            // resolver.setValue(value);
             throw new RuntimeException("variable already defined in scope: " + name);
         }
         else {

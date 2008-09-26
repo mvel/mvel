@@ -51,7 +51,6 @@ public class IncludeNode extends Node {
         this.next = next;
     }
 
-
     public Object eval(TemplateRuntime runtime, StringAppender appender, Object ctx, VariableResolverFactory factory) {
         String file = MVEL.eval(includeExpression, ctx, factory, String.class);
 

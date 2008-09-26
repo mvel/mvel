@@ -56,5 +56,4 @@ public class IndexedVariableAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
-
 }

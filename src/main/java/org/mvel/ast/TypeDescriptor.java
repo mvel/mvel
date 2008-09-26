@@ -127,6 +127,4 @@ public class TypeDescriptor implements Serializable {
 
         return cls;
     }
-
-
 }

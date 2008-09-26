@@ -97,7 +97,6 @@ public class MethodAccessor implements AccessorNode {
         this.length = (this.parameterTypes = this.method.getParameterTypes()).length;
     }
 
-
     public ExecutableStatement[] getParms() {
         return parms;
     }
@@ -108,7 +107,6 @@ public class MethodAccessor implements AccessorNode {
 
     public MethodAccessor() {
     }
-
 
     public MethodAccessor(Method method, ExecutableStatement[] parms) {
         this.method = method;
@@ -124,7 +122,6 @@ public class MethodAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;

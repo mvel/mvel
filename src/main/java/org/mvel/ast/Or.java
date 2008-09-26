@@ -54,7 +54,7 @@ public class Or extends ASTNode {
         this.right = right;
     }
 
-        public String toString() {
-        return "(" + left.toString() + " || " + right.toString() + ")"; 
+    public String toString() {
+        return "(" + left.toString() + " || " + right.toString() + ")";
     }
 }
