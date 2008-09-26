@@ -50,7 +50,6 @@ public class ErrorDetail {
         this.message = message;
     }
 
-
     public String toString() {
          if (critical) {
              return "(" + row + "," + col + ") " + message;
@@ -58,6 +57,5 @@ public class ErrorDetail {
          else {
              return "(" + row + "," + col + ") WARNING: " + message;
          }
-
     }
 }

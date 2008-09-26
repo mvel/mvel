@@ -52,9 +52,7 @@ public class ExecutableAccessorSafe implements ExecutableStatement, Safe {
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         return handleParserEgress(node.getReducedValueAccelerated(staticContext, staticContext, factory),
                 returnBigDecimal);
-
     }
-
 
     public void setKnownIngressType(Class type) {
         this.ingress = type;
@@ -89,7 +87,6 @@ public class ExecutableAccessorSafe implements ExecutableStatement, Safe {
     public ASTNode getNode() {
         return node;
     }
-
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;

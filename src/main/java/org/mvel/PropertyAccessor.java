@@ -243,7 +243,6 @@ public class PropertyAccessor {
                 else if (curr.getClass().isArray()) {
                     Array.set(curr, eval(ex, this.ctx, this.variableFactory, Integer.class), convert(value, getBaseComponentType(curr.getClass())));
                 }
-
                 else {
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
                 }
@@ -252,7 +251,6 @@ public class PropertyAccessor {
             }
 
             String tk = capture();
-
 
             Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
             if (member == null) {
@@ -302,7 +300,6 @@ public class PropertyAccessor {
         catch (IllegalAccessException e) {
             throw new PropertyAccessException("could not access property", e);
         }
-
     }
 
     private int nextToken() {
@@ -409,7 +406,6 @@ public class PropertyAccessor {
         return null;
     }
 
-
     private static void addMethodCache(Class cls, Integer property, Method member) {
         Map<Integer, Object[]> map = METHOD_RESOLVER_CACHE.get(cls);
         if (map == null) {
@@ -425,7 +421,6 @@ public class PropertyAccessor {
         }
         return null;
     }
-
 
     private Object getBeanProperty(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
@@ -493,7 +488,6 @@ public class PropertyAccessor {
             while (isWhitespace(property[cursor]) && ++cursor < length) ;
     }
 
-
     /**
      * @param c - character to scan to.
      * @return - returns true is end of statement is hit, false if the scan scar is countered.
@@ -506,7 +500,6 @@ public class PropertyAccessor {
         }
         return true;
     }
-
 
     private Object getWithProperty(Object ctx) {
         String root = new String(property, 0, cursor - 1).trim();
@@ -726,5 +719,4 @@ public class PropertyAccessor {
     public int getCursorPosition() {
         return cursor;
     }
-
 }

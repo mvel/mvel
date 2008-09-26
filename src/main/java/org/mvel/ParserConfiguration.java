@@ -37,7 +37,6 @@ public class ParserConfiguration implements Serializable {
         this.interceptors = interceptors;
     }
 
-
     public Set<String> getPackageImports() {
         return packageImports;
     }
@@ -45,7 +44,6 @@ public class ParserConfiguration implements Serializable {
     public void setPackageImports(Set<String> packageImports) {
         this.packageImports = packageImports;
     }
-
 
     public Class getImport(String name) {
         return (imports != null && imports.containsKey(name) ? (Class) imports.get(name) : (Class) AbstractParser.LITERALS.get(name));
@@ -107,7 +105,6 @@ public class ParserConfiguration implements Serializable {
                         && AbstractParser.LITERALS.containsKey(name))
                 || checkForDynamicImport(name);
     }
-
 
     public void addImport(Class cls) {
         addImport(getSimpleClassName(cls), cls);
