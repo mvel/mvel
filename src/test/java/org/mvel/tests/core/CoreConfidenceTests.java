@@ -4301,6 +4301,10 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testStaticallyTypedItemInForEach() {
+        assertEquals("1234", test("StringBuffer sbuf = new StringBuffer(); foreach (int i : new int[] { 1,2,3,4 }) { sbuf.append(i); }; sbuf.toString()"));
+    }
+
 }
 
 

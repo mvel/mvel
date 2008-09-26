@@ -139,7 +139,7 @@ public class ForEachNode extends BlockNode {
 
         Object iterCond = MVEL.eval(cond, thisValue, factory);
 
-        if (itemType != null) enforceTypeSafety(itemType, iterCond.getClass());
+        if (itemType != null) enforceTypeSafety(itemType, getBaseComponentType(iterCond.getClass()));
 
         this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
 
@@ -198,7 +198,7 @@ public class ForEachNode extends BlockNode {
             String tk = new String(condition, 0, x).trim();
             try {
                 itemType = ParseTools.findClass(null, tk);
-                item = new String(condition, x + 1, cursor - x).trim();
+                item = new String(condition, x, cursor - x).trim();
             }
             catch (ClassNotFoundException e) {
                 throw new CompileException("cannot resolve identifier: " + tk);
