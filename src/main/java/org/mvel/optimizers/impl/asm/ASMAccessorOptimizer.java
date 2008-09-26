@@ -2108,6 +2108,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitInsn(DUP);
             }
 
+            returnType = List.class;
+
             return LIST;
         }
         else if (o instanceof Map) {
@@ -2147,13 +2149,28 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitInsn(DUP);
             }
 
+            returnType = Map.class;
+
             return MAP;
         }
         else if (o instanceof Object[]) {
             intPush(((Object[]) o).length);
 
+            try {
+                if (returnType != null) {
+                    returnType = findClass(null, repeatChar('[', 1) + "L" + getBaseComponentType(returnType).getName() + ";");
+                }
+                else {
+                    returnType = Object[].class;
+                }
+            }
+            catch (ClassNotFoundException e) {
+                throw new CompileException("cannot instantiate class", e);
+            }
+
+
             assert debug("ANEWARRAY (" + o.hashCode() + ")");
-            mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
+            mv.visitTypeInsn(ANEWARRAY, getInternalName(getBaseComponentType(returnType)));
 
             assert debug("DUP");
             mv.visitInsn(DUP);
@@ -2175,6 +2192,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 i++;
             }
+
 
             return ARRAY;
         }
@@ -2249,8 +2267,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    public Accessor optimizeCollection(Object o, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+    public Accessor optimizeCollection(Object o, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         this.cursor = 0;
+        this.returnType = type;
         if (property != null) this.length = (this.expr = property).length;
         this.compiledInputs = new ArrayList<ExecutableStatement>();
 
@@ -2262,17 +2281,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         literal = true;
 
-        switch (_getAccessor(o)) {
-            case LIST:
-                this.returnType = List.class;
-                break;
-            case MAP:
-                this.returnType = Map.class;
-                break;
-            case ARRAY:
-                this.returnType = Object[].class;
-                break;
-        }
+        _getAccessor(o);
+
 
         _finishJIT();
 

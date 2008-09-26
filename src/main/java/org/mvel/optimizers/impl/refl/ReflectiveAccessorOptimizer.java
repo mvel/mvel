@@ -39,9 +39,9 @@ import org.mvel.optimizers.impl.refl.collection.ArrayCreator;
 import org.mvel.optimizers.impl.refl.collection.ExprValueAccessor;
 import org.mvel.optimizers.impl.refl.collection.ListCreator;
 import org.mvel.optimizers.impl.refl.collection.MapCreator;
+import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.*;
-import org.mvel.util.*;
 
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
@@ -313,7 +313,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     private Object getWithProperty(Object ctx) {
-        String root = new String(expr, 0, cursor-1).trim();
+        String root = new String(expr, 0, cursor - 1).trim();
 
         int start = cursor + 1;
         int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{');
@@ -696,26 +696,35 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             Accessor[] a = new Accessor[((Object[]) o).length];
             int i = 0;
 
-            for (Object item : (Object[]) o) {
+            for (Object item : (Object[]) o) {                     
                 a[i++] = _getAccessor(item); // item
             }
 
-            returnType = o.getClass();
+            try {
+                if (returnType != null) {
+                    returnType = findClass(null, repeatChar('[', 1) + "L" + getBaseComponentType(returnType).getName() + ";");
+                }
+                else {
+                    returnType = Object[].class;
+                }
+            }
+            catch (ClassNotFoundException e) {
+                throw new CompileException("cannot instantiate class", e);
+            }
 
             return new ArrayCreator(a, PropertyTools.getBaseComponentType(returnType));
         }
         else {
-            returnType = Object.class;
+            if (returnType == null) returnType = Object.class;
             return new ExprValueAccessor((String) o);
         }
     }
 
-    public Accessor optimizeCollection(Object o, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-//        CollectionParser parser = new CollectionParser();
-//        ctx = ((List) parser.parseCollection(property, false)).get(0);
+    public Accessor optimizeCollection(Object o, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+
+        this.returnType = type;
 
         Accessor root = _getAccessor(o);
-        //     int end = parser.getCursor() + 2;
 
         if (property != null && property.length > 0) {
             return new Union(root, property);

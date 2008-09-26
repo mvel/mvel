@@ -24,7 +24,6 @@ import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
 import static org.mvel.util.PropertyTools.isIdentifierPart;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -208,18 +207,18 @@ public class CollectionParser {
             case MAP:
                 return map;
             case ARRAY:
-                if (colType == null) {
+      //          if (colType == null) {
                     return list.toArray();
-                }
-                else {
-                    Object a = Array.newInstance(colType, list.size());
-                    int i = 0;
-                    for (Object item : list) {
-                        Array.set(a, i++, item);
-                    }
-                    return a;
-
-                }
+//                }
+//                else {
+//                    Object a = Array.newInstance(colType, list.size());
+//                    int i = 0;
+//                    for (Object item : list) {
+//                        Array.set(a, i++, item);
+//                    }
+//                    return a;
+//
+//                }
             default:
                 return list;
         }

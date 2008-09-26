@@ -10,6 +10,7 @@ import static java.lang.System.currentTimeMillis;
 //todo: de-optimize in this class.
 public class DynamicCollectionAccessor implements DynamicAccessor {
     private Object rootObject;
+    private Class colType;
     private char[] property;
     private long stamp;
     private int type;
@@ -21,8 +22,9 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
     private Accessor _safeAccessor;
     private Accessor _accessor;
 
-    public DynamicCollectionAccessor(Object rootObject, char[] property, int type, Accessor _accessor) {
+    public DynamicCollectionAccessor(Object rootObject, Class colType, char[] property, int type, Accessor _accessor) {
         this.rootObject = rootObject;
+        this.colType = colType;
         this._safeAccessor = this._accessor = _accessor;
         this.type = type;
         this.property = property;
@@ -57,7 +59,7 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
             DynamicOptimizer.enforceTenureLimit();
         }
 
-        _accessor = OptimizerFactory.getAccessorCompiler("ASM").optimizeCollection(rootObject, property, ctx, elCtx, variableResolverFactory);
+        _accessor = OptimizerFactory.getAccessorCompiler("ASM").optimizeCollection(rootObject, colType, property, ctx, elCtx, variableResolverFactory);
         return _accessor.getValue(ctx, elCtx, variableResolverFactory);
 
     }

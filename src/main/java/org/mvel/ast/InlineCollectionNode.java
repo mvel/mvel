@@ -62,7 +62,7 @@ public class InlineCollectionNode extends ASTNode {
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
             if (collectionGraph == null) parseGraph(true,null);
 
-            accessor = ao.optimizeCollection(collectionGraph, trailing, ctx, thisValue, factory);
+            accessor = ao.optimizeCollection(collectionGraph, egressType, trailing, ctx, thisValue, factory);
             egressType = ao.getEgressType();
 
             if (ao.isLiteralOnly()) {
@@ -82,7 +82,7 @@ public class InlineCollectionNode extends ASTNode {
         parseGraph(false,egressType);
 
         return getAccessorCompiler(SAFE_REFLECTIVE)
-                .optimizeCollection(collectionGraph, trailing, ctx, thisValue, factory).getValue(ctx, thisValue, factory);
+                .optimizeCollection(collectionGraph, egressType, trailing, ctx, thisValue, factory).getValue(ctx, thisValue, factory);
     }
 
     private void parseGraph(boolean compile, Class type) {

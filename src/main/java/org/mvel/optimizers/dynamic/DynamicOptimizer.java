@@ -15,7 +15,7 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
     public static DynamicClassLoader classLoader;
     public static int tenuringThreshold = 10;
-    public static long timeSpan = 100; 
+    public static long timeSpan = 100;
     public static int maximumTenure = 1500;
     public static int totalRecycled = 0;
 
@@ -30,13 +30,13 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
     public static void enforceTenureLimit() {
         if (classLoader.isOverloaded()) {
             classLoader.deoptimizeAll();
-            totalRecycled =+ classLoader.getTotalClasses();
+            totalRecycled = +classLoader.getTotalClasses();
             _init();
         }
     }
 
     public static final int REGULAR_ACCESSOR = 0;
-    
+
     public Accessor optimizeAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef) {
         return classLoader.registerDynamicAccessor(new DynamicGetAccessor(property, 0, firstStage.optimizeAccessor(property, ctx, thisRef, factory, rootThisRef)));
     }
@@ -49,8 +49,8 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
     public static final int COLLECTION = 2;
 
-    public Accessor optimizeCollection(Object rootObject, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-       return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, property, 2, firstStage.optimizeCollection(rootObject, property, ctx, thisRef, factory)));
+    public Accessor optimizeCollection(Object rootObject, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, type, property, 2, firstStage.optimizeCollection(rootObject, type, property, ctx, thisRef, factory)));
     }
 
     public static final int OBJ_CREATION = 3;

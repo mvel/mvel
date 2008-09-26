@@ -4294,6 +4294,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testArrayDefinitionWithInitializer() {
+
         String[] compareTo = new String[] { "foo", "bar"};
         String[] results = (String[]) test("new String[] { 'foo', 'bar' }");
 

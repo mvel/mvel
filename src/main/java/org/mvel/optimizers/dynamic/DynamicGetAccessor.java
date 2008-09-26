@@ -64,7 +64,7 @@ public class DynamicGetAccessor implements DynamicAccessor {
                 _accessor = ao.optimizeObjectCreation(property, ctx, elCtx, variableResolverFactory);
                 return _accessor.getValue(ctx, elCtx, variableResolverFactory);
             case DynamicOptimizer.COLLECTION:
-                _accessor = ao.optimizeCollection(null, property, ctx, elCtx, variableResolverFactory);
+                _accessor = ao.optimizeCollection(null, null, property, ctx, elCtx, variableResolverFactory);
                 return _accessor.getValue(ctx, elCtx, variableResolverFactory);
             case DynamicOptimizer.FOLD:
                 _accessor = ao.optimizeFold(property, ctx, elCtx, variableResolverFactory);

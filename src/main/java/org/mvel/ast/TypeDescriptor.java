@@ -28,9 +28,8 @@ public class TypeDescriptor implements Serializable {
 
     public void updateClassName(char[] name, int fields) {
         if (name.length == 0 || isDigit(name[0])) return;
-
-        endRange = findFirst('(', name);
-        if (endRange == -1) {
+        
+        if ((endRange = findFirst('(', name)) == -1) {
             if ((endRange = findFirst('[', name)) != -1) {
                 className = new String(name, 0, endRange);
                 int to;
