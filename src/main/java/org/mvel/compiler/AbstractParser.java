@@ -247,6 +247,11 @@ public class AbstractParser implements Serializable {
                         switch (OPERATORS.get(t)) {
                             case NEW:
                                 start = cursor = trimRight(cursor);
+
+                                if (!isIdentifierPart(expr[cursor])) {
+                                    throw new CompileException("unexpected character (expected identifier): " + expr[cursor], expr, cursor);
+                                }
+
                                 captureToEOT();
                                 lastNode = new NewObjectNode(subArray(start, cursor), fields);
 
@@ -257,10 +262,10 @@ public class AbstractParser implements Serializable {
 
                                     if (egressType == null) {
                                         try {
-                                        egressType = TypeDescriptor.getClassReference(pCtx, ((NewObjectNode) lastNode).getTypeDescr());
+                                            egressType = TypeDescriptor.getClassReference(pCtx, ((NewObjectNode) lastNode).getTypeDescr());
                                         }
                                         catch (ClassNotFoundException e) {
-                                            throw new CompileException("could not instantiate class" ,e);
+                                            throw new CompileException("could not instantiate class", e);
                                         }
                                     }
 
@@ -1524,6 +1529,7 @@ public class AbstractParser implements Serializable {
             switch (expr[cursor]) {
                 case ';':
                     return;
+
                 default: {
                     if (!isIdentifierPart(expr[cursor])) {
                         if (captured) return;
