@@ -131,7 +131,6 @@ public class MVEL {
 
     public static Serializable compileExpression(String expression, Map<String, Object> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
-
         return optimizeTree(new ExpressionCompiler(expression)
                 .compile(new ParserContext(imports, interceptors, sourceName)));
     }
@@ -221,7 +220,6 @@ public class MVEL {
         try {
             return ((ExecutableStatement) compiledExpression).getValue(ctx, vars != null ? new MapVariableResolverFactory(vars) : null);
         }
-
         catch (EndWithValue end) {
             return handleParserEgress(end.getValue(), false);
         }
@@ -599,9 +597,7 @@ public class MVEL {
     }
 
     public static String parseMacros(String input, Map<String, Macro> macros) {
-        MacroProcessor macroProcessor = new MacroProcessor();
-        macroProcessor.setMacros(macros);
-        return macroProcessor.parse(input);
+        return new MacroProcessor(macros).parse(input);
     }
 
     public static String preprocess(char[] input, PreProcessor[] preprocessors) {

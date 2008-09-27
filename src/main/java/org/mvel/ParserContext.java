@@ -86,11 +86,9 @@ public class ParserContext implements Serializable {
         return Object.class;
     }
 
-
     public int getLineCount() {
         return lineCount;
     }
-
 
     public int setLineCount(int lineCount) {
         return this.lineCount = (short) lineCount;
@@ -188,6 +186,7 @@ public class ParserContext implements Serializable {
     public void addInput(String name, Class type, Class[] typeParameters) {
         if (type == null) type = Object.class;
         addInput(name, type);
+
         if (this.typeParameters == null) this.typeParameters = new LinkedHashMap<String, Map<String, Class>>();
         if (this.typeParameters.get(name) == null) this.typeParameters.put(name, new LinkedHashMap<String, Class>());
 

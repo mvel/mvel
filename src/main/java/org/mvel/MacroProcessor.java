@@ -12,6 +12,13 @@ import java.util.Map;
 public class MacroProcessor extends AbstractParser implements PreProcessor {
     private Map<String, Macro> macros;
 
+    public MacroProcessor() {
+    }
+
+    public MacroProcessor(Map<String, Macro> macros) {
+        this.macros = macros;
+    }
+
     public char[] parse(char[] input) {
         setExpression(input);
 

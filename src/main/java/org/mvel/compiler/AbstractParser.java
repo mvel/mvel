@@ -992,7 +992,6 @@ public class AbstractParser implements Serializable {
         return lastNode = node;
     }
 
-
     /**
      * Most of this method should be self-explanatory.
      *
@@ -1087,7 +1086,6 @@ public class AbstractParser implements Serializable {
                 return new DoNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
             case ASTNode.BLOCK_DO_UNTIL:
                 return new DoUntilNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd));
-
             default:
                 return new WithNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
         }
@@ -1129,7 +1127,6 @@ public class AbstractParser implements Serializable {
             case ASTNode.BLOCK_DO:
                 skipWhitespaceWithLineAccounting();
                 return _captureBlock(null, expr, false, type);
-
 
             default: // either BLOCK_WITH or BLOCK_FOREACH
                 captureToNextTokenJunction();
@@ -1700,12 +1697,10 @@ public class AbstractParser implements Serializable {
         }
     }
 
-
     protected void setExpression(char[] expression) {
         length = (this.expr = expression).length;
         while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
     }
-
 
     /**
      * Return the previous non-whitespace character.
@@ -1826,7 +1821,6 @@ public class AbstractParser implements Serializable {
      */
     protected void newContext(ParserContext pCtx) {
         contextControl(SET, pCtx, this);
-
     }
 
     /**
