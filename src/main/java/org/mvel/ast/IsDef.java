@@ -7,17 +7,15 @@ import org.mvel.CompileException;
 import org.mvel.integration.VariableResolverFactory;
 
 public class IsDef extends ASTNode {
-    private String varName;
-
     public IsDef(char[] expr) {
-        varName = new String(this.name = expr);
+        this.nameCache = new String(this.name = expr);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return factory.isResolveable(varName);
+        return factory.isResolveable(nameCache);
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return factory.isResolveable(varName);
+        return factory.isResolveable(nameCache);
     }
 }

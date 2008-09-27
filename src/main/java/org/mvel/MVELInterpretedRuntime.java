@@ -20,6 +20,7 @@
 package org.mvel;
 
 import static org.mvel.Operator.*;
+import static org.mvel.Operator.AND;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.Substatement;
 import org.mvel.compiler.AbstractParser;
@@ -136,7 +137,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         continue;
                 }
 
-
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 
                 switch ((operator = arithmeticFunctionReduction(operator))) {
@@ -155,7 +155,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
             if (holdOverRegister != null) {
                 stk.push(holdOverRegister);
             }
-
         }
         catch (CompileException e) {
             CompileException c = new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0, e);
@@ -225,7 +224,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
                     return 0;
                 }
 
-
             case TERNARY_ELSE:
                 return 0;
 
@@ -281,7 +279,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
         ASTNode tk;
 
         switch (operator) {
-            case Operator.AND:
+            case AND:
                 while ((tk = nextToken()) != null && !tk.isOperator(Operator.END_OF_STMT) && !tk.isOperator(Operator.OR)) {
                     //nothing
                 }

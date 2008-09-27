@@ -67,8 +67,8 @@ public class PropertyVerifier extends AbstractOptimizer {
     public Class analyze() {
         Class ctx = Object.class;
         resolvedExternally = true;
-
         first = true;
+        
         while (cursor < length) {
             switch (nextSubToken()) {
                 case NORM:

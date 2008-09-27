@@ -192,6 +192,10 @@ public class AbstractParser implements Serializable {
             int brace, idx;
             start = cursor;
 
+            char[] tmp;
+            String name;
+
+
             /**
              * Because of parser recursion for sub-expression parsing, we sometimes need to remain
              * certain field states.  We do not reset for assignments, boolean mode, list creation or
@@ -242,13 +246,11 @@ public class AbstractParser implements Serializable {
                     cursor++;
                 }
                 else if (capture) {
-                    String t;
+                   String t;
                     if (OPERATORS.containsKey(t = new String(expr, start, cursor - start))) {
                         switch (OPERATORS.get(t)) {
                             case NEW:
-                                start = cursor = trimRight(cursor);
-
-                                if (!isIdentifierPart(expr[cursor])) {
+                                if (!isIdentifierPart(expr[start = cursor = trimRight(cursor)])) {
                                     throw new CompileException("unexpected character (expected identifier): " + expr[cursor], expr, cursor);
                                 }
 
@@ -257,7 +259,6 @@ public class AbstractParser implements Serializable {
 
                                 skipWhitespaceWithLineAccounting();
                                 if (cursor != length && expr[cursor] == '{') {
-
                                     Class egressType = ((NewObjectNode) lastNode).getEgressType();
 
                                     if (egressType == null) {
@@ -343,10 +344,10 @@ public class AbstractParser implements Serializable {
                                 return lastNode = new StaticImportNode(subArray(start, cursor--));
 
                             case FUNCTION:
-                                Function function = (Function) captureCodeBlock(FUNCTION);
+                                lastNode = (Function) captureCodeBlock(FUNCTION);
                                 capture = false;
                                 start = cursor + 1;
-                                return function;
+                                return lastNode;
 
                             case UNTYPED_VAR:
                                 start = cursor + 1;
@@ -356,14 +357,11 @@ public class AbstractParser implements Serializable {
                                 skipWhitespace();
 
                                 if (expr[cursor] == '=') {
-                                    if (end == start) throw new CompileException("illegal use of reserved word: var");
-
-                                    cursor = start;
+                                    if (end == (cursor = start)) throw new CompileException("illegal use of reserved word: var");
                                     continue;
                                 }
                                 else {
-                                    String name = new String(subArray(start, end));
-                                    if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                    if ((idx = pCtx.variableIndexOf(name = new String(subArray(start, end)))) != -1) {
                                         return lastNode = new IndexedDeclTypedVarNode(idx, Object.class);
                                     }
                                     else {
@@ -387,7 +385,6 @@ public class AbstractParser implements Serializable {
                      * If we encounter any of the following cases, we are still dealing with
                      * a contiguous token.
                      */
-                    String name;
                     if (cursor != length) {
                         switch (expr[cursor]) {
                             case '?':
@@ -473,7 +470,6 @@ public class AbstractParser implements Serializable {
                                     else {
                                         return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.MULT, fields);
                                     }
-
                                 }
                                 break;
 
@@ -511,7 +507,7 @@ public class AbstractParser implements Serializable {
 
                             case '~':
                                 if (lookAhead() == '=') {
-                                    char[] stmt = subArray(start, trimLeft(cursor));
+                                    tmp = subArray(start, trimLeft(cursor));
 
                                     start = cursor += 2;
 
@@ -521,7 +517,7 @@ public class AbstractParser implements Serializable {
 
                                     captureToEOT();
 
-                                    return lastNode = new RegExMatch(stmt, fields, subArray(start, cursor));
+                                    return lastNode = new RegExMatch(tmp, fields, subArray(start, cursor));
                                 }
                                 break;
 
@@ -624,18 +620,16 @@ public class AbstractParser implements Serializable {
                     return createPropertyToken(start, cursor);
                 }
                 else {
-                    String name;
-
                     switch (expr[cursor]) {
                         case '.': {
                             cursor++;
                             expectNextChar_IW('{');
 
-                            char[] prop = subArray(start, cursor - 1);
+                            tmp = subArray(start, cursor - 1);
                             start = cursor;
                             cursor = balancedCapture(expr, cursor, '{') + 1;
 
-                            return lastNode = new ThisWithNode(prop, subArray(start + 1, cursor - 1), fields);
+                            return lastNode = new ThisWithNode(tmp, subArray(start + 1, cursor - 1), fields);
                         }
 
                         case '@': {
@@ -803,11 +797,10 @@ public class AbstractParser implements Serializable {
                             }
 
                             //todo: support typecast to array types
-                            char[] _subset = null;
-
+                            tmp = null;
                             if (singleToken) {
                                 int st;
-                                TypeDescriptor tDescr = new TypeDescriptor(_subset = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st), fields);
+                                TypeDescriptor tDescr = new TypeDescriptor(tmp = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st), fields);
 
                                 Class cls;
                                 if (tDescr.getClassName() != null) {
@@ -825,8 +818,8 @@ public class AbstractParser implements Serializable {
                                 }
                             }
 
-                            if (_subset != null) {
-                                return handleUnion(handleSubstatement(new Substatement(_subset, fields)));
+                            if (tmp != null) {
+                                return handleUnion(handleSubstatement(new Substatement(tmp, fields)));
                             }
                             else {
                                 return handleUnion(handleSubstatement(new Substatement(subset(expr, start = trimRight(start + 1), trimLeft(cursor - 1) - start), fields)));
@@ -1194,7 +1187,6 @@ public class AbstractParser implements Serializable {
                     throw new CompileException("incomplete statement", expr, cursor);
                 }
                 else if (expr[cursor] == '{') {
-                    // blockStart = cursor;
                     blockEnd = cursor = balancedCapture(expr, blockStart = cursor, '{');
                 }
                 else {
