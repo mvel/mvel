@@ -1161,14 +1161,10 @@ public class AbstractParser implements Serializable {
             }
 
             /**
-             * Grabe the function name.
-             */
-            name = createStringTrimmed(expr, start, (startCond = cursor) - start);
-
-            /**
              * Check to see if the name is legal.
              */
-            if (isReservedWord(name) || isNotValidNameorLabel(name))
+            if (isReservedWord(name = createStringTrimmed(expr, start, (startCond = cursor) - start))
+                    || isNotValidNameorLabel(name))
                 throw new CompileException("illegal function name or use of reserved word", expr, cursor);
 
             if (expr[cursor] == '(') {
@@ -1203,8 +1199,7 @@ public class AbstractParser implements Serializable {
                     /**
                      * This function is bracketed.  We capture the entire range in the brackets.
                      */
-                    blockStart = cursor;
-                    blockEnd = cursor = balancedCapture(expr, cursor, '{');
+                    blockEnd = cursor = balancedCapture(expr, blockStart = cursor, '{');
                 }
                 else {
                     /**
@@ -1263,8 +1258,7 @@ public class AbstractParser implements Serializable {
             throw new CompileException("unbalanced braces", expr, cursor);
         }
         else if (expr[cursor] == '{') {
-            blockStart = cursor;
-            int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '{');
+            int[] cap = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{');
             blockEnd = cursor = cap[0];
 
             pCtx.incrementLineCount(cap[1]);
