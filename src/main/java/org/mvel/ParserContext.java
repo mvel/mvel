@@ -187,8 +187,12 @@ public class ParserContext implements Serializable {
         if (type == null) type = Object.class;
         addInput(name, type);
 
-        if (this.typeParameters == null) this.typeParameters = new LinkedHashMap<String, Map<String, Class>>();
-        if (this.typeParameters.get(name) == null) this.typeParameters.put(name, new LinkedHashMap<String, Class>());
+        if (this.typeParameters == null) {
+            this.typeParameters = new LinkedHashMap<String, Map<String, Class>>();
+        }
+        if (this.typeParameters.get(name) == null) {
+            this.typeParameters.put(name, new LinkedHashMap<String, Class>());
+        }
 
         Map<String, Class> t = this.typeParameters.get(name);
 
@@ -359,7 +363,6 @@ public class ParserContext implements Serializable {
     public void addKnownLine(int lineNumber) {
         addKnownLine(sourceFile, lineNumber);
     }
-
 
     public LineLabel getLastLineLabel() {
         return lastLineLabel;

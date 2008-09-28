@@ -984,10 +984,10 @@ public class AbstractParser implements Serializable {
                 captureToEOT();
                 return lastNode = new Union(expr, union, cursor, fields, node);
             }
-            else if (expr[cursor] == '[') {
-                captureToEOT();
-                return lastNode = new Union(expr, cursor, cursor, fields, node);
-            }
+//            else if (expr[cursor] == '[') {
+//                captureToEOT();
+//                return lastNode = new Union(expr, cursor, cursor, fields, node);
+//            }
         }
         return lastNode = node;
     }
