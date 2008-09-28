@@ -3979,7 +3979,6 @@ public class CoreConfidenceTests extends AbstractTest {
         ParserContext pCtx = new ParserContext();
         pCtx.addImport(Foo.class);
 
-
         CompiledExpression c = expr.compile(pCtx);
 
         Foo f = (Foo) MVEL.executeExpression(c);
@@ -3989,8 +3988,6 @@ public class CoreConfidenceTests extends AbstractTest {
         f = (Foo) MVEL.executeExpression(c);
 
         assertEquals("bar", f.getName());
-
-
     }
 
     public void testInlineWithImpliedThis() {
@@ -4046,7 +4043,6 @@ public class CoreConfidenceTests extends AbstractTest {
                 throw new RuntimeException("Exception was thrown", e);
             }
         }
-
     }
 
     private static final KnowledgeHelperFixer fixer = new KnowledgeHelperFixer();
@@ -4067,7 +4063,6 @@ public class CoreConfidenceTests extends AbstractTest {
         String result = fixer.fix("        /*System.out.println( \"help\" );\r\n*/       System.out.println( \"help\" );  \r\n     list.add( $person );");
         assertEquals("        /*System.out.println( \"help\" );\r\n*/       System.out.println( \"help\" );  \r\n     list.add( $person );",
                 result);
-
     }
 
     public void testAdd__Handle__Simple() {
@@ -4113,7 +4108,6 @@ public class CoreConfidenceTests extends AbstractTest {
         result = fixer.fix("xxx update(myObject ); update( myObject ); update( yourObject ); yyy");
         assertEqualsIgnoreWhitespace("xxx drools.update(myObject ); drools.update( myObject ); drools.update( yourObject ); yyy",
                 result);
-
     }
 
     public void testAssert1() {
