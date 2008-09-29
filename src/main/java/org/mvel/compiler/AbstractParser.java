@@ -2311,6 +2311,9 @@ public class AbstractParser implements Serializable {
             throw new CompileException("syntax error or incompatable types", expr, cursor, e);
 
         }
+        catch (ArithmeticException e) {
+            throw new CompileException("arithmetic error: " + e.getMessage(), e);
+        }
         catch (Exception e) {
             throw new CompileException("failed to subEval expression", e);
         }
