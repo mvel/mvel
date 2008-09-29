@@ -1990,7 +1990,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected static boolean isArithmeticOperator(int operator) {
-        return operator < 6;
+        return operator != -1 && operator < 6;
     }
 
     protected int arithmeticFunctionReduction(int operator) {
@@ -2005,10 +2005,6 @@ public class AbstractParser implements Serializable {
          * precdence.
          */
         if ((tk = nextToken()) != null) {
-            if (!tk.isOperator()) {
-                throw new CompileException("unexpected token: " + tk.getName(), expr, cursor);
-            }
-
             if (isArithmeticOperator(operator2 = tk.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
                 xswap();
                 /**
@@ -2141,6 +2137,9 @@ public class AbstractParser implements Serializable {
                     x = true;
                     y = 0;
                 }
+            }
+            else if (!tk.isOperator()) {
+                throw new CompileException("unexpected token: " + tk.getName());
             }
             else {
                 reduce();
