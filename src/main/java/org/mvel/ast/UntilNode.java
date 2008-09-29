@@ -21,9 +21,8 @@ package org.mvel.ast;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import static org.mvel.util.ParseTools.subCompileExpression;
-import org.mvel.util.CompilerTools;
 import static org.mvel.util.CompilerTools.expectType;
+import static org.mvel.util.ParseTools.subCompileExpression;
 
 import java.util.HashMap;
 
@@ -36,9 +35,8 @@ public class UntilNode extends BlockNode {
     protected ExecutableStatement compiledBlock;
 
     public UntilNode(char[] condition, char[] block, int fields) {
-        this.condition = (ExecutableStatement) subCompileExpression(this.name = condition);
-
-        expectType(this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+        expectType(this.condition = (ExecutableStatement) subCompileExpression(this.name = condition),
+                Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }
@@ -53,10 +51,10 @@ public class UntilNode extends BlockNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory = new MapVariableResolverFactory(new HashMap(0), factory);
-        
+        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
+
         while (!(Boolean) condition.getValue(ctx, thisValue, factory)) {
-            compiledBlock.getValue(ctx, thisValue, factory);
+            compiledBlock.getValue(ctx, thisValue, ctxFactory);
         }
         return null;
     }

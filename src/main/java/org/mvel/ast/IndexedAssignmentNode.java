@@ -23,6 +23,7 @@ import static org.mvel.MVEL.compileSetExpression;
 import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
+import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
@@ -59,7 +60,9 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
         }
         else if ((assignStart = find(expr, '=')) != -1) {
             this.name = createStringTrimmed(expr, 0, assignStart);
-            this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1))).getKnownEgressType();
+            this.egressType = (statement
+                    = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1)))
+                    .getKnownEgressType();
 
             if (col = ((endOfName = findFirst('[', indexTarget = this.name.toCharArray())) > 0)) {
                 if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
@@ -77,7 +80,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            AbstractParser.getCurrentThreadParserContext().addVariable(name, egressType);
+            getCurrentThreadParserContext().addVariable(name, egressType);
         }
     }
 
@@ -115,8 +118,6 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        //   Object o;
-
         checkNameSafety(name);
 
         if (col) {
@@ -130,8 +131,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
     }
 
     public String getAssignmentVar() {
-     //   return new String(indexTarget);
-     return name;
+        return name;
     }
 
     public char[] getExpression() {

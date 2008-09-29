@@ -28,7 +28,6 @@ public class TypeCast extends ASTNode {
     private ExecutableStatement statement;
 
     public TypeCast(char[] expr, Class cast, int fields) {
-     //   super(expr, start, end, fields);
         this.egressType = cast;
         this.name = expr;
         if ((fields & COMPILE_IMMEDIATE) != 0) {

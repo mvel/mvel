@@ -1291,7 +1291,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testBreakpoints5() {
         String expression = "System.out.println('foo');\r\n" +
                 "a = new Foo();\r\n" +
-                "a.name = 'bar'\r\n" +
+                "a.name = 'bar';\r\n" +
                 "foo.happy();\r\n" +
                 "System.out.println( 'name:' + a.name );               \r\n" +
                 "System.out.println( 'name:' + a.name );         \r\n" +
@@ -4291,11 +4291,11 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testArrayDefinitionWithInitializer() {
-        String[] compareTo = new String[] { "foo", "bar"};
+        String[] compareTo = new String[]{"foo", "bar"};
         String[] results = (String[]) test("new String[] { 'foo', 'bar' }");
 
         for (int i = 0; i < compareTo.length; i++) {
-           if (!compareTo[i].equals(results[i])) throw new AssertionError("arrays do not match.");
+            if (!compareTo[i].equals(results[i])) throw new AssertionError("arrays do not match.");
         }
     }
 
@@ -4303,6 +4303,25 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("1234", test("StringBuffer sbuf = new StringBuffer(); foreach (int i : new int[] { 1,2,3,4 }) { sbuf.append(i); }; sbuf.toString()"));
     }
 
+    public void testShouldFail() {
+        try {
+            MVEL.eval("i = 0; i < 99 dksadlka", new HashMap());
+        }
+        catch (Exception e) {
+            return;
+        }
+        assertTrue(false);
+    }
+
+    public void testShouldFail2() {
+        try {
+            MVEL.compileExpression("i = 0; i < 99 dksadlka");
+        }
+        catch (Exception e) {
+            return;
+        }
+        assertTrue(false);
+    }
 }
 
 

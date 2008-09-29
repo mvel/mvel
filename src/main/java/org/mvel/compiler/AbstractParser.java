@@ -34,7 +34,7 @@ import org.mvel.util.StringAppender;
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
-import static java.lang.Float.parseFloat;
+import static java.lang.Double.parseDouble;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
@@ -104,8 +104,8 @@ public class AbstractParser implements Serializable {
          * Add System and all the class wrappers from the JCL.
          */
         LITERALS.put("System", System.class);
-
         LITERALS.put("String", String.class);
+        LITERALS.put("CharSequence", CharSequence.class);
 
         LITERALS.put("Integer", Integer.class);
         LITERALS.put("int", Integer.class);
@@ -144,7 +144,7 @@ public class AbstractParser implements Serializable {
 
         LITERALS.put("Array", java.lang.reflect.Array.class);
 
-        if (parseFloat(getProperty("java.version").substring(0, 2)) >= 1.5) {
+        if (parseDouble(getProperty("java.version").substring(0, 3)) >= 1.5) {
             try {
                 LITERALS.put("StringBuilder", currentThread().getContextClassLoader().loadClass("java.lang.StringBuilder"));
             }
@@ -194,7 +194,6 @@ public class AbstractParser implements Serializable {
 
             char[] tmp;
             String name;
-
 
             /**
              * Because of parser recursion for sub-expression parsing, we sometimes need to remain
@@ -246,7 +245,7 @@ public class AbstractParser implements Serializable {
                     cursor++;
                 }
                 else if (capture) {
-                   String t;
+                    String t;
                     if (OPERATORS.containsKey(t = new String(expr, start, cursor - start))) {
                         switch (OPERATORS.get(t)) {
                             case NEW:
@@ -357,7 +356,8 @@ public class AbstractParser implements Serializable {
                                 skipWhitespace();
 
                                 if (expr[cursor] == '=') {
-                                    if (end == (cursor = start)) throw new CompileException("illegal use of reserved word: var");
+                                    if (end == (cursor = start))
+                                        throw new CompileException("illegal use of reserved word: var");
                                     continue;
                                 }
                                 else {
@@ -984,10 +984,6 @@ public class AbstractParser implements Serializable {
                 captureToEOT();
                 return lastNode = new Union(expr, union, cursor, fields, node);
             }
-//            else if (expr[cursor] == '[') {
-//                captureToEOT();
-//                return lastNode = new Union(expr, cursor, cursor, fields, node);
-//            }
         }
         return lastNode = node;
     }
@@ -2008,7 +2004,11 @@ public class AbstractParser implements Serializable {
          * If the next token is an operator, we check to see if it has a higher
          * precdence.
          */
-        if ((tk = nextToken()) != null && tk.isOperator()) {
+        if ((tk = nextToken()) != null) {
+            if (!tk.isOperator()) {
+                throw new CompileException("unexpected token: " + tk.getName(), expr, cursor);
+            }
+
             if (isArithmeticOperator(operator2 = tk.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
                 xswap();
                 /**

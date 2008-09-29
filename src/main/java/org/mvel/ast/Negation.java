@@ -14,9 +14,8 @@ public class Negation extends ASTNode {
         this.name = name;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            this.stmt = (ExecutableStatement) subCompileExpression(name);
-
-            if (stmt.getKnownEgressType() != null && !stmt.getKnownEgressType().isAssignableFrom(Boolean.class)) {
+            if ((this.stmt = (ExecutableStatement) subCompileExpression(name)).getKnownEgressType() != null
+                    && !stmt.getKnownEgressType().isAssignableFrom(Boolean.class)) {
                 throw new CompileException("negation operator cannot be applied to non-boolean type");
             }
         }

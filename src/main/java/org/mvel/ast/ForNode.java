@@ -59,24 +59,24 @@ public class ForNode extends BlockNode {
         return null;
     }
 
+    public ForNode() {
+        super();    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
     private void handleCond(char[] condition, int fields) {
         int start = 0;
         int cursor = nextCondPart(condition, start);
         try {
             this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start - 1));
 
-            this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor,
-                    (cursor = nextCondPart(condition, start)) - start - 1));
-
-            expectType(this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+            expectType(this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor,
+                    (cursor = nextCondPart(condition, start)) - start - 1)), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
             this.after = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start)) - start));
         }
         catch (NegativeArraySizeException e) {
             throw new CompileException("wrong syntax; did you mean to use 'foreach'?");
-
         }
-
     }
 
     private int nextCondPart(char[] condition, int cursor) {

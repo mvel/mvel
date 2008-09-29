@@ -38,7 +38,8 @@ public class StaticImportNode extends ASTNode {
 
     public StaticImportNode(char[] expr) {
         try {
-            declaringClass = currentThread().getContextClassLoader().loadClass(new String(subset(expr, 0, findLast('.', this.name = expr))));
+            declaringClass = currentThread().getContextClassLoader()
+                    .loadClass(new String(subset(expr, 0, findLast('.', this.name = expr))));
             methodName = new String(subset(expr, findLast('.', expr) + 1));
 
             if (resolveMethod() == null) {

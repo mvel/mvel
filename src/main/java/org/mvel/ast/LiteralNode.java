@@ -36,9 +36,6 @@ public class LiteralNode extends ASTNode {
             this.intRegister = ((Integer) (this.literal = literal));
             this.egressType = Integer.class;
         }
-//        else if (literal instanceof Class) {
-//            this.egressType = (Class) literal;
-//        }
         else {
             if ((this.literal = literal) != null) {
                 this.egressType = literal.getClass();

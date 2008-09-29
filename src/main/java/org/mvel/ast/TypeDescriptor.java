@@ -45,7 +45,6 @@ public class TypeDescriptor implements Serializable {
                         throw new CompileException("unexpected token in contstructor", name, endRange);
 
                     to = balancedCapture(name, endRange, '[');
-
                     sizes.add(subset(name, ++endRange, to - endRange));
                     endRange = to + 1;
                 }

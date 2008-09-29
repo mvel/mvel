@@ -221,6 +221,10 @@ public class ExpressionCompiler extends AbstractParser {
                         }
                     }
                     else {
+                        if (tkOp != null && !tkOp.isOperator() && !(tk.getLiteralValue() instanceof Class)) {
+                            throw new CompileException("unexpected token: " + tkOp.getName());
+                        }
+
                         literalOnly = false;
                         astBuild.addTokenNode(verify(pCtx, tk));
                         if (tkOp != null) astBuild.addTokenNode(verify(pCtx, tkOp));

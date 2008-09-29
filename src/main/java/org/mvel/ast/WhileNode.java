@@ -35,10 +35,8 @@ public class WhileNode extends BlockNode {
     protected ExecutableStatement compiledBlock;
 
     public WhileNode(char[] condition, char[] block, int fields) {
-        this.condition = (ExecutableStatement) subCompileExpression(this.name = condition);
-
-        expectType(this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
-
+        expectType(this.condition = (ExecutableStatement) subCompileExpression(this.name = condition),
+                Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
     }
 
@@ -52,10 +50,10 @@ public class WhileNode extends BlockNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory = new MapVariableResolverFactory(new HashMap(0), factory);
+        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
 
         while ((Boolean) condition.getValue(ctx, thisValue, factory)) {
-            compiledBlock.getValue(ctx, thisValue, factory);
+            compiledBlock.getValue(ctx, thisValue, ctxFactory);
         }
         return null;
     }
