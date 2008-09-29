@@ -18,18 +18,17 @@
  */
 package org.mvel.ast;
 
+import org.mvel.CompileException;
 import org.mvel.MVEL;
 import static org.mvel.MVEL.executeSetExpression;
 import org.mvel.Operator;
 import org.mvel.ParserContext;
-import org.mvel.CompileException;
 import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
-import org.mvel.util.PropertyTools;
-import org.mvel.util.StringAppender;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
+import org.mvel.util.StringAppender;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -83,9 +82,9 @@ public class WithNode extends BlockNode implements NestedStatement {
 
     private void compileWithExpressions() {
         List<ParmValuePair> parms = new ArrayList<ParmValuePair>();
+        String parm = "";
 
         int start = 0;
-        String parm = "";
         int end = -1;
 
         int oper = -1;

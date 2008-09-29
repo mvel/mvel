@@ -21,6 +21,7 @@ package org.mvel.compiler;
 import org.mvel.CompileException;
 import org.mvel.ParserContext;
 import org.mvel.PropertyAccessException;
+import org.mvel.ast.Function;
 import org.mvel.optimizers.AbstractOptimizer;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
@@ -245,6 +246,8 @@ public class PropertyVerifier extends AbstractOptimizer {
      * @return known egress type.
      */
     private Class getMethod(Class ctx, String name) {
+        int st = cursor;
+
         /**
          * Check to see if this is the first element in the statement.
          */
@@ -266,11 +269,13 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
             else if (pCtx.hasFunction(name)) {
                 resolvedExternally = false;
-                return pCtx.getFunction(name).getEgressType();
+                String tk = ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";                
+                Function f = pCtx.getFunction(name);
+                f.checkArgumentCount(parseParameterList(tk.toCharArray(), 0, -1).length);
+                return f.getEgressType();
             }
         }
 
-        int st = cursor;
 
         /**
          * Get the arguments for the method.

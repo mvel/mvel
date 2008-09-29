@@ -4322,6 +4322,17 @@ public class CoreConfidenceTests extends AbstractTest {
         }
         assertTrue(false);
     }
+
+    public void testShouldFail3() {
+        try {
+            MVEL.compileExpression("def foo() { 'bar' }; foo(123);");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+        assertTrue(false);
+    }
 }
 
 

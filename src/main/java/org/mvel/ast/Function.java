@@ -19,6 +19,7 @@
 package org.mvel.ast;
 
 import org.mvel.ParserContext;
+import org.mvel.CompileException;
 import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.EndWithValue;
 import org.mvel.compiler.ExecutableStatement;
@@ -47,9 +48,9 @@ public class Function extends ASTNode implements Safe {
         parmNum = (this.parameters = parseParameterList(parameters, 0, parameters.length)).length;
 
         ParserContext old = AbstractParser.getCurrentThreadParserContext();
+        old.declareFunction(this);
 
         ParserContext ctx = new ParserContext();
-        ctx.declareFunction(this);
         ctx.setIndexAllocation(true);
 
         /**
@@ -135,6 +136,13 @@ public class Function extends ASTNode implements Safe {
 
     public boolean hasParameters() {
         return this.parameters != null && this.parameters.length != 0;
+    }
+
+    public void checkArgumentCount(int passing) {
+        if (passing != parmNum) {
+            throw new CompileException("bad number of arguments in function call: "
+                    + passing + " (expected: " + parmNum + ")"); 
+        }
     }
 
     public String toString() {

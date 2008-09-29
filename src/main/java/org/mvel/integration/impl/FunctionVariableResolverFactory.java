@@ -6,6 +6,7 @@ import org.mvel.integration.VariableResolverFactory;
 
 public class FunctionVariableResolverFactory extends BaseVariableResolverFactory implements LocalVariableResolverFactory {
     public FunctionVariableResolverFactory(VariableResolverFactory nextFactory, String[] indexedVariables, Object[] parameters) {
+
         this.nextFactory = nextFactory;
         this.indexedVariableResolvers = new VariableResolver[(this.indexedVariableNames = indexedVariables).length];
         for (int i = 0; i < parameters.length; i++) {

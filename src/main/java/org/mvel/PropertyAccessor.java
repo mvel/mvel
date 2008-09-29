@@ -618,6 +618,7 @@ public class PropertyAccessor {
                 name = ((MethodStub) ptr).getMethodName();
             }
             else if (ptr instanceof Function) {
+                ((Function) ptr).checkArgumentCount(args.length);
                 return ((Function) ptr).call(ctx, thisReference, variableFactory, args);
             }
             else {

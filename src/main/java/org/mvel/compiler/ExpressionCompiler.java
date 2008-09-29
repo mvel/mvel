@@ -255,6 +255,13 @@ public class ExpressionCompiler extends AbstractParser {
         catch (NullPointerException e) {
             throw new CompileException("not a statement, or badly formed structure", e);
         }
+        catch (CompileException e) {
+        //    CompileException ne = new CompileException(e.getMessage(), expr, cursor, e);
+            e.setExpr(expr);
+            e.setLineNumber(line);
+            e.setColumn(cursor - lastLineStart);
+            throw e;
+        }
         catch (Throwable e) {
             parserContext.set(null);
             if (e instanceof RuntimeException) throw (RuntimeException) e;

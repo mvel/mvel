@@ -20,6 +20,7 @@
 package org.mvel.ast;
 
 import org.mvel.*;
+import static org.mvel.Operator.NOOP;
 import static org.mvel.ast.TypeDescriptor.getClassReference;
 import static org.mvel.PropertyAccessor.get;
 import org.mvel.compiler.AbstractParser;
@@ -259,10 +260,13 @@ public class ASTNode implements Cloneable, Serializable {
                         return get(m.getName() + new String(name, td.getEndRange(), name.length - td.getEndRange()),
                                 m.getDeclaringClass(), factory, thisValue);
                     }
-                    else {
+                    else if (o instanceof Function) {
                         Function f = (Function) o;
                         return get(f.getName() + new String(name, td.getEndRange(), name.length - td.getEndRange()),
                                 null, factory, thisValue);
+                    }
+                    else {
+                        throw new CompileException("call to non-callable object: " + o.getClass().getName());
                     }
                 }
 
@@ -467,7 +471,7 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public Integer getOperator() {
-        return Operator.NOOP;
+        return NOOP;
     }
 
     protected boolean isCollection() {
