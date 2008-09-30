@@ -53,14 +53,12 @@ public class TypedVarNode extends ASTNode implements Assignment {
         }
         else {
             checkNameSafety(name = new String(expr));
-
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             AbstractParser.getCurrentThreadParserContext().addVariable(name, egressType, true);
         }
     }
-
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (statement == null) statement = (ExecutableStatement) subCompileExpression(stmt);

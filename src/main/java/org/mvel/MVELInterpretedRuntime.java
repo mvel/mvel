@@ -404,8 +404,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
         if (pCtx.hasImport(name)) return pCtx.getImport(name);
 
-        VariableResolverFactory vrf = findClassImportResolverFactory(variableFactory);
-        return (Class) vrf.getVariableResolver(name).getValue();
+        return (Class) findClassImportResolverFactory(variableFactory).getVariableResolver(name).getValue();
     }
 }
 
