@@ -369,11 +369,9 @@ public class ShellSession {
         return sbuf.toString();
     }
 
-
     public Map<String, Command> getCommands() {
         return commands;
     }
-
 
     public Map<String, Object> getVariables() {
         return variables;
@@ -382,7 +380,6 @@ public class ShellSession {
     public Map<String, String> getEnv() {
         return env;
     }
-
 
     public String getCommandBuffer() {
         return commandBuffer;

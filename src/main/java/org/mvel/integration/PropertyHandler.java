@@ -2,6 +2,8 @@ package org.mvel.integration;
 
 /**
  * This interface allows an external property handler to resolve a property against the provided context.
+ *
+ * @see org.mvel.optimizers.impl.asm.ProducesBytecode
  */
 public interface PropertyHandler {
     /**
