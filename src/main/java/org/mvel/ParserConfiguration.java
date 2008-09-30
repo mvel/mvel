@@ -15,7 +15,7 @@ public class ParserConfiguration implements Serializable {
     protected Map<String, Object> imports;
     protected Set<String> packageImports;
     protected Map<String, Interceptor> interceptors;
-    protected ClassLoader classLoader = currentThread().getContextClassLoader();
+    protected transient ClassLoader classLoader = currentThread().getContextClassLoader();
 
     public ParserConfiguration() {
     }
