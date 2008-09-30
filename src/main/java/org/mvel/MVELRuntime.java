@@ -155,6 +155,9 @@ public class MVELRuntime {
                 catch (ClassCastException e) {
                     throw new CompileException("syntax error or incomptable types", e);
                 }
+                catch (CompileException e) {
+                    throw e;
+                }
                 catch (Exception e) {
                     throw new CompileException("failed to compile sub expression", e);
                 }

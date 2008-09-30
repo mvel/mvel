@@ -829,7 +829,7 @@ public class AbstractParser implements Serializable {
                         case '}':
                         case ']':
                         case ')': {
-                            throw new ParseException("unbalanced braces", expr, cursor);
+                            throw new CompileException("unbalanced braces", expr, cursor);
                         }
 
                         case '>': {
@@ -960,10 +960,10 @@ public class AbstractParser implements Serializable {
             throw c;
         }
         catch (CompileException e) {
-            CompileException c = new CompileException(e.getMessage(), expr, cursor, e.getCursor() == 0, e);
-            c.setLineNumber(line);
-            c.setColumn(cursor - lastLineStart);
-            throw c;
+            e.setExpr(expr);
+            e.setLineNumber(line);
+            e.setColumn(cursor - lastLineStart);
+            throw e;
         }
     }
 
