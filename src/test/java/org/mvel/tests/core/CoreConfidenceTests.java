@@ -4312,6 +4312,16 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testStaticallyTypedLong() {
         assertEquals(10l, test("10l"));
     }
+
+    public void testCompileTimeCoercion() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("foo", Foo.class);
+
+        CompiledExpression c = new ExpressionCompiler("foo.bar.woof == 'true'").compile(ctx);
+
+        assertEquals(true, MVEL.executeExpression(c, createTestMap()));
+    }
 }
 
 

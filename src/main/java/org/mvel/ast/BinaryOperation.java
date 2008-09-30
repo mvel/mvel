@@ -19,10 +19,10 @@
 package org.mvel.ast;
 
 import org.mvel.CompileException;
+import org.mvel.DataConversion;
 import org.mvel.Operator;
 import static org.mvel.Operator.PTABLE;
 import org.mvel.ParserContext;
-import org.mvel.debug.DebugTools;
 import static org.mvel.debug.DebugTools.getOperatorSymbol;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.doOperations;
@@ -54,7 +54,12 @@ public class BinaryOperation extends ASTNode {
 
                 default:
                     if (!left.getEgressType().isAssignableFrom(right.getEgressType())) {
-                        throw new CompileException("incompatible types in statement: " + right.getEgressType() + " (assignment from: " + left.getEgressType() + ")");
+                        if (right.isLiteral() && DataConversion.canConvert(right.getEgressType(), left.getEgressType())) {
+                            this.right = new LiteralNode(DataConversion.convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()));
+                        }
+                        else {
+                            throw new CompileException("incompatible types in statement: " + right.getEgressType() + " (compared from: " + left.getEgressType() + ")");
+                        }
                     }
             }
         }
@@ -82,11 +87,9 @@ public class BinaryOperation extends ASTNode {
             case Operator.MULT:
             case Operator.DIV:
             case Operator.POWER:
-                boolean foo = !!true;
-
                 egressType = bestFitType(left.egressType, right.egressType);
                 break;
-                
+
             case Operator.BW_AND:
             case Operator.BW_OR:
             case Operator.BW_XOR:
