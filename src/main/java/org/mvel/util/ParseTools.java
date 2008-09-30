@@ -23,6 +23,7 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.MVEL.getDebuggingOutputFileName;
 import org.mvel.ast.ASTNode;
 import static org.mvel.compiler.AbstractParser.*;
+import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.compiler.*;
 import org.mvel.integration.ResolverTools;
 import static org.mvel.integration.ResolverTools.insertFactory;
@@ -432,7 +433,7 @@ public class ParseTools {
         }
         else {
             try {
-                cls = currentThread().getContextClassLoader().loadClass(className);
+                cls = getCurrentThreadParserContext().getParserConfiguration().getClassLoader().loadClass(className);
             }
             catch (ClassNotFoundException e) {
                 /**
