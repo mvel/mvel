@@ -19,6 +19,7 @@
 package org.mvel.util;
 
 import org.mvel.DataTypes;
+import org.mvel.CompileException;
 
 import static java.lang.Double.parseDouble;
 import static java.lang.Float.parseFloat;
@@ -35,7 +36,6 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.util.Collection;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 public class PropertyTools {
     public static boolean isEmpty(Object o) {
@@ -172,20 +172,33 @@ public class PropertyTools {
 
 
     public static Object handleNumericConversion(final char[] val) {
-        switch (numericTest(val)) {
-            case DataTypes.FLOAT:
-                return parseFloat(new String(val));
-            case DataTypes.INTEGER:
-                return parseInt(new String(val));
-            case DataTypes.LONG:
-                return parseLong(new String(val));
-            case DataTypes.DOUBLE:
-                return parseDouble(new String(val));
-            case DataTypes.BIG_DECIMAL:
-                // @todo: new String() only needed for jdk1.4, remove when we move to jdk1.5
-                return new BigDecimal(new String(val), MathContext.DECIMAL128);
-            default:
-                return new String(val);
+        if (!isDigit(val[val.length-1])) {
+            switch (val[val.length-1]) {
+                case 'l':
+                    return parseLong(new String(val, 0, val.length - 1));
+                case 'd':
+                    return parseDouble(new String(val, 0, val.length - 1));
+                case 'f':
+                    return parseFloat(new String(val, 0, val.length - 1));
+            }
+            throw new CompileException("unrecognized numeric literal");
+        }
+        else {
+            switch (numericTest(val)) {
+                case DataTypes.FLOAT:
+                    return parseFloat(new String(val));
+                case DataTypes.INTEGER:
+                    return parseInt(new String(val));
+                case DataTypes.LONG:
+                    return parseLong(new String(val));
+                case DataTypes.DOUBLE:
+                    return parseDouble(new String(val));
+                case DataTypes.BIG_DECIMAL:
+                    // @todo: new String() only needed for jdk1.4, remove when we move to jdk1.5
+                    return new BigDecimal(new String(val), MathContext.DECIMAL128);
+                default:
+                    return new String(val);
+            }
         }
     }
 
@@ -294,6 +307,15 @@ public class PropertyTools {
             if (!isDigit(c = val[i])) {
                 if (c == '.' && f) {
                     f = false;
+                }
+                else if (len != 1 && i == len - 1) {
+                    switch (val[i]) {
+                        case 'l':
+                        case 'f':
+                        case 'd':
+                            return true;
+                    }
+                    return false;
                 }
                 else {
                     return false;
