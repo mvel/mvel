@@ -1,0 +1,5 @@
+@comment{
+   *
+   * This is a simple template.
+   *
+}@{_foo_}::@{_bar_}
