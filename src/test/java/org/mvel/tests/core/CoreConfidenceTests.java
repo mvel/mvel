@@ -125,9 +125,33 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(false, test("foo.bar.woof==false"));
     }
 
+    public void testBooleanOperatorWithCoercion() {
+        String expr = "foo.bar.woof==\"true\"";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expr);
+        
+        ParserContext context = new ParserContext();
+        context.setStrictTypeEnforcement(true);      
+        context.addInput( "foo", Foo.class );
+        Serializable compiledExpression = compiler.compile(context);
+        boolean result = (Boolean) MVEL.executeExpression( compiledExpression, createTestMap() );
+        assertTrue( result );
+        
+        expr = "foo.bar.woof==\"false\"";
+
+        compiler = new ExpressionCompiler(expr);
+        
+        context = new ParserContext();
+        context.setStrictTypeEnforcement(true);      
+        context.addInput( "foo", Foo.class );
+        compiledExpression = compiler.compile(context);
+        result = (Boolean) MVEL.executeExpression( compiledExpression, createTestMap() );
+        assertFalse( result );        
+    }
+    
     public void testTextComparison() {
         assertEquals(true, test("foo.bar.name == 'dog'"));
-    }
+    }    
 
     public void testNETextComparison() {
         assertEquals(true, test("foo.bar.name != 'foo'"));
