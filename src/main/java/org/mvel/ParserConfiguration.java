@@ -15,6 +15,7 @@ public class ParserConfiguration implements Serializable {
     protected Map<String, Object> imports;
     protected Set<String> packageImports;
     protected Map<String, Interceptor> interceptors;
+    protected ClassLoader classLoader = currentThread().getContextClassLoader();
 
     public ParserConfiguration() {
     }
@@ -69,7 +70,7 @@ public class ParserConfiguration implements Serializable {
         Class cls = null;
         for (String pkg : packageImports) {
             try {
-                cls = currentThread().getContextClassLoader().loadClass(pkg + "." + className);
+                cls = classLoader.loadClass(pkg + "." + className);
                 found++;
             }
             catch (ClassNotFoundException e) {
@@ -159,5 +160,13 @@ public class ParserConfiguration implements Serializable {
 
     public boolean hasImports() {
         return (imports != null && imports.size() != 0) || (packageImports != null && packageImports.size() != 0);
+    }
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 }
