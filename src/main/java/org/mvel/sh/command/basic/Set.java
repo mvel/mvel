@@ -27,7 +27,7 @@ public class Set implements Command {
                 if (i < args.length) sbuf.append(" ");
             }
 
-            env.put(args[0], sbuf.toString());
+            env.put(args[0], sbuf.toString().trim());
         }
 
         return null;

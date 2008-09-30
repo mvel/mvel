@@ -37,7 +37,7 @@ public class FailureTests extends AbstractTest {
         }
         assertTrue(false);
     }
-
+                                                                                       
     public void testShouldFail3() {
         try {
             MVEL.compileExpression("def foo() { 'bar' }; foo(123);");
@@ -52,6 +52,17 @@ public class FailureTests extends AbstractTest {
     public void testShouldFail4() {
         try {
            MVEL.eval("hour zzz", createTestMap());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+        assertTrue(false);
+    }
+
+    public void testShouldFail5() {
+        try {
+            MVEL.eval("[");
         }
         catch (Exception e) {
             e.printStackTrace();

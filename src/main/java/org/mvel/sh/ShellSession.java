@@ -51,7 +51,8 @@ public class ShellSession {
         env.put("$OS_VERSION", getProperty("os.version"));
         env.put("$JAVA_VERSION", getProperty("java.version"));
         env.put("$CWD", new File(".").getAbsolutePath());
-        env.put("$ECHO", "true");
+        env.put("$PRINTOUTPUT", "true");
+        env.put("$ECHO", "false");
         env.put("$SHOW_TRACES", "true");
         env.put("$USE_OPTIMIZER_ALWAYS", "false");
         env.put("$PATH", "");
@@ -101,6 +102,11 @@ public class ShellSession {
                     commandBuffer = readBuffer.readLine();
                 }
 
+                if ("true".equals(env.get("$ECHO"))) {
+                    out.println(">" + commandBuffer);
+                    out.flush();
+                }
+
                 if (commands.containsKey((inTokens =
                         inBuffer.append(commandBuffer).toString().split("\\s"))[0])) {
 
@@ -134,6 +140,7 @@ public class ShellSession {
                             multi = false;
                         }
 
+
                         if (parseBoolean(env.get("$USE_OPTIMIZER_ALWAYS"))) {
                             outputBuffer = executeExpression(compileExpression(inBuffer.toString()), lvrf);
                         }
@@ -153,7 +160,7 @@ public class ShellSession {
                         else {
                             paths = env.get("$PATH").split("(:|;)");
                         }
-               
+
                         boolean successfulExec = false;
 
                         for (String execPath : paths) {
@@ -301,7 +308,7 @@ public class ShellSession {
                             out.println(env.get("$LAST_STACK_TRACE"));
                         }
                         else {
-                            out.println(e.toString()); 
+                            out.println(e.toString());
                         }
 
                         inBuffer.reset();
@@ -310,7 +317,7 @@ public class ShellSession {
                     }
 
 
-                    if (outputBuffer != null && "true".equals(env.get("$ECHO"))) {
+                    if (outputBuffer != null && "true".equals(env.get("$PRINTOUTPUT"))) {
                         out.println(String.valueOf(outputBuffer));
                     }
 
@@ -344,10 +351,10 @@ public class ShellSession {
         depth = 0;
         for (char aBuffer : buffer) {
             switch (aBuffer) {
-                case'{':
+                case '{':
                     depth++;
                     break;
-                case'}':
+                case '}':
                     depth--;
                     break;
             }
