@@ -938,6 +938,12 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testUnQualifiedStaticTyping() {
+        CompiledExpression ce = (CompiledExpression) MVEL.compileExpression("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ");
+        System.out.println(DebugTools.decompile(ce));
+
+
+
+
         assertEquals(20, testCompiledSimple("import java.math.BigDecimal; BigDecimal a = new BigDecimal( 10.0 ); BigDecimal b = new BigDecimal( 10.0 ); BigDecimal c = a + b; return c; ", new HashMap()));
     }
 
@@ -4301,37 +4307,6 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testStaticallyTypedItemInForEach() {
         assertEquals("1234", test("StringBuffer sbuf = new StringBuffer(); foreach (int i : new int[] { 1,2,3,4 }) { sbuf.append(i); }; sbuf.toString()"));
-    }
-
-    public void testShouldFail() {
-        try {
-            MVEL.eval("i = 0; i < 99 dksadlka", new HashMap());
-        }
-        catch (Exception e) {
-            return;
-        }
-        assertTrue(false);
-    }
-
-    public void testShouldFail2() {
-        try {
-            MVEL.compileExpression("i = 0; i < 99 dksadlka");
-        }
-        catch (Exception e) {
-            return;
-        }
-        assertTrue(false);
-    }
-
-    public void testShouldFail3() {
-        try {
-            MVEL.compileExpression("def foo() { 'bar' }; foo(123);");
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
-        assertTrue(false);
     }
 }
 

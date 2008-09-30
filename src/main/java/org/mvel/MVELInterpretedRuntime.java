@@ -135,6 +135,11 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         return;
                     case OP_RESET_FRAME:
                         continue;
+                    case OP_OVERFLOW:
+                        if (!tk.isOperator()) {
+                            throw new CompileException("unexpected token: " + tk.getName());
+                        }
+                        continue;
                 }
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
@@ -176,7 +181,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
     private int procBooleanOperator(int operator) {
         switch (operator) {
             case NOOP:
-                return 0;
+                return -2;
 
             case AND:
                 reduceRight();
@@ -221,10 +226,11 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         //nothing
                     }
 
-                    return 0;
                 }
+                return 0;
 
             case TERNARY_ELSE:
+                captureToEOS();
                 return 0;
 
             case END_OF_STMT:

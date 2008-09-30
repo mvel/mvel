@@ -82,5 +82,7 @@ public class ImportNode extends ASTNode {
     public String getPackageImport() {
         return new String(name, 0, offset);
     }
+
+    
 }
 

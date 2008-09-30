@@ -64,7 +64,6 @@ public class ExpressionCompiler extends AbstractParser {
         }
         finally {
             //noinspection ThrowFromFinallyBlock
-
             removeContext();
 
             if (pCtx.isFatalError()) {

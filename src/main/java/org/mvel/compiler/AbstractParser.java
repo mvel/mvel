@@ -53,6 +53,7 @@ public class AbstractParser implements Serializable {
     protected int length;
     protected int fields;
 
+    protected static final int OP_OVERFLOW = -2;
     protected static final int OP_TERMINATE = -1;
     protected static final int OP_RESET_FRAME = 0;
     protected static final int OP_CONTINUE = 1;
@@ -327,20 +328,19 @@ public class AbstractParser implements Serializable {
                             case IMPORT:
                                 start = cursor = trimRight(cursor);
                                 captureToEOS();
-                                ImportNode importNode = new ImportNode(subArray(start, cursor--));
+                                ImportNode importNode = new ImportNode(subArray(start, cursor));
                                 if (importNode.isPackageImport()) {
                                     pCtx.addPackageImport(importNode.getPackageImport());
-                                    cursor++;
                                 }
                                 else {
                                     pCtx.addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
                                 }
-                                return importNode;
+                                return lastNode = importNode;
 
                             case IMPORT_STATIC:
                                 start = cursor = trimRight(cursor);
                                 captureToEOS();
-                                return lastNode = new StaticImportNode(subArray(start, cursor--));
+                                return lastNode = new StaticImportNode(subArray(start, cursor));
 
                             case FUNCTION:
                                 lastNode = (Function) captureCodeBlock(FUNCTION);
@@ -1099,7 +1099,6 @@ public class AbstractParser implements Serializable {
                     if (tk != null) {
                         captureToNextTokenJunction();
                         skipWhitespace();
-
                         cond = expr[cursor] != '{' && expr[cursor] == 'i' && expr[++cursor] == 'f'
                                 && (isWhitespace(expr[++cursor]) || expr[cursor] == '(');
                     }
@@ -1253,7 +1252,6 @@ public class AbstractParser implements Serializable {
         else if (expr[cursor] == '{') {
             int[] cap = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{');
             blockEnd = cursor = cap[0];
-
             pCtx.incrementLineCount(cap[1]);
         }
         else {
@@ -2309,7 +2307,6 @@ public class AbstractParser implements Serializable {
         }
         catch (ClassCastException e) {
             throw new CompileException("syntax error or incompatable types", expr, cursor, e);
-
         }
         catch (ArithmeticException e) {
             throw new CompileException("arithmetic error: " + e.getMessage(), e);
