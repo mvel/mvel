@@ -128,11 +128,6 @@ public class BinaryOperation extends ASTNode {
         return operation;
     }
 
-    //  public void setOperation(int operation) {
-    //     assert operation != -1;
-    //      this.operation = operation;
-    //  }
-
     public ASTNode getLeft() {
         return left;
     }

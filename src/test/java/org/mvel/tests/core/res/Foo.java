@@ -5,16 +5,11 @@ import java.util.Collection;
 public class Foo {
     private Bar bar = new Bar();
     public String register;
-
     public String aValue = "";
     public String bValue = "";
-
     private String name = "dog";
-
     private int countTest = 0;
-
     private Collection collectionTest;
-
     private SampleBean sampleBean = new SampleBean();
 
     public void abc() {

@@ -1,7 +1,7 @@
 package org.mvel.tests.core.res;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Bar {
     private String name = "dog";
@@ -9,7 +9,6 @@ public class Bar {
     private int age = 14;
     private String assignTest = "";
     private List testList = new ArrayList();
-
 
     public String getName() {
         return name;
@@ -26,7 +25,6 @@ public class Bar {
     public void setWoof(boolean woof) {
         this.woof = woof;
     }
-
 
     public int getAge() {
         return age;

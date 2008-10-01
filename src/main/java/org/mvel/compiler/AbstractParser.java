@@ -26,7 +26,6 @@ import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
-import org.mvel.util.PropertyTools;
 import static org.mvel.util.PropertyTools.*;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
@@ -575,7 +574,7 @@ public class AbstractParser implements Serializable {
                                             TypeDescriptor tDescr = new TypeDescriptor(((String) lastNode.getLiteralValue()).toCharArray(), 0);
 
                                             try {
-                                                lastNode.setLiteralValue(TypeDescriptor.getClassReference(pCtx, tDescr));
+                                                lastNode.setLiteralValue(getClassReference(pCtx, tDescr));
                                                 lastNode.discard();
                                             }
                                             catch (Exception e) {
@@ -626,8 +625,7 @@ public class AbstractParser implements Serializable {
                             expectNextChar_IW('{');
 
                             tmp = subArray(start, cursor - 1);
-                            start = cursor;
-                            cursor = balancedCapture(expr, cursor, '{') + 1;
+                            cursor = balancedCapture(expr, start = cursor, '{') + 1;
 
                             return lastNode = new ThisWithNode(tmp, subArray(start + 1, cursor - 1), fields);
                         }
@@ -661,12 +659,10 @@ public class AbstractParser implements Serializable {
                                     return lastNode = new PreFixDecNode(name);
                                 }
                             }
-                            else
-                            if ((cursor != 0 && !isWhitespace(lookBehind())) || !PropertyTools.isDigit(lookAhead())) {
+                            else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
                                 return createOperator(expr, start, cursor++ + 1);
                             }
-                            else
-                            if ((cursor - 1) != 0 || (!PropertyTools.isDigit(lookBehind())) && PropertyTools.isDigit(lookAhead())) {
+                            else if ((cursor - 1) != 0 || (!isDigit(lookBehind())) && isDigit(lookAhead())) {
                                 cursor++;
                                 break;
                             }
@@ -860,9 +856,8 @@ public class AbstractParser implements Serializable {
 
                         case '\'':
                         case '"':
-                            lastNode = new LiteralNode(
-                                    handleStringEscapes(
-                                            subset(expr, start + 1, (cursor = captureStringLiteral(expr[cursor], expr, cursor, length)) - start - 1))
+                            lastNode = new LiteralNode(handleStringEscapes(subset(expr, start + 1,
+                                    (cursor = captureStringLiteral(expr[cursor], expr, cursor, length)) - start - 1))
                                     , String.class);
 
                             cursor++;
@@ -893,7 +888,7 @@ public class AbstractParser implements Serializable {
 
                         case '~':
                             if ((cursor++ - 1 != 0 || !isIdentifierPart(lookBehind()))
-                                    && PropertyTools.isDigit(expr[cursor])) {
+                                    && isDigit(expr[cursor])) {
                                 start = cursor;
                                 captureToEOT();
                                 return lastNode = new Invert(subset(expr, start, cursor - start), fields);
@@ -1029,7 +1024,8 @@ public class AbstractParser implements Serializable {
             if ((offset = findFirst('.', _subset)) != -1) {
                 String iStr = new String(_subset, 0, offset);
                 if (pCtx.hasImport(iStr)) {
-                    return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1), fields, pCtx.getImport(iStr));
+                    return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1),
+                            fields, pCtx.getImport(iStr));
                 }
             }
             else {
@@ -1398,7 +1394,6 @@ public class AbstractParser implements Serializable {
         return OP_CONTINUE;
     }
 
-
     /**
      * Checking from the current cursor position, check to see if we're inside a contiguous identifier.
      *
@@ -1461,7 +1456,6 @@ public class AbstractParser implements Serializable {
         while (cursor != length && isWhitespace(expr[cursor])) cursor++;
         return cursor != length && isIdentifierPart(expr[cursor]);
     }
-
 
     /**
      * Capture from the current cursor position, to the end of the statement.
@@ -1896,9 +1890,7 @@ public class AbstractParser implements Serializable {
     }
 
     public static Map<String, Integer> loadLanguageFeaturesByLevel(int languageLevel) {
-
         Map<String, Integer> operatorsTable = new HashMap<String, Integer>();
-
         switch (languageLevel) {
             case 5:  // control flow operations
                 operatorsTable.put("if", IF);
@@ -1976,7 +1968,6 @@ public class AbstractParser implements Serializable {
             case 0: // Property access and inline collections
                 operatorsTable.put(":", TERNARY_ELSE);
         }
-
         return operatorsTable;
     }
 

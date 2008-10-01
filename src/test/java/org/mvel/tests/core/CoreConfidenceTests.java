@@ -3994,9 +3994,7 @@ public class CoreConfidenceTests extends AbstractTest {
         expectedCheese.setUseBy(new SimpleDateFormat("dd-MMM-yyyy").parse("10-Jul-1974"));
 
         ExpressionCompiler compiler = new ExpressionCompiler("c = new Cheese(); c.useBy = '10-Jul-1974'; return c");
-        //  Serializable expr = compiler.compile(ctx);
         Cheese actualCheese = (Cheese) executeExpression(compiler.compile(ctx), createTestMap());
-
         assertEquals(expectedCheese.getUseBy(), actualCheese.getUseBy());
     }
 
@@ -4292,8 +4290,6 @@ public class CoreConfidenceTests extends AbstractTest {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
         ctx.addInput("foo", Foo.class);
-
-        //   CompiledExpression c = new ExpressionCompiler("foo.bar.woof == 'true'").compile(ctx);
 
         assertEquals(true, executeExpression(new ExpressionCompiler("foo.bar.woof == 'true'").compile(ctx), createTestMap()));
     }
