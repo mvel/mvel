@@ -912,7 +912,14 @@ public class AbstractParser implements Serializable {
 
                                 start = cursor;
                                 captureToEOT();
-                                return lastNode = new Negation(subset(expr, start, cursor - start), fields);
+                                if ("new".equals(name = new String(expr, start, cursor - start))
+                                        || "isdef".equals(name)) {
+                                    captureToEOT();
+
+                                    return lastNode = new Negation(subset(expr, start, cursor - start), fields);
+                                }
+
+                                return lastNode = new Negation(name.toCharArray(), fields);
                             }
                             else if (expr[cursor] == '(') {
                                 start = cursor--;

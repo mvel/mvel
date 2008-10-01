@@ -1,14 +1,14 @@
 package org.mvel.ast;
 
-import org.mvel.MVEL;
 import org.mvel.CompileException;
-import org.mvel.Operator;
+import org.mvel.MVEL;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.subCompileExpression;
 
 public class Negation extends ASTNode {
     private ExecutableStatement stmt;
+
 
     public Negation(char[] name, int fields) {
         this.name = name;
