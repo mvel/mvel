@@ -918,8 +918,9 @@ public class AbstractParser implements Serializable {
 
                                     return lastNode = new Negation(subset(expr, start, cursor - start), fields);
                                 }
-
-                                return lastNode = new Negation(name.toCharArray(), fields);
+                                else {
+                                    return lastNode = new Negation(name.toCharArray(), fields);
+                                }
                             }
                             else if (expr[cursor] == '(') {
                                 start = cursor--;
