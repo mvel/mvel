@@ -51,6 +51,7 @@ public class ShellSession {
         env.put("$OS_VERSION", getProperty("os.version"));
         env.put("$JAVA_VERSION", getProperty("java.version"));
         env.put("$CWD", new File(".").getAbsolutePath());
+        env.put("$COMMAND_PASSTRU", "false");
         env.put("$PRINTOUTPUT", "true");
         env.put("$ECHO", "false");
         env.put("$SHOW_TRACES", "true");
@@ -129,6 +130,7 @@ public class ShellSession {
                 }
                 else {
                     commandBuffer = null;
+                    outputBuffer = null;
 
                     try {
 
@@ -140,7 +142,6 @@ public class ShellSession {
                             multi = false;
                         }
 
-
                         if (parseBoolean(env.get("$USE_OPTIMIZER_ALWAYS"))) {
                             outputBuffer = executeExpression(compileExpression(inBuffer.toString()), lvrf);
                         }
@@ -149,177 +150,184 @@ public class ShellSession {
                         }
                     }
                     catch (Exception e) {
+                        if ("true".equals(env.get("$COMMAND_PASSTHRU"))) {
 
-                        String[] paths;
-                        String s;
-                        if ((s = inTokens[0]).startsWith("./")) {
-                            s = new File(env.get("$CWD")).getAbsolutePath() + s.substring(s.indexOf('/'));
+                            String[] paths;
+                            String s;
+                            if ((s = inTokens[0]).startsWith("./")) {
+                                s = new File(env.get("$CWD")).getAbsolutePath() + s.substring(s.indexOf('/'));
 
-                            paths = new String[]{s};
-                        }
-                        else {
-                            paths = env.get("$PATH").split("(:|;)");
-                        }
+                                paths = new String[]{s};
+                            }
+                            else {
+                                paths = env.get("$PATH").split("(:|;)");
+                            }
 
-                        boolean successfulExec = false;
-
-                        for (String execPath : paths) {
-                            if ((execFile = new File(execPath + "/" + s)).exists() && execFile.isFile()) {
-                                successfulExec = true;
-
-                                String[] execString = new String[inTokens.length];
-                                execString[0] = execFile.getAbsolutePath();
-
-                                System.arraycopy(inTokens, 1, execString, 1, inTokens.length - 1);
-
-                                try {
-                                    final Process p = getRuntime().exec(execString);
-                                    final OutputStream outStream = p.getOutputStream();
-
-                                    final InputStream inStream = p.getInputStream();
-                                    final InputStream errStream = p.getErrorStream();
-
-                                    final RunState runState = new RunState(this);
-
-                                    final Thread pollingThread = new Thread(new Runnable() {
-                                        public void run() {
-                                            byte[] buf = new byte[25];
-                                            int read;
-
-                                            while (true) {
-                                                try {
-                                                    while ((read = inStream.read(buf)) > 0) {
-                                                        for (int i = 0; i < read; i++) {
-                                                            sysPrintStream.print((char) buf[i]);
-                                                        }
-                                                        sysPrintStream.flush();
-                                                    }
-
-                                                    if (!runState.isRunning()) break;
-                                                }
-                                                catch (Exception e) {
-                                                    break;
-                                                }
-                                            }
-
-                                            sysPrintStream.flush();
-
-                                            if (!multi) {
-                                                multiIndentSize = (prompt = String.valueOf(TemplateRuntime.eval(env.get("$PROMPT"), variables))).length();
-                                                out.append(prompt);
-                                            }
-                                            else {
-                                                out.append(">").append(indent((multiIndentSize - 1) + (depth * 4)));
-                                            }
-
-                                        }
-                                    });
+                            boolean successfulExec = false;
 
 
-                                    final Thread watchThread = new Thread(new Runnable() {
-                                        public void run() {
+                            for (String execPath : paths) {
+                                if ((execFile = new File(execPath + "/" + s)).exists() && execFile.isFile()) {
+                                    successfulExec = true;
 
-                                            Thread runningThread = new Thread(new Runnable() {
-                                                public void run() {
-                                                    try {
-                                                        String read;
-                                                        while (runState.isRunning()) {
-                                                            while ((read = readBuffer.readLine()) != null) {
-                                                                if (runState.isRunning()) {
-                                                                    for (char c : read.toCharArray()) {
-                                                                        outStream.write((byte) c);
-                                                                    }
-                                                                }
-                                                                else {
-                                                                    runState.getSession().setCommandBuffer(read);
-                                                                    break;
-                                                                }
-                                                            }
-                                                        }
+                                    String[] execString = new String[inTokens.length];
+                                    execString[0] = execFile.getAbsolutePath();
 
-                                                        outStream.write((byte) '\n');
-                                                        outStream.flush();
-                                                    }
-                                                    catch (Exception e2) {
-
-                                                    }
-                                                }
-
-                                            });
-
-                                            runningThread.setPriority(Thread.MIN_PRIORITY);
-                                            runningThread.start();
-
-                                            try {
-                                                p.waitFor();
-                                            }
-                                            catch (InterruptedException e) {
-                                                // nothing;
-                                            }
-
-                                            sysPrintStream.flush();
-                                            runState.setRunning(false);
-
-                                            try {
-                                                runningThread.join();
-                                            }
-                                            catch (InterruptedException e) {
-                                                // nothing;Ç
-                                            }
-                                        }
-                                    });
-
-                                    pollingThread.setPriority(Thread.MIN_PRIORITY);
-                                    pollingThread.start();
-
-                                    watchThread.setPriority(Thread.MIN_PRIORITY);
-                                    watchThread.start();
-                                    watchThread.join();
-
+                                    System.arraycopy(inTokens, 1, execString, 1, inTokens.length - 1);
 
                                     try {
-                                        pollingThread.notify();
-                                    }
-                                    catch (Exception ne) {
+                                        final Process p = getRuntime().exec(execString);
+                                        final OutputStream outStream = p.getOutputStream();
+
+                                        final InputStream inStream = p.getInputStream();
+                                        final InputStream errStream = p.getErrorStream();
+
+                                        final RunState runState = new RunState(this);
+
+                                        final Thread pollingThread = new Thread(new Runnable() {
+                                            public void run() {
+                                                byte[] buf = new byte[25];
+                                                int read;
+
+                                                while (true) {
+                                                    try {
+                                                        while ((read = inStream.read(buf)) > 0) {
+                                                            for (int i = 0; i < read; i++) {
+                                                                sysPrintStream.print((char) buf[i]);
+                                                            }
+                                                            sysPrintStream.flush();
+                                                        }
+
+                                                        if (!runState.isRunning()) break;
+                                                    }
+                                                    catch (Exception e) {
+                                                        break;
+                                                    }
+                                                }
+
+                                                sysPrintStream.flush();
+
+                                                if (!multi) {
+                                                    multiIndentSize = (prompt = String.valueOf(TemplateRuntime.eval(env.get("$PROMPT"), variables))).length();
+                                                    out.append(prompt);
+                                                }
+                                                else {
+                                                    out.append(">").append(indent((multiIndentSize - 1) + (depth * 4)));
+                                                }
+
+                                            }
+                                        });
+
+
+                                        final Thread watchThread = new Thread(new Runnable() {
+                                            public void run() {
+
+                                                Thread runningThread = new Thread(new Runnable() {
+                                                    public void run() {
+                                                        try {
+                                                            String read;
+                                                            while (runState.isRunning()) {
+                                                                while ((read = readBuffer.readLine()) != null) {
+                                                                    if (runState.isRunning()) {
+                                                                        for (char c : read.toCharArray()) {
+                                                                            outStream.write((byte) c);
+                                                                        }
+                                                                    }
+                                                                    else {
+                                                                        runState.getSession().setCommandBuffer(read);
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            outStream.write((byte) '\n');
+                                                            outStream.flush();
+                                                        }
+                                                        catch (Exception e2) {
+
+                                                        }
+                                                    }
+
+                                                });
+
+                                                runningThread.setPriority(Thread.MIN_PRIORITY);
+                                                runningThread.start();
+
+                                                try {
+                                                    p.waitFor();
+                                                }
+                                                catch (InterruptedException e) {
+                                                    // nothing;
+                                                }
+
+                                                sysPrintStream.flush();
+                                                runState.setRunning(false);
+
+                                                try {
+                                                    runningThread.join();
+                                                }
+                                                catch (InterruptedException e) {
+                                                    // nothing;Ç
+                                                }
+                                            }
+                                        });
+
+                                        pollingThread.setPriority(Thread.MIN_PRIORITY);
+                                        pollingThread.start();
+
+                                        watchThread.setPriority(Thread.MIN_PRIORITY);
+                                        watchThread.start();
+                                        watchThread.join();
+
+
+                                        try {
+                                            pollingThread.notify();
+                                        }
+                                        catch (Exception ne) {
+
+                                        }
 
                                     }
-
-                                }
-                                catch (Exception e2) {
-                                    // fall through;
+                                    catch (Exception e2) {
+                                        // fall through;
+                                    }
                                 }
                             }
-                        }
 
-                        if (successfulExec) {
+                            if (successfulExec) {
+                                inBuffer.reset();
+                                continue;
+                            }
+
+
+                            ByteArrayOutputStream stackTraceCap = new ByteArrayOutputStream();
+                            PrintStream capture = new PrintStream(stackTraceCap);
+
+                            e.printStackTrace(capture);
+                            capture.flush();
+
+                            env.put("$LAST_STACK_TRACE", new String(stackTraceCap.toByteArray()));
+                            if (parseBoolean(env.get("$SHOW_TRACE"))) {
+                                out.println(env.get("$LAST_STACK_TRACE"));
+                            }
+                            else {
+                                out.println(e.toString());
+                            }
+
                             inBuffer.reset();
+
                             continue;
-                        }
-
-
-                        ByteArrayOutputStream stackTraceCap = new ByteArrayOutputStream();
-                        PrintStream capture = new PrintStream(stackTraceCap);
-
-                        e.printStackTrace(capture);
-                        capture.flush();
-
-                        env.put("$LAST_STACK_TRACE", new String(stackTraceCap.toByteArray()));
-                        if (parseBoolean(env.get("$SHOW_TRACE"))) {
-                            out.println(env.get("$LAST_STACK_TRACE"));
                         }
                         else {
                             out.println(e.toString());
                         }
-
-                        inBuffer.reset();
-
-                        continue;
                     }
 
 
                     if (outputBuffer != null && "true".equals(env.get("$PRINTOUTPUT"))) {
                         out.println(String.valueOf(outputBuffer));
                     }
+
 
                 }
 
