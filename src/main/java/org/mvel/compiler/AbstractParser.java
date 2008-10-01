@@ -948,6 +948,12 @@ public class AbstractParser implements Serializable {
 
             return createPropertyToken(start, cursor);
         }
+        catch (StringIndexOutOfBoundsException e) {
+            CompileException c = new CompileException("unexpected end of statement", expr, cursor, e);
+            c.setLineNumber(line);
+            c.setColumn(cursor - lastLineStart);
+            throw c;
+        }
         catch (ArrayIndexOutOfBoundsException e) {
             CompileException c = new CompileException("unexpected end of statement", expr, cursor, e);
             c.setLineNumber(line);
