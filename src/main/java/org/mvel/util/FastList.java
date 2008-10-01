@@ -202,11 +202,11 @@ public class FastList extends AbstractList implements Externalizable {
     }
 
     public ListIterator listIterator(int i) {
-        return super.listIterator(i);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.listIterator(i);
     }
 
     public List subList(int i, int i1) {
-        return super.subList(i, i1);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.subList(i, i1);
     }
 
     public boolean equals(Object o) {
@@ -227,7 +227,7 @@ public class FastList extends AbstractList implements Externalizable {
     }
 
     public int hashCode() {
-        return super.hashCode();    //To change body of overridden methods use File | Settings | File Templates.
+        return super.hashCode();
     }
 
     protected void removeRange(int i, int i1) {
@@ -291,6 +291,6 @@ public class FastList extends AbstractList implements Externalizable {
 
 
     public String toString() {
-        return super.toString();    //To change body of overridden methods use File | Settings | File Templates.
+        return super.toString();
     }
 }

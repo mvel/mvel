@@ -119,8 +119,7 @@ public class ExecutionStack implements Stack {
 
         if (element == null) return "<EMPTY>";
 
-        StringAppender appender = new StringAppender();
-        appender.append("[");
+        StringAppender appender = new StringAppender().append("[");
         do {
             appender.append(String.valueOf(el.value));
             if (el.next != null) appender.append(", ");
