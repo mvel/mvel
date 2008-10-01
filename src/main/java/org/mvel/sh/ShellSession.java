@@ -298,29 +298,27 @@ public class ShellSession {
                                 inBuffer.reset();
                                 continue;
                             }
+                        }
 
+                        ByteArrayOutputStream stackTraceCap = new ByteArrayOutputStream();
+                        PrintStream capture = new PrintStream(stackTraceCap);
 
-                            ByteArrayOutputStream stackTraceCap = new ByteArrayOutputStream();
-                            PrintStream capture = new PrintStream(stackTraceCap);
+                        e.printStackTrace(capture);
+                        capture.flush();
 
-                            e.printStackTrace(capture);
-                            capture.flush();
-
-                            env.put("$LAST_STACK_TRACE", new String(stackTraceCap.toByteArray()));
-                            if (parseBoolean(env.get("$SHOW_TRACE"))) {
-                                out.println(env.get("$LAST_STACK_TRACE"));
-                            }
-                            else {
-                                out.println(e.toString());
-                            }
-
-                            inBuffer.reset();
-
-                            continue;
+                        env.put("$LAST_STACK_TRACE", new String(stackTraceCap.toByteArray()));
+                        if (parseBoolean(env.get("$SHOW_TRACE"))) {
+                            out.println(env.get("$LAST_STACK_TRACE"));
                         }
                         else {
                             out.println(e.toString());
                         }
+
+                        inBuffer.reset();
+
+                        continue;
+
+
                     }
 
 
