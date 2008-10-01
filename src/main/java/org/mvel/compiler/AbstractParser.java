@@ -915,7 +915,6 @@ public class AbstractParser implements Serializable {
                                 if ("new".equals(name = new String(expr, start, cursor - start))
                                         || "isdef".equals(name)) {
                                     captureToEOT();
-
                                     return lastNode = new Negation(subset(expr, start, cursor - start), fields);
                                 }
                                 else {
@@ -1414,7 +1413,7 @@ public class AbstractParser implements Serializable {
      * @return
      */
     protected boolean tokenContinues() {
-        if (cursor >= length) return false;
+        if (cursor == length) return false;
         else if (expr[cursor] == '.' || expr[cursor] == '[') return true;
         else if (isWhitespace(expr[cursor])) {
             int markCurrent = cursor;
@@ -1438,6 +1437,7 @@ public class AbstractParser implements Serializable {
                 case '!':
                     if (lookAhead() == '=') return;
                     else break;
+
                 case '<':
                 case '>':
                     return;
