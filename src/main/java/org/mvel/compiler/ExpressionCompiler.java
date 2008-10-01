@@ -246,7 +246,9 @@ public class ExpressionCompiler extends AbstractParser {
                 pCtx.processTables();
             }
 
-            if (!stk.isEmpty()) throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
+            if (!stk.isEmpty()) {
+                throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
+            }
 
             return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly);
 
@@ -255,7 +257,7 @@ public class ExpressionCompiler extends AbstractParser {
             throw new CompileException("not a statement, or badly formed structure", e);
         }
         catch (CompileException e) {
-        //    CompileException ne = new CompileException(e.getMessage(), expr, cursor, e);
+            //    CompileException ne = new CompileException(e.getMessage(), expr, cursor, e);
             e.setExpr(expr);
             e.setLineNumber(line);
             e.setColumn(cursor - lastLineStart);

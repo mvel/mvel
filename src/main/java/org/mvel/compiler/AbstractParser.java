@@ -2197,8 +2197,8 @@ public class AbstractParser implements Serializable {
                 case GETHAN:
                 case LETHAN:
                 case POWER:
-                    v1 = stk.pop();
-                    stk.push(doOperations(stk.pop(), operator, v1));
+                    //    v1 = stk.pop();
+                    stk.push(doOperations(stk.peek2(), operator, stk.pop2()));
                     break;
 
                 case AND:
@@ -2241,54 +2241,55 @@ public class AbstractParser implements Serializable {
                     break;
 
                 case CONTAINS:
-                    v1 = stk.pop();
-                    stk.push(containsCheck(stk.pop(), v1));
+                    stk.push(containsCheck(stk.peek2(), stk.pop2()));
                     break;
 
                 case BW_AND:
-                    v1 = stk.pop();
-                    stk.push(asInt(stk.pop()) & asInt(v1));
+                    //    v1 = stk.pop();
+                    stk.push(asInt(stk.peek2()) & asInt(stk.pop2()));
                     break;
 
                 case BW_OR:
-                    v1 = stk.pop();
-                    stk.push(asInt(stk.pop()) | asInt(v1));
+                    //    v1 = stk.pop();
+                    stk.push(asInt(stk.peek2()) | asInt(stk.pop2()));
                     break;
 
                 case BW_XOR:
-                    v1 = stk.pop();
-                    stk.push(asInt(stk.pop()) ^ asInt(v1));
+                    //     v1 = stk.pop();
+                    stk.push(asInt(stk.peek2()) ^ asInt(stk.pop2()));
                     break;
 
                 case BW_SHIFT_LEFT:
-                    v1 = stk.pop();
-                    stk.push(asInt(stk.pop()) << asInt(v1));
+                    //    v1 = stk.pop();
+                    stk.push(asInt(stk.peek2()) << asInt(stk.pop2()));
                     break;
 
                 case BW_USHIFT_LEFT:
-                    v1 = stk.pop();
-                    int iv2 = asInt(stk.pop());
+                    //  v1 = stk.pop();
+                    int iv2 = asInt(stk.peek2());
                     if (iv2 < 0) iv2 *= -1;
-                    stk.push(iv2 << asInt(v1));
+                    stk.push(iv2 << asInt(stk.pop2()));
                     break;
 
                 case BW_SHIFT_RIGHT:
-                    v1 = stk.pop();
-                    stk.push(asInt(stk.pop()) >> asInt(v1));
+                    //    v1 = stk.pop();
+                    stk.push(asInt(stk.peek2()) >> asInt(stk.pop2()));
                     break;
 
                 case BW_USHIFT_RIGHT:
-                    v1 = stk.pop();
-                    stk.push(asInt(stk.pop()) >>> asInt(v1));
+                    //     v1 = stk.pop();
+                    stk.push(asInt(stk.peek2()) >>> asInt(stk.pop2()));
                     break;
 
                 case STR_APPEND:
-                    v1 = stk.pop();
-                    stk.push(new StringAppender(java.lang.String.valueOf(stk.pop())).append(java.lang.String.valueOf(v1)).toString());
+                    //    v1 = stk.pop();
+                    stk.push(new StringAppender(java.lang.String.valueOf(stk.peek2()))
+                            .append(java.lang.String.valueOf(stk.pop2())).toString());
                     break;
 
                 case SOUNDEX:
-                    stk.push(Soundex.soundex(java.lang.String.valueOf(stk.pop())).equals(Soundex.soundex(java.lang.String.valueOf(stk.pop()))));
+                    stk.push(Soundex.soundex(java.lang.String.valueOf(stk.pop()))
+                            .equals(Soundex.soundex(java.lang.String.valueOf(stk.pop()))));
                     break;
 
                 case SIMILARITY:

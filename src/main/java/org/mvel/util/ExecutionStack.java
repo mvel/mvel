@@ -67,7 +67,6 @@ public class ExecutionStack implements Stack {
     }
 
     public Object peek2() {
-        if (size < 2) return null;
         return element.next.value;
     }
 
@@ -78,6 +77,16 @@ public class ExecutionStack implements Stack {
         }
         finally {
             element = element.next;
+        }
+    }
+
+    public Object pop2() {
+        try {
+            size -= 2;
+            return element.value;
+        }
+        finally {
+            element = element.next.next;
         }
     }
 
@@ -115,7 +124,8 @@ public class ExecutionStack implements Stack {
         do {
             appender.append(String.valueOf(el.value));
             if (el.next != null) appender.append(", ");
-        } while ((el = el.next) != null);
+        }
+        while ((el = el.next) != null);
 
         appender.append("]");
 

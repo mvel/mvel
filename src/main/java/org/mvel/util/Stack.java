@@ -39,6 +39,8 @@ public interface Stack extends Serializable {
 
     public Object pop();
 
+    public Object pop2();
+
     public void discard();
 
     public void clear();
