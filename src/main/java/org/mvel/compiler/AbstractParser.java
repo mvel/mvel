@@ -1588,7 +1588,7 @@ public class AbstractParser implements Serializable {
      * @return new position.
      */
     protected int trimLeft(int pos) {
-        while (pos != 0 && isWhitespace(expr[pos - 1])) pos--;
+        while (pos != 0 && pos != start && isWhitespace(expr[pos - 1])) pos--;
         return pos;
     }
 
@@ -2211,7 +2211,6 @@ public class AbstractParser implements Serializable {
                 case GETHAN:
                 case LETHAN:
                 case POWER:
-                    //    v1 = stk.pop();
                     stk.push(doOperations(stk.peek2(), operator, stk.pop2()));
                     break;
 
@@ -2259,44 +2258,36 @@ public class AbstractParser implements Serializable {
                     break;
 
                 case BW_AND:
-                    //    v1 = stk.pop();
                     stk.push(asInt(stk.peek2()) & asInt(stk.pop2()));
                     break;
 
                 case BW_OR:
-                    //    v1 = stk.pop();
                     stk.push(asInt(stk.peek2()) | asInt(stk.pop2()));
                     break;
 
                 case BW_XOR:
-                    //     v1 = stk.pop();
                     stk.push(asInt(stk.peek2()) ^ asInt(stk.pop2()));
                     break;
 
                 case BW_SHIFT_LEFT:
-                    //    v1 = stk.pop();
                     stk.push(asInt(stk.peek2()) << asInt(stk.pop2()));
                     break;
 
                 case BW_USHIFT_LEFT:
-                    //  v1 = stk.pop();
                     int iv2 = asInt(stk.peek2());
                     if (iv2 < 0) iv2 *= -1;
                     stk.push(iv2 << asInt(stk.pop2()));
                     break;
 
                 case BW_SHIFT_RIGHT:
-                    //    v1 = stk.pop();
                     stk.push(asInt(stk.peek2()) >> asInt(stk.pop2()));
                     break;
 
                 case BW_USHIFT_RIGHT:
-                    //     v1 = stk.pop();
                     stk.push(asInt(stk.peek2()) >>> asInt(stk.pop2()));
                     break;
 
                 case STR_APPEND:
-                    //    v1 = stk.pop();
                     stk.push(new StringAppender(java.lang.String.valueOf(stk.peek2()))
                             .append(java.lang.String.valueOf(stk.pop2())).toString());
                     break;

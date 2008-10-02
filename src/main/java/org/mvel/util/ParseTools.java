@@ -23,7 +23,6 @@ import static org.mvel.DataConversion.canConvert;
 import static org.mvel.MVEL.getDebuggingOutputFileName;
 import org.mvel.ast.ASTNode;
 import static org.mvel.compiler.AbstractParser.*;
-import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.compiler.*;
 import org.mvel.integration.ResolverTools;
 import static org.mvel.integration.ResolverTools.insertFactory;
@@ -763,6 +762,7 @@ public class ParseTools {
     }
 
     public static char[] subset(char[] array, int start, int length) {
+        if (length < 0) return new char[0];
         char[] newArray = new char[length];
 
         for (int i = 0; i < newArray.length; i++) {

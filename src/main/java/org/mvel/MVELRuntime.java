@@ -2,7 +2,6 @@ package org.mvel;
 
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.Operator.*;
-import static org.mvel.Operator.TERNARY_ELSE;
 import static org.mvel.Soundex.soundex;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.LineLabel;
@@ -137,8 +136,7 @@ public class MVELRuntime {
                                 break;
 
                             case CONTAINS:
-                                v1 = stk.pop();
-                                stk.push(containsCheck(stk.pop(), v1));
+                                stk.push(containsCheck(stk.peek2(), stk.pop2()));
                                 break;
 
                             case SOUNDEX:

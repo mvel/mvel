@@ -20,7 +20,6 @@
 package org.mvel;
 
 import static org.mvel.Operator.*;
-import static org.mvel.Operator.AND;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.Substatement;
 import org.mvel.compiler.AbstractParser;
@@ -160,6 +159,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
             if (holdOverRegister != null) {
                 stk.push(holdOverRegister);
             }
+
         }
         catch (CompileException e) {
             e.setExpr(expr);
