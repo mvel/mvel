@@ -18,10 +18,10 @@
  */
 package org.mvel.optimizers;
 
+import org.mvel.CompileException;
 import org.mvel.compiler.AbstractParser;
-import static org.mvel.util.PropertyTools.isIdentifierPart;
-
 import static org.mvel.util.ParseTools.isWhitespace;
+import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
@@ -144,17 +144,25 @@ public class AbstractOptimizer extends AbstractParser {
             case '[':
                 return COL;
             case '.':
-                skipWhitespace();
                 if ((start + 1) != length) {
                     switch (expr[cursor = ++start]) {
                         case '?':
-                            cursor = ++start;
+                            if ((cursor = ++start) == length) {
+                                throw new CompileException("unexpected end of statement");
+                            }
                             fields = -1;
                             break;
                         case '{':
                             return WITH;
+                        default:
+                            if (isWhitespace(expr[start])) {
+                                skipWhitespace();
+                                start = cursor;
+                            }
                     }
-
+                }
+                else {
+                    throw new CompileException("unexpected end of statement");
                 }
                 break;
         }
@@ -162,7 +170,7 @@ public class AbstractOptimizer extends AbstractParser {
         //noinspection StatementWithEmptyBody
         while (++cursor < length && isIdentifierPart(expr[cursor])) ;
 
-        if (cursor != length) {
+        if (cursor < length) {
             skipWhitespace();
             switch (expr[cursor]) {
                 case '[':
@@ -182,7 +190,7 @@ public class AbstractOptimizer extends AbstractParser {
          * Trim off any whitespace.
          */
 
-        return  new String(expr, start = trimRight(start), trimLeft(cursor) - start);
+        return new String(expr, start = trimRight(start), trimLeft(cursor) - start);
     }
 
     /**

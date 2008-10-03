@@ -2017,7 +2017,7 @@ public class AbstractParser implements Serializable {
 
                 while (true) {
                     // look ahead again
-                    if ((tk = nextToken()) != null && PTABLE[operator2 = tk.getOperator()] > PTABLE[operator]) {
+                    if ((tk = nextToken()) != null && tk.isOperator() && PTABLE[operator2 = tk.getOperator()] > PTABLE[operator]) {
                         // if we have back to back operations on the stack, we don't xswap
                         if (x) {
                             xswap();

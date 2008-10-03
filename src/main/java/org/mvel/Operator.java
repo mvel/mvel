@@ -19,7 +19,7 @@
 package org.mvel;
 
 public interface Operator {
-  
+
     public static final int NOOP = -1;
 
     /**
@@ -52,7 +52,7 @@ public interface Operator {
             7,   // EQUAL
             7,   // NEQUAL
 
-           13,    // STR_APPEND
+            13,    // STR_APPEND
             3,   // AND
             2,   // OR
             2,   // CHOR
@@ -65,6 +65,9 @@ public interface Operator {
             0,  // TERNARY
             0,  // TERNARY ELSE
             13,   // ASSIGN
+            13,   // INC_ASSIGN
+            13   // DEC ASSIGN
+
     };
 
     public static final int ADD = 0;
@@ -136,5 +139,5 @@ public interface Operator {
     public static final int RETURN = 99;
 
     public static final int FUNCTION = 100;
-    
+
 }

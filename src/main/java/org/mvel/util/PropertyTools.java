@@ -18,8 +18,8 @@
  */
 package org.mvel.util;
 
-import org.mvel.DataTypes;
 import org.mvel.CompileException;
+import org.mvel.DataTypes;
 
 import static java.lang.Double.parseDouble;
 import static java.lang.Float.parseFloat;
@@ -172,8 +172,8 @@ public class PropertyTools {
 
 
     public static Object handleNumericConversion(final char[] val) {
-        if (!isDigit(val[val.length-1])) {
-            switch (val[val.length-1]) {
+        if (!isDigit(val[val.length - 1])) {
+            switch (val[val.length - 1]) {
                 case 'l':
                     return parseLong(new String(val, 0, val.length - 1));
                 case 'd':
@@ -364,6 +364,8 @@ public class PropertyTools {
 
     public static String createStringTrimmed(char[] s, int start, int length) {
         int end = start + length;
+        if (end > s.length) return new String(s);
+
         while (start != end && s[start] <= '\u0020') {
             start++;
         }
