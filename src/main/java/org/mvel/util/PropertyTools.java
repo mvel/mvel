@@ -172,7 +172,30 @@ public class PropertyTools {
 
 
     public static Object handleNumericConversion(final char[] val) {
-        if (!isDigit(val[val.length - 1])) {
+        if (val.length != 1 && val[0] == '0') {
+
+            //        if (val[1] == 'x') {
+            // hex number
+            if (!isDigit(val[val.length - 1])) {
+                switch (val[val.length - 1]) {
+                    case 'l':
+                        return Long.decode(new String(val, 0, val.length - 1));
+                    case 'I':
+                        return BigInteger.valueOf(Long.decode(new String(val, 0, val.length - 1)));
+                    case 'D':
+                        return BigDecimal.valueOf(Long.decode(new String(val, 0, val.length - 1)));
+                }
+                //              throw new CompileException("unrecognized numeric literal");
+            }
+
+            return Integer.decode(new String(val));
+//            }
+//            else {
+//                // octal number
+//
+//            }
+        }
+        else if (!isDigit(val[val.length - 1])) {
             switch (val[val.length - 1]) {
                 case 'l':
                     return parseLong(new String(val, 0, val.length - 1));
@@ -180,6 +203,10 @@ public class PropertyTools {
                     return parseDouble(new String(val, 0, val.length - 1));
                 case 'f':
                     return parseFloat(new String(val, 0, val.length - 1));
+                case 'I':
+                    return new BigInteger(new String(val, 0, val.length - 1));
+                case 'D':
+                    return new BigDecimal(new String(val, 0, val.length - 1));
             }
             throw new CompileException("unrecognized numeric literal");
         }
@@ -309,13 +336,36 @@ public class PropertyTools {
                     f = false;
                 }
                 else if (len != 1 && i == len - 1) {
-                    switch (val[i]) {
+                    switch (c) {
                         case 'l':
                         case 'f':
                         case 'd':
+                        case 'I':
+                        case 'D':
                             return true;
                     }
                     return false;
+                }
+                else if (i == 1 && c == 'x' && val[0] == '0') {
+                    for (i++; i < len; i++) {
+                        if (!isDigit(c = val[i])) {
+                            if ((c < 'A' || c > 'F') && (c < 'a' || c > 'f')) {
+
+                                if (i == len - 1) {
+                                    switch (c) {
+                                        case 'l':
+                                        case 'I':
+                                        case 'D':
+                                            return true;
+                                    }
+                                }
+
+                                return false;
+                            }
+                        }
+                    }
+                    return len - 2 > 0;
+
                 }
                 else {
                     return false;
