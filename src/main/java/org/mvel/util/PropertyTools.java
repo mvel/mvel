@@ -189,14 +189,17 @@ public class PropertyTools {
         else if (!isDigit(val[val.length - 1])) {
             switch (val[val.length - 1]) {
                 case 'l':
+                case 'L':
                     return parseLong(new String(val, 0, val.length - 1));
                 case 'd':
+                case 'D':
                     return parseDouble(new String(val, 0, val.length - 1));
                 case 'f':
+                case 'F':
                     return parseFloat(new String(val, 0, val.length - 1));
                 case 'I':
                     return new BigInteger(new String(val, 0, val.length - 1));
-                case 'D':
+                case 'B':
                     return new BigDecimal(new String(val, 0, val.length - 1));
             }
             throw new CompileException("unrecognized numeric literal");
@@ -329,10 +332,13 @@ public class PropertyTools {
                 else if (len != 1 && i == len - 1) {
                     switch (c) {
                         case 'l':
+                        case 'L':
                         case 'f':
+                        case 'F':
                         case 'd':
-                        case 'I':
                         case 'D':
+                        case 'I':
+                        case 'B':
                             return true;
                     }
                     return false;
