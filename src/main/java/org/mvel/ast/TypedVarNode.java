@@ -19,13 +19,10 @@
 package org.mvel.ast;
 
 import static org.mvel.MVEL.eval;
-import org.mvel.compiler.ExecutableStatement;
 import org.mvel.compiler.AbstractParser;
+import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.find;
-import static org.mvel.util.PropertyTools.createStringTrimmed;
-import org.mvel.util.PropertyTools;
 
 /**
  * @author Christopher Brock

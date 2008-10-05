@@ -20,9 +20,8 @@ package org.mvel.ast;
 
 import org.mvel.CompileException;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.findClassImportResolverFactory;
-import static org.mvel.util.PropertyTools.endsWith;
-import static org.mvel.util.PropertyTools.findLast;
 
 /**
  * @author Christopher Brock
@@ -37,9 +36,9 @@ public class ImportNode extends ASTNode {
     public ImportNode(char[] expr) {
         this.name = expr;
 
-        if (endsWith(expr, WC_TEST)) {
+        if (ParseTools.endsWith(expr, WC_TEST)) {
             packageImport = true;
-            offset = (short) findLast(expr, '.');
+            offset = (short) ParseTools.findLast(expr, '.');
         }
         else {
             try {
@@ -83,6 +82,6 @@ public class ImportNode extends ASTNode {
         return new String(name, 0, offset);
     }
 
-    
+
 }
 

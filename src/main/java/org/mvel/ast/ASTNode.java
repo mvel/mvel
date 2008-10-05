@@ -19,10 +19,13 @@
 
 package org.mvel.ast;
 
-import org.mvel.*;
+import org.mvel.CompileException;
 import static org.mvel.Operator.NOOP;
-import static org.mvel.ast.TypeDescriptor.getClassReference;
+import org.mvel.OptimizationFailure;
+import org.mvel.PropertyAccessException;
 import static org.mvel.PropertyAccessor.get;
+import org.mvel.UnresolveablePropertyException;
+import static org.mvel.ast.TypeDescriptor.getClassReference;
 import org.mvel.compiler.AbstractParser;
 import static org.mvel.compiler.AbstractParser.LITERALS;
 import org.mvel.compiler.Accessor;
@@ -32,8 +35,7 @@ import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizationNotSupported;
 import static org.mvel.optimizers.OptimizerFactory.*;
 import static org.mvel.util.ArrayTools.findFirst;
-import static org.mvel.util.PropertyTools.handleNumericConversion;
-import static org.mvel.util.PropertyTools.isNumber;
+import org.mvel.util.ParseTools;
 import org.mvel.util.ThisLiteral;
 
 import java.io.Serializable;
@@ -406,8 +408,8 @@ public class ASTNode implements Cloneable, Serializable {
             egressType = (literal = AbstractParser.OPERATORS.get(literal)).getClass();
             return;
         }
-        else if (isNumber(name)) {
-            egressType = (literal = handleNumericConversion(name)).getClass();
+        else if (ParseTools.isNumber(name)) {
+            egressType = (literal = ParseTools.handleNumericConversion(name)).getClass();
             if (((fields |= NUMERIC | LITERAL | IDENTIFIER) & INVERT) != 0) {
                 try {
                     literal = ~((Integer) literal);

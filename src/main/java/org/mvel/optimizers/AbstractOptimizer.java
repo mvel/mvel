@@ -20,8 +20,8 @@ package org.mvel.optimizers;
 
 import org.mvel.CompileException;
 import org.mvel.compiler.AbstractParser;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.isWhitespace;
-import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
@@ -168,7 +168,7 @@ public class AbstractOptimizer extends AbstractParser {
         }
 
         //noinspection StatementWithEmptyBody
-        while (++cursor < length && isIdentifierPart(expr[cursor])) ;
+        while (++cursor < length && ParseTools.isIdentifierPart(expr[cursor])) ;
 
         if (cursor < length) {
             skipWhitespace();

@@ -27,7 +27,6 @@ import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.createStringTrimmed;
 import org.mvel.util.StringAppender;
 
 import java.io.Serializable;
@@ -183,7 +182,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                 parms.add(
                         new ParmValuePair(null, (ExecutableStatement)
                                 subCompileExpression(new StringAppender(nestParm).append('.')
-                                                .append(subset(block, start, end - start)).toString()))
+                                        .append(subset(block, start, end - start)).toString()))
                 );
             }
             else {

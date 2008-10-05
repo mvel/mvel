@@ -20,17 +20,14 @@ package org.mvel.ast;
 
 import org.mvel.MVEL;
 import static org.mvel.MVEL.compileSetExpression;
-import org.mvel.PropertyAccessor;
 import org.mvel.Operator;
-import org.mvel.ParserContext;
+import org.mvel.PropertyAccessor;
 import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.createStringTrimmed;
-import static org.mvel.util.PropertyTools.find;
 
 /**
  * @author Christopher Brock

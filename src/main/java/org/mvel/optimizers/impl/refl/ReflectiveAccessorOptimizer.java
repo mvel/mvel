@@ -39,10 +39,13 @@ import org.mvel.optimizers.impl.refl.collection.ArrayCreator;
 import org.mvel.optimizers.impl.refl.collection.ExprValueAccessor;
 import org.mvel.optimizers.impl.refl.collection.ListCreator;
 import org.mvel.optimizers.impl.refl.collection.MapCreator;
-import org.mvel.util.*;
+import org.mvel.util.ArrayTools;
+import org.mvel.util.MethodStub;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.*;
-import static org.mvel.util.PropertyTools.getBaseComponentType;
+import static org.mvel.util.PropertyTools.getFieldOrAccessor;
+import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
+import org.mvel.util.StringAppender;
 
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
@@ -696,7 +699,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             Accessor[] a = new Accessor[((Object[]) o).length];
             int i = 0;
 
-            for (Object item : (Object[]) o) {                     
+            for (Object item : (Object[]) o) {
                 a[i++] = _getAccessor(item); // item
             }
 

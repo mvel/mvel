@@ -28,9 +28,9 @@ import static org.mvel.Soundex.soundex;
 import org.mvel.Unit;
 import org.mvel.debug.DebugTools;
 import org.mvel.util.InternalNumber;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.narrowType;
 import static org.mvel.util.ParseTools.resolveType;
-import static org.mvel.util.PropertyTools.isNumber;
 
 import static java.lang.String.valueOf;
 import java.math.BigDecimal;
@@ -58,7 +58,8 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 return _doOperations(type1, val1, operation, type2, val2);
             }
         }
-        else if (type2 == DataTypes.BIG_DECIMAL && (type1 > 99 || (type1 == DataTypes.STRING && isNumber(val1)))) {
+        else
+        if (type2 == DataTypes.BIG_DECIMAL && (type1 > 99 || (type1 == DataTypes.STRING && ParseTools.isNumber(val1)))) {
             return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1), operation, (BigDecimal) val2, true);
         }
         else {
@@ -135,7 +136,8 @@ public class IEEEFloatingPointMath implements MathProcessor {
             if (type1 > 99 && type1 == type2) {
                 return doOperationsSameType(type1, val1, operation, val2);
             }
-            else if ((type1 > 99 && (type2 > 99)) || (operation != 0 && isNumber(val1) && isNumber(val2))) {
+            else
+            if ((type1 > 99 && (type2 > 99)) || (operation != 0 && ParseTools.isNumber(val1) && ParseTools.isNumber(val2))) {
                 return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1), operation, getInternalNumberFromType(val2, type2), true);
             }
             else

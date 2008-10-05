@@ -32,7 +32,6 @@ import static org.mvel.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import org.mvel.util.ArrayTools;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.getBaseComponentType;
 
 import java.io.Serializable;
 import static java.lang.Thread.currentThread;

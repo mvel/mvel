@@ -25,7 +25,6 @@ import org.mvel.ast.Function;
 import org.mvel.optimizers.AbstractOptimizer;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.getFieldOrAccessor;
-import static org.mvel.util.PropertyTools.getSubComponentType;
 import org.mvel.util.StringAppender;
 
 import java.lang.reflect.*;
@@ -51,7 +50,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         this.length = (this.expr = property.toCharArray()).length;
         this.pCtx = parserContext;
     }
-    
+
     public List<String> getInputs() {
         return inputs;
     }
@@ -69,7 +68,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         Class ctx = Object.class;
         resolvedExternally = true;
         first = true;
-        
+
         while (cursor < length) {
             switch (nextSubToken()) {
                 case NORM:
@@ -269,13 +268,12 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
             else if (pCtx.hasFunction(name)) {
                 resolvedExternally = false;
-                String tk = ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";                
+                String tk = ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
                 Function f = pCtx.getFunction(name);
                 f.checkArgumentCount(parseParameterList(tk.toCharArray(), 0, -1).length);
                 return f.getEgressType();
             }
         }
-
 
         /**
          * Get the arguments for the method.

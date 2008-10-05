@@ -23,7 +23,6 @@ import org.mvel.compiler.AccessorNode;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.ParseTools;
-import static org.mvel.util.PropertyTools.getBaseComponentType;
 
 import java.lang.reflect.Array;
 
@@ -56,11 +55,11 @@ public class ArrayAccessorNest implements AccessorNode {
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
         if (nextNode != null) {
-             return nextNode.setValue(((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)], elCtx, vars, value);
+            return nextNode.setValue(((Object[]) ctx)[(Integer) index.getValue(ctx, elCtx, vars)], elCtx, vars, value);
         }
         else {
             if (baseComponentType == null) {
-                baseComponentType = getBaseComponentType(ctx.getClass());
+                baseComponentType = ParseTools.getBaseComponentType(ctx.getClass());
                 requireConversion = baseComponentType != value.getClass() && !baseComponentType.isAssignableFrom(value.getClass());
             }
 

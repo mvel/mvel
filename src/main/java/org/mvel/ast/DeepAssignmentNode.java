@@ -26,8 +26,6 @@ import org.mvel.compiler.CompiledSetExpression;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.createStringTrimmed;
-import static org.mvel.util.PropertyTools.find;
 
 /**
  * @author Christopher Brock

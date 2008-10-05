@@ -1,16 +1,14 @@
 package org.mvel.templates.res;
 
-import org.mvel.util.StringAppender;
-import org.mvel.util.PropertyTools;
-import static org.mvel.util.PropertyTools.createStringTrimmed;
+import org.mvel.CompileException;
+import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
-import org.mvel.MVEL;
-import org.mvel.CompileException;
-import org.mvel.templates.TemplateSyntaxError;
-import org.mvel.templates.TemplateRuntimeError;
 import org.mvel.templates.TemplateRuntime;
+import org.mvel.templates.TemplateRuntimeError;
 import org.mvel.templates.util.ArrayIterator;
+import org.mvel.util.ParseTools;
+import org.mvel.util.StringAppender;
 
 import java.util.*;
 
@@ -105,14 +103,14 @@ public class ForEachNode extends Node {
         for (int i = 0; i < contents.length; i++) {
             switch (contents[i]) {
                 case ':':
-                    items.add(createStringTrimmed(contents, start, i - start));
+                    items.add(ParseTools.createStringTrimmed(contents, start, i - start));
                     start = i + 1;
                     break;
                 case ',':
                     if (expr.size() != (items.size() - 1)) {
                         throw new CompileException("unexpected character ',' in foreach tag", cStart + i);
                     }
-                    expr.add(createStringTrimmed(contents, start, i - start));
+                    expr.add(ParseTools.createStringTrimmed(contents, start, i - start));
                     start = i + 1;
                     break;
             }
@@ -122,7 +120,7 @@ public class ForEachNode extends Node {
             if (expr.size() != (items.size() - 1)) {
                 throw new CompileException("expected character ':' in foreach tag", cEnd);
             }
-            expr.add(createStringTrimmed(contents, start, contents.length - start));
+            expr.add(ParseTools.createStringTrimmed(contents, start, contents.length - start));
         }
 
         item = new String[items.size()];

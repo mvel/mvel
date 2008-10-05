@@ -27,8 +27,6 @@ import org.mvel.integration.impl.ItemResolverFactory;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.subCompileExpression;
 import static org.mvel.util.ParseTools.subset;
-import static org.mvel.util.PropertyTools.createStringTrimmed;
-import static org.mvel.util.PropertyTools.getBaseComponentType;
 
 import java.util.Collection;
 
@@ -139,7 +137,7 @@ public class ForEachNode extends BlockNode {
 
         Object iterCond = MVEL.eval(cond, thisValue, factory);
 
-        if (itemType != null) enforceTypeSafety(itemType, getBaseComponentType(iterCond.getClass()));
+        if (itemType != null) enforceTypeSafety(itemType, ParseTools.getBaseComponentType(iterCond.getClass()));
 
         this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
 
@@ -191,7 +189,7 @@ public class ForEachNode extends BlockNode {
         if (cursor == condition.length || condition[cursor] != ':')
             throw new CompileException("expected : in foreach");
 
-        item = createStringTrimmed(condition, 0, cursor);
+        item = ParseTools.createStringTrimmed(condition, 0, cursor);
 
         int x;
         if ((x = item.indexOf(' ')) != -1) {
@@ -211,7 +209,7 @@ public class ForEachNode extends BlockNode {
             this.condition = (ExecutableStatement) subCompileExpression(this.cond);
 
             if (itemType != null) {
-                enforceTypeSafety(itemType, getBaseComponentType(this.condition.getKnownEgressType()));
+                enforceTypeSafety(itemType, ParseTools.getBaseComponentType(this.condition.getKnownEgressType()));
             }
         }
     }
@@ -219,7 +217,7 @@ public class ForEachNode extends BlockNode {
     private static void enforceTypeSafety(Class required, Class actual) {
         if (!required.isAssignableFrom(actual)) {
             throw new CompileException("type mismatch in foreach: expected: "
-                    + required.getName() + "; but found: " + getBaseComponentType(actual));
+                    + required.getName() + "; but found: " + ParseTools.getBaseComponentType(actual));
         }
     }
 }

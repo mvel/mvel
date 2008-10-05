@@ -12,9 +12,9 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.ClassImportResolverFactory;
 import org.mvel.util.ASTLinkedList;
 import org.mvel.util.ExecutionStack;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.PropertyTools.isEmpty;
-import static org.mvel.util.PropertyTools.similarity;
 import org.mvel.util.Stack;
 
 import static java.lang.String.valueOf;
@@ -144,7 +144,7 @@ public class MVELRuntime {
                                 break;
 
                             case SIMILARITY:
-                                stk.push(similarity(valueOf(stk.pop()), valueOf(stk.pop())));
+                                stk.push(ParseTools.similarity(valueOf(stk.pop()), valueOf(stk.pop())));
                                 break;
 
                         }

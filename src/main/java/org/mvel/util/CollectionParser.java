@@ -21,8 +21,6 @@ package org.mvel.util;
 import org.mvel.CompileException;
 import org.mvel.compiler.ExecutableStatement;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.createStringTrimmed;
-import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,7 +68,7 @@ public class CollectionParser {
     }
 
     public Object parseCollection(char[] property, boolean subcompile, Class colType) {
-        if (colType != null) this.colType = PropertyTools.getBaseComponentType(colType);
+        if (colType != null) this.colType = getBaseComponentType(colType);
         this.cursor = 0;
         if ((this.length = (this.property = property).length) > 0)
             while (length > 0 && isWhitespace(property[length - 1]))

@@ -18,7 +18,7 @@
  */
 package org.mvel.compiler;
 
-import static org.mvel.util.PropertyTools.isNumeric;
+import org.mvel.util.ParseTools;
 
 import java.io.Serializable;
 import static java.lang.String.valueOf;
@@ -34,7 +34,7 @@ public class BlankLiteral implements Serializable {
         if (obj == null || "".equals(valueOf(obj))) {
             return true;
         }
-        else if (isNumeric(obj)) {
+        else if (ParseTools.isNumeric(obj)) {
             return "0".equals(valueOf(obj));
         }
         else if (obj instanceof Collection) {

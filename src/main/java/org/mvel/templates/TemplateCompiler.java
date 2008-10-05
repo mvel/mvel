@@ -4,14 +4,14 @@ import org.mvel.CompileException;
 import org.mvel.templates.res.*;
 import org.mvel.templates.util.TemplateTools;
 import org.mvel.util.ExecutionStack;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.balancedCaptureWithLineAccounting;
 import static org.mvel.util.ParseTools.subset;
-import static org.mvel.util.PropertyTools.isIdentifierPart;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.InputStream;
-import java.io.File;
 
 /**
  * The TemplateCompiler class is used for pre-compiling MVEL Templates.  To execute a compiled template see {@link TemplateRuntime}
@@ -56,7 +56,7 @@ public class TemplateCompiler {
 
     public Node compileFrom(Node root, ExecutionStack stack) {
         line = 1;
-                
+
         Node n = root;
         if (root == null) {
             n = root = new TextNode(0, 0);
@@ -260,7 +260,7 @@ public class TemplateCompiler {
 
     public int captureOrbToken() {
         int newStart = ++cursor;
-        while ((cursor != length) && isIdentifierPart(template[cursor])) cursor++;
+        while ((cursor != length) && ParseTools.isIdentifierPart(template[cursor])) cursor++;
         if (cursor != length && template[cursor] == '{') return newStart;
         return -1;
     }
