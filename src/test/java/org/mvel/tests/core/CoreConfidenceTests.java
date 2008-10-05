@@ -1892,6 +1892,31 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("with (foo) { countTest += 5 }; if (foo.countTest == 5) { foo.countTest = 0; return true; } else { foo.countTest = 0; return false; }"));
     }
 
+    public void testOperativeAssignMod() {
+        int val = 5;
+        assertEquals(val %= 2, test("int val = 5; val %= 2; val"));
+    }
+
+    public void testOperativeAssignDiv() {
+        int val = 10;
+        assertEquals(val /= 2, test("int val = 10; val /= 2; val"));
+    }
+
+    public void testOperativeAssignShift1() {
+        int val = 5;
+        assertEquals(val <<= 2, test("int val = 5; val <<= 2; val"));
+    }
+
+    public void testOperativeAssignShift2() {
+        int val = 5;
+        assertEquals(val >>= 2, test("int val = 5; val >>= 2; val"));
+    }
+
+    public void testOperativeAssignShift3() {
+        int val = -5;
+        assertEquals(val >>>= 2, test("int val = -5; val >>>= 2; val"));
+    }
+
     public void testTypeCast() {
         assertEquals("10", test("(String) 10"));
     }
@@ -4313,6 +4338,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testUniHex1() {
         assertEquals("\uFFFF::", MVEL.eval("'\\uFFFF::'"));
     }
+
 
 }
 
