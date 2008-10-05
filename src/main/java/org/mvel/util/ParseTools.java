@@ -1777,13 +1777,11 @@ public class ParseTools {
     }
 
     public static Serializable optimizeTree(final CompiledExpression compiled) {
-        ASTIterator nodes = compiled.getInstructions();
-
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
-        if (nodes.size() == 1) {
-            ASTNode tk = nodes.firstNode();
+        if (compiled.getInstructions().size() == 1) {
+            ASTNode tk = compiled.getInstructions().firstNode();
 
             if (tk.isLiteral() && !tk.isThisVal()) {
                 if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
