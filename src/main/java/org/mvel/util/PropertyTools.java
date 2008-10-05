@@ -351,8 +351,9 @@ public class PropertyTools {
                                 if (i == len - 1) {
                                     switch (c) {
                                         case 'l':
+                                        case 'L':
                                         case 'I':
-                                        case 'D':
+                                        case 'B':
                                             return true;
                                     }
                                 }
