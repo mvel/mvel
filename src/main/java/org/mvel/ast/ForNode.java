@@ -65,24 +65,26 @@ public class ForNode extends BlockNode {
 
     private void handleCond(char[] condition, int fields) {
         int start = 0;
-        int cursor = nextCondPart(condition, start);
+        int cursor = nextCondPart(condition, start, false);
         try {
             this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start - 1));
 
             expectType(this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor,
-                    (cursor = nextCondPart(condition, start)) - start - 1)), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+                    (cursor = nextCondPart(condition, start, false)) - start - 1)), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
-            this.after = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start)) - start));
+            this.after = (ExecutableStatement)
+                    subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start, true)) - start));
         }
         catch (NegativeArraySizeException e) {
             throw new CompileException("wrong syntax; did you mean to use 'foreach'?");
         }
     }
 
-    private int nextCondPart(char[] condition, int cursor) {
+    private int nextCondPart(char[] condition, int cursor, boolean allowEnd) {
         for (; cursor < condition.length; cursor++) {
             if (condition[cursor] == ';') return ++cursor;
         }
+        if (!allowEnd) throw new CompileException("expected ;");
         return cursor;
     }
 }
