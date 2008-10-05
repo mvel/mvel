@@ -4298,6 +4298,22 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(0x0A, MVEL.eval("0x0A"));
     }
 
+    public void testOctalEscapes() {
+        assertEquals("\344", MVEL.eval("'\\344'"));
+    }
+
+    public void testOctalEscapes2() {
+        assertEquals("\7", MVEL.eval("'\\7'"));
+    }
+
+    public void testOctalEscapes3() {
+        assertEquals("\777", MVEL.eval("'\\777'"));
+    }
+
+    public void testUniHex1() {
+        assertEquals("\uFFFF::", MVEL.eval("'\\uFFFF::'"));
+    }
+
 //    public void testFuzz() {
 //        MVEL.compileExpression("a+>=\u0011AL4\u0014Y\u00048\u0011;\u0014\n" +
 //                "'~\t\f\u00067Bh,\u0003'\u001BonV\u0013v:yQ\u0001gn\u001A\u000F\u0004hX\u0002\u0014\u0014q,9\b\u000Fb]\u000BZX=y\"^ \u00077KRA\u007F!K,NZj#AoR\u0005z-;\u001F\u001D\u0013h \u007Fu\u001E`\u000BW~$O\u00018~\u0019{/h\u001A?5'P<U\u0011X7^HX\u001F=\u0001QP{\u000F\bCi");

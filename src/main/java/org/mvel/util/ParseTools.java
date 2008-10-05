@@ -32,7 +32,6 @@ import org.mvel.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel.integration.impl.TypeInjectionResolverFactoryImpl;
 import org.mvel.math.MathProcessor;
 import static org.mvel.util.PropertyTools.createStringTrimmed;
-import sun.misc.Unsafe;
 
 import java.io.*;
 import static java.lang.Class.forName;
@@ -41,7 +40,6 @@ import static java.lang.String.valueOf;
 import static java.lang.System.arraycopy;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -619,22 +617,94 @@ public class ParseTools {
         return hash + sig.length + declaring.hashCode();
     }
 
-    public static char handleEscapeSequence(char escapedChar) {
-        switch (escapedChar) {
+    /**
+     * Replace escape sequences and return trim required.
+     *
+     * @param escapeStr
+     * @param pos
+     * @return
+     */
+    public static int handleEscapeSequence(char[] escapeStr, int pos) {
+        escapeStr[pos - 1] = 0;
+
+        switch (escapeStr[pos]) {
             case '\\':
-                return '\\';
+                escapeStr[pos] = '\\';
+                return 1;
+            case 'b':
+                escapeStr[pos] = '\b';
+                return 1;
+            case 'f':
+                escapeStr[pos] = '\f';
+                return 1;
             case 't':
-                return '\t';
+                escapeStr[pos] = '\t';
+                return 1;
             case 'r':
-                return '\r';
+                escapeStr[pos] = '\r';
+                return 1;
             case 'n':
-                return '\n';
+                escapeStr[pos] = '\n';
+                return 1;
             case '\'':
-                return '\'';
+                escapeStr[pos] = '\'';
+                return 1;
             case '"':
-                return '"';
+                escapeStr[pos] = '\"';
+                return 1;
+            case 'u':
+                //unicode
+                int s = pos;
+                if (s + 4 > escapeStr.length) throw new CompileException("illegal unicode escape sequence");
+                else {
+                    while (++pos - s != 5) {
+                        if ((escapeStr[pos] >= '0' && escapeStr[pos] <= '9') ||
+                                (escapeStr[pos] >= 'A' && escapeStr[pos] <= 'F')) {
+                        }
+                        else {
+                            throw new CompileException("illegal unicode escape sequence");
+                        }
+                    }
+
+                    escapeStr[s - 1] = (char) Integer.decode("0x" + new String(escapeStr, s + 1, 4)).intValue();
+                    escapeStr[s] = 0;
+                    escapeStr[s + 1] = 0;
+                    escapeStr[s + 2] = 0;
+                    escapeStr[s + 3] = 0;
+                    escapeStr[s + 4] = 0;
+
+                    return 5;
+                }
+
+
             default:
-                throw new ParseException("illegal escape sequence: " + escapedChar);
+                //octal
+                s = pos;
+                while (escapeStr[pos] >= '0' && escapeStr[pos] < '8') {
+                    if (pos != s && escapeStr[s] > '3') {
+                        escapeStr[s - 1] = (char) Integer.decode("0" + new String(escapeStr, s, pos - s + 1)).intValue();
+                        escapeStr[s] = 0;
+                        escapeStr[s + 1] = 0;
+                        return 2;
+                    }
+                    else if ((pos - s) == 2) {
+                        escapeStr[s - 1] = (char) Integer.decode("0" + new String(escapeStr, s, pos - s + 1)).intValue();
+                        escapeStr[s] = 0;
+                        escapeStr[s + 1] = 0;
+                        escapeStr[s + 2] = 0;
+                        return 3;
+                    }
+
+                    if (pos + 1 == escapeStr.length || (escapeStr[pos] < '0' || escapeStr[pos] > '7')) {
+                        escapeStr[s - 1] = (char) Integer.decode("0" + new String(escapeStr, s, pos - s + 1)).intValue();
+                        escapeStr[s] = 0;
+                        return 1;
+                    }
+
+                    pos++;
+                }
+
+                throw new CompileException("illegal escape sequence: " + escapeStr[pos]);
         }
     }
 
@@ -1161,19 +1231,18 @@ public class ParseTools {
         int escapes = 0;
         for (int i = 0; i < input.length; i++) {
             if (input[i] == '\\') {
-                input[i++] = 0;
-                input[i] = handleEscapeSequence(input[i]);
-                escapes++;
+                escapes += handleEscapeSequence(input, ++i);
             }
         }
+
+        if (escapes == 0) return new String(input);
 
         char[] processedEscapeString = new char[input.length - escapes];
         int cursor = 0;
         for (char aName : input) {
-            if (aName == 0) {
-                continue;
+            if (aName != 0) {
+                processedEscapeString[cursor++] = aName;
             }
-            processedEscapeString[cursor++] = aName;
         }
 
         return new String(processedEscapeString);
@@ -1181,7 +1250,7 @@ public class ParseTools {
 
     public static int captureStringLiteral(final char type, final char[] expr, int cursor, int length) {
         while (++cursor < length && expr[cursor] != type) {
-            if (expr[cursor] == '\\') handleEscapeSequence(expr[++cursor]);
+            if (expr[cursor] == '\\') cursor++;
         }
 
         if (cursor == length || expr[cursor] != type) {
@@ -1461,20 +1530,4 @@ public class ParseTools {
     }
 
 
-    private static Unsafe _getUnsafe() {
-        try {
-            Field field = Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            return (Unsafe) field.get(null);
-        }
-        catch (Exception ex) {
-            throw new RuntimeException("can't get Unsafe instance", ex);
-        }
-    }
-
-    private static final Unsafe unsafe__ = _getUnsafe();
-
-    public static Unsafe getUnsafe() {
-        return unsafe__;
-    }
 }

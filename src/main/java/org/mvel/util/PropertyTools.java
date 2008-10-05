@@ -172,10 +172,7 @@ public class PropertyTools {
 
 
     public static Object handleNumericConversion(final char[] val) {
-        if (val.length != 1 && val[0] == '0') {
-
-            //        if (val[1] == 'x') {
-            // hex number
+        if (val.length != 1 && val[0] == '0' && val[1] != '.') {
             if (!isDigit(val[val.length - 1])) {
                 switch (val[val.length - 1]) {
                     case 'l':
@@ -185,15 +182,9 @@ public class PropertyTools {
                     case 'D':
                         return BigDecimal.valueOf(Long.decode(new String(val, 0, val.length - 1)));
                 }
-                //              throw new CompileException("unrecognized numeric literal");
             }
 
             return Integer.decode(new String(val));
-//            }
-//            else {
-//                // octal number
-//
-//            }
         }
         else if (!isDigit(val[val.length - 1])) {
             switch (val[val.length - 1]) {
