@@ -340,6 +340,8 @@ public class PropertyTools {
                         case 'I':
                         case 'B':
                             return true;
+                        case '.':
+                            throw new CompileException("invalid number literal");
                     }
                     return false;
                 }
@@ -366,7 +368,10 @@ public class PropertyTools {
 
                 }
                 else {
-                    return false;
+                    if (i == 0) return false;
+                    else {
+                        throw new CompileException("invalid number literal");
+                    }
                 }
             }
         }

@@ -175,6 +175,7 @@ public class ExpressionCompiler extends AbstractParser {
                                     if (isArithmeticOperator(op)) {
                                         arithmeticFunctionReduction(op);
                                     }
+
                                     else {
                                         reduce();
                                     }
