@@ -28,7 +28,6 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.findClassImportResolverFactory;
-import static org.mvel.util.ParseTools.handleParserEgress;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -59,7 +58,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 contextControl(REMOVE, null, null);
             }
 
-            return handleParserEgress(stk.pop(), returnBigDecimal);
+            return stk.pop();
         }
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
@@ -75,7 +74,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 throw e;
         }
         catch (EndWithValue end) {
-            return handleParserEgress(end.getValue(), returnBigDecimal);
+            return end.getValue();
         }
     }
 

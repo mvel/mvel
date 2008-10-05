@@ -21,7 +21,6 @@ package org.mvel.compiler;
 import org.mvel.ast.ASTNode;
 import org.mvel.ast.Safe;
 import org.mvel.integration.VariableResolverFactory;
-import static org.mvel.util.ParseTools.handleParserEgress;
 
 
 public class ExecutableAccessorSafe implements ExecutableStatement, Safe {
@@ -45,13 +44,11 @@ public class ExecutableAccessorSafe implements ExecutableStatement, Safe {
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        return handleParserEgress(node.getReducedValueAccelerated(ctx, elCtx, variableFactory),
-                returnBigDecimal);
+        return node.getReducedValueAccelerated(ctx, elCtx, variableFactory);
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        return handleParserEgress(node.getReducedValueAccelerated(staticContext, staticContext, factory),
-                returnBigDecimal);
+        return node.getReducedValueAccelerated(staticContext, staticContext, factory);
     }
 
     public void setKnownIngressType(Class type) {

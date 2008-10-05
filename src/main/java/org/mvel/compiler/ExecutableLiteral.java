@@ -20,7 +20,6 @@ package org.mvel.compiler;
 
 import org.mvel.ast.Safe;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.util.ParseTools;
 
 /**
  * @author Christopher Brock
@@ -31,7 +30,7 @@ public class ExecutableLiteral implements ExecutableStatement, Safe {
     private boolean intOptimized;
 
     public ExecutableLiteral(Object literal) {
-        this.literal = ParseTools.handleParserEgress(literal, false);
+        this.literal = literal;
     }
 
     public ExecutableLiteral(int literal) {

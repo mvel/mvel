@@ -26,7 +26,6 @@ import org.mvel.optimizers.AccessorOptimizer;
 import static org.mvel.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
 import org.mvel.util.ASTIterator;
 import org.mvel.util.ASTLinkedList;
-import static org.mvel.util.ParseTools.handleParserEgress;
 
 import java.io.Serializable;
 
@@ -39,7 +38,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private boolean convertableIngressEgress;
     private boolean optimized = false;
     private boolean importInjectionRequired = false;
-    private boolean returnBigDecimal = false;
     private boolean literalOnly;
 
     private Class<? extends AccessorOptimizer> accessorOptimizer;
@@ -101,7 +99,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         if (!optimized) setupOptimizers();
-        return handleParserEgress(execute(false, this, staticContext, factory), returnBigDecimal);
+        return execute(false, this, staticContext, factory);
     }
 
     public Object getDirectValue(Object staticContext, VariableResolverFactory factory) {
@@ -154,14 +152,6 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
             this.importInjectionRequired =
                     parserContext.getImports() != null && parserContext.getImports().size() != 0;
         }
-    }
-
-    public boolean isReturnBigDecimal() {
-        return returnBigDecimal;
-    }
-
-    public void setReturnBigDecimal(boolean returnBigDecimal) {
-        this.returnBigDecimal = returnBigDecimal;
     }
 
     public boolean isImportInjectionRequired() {
