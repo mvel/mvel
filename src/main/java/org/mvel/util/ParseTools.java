@@ -56,22 +56,14 @@ import java.util.*;
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
     public static final MathProcessor MATH_PROCESSOR;
-    public static final boolean JDK_14_COMPATIBILITY;
 
     static {
         try {
             double version = parseDouble(System.getProperty("java.version").substring(0, 3));
-            if (version == 1.4) {
-                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.JDK14CompatabilityMath").newInstance();
-                JDK_14_COMPATIBILITY = true;
-            }
-            else if (version > 1.4) {
-                MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
-                JDK_14_COMPATIBILITY = false;
-            }
-            else {
+            if (version < 1.5) {
                 throw new RuntimeException("unsupported java version: " + version);
             }
+            MATH_PROCESSOR = (MathProcessor) forName("org.mvel.math.IEEEFloatingPointMath").newInstance();
         }
         catch (RuntimeException e) {
             throw e;
@@ -590,8 +582,7 @@ public class ParseTools {
         if (compareTo == null)
             return false;
         else if (compareTo instanceof String)
-            // @todo use String.contains once we move to jdk1.5
-            return ((String) compareTo).indexOf(valueOf(compareTest)) > -1;
+            return ((String) compareTo).contains(valueOf(compareTest));
         else if (compareTo instanceof Collection)
             return ((Collection) compareTo).contains(compareTest);
         else if (compareTo instanceof Map)
@@ -1410,23 +1401,8 @@ public class ParseTools {
      * @return Simple name of class
      */
     public static String getSimpleClassName(Class cls) {
-        if (JDK_14_COMPATIBILITY) {
-            int lastIndex = cls.getName().lastIndexOf('$');
-            if (lastIndex < 0) {
-                lastIndex = cls.getName().lastIndexOf('.');
-            }
-            if (cls.isArray()) {
-                return cls.getName().substring(lastIndex + 1) + "[]";
-            }
-            else {
-                return cls.getName().substring(lastIndex + 1);
-            }
-        }
-        else {
-            return cls.getSimpleName();
-        }
+        return cls.getSimpleName();
     }
-
 
     public static void checkNameSafety(String name) {
         if (isReservedWord(name)) {
@@ -1534,6 +1510,4 @@ public class ParseTools {
 
         return null;
     }
-
-
 }

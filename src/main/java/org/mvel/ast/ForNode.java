@@ -80,7 +80,7 @@ public class ForNode extends BlockNode {
         }
     }
 
-    private int nextCondPart(char[] condition, int cursor, boolean allowEnd) {
+    private static int nextCondPart(char[] condition, int cursor, boolean allowEnd) {
         for (; cursor < condition.length; cursor++) {
             if (condition[cursor] == ';') return ++cursor;
         }

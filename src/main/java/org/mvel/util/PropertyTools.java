@@ -215,8 +215,7 @@ public class PropertyTools {
                 case DataTypes.DOUBLE:
                     return parseDouble(new String(val));
                 case DataTypes.BIG_DECIMAL:
-                    // @todo: new String() only needed for jdk1.4, remove when we move to jdk1.5
-                    return new BigDecimal(new String(val), MathContext.DECIMAL128);
+                    return new BigDecimal(val, MathContext.DECIMAL128);
                 default:
                     return new String(val);
             }
@@ -383,8 +382,8 @@ public class PropertyTools {
         if (toCompare == null)
             return false;
         else if (toCompare instanceof String)
-            // @todo use String.contains once we move to jdk1.5
-            return ((String) toCompare).indexOf(valueOf(testValue)) > -1;
+            return ((String) toCompare).contains(valueOf(testValue));
+            //    return ((String) toCompare).indexOf(valueOf(testValue)) > -1;
         else if (toCompare instanceof Collection)
             return ((Collection) toCompare).contains(testValue);
         else if (toCompare instanceof Map)
