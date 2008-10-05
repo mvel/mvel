@@ -18,22 +18,9 @@
  */
 package org.mvel.ast;
 
-import org.mvel.MVEL;
-import static org.mvel.MVEL.executeSetExpression;
-import org.mvel.Operator;
-import org.mvel.ParserContext;
 import org.mvel.CompileException;
-import static org.mvel.compiler.AbstractParser.getCurrentThreadParserContext;
-import org.mvel.compiler.ExecutableStatement;
+import static org.mvel.MVEL.executeSetExpression;
 import org.mvel.integration.VariableResolverFactory;
-import static org.mvel.util.ParseTools.*;
-import org.mvel.util.PropertyTools;
-import org.mvel.util.StringAppender;
-import static org.mvel.util.PropertyTools.createStringTrimmed;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Christopher Brock

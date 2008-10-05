@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.mvel</groupId>
     <artifactId>mvel</artifactId>
@@ -7,7 +8,7 @@
     <name>mvel</name>
     <url>http://mvel.codehaus.org/</url>
     <scm>
-        <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/2.0-SNAPSHOT-09102008</developerConnection>
+        <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/2.0-SNAPSHOT-100508</developerConnection>
     </scm>
 
     <build>
@@ -97,7 +98,7 @@
             <name>Codehaus Maven Repository</name>
             <url>dav:https://dav.codehaus.org/repository/mvel/</url>
         </repository>
-       <!-- use the following if you ARE using a snapshot version. -->
+        <!-- use the following if you ARE using a snapshot version. -->
         <snapshotRepository>
             <id>codehaus.org</id>
             <name>Codehaus Snapshot Maven Repository</name>
