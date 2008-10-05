@@ -728,6 +728,9 @@ public class ParseTools {
             case Operator.MULT:
                 op = '*';
                 break;
+            case Operator.MOD:
+                op = '%';
+                break;
             case Operator.DIV:
                 op = '/';
                 break;
@@ -737,6 +740,16 @@ public class ParseTools {
             case Operator.BW_OR:
                 op = '|';
                 break;
+            case Operator.BW_SHIFT_LEFT:
+                op = '\u00AB';
+                break;
+            case Operator.BW_SHIFT_RIGHT:
+                op = '\u00BB';
+                break;
+            case Operator.BW_USHIFT_RIGHT:
+                op = '\u00AC';
+                break;
+
         }
 
         arraycopy(name.toCharArray(), 0, (stmt = new char[name.length() + statement.length + 1]), 0, name.length());

@@ -447,7 +447,10 @@ public class AbstractParser implements Serializable {
 
                                         captureToEOS();
 
-                                        if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        if (union) {
+                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, SUB, t);
+                                        }
+                                        else if ((idx = pCtx.variableIndexOf(name)) != -1) {
                                             return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.SUB, idx, fields);
                                         }
                                         else {
@@ -463,7 +466,10 @@ public class AbstractParser implements Serializable {
                                     start = cursor += 2;
                                     captureToEOS();
 
-                                    if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                    if (union) {
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, MULT, t);
+                                    }
+                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
                                         return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.MULT, idx, fields);
                                     }
                                     else {
@@ -479,11 +485,92 @@ public class AbstractParser implements Serializable {
                                     start = cursor += 2;
                                     captureToEOS();
 
-                                    if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                    if (union) {
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, DIV, t);
+                                    }
+                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
                                         return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.DIV, idx, fields);
                                     }
                                     else {
                                         return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.DIV, fields);
+                                    }
+                                }
+                                break;
+
+                            case '%':
+                                if (lookAhead() == '=') {
+                                    name = new String(expr, start, trimLeft(cursor) - start);
+
+                                    start = cursor += 2;
+                                    captureToEOS();
+
+                                    if (union) {
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, MOD, t);
+                                    }
+                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.MOD, idx, fields);
+                                    }
+                                    else {
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.MOD, fields);
+                                    }
+                                }
+                                break;
+
+                            case '\u00AB': // special compact code for recursive parses
+                            case '<':
+                                if ((lookAhead() == '<' && lookAhead(2) == '=') || expr[cursor] == '\u00AB') {
+                                    name = new String(expr, start, trimLeft(cursor) - start);
+
+                                    start = cursor += expr[cursor] == '\u00AB' ? 2 : 3;
+                                    captureToEOS();
+
+                                    if (union) {
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_SHIFT_LEFT, t);
+                                    }
+                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_SHIFT_LEFT, idx, fields);
+                                    }
+                                    else {
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_SHIFT_LEFT, fields);
+                                    }
+                                }
+                                break;
+
+                            case '\u00BB':
+                            case '\u00AC':
+                            case '>':
+                                if (lookAhead() == '>') {
+                                    if (lookAhead(2) == '=' || expr[cursor] == '\u00BB') {
+                                        name = new String(expr, start, trimLeft(cursor) - start);
+
+                                        start = cursor += expr[cursor] == '\u00BB' ? 2 : 3;
+                                        captureToEOS();
+
+                                        if (union) {
+                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_SHIFT_RIGHT, t);
+                                        }
+                                        else if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_SHIFT_RIGHT, idx, fields);
+                                        }
+                                        else {
+                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_SHIFT_RIGHT, fields);
+                                        }
+                                    }
+                                    else if ((lookAhead(2) == '>' && lookAhead(3) == '=') || expr[cursor] == '\u00AC') {
+                                        name = new String(expr, start, trimLeft(cursor) - start);
+
+                                        start = cursor += expr[cursor] == '\u00AC' ? 2 : 4;
+                                        captureToEOS();
+
+                                        if (union) {
+                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_USHIFT_RIGHT, t);
+                                        }
+                                        else if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_USHIFT_RIGHT, idx, fields);
+                                        }
+                                        else {
+                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_USHIFT_RIGHT, fields);
+                                        }
                                     }
                                 }
                                 break;
@@ -1920,6 +2007,8 @@ public class AbstractParser implements Serializable {
                 operatorsTable.put("var", UNTYPED_VAR);
                 operatorsTable.put("+=", ASSIGN_ADD);
                 operatorsTable.put("-=", ASSIGN_SUB);
+                operatorsTable.put("/=", ASSIGN_DIV);
+                operatorsTable.put("%=", ASSIGN_MOD);
 
             case 3: // iteration
                 operatorsTable.put("foreach", FOREACH);

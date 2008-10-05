@@ -130,7 +130,15 @@ public interface Operator {
     public static final int ASSIGN_ADD = 52;
     public static final int ASSIGN_SUB = 53;
     public static final int ASSIGN_STR_APPEND = 54;
+    public static final int ASSIGN_DIV = 55;
+    public static final int ASSIGN_MOD = 56;
 
+    public static final int ASSIGN_OR = 57;
+    public static final int ASSIGN_AND = 58;
+    public static final int ASSIGN_XOR = 59;
+    public static final int ASSIGN_LSHIFT = 60;
+    public static final int ASSIGN_RSHIFT = 61;
+    public static final int ASSIGN_RUSHIFT = 62;
 
     public static final int IMPORT_STATIC = 95;
     public static final int IMPORT = 96;
