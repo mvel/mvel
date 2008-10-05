@@ -48,8 +48,6 @@ import static java.nio.ByteBuffer.allocateDirect;
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
 
-class contains much of the actual parsing code used by the core parser.
-        */
 
 @SuppressWarnings({"ManualArrayCopy"})
 public class ParseTools {
