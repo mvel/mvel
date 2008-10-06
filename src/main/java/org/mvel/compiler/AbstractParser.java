@@ -424,6 +424,15 @@ public class AbstractParser implements Serializable {
                                             return lastNode = new AssignmentNode(subArray(start, cursor), fields, ADD, name);
                                         }
                                 }
+
+                                if (isDigit(lookAhead()) &&
+                                        cursor > 1 && (expr[cursor - 1] == 'E' || expr[cursor - 1] == 'e')
+                                        && isDigit(expr[cursor - 2])) {
+                                    cursor++;
+                                    capture = true;
+                                    continue;
+
+                                }
                                 break;
 
                             case '-':

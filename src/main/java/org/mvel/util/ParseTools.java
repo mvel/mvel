@@ -1565,7 +1565,7 @@ public class ParseTools {
 
                 }
                 else if (i != 0 && (i + 1) < len && (c == 'E' || c == 'e')) {
-                    if (val[++i] == '-') i++;
+                    if (val[++i] == '-' || val[i] == '+') i++;
                 }
                 else {
                     if (i != 0) throw new CompileException("invalid number literal");
