@@ -4397,6 +4397,31 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("2007-03-01", s[1][0]);
     }
+
+    public void testNakedMethodCall() {
+        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        Serializable c = MVEL.compileExpression("tm = System.currentTimeMillis");
+        assertTrue(((Long) MVEL.executeExpression(c, new HashMap())) > 0);
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+
+        assertTrue(((Long) MVEL.executeExpression(c, new HashMap())) > 0);
+
+        Map map = new HashMap();
+        map.put("foo", new Foo());
+        c = MVEL.compileExpression("foo.happy");
+        assertEquals("happyBar", MVEL.executeExpression(c, map));
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        c = MVEL.compileExpression("foo.happy");
+
+        assertEquals("happyBar", MVEL.executeExpression(c, map));
+
+        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
+    }
 }
 
 

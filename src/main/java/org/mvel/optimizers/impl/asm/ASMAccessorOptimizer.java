@@ -898,10 +898,25 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 Class c = (Class) ctx;
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
-                        writeFunctionPointerStub(c, m);
-                        return m;
+                        if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+                            assert debug("POP");
+                            mv.visitInsn(POP);
+                            assert debug("INVOKESTATIC " + m.getName());
+                            mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(), getMethodDescriptor(m));
+
+                            returnType = m.getReturnType();
+
+                            return m.invoke(null, EMPTY_OBJ_ARR);
+                        }
+                        else {
+                            writeFunctionPointerStub(c, m);
+                            return m;
+                        }
                     }
                 }
+            }
+            else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+                return getMethod(ctx, property);
             }
 
             throw new PropertyAccessException(property);
@@ -1105,7 +1120,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         assert debug("\n  **  {method: " + name + "}");
 
         int st = cursor;
-        String tk = ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ?
+        String tk = cursor != length && ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ?
                 new String(expr, st + 1, cursor - st - 1) : "";
         cursor++;
 

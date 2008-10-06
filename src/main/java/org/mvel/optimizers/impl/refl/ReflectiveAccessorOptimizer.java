@@ -331,7 +331,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     private Object getBeanProperty(Object ctx, String property)
-            throws IllegalAccessException, InvocationTargetException {
+            throws Exception {
 
         if (first) {
             if ("this".equals(property)) {
@@ -424,11 +424,18 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 Class c = (Class) ctx;
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
-                        addAccessorNode(new StaticReferenceAccessor(m));
-                        return m;
+                        if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+                            addAccessorNode(new MethodAccessor(m, new ExecutableStatement[0]));
+                            return m.invoke(null, EMPTY_OBJ_ARR);
+                        }
+                        else {
+                            addAccessorNode(new StaticReferenceAccessor(m));
+                            return m;
+                        }
                     }
                 }
             }
+            else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) return getMethod(ctx, property);
             throw new PropertyAccessException(property);
         }
     }
@@ -540,7 +547,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name) throws Exception {
         int st = cursor;
-        String tk = ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
+        String tk = cursor != length
+                && ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
         cursor++;
 
         Object[] args;

@@ -44,12 +44,16 @@ public class MVEL {
     public static final String CODENAME = "enceladus";
 
     static boolean DEBUG_FILE = getBoolean("mvel.debug.fileoutput");
+
     static String ADVANCED_DEBUGGING_FILE = System.getProperty("mvel.debugging.file") == null ? "mvel_debug.txt"
             : System.getProperty("mvel.debugging.file");
+
     static boolean ADVANCED_DEBUG = getBoolean("mvel.advanced_debugging");
-    public static boolean THREAD_SAFE = getBoolean("mvel.threadsafety");
     static boolean WEAK_CACHE = getBoolean("mvel.weak_caching");
     static boolean NO_JIT = getBoolean("mvel.disable.jit");
+
+    public static boolean COMPILER_OPT_ALLOW_NAKED_METH_CALL =
+            getBoolean("mvel.compiler.allow_naked_meth_calls");
 
     static boolean OPTIMIZER = true;
 
@@ -59,21 +63,6 @@ public class MVEL {
         }
     }
 
-    /**
-     * Force MVEL to use thread-safe caching.  This can also be specified enivromentally using the
-     * <tt>mvflex.expression.threadsafety</tt> system property.
-     *
-     * @param threadSafe - true enabled thread-safe caching - false disables thread-safety.
-     */
-    public static void setThreadSafe(boolean threadSafe) {
-        THREAD_SAFE = threadSafe;
-        PropertyAccessor.configureFactory();
-        MVELInterpretedRuntime.configureFactory();
-    }
-
-    public static boolean isThreadSafe() {
-        return THREAD_SAFE;
-    }
 
     public static boolean isAdvancedDebugging() {
         return ADVANCED_DEBUG;

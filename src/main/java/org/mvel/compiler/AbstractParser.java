@@ -37,7 +37,6 @@ import static java.lang.Double.parseDouble;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
-import static java.util.Collections.synchronizedMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -157,12 +156,7 @@ public class AbstractParser implements Serializable {
     }
 
     public static void configureFactory() {
-        if (MVEL.THREAD_SAFE) {
-            EX_PRECACHE = synchronizedMap(new WeakHashMap<String, char[]>(10));
-        }
-        else {
-            EX_PRECACHE = new WeakHashMap<String, char[]>(10);
-        }
+        EX_PRECACHE = new WeakHashMap<String, char[]>(10);
     }
 
     protected ASTNode nextTokenSkipSymbols() {

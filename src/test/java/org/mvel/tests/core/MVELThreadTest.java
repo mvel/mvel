@@ -20,9 +20,6 @@ public class MVELThreadTest {
         //Create a bean to run expressions against
         final Bean bean = new Bean();
 
-        //Set thread safety ON
-        MVEL.setThreadSafe(true);
-
         //Use reflection mode
         OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
 

@@ -27,14 +27,14 @@ import org.mvel.integration.VariableResolverFactory;
 import org.mvel.util.MethodStub;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.*;
+import static org.mvel.util.PropertyTools.getFieldOrAccessor;
+import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
 import org.mvel.util.StringAppender;
 
 import static java.lang.Character.isJavaIdentifierPart;
 import java.lang.reflect.*;
 import static java.lang.reflect.Array.getLength;
 import java.util.*;
-import static java.util.Collections.synchronizedMap;
 
 @SuppressWarnings({"unchecked"})
 public class PropertyAccessor {
@@ -70,16 +70,9 @@ public class PropertyAccessor {
     }
 
     static void configureFactory() {
-        if (MVEL.THREAD_SAFE) {
-            READ_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
-            WRITE_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
-            METHOD_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Object[]>>(10));
-        }
-        else {
-            READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
-            WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
-            METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Object[]>>(10));
-        }
+        READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
+        WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
+        METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Object[]>>(10));
     }
 
     public PropertyAccessor(char[] property, Object ctx) {
@@ -471,6 +464,9 @@ public class PropertyAccessor {
             Class c = (Class) ctx;
             for (Method m : c.getMethods()) {
                 if (property.equals(m.getName())) {
+                    if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+                        return m.invoke(ctx, EMPTY_OBJ_ARR);
+                    }
                     return m;
                 }
             }
