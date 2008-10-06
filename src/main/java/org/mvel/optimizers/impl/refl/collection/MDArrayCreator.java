@@ -27,9 +27,10 @@ import static java.lang.reflect.Array.newInstance;
 /**
  * @author Christopher Brock
  */
-public class ArrayCreator implements Accessor {
+public class MDArrayCreator implements Accessor {
     public Accessor[] template;
     private Class arrayType;
+    private int dimension;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         if (Object.class.equals(arrayType)) {
@@ -52,9 +53,10 @@ public class ArrayCreator implements Accessor {
         }
     }
 
-    public ArrayCreator(Accessor[] template, Class arrayType) {
+    public MDArrayCreator(Accessor[] template, Class arrayType, int dimension) {
         this.template = template;
         this.arrayType = arrayType;
+        this.dimension = dimension;
     }
 
 

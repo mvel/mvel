@@ -253,11 +253,25 @@ public class AbstractParser implements Serializable {
                                     throw new CompileException("unexpected character (expected identifier): " + expr[cursor], expr, cursor);
                                 }
 
-                                captureToEOT();
+                                /**
+                                 * Capture the beginning part of the token.
+                                 */
+                                do {
+                                    captureToNextTokenJunction();
+                                    skipWhitespaceWithLineAccounting();
+                                }
+                                while (cursor < length && expr[cursor] == '[');
+
+                                /**
+                                 * If it's not a dimentioned array, continue capturing if necessary.
+                                 */
+                                if (cursor < length && expr[cursor - 2] != ']') captureToEOT();
+
                                 lastNode = new NewObjectNode(subArray(start, cursor), fields);
 
                                 skipWhitespaceWithLineAccounting();
                                 if (cursor != length && expr[cursor] == '{') {
+                                    start = cursor;
                                     Class egressType = ((NewObjectNode) lastNode).getEgressType();
 
                                     if (egressType == null) {
@@ -280,9 +294,7 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new InlineCollectionNode(expr, start, cursor, fields,
                                                 egressType);
                                     }
-
                                 }
-
                                 return lastNode;
 
                             case ASSERT:
@@ -1690,6 +1702,63 @@ public class AbstractParser implements Serializable {
         while (++cursor != length);
     }
 
+    protected void captureToEOTNEW() {
+        skipWhitespace();
+        boolean dims = false;
+        do {
+            switch (expr[cursor]) {
+                case '{':
+                    if (dims) return;
+
+                case '[':
+                    dims = true;
+                    if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
+                        throw new CompileException("unbalanced braces", expr, cursor);
+                    }
+                    break;
+                case '(':
+                    if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
+                        throw new CompileException("unbalanced braces", expr, cursor);
+                    }
+                    break;
+
+                case '=':
+                case '&':
+                case '|':
+                case ';':
+                    return;
+
+                case '.':
+                    skipWhitespace();
+                    break;
+
+                case '\'':
+                    cursor = captureStringLiteral('\'', expr, cursor, length);
+                    break;
+                case '"':
+                    cursor = captureStringLiteral('"', expr, cursor, length);
+                    break;
+
+                default:
+                    if (isWhitespace(expr[cursor])) {
+                        skipWhitespace();
+
+                        if (expr[cursor] == '.') {
+                            if (cursor != length) cursor++;
+                            skipWhitespace();
+                            break;
+                        }
+                        else {
+                            trimWhitespace();
+                            return;
+                        }
+                    }
+            }
+        }
+        while (++cursor != length);
+    }
+
+
     /**
      * From the specified cursor position, trim out any whitespace between the current position and the end of the
      * last non-whitespace character.
@@ -1749,8 +1818,16 @@ public class AbstractParser implements Serializable {
                 case '{':
                 case '(':
                     return;
+                case '[':
+                    int[] c = balancedCaptureWithLineAccounting(expr, cursor, '[');
+                    cursor = c[0] + 1;
+                    line += c[1];
+                    continue;
+
                 default:
-                    if (isWhitespace(expr[cursor])) return;
+                    if (isWhitespace(expr[cursor])) {
+                        return;
+                    }
                     cursor++;
             }
         }

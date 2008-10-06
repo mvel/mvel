@@ -4373,21 +4373,30 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testNumLiterals8() {
-        assertEquals(0.0, MVEL.eval("0.0"));
-    }
-
-    public void testNumLiterals9() {
-        assertEquals(3.14, MVEL.eval("3.14"));
-    }
-
-    public void testNumLiterals10() {
         assertEquals(1e-9d, MVEL.eval("1e-9d"));
     }
 
-    public void testNumLiterals11() {
+    public void testNumLiterals9() {
         assertEquals(0x400921FB54442D18L, MVEL.eval("0x400921FB54442D18L"));
     }
 
+    public void testArrayCreation2() {
+        String[][] s = (String[][])
+                test("new String[][] {{\"2008-04-01\", \"2008-05-10\"}, {\"2007-03-01\", \"2007-02-12\"}}");
+        assertEquals("2007-03-01", s[1][0]);
+    }
+
+    public void testArrayCreation3() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        Serializable ce =
+                MVEL.compileExpression("new String[][] {{\"2008-04-01\", \"2008-05-10\"}, {\"2007-03-01\", \"2007-02-12\"}}");
+
+        String[][] s = (String[][])
+                MVEL.executeExpression(ce);
+
+        assertEquals("2007-03-01", s[1][0]);
+    }
 }
 
 

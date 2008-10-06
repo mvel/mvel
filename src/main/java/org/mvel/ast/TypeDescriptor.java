@@ -2,16 +2,16 @@ package org.mvel.ast;
 
 import org.mvel.CompileException;
 import org.mvel.ParserContext;
-import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel.compiler.ExecutableStatement;
+import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import static org.mvel.util.ParseTools.*;
 
 import java.io.Serializable;
+import static java.lang.Character.isDigit;
 import java.util.Iterator;
 import java.util.LinkedList;
-import static java.lang.Character.isDigit;
 
 public class TypeDescriptor implements Serializable {
     private String className;
@@ -28,7 +28,7 @@ public class TypeDescriptor implements Serializable {
 
     public void updateClassName(char[] name, int fields) {
         if (name.length == 0 || isDigit(name[0])) return;
-        
+
         if ((endRange = findFirst('(', name)) == -1) {
             if ((endRange = findFirst('[', name)) != -1) {
                 className = new String(name, 0, endRange);
@@ -39,11 +39,11 @@ public class TypeDescriptor implements Serializable {
                 while (endRange < name.length) {
                     while (endRange < name.length && isWhitespace(name[endRange])) endRange++;
 
-                    if (endRange == name.length) break;
+                    if (endRange == name.length || name[endRange] == '{') break;
 
-                    if (name[endRange] != '[')
+                    if (name[endRange] != '[') {
                         throw new CompileException("unexpected token in contstructor", name, endRange);
-
+                    }
                     to = balancedCapture(name, endRange, '[');
                     sizes.add(subset(name, ++endRange, to - endRange));
                     endRange = to + 1;

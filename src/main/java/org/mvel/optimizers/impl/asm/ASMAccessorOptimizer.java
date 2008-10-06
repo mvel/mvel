@@ -47,7 +47,8 @@ import org.mvel.optimizers.impl.refl.Union;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.*;
+import static org.mvel.util.PropertyTools.getFieldOrAccessor;
+import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -537,7 +538,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         catch (VerifyError e) {
             System.out.println("**** COMPILER BUG! REPORT THIS IMMEDIATELY AT http://jira.codehaus.org/browse/mvel");
-            System.out.println("Expression: " + new String(expr));
+            System.out.println("Expression: " + (expr == null ? null : new String(expr)));
             throw e;
         }
 
@@ -2077,7 +2078,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private static final int MAP = 2;
     private static final int VAL = 3;
 
-    private int _getAccessor(Object o) {
+    private int _getAccessor(Object o, Class type) {
         if (o instanceof List) {
             assert debug("NEW " + LIST_IMPL);
             mv.visitTypeInsn(NEW, LIST_IMPL);
@@ -2093,7 +2094,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             mv.visitMethodInsn(INVOKESPECIAL, LIST_IMPL, "<init>", "(I)V");
 
             for (Object item : (List) o) {
-                if (_getAccessor(item) != VAL) {
+                if (_getAccessor(item, type) != VAL) {
                     assert debug("POP");
                     mv.visitInsn(POP);
                 }
@@ -2130,11 +2131,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             for (Object item : ((Map) o).keySet()) {
                 mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 
-                if (_getAccessor(item) != VAL) {
+                if (_getAccessor(item, type) != VAL) {
                     assert debug("POP");
                     mv.visitInsn(POP);
                 }
-                if (_getAccessor(((Map) o).get(item)) != VAL) {
+                if (_getAccessor(((Map) o).get(item), type) != VAL) {
                     assert debug("POP");
                     mv.visitInsn(POP);
                 }
@@ -2154,45 +2155,52 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return MAP;
         }
         else if (o instanceof Object[]) {
-            intPush(((Object[]) o).length);
+            Accessor[] a = new Accessor[((Object[]) o).length];
+            int i = 0;
+            int dim = 0;
+
+            if (type != null) {
+                String nm = type.getName();
+                while (nm.charAt(dim) == '[') dim++;
+            }
+            else {
+                type = Object[].class;
+                dim = 1;
+            }
 
             try {
-                if (returnType != null) {
-                    returnType = findClass(null, repeatChar('[', 1) + "L" + getBaseComponentType(returnType).getName() + ";");
-                }
-                else {
-                    returnType = Object[].class;
-                }
-            }
-            catch (ClassNotFoundException e) {
-                throw new CompileException("cannot instantiate class", e);
-            }
+                intPush(((Object[]) o).length);
+                assert debug("ANEWARRAY " + getInternalName(getSubComponentType(type)) + " (" + ((Object[]) o).length + ")");
+                mv.visitTypeInsn(ANEWARRAY, getInternalName(getSubComponentType(type)));
 
+                Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + getBaseComponentType(type).getName() + ";")
+                        : type;
 
-            assert debug("ANEWARRAY (" + o.hashCode() + ")");
-            mv.visitTypeInsn(ANEWARRAY, getInternalName(getBaseComponentType(returnType)));
-
-            assert debug("DUP");
-            mv.visitInsn(DUP);
-
-            int i = 0;
-            for (Object item : (Object[]) o) {
-                intPush(i);
-
-                if (_getAccessor(item) != VAL) {
-                    assert debug("POP");
-                    mv.visitInsn(POP);
-                }
-
-                assert debug("AASTORE (" + o.hashCode() + ")");
-                mv.visitInsn(AASTORE);
 
                 assert debug("DUP");
                 mv.visitInsn(DUP);
 
-                i++;
-            }
+                for (Object item : (Object[]) o) {
+                    intPush(i);
 
+                    if (_getAccessor(item, cls) != VAL) {
+                        assert debug("POP");
+                        mv.visitInsn(POP);
+                    }
+
+                    assert debug("AASTORE (" + o.hashCode() + ")");
+                    mv.visitInsn(AASTORE);
+
+                    assert debug("DUP");
+                    mv.visitInsn(DUP);
+
+                    i++;
+                }
+
+            }
+            catch (ClassNotFoundException e) {
+                throw new RuntimeException("this error should never throw:" + getBaseComponentType(type).getName(), e);
+            }
 
             return ARRAY;
         }
@@ -2281,7 +2289,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         literal = true;
 
-        _getAccessor(o);
+        _getAccessor(o, type);
 
 
         _finishJIT();
@@ -2477,7 +2485,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private void dumpAdvancedDebugging() {
         if (buildLog == null) return;
 
-        System.out.println("JIT Compiler Dump for: <<" + new String(expr) + ">>\n-------------------------------\n");
+        System.out.println("JIT Compiler Dump for: <<" + (expr == null ? null : new String(expr)) + ">>\n-------------------------------\n");
         System.out.println(buildLog.toString());
         System.out.println("\n<END OF DUMP>\n");
         if (MVEL.isFileDebugging()) {

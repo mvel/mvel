@@ -668,13 +668,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         return rootNode.getValue(ctx, elCtx, variableFactory);
     }
 
-    private Accessor _getAccessor(Object o) {
+    private Accessor _getAccessor(Object o, Class type) {
         if (o instanceof List) {
             Accessor[] a = new Accessor[((List) o).size()];
             int i = 0;
 
             for (Object item : (List) o) {
-                a[i++] = _getAccessor(item);
+                a[i++] = _getAccessor(item, type);
             }
 
             returnType = List.class;
@@ -687,8 +687,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             int i = 0;
 
             for (Object item : ((Map) o).keySet()) {
-                k[i] = _getAccessor(item); // key
-                v[i++] = _getAccessor(((Map) o).get(item)); // value
+                k[i] = _getAccessor(item, type); // key
+                v[i++] = _getAccessor(((Map) o).get(item), type); // value
             }
 
             returnType = Map.class;
@@ -698,25 +698,30 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         else if (o instanceof Object[]) {
             Accessor[] a = new Accessor[((Object[]) o).length];
             int i = 0;
+            int dim = 0;
 
-            for (Object item : (Object[]) o) {
-                a[i++] = _getAccessor(item); // item
+            if (type != null) {
+                String nm = type.getName();
+                while (nm.charAt(dim) == '[') dim++;
+            }
+            else {
+                type = Object[].class;
+                dim = 1;
             }
 
             try {
-                if (returnType != null) {
-                    returnType = findClass(null, repeatChar('[', 1)
-                            + "L" + getBaseComponentType(returnType).getName() + ";");
+                Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + getBaseComponentType(type).getName() + ";")
+                        : type;
+
+                for (Object item : (Object[]) o) {
+                    a[i++] = _getAccessor(item, cls); // item
                 }
-                else {
-                    returnType = Object[].class;
-                }
+
+                return new ArrayCreator(a, getSubComponentType(type));
             }
             catch (ClassNotFoundException e) {
-                throw new CompileException("cannot instantiate class", e);
+                throw new RuntimeException("this error should never throw:" + getBaseComponentType(type).getName(), e);
             }
-
-            return new ArrayCreator(a, getBaseComponentType(returnType));
         }
         else {
             if (returnType == null) returnType = Object.class;
@@ -724,9 +729,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
     }
 
+
     public Accessor optimizeCollection(Object o, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         this.returnType = type;
-        Accessor root = _getAccessor(o);
+        Accessor root = _getAccessor(o, returnType);
 
         if (property != null && property.length > 0) {
             return new Union(root, property);
