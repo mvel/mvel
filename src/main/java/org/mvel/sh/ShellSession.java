@@ -417,9 +417,7 @@ public class ShellSession {
     }
 
     public void exec(String command) {
-        String[] cmds = command.split("\n");
-
-        for (String c : cmds) {
+        for (String c : command.split("\n")) {
             inBuffer.append(c);
             _exec();
         }
