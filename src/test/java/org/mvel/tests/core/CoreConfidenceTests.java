@@ -4342,10 +4342,50 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("\uFFFF::", MVEL.eval("'\\uFFFF::'"));
     }
 
-    public void testNumericOverflowLiterals() {
-        double d = 3.141592653589793E-305;
-        Object r = MVEL.eval("3.141592653589793E-305");
-        assertEquals(d, r);
+    public void testNumLiterals() {
+        assertEquals(1e1f, MVEL.eval("1e1f"));
+    }
+
+    public void testNumLiterals2() {
+        assertEquals(2.f, MVEL.eval("2.f"));
+    }
+
+    public void testNumLiterals3() {
+        assertEquals(.3f, MVEL.eval(".3f"));
+    }
+
+    public void testNumLiterals4() {
+        assertEquals(3.14f, MVEL.eval("3.14f"));
+    }
+
+    public void testNumLiterals5() {
+        Object o = MVEL.eval("1e1");
+
+        assertEquals(1e1, MVEL.eval("1e1"));
+    }
+
+    public void testNumLiterals6() {
+        assertEquals(2., MVEL.eval("2."));
+    }
+
+    public void testNumLiterals7() {
+        assertEquals(.3, MVEL.eval(".3"));
+    }
+
+    public void testNumLiterals8() {
+        assertEquals(0.0, MVEL.eval("0.0"));
+    }
+
+    public void testNumLiterals9() {
+        assertEquals(3.14, MVEL.eval("3.14"));
+    }
+
+    public void testNumLiterals10() {
+        assertEquals(1e-9d, MVEL.eval("1e-9d"));
+    }
+
+    public void testNumLiterals11() {
+        assertEquals(0x400921FB54442D18L, MVEL.eval("0x400921FB54442D18L"));
     }
 
 }

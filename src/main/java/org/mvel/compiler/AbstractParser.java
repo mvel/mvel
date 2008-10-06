@@ -728,6 +728,10 @@ public class AbstractParser implements Serializable {
                     switch (expr[cursor]) {
                         case '.': {
                             cursor++;
+                            if (isDigit(expr[cursor])) {
+                                capture = true;
+                                continue;
+                            }
                             expectNextChar_IW('{');
 
                             tmp = subArray(start, cursor - 1);

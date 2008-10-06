@@ -1364,6 +1364,7 @@ public class ParseTools {
         if (val.length != 1 && val[0] == '0' && val[1] != '.') {
             if (!isDigit(val[val.length - 1])) {
                 switch (val[val.length - 1]) {
+                    case 'L':
                     case 'l':
                         return Long.decode(new String(val, 0, val.length - 1));
                     case 'I':
@@ -1380,6 +1381,7 @@ public class ParseTools {
                 case 'l':
                 case 'L':
                     return java.lang.Long.parseLong(new String(val, 0, val.length - 1));
+                case '.':
                 case 'd':
                 case 'D':
                     return parseDouble(new String(val, 0, val.length - 1));
@@ -1447,6 +1449,7 @@ public class ParseTools {
                     case '.':
                         fp = true;
                         break;
+                    case 'e':
                     case 'E':
                         fp = true;
                         if (i++ < len && val[i] == '-') i++;
