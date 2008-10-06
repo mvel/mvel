@@ -1,5 +1,6 @@
 package org.mvel.sh;
 
+import org.mvel.MVEL;
 import static org.mvel.MVEL.*;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
@@ -29,6 +30,9 @@ public class ShellSession {
     private Map<String, String> env;
     private Object ctxObject;
 
+    DefaultLocalVariableResolverFactory lvrf;
+
+
     private int depth;
 
     private boolean multi = false;
@@ -37,8 +41,7 @@ public class ShellSession {
     private String prompt;
     private String commandBuffer;
 
-    //todo: fix this
-    public void run() {
+    public ShellSession() {
         System.out.println("Starting session...");
 
         variables = new HashMap<String, Object>();
@@ -77,9 +80,17 @@ public class ShellSession {
 
         }
 
-        DefaultLocalVariableResolverFactory lvrf = new DefaultLocalVariableResolverFactory(variables);
+        lvrf = new DefaultLocalVariableResolverFactory(variables);
         lvrf.appendFactory(new MapVariableResolverFactory(env));
+    }
 
+    public ShellSession(String init) {
+        this();
+        exec(init);
+    }
+
+    //todo: fix this
+    public void run() {
         StringAppender inBuffer = new StringAppender();
         String[] inTokens;
         Object outputBuffer;
@@ -402,6 +413,10 @@ public class ShellSession {
 
     public void setCommandBuffer(String commandBuffer) {
         this.commandBuffer = commandBuffer;
+    }
+
+    public void exec(String command) {
+        MVEL.eval(command, ctxObject, lvrf);
     }
 
     public static final class RunState {
