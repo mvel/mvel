@@ -35,7 +35,6 @@ public interface Operator {
             11,   // MOD
             12,   // POWER
 
-
             6,   // BW_AND
             4,   // BW_OR
             5,   // BW_XOR

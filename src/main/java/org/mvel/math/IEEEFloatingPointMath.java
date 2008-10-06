@@ -40,7 +40,7 @@ import java.math.MathContext;
 /**
  * @author Christopher Brock
  */
-public class IEEEFloatingPointMath implements MathProcessor {
+public strictfp class IEEEFloatingPointMath implements MathProcessor {
     private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
 
     public Object doOperation(final Object val1, final int operation, final Object val2) {
@@ -58,8 +58,8 @@ public class IEEEFloatingPointMath implements MathProcessor {
                 return _doOperations(type1, val1, operation, type2, val2);
             }
         }
-        else
-        if (type2 == DataTypes.BIG_DECIMAL && (type1 > 99 || (type1 == DataTypes.STRING && ParseTools.isNumber(val1)))) {
+        else if (type2 == DataTypes.BIG_DECIMAL && (type1 > 99 ||
+                (type1 == DataTypes.STRING && ParseTools.isNumber(val1)))) {
             return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1), operation, (BigDecimal) val2, true);
         }
         else {
