@@ -1,6 +1,5 @@
 package org.mvel.sh;
 
-import org.mvel.MVEL;
 import static org.mvel.MVEL.*;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.MapVariableResolverFactory;
@@ -418,7 +417,12 @@ public class ShellSession {
     }
 
     public void exec(String command) {
-        MVEL.eval(command, ctxObject, lvrf);
+        String[] cmds = command.split("\n");
+
+        for (String c : cmds) {
+            inBuffer.append(c);
+            _exec();
+        }
     }
 
     public static final class RunState {
