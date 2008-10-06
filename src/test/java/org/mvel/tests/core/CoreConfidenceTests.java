@@ -4342,6 +4342,11 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("\uFFFF::", MVEL.eval("'\\uFFFF::'"));
     }
 
+    public void testNumericOverflowLiterals() {
+        double d = 3.141592653589793E-305;
+        Object r = MVEL.eval("3.141592653589793E-305");
+        assertEquals(d, r);
+    }
 
 }
 

@@ -26,7 +26,7 @@ import org.mvel.integration.VariableResolverFactory;
 import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.*;
+import static org.mvel.util.PropertyTools.isEmpty;
 import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
@@ -457,6 +457,16 @@ public class AbstractParser implements Serializable {
                                             return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.SUB, fields);
                                         }
                                 }
+
+                                if (isDigit(lookAhead()) &&
+                                        cursor > 1 && (expr[cursor - 1] == 'E' || expr[cursor - 1] == 'e')
+                                        && isDigit(expr[cursor - 2])) {
+                                    cursor++;
+                                    capture = true;
+                                    continue;
+
+                                }
+
                                 break;
 
                             case '*':

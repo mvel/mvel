@@ -1443,32 +1443,26 @@ public class ParseTools {
 
         for (; i < len; i++) {
             if (!isDigit(c = val[i])) {
-                if (c == '.') {
-                    //          len = 0;
-                    fp = true;
-                    // continue;
+                switch (c) {
+                    case '.':
+                        fp = true;
+                        break;
+                    case 'E':
+                        fp = true;
+                        if (i++ < len && val[i] == '-') i++;
+                        break;
+
+                    default:
+                        return -1;
                 }
-                else {
-                    return -1;
-                }
+
+
             }
         }
 
         if (len > 0) {
             if (fp) {
-                if (len > 17) {
-                    return DataTypes.BIG_DECIMAL;
-                }
-                else if (len > 15) {
-                    // requires float
-                    return DataTypes.FLOAT;
-                }
-                else {
-                    return DataTypes.DOUBLE;
-                }
-            }
-            else if (len > 11) {
-                return DataTypes.BIG_DECIMAL;
+                return DataTypes.DOUBLE;
             }
             else if (len > 9) {
                 return DataTypes.LONG;
@@ -1570,11 +1564,12 @@ public class ParseTools {
                     return len - 2 > 0;
 
                 }
+                else if (i != 0 && (i + 1) < len && (c == 'E' || c == 'e')) {
+                    if (val[++i] == '-') i++;
+                }
                 else {
-                    if (i == 0) return false;
-                    else {
-                        throw new CompileException("invalid number literal");
-                    }
+                    if (i != 0) throw new CompileException("invalid number literal");
+                    return false;
                 }
             }
         }
