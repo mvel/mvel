@@ -27,6 +27,7 @@ public class ShellSession {
     private final Map<String, Command> commands = new HashMap<String, Command>();
     private Map<String, Object> variables;
     private Map<String, String> env;
+    private Object ctxObject;
 
     private int depth;
 
@@ -143,10 +144,10 @@ public class ShellSession {
                         }
 
                         if (parseBoolean(env.get("$USE_OPTIMIZER_ALWAYS"))) {
-                            outputBuffer = executeExpression(compileExpression(inBuffer.toString()), lvrf);
+                            outputBuffer = executeExpression(compileExpression(inBuffer.toString()), ctxObject, lvrf);
                         }
                         else {
-                            outputBuffer = eval(inBuffer.toString(), lvrf);
+                            outputBuffer = eval(inBuffer.toString(), ctxObject, lvrf);
                         }
                     }
                     catch (Exception e) {
@@ -385,6 +386,14 @@ public class ShellSession {
 
     public Map<String, String> getEnv() {
         return env;
+    }
+
+    public Object getCtxObject() {
+        return ctxObject;
+    }
+
+    public void setCtxObject(Object ctxObject) {
+        this.ctxObject = ctxObject;
     }
 
     public String getCommandBuffer() {

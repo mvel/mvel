@@ -12,6 +12,7 @@ public class BasicCommandSet implements CommandSet {
         Map<String, Command> cmds = new LinkedHashMap<String, Command>();
 
         cmds.put("set", new Set());
+        cmds.put("push", new PushContext());
         cmds.put("help", new Help());
         cmds.put("showvars", new ShowVars());
         cmds.put("inspect", new ObjectInspector());
