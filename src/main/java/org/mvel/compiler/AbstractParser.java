@@ -484,6 +484,61 @@ public class AbstractParser implements Serializable {
 
                                 break;
 
+                            case '|':
+                                if (lookAhead() == '=') {
+                                    name = new String(expr, start, trimLeft(cursor) - start);
+
+                                    start = cursor += 2;
+                                    captureToEOS();
+
+                                    if (union) {
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_OR, t);
+                                    }
+                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.BW_OR, idx, fields);
+                                    }
+                                    else {
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.BW_OR, fields);
+                                    }
+                                }
+
+
+                            case '&':
+                                if (lookAhead() == '=') {
+                                    name = new String(expr, start, trimLeft(cursor) - start);
+
+                                    start = cursor += 2;
+                                    captureToEOS();
+
+                                    if (union) {
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_AND, t);
+                                    }
+                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.BW_AND, idx, fields);
+                                    }
+                                    else {
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.BW_AND, fields);
+                                    }
+                                }
+
+                            case '^':
+                                if (lookAhead() == '=') {
+                                    name = new String(expr, start, trimLeft(cursor) - start);
+
+                                    start = cursor += 2;
+                                    captureToEOS();
+
+                                    if (union) {
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_XOR, t);
+                                    }
+                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.BW_XOR, idx, fields);
+                                    }
+                                    else {
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.BW_XOR, fields);
+                                    }
+                                }
+
                             case '*':
                                 if (lookAhead() == '=') {
                                     name = new String(expr, start, trimLeft(cursor) - start);
@@ -997,6 +1052,20 @@ public class AbstractParser implements Serializable {
                             if (expr[cursor++ + 1] == '|') {
                                 return new OperatorNode(OPERATORS.get(new String(expr, start, ++cursor - start)));
                             }
+//                            else if (expr[cursor] == '=') {
+//                                if (!isNextIdentifierOrLiteral()) {
+//                                    throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, cursor);
+//                                }
+//
+//                                captureToEOS();
+//
+//                                if ((idx = pCtx.variableIndexOf(name)) != -1) {
+//                                    return lastNode = new IndexedOperativeAssign(subArray(start, cursor), ADD, idx, fields);
+//                                }
+//                                else {
+//                                    return lastNode = new OperativeAssign(name, subArray(start, cursor), ADD, fields);
+//                                }
+//                            }
                             else {
                                 return createOperator(expr, start, cursor);
                             }
