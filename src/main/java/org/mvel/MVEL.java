@@ -63,7 +63,6 @@ public class MVEL {
         }
     }
 
-
     public static boolean isAdvancedDebugging() {
         return ADVANCED_DEBUG;
     }

@@ -5,8 +5,7 @@ import org.mvel.MVEL;
 public class Main {
     public static void main(String[] args) {
         showSplash();
-        ShellSession session = new ShellSession();
-        session.run();
+        new ShellSession().run();
     }
 
     private static void showSplash() {
