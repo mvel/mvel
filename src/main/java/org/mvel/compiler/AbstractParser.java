@@ -1185,10 +1185,14 @@ public class AbstractParser implements Serializable {
         switch (type) {
             case ASTNode.BLOCK_IF:
                 return new IfNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+            case ASTNode.BLOCK_FOR:
+                for (int i = condStart; i < condEnd; i++) {
+                    if (expr[i] == ';')
+                        return new ForNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+                }
+
             case ASTNode.BLOCK_FOREACH:
                 return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
-            case ASTNode.BLOCK_FOR:
-                return new ForNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
             case ASTNode.BLOCK_WHILE:
                 return new WhileNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
             case ASTNode.BLOCK_UNTIL:
