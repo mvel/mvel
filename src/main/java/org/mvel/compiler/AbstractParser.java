@@ -1189,6 +1189,8 @@ public class AbstractParser implements Serializable {
                 for (int i = condStart; i < condEnd; i++) {
                     if (expr[i] == ';')
                         return new ForNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+                    else if (expr[i] == ':')
+                        break;
                 }
 
             case ASTNode.BLOCK_FOREACH:
