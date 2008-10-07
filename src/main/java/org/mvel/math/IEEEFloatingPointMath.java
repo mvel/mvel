@@ -140,12 +140,14 @@ public strictfp class IEEEFloatingPointMath implements MathProcessor {
             if ((type1 > 99 && (type2 > 99)) || (operation != 0 && ParseTools.isNumber(val1) && ParseTools.isNumber(val2))) {
                 return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1), operation, getInternalNumberFromType(val2, type2), true);
             }
-            else
-            if (operation != ADD && (type1 == 15 || type2 == 15) && type1 != type2 && type1 != EMPTY && type2 != EMPTY) {
+            else if (operation != ADD &&
+                    (type1 == 15 || type2 == 15) &&
+                    type1 != type2 && type1 != EMPTY && type2 != EMPTY) {
+
                 return doOperationNonNumeric(convert(val1, Boolean.class), operation, convert(val2, Boolean.class));
             }
             // Fix for: MVEL-56
-            else if ((type1 == 1 || type2 == 1) && (type1 == 8 || type1 == 16 || type2 == 8 || type2 == 16)) {
+            else if ((type1 == 1 || type2 == 1) && (type1 == 8 || type1 == 112 || type2 == 8 || type2 == 112)) {
                 if (type1 == 1) {
                     return doOperationNonNumeric(val1, operation, valueOf(val2));
                 }
