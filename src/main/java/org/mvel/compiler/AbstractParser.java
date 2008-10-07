@@ -484,124 +484,40 @@ public class AbstractParser implements Serializable {
 
                                 break;
 
-                            case '|':
-                                if (lookAhead() == '=') {
-                                    name = new String(expr, start, trimLeft(cursor) - start);
-
-                                    start = cursor += 2;
-                                    captureToEOS();
-
-                                    if (union) {
-                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_OR, t);
-                                    }
-                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.BW_OR, idx, fields);
-                                    }
-                                    else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.BW_OR, fields);
-                                    }
-                                }
-
-
-                            case '&':
-                                if (lookAhead() == '=') {
-                                    name = new String(expr, start, trimLeft(cursor) - start);
-
-                                    start = cursor += 2;
-                                    captureToEOS();
-
-                                    if (union) {
-                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_AND, t);
-                                    }
-                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.BW_AND, idx, fields);
-                                    }
-                                    else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.BW_AND, fields);
-                                    }
-                                }
-
-                            case '^':
-                                if (lookAhead() == '=') {
-                                    name = new String(expr, start, trimLeft(cursor) - start);
-
-                                    start = cursor += 2;
-                                    captureToEOS();
-
-                                    if (union) {
-                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_XOR, t);
-                                    }
-                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.BW_XOR, idx, fields);
-                                    }
-                                    else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.BW_XOR, fields);
-                                    }
-                                }
-
-                            case '*':
-                                if (lookAhead() == '=') {
-                                    name = new String(expr, start, trimLeft(cursor) - start);
-
-                                    start = cursor += 2;
-                                    captureToEOS();
-
-                                    if (union) {
-                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, MULT, t);
-                                    }
-                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.MULT, idx, fields);
-                                    }
-                                    else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.MULT, fields);
-                                    }
-                                }
-                                break;
-
-                            case '/':
-                                if (lookAhead() == '=') {
-                                    name = new String(expr, start, trimLeft(cursor) - start);
-
-                                    start = cursor += 2;
-                                    captureToEOS();
-
-                                    if (union) {
-                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, DIV, t);
-                                    }
-                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.DIV, idx, fields);
-                                    }
-                                    else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.DIV, fields);
-                                    }
-                                }
-                                break;
-
-                            case '%':
-                                if (lookAhead() == '=') {
-                                    name = new String(expr, start, trimLeft(cursor) - start);
-
-                                    start = cursor += 2;
-                                    captureToEOS();
-
-                                    if (union) {
-                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, MOD, t);
-                                    }
-                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.MOD, idx, fields);
-                                    }
-                                    else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.MOD, fields);
-                                    }
-                                }
-                                break;
 
                             case '\u00AB': // special compact code for recursive parses
-                            case '<':
-                                if ((lookAhead() == '<' && lookAhead(2) == '=') || expr[cursor] == '\u00AB') {
+                            case '\u00BB':
+                            case '\u00AC':
+                            case '&':
+                            case '^':
+                            case '|':
+                            case '*':
+                            case '/':
+                            case '%':
+                                char op = expr[cursor];
+                                if (lookAhead() == '=') {
                                     name = new String(expr, start, trimLeft(cursor) - start);
 
-                                    start = cursor += expr[cursor] == '\u00AB' ? 2 : 3;
+                                    start = cursor += 2;
+                                    captureToEOS();
+
+                                    if (union) {
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, _bwOpLookup(op), t);
+                                    }
+                                    else if ((idx = pCtx.variableIndexOf(name)) != -1) {
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), _bwOpLookup(op), idx, fields);
+                                    }
+                                    else {
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), _bwOpLookup(op), fields);
+                                    }
+                                }
+
+
+                            case '<':
+                                if ((lookAhead() == '<' && lookAhead(2) == '=')) {
+                                    name = new String(expr, start, trimLeft(cursor) - start);
+
+                                    start = cursor += 3;
                                     captureToEOS();
 
                                     if (union) {
@@ -616,14 +532,13 @@ public class AbstractParser implements Serializable {
                                 }
                                 break;
 
-                            case '\u00BB':
-                            case '\u00AC':
+
                             case '>':
                                 if (lookAhead() == '>') {
-                                    if (lookAhead(2) == '=' || expr[cursor] == '\u00BB') {
+                                    if (lookAhead(2) == '=') {
                                         name = new String(expr, start, trimLeft(cursor) - start);
 
-                                        start = cursor += expr[cursor] == '\u00BB' ? 2 : 3;
+                                        start = cursor += 3;
                                         captureToEOS();
 
                                         if (union) {
@@ -636,10 +551,10 @@ public class AbstractParser implements Serializable {
                                             return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_SHIFT_RIGHT, fields);
                                         }
                                     }
-                                    else if ((lookAhead(2) == '>' && lookAhead(3) == '=') || expr[cursor] == '\u00AC') {
+                                    else if ((lookAhead(2) == '>' && lookAhead(3) == '=')) {
                                         name = new String(expr, start, trimLeft(cursor) - start);
 
-                                        start = cursor += expr[cursor] == '\u00AC' ? 2 : 4;
+                                        start = cursor += 4;
                                         captureToEOS();
 
                                         if (union) {
@@ -2569,6 +2484,32 @@ public class AbstractParser implements Serializable {
         catch (Exception e) {
             throw new CompileException("failed to subEval expression", e);
         }
+    }
+
+    private static int _bwOpLookup(char c) {
+        switch (c) {
+            case '|':
+                return Operator.BW_OR;
+            case '&':
+                return Operator.BW_AND;
+            case '^':
+                return Operator.BW_XOR;
+            case '*':
+                return Operator.MULT;
+            case '/':
+                return Operator.DIV;
+            case '+':
+                return Operator.ADD;
+            case '%':
+                return Operator.MOD;
+            case '\u00AB':
+                return Operator.BW_SHIFT_LEFT;
+            case '\u00BB':
+                return Operator.BW_SHIFT_RIGHT;
+            case '\u00AC':
+                return Operator.BW_USHIFT_RIGHT;
+        }
+        return -1;
     }
 
     private static int asInt(final Object o) {
