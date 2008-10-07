@@ -1071,6 +1071,12 @@ public class AbstractParser implements Serializable {
 
             return createPropertyToken(start, cursor);
         }
+        catch (NumberFormatException e) {
+            CompileException c = new CompileException("badly formatted number: " + e.getMessage(), expr, cursor, e);
+            c.setLineNumber(line);
+            c.setColumn(cursor - lastLineStart);
+            throw c;
+        }
         catch (StringIndexOutOfBoundsException e) {
             CompileException c = new CompileException("unexpected end of statement", expr, cursor, e);
             c.setLineNumber(line);

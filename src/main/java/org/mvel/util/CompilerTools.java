@@ -97,6 +97,9 @@ public class CompilerTools {
                         optimizedAst.addTokenNode(tkOp2);
                     }
                 }
+                else if (!tkOp.isOperator() && tk.getLiteralValue() instanceof Class) {
+                    optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), (Class) tk.getLiteralValue(), 0));
+                }
                 else if (tkOp.isOperator(Operator.REGEX)) {
                     optimizedAst.addTokenNode(new RegExMatchNode(tk, astLinkedList.nextNode()));
                 }
@@ -196,12 +199,13 @@ public class CompilerTools {
         Class retType = expression.getKnownEgressType();
         if (compileMode && getCurrentThreadParserContext().isStrictTypeEnforcement()) {
             if (retType == null || !type.isAssignableFrom(retType)) {
-                           throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-                        + (retType != null ? retType.getName() : "null"));            }
-        }
-        else if (retType == null || !Object.class.equals(retType) &&  !type.isAssignableFrom(retType)) {
-                           throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
+                throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
                         + (retType != null ? retType.getName() : "null"));
+            }
+        }
+        else if (retType == null || !Object.class.equals(retType) && !type.isAssignableFrom(retType)) {
+            throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
+                    + (retType != null ? retType.getName() : "null"));
         }
     }
 }

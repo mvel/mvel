@@ -4422,6 +4422,17 @@ public class CoreConfidenceTests extends AbstractTest {
 
         MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
     }
+
+    public void testDecl() {
+        assertEquals((char) 100, test("char c; c = 100; c"));
+    }
+
+    public void testThis() {
+        test("aO`7.y10wx\u00105eL\u001BO\u0010\u0010bI\n" +
+                "MuC\u0006w\u0018&t[\u00159oRij_&]8Mng/Dh\u0010'j\f_\u0015|/Dm:\\6uU\u0010Z>B\u001E ^\u000F4\u000B`\u000Bpo>ap>Nyv&\u001Dd\u0011y86$?\u000F2DT\u0010T$\u0015\u0002[\u0017\tS\u0015S&LB!R\u00114\u0011]\\>(Y\u0015x$G4X\u0005:u");
+
+
+    }
 }
 
 

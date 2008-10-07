@@ -135,7 +135,10 @@ public class MVELInterpretedRuntime extends AbstractParser {
                         continue;
                     case OP_OVERFLOW:
                         if (!tk.isOperator()) {
-                            throw new CompileException("unexpected token: " + tk.getName());
+                            if (!(stk.peek() instanceof Class)) {
+                                throw new CompileException("unexpected token: " + tk.getName());
+                            }
+                            variableFactory.createVariable(tk.getName(), null, (Class) stk.peek());
                         }
                         continue;
                 }

@@ -75,7 +75,6 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
                 this.varName = new String(expr, 0, endOfName);
                 index = new String(indexTarget, endOfName, indexTarget.length - endOfName);
-                // index = subset(indexTarget, endOfName, indexTarget.length - endOfName);
             }
 
             checkNameSafety(this.varName);
@@ -101,17 +100,15 @@ public class AssignmentNode extends ASTNode implements Assignment {
         }
 
         if (col) {
-            setExpr.setValue(ctx, thisValue, factory, ctx = statement.getValue(ctx, thisValue, factory));
+            return setExpr.setValue(ctx, thisValue, factory, statement.getValue(ctx, thisValue, factory));
         }
         else if (statement != null) {
-            factory.createVariable(varName, ctx = statement.getValue(ctx, thisValue, factory));
+            return factory.createVariable(varName, statement.getValue(ctx, thisValue, factory)).getValue();
         }
         else {
             factory.createVariable(varName, null);
-            return Void.class;
+            return null;
         }
-
-        return ctx;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -121,7 +118,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
             PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = MVEL.eval(stmt, ctx, factory));
         }
         else {
-            factory.createVariable(varName, ctx = MVEL.eval(stmt, ctx, factory));
+            return factory.createVariable(varName, MVEL.eval(stmt, ctx, factory)).getValue();
         }
 
         return ctx;

@@ -33,6 +33,11 @@ public class TypedVarNode extends ASTNode implements Assignment {
 
     private ExecutableStatement statement;
 
+    public TypedVarNode(String name, Class type) {
+        this.name = name;
+        this.egressType = type;
+    }
+
     public TypedVarNode(char[] expr, int fields, Class type) {
         this.egressType = type;
         this.fields = fields;

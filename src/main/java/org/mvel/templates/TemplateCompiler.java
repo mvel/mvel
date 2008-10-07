@@ -90,8 +90,8 @@ public class TemplateCompiler {
                                     /**
                                      * Capture any residual text node, and push the if statement on the nesting stack.
                                      */
-                                    stack.push(n = markTextNode(n).setNext(
-                                            new IfNode(start, name, template, captureOrbInternal(), start)));
+                                    stack.push(n = markTextNode(n).next =
+                                            new IfNode(start, name, template, captureOrbInternal(), start));
 
                                     n.setTerminus(new TerminalNode());
 
@@ -99,10 +99,10 @@ public class TemplateCompiler {
 
                                 case Opcodes.ELSE:
                                     if (!stack.isEmpty() && stack.peek() instanceof IfNode) {
-                                        markTextNode(n).setNext((last = (IfNode) stack.pop()).getTerminus());
+                                        markTextNode(n).next = (last = (IfNode) stack.pop()).getTerminus();
 
                                         last.demarcate(last.getTerminus(), template);
-                                        last.setNext(n = new IfNode(start, name, template, captureOrbInternal(), start));
+                                        last.next = n = new IfNode(start, name, template, captureOrbInternal(), start);
                                         n.setTerminus(last.getTerminus());
 
                                         stack.push(n);
@@ -111,7 +111,7 @@ public class TemplateCompiler {
 
                                 case Opcodes.FOREACH:
                                     stack.push(
-                                            n = markTextNode(n).setNext(new ForEachNode(start, name, template, captureOrbInternal(), start))
+                                            n = markTextNode(n).next = new ForEachNode(start, name, template, captureOrbInternal(), start)
                                     );
 
                                     n.setTerminus(new TerminalNode());
@@ -119,32 +119,32 @@ public class TemplateCompiler {
                                     break;
 
                                 case Opcodes.INCLUDE_FILE:
-                                    n = markTextNode(n).setNext(
-                                            new IncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1)
-                                    );
+                                    n = markTextNode(n).next =
+                                            new IncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1
+                                            );
                                     break;
 
                                 case Opcodes.INCLUDE_NAMED:
-                                    n = markTextNode(n).setNext(
-                                            new NamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1)
-                                    );
+                                    n = markTextNode(n).next =
+                                            new NamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1
+                                            );
                                     break;
 
                                 case Opcodes.CODE:
                                     n = markTextNode(n)
-                                            .setNext(new CodeNode(start, name, template, captureOrbInternal(), start = cursor + 1));
+                                            .next = new CodeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                                     break;
 
                                 case Opcodes.COMMENT:
                                     n = markTextNode(n)
-                                            .setNext(new CommentNode(start, name, template, captureOrbInternal(), start = cursor + 1));
+                                            .next = new CommentNode(start, name, template, captureOrbInternal(), start = cursor + 1);
 
                                     break;
 
                                 case Opcodes.DECLARE:
-                                    stack.push(n = markTextNode(n).setNext(
-                                            new DeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1)
-                                    ));
+                                    stack.push(n = markTextNode(n).next =
+                                            new DeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1
+                                            ));
 
                                     n.setTerminus(new TerminalNode());
 
@@ -160,21 +160,21 @@ public class TemplateCompiler {
                                     terminal.setEnd((lastTextRangeEnding = start) - 1);
                                     terminal.calculateContents(template);
 
-                                    if (end.demarcate(terminal, template)) n = n.setNext(terminal);
+                                    if (end.demarcate(terminal, template)) n = n.next = terminal;
                                     else n = terminal;
 
                                     break;
 
                                 default:
                                     if (name.length() == 0) {
-                                        n = markTextNode(n).setNext(
-                                                new ExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1));
+                                        n = markTextNode(n).next =
+                                                new ExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                                     }
                                     else if (customNodes != null && customNodes.containsKey(name)) {
                                         Class<? extends Node> customNode = customNodes.get(name);
 
                                         try {
-                                            (n = markTextNode(n).setNext(customNode.newInstance())).setBegin(start);
+                                            (n = markTextNode(n).next = (customNode.newInstance())).setBegin(start);
                                             n.setName(name);
                                             n.setCStart(captureOrbInternal());
                                             n.setCEnd(start = cursor + 1);
@@ -228,9 +228,9 @@ public class TemplateCompiler {
         }
 
         if (start < template.length) {
-            n = n.setNext(new TextNode(start, template.length));
+            n = n.next = new TextNode(start, template.length);
         }
-        n.setNext(new EndNode());
+        n.next = new EndNode();
 
         n = root;
         do {
@@ -293,7 +293,7 @@ public class TemplateCompiler {
         int s = (n.getEnd() > lastTextRangeEnding ? n.getEnd() : lastTextRangeEnding);
 
         if (s < start) {
-            return n.setNext(new TextNode(s, lastTextRangeEnding = start - 1));
+            return n.next = new TextNode(s, lastTextRangeEnding = start - 1);
         }
         return n;
     }

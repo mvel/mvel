@@ -1,12 +1,12 @@
 package org.mvel.templates.res;
 
+import org.mvel.MVEL;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.templates.TemplateRuntime;
-import org.mvel.templates.SimpleTemplateRegistry;
 import org.mvel.templates.CompiledTemplate;
+import org.mvel.templates.SimpleTemplateRegistry;
+import org.mvel.templates.TemplateRuntime;
 import static org.mvel.util.ParseTools.subset;
 import org.mvel.util.StringAppender;
-import org.mvel.MVEL;
 
 public class DeclareNode extends Node {
     private Node nestedNode;
@@ -22,7 +22,7 @@ public class DeclareNode extends Node {
             runtime.setNamedTemplateRegistry(new SimpleTemplateRegistry());
         }
 
-    //   String name = MVEL.eval(contents, ctx, factory, String.class);
+        //   String name = MVEL.eval(contents, ctx, factory, String.class);
 
         runtime.getNamedTemplateRegistry()
                 .addNamedTemplate(MVEL.eval(contents, ctx, factory, String.class),
@@ -34,8 +34,9 @@ public class DeclareNode extends Node {
     public boolean demarcate(Node terminatingNode, char[] template) {
         Node n = nestedNode = next;
 
-        while (n.getNext() != null) n = n.getNext();
-        n.setNext(new EndNode());
+        while (n.getNext() != null) n = n.next;
+
+        n.next = new EndNode();
 
         next = terminus;
         return false;

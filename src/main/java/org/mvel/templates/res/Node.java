@@ -1,9 +1,9 @@
 package org.mvel.templates.res;
 
-import org.mvel.util.StringAppender;
-import static org.mvel.util.ParseTools.subset;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.templates.TemplateRuntime;
+import static org.mvel.util.ParseTools.subset;
+import org.mvel.util.StringAppender;
 
 import java.io.Serializable;
 
@@ -14,7 +14,7 @@ public abstract class Node implements Serializable {
     protected int cStart;
     protected int cEnd;
     protected int end;
-    protected Node next;
+    public Node next;
     protected Node terminus;
 
     public Node() {
