@@ -1,8 +1,10 @@
 package org.mvel.ast;
 
+import org.mvel.CompileException;
 import org.mvel.MVEL;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
+import org.mvel.util.CompilerTools;
 import static org.mvel.util.ParseTools.subCompileExpression;
 
 public class Invert extends ASTNode {
@@ -12,7 +14,7 @@ public class Invert extends ASTNode {
         this.name = name;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            this.stmt = (ExecutableStatement) subCompileExpression(name);
+            CompilerTools.expectType(this.stmt = (ExecutableStatement) subCompileExpression(name), Integer.class, true);
         }
     }
 
@@ -21,6 +23,12 @@ public class Invert extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return ~((Integer) MVEL.eval(name, ctx, factory));
+        Object o = MVEL.eval(name, ctx, factory);
+        if (o instanceof Integer) {
+            return ~((Integer) o);
+        }
+        else {
+            throw new CompileException("was expecting type: Integer; but found type: " + (o == null ? "null" : o.getClass().getName()));
+        }
     }
 }

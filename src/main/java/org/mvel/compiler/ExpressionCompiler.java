@@ -145,7 +145,8 @@ public class ExpressionCompiler extends AbstractParser {
                          * reduction.
                          */
                         if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()
-                                && tkOp.getOperator() < 34 && ((lastOp == -1 || PTABLE[lastOp] < PTABLE[tkOp.getOperator()]))) {
+                                && tkOp.getOperator() < 34 && ((lastOp == -1
+                                || (lastOp < PTABLE.length && PTABLE[lastOp] < PTABLE[tkOp.getOperator()])))) {
 
                             stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), op = tkOp.getOperator());
 
