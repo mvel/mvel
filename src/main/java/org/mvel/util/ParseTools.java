@@ -1798,7 +1798,6 @@ public class ParseTools {
         }
     }
 
-
     /**
      * REMOVE THIS WITH JDK1.4 COMPATIBILITY!  COMPENSATES FOR LACK OF getSimpleName IN java.lang.Class -- DIE 1.4!
      *
@@ -1814,7 +1813,7 @@ public class ParseTools {
             throw new CompileException("illegal use of reserved word: " + name);
         }
         else if (Character.isDigit(name.charAt(0))) {
-            throw new CompileException("illegal assignment");
+            throw new CompileException("not an identifier");
         }
     }
 
