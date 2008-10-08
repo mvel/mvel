@@ -259,7 +259,7 @@ public class AbstractParser implements Serializable {
                                 /**
                                  * If it's not a dimentioned array, continue capturing if necessary.
                                  */
-                                if (cursor < length && expr[cursor - 2] != ']') captureToEOT();
+                                if (cursor < length && !lastNonWhite(']')) captureToEOT();
 
                                 lastNode = new NewObjectNode(subArray(start, cursor), fields);
 
@@ -1039,7 +1039,8 @@ public class AbstractParser implements Serializable {
                             if (tokenContinues()) {
                                 lastNode = new InlineCollectionNode(expr, start, start = cursor, fields);
                                 captureToEOT();
-                                return lastNode = new Union(expr, start + 1, cursor, fields, lastNode);
+                                if (expr[start] == '.') start++;
+                                return lastNode = new Union(expr, start, cursor, fields, lastNode);
                             }
                             else {
                                 return lastNode = new InlineCollectionNode(expr, start, cursor, fields);
@@ -1748,6 +1749,12 @@ public class AbstractParser implements Serializable {
         while (++cursor != length);
     }
 
+
+    protected boolean lastNonWhite(char c) {
+        int i = cursor - 1;
+        while (isWhitespace(expr[i])) i--;
+        return c == expr[i];
+    }
 
     /**
      * From the specified cursor position, trim out any whitespace between the current position and the end of the
