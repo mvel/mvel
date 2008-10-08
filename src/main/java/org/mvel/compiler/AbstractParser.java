@@ -244,7 +244,8 @@ public class AbstractParser implements Serializable {
                         switch (OPERATORS.get(t)) {
                             case NEW:
                                 if (!isIdentifierPart(expr[start = cursor = trimRight(cursor)])) {
-                                    throw new CompileException("unexpected character (expected identifier): " + expr[cursor], expr, cursor);
+                                    throw new CompileException("unexpected character (expected identifier): "
+                                            + expr[cursor], expr, cursor);
                                 }
 
                                 /**

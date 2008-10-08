@@ -18,15 +18,15 @@
  */
 package org.mvel.ast;
 
-import org.mvel.ParserContext;
 import org.mvel.CompileException;
+import org.mvel.ParserContext;
 import org.mvel.compiler.AbstractParser;
 import org.mvel.compiler.EndWithValue;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.FunctionVariableResolverFactory;
-import static org.mvel.util.ParseTools.parseParameterList;
+import static org.mvel.util.ParseTools.parseParameterDefList;
 import static org.mvel.util.ParseTools.subCompileExpression;
 
 import java.util.Map;
@@ -45,7 +45,7 @@ public class Function extends ASTNode implements Safe {
             this.name = "AnonFunction" + this.hashCode();
         }
 
-        parmNum = (this.parameters = parseParameterList(parameters, 0, parameters.length)).length;
+        parmNum = (this.parameters = parseParameterDefList(parameters, 0, parameters.length)).length;
 
         ParserContext old = AbstractParser.getCurrentThreadParserContext();
         old.declareFunction(this);
@@ -71,7 +71,7 @@ public class Function extends ASTNode implements Safe {
          * Add globals as inputs
          */
         if (old.getVariables() != null) {
-            for (Map.Entry<String,Class> e : old.getVariables().entrySet()) {
+            for (Map.Entry<String, Class> e : old.getVariables().entrySet()) {
                 ctx.addInput(e.getKey(), e.getValue());
             }
 
@@ -141,7 +141,7 @@ public class Function extends ASTNode implements Safe {
     public void checkArgumentCount(int passing) {
         if (passing != parmNum) {
             throw new CompileException("bad number of arguments in function call: "
-                    + passing + " (expected: " + parmNum + ")"); 
+                    + passing + " (expected: " + parmNum + ")");
         }
     }
 

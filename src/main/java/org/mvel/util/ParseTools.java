@@ -114,6 +114,75 @@ public class ParseTools {
         return null;
     }
 
+    public static String[] parseParameterDefList(char[] parm, int offset, int length) {
+        List<String> list = new LinkedList<String>();
+
+        if (length == -1)
+            length = parm.length;
+
+        int start = offset;
+        int i = offset;
+        int end = i + length;
+        String s;
+
+        for (; i < end; i++) {
+            switch (parm[i]) {
+                case '(':
+                case '[':
+                case '{':
+                    i = balancedCapture(parm, i, parm[i]);
+                    continue;
+
+                case '\'':
+                    i = captureStringLiteral('\'', parm, i, parm.length);
+                    continue;
+
+                case '"':
+                    i = captureStringLiteral('"', parm, i, parm.length);
+                    continue;
+
+                case ',':
+                    if (i > start) {
+                        while (isWhitespace(parm[start]))
+                            start++;
+
+                        checkNameSafety(s = new String(parm, start, i - start));
+
+                        list.add(s);
+                    }
+
+                    while (isWhitespace(parm[i]))
+                        i++;
+
+                    start = i + 1;
+                    continue;
+
+                default:
+                    if (!isWhitespace(parm[i]) && !isIdentifierPart(parm[i])) {
+                        throw new CompileException("expected parameter");
+                    }
+            }
+        }
+
+        if (start < (length + offset) && i > start) {
+            s = createStringTrimmed(parm, start, i - start);
+            if (s.length() > 0) {
+                checkNameSafety(s);
+                list.add(s);
+            }
+        }
+        else if (list.size() == 0) {
+            s = createStringTrimmed(parm, start, length);
+            if (s.length() > 0) {
+                checkNameSafety(s);
+                list.add(s);
+            }
+        }
+
+        return list.toArray(new String[list.size()]);
+    }
+
+
     public static String[] parseParameterList(char[] parm, int offset, int length) {
         List<String> list = new LinkedList<String>();
 
