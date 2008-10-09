@@ -15,7 +15,6 @@ import org.mvel.util.ExecutionStack;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.containsCheck;
 import static org.mvel.util.PropertyTools.isEmpty;
-import org.mvel.util.Stack;
 
 import static java.lang.String.valueOf;
 import static java.lang.Thread.currentThread;
@@ -44,7 +43,7 @@ public class MVELRuntime {
             variableFactory = new ClassImportResolverFactory(expression.getParserContext().getParserConfiguration(), variableFactory);
         }
 
-        Stack stk = new ExecutionStack();
+        ExecutionStack stk = new ExecutionStack();
         Object v1, v2;
 
         ASTNode tk = null;
@@ -82,7 +81,7 @@ public class MVELRuntime {
                         continue;
 
                     case TERNARY:
-                        if (!(Boolean) stk.pop()) {
+                        if (!stk.popBoolean()) {
                             //noinspection StatementWithEmptyBody
                             while (node.hasMoreNodes() && !node.nextNode().isOperator(TERNARY_ELSE)) ;
                         }

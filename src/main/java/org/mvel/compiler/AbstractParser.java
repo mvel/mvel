@@ -27,7 +27,6 @@ import static org.mvel.util.ArrayTools.findFirst;
 import org.mvel.util.ExecutionStack;
 import static org.mvel.util.ParseTools.*;
 import static org.mvel.util.PropertyTools.isEmpty;
-import org.mvel.util.Stack;
 import org.mvel.util.StringAppender;
 
 import java.io.Serializable;
@@ -77,7 +76,7 @@ public class AbstractParser implements Serializable {
     public static final Map<String, Integer> OPERATORS =
             new HashMap<String, Integer>(25 * 2, 0.4f);
 
-    protected Stack stk;
+    protected ExecutionStack stk;
     protected ExecutionStack splitAccumulator = new ExecutionStack();
 
     protected static ThreadLocal<ParserContext> parserContext;

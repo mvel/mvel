@@ -18,6 +18,8 @@
  */
 package org.mvel.util;
 
+import org.mvel.CompileException;
+
 public class ExecutionStack implements Stack {
     private StackElement element;
     private int size = 0;
@@ -74,6 +76,17 @@ public class ExecutionStack implements Stack {
         if (size-- == 0) return null;
         try {
             return element.value;
+        }
+        finally {
+            element = element.next;
+        }
+    }
+
+    public Boolean popBoolean() {
+        if (size-- == 0) return null;
+        try {
+            if (element.value instanceof Boolean) return (Boolean) element.value;
+            throw new CompileException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
         }
         finally {
             element = element.next;

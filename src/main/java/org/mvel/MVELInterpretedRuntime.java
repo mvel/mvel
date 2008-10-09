@@ -220,20 +220,15 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 }
 
             case TERNARY:
-                if (stk.peek() instanceof Boolean) {
-                    if (!(Boolean) stk.pop()) {
-                        stk.clear();
+                if (!stk.popBoolean()) {
+                    stk.clear();
 
-                        ASTNode tk;
-                        while ((tk = nextToken()) != null && !tk.isOperator(Operator.TERNARY_ELSE)) {
-                            //nothing
-                        }
+                    ASTNode tk;
+                    while ((tk = nextToken()) != null && !tk.isOperator(Operator.TERNARY_ELSE)) {
+                        //nothing
                     }
                 }
-                else {
-                    throw new CompileException("ternary if against non-boolean value: "
-                            + String.valueOf(stk.peek()));
-                }
+
 
                 return 0;
 

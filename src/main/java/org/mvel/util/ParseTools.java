@@ -898,7 +898,7 @@ public class ParseTools {
     }
 
     public static char[] subset(char[] array, int start, int length) {
-        if (length == -1) return new char[0];
+        if (length < 0) return new char[0];
         char[] newArray = new char[length];
 
         for (int i = 0; i < newArray.length; i++) {
