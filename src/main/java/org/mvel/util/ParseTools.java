@@ -1177,8 +1177,9 @@ public class ParseTools {
                                     }
                                 case '\r':
                                 case '\n':
+                                    break;
                             }
-
+                            start++;
                         }
                     }
                 }

@@ -4454,6 +4454,12 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testInlineUnion() {
         assertEquals("test", test("{'foo', 'test'}[1]"));
     }
+
+    public void testFuzz() {
+        test("lNbZ]q-v5^:xUxJ\f\t\u0007\u0005/*\u001CUiO`\u0010\f\u001B\u001Ah\n" +
+                "T\u001D\"\u0007*$3| H\u000E\u001Fxj\u0006.vQ[q;0&i&y-,k\u001C\u0019W");
+
+    }
 }
 
 
