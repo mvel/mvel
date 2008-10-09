@@ -777,8 +777,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         ASTNode var = nextToken();
+        ASTNode var2 = nextToken();
 
-        if (!nextToken().isOperator(Operator.PROJECTION)) {
+        if (!var2.isOperator(Operator.PROJECTION)) {
             throw new CompileException("expected fold operator");
         }
 

@@ -1772,6 +1772,16 @@ public class ParseTools {
         return cls;
     }
 
+    public static boolean isJunct(char c) {
+        switch (c) {
+            case '[':
+            case '(':
+                return true;
+            default:
+                return isWhitespace(c);
+        }
+    }
+
     public static final class WithStatementPair implements java.io.Serializable {
         private String parm;
         private String value;

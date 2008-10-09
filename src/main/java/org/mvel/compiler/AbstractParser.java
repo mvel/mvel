@@ -819,23 +819,28 @@ public class AbstractParser implements Serializable {
                                         cursor = captureStringLiteral('"', expr, cursor, length);
                                         break;
                                     case 'i':
-                                        if (lookAhead() == 'n' && isWhitespace(lookAhead(2)) && !isIdentifierPart(lookBehind())) {
-                                            fields |= ASTNode.FOLD;
+                                        if (lookAhead() == 'n' && isWhitespace(lookAhead(2))) {
+
                                             for (int level = brace; cursor != length; cursor++) {
                                                 switch (expr[cursor]) {
                                                     case '(':
                                                         brace++;
                                                         break;
                                                     case ')':
-                                                        if (--brace != level) {
-                                                            if (lookAhead() == '.') {
-                                                                lastNode = createToken(expr, trimRight(start + 1), (start = cursor++), ASTNode.FOLD);
+                                                        if (--brace < level) {
+                                                            cursor++;
+                                                            if (tokenContinues()) {
+                                                                lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2));
+                                                                start = cursor;
+                                                                if (expr[start] == '.') start++;
                                                                 captureToEOT();
-                                                                return lastNode = new Union(expr, trimRight(start + 2), cursor, fields, lastNode);
+                                                                return lastNode = new Union(expr, trimRight(start), cursor, fields, lastNode);
                                                             }
                                                             else {
-                                                                return createToken(expr, trimRight(start + 1), cursor++, ASTNode.FOLD);
+                                                                lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2));
+                                                                return lastNode;
                                                             }
+
                                                         }
                                                         break;
                                                     case '\'':
@@ -968,20 +973,6 @@ public class AbstractParser implements Serializable {
                             if (expr[cursor++ + 1] == '|') {
                                 return new OperatorNode(OPERATORS.get(new String(expr, start, ++cursor - start)));
                             }
-//                            else if (expr[cursor] == '=') {
-//                                if (!isNextIdentifierOrLiteral()) {
-//                                    throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, cursor);
-//                                }
-//
-//                                captureToEOS();
-//
-//                                if ((idx = pCtx.variableIndexOf(name)) != -1) {
-//                                    return lastNode = new IndexedOperativeAssign(subArray(start, cursor), ADD, idx, fields);
-//                                }
-//                                else {
-//                                    return lastNode = new OperativeAssign(name, subArray(start, cursor), ADD, fields);
-//                                }
-//                            }
                             else {
                                 return createOperator(expr, start, cursor);
                             }
@@ -1537,6 +1528,7 @@ public class AbstractParser implements Serializable {
         }
         return false;
     }
+
 
     protected void expectEOS() {
         skipWhitespace();

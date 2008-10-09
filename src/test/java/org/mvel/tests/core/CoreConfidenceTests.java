@@ -632,6 +632,25 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(3, test("(name in things).size()"));
     }
 
+    public void testProjectionSupport3() {
+        assertEquals("FOO", test("(toUpperCase() in ['bar', 'foo'])[1]"));
+    }
+
+    public void testProjectionSupport4() {
+        Collection col = (Collection) test("(toUpperCase() in ['zero', 'zen', 'bar', 'foo'] if ($ == 'bar'))");
+        assertEquals(1, col.size());
+        assertEquals("BAR", col.iterator().next());
+    }
+
+    public void testProjectionSupport5() {
+        Collection col = (Collection) test("(toUpperCase() in ['zero', 'zen', 'bar', 'foo'] if ($.startsWith('z')))");
+        assertEquals(2, col.size());
+        Iterator iter = col.iterator();
+        assertEquals("ZERO", iter.next());
+        assertEquals("ZEN", iter.next());
+    }
+
+
     public void testSizeOnInlineArray() {
         assertEquals(3, test("{1,2,3}.size()"));
     }
@@ -4435,10 +4454,6 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testInlineUnion() {
         assertEquals("test", test("{'foo', 'test'}[1]"));
-    }
-
-    public void testFuzz() {
-        test(";2>2\u000FX\u000F? \u0017!7K\u0016>\u001E2 \u0012@X\u001D%)rwZ\u0004JjC,47`[TxS\u0015!+r\\X\t\u0019'>f\u0001Hp\u0018a7'Z\u0013.8*yl^DJt9h!+$Iyd\u0016qy\u0000nfw\u0013\u0005\u0003\u001FLCHd(pDV[<sE\u0003)u\u0016p?\bu\u0007#\u0015*\u001DqL\u0013Qu\u0018w=2\u0018\u001EU]_Q\u001C");
     }
 }
 
