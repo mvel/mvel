@@ -46,7 +46,7 @@ public class ItemResolverFactory extends BaseVariableResolverFactory {
     public static class ItemResolver implements VariableResolver {
         private final String name;
         private Class type = Object.class;
-        private Object value;
+        public Object value;
 
         public ItemResolver(String name, Class type) {
             this.name = name;
@@ -58,7 +58,7 @@ public class ItemResolverFactory extends BaseVariableResolverFactory {
         }
 
         public String getName() {
-            return name;  
+            return name;
         }
 
         public Class getType() {

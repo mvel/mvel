@@ -41,11 +41,7 @@ public class Fold extends ASTNode {
 
                 if (name[cursor] == 'i' && name[cursor + 1] == 'f' && ParseTools.isJunct(name[cursor + 2])) {
                     int s = cursor + 2;
-                    char[] xx = ParseTools.subset(name, s, name.length - s);
-
-                    System.out.println("<<" + new String(xx) + ">>");
-
-                    constraintEx = (ExecutableStatement) subCompileExpression(xx);
+                    constraintEx = (ExecutableStatement) subCompileExpression(ParseTools.subset(name, s, name.length - s));
                     break;
                 }
             }
@@ -58,18 +54,18 @@ public class Fold extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver("$");
+        ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, new DefaultLocalVariableResolverFactory(factory));
+
         List list;
 
         if (constraintEx != null) {
-            ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver("$");
-            ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, new DefaultLocalVariableResolverFactory(factory));
-
             Collection col = ((Collection) dataEx.getValue(ctx, thisValue, factory));
             list = new FastList(col.size());
             for (Object o : col) {
-                itemR.setValue(o);
+                itemR.value = o;
                 if ((Boolean) constraintEx.getValue(ctx, thisValue, itemFactory)) {
-                    list.add(subEx.getValue(o, thisValue, factory));
+                    list.add(subEx.getValue(o, thisValue, itemFactory));
                 }
             }
         }
@@ -77,7 +73,7 @@ public class Fold extends ASTNode {
             Collection col = ((Collection) dataEx.getValue(ctx, thisValue, factory));
             list = new FastList(col.size());
             for (Object o : col) {
-                list.add(subEx.getValue(o, thisValue, factory));
+                list.add(subEx.getValue(itemR.value = o, thisValue, itemFactory));
             }
         }
 
@@ -85,11 +81,12 @@ public class Fold extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver("$");
+        ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, new DefaultLocalVariableResolverFactory(factory));
+
         List list;
 
         if (constraintEx != null) {
-            ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver("$");
-            ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, new DefaultLocalVariableResolverFactory(factory));
 
             Object x = dataEx.getValue(ctx, thisValue, factory);
 
@@ -99,9 +96,9 @@ public class Fold extends ASTNode {
 
             list = new FastList(((Collection) x).size());
             for (Object o : (Collection) x) {
-                itemR.setValue(o);
+                itemR.value = o;
                 if ((Boolean) constraintEx.getValue(ctx, thisValue, itemFactory)) {
-                    list.add(subEx.getValue(o, thisValue, factory));
+                    list.add(subEx.getValue(o, thisValue, itemFactory));
                 }
             }
         }
@@ -114,7 +111,7 @@ public class Fold extends ASTNode {
 
             list = new FastList(((Collection) x).size());
             for (Object o : (Collection) x) {
-                list.add(subEx.getValue(o, thisValue, factory));
+                list.add(subEx.getValue(itemR.value = o, thisValue, itemFactory));
             }
         }
 
