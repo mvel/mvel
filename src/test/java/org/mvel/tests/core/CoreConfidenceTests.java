@@ -3693,7 +3693,6 @@ public class CoreConfidenceTests extends AbstractTest {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
         ctx.addInput("foo", HashMap.class, new Class[]{String.class, String.class});
-
         ExpressionCompiler compiler = new ExpressionCompiler("foo.get('bar').toUpperCase()");
         compiler.compile(ctx);
     }
