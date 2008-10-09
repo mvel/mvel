@@ -22,7 +22,6 @@ import org.mvel.*;
 import static org.mvel.DataConversion.canConvert;
 import static org.mvel.DataConversion.convert;
 import static org.mvel.MVEL.eval;
-import org.mvel.ast.ASTNode;
 import org.mvel.ast.Function;
 import org.mvel.ast.TypeDescriptor;
 import static org.mvel.ast.TypeDescriptor.getClassReference;
@@ -765,39 +764,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
     }
 
-
-    public Accessor optimizeFold(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        this.length = (this.expr = property).length;
-        this.cursor = 0;
-        greedy = false; // don't be greedy!
-
-        if (expr[cursor] == '(') {
-            length = cursor = balancedCapture(expr, cursor, '(');
-            cursor = 1;
-        }
-
-        ASTNode var = nextToken();
-        ASTNode var2 = nextToken();
-
-        if (!var2.isOperator(Operator.PROJECTION)) {
-            throw new CompileException("expected fold operator");
-        }
-
-        greedy = true;
-
-        Fold fold = new Fold(var.getNameAsArray(), new ExprValueAccessor(nextToken().getName()));
-
-        if (length < property.length - 1) {
-            cursor += 2;
-            Accessor union = new Union(fold, subset(property, cursor));
-            val = union.getValue(ctx, thisRef, factory);
-            return union;
-        }
-        else {
-            val = fold.getValue(ctx, thisRef, factory);
-            return fold;
-        }
-    }
 
     private void setRootNode(AccessorNode rootNode) {
         this.rootNode = this.currNode = rootNode;

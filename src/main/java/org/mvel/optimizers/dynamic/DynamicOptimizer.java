@@ -59,12 +59,6 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
         return classLoader.registerDynamicAccessor(new DynamicGetAccessor(property, 3, firstStage.optimizeObjectCreation(property, ctx, thisRef, factory)));
     }
 
-    public static final int FOLD = 4;
-
-    public Accessor optimizeFold(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        enforceTenureLimit();
-        return classLoader.registerDynamicAccessor(new DynamicGetAccessor(property, 4, firstStage.optimizeFold(property, ctx, thisRef, factory)));
-    }
 
     public Object getResultOptPass() {
         return firstStage.getResultOptPass();

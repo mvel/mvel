@@ -1,9 +1,11 @@
 package org.mvel.ast;
 
+import org.mvel.CompileException;
 import org.mvel.compiler.ExecutableStatement;
 import org.mvel.integration.VariableResolverFactory;
 import org.mvel.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel.integration.impl.ItemResolverFactory;
+import org.mvel.util.CompilerTools;
 import org.mvel.util.FastList;
 import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.isWhitespace;
@@ -17,11 +19,8 @@ public class Fold extends ASTNode {
     private ExecutableStatement dataEx;
     private ExecutableStatement constraintEx;
 
-    public Fold(char[] name) {
+    public Fold(char[] name, int fields) {
         this.name = name;
-
-        System.out.println("FOLD<<" + new String(name) + ">>");
-
         int cursor = 0;
         for (; cursor < name.length; cursor++) {
             if (isWhitespace(name[cursor])) {
@@ -52,7 +51,8 @@ public class Fold extends ASTNode {
             }
         }
 
-        dataEx = (ExecutableStatement) subCompileExpression(ParseTools.subset(name, start, cursor - start));
+        CompilerTools.expectType(dataEx = (ExecutableStatement) subCompileExpression(ParseTools.subset(name, start, cursor - start)),
+                Collection.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
 
     }
@@ -85,6 +85,43 @@ public class Fold extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
+        List list;
+
+        if (constraintEx != null) {
+            ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver("$");
+            ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, new DefaultLocalVariableResolverFactory(factory));
+
+            Object x = dataEx.getValue(ctx, thisValue, factory);
+
+            if (!(x instanceof Collection))
+                throw new CompileException("was expecting type: Collection; but found type: "
+                        + (x == null ? "null" : x.getClass().getName()));
+
+            list = new FastList(((Collection) x).size());
+            for (Object o : (Collection) x) {
+                itemR.setValue(o);
+                if ((Boolean) constraintEx.getValue(ctx, thisValue, itemFactory)) {
+                    list.add(subEx.getValue(o, thisValue, factory));
+                }
+            }
+        }
+        else {
+            Object x = dataEx.getValue(ctx, thisValue, factory);
+
+            if (!(x instanceof Collection))
+                throw new CompileException("was expecting type: Collection; but found type: "
+                        + (x == null ? "null" : x.getClass().getName()));
+
+            list = new FastList(((Collection) x).size());
+            for (Object o : (Collection) x) {
+                list.add(subEx.getValue(o, thisValue, factory));
+            }
+        }
+
+        return list;
+    }
+
+    public Class getEgressType() {
+        return Collection.class;
     }
 }

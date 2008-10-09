@@ -830,14 +830,14 @@ public class AbstractParser implements Serializable {
                                                         if (--brace < level) {
                                                             cursor++;
                                                             if (tokenContinues()) {
-                                                                lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2));
+                                                                lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2), fields);
                                                                 start = cursor;
                                                                 if (expr[start] == '.') start++;
                                                                 captureToEOT();
                                                                 return lastNode = new Union(expr, trimRight(start), cursor, fields, lastNode);
                                                             }
                                                             else {
-                                                                lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2));
+                                                                lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2), fields);
                                                                 return lastNode;
                                                             }
 
@@ -847,7 +847,7 @@ public class AbstractParser implements Serializable {
                                                         cursor = captureStringLiteral('\'', expr, cursor, length);
                                                         break;
                                                     case '"':
-                                                        cursor = captureStringLiteral('\'', expr, cursor, length);
+                                                        cursor = captureStringLiteral('\"', expr, cursor, length);
                                                         break;
                                                 }
                                             }

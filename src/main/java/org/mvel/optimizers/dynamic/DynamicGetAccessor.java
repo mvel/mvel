@@ -2,8 +2,8 @@ package org.mvel.optimizers.dynamic;
 
 import org.mvel.compiler.Accessor;
 import org.mvel.integration.VariableResolverFactory;
-import org.mvel.optimizers.OptimizerFactory;
 import org.mvel.optimizers.AccessorOptimizer;
+import org.mvel.optimizers.OptimizerFactory;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -66,9 +66,6 @@ public class DynamicGetAccessor implements DynamicAccessor {
             case DynamicOptimizer.COLLECTION:
                 _accessor = ao.optimizeCollection(null, null, property, ctx, elCtx, variableResolverFactory);
                 return _accessor.getValue(ctx, elCtx, variableResolverFactory);
-            case DynamicOptimizer.FOLD:
-                _accessor = ao.optimizeFold(property, ctx, elCtx, variableResolverFactory);
-                return ao.getResultOptPass();
         }
         return null;
     }

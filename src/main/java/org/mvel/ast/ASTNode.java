@@ -125,26 +125,22 @@ public class ASTNode implements Cloneable, Serializable {
             AccessorOptimizer optimizer;
             Object retVal = null;
 
-            if ((fields & FOLD) != 0) {
-                retVal = (setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
-                        .optimizeFold(name, ctx, thisValue, factory)).getValue(ctx, thisValue, factory));
+
+            if ((fields & NOJIT) != 0) {
+                optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
             }
             else {
-                if ((fields & NOJIT) != 0) {
-                    optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
-                }
-                else {
-                    optimizer = getDefaultAccessorCompiler();
-                }
-
-                try {
-                    setAccessor(optimizer.optimizeAccessor(name, ctx, thisValue, factory, true));
-                }
-                catch (OptimizationNotSupported ne) {
-                    setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
-                            .optimizeAccessor(name, ctx, thisValue, factory, true));
-                }
+                optimizer = getDefaultAccessorCompiler();
             }
+
+            try {
+                setAccessor(optimizer.optimizeAccessor(name, ctx, thisValue, factory, true));
+            }
+            catch (OptimizationNotSupported ne) {
+                setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
+                        .optimizeAccessor(name, ctx, thisValue, factory, true));
+            }
+
 
             if (accessor == null)
                 throw new OptimizationFailure("failed optimization");
@@ -166,12 +162,6 @@ public class ASTNode implements Cloneable, Serializable {
         String s;
         if ((fields & (LITERAL)) != 0) {
             return literal;
-        }
-        else if ((fields & FOLD) != 0) {
-            AccessorOptimizer optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
-            optimizer.optimizeFold(name, ctx, thisValue, factory);
-
-            return optimizer.getResultOptPass();
         }
 
         if ((fields & DEEP_PROPERTY) != 0) {

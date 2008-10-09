@@ -40,7 +40,7 @@ public class InlineCollectionNode extends ASTNode {
         super(expr, start, end, fields | INLINE_COLLECTION);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            parseGraph(true,null);
+            parseGraph(true, null);
         }
     }
 
@@ -50,7 +50,7 @@ public class InlineCollectionNode extends ASTNode {
         this.egressType = type;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            parseGraph(true,type);
+            parseGraph(true, type);
         }
     }
 
@@ -60,7 +60,7 @@ public class InlineCollectionNode extends ASTNode {
         }
         else {
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-            if (collectionGraph == null) parseGraph(true,null);
+            if (collectionGraph == null) parseGraph(true, null);
 
             accessor = ao.optimizeCollection(collectionGraph, egressType, trailing, ctx, thisValue, factory);
             egressType = ao.getEgressType();
@@ -79,7 +79,7 @@ public class InlineCollectionNode extends ASTNode {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
 
-        parseGraph(false,egressType);
+        parseGraph(false, egressType);
 
         return getAccessorCompiler(SAFE_REFLECTIVE)
                 .optimizeCollection(collectionGraph, egressType, trailing, ctx, thisValue, factory).getValue(ctx, thisValue, factory);
@@ -97,5 +97,7 @@ public class InlineCollectionNode extends ASTNode {
 
         if (parser.getCursor() + 2 < name.length)
             trailing = subset(name, parser.getCursor() + 2);
+
+        if (this.egressType == null) this.egressType = collectionGraph.getClass();
     }
 }
