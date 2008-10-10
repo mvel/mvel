@@ -850,6 +850,8 @@ public class AbstractParser implements Serializable {
                                                         break;
                                                 }
                                             }
+
+                                            throw new CompileException("unterminated projection", expr, cursor);
                                         }
                                         break;
 
