@@ -44,6 +44,8 @@ import java.io.IOException;
 import static java.lang.System.getProperty;
 import static java.lang.reflect.Array.getLength;
 import java.lang.reflect.*;
+import static java.lang.reflect.Modifier.FINAL;
+import static java.lang.String.valueOf;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -444,16 +446,32 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     ldcClassConstant((Class) ts);
                     return ts;
                 }
-                else {
-                    assert debug("GETSTATIC " + getDescriptor(((Field) ts).getDeclaringClass()) + "."
-                            + ((Field) ts).getName() + "::" + getDescriptor(((Field) ts).getType()));
-
-                    mv.visitFieldInsn(GETSTATIC, getDescriptor(((Field) ts).getDeclaringClass()),
-                            ((Field) ts).getName(), getDescriptor(returnType = ((Field) ts).getType()));
-
-
-                    return ((Field) ts).get(null);
+                else if (ts instanceof Method) {
+                    writeFunctionPointerStub(((Method) ts).getDeclaringClass(), (Method) ts);
+                    return ts;
                 }
+                else {
+                    Field f = (Field) ts;
+
+                    if ((f.getModifiers() & FINAL) != 0) {
+                        Object finalVal = f.get(null);
+                        assert debug("LDC " + valueOf(finalVal));
+                        mv.visitLdcInsn(finalVal);
+                        wrapPrimitive(finalVal.getClass());
+                        return finalVal;
+                    }
+                    else {
+                        assert debug("GETSTATIC " + getInternalName(f.getDeclaringClass()) + "."
+                                + ((Field) ts).getName() + "::" + getDescriptor(f.getType()));
+
+                        mv.visitFieldInsn(GETSTATIC, getInternalName(f.getDeclaringClass()),
+                                f.getName(), getDescriptor(returnType = f.getType()));
+
+
+                        return f.get(null);
+                    }
+                }
+
             }
             else if (ctx instanceof Class) {
                 /**
@@ -463,58 +481,60 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 Class c = (Class) ctx;
                 for (Method m : c.getMethods()) {
                     if (property.equals(m.getName())) {
-
-                        assert debug("*** producing function ptr stub.");
-
-                        ldcClassConstant(c);
-
-                        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getMethods", "()[Ljava/lang/reflect/Method;");
-                        mv.visitVarInsn(ASTORE, 7);
-                        mv.visitInsn(ICONST_0);
-                        mv.visitVarInsn(ISTORE, 5);
-                        mv.visitVarInsn(ALOAD, 7);
-                        mv.visitInsn(ARRAYLENGTH);
-                        mv.visitVarInsn(ISTORE, 6);
-                        Label l1 = new Label();
-                        mv.visitJumpInsn(GOTO, l1);
-                        Label l2 = new Label();
-                        mv.visitLabel(l2);
-                        mv.visitVarInsn(ALOAD, 7);
-                        mv.visitVarInsn(ILOAD, 5);
-                        mv.visitInsn(AALOAD);
-                        mv.visitVarInsn(ASTORE, 4);
-                        Label l3 = new Label();
-                        mv.visitLabel(l3);
-                        mv.visitLdcInsn(m.getName());
-                        mv.visitVarInsn(ALOAD, 4);
-                        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/reflect/Method", "getName", "()Ljava/lang/String;");
-                        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "equals", "(Ljava/lang/Object;)Z");
-                        Label l4 = new Label();
-                        mv.visitJumpInsn(IFEQ, l4);
-                        Label l5 = new Label();
-                        mv.visitLabel(l5);
-                        mv.visitVarInsn(ALOAD, 4);
-                        mv.visitInsn(ARETURN);
-                        mv.visitLabel(l4);
-                        mv.visitIincInsn(5, 1);
-                        mv.visitLabel(l1);
-                        mv.visitVarInsn(ILOAD, 5);
-                        mv.visitVarInsn(ILOAD, 6);
-                        mv.visitJumpInsn(IF_ICMPLT, l2);
-                        Label l6 = new Label();
-                        mv.visitLabel(l6);
-                        mv.visitInsn(ACONST_NULL);
-                        mv.visitInsn(ARETURN);
-
-                        deferFinish = true;
-
+                        writeFunctionPointerStub(c, m);
                         return m;
                     }
                 }
             }
 
+
             throw new PropertyAccessException(property);
         }
+    }
+
+
+    private void writeFunctionPointerStub(Class c, Method m) {
+        ldcClassConstant(c);
+
+        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Class", "getMethods", "()[Ljava/lang/reflect/Method;");
+        mv.visitVarInsn(ASTORE, 7);
+        mv.visitInsn(ICONST_0);
+        mv.visitVarInsn(ISTORE, 5);
+        mv.visitVarInsn(ALOAD, 7);
+        mv.visitInsn(ARRAYLENGTH);
+        mv.visitVarInsn(ISTORE, 6);
+        Label l1 = new Label();
+        mv.visitJumpInsn(GOTO, l1);
+        Label l2 = new Label();
+        mv.visitLabel(l2);
+        mv.visitVarInsn(ALOAD, 7);
+        mv.visitVarInsn(ILOAD, 5);
+        mv.visitInsn(AALOAD);
+        mv.visitVarInsn(ASTORE, 4);
+        Label l3 = new Label();
+        mv.visitLabel(l3);
+        mv.visitLdcInsn(m.getName());
+        mv.visitVarInsn(ALOAD, 4);
+        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/reflect/Method", "getName", "()Ljava/lang/String;");
+        mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/String", "equals", "(Ljava/lang/Object;)Z");
+        Label l4 = new Label();
+        mv.visitJumpInsn(IFEQ, l4);
+        Label l5 = new Label();
+        mv.visitLabel(l5);
+        mv.visitVarInsn(ALOAD, 4);
+        mv.visitInsn(ARETURN);
+        mv.visitLabel(l4);
+        mv.visitIincInsn(5, 1);
+        mv.visitLabel(l1);
+        mv.visitVarInsn(ILOAD, 5);
+        mv.visitVarInsn(ILOAD, 6);
+        mv.visitJumpInsn(IF_ICMPLT, l2);
+        Label l6 = new Label();
+        mv.visitLabel(l6);
+        mv.visitInsn(ACONST_NULL);
+        mv.visitInsn(ARETURN);
+
+        deferFinish = true;
     }
 
 
@@ -1123,8 +1143,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             /**
              * JAVA 1.4 SUCKS!  DIE 1.4 DIE!!!
              */
-        	
-        	assert debug("** Using 1.4 Bytecode **");
+
+            assert debug("** Using 1.4 Bytecode **");
 
             if (cls == boolean.class || cls == Boolean.class) {
                 assert debug("NEW java/lang/Boolean");
@@ -1177,7 +1197,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 assert debug("DUP X2");
                 mv.visitInsn(DUP_X2);
-                
+
                 assert debug("DUP X2");
                 mv.visitInsn(DUP_X2);
 

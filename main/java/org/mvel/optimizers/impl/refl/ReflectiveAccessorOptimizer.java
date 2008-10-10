@@ -373,11 +373,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     addAccessorNode(new StaticReferenceAccessor(tryStaticMethodRef));
                     return tryStaticMethodRef;
                 }
-                else {
+                else if (tryStaticMethodRef instanceof Field) {
                     addAccessorNode(new StaticVarAccessor((Field) tryStaticMethodRef));
                     return ((Field) tryStaticMethodRef).get(null);
                 }
-
+                else {
+                    addAccessorNode(new StaticReferenceAccessor(tryStaticMethodRef));
+                    return tryStaticMethodRef;
+                }
             }
             else if (ctx instanceof Class) {
                 Class c = (Class) ctx;
