@@ -36,14 +36,14 @@ import java.util.Map;
 public class MVEL {
     public static final String NAME = "MVEL (MVFLEX Expression Language)";
     public static final String VERSION = "1.3";
-    public static final String VERSION_SUB = "11";
+    public static final String VERSION_SUB = "13";
     public static final String CODENAME = "horizon";
 
     static boolean DEBUG_FILE = getBoolean("mvel.debug.fileoutput");
     static String ADVANCED_DEBUGGING_FILE = System.getProperty("mvel.debugging.file") == null ? "mvel_debug.txt"
             : System.getProperty("mvel.debugging.file");
+
     static boolean ADVANCED_DEBUG = getBoolean("mvel.advanced_debugging");
-    static boolean THREAD_SAFE = getBoolean("mvel.threadsafety");
     static boolean WEAK_CACHE = getBoolean("mvel.weak_caching");
     static boolean NO_JIT = getBoolean("mvel.disable.jit");
 
@@ -53,23 +53,6 @@ public class MVEL {
         if (System.getProperty("mvel.optimizer") != null) {
             OPTIMIZER = getBoolean("mvel.optimizer");
         }
-    }
-
-    /**
-     * Force MVEL to use thread-safe caching.  This can also be specified enivromentally using the
-     * <tt>mvflex.expression.threadsafety</tt> system property.
-     *
-     * @param threadSafe - true enabled thread-safe caching - false disables thread-safety.
-     */
-    public static void setThreadSafe(boolean threadSafe) {
-        THREAD_SAFE = threadSafe;
-        PropertyAccessor.configureFactory();
-        TemplateInterpreter.configureFactory();
-        MVELInterpretedRuntime.configureFactory();
-    }
-
-    public static boolean isThreadSafe() {
-        return THREAD_SAFE;
     }
 
     public static boolean isAdvancedDebugging() {
@@ -209,6 +192,7 @@ public class MVEL {
         }
     }
 
+
     /**
      * Executes a compiled expression.
      *
@@ -343,6 +327,7 @@ public class MVEL {
             return convert(handleParserEgress(end.getValue(), false), toType);
         }
     }
+
 
     public static Object[] executeAllExpression(Serializable[] compiledExpressions, Object ctx, VariableResolverFactory vars) {
         if (compiledExpressions == null) return GetterAccessor.EMPTY;

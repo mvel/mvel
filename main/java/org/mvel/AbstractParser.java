@@ -19,7 +19,6 @@ import static java.lang.Float.parseFloat;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
-import static java.util.Collections.synchronizedMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -106,10 +105,10 @@ public class AbstractParser implements Serializable {
         LITERALS.put("char", Character.class);
 
         LITERALS.put("Double", Double.class);
-        LITERALS.put("double", double.class);
+        LITERALS.put("double", Double.class);
 
         LITERALS.put("Float", Float.class);
-        LITERALS.put("float", float.class);
+        LITERALS.put("float", Float.class);
 
         LITERALS.put("Math", Math.class);
         LITERALS.put("Void", Void.class);
@@ -141,12 +140,7 @@ public class AbstractParser implements Serializable {
 
 
     static void configureFactory() {
-        if (MVEL.THREAD_SAFE) {
-            EX_PRECACHE = synchronizedMap(new WeakHashMap<String, char[]>(10));
-        }
-        else {
-            EX_PRECACHE = new WeakHashMap<String, char[]>(10);
-        }
+        EX_PRECACHE = new WeakHashMap<String, char[]>(10);
     }
 
     protected ASTNode nextTokenSkipSymbols() {
@@ -260,10 +254,9 @@ public class AbstractParser implements Serializable {
                             case IMPORT:
                                 start = cursor = trimRight(cursor);
                                 captureToEOS();
-                                ImportNode importNode = new ImportNode(subArray(start, cursor--));
+                                ImportNode importNode = new ImportNode(subArray(start, cursor));
                                 if (importNode.isPackageImport()) {
                                     getParserContext().addPackageImport(importNode.getPackageImport());
-                                    cursor++;
                                 }
                                 else {
                                     getParserContext().addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
@@ -273,7 +266,7 @@ public class AbstractParser implements Serializable {
                             case IMPORT_STATIC:
                                 start = cursor = trimRight(cursor);
                                 captureToEOS();
-                                return lastNode = new StaticImportNode(subArray(start, cursor--), fields);
+                                return lastNode = new StaticImportNode(subArray(start, cursor), fields);
                         }
                     }
 
@@ -380,6 +373,13 @@ public class AbstractParser implements Serializable {
                                     start = cursor += 2;
                                     captureToEOS();
                                     return lastNode = new AssignAdd(subArray(start, cursor), fields, name);
+                                }
+                                else if (isNext('-')) {
+                                    name = new String(expr, start, trimLeft(cursor) - start);
+                                    start = cursor += 2;
+                                    captureToEOS();
+                                    return lastNode = new AssignSub(subArray(start, cursor), fields, name);
+
                                 }
 
                                 if (greedy && !isNext('=')) {
@@ -711,7 +711,8 @@ public class AbstractParser implements Serializable {
                             }
 
                         case '!': {
-                            if (isIdentifierPart(expr[++cursor]) || expr[cursor] == '(') {
+                            ++cursor;
+                            if (isIdentifierPart(expr[cursor = nextNonBlack()]) || expr[cursor] == '(') {
                                 start = cursor;
                                 fields |= ASTNode.NEGATION;
                                 continue;
@@ -1274,6 +1275,15 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    public int nextNonBlack() {
+        if ((cursor + 1) >= length) {
+            return -1;
+        }
+        int i = cursor;
+        while (i != length && isWhitespace(expr[i])) i++;
+        return i;
+    }
+
     protected boolean isStatementManuallyTerminated() {
         int c = cursor;
         while (c != length && isWhitespace(expr[c])) c++;
@@ -1323,7 +1333,7 @@ public class AbstractParser implements Serializable {
                 case SET:
                     pCtx.setRootParser(parser);
                     parserContext.set(pCtx);
-                    return null;
+                    return pCtx;
 
                 case REMOVE:
                     parserContext.set(null);

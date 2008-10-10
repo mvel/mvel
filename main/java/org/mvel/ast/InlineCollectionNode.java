@@ -7,6 +7,7 @@ import org.mvel.optimizers.AccessorOptimizer;
 import org.mvel.optimizers.OptimizerFactory;
 import static org.mvel.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
 import static org.mvel.optimizers.OptimizerFactory.getAccessorCompiler;
+import org.mvel.util.CollectionParser;
 
 import java.util.List;
 
@@ -16,6 +17,10 @@ import java.util.List;
 public class InlineCollectionNode extends ASTNode {
     public InlineCollectionNode(char[] expr, int start, int end, int fields) {
         super(expr, start, end, fields | INLINE_COLLECTION);
+
+        if ((fields & COMPILE_IMMEDIATE) != 0) {
+            new CollectionParser().parseCollection(name, true);
+        }
     }
 
     public InlineCollectionNode(char[] expr, int fields) {

@@ -32,7 +32,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
 
         }
         else if ((mark = find(expr, '=')) != -1) {
-            property = new String(expr, 0, mark).trim();
+            this.egressType = ((ExecutableStatement) subCompileExpression(property = new String(expr, 0, mark).trim())).getKnownEgressType();
             stmt = subset(expr, mark + 1);
 
             if ((fields & COMPILE_IMMEDIATE) != 0) {
@@ -40,7 +40,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
             }
         }
         else {
-            property = new String(expr);
+            this.egressType = ((ExecutableStatement) subCompileExpression(property = new String(expr))).getKnownEgressType();
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {

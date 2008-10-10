@@ -151,10 +151,6 @@ public class ASTLinkedList implements ASTIterator {
 
             if (!hasMoreNodes()) break;
 
-            if (nextNode().isDiscard()) {
-                curr.nextASTNode = nextNode();
-            }
-
             last = curr;
         }
 

@@ -16,7 +16,7 @@ public class ExpressionCompiler extends AbstractParser {
     private ParserContext pCtx;
 
     public CompiledExpression compile() {
-        return compile(contextControl(GET_OR_CREATE, null, null));
+        return compile(contextControl(SET, new ParserContext(), null));
     }
 
     public CompiledExpression compile(ParserContext ctx) {
@@ -191,7 +191,7 @@ public class ExpressionCompiler extends AbstractParser {
                     if (tk.isOperator()) {
                         lastOp = tk.getOperator();
                     }
-                    
+
                     literalOnly = false;
                 }
 
@@ -252,13 +252,22 @@ public class ExpressionCompiler extends AbstractParser {
                     addFatalError("invalid assignment - variable name is a reserved keyword: " + varName);
                 }
 
-                new ExpressionCompiler(new String(assign, c, assign.length - c).trim())._compile();
+         //       returnType = new ExpressionCompiler(varName)._compile().getKnownEgressType();
+                Class assignType = new ExpressionCompiler(new String(assign, c, assign.length - c).trim())._compile().getKnownEgressType();
 
                 if (((Assignment) tk).isNewDeclaration() && pCtx.hasVarOrInput(varName)) {
                     throw new CompileException("statically-typed variable '" + varName + "' defined more than once in scope");
                 }
 
                 pCtx.addVariable(varName, returnType = tk.getEgressType());
+
+                if (pCtx.isStrictTypeEnforcement()) {
+                    if (!returnType.isAssignableFrom(assignType)) {
+                        throw new CompileException(
+                                "cannot assign type " + assignType.getName()
+                                        + " to " + returnType.getName());
+                    }
+                }
             }
             else if (tk.isIdentifier()) {
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), getParserContext());
