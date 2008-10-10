@@ -39,13 +39,10 @@ import org.mvel2.optimizers.impl.refl.collection.ArrayCreator;
 import org.mvel2.optimizers.impl.refl.collection.ExprValueAccessor;
 import org.mvel2.optimizers.impl.refl.collection.ListCreator;
 import org.mvel2.optimizers.impl.refl.collection.MapCreator;
-import org.mvel2.util.ArrayTools;
-import org.mvel2.util.MethodStub;
-import org.mvel2.util.ParseTools;
+import org.mvel2.util.*;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
-import org.mvel2.util.StringAppender;
 
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
@@ -718,11 +715,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             try {
-                Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + getBaseComponentType(type).getName() + ";")
+                Class base = getBaseComponentType(type);
+                Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + base.getName() + ";")
                         : type;
 
                 for (Object item : (Object[]) o) {
-                    a[i++] = _getAccessor(item, cls); // item
+                    CompilerTools.expectType(a[i++] = _getAccessor(item, cls), base, true);
                 }
 
                 return new ArrayCreator(a, getSubComponentType(type));
@@ -737,7 +735,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             if (type.isArray()) {
                 Class et = eva.getStmt().getKnownEgressType();
                 Class tt = getSubComponentType(type);
-                if (!tt.isAssignableFrom(et)) {
+                if (et != null && !tt.isAssignableFrom(et)) {
                     if ((eva.getStmt() instanceof ExecutableLiteral) && canConvert(et, tt)) {
                         eva.setStmt(new ExecutableLiteral(convert(eva.getStmt().getValue(null, null), tt)));
                     }

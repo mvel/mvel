@@ -64,4 +64,8 @@ public class StaticVarAccessor implements AccessorNode {
         }
         return value;
     }
+
+    public Class getKnownEgressType() {
+        return field.getClass();
+    }
 }

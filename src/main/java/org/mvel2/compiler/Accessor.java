@@ -25,4 +25,6 @@ public interface Accessor {
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory);
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value);
+
+    public Class getKnownEgressType();
 }

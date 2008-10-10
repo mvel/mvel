@@ -55,4 +55,8 @@ public class IndexedVariableAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
+
+    public Class getKnownEgressType() {
+        return Object.class;
+    }
 }

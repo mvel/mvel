@@ -253,6 +253,15 @@ public class NewObjectNode extends ASTNode {
         public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
             return null;
         }
+
+        public Class getKnownEgressType() {
+            try {
+                return Class.forName("[L" + arrayType.getName() + ";");
+            }
+            catch (ClassNotFoundException cne) {
+                return null;
+            }
+        }
     }
 
     public TypeDescriptor getTypeDescr() {

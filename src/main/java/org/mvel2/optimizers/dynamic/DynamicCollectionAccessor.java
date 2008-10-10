@@ -78,4 +78,8 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
     public int getRuncount() {
         return runcount;
     }
+
+    public Class getKnownEgressType() {
+        return colType;
+    }
 }

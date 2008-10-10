@@ -39,4 +39,8 @@ public class ArrayLength extends BaseAccessor {
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;
     }
+
+    public Class getKnownEgressType() {
+        return Integer.class;
+    }
 }

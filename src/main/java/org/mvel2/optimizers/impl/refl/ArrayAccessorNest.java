@@ -91,6 +91,10 @@ public class ArrayAccessorNest implements AccessorNode {
         return this.nextNode = nextNode;
     }
 
+    public Class getKnownEgressType() {
+        return baseComponentType;
+    }
+
     public String toString() {
         return "Array Accessor -> [" + index + "]";
     }

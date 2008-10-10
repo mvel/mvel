@@ -43,7 +43,8 @@ public class ArrayCreator implements Accessor {
         else {
             Object newArray = newInstance(arrayType, template.length);
             for (int i = 0; i < template.length; i++) {
-                Array.set(newArray, i, template[i].getValue(ctx, elCtx, variableFactory));
+                Object o = template[i].getValue(ctx, elCtx, variableFactory);
+                Array.set(newArray, i, o);
             }
 
             return newArray;
@@ -56,8 +57,11 @@ public class ArrayCreator implements Accessor {
 
     }
 
-
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;
+    }
+
+    public Class getKnownEgressType() {
+        return arrayType;
     }
 }

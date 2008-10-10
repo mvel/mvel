@@ -53,4 +53,8 @@ public class FunctionAccessor extends BaseAccessor {
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         throw new RuntimeException("can't write to function");
     }
+
+    public Class getKnownEgressType() {
+        return Object.class;
+    }
 }

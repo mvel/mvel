@@ -62,4 +62,8 @@ public class StaticReferenceAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
+
+    public Class getKnownEgressType() {
+        return literal.getClass();
+    }
 }

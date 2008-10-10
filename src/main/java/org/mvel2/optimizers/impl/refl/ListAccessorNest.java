@@ -75,4 +75,8 @@ public class ListAccessorNest implements AccessorNode {
     public String toString() {
         return "Array Accessor -> [" + index + "]";
     }
+
+    public Class getKnownEgressType() {
+        return Object.class;
+    }
 }

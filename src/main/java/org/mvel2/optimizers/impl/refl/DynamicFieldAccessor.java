@@ -84,4 +84,8 @@ public class DynamicFieldAccessor implements AccessorNode {
     public AccessorNode setNextNode(AccessorNode nextNode) {
         return this.nextNode = nextNode;
     }
+
+    public Class getKnownEgressType() {
+        return targetType;
+    }
 }

@@ -31,4 +31,8 @@ public class PropertyHandlerAccessor extends BaseAccessor {
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return propertyHandler.setProperty(propertyName, ctx, variableFactory, value);
     }
+
+    public Class getKnownEgressType() {
+        return Object.class;
+    }
 }

@@ -49,4 +49,8 @@ public class ExprValueAccessor implements Accessor {
     public void setStmt(ExecutableStatement stmt) {
         this.stmt = stmt;
     }
+
+    public Class getKnownEgressType() {
+        return stmt.getKnownEgressType();
+    }
 }

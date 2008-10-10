@@ -84,4 +84,8 @@ public class DynamicGetAccessor implements DynamicAccessor {
     public int getRuncount() {
         return runcount;
     }
+
+    public Class getKnownEgressType() {
+        return _safeAccessor.getKnownEgressType();
+    }
 }

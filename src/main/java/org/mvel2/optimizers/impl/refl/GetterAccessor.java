@@ -84,4 +84,8 @@ public class GetterAccessor implements AccessorNode {
         // not implemented
         return null;
     }
+
+    public Class getKnownEgressType() {
+        return method.getReturnType();
+    }
 }

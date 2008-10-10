@@ -82,4 +82,8 @@ public class MapAccessorNest implements AccessorNode {
     public String toString() {
         return "Map Accessor -> [" + property + "]";
     }
+
+    public Class getKnownEgressType() {
+        return Object.class;
+    }
 }

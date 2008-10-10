@@ -73,4 +73,8 @@ public class DynamicSetAccessor implements DynamicAccessor {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public Class getKnownEgressType() {
+        return _safeAccessor.getKnownEgressType();
+    }
 }

@@ -67,4 +67,8 @@ public class DynamicSetterAccessor implements AccessorNode {
     public String toString() {
         return method.getDeclaringClass().getName() + "." + method.getName();
     }
+
+    public Class getKnownEgressType() {
+        return targetType;
+    }
 }

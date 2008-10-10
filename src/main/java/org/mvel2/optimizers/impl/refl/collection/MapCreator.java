@@ -50,4 +50,8 @@ public class MapCreator implements Accessor {
         // not implemented
         return null;
     }
+
+    public Class getKnownEgressType() {
+        return Map.class;
+    }
 }

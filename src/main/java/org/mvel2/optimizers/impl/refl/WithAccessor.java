@@ -95,4 +95,8 @@ public class WithAccessor implements AccessorNode {
             this.statement = statement;
         }
     }
+
+    public Class getKnownEgressType() {
+        return Object.class;
+    }
 }

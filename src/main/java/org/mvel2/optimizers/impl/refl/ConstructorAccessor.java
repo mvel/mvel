@@ -92,4 +92,8 @@ public class ConstructorAccessor extends BaseAccessor {
         this.length = (this.parmTypes = constructor.getParameterTypes()).length;
         this.parms = parms;
     }
+
+    public Class getKnownEgressType() {
+        return constructor.getClass();
+    }
 }

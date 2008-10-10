@@ -16,4 +16,8 @@ public class AccessorBMModel implements Accessor {
         // ((List) ctx).set(55, value);
         return ((String[]) ctx)[(Integer) p0.getValue(ctx, variableFactory)] = (String) value;
     }
+
+    public Class getKnownEgressType() {
+        return Object.class;
+    }
 }

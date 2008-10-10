@@ -24,8 +24,8 @@ import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
 import org.mvel2.ast.*;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.CompiledExpression;
-import org.mvel2.compiler.ExecutableStatement;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -195,7 +195,7 @@ public class CompilerTools {
         return allFunctions;
     }
 
-    public static void expectType(ExecutableStatement expression, Class type, boolean compileMode) {
+    public static void expectType(Accessor expression, Class type, boolean compileMode) {
         Class retType = expression.getKnownEgressType();
         if (compileMode && getCurrentThreadParserContext().isStrictTypeEnforcement()) {
             if (retType == null || !type.isAssignableFrom(retType)) {

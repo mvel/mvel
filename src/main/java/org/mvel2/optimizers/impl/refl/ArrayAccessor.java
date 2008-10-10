@@ -69,6 +69,10 @@ public class ArrayAccessor implements AccessorNode {
         return this.nextNode = nextNode;
     }
 
+    public Class getKnownEgressType() {
+        return Object[].class;
+    }
+
     public String toString() {
         return "Array Accessor -> [" + index + "]";
     }
