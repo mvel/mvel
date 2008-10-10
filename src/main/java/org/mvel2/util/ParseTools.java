@@ -1262,6 +1262,7 @@ public class ParseTools {
                                     lines++;
                             }
 
+                            start++;
                         }
                     }
                 }

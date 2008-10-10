@@ -46,13 +46,16 @@ public class ExprValueAccessor implements Accessor {
         Class et = stmt.getKnownEgressType();
         if (stmt.getKnownEgressType() != null && !tt.isAssignableFrom(et)) {
             if ((stmt instanceof ExecutableLiteral) && canConvert(et, tt)) {
-                stmt = new ExecutableLiteral(convert(stmt.getValue(null, null), tt));
+                try {
+                    stmt = new ExecutableLiteral(convert(stmt.getValue(null, null), tt));
+                    return;
+                }
+                catch (IllegalArgumentException e) {
+                    // fall through;
+                }
             }
-            else {
-                throw new CompileException("was expecting type: " + tt + "; but found type: " + (et == null ? "null" : et.getName()));
-            }
+            throw new CompileException("was expecting type: " + tt + "; but found type: " + (et == null ? "null" : et.getName()));
         }
-        //   }
     }
 
 
