@@ -198,7 +198,8 @@ public class CompilerTools {
     public static void expectType(Accessor expression, Class type, boolean compileMode) {
         Class retType = expression.getKnownEgressType();
         if (compileMode) {
-            if ((retType == null || !type.isAssignableFrom(retType)) && getCurrentThreadParserContext().isStrictTypeEnforcement()) {
+            if ((retType == null || !type.isAssignableFrom(retType)) && (!Object.class.equals(retType)
+                    || getCurrentThreadParserContext().isStrictTypeEnforcement())) {
                 throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
                         + (retType != null ? retType.getName() : "null"));
             }
@@ -212,7 +213,9 @@ public class CompilerTools {
     public static void expectType(ASTNode node, Class type, boolean compileMode) {
         Class retType = node.getEgressType();
         if (compileMode) {
-            if ((retType == null || !type.isAssignableFrom(retType)) && getCurrentThreadParserContext().isStrictTypeEnforcement()) {
+            if ((retType == null || !type.isAssignableFrom(retType)) &&
+                    (getCurrentThreadParserContext().isStrictTypeEnforcement()
+                            || getCurrentThreadParserContext().isStrictTypeEnforcement())) {
                 throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
                         + (retType != null ? retType.getName() : "null"));
             }
