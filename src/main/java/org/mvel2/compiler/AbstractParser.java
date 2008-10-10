@@ -121,10 +121,10 @@ public class AbstractParser implements Serializable {
         LITERALS.put("char", Character.class);
 
         LITERALS.put("Double", Double.class);
-        LITERALS.put("double", double.class);
+        LITERALS.put("double", Double.class);
 
         LITERALS.put("Float", Float.class);
-        LITERALS.put("float", float.class);
+        LITERALS.put("float", Float.class);
 
         LITERALS.put("Math", Math.class);
         LITERALS.put("Void", Void.class);

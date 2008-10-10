@@ -40,15 +40,13 @@ public class IfNode extends ASTNode implements NestedStatement {
     protected ExecutableStatement elseBlock;
 
     public IfNode(char[] condition, char[] block, int fields) {
-        if ((this.name = condition) == null) {
+        if ((this.name = condition) == null || condition.length == 0) {
             throw new CompileException("statement expected");
         }
         this.block = block;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            this.condition = (ExecutableStatement) subCompileExpression(condition);
-
-            expectType(this.condition, Boolean.class, true);
+            expectType(this.condition = (ExecutableStatement) subCompileExpression(condition), Boolean.class, true);
             this.nestedStatement = (ExecutableStatement) subCompileExpression(block);
         }
     }
@@ -64,7 +62,7 @@ public class IfNode extends ASTNode implements NestedStatement {
             return elseBlock.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else {
-            return Void.class;
+            return null;
         }
     }
 
@@ -79,7 +77,7 @@ public class IfNode extends ASTNode implements NestedStatement {
             return elseBlock.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else {
-            return Void.class;
+            return null;
         }
     }
 

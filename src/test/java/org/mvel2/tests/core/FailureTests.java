@@ -1,6 +1,8 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
+import org.mvel2.compiler.ExpressionCompiler;
 
 import java.util.HashMap;
 
@@ -68,6 +70,22 @@ public class FailureTests extends AbstractTest {
             e.printStackTrace();
             return;
         }
+        assertTrue(false);
+    }
+
+    public void testShouldFail6() {
+        try {
+            ParserContext ctx = new ParserContext();
+            ctx.setStrongTyping(true);
+
+            new ExpressionCompiler("new double[] { 3, 1 }").compile(ctx);
+
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
         assertTrue(false);
     }
 }

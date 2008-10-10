@@ -4455,9 +4455,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("test", test("{'foo', 'test'}[1]"));
     }
 
-    public void testXXX() {
-        new ExpressionCompiler("a=0;b=0;if (a == b) { }").compile();
-    }
 }
 
 

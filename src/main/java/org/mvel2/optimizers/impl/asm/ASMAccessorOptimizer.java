@@ -2220,7 +2220,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return ARRAY;
         }
         else {
-            writeLiteralOrSubexpression(subCompileExpression((String) o));
+
+            if (type.isArray()) {
+                writeLiteralOrSubexpression(subCompileExpression((String) o), getSubComponentType(type));
+
+            }
+            else {
+                writeLiteralOrSubexpression(subCompileExpression((String) o));
+            }
             return VAL;
         }
     }
@@ -2246,7 +2253,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             else if (desiredTarget != null && type != desiredTarget) {
                 assert debug("*** Converting because desiredType(" + desiredTarget.getClass() + ") is not: " + type);
 
-                dataConversion(desiredTarget);
+                if (!DataConversion.canConvert(type, desiredTarget)) {
+                    throw new CompileException("was expecting type: " + desiredTarget.getName() + "; but found type: " + type.getName());
+                }
                 writeOutLiteralWrapped(convert(((ExecutableLiteral) stmt).getLiteral(), desiredTarget));
             }
             else {

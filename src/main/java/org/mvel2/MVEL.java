@@ -83,6 +83,10 @@ public class MVEL {
         return new MVELInterpretedRuntime(expression, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
     }
 
+    public static Object eval(char[] expression) {
+        return new MVELInterpretedRuntime(expression, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
+    }
+
     public static Object eval(String expression, Object ctx) {
         return new MVELInterpretedRuntime(expression, ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
     }

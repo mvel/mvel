@@ -20,39 +20,25 @@ public class Fuzzer {
             '.', '?', '/', '`', ' ', '\t', '\n', '\r'
     };
 
-    //  private static File tmpFile = new File(System.getProperty("user.home") + "/out.txt");
-
     public static void main(String[] args) throws IOException {
-
         DecimalFormat df = new DecimalFormat("###,###.##");
         StringAppender append = new StringAppender();
+        //  char[] append;
         int len;
         long start = currentTimeMillis();
         long time;
         double rate;
-
-        //       FileOutputStream stream = new FileOutputStream(tmpFile);
-        //       BufferedOutputStream bOstream = new BufferedOutputStream(stream);
-
-        //   char c;
 
         for (int run = 0; run < MAX; run++) {
             len = (int) (Math.random() * 500) + 1;
             append.reset();
 
             for (int i = 0; i < len; i++) {
+                //        append[i] = CHAR_TABLE[(int) ((Math.random() * 1000) % CHAR_TABLE.length)];
                 append.append(CHAR_TABLE[(int) ((Math.random() * 1000) % CHAR_TABLE.length)]);
-                //          bOstream.write(c);
             }
 
             try {
-
-                //         bOstream.write('*');
-                //         bOstream.write('*');
-                //         bOstream.write('*');
-                //         bOstream.write('\n');
-
-                //         bOstream.flush();
                 MVEL.eval(append.toString());
             }
             catch (UnresolveablePropertyException e) {

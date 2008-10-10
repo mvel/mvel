@@ -41,4 +41,12 @@ public class ExprValueAccessor implements Accessor {
         // not implemented
         return null;
     }
+
+    public ExecutableStatement getStmt() {
+        return stmt;
+    }
+
+    public void setStmt(ExecutableStatement stmt) {
+        this.stmt = stmt;
+    }
 }
