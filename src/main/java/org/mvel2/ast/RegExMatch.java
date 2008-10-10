@@ -18,18 +18,23 @@
  */
 package org.mvel2.ast;
 
+import org.mvel2.CompileException;
 import static org.mvel2.MVEL.eval;
+import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
 import static java.lang.String.valueOf;
+import java.util.regex.Pattern;
 import static java.util.regex.Pattern.compile;
+import java.util.regex.PatternSyntaxException;
 
 public class RegExMatch extends ASTNode {
     private ExecutableStatement stmt;
     private ExecutableStatement patternStmt;
     private char[] pattern;
+    private Pattern p;
 
     public RegExMatch(char[] expr, int fields, char[] pattern) {
         super(expr, fields);
@@ -37,17 +42,36 @@ public class RegExMatch extends ASTNode {
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             this.stmt = (ExecutableStatement) subCompileExpression(expr);
-            this.patternStmt = (ExecutableStatement) subCompileExpression(pattern);
+            if ((this.patternStmt = (ExecutableStatement)
+                    subCompileExpression(pattern)) instanceof ExecutableLiteral) {
+
+                try {
+                    p = compile(valueOf(patternStmt.getValue(null, null)));
+                }
+                catch (PatternSyntaxException e) {
+                    throw new CompileException("bad regular expression", e);
+                }
+            }
         }
     }
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return compile(valueOf(patternStmt.getValue(ctx, thisValue, factory))).matcher(valueOf(stmt.getValue(ctx, thisValue, factory))).matches();
+        if (p == null) {
+            return compile(valueOf(patternStmt.getValue(ctx, thisValue, factory))).matcher(valueOf(stmt.getValue(ctx, thisValue, factory))).matches();
+        }
+        else {
+            return p.matcher(valueOf(stmt.getValue(ctx, thisValue, factory))).matches();
+        }
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return compile(valueOf(eval(pattern, ctx, factory))).matcher(valueOf(eval(name, ctx, factory))).matches();
+        try {
+            return compile(valueOf(eval(pattern, ctx, factory))).matcher(valueOf(eval(name, ctx, factory))).matches();
+        }
+        catch (PatternSyntaxException e) {
+            throw new CompileException("bad regular expression", e);
+        }
     }
 
     public Class getEgressType() {

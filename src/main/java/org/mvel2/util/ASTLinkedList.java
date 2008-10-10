@@ -64,9 +64,21 @@ public class ASTLinkedList implements ASTIterator {
         }
     }
 
-
     public ASTNode firstNode() {
         return firstASTNode;
+    }
+
+    public boolean isSingleNode() {
+        return size == 1 || (size == 2 && firstASTNode.fields == -1);
+    }
+
+    public ASTNode firstNonSymbol() {
+        if (firstASTNode.fields == -1) {
+            return firstASTNode.nextASTNode;
+        }
+        else {
+            return firstASTNode;
+        }
     }
 
     public void reset() {

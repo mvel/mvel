@@ -2196,7 +2196,7 @@ public class AbstractParser implements Serializable {
                         y = 1;
                         continue;
                     }
-                    else if (tk != null && operator2 != -1) {
+                    else if (tk != null && operator2 != -1 && operator2 != 37) {
                         if (PTABLE[operator2] == PTABLE[operator]) {
                             // if we have back to back operations on the stack, we don't xswap             
                             if (x) {

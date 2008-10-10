@@ -46,10 +46,10 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     private ParserContext parserContext;
 
-    public CompiledExpression(ASTIterator astMap, String sourceName, Class egressType, ParserContext ctx, boolean literalOnly) {
+    public CompiledExpression(ASTLinkedList astMap, String sourceName, Class egressType, ParserContext ctx, boolean literalOnly) {
         this.tokens = astMap;
         this.sourceName = sourceName;
-        this.knownEgressType = astMap.size() == 1 ? astMap.firstNode().getEgressType() : egressType;
+        this.knownEgressType = astMap.isSingleNode() ? astMap.firstNonSymbol().getEgressType() : egressType;
         this.literalOnly = literalOnly;
         setParserContext(ctx);
     }

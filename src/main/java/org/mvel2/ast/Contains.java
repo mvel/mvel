@@ -19,4 +19,8 @@ public class Contains extends ASTNode {
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         throw new RuntimeException("operation not supported");
     }
+
+    public Class getEgressType() {
+        return Boolean.class;
+    }
 }

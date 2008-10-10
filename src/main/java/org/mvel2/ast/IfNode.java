@@ -18,10 +18,12 @@
  */
 package org.mvel2.ast;
 
+import org.mvel2.CompileException;
 import static org.mvel2.MVEL.eval;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
 import java.util.HashMap;
@@ -38,11 +40,15 @@ public class IfNode extends ASTNode implements NestedStatement {
     protected ExecutableStatement elseBlock;
 
     public IfNode(char[] condition, char[] block, int fields) {
-        this.name = condition;
+        if ((this.name = condition) == null) {
+            throw new CompileException("statement expected");
+        }
         this.block = block;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             this.condition = (ExecutableStatement) subCompileExpression(condition);
+
+            expectType(this.condition, Boolean.class, true);
             this.nestedStatement = (ExecutableStatement) subCompileExpression(block);
         }
     }

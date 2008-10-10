@@ -147,6 +147,7 @@ public class AbstractOptimizer extends AbstractParser {
                 if ((start + 1) != length) {
                     switch (expr[cursor = ++start]) {
                         case '?':
+                            skipWhitespace();
                             if ((cursor = ++start) == length) {
                                 throw new CompileException("unexpected end of statement");
                             }

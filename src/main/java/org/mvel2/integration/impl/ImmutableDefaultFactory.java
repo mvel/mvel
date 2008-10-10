@@ -50,6 +50,7 @@ public class ImmutableDefaultFactory implements VariableResolverFactory {
     }
 
     public VariableResolver getIndexedVariableResolver(int index) {
+        throwError();
         return null;
     }
 

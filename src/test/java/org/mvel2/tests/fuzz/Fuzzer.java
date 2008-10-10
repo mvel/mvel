@@ -5,6 +5,10 @@ import org.mvel2.MVEL;
 import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.util.StringAppender;
 
+import java.io.IOException;
+import static java.lang.System.currentTimeMillis;
+import java.text.DecimalFormat;
+
 public class Fuzzer {
     private static final int MAX = 100000000;
 
@@ -16,21 +20,39 @@ public class Fuzzer {
             '.', '?', '/', '`', ' ', '\t', '\n', '\r'
     };
 
+    //  private static File tmpFile = new File(System.getProperty("user.home") + "/out.txt");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
-
+        DecimalFormat df = new DecimalFormat("###,###.##");
         StringAppender append = new StringAppender();
         int len;
+        long start = currentTimeMillis();
+        long time;
+        double rate;
+
+        //       FileOutputStream stream = new FileOutputStream(tmpFile);
+        //       BufferedOutputStream bOstream = new BufferedOutputStream(stream);
+
+        //   char c;
 
         for (int run = 0; run < MAX; run++) {
-            len = (int) (Math.random() * 500);
+            len = (int) (Math.random() * 500) + 1;
             append.reset();
+
             for (int i = 0; i < len; i++) {
                 append.append(CHAR_TABLE[(int) ((Math.random() * 1000) % CHAR_TABLE.length)]);
+                //          bOstream.write(c);
             }
 
             try {
+
+                //         bOstream.write('*');
+                //         bOstream.write('*');
+                //         bOstream.write('*');
+                //         bOstream.write('\n');
+
+                //         bOstream.flush();
                 MVEL.eval(append.toString());
             }
             catch (UnresolveablePropertyException e) {
@@ -46,7 +68,12 @@ public class Fuzzer {
                 System.err.flush();
             }
 
-            if (run % 10000 == 0) System.out.println("Run:" + run);
+            if (run % 20000 == 0 && run != 0) {
+                rate = run / (time = (currentTimeMillis() - start) / 1000);
+                System.out.println("Run: " + df.format(run) + " times; "
+                        + df.format(time) + "secs; " + df.format(rate) + " avg. per second.");
+            }
+
         }
     }
 
