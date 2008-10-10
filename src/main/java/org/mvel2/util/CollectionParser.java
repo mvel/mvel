@@ -19,6 +19,7 @@
 package org.mvel2.util;
 
 import org.mvel2.CompileException;
+import org.mvel2.DataConversion;
 import org.mvel2.compiler.ExecutableStatement;
 import static org.mvel2.util.ParseTools.*;
 
@@ -217,7 +218,7 @@ public class CollectionParser {
         }
         else {
             Class r = ((ExecutableStatement) subCompileExpression(ex)).getKnownEgressType();
-            if (!colType.isAssignableFrom(r)) {
+            if (!colType.isAssignableFrom(r) && !DataConversion.canConvert(r, colType)) {
                 throw new CompileException("expected type: " + colType.getName() + "; but found:" + r.getName());
             }
         }

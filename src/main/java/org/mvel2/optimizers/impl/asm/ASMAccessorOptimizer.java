@@ -2220,10 +2220,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return ARRAY;
         }
         else {
-
             if (type.isArray()) {
                 writeLiteralOrSubexpression(subCompileExpression((String) o), getSubComponentType(type));
-
             }
             else {
                 writeLiteralOrSubexpression(subCompileExpression((String) o));

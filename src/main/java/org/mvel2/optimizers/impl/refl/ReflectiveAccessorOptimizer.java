@@ -27,7 +27,6 @@ import org.mvel2.ast.TypeDescriptor;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.AccessorNode;
-import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.compiler.ExecutableStatement;
 import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
 import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
@@ -39,10 +38,14 @@ import org.mvel2.optimizers.impl.refl.collection.ArrayCreator;
 import org.mvel2.optimizers.impl.refl.collection.ExprValueAccessor;
 import org.mvel2.optimizers.impl.refl.collection.ListCreator;
 import org.mvel2.optimizers.impl.refl.collection.MapCreator;
-import org.mvel2.util.*;
+import org.mvel2.util.ArrayTools;
+import static org.mvel2.util.CompilerTools.expectType;
+import org.mvel2.util.MethodStub;
+import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+import org.mvel2.util.StringAppender;
 
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
@@ -720,7 +723,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                         : type;
 
                 for (Object item : (Object[]) o) {
-                    CompilerTools.expectType(a[i++] = _getAccessor(item, cls), base, true);
+                    expectType(a[i++] = _getAccessor(item, cls), base, true);
                 }
 
                 return new ArrayCreator(a, getSubComponentType(type));
@@ -731,20 +734,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
         else {
             if (returnType == null) returnType = Object.class;
-            ExprValueAccessor eva = new ExprValueAccessor((String) o);
             if (type.isArray()) {
-                Class et = eva.getStmt().getKnownEgressType();
-                Class tt = getSubComponentType(type);
-                if (et != null && !tt.isAssignableFrom(et)) {
-                    if ((eva.getStmt() instanceof ExecutableLiteral) && canConvert(et, tt)) {
-                        eva.setStmt(new ExecutableLiteral(convert(eva.getStmt().getValue(null, null), tt)));
-                    }
-                    else {
-                        throw new CompileException("was expecting type: " + tt + "; but found type: " + (et == null ? "null" : et.getName()));
-                    }
-                }
+                return new ExprValueAccessor((String) o, type);
             }
-            return eva;
+            else {
+                return new ExprValueAccessor((String) o);
+            }
+
         }
     }
 

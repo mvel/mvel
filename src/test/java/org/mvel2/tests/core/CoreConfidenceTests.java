@@ -4469,7 +4469,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("org.mvel2.tests.core.CoreConfidenceTests.minim( {456.2, 2.3} ) == 2.3"));
     }
 
-
 }
 
 

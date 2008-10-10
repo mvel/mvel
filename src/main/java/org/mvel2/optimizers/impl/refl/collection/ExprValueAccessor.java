@@ -18,10 +18,15 @@
  */
 package org.mvel2.optimizers.impl.refl.collection;
 
+import org.mvel2.CompileException;
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataConversion.convert;
 import org.mvel2.compiler.Accessor;
+import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ParseTools;
+import static org.mvel2.util.ParseTools.getSubComponentType;
 
 /**
  * @author Christopher Brock
@@ -32,6 +37,24 @@ public class ExprValueAccessor implements Accessor {
     public ExprValueAccessor(String ex) {
         stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex);
     }
+
+    public ExprValueAccessor(String ex, Class expectedType) {
+        stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex);
+
+        //if (expectedType.isArray()) {
+        Class tt = getSubComponentType(expectedType);
+        Class et = stmt.getKnownEgressType();
+        if (stmt.getKnownEgressType() != null && !tt.isAssignableFrom(et)) {
+            if ((stmt instanceof ExecutableLiteral) && canConvert(et, tt)) {
+                stmt = new ExecutableLiteral(convert(stmt.getValue(null, null), tt));
+            }
+            else {
+                throw new CompileException("was expecting type: " + tt + "; but found type: " + (et == null ? "null" : et.getName()));
+            }
+        }
+        //   }
+    }
+
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         return stmt.getValue(elCtx, variableFactory);
