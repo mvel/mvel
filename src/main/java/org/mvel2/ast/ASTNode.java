@@ -244,7 +244,7 @@ public class ASTNode implements Cloneable, Serializable {
                         // fall through
                     }
                 }
-                else if (factory.isResolveable(td.getClassName())) {
+                else if (factory != null && factory.isResolveable(td.getClassName())) {
                     Object o = factory.getVariableResolver(td.getClassName()).getValue();
 
                     if (o instanceof Method) {

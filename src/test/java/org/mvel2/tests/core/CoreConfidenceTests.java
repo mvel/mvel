@@ -1970,14 +1970,14 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ExpressionCompiler compiler = new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar'),\n'bobba' : new User('Bobba', 'Feta') ]; [ users.get('darth'), users.get('bobba') ]");
         //    Serializable s = compiler.compile(ctx);
-        List list = (List) executeExpression(compiler.compile(ctx));
+        List list = (List) executeExpression(compiler.compile(ctx), new HashMap());
         User user = (User) list.get(0);
         assertEquals("Darth", user.getFirstName());
         user = (User) list.get(1);
         assertEquals("Bobba", user.getFirstName());
 
         compiler = new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar'),\n'bobba' : new User('Bobba', 'Feta') ]; [ users['darth'], users['bobba'] ]");
-        list = (List) executeExpression(compiler.compile(ctx));
+        list = (List) executeExpression(compiler.compile(ctx), new HashMap());
         user = (User) list.get(0);
         assertEquals("Darth", user.getFirstName());
         user = (User) list.get(1);
@@ -1990,7 +1990,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ExpressionCompiler compiler = new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), new User('Bobba', 'Feta') ]; [ users.get( 0 ), users.get( 1 ) ]");
         ///  Serializable s = compiler.compile(ctx);
-        List list = (List) executeExpression(compiler.compile(ctx));
+        List list = (List) executeExpression(compiler.compile(ctx), new HashMap());
         User user = (User) list.get(0);
         assertEquals("Darth", user.getFirstName());
         user = (User) list.get(1);
@@ -1998,7 +1998,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         compiler = new ExpressionCompiler("users = [ new User('Darth', 'Vadar'), new User('Bobba', 'Feta') ]; [ users[0], users[1] ]");
         //    s = compiler.compile(ctx);
-        list = (List) executeExpression(compiler.compile(ctx));
+        list = (List) executeExpression(compiler.compile(ctx), new HashMap());
         user = (User) list.get(0);
         assertEquals("Darth", user.getFirstName());
         user = (User) list.get(1);
@@ -2972,7 +2972,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ExpressionCompiler compiler = new ExpressionCompiler(text);
         Serializable execution = compiler.compile(context);
-        List result = (List) executeExpression(execution);
+        List result = (List) executeExpression(execution, new HashMap());
         assertEquals(list, result);
     }
 

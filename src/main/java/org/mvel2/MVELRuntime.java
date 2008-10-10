@@ -10,6 +10,7 @@ import org.mvel2.debug.Debugger;
 import org.mvel2.debug.DebuggerContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
+import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.util.ASTLinkedList;
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.ParseTools;
@@ -24,6 +25,7 @@ import static java.lang.Thread.currentThread;
  */
 @SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class MVELRuntime {
+    public static final ImmutableDefaultFactory IMMUTABLE_DEFAULT_FACTORY = new ImmutableDefaultFactory();
     private static ThreadLocal<DebuggerContext> debuggerContext;
 
     /**

@@ -138,10 +138,10 @@ public class CompilerTools {
 
                         switch (tkOp.getOperator()) {
                             case Operator.AND:
-                                bool = new And(tk, astLinkedList.nextNode());
+                                bool = new And(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
                                 break;
                             case Operator.OR:
-                                bool = new Or(tk, astLinkedList.nextNode());
+                                bool = new Or(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
                         }
 
                         while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
@@ -149,10 +149,10 @@ public class CompilerTools {
 
                             switch ((tkOp = tkOp2).getOperator()) {
                                 case Operator.AND:
-                                    bool = new And(bool, astLinkedList.nextNode());
+                                    bool = new And(bool, astLinkedList.nextNode(), ctx.isStrongTyping());
                                     break;
                                 case Operator.OR:
-                                    bool = new Or(bool, astLinkedList.nextNode());
+                                    bool = new Or(bool, astLinkedList.nextNode(), ctx.isStrongTyping());
                             }
                         }
 
@@ -208,4 +208,60 @@ public class CompilerTools {
                     + (retType != null ? retType.getName() : "null"));
         }
     }
+
+    public static void expectType(ASTNode node, Class type, boolean compileMode) {
+        Class retType = node.getEgressType();
+        if (compileMode && getCurrentThreadParserContext().isStrictTypeEnforcement()) {
+            if (retType == null || !type.isAssignableFrom(retType)) {
+                throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
+                        + (retType != null ? retType.getName() : "null"));
+            }
+        }
+        else if (retType == null || !Object.class.equals(retType) && !type.isAssignableFrom(retType)) {
+            throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
+                    + (retType != null ? retType.getName() : "null"));
+        }
+    }
+
+    public static Class getReturnTypeFromOp(int operation, Class left, Class right) {
+        switch (operation) {
+            case Operator.LETHAN:
+            case Operator.LTHAN:
+            case Operator.GETHAN:
+            case Operator.GTHAN:
+            case Operator.EQUAL:
+            case Operator.NEQUAL:
+            case Operator.AND:
+            case Operator.OR:
+            case Operator.CONTAINS:
+            case Operator.CONVERTABLE_TO:
+                return Boolean.class;
+
+            case Operator.ADD:
+            case Operator.SUB:
+            case Operator.MULT:
+            case Operator.DIV:
+            case Operator.POWER:
+            case Operator.MOD:
+                return left;
+
+            case Operator.BW_AND:
+            case Operator.BW_OR:
+            case Operator.BW_XOR:
+            case Operator.BW_SHIFT_RIGHT:
+            case Operator.BW_SHIFT_LEFT:
+            case Operator.BW_USHIFT_LEFT:
+            case Operator.BW_USHIFT_RIGHT:
+            case Operator.BW_NOT:
+                return Integer.class;
+
+            case Operator.STR_APPEND:
+                return String.class;
+
+            default:
+                throw new RuntimeException("unknown type: " + operation);
+        }
+    }
+
+
 }

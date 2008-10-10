@@ -19,15 +19,15 @@
 package org.mvel2.ast;
 
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.CompilerTools;
 
 public class And extends ASTNode {
     private ASTNode left;
     private ASTNode right;
 
-    public And(ASTNode left, ASTNode right) {
-
-        this.left = left;
-        this.right = right;
+    public And(ASTNode left, ASTNode right, boolean strongTyping) {
+        CompilerTools.expectType(this.left = left, Boolean.class, strongTyping);
+        CompilerTools.expectType(this.right = right, Boolean.class, strongTyping);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -58,4 +58,10 @@ public class And extends ASTNode {
     public String toString() {
         return "(" + left.toString() + " && " + right.toString() + ")";
     }
+
+    public Class getEgressType() {
+        return Boolean.class;
+    }
 }
+
+

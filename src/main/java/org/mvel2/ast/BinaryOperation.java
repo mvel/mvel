@@ -25,6 +25,7 @@ import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.CompilerTools;
 import static org.mvel2.util.ParseTools.doOperations;
 
 public class BinaryOperation extends ASTNode {
@@ -34,16 +35,24 @@ public class BinaryOperation extends ASTNode {
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right) {
         this.operation = operation;
-        this.left = left;
-        this.right = right;
+        if ((this.left = left) == null) {
+            throw new CompileException("not a statement");
+        }
+        if ((this.right = right) == null) {
+            throw new CompileException("not a statement");
+        }
 
-        setReturnType();
+        egressType = CompilerTools.getReturnTypeFromOp(operation, left.egressType, right.egressType);
     }
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
         this.operation = operation;
-        this.left = left;
-        this.right = right;
+        if ((this.left = left) == null) {
+            throw new CompileException("not a statement");
+        }
+        if ((this.right = right) == null) {
+            throw new CompileException("not a statement");
+        }
 
         if (ctx.isStrongTyping()) {
             switch (operation) {
@@ -64,55 +73,7 @@ public class BinaryOperation extends ASTNode {
             }
         }
 
-        setReturnType();
-    }
-
-    private void setReturnType() {
-        switch (operation) {
-            case Operator.LETHAN:
-            case Operator.LTHAN:
-            case Operator.GETHAN:
-            case Operator.GTHAN:
-            case Operator.EQUAL:
-            case Operator.NEQUAL:
-            case Operator.AND:
-            case Operator.OR:
-            case Operator.CONTAINS:
-            case Operator.CONVERTABLE_TO:
-                egressType = Boolean.class;
-                break;
-
-            case Operator.ADD:
-            case Operator.SUB:
-            case Operator.MULT:
-            case Operator.DIV:
-            case Operator.POWER:
-            case Operator.MOD:
-                egressType = bestFitType(left.egressType, right.egressType);
-                break;
-
-            case Operator.BW_AND:
-            case Operator.BW_OR:
-            case Operator.BW_XOR:
-            case Operator.BW_SHIFT_RIGHT:
-            case Operator.BW_SHIFT_LEFT:
-            case Operator.BW_USHIFT_LEFT:
-            case Operator.BW_USHIFT_RIGHT:
-            case Operator.BW_NOT:
-                egressType = Integer.class;
-                break;
-
-            case Operator.STR_APPEND:
-                egressType = String.class;
-                break;
-
-            default:
-                throw new RuntimeException("unknown type: " + operation);
-        }
-    }
-
-    private static Class bestFitType(Class a, Class b) {
-        return a;
+        egressType = CompilerTools.getReturnTypeFromOp(operation, left.egressType, right.egressType);
     }
 
 

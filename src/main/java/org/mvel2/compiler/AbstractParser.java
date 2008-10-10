@@ -1572,6 +1572,7 @@ public class AbstractParser implements Serializable {
                 case '[':
                 case '{':
                     cursor = balancedCapture(expr, cursor, expr[cursor]);
+                    if (cursor >= length) return;
                     break;
 
                 case ';':
@@ -2181,7 +2182,9 @@ public class AbstractParser implements Serializable {
 
                 while (true) {
                     // look ahead again
-                    if ((tk = nextToken()) != null && tk.isOperator() && PTABLE[operator2 = tk.getOperator()] > PTABLE[operator]) {
+
+                    if ((tk = nextToken()) != null && (operator2 = tk.getOperator()) != -1
+                            && operator2 != 37 && PTABLE[operator2] > PTABLE[operator]) {
                         // if we have back to back operations on the stack, we don't xswap
                         if (x) {
                             xswap();
@@ -2193,7 +2196,7 @@ public class AbstractParser implements Serializable {
                         y = 1;
                         continue;
                     }
-                    else if (tk != null) {
+                    else if (tk != null && operator2 != -1) {
                         if (PTABLE[operator2] == PTABLE[operator]) {
                             // if we have back to back operations on the stack, we don't xswap             
                             if (x) {

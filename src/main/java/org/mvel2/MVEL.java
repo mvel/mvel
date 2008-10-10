@@ -80,11 +80,11 @@ public class MVEL {
     }
 
     public static Object eval(String expression) {
-        return new MVELInterpretedRuntime(expression).parse();
+        return new MVELInterpretedRuntime(expression, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
     }
 
     public static Object eval(String expression, Object ctx) {
-        return new MVELInterpretedRuntime(expression, ctx).parse();
+        return new MVELInterpretedRuntime(expression, ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
     }
 
     public static Object eval(String expression, VariableResolverFactory resolverFactory) {
@@ -179,7 +179,7 @@ public class MVEL {
     }
 
     public static void executeSetExpression(Serializable compiledSet, Object ctx, Object value) {
-        ((CompiledSetExpression) compiledSet).setValue(ctx, ctx, null, value);
+        ((CompiledSetExpression) compiledSet).setValue(ctx, ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY, value);
     }
 
     public static void executeSetExpression(Serializable compiledSet, Object ctx, VariableResolverFactory vrf, Object value) {
@@ -188,7 +188,7 @@ public class MVEL {
 
     public static Object executeExpression(Object compiledExpression) {
         try {
-            return ((ExecutableStatement) compiledExpression).getValue(null, null);
+            return ((ExecutableStatement) compiledExpression).getValue(null, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY);
         }
         catch (EndWithValue e) {
             return e.getValue();
@@ -250,7 +250,7 @@ public class MVEL {
      */
     public static Object executeExpression(final Object compiledExpression, final Object ctx) {
         try {
-            return ((ExecutableStatement) compiledExpression).getValue(ctx, null);
+            return ((ExecutableStatement) compiledExpression).getValue(ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY);
         }
         catch (EndWithValue end) {
             return end.getValue();

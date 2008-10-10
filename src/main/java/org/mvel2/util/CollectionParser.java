@@ -180,7 +180,7 @@ public class CollectionParser {
                 case '.':
                     cursor++;
                     while (cursor != length && isWhitespace(property[cursor])) cursor++;
-                    if (property[cursor] == '{') {
+                    if (cursor != length && property[cursor] == '{') {
                         cursor = balancedCapture(property, cursor, '{');
                     }
                     break;

@@ -29,6 +29,9 @@ public class Negation extends ASTNode {
         try {
             return !((Boolean) MVEL.eval(name, ctx, factory));
         }
+        catch (NullPointerException e) {
+            throw new CompileException("negation operator applied to a null value");
+        }
         catch (ClassCastException e) {
             throw new CompileException("negation operator applied to non-boolean expression");
         }

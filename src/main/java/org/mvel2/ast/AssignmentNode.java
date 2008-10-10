@@ -42,7 +42,6 @@ public class AssignmentNode extends ASTNode implements Assignment {
     private char[] stmt;
     private ExecutableStatement statement;
     private boolean col = false;
-    //   private String index;
 
     public AssignmentNode(char[] expr, int fields, int operation, String name) {
         super(expr, fields);

@@ -188,7 +188,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
             case AND:
                 reduceRight();
 
-                if (stk.peek() instanceof Boolean && !((Boolean) stk.peek())) {
+                if (!stk.peekBoolean()) {
                     if (unwindStatement(operator)) {
                         return -1;
                     }
@@ -205,7 +205,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
             case OR:
                 reduceRight();
 
-                if (stk.peek() instanceof Boolean && ((Boolean) stk.peek())) {
+                if (stk.peekBoolean()) {
                     if (unwindStatement(operator)) {
                         return -1;
                     }
@@ -333,6 +333,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
         this.expr = expression;
         this.length = expr.length;
         this.ctx = ctx;
+        this.variableFactory = MVELRuntime.IMMUTABLE_DEFAULT_FACTORY;
     }
 
     MVELInterpretedRuntime(String expression, Object ctx, Map<String, Object> variables) {

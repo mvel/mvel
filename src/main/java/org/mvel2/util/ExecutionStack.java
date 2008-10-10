@@ -68,6 +68,12 @@ public class ExecutionStack implements Stack {
         else return element.value;
     }
 
+    public Boolean peekBoolean() {
+        if (size == 0) return null;
+        if (element.value instanceof Boolean) return (Boolean) element.value;
+        throw new CompileException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
+    }
+
     public Object peek2() {
         return element.next.value;
     }

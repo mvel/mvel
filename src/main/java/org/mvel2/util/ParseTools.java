@@ -1162,7 +1162,8 @@ public class ParseTools {
         }
         else {
             for (start++; start < chars.length; start++) {
-                if (chars[start] == '/' && start < chars.length) {
+                if (start < chars.length && chars[start] == '/') {
+                    if (start + 1 == chars.length) return start;
                     if (chars[start + 1] == '/') {
                         start++;
                         while (start < chars.length && chars[start] != '\n') start++;
@@ -1172,7 +1173,7 @@ public class ParseTools {
                         while (start < chars.length) {
                             switch (chars[start]) {
                                 case '*':
-                                    if (start < chars.length && chars[start + 1] == '/') {
+                                    if (start + 1 < chars.length && chars[start + 1] == '/') {
                                         break;
                                     }
                                 case '\r':
@@ -1183,6 +1184,7 @@ public class ParseTools {
                         }
                     }
                 }
+                if (start == chars.length) return start;
                 if (chars[start] == '\'' || chars[start] == '"') {
                     start = captureStringLiteral(chars[start], chars, start, chars.length);
                 }
@@ -1313,7 +1315,7 @@ public class ParseTools {
             if (expr[cursor] == '\\') cursor++;
         }
 
-        if (cursor == length || expr[cursor] != type) {
+        if (cursor >= length || expr[cursor] != type) {
             throw new CompileException("unterminated literal", expr, cursor);
         }
 
