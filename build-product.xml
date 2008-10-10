@@ -43,8 +43,8 @@
 
     <target name="el-tests">
         <junit fork="yes" haltonfailure="yes">
-            <test name="org.mvel.tests.core.CoreConfidenceTests"/>
-            <test name="org.mvel.compiler.GenericsTypeInferenceTest"/>
+            <test name="org.mvel2.tests.core.CoreConfidenceTests"/>
+            <test name="org.mvel2.compiler.GenericsTypeInferenceTest"/>
             <formatter type="plain" usefile="false"/>
             <classpath refid="classpath"/>
         </junit>
@@ -60,15 +60,15 @@
         <jar jarfile="mvel.jar" basedir="build">
             <manifest>
                 <attribute name="Built-By" value="Mike Brock"/>
-                <attribute name="Main-Class" value="org.mvel.MVELSH"/>
+                <attribute name="Main-Class" value="org.mvel2.MVELSH"/>
 
-                <section name="org.mvel">
+                <section name="org.mvel2">
                     <attribute name="Sealed" value="false"/>
                     <attribute name="Specification-Title" value="MVEL"/>
                     <attribute name="Specification-Version" value="${version}"/>
                     <attribute name="Implementation-Version" value="${version} ${TODAY}"/>
                     <attribute name="Implementation-Vendor" value="Mike Brock"/>
-                    <attribute name="Main-Class" value="org.mvel.MVELSH"/>
+                    <attribute name="Main-Class" value="org.mvel2.MVELSH"/>
                 </section>
             </manifest>
         </jar>
@@ -118,9 +118,9 @@
         <jar jarfile="mvel-${version}-java${java.version}-nd.jar" basedir="build">
             <manifest>
                 <attribute name="Built-By" value="Mike Brock"/>
-                <attribute name="Main-Class" value="org.mvel.MVELSH"/>
+                <attribute name="Main-Class" value="org.mvel2.MVELSH"/>
 
-                <section name="org.mvel">
+                <section name="org.mvel2">
                     <attribute name="Sealed" value="true"/>
                     <attribute name="Specification-Title" value="MVEL"/>
                     <attribute name="Specification-Version" value="${version}"/>
