@@ -6,11 +6,17 @@ import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.util.StringAppender;
 
 import java.io.IOException;
+import static java.lang.Math.random;
 import static java.lang.System.currentTimeMillis;
 import java.text.DecimalFormat;
+import java.util.Random;
 
 public class Fuzzer {
     private static final int MAX = 100000000;
+
+    private static final int[] SALTS = {83, 301, 320, 102, 105, 993, 203, 102, 4904, 1202,
+            102, 303, 83, 1, 5, 85, 19, 20, 193, 669, 344, 901,
+            930, 12, 1, 1, 89, 61, 8392, 2, 2038, 9, 7, 10};
 
     private static final char[] CHAR_TABLE = {
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
@@ -29,14 +35,30 @@ public class Fuzzer {
         long time;
         double rate;
 
+        int seed;
+
+        boolean flip = false;
+
+        Random rand = new Random(System.currentTimeMillis());
+        Random rand1 = new Random(System.currentTimeMillis() + 1);
+        Random rand2 = new Random(rand1.nextInt());
+        Random rand3 = new Random(rand.nextInt(SALTS.length - 1));
+        Random rand4 = new Random(rand3.nextInt());
+
         for (int run = 0; run < MAX; run++) {
-            len = (int) (Math.random() * 500) + 1;
+            len = (int) (random() * 500) + 10;
             append.reset();
 
             for (int i = 0; i < len; i++) {
-                //        append[i] = CHAR_TABLE[(int) ((Math.random() * 1000) % CHAR_TABLE.length)];
-                append.append(CHAR_TABLE[(int) ((Math.random() * 1000) % CHAR_TABLE.length)]);
+                seed = (rand.nextInt(1000)) + 1;
+                seed = (SALTS[seed % SALTS.length]) * ((flip = !flip) ? rand1.nextInt(1000) : rand2.nextInt(1000)) + 1;
+
+                append.append(CHAR_TABLE[seed % CHAR_TABLE.length]);
+
+
+                SALTS[rand3.nextInt(SALTS.length - 1)] = rand4.nextInt(1000) + 1;
             }
+
 
             try {
                 MVEL.eval(append.toString());
@@ -54,10 +76,16 @@ public class Fuzzer {
                 System.err.flush();
             }
 
-            if (run % 20000 == 0 && run != 0) {
+            if (run % 50000 == 0 && run != 0) {
                 rate = run / (time = (currentTimeMillis() - start) / 1000);
                 System.out.println("Run: " + df.format(run) + " times; "
                         + df.format(time) + "secs; " + df.format(rate) + " avg. per second.");
+//                System.out.println();
+//                for (int aSALTS : SALTS) {
+//                    System.out.print("[" + aSALTS + "]");
+//                }
+//                System.out.println();
+
             }
 
         }
