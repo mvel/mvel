@@ -80,11 +80,6 @@ public class Fuzzer {
                 rate = run / (time = (currentTimeMillis() - start) / 1000);
                 System.out.println("Run: " + df.format(run) + " times; "
                         + df.format(time) + "secs; " + df.format(rate) + " avg. per second.");
-//                System.out.println();
-//                for (int aSALTS : SALTS) {
-//                    System.out.print("[" + aSALTS + "]");
-//                }
-//                System.out.println();
 
             }
 
