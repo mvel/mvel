@@ -1,7 +1,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
-import org.mvel2.debug.DebugTools;
+import static org.mvel2.debug.DebugTools.getOperatorSymbol;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class OperatorNode extends ASTNode {
@@ -24,10 +24,10 @@ public class OperatorNode extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        throw new CompileException("illegal use of operator: " + DebugTools.getOperatorSymbol(operator));
+        throw new CompileException("illegal use of operator: " + getOperatorSymbol(operator));
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        throw new CompileException("illegal use of operator: " + DebugTools.getOperatorSymbol(operator));
+        throw new CompileException("illegal use of operator: " + getOperatorSymbol(operator));
     }
 }

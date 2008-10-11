@@ -4328,6 +4328,16 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("1234", test("StringBuffer sbuf = new StringBuffer(); foreach (int i : new int[] { 1,2,3,4 }) { sbuf.append(i); }; sbuf.toString()"));
     }
 
+    public void testArrayDefinitionWithCoercion() {
+        Double[] d = (Double[]) test("new double[] { 1,2,3,4 }");
+        assertEquals(2d, d[1]);
+    }
+
+    public void testArrayDefinitionWithCoercion2() {
+        Float[] d = (Float[]) test("new float[] { 1,2,3,4 }");
+        assertEquals(2f, d[1]);
+    }
+
     public void testStaticallyTypedLong() {
         assertEquals(10l, test("10l"));
     }

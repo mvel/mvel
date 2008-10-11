@@ -1591,10 +1591,11 @@ public class ParseTools {
         boolean f = true;
         int i = 0;
         if (len > 1) {
-            if (val[0] == '-') i++;
-            else if (val[0] == '~') {
-                i++;
-                if (val[1] == '-') i++;
+            switch (val[0]) {
+                case '-':
+                    if (val[1] == '-') i++;
+                case '~':
+                    i++;
             }
         }
         for (; i < len; i++) {

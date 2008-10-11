@@ -56,7 +56,7 @@ public class Fuzzer {
                 append.append(CHAR_TABLE[seed % CHAR_TABLE.length]);
 
 
-                SALTS[rand3.nextInt(SALTS.length - 1)] = rand4.nextInt(1000) + 1;
+                SALTS[rand3.nextInt(SALTS.length - 1)] ^= rand4.nextInt(1000) + 1;
             }
 
 
@@ -80,7 +80,6 @@ public class Fuzzer {
                 rate = run / (time = (currentTimeMillis() - start) / 1000);
                 System.out.println("Run: " + df.format(run) + " times; "
                         + df.format(time) + "secs; " + df.format(rate) + " avg. per second.");
-
             }
 
         }
