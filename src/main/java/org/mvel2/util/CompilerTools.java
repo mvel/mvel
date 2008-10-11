@@ -55,13 +55,14 @@ public class CompilerTools {
                     optimizedAst.addTokenNode(tk, tkOp);
                 }
                 else if (tkOp.isOperator() && tkOp.getOperator() < 21) {
-                    int op;
+                    int op = tkOp.getOperator();
                     int op2;
 
-                    BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode(), ctx);
                     if (op == -1) {
                         throw new CompileException("illegal use of operator: " + tkOp.getName());
                     }
+
+                    BinaryOperation bo = new BinaryOperation(op, tk, astLinkedList.nextNode(), ctx);
 
                     tkOp2 = null;
 
