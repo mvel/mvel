@@ -77,7 +77,8 @@ public class MapVariableResolver implements VariableResolver {
 
     public void setValue(Object value) {
         if (knownType != null && value != null && value.getClass() != knownType) {
-            if (!canConvert(knownType, value.getClass())) {
+            Class t = value.getClass();
+            if (!canConvert(knownType, t)) {
                 throw new CompileException("cannot assign " + value.getClass().getName() + " to type: "
                         + knownType.getName());
             }

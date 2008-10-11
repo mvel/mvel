@@ -19,11 +19,11 @@
 package org.mvel2;
 
 import org.mvel2.conversion.*;
+import org.mvel2.util.FastList;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The DataConversion factory is where all of MVEL's type converters are registered with the runtime.
@@ -81,6 +81,16 @@ public class DataConversion {
 
         CONVERTERS.put(BigDecimal.class, new BigDecimalCH());
         CONVERTERS.put(BigInteger.class, new BigIntegerCH());
+
+        CONVERTERS.put(List.class, ch = new ListCH());
+        CONVERTERS.put(FastList.class, ch);
+        CONVERTERS.put(ArrayList.class, ch);
+        CONVERTERS.put(LinkedList.class, ch);
+
+        CONVERTERS.put(Set.class, ch = new SetCH());
+        CONVERTERS.put(HashSet.class, ch);
+        CONVERTERS.put(LinkedHashSet.class, ch);
+        CONVERTERS.put(TreeSet.class, ch);
     }
 
     public static boolean canConvert(Class toType, Class convertFrom) {
