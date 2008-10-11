@@ -4468,6 +4468,19 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testJIRA113() {
         assertEquals(true, test("org.mvel2.tests.core.CoreConfidenceTests.minim( {456.2, 2.3} ) == 2.3"));
     }
+
+    public void testFoo() {
+        MVEL.eval("{vlkm1r0q9{c=}.-;#N}.x{:Ax?beF}bqX-Ckt\t\n" +
+                "L5+HDnaL\t0<6pnXz1tt*KXbX,Mb<hX*e%b\t;`!j\n" +
+                "P:9#\n" +
+                ">5E,Xb:K\n" +
+                "M:zX\n" +
+                "]X#-r%&<N}@>TKJ%=r\t(AfU%G:1PtrvFC0znl:L--#ROZJ7XHy-}\n" +
+                "-*ZXZ=U*X&-jn?/-DXPJn,pOD~>XrT<9Pv&b;~#f519B?JbX9b.w<\n" +
+                "!QtX_F~P#b-5`!H/\n" +
+                "U0w\n" +
+                "~na%-+V%?F6rdf@b)bPqV91Ybx}Jr^!b#Zm\tR2<D<btq<-3(bXbL'9V<RInljRE?3Xb`!0J?:1N3&v6Hj -{C:F#9Hf\tC}OtLLX9&:Jqb_<Dz}hb&b<6<CFXgNK&OS}bhVj9PHLt(%MkA1*bA%b<JB");
+    }
 }
 
 

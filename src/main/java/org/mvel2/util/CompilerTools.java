@@ -59,6 +59,9 @@ public class CompilerTools {
                     int op2;
 
                     BinaryOperation bo = new BinaryOperation(op = tkOp.getOperator(), tk, astLinkedList.nextNode(), ctx);
+                    if (op == -1) {
+                        throw new CompileException("illegal use of operator: " + tkOp.getName());
+                    }
 
                     tkOp2 = null;
 
@@ -67,7 +70,7 @@ public class CompilerTools {
                      * right here.
                      */
                     while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
-                            && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) < 21) {
+                            && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) != -1 && op2 < 21) {
 
                         if (PTABLE[op2] > PTABLE[op]) {
                             bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode(), ctx));
@@ -261,9 +264,9 @@ public class CompilerTools {
             case Operator.STR_APPEND:
                 return String.class;
 
-            default:
-                throw new RuntimeException("unknown type: " + operation);
+
         }
+        return null;
     }
 
 
