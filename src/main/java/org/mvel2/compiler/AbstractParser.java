@@ -2243,7 +2243,8 @@ public class AbstractParser implements Serializable {
                             operator = tk.getOperator();
                             // Reduce the lesser or equal precedence operations.
                             while (stk.size() != 1 && stk.peek2() instanceof Integer &&
-                                    PTABLE[((Integer) stk.peek2())] >= PTABLE[operator]) {
+                                    ((operator2 = (Integer) stk.peek2()) < PTABLE.length) &&
+                                    PTABLE[operator2] >= PTABLE[operator]) {
                                 xswap();
                                 reduce();
                             }
