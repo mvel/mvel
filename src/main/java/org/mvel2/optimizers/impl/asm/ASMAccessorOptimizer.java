@@ -405,7 +405,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 Method meth = (Method) member;
 
-
                 assert debug("ALOAD 4");
                 mv.visitVarInsn(ALOAD, 4);
 
@@ -413,7 +412,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 assert debug("DUP_X1");
                 mv.visitInsn(DUP_X1);
-
 
                 if (value != null && !targetType.isAssignableFrom(value.getClass())) {
                     if (!canConvert(targetType, value.getClass())) {
@@ -682,7 +680,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throws IllegalAccessException, InvocationTargetException {
 
         assert debug("\n  **  ENTER -> {bean: " + property + "; ctx=" + ctx + "}");
-
 
         if (returnType != null && returnType.isPrimitive()) {
             //noinspection unchecked
@@ -1899,15 +1896,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             wrapPrimitive(byte.class);
         }
     }
-
-//    public void arrayStore(Class type, int idx, String expression) {
-//        mv.visitVarInsn(ALOAD, 1);
-//        mv.visitTypeInsn(CHECKCAST, getDescriptor(type));
-//        intPush(idx);
-//        mv.visitVarInsn(ALOAD, 4);
-//        unwrapPrimitive(type);
-//        mv.visitInsn(arrayStore(getBaseComponentType(type)));
-//    }
 
     public void arrayStore(Class cls) {
         if (cls.isPrimitive()) {

@@ -19,6 +19,7 @@
 package org.mvel2.optimizers.impl.refl;
 
 import org.mvel2.CompileException;
+import static org.mvel2.DataConversion.convert;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
 
@@ -27,6 +28,8 @@ import java.lang.reflect.Field;
 public class FieldAccessor implements AccessorNode {
     private AccessorNode nextNode;
     private Field field;
+    private boolean coercionRequired = false;
+
 
     public FieldAccessor() {
     }
@@ -51,13 +54,21 @@ public class FieldAccessor implements AccessorNode {
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         try {
-            if (nextNode != null) {
-                return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value);
+            if (coercionRequired) {
+                field.set(ctx, value = convert(ctx, field.getClass()));
+                return value;
             }
             else {
                 field.set(ctx, value);
                 return value;
             }
+        }
+        catch (IllegalArgumentException e) {
+            if (!coercionRequired) {
+                coercionRequired = true;
+                return setValue(ctx, elCtx, variableFactory, value);
+            }
+            throw new CompileException("unable to bind property", e);
         }
         catch (Exception e) {
             throw new CompileException("unable to access field", e);

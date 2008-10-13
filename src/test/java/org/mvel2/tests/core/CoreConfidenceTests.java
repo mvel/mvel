@@ -4478,6 +4478,15 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testJIRA113() {
         assertEquals(true, test("org.mvel2.tests.core.CoreConfidenceTests.minim( {456.2, 2.3} ) == 2.3"));
     }
+
+    public void testPooker() {
+        Serializable s = MVEL.compileSetExpression("name");
+
+        Foo foo = new Foo();
+        MVEL.executeSetExpression(s, foo, 12);
+
+        assertEquals("12", foo.getName());
+    }
 }
 
 

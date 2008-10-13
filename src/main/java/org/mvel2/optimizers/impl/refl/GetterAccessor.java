@@ -27,7 +27,6 @@ import java.lang.reflect.Method;
 
 public class GetterAccessor implements AccessorNode {
     private AccessorNode nextNode;
-
     private final Method method;
 
     public static final Object[] EMPTY = new Object[0];
