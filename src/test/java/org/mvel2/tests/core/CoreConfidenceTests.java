@@ -1959,7 +1959,7 @@ public class CoreConfidenceTests extends AbstractTest {
         innermap.put("test", "foo");
         outermap.put("innermap", innermap);
 
-        MVEL.setProperty(outermap, "innermap['test']", "bar");
+        setProperty(outermap, "innermap['test']", "bar");
 
         assertEquals("bar", testCompiledSimple("innermap['test']", outermap, null));
     }
@@ -2020,7 +2020,7 @@ public class CoreConfidenceTests extends AbstractTest {
         innermap.put("test", "foo");
         outermap.put("innermap", innermap);
 
-        MVEL.executeSetExpression(MVEL.compileSetExpression("innermap['test']"), outermap, "bar");
+        executeSetExpression(compileSetExpression("innermap['test']"), outermap, "bar");
 
         assertEquals("bar", testCompiledSimple("innermap['test']", outermap, null));
     }
@@ -3460,11 +3460,11 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testSetExpressions1() {
         Map<String, Object> myMap = new HashMap<String, Object>();
 
-        final Serializable fooExpr = MVEL.compileSetExpression("foo");
-        MVEL.executeSetExpression(fooExpr, myMap, "blah");
+        final Serializable fooExpr = compileSetExpression("foo");
+        executeSetExpression(fooExpr, myMap, "blah");
         assertEquals("blah", myMap.get("foo"));
 
-        MVEL.executeSetExpression(fooExpr, myMap, "baz");
+        executeSetExpression(fooExpr, myMap, "baz");
         assertEquals("baz", myMap.get("foo"));
 
     }
@@ -4479,14 +4479,116 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("org.mvel2.tests.core.CoreConfidenceTests.minim( {456.2, 2.3} ) == 2.3"));
     }
 
-    public void testPooker() {
-        Serializable s = MVEL.compileSetExpression("name");
+    public void testSetCoercion() {
+        Serializable s = compileSetExpression("name");
 
         Foo foo = new Foo();
-        MVEL.executeSetExpression(s, foo, 12);
+        executeSetExpression(s, foo, 12);
+        assertEquals("12", foo.getName());
 
+        foo = new Foo();
+        setProperty(foo, "name", 12);
         assertEquals("12", foo.getName());
     }
+
+//    public void testThreadTest() throws InterruptedException {
+//        Cookie cookie = new Cookie();
+//
+//        long start = System.currentTimeMillis();
+//
+//        MVEL.eval("pookie.age", cookie);
+//        long end = System.currentTimeMillis();
+//        System.out.println("Getting field time was " + (end - start));
+//
+//
+//        start = System.currentTimeMillis();
+//        MVEL.eval("pookie.dookies['bart'].name", cookie);
+//        end = System.currentTimeMillis();
+//        System.out.println("Getting property time was " + (end - start));
+//
+//        // Loop
+//
+//        start = System.currentTimeMillis();
+//        for (int i = 0; i < 50; i++) {
+//            MVEL.eval("pookie.dookies['bart'].name", cookie);
+//        }
+//        end = System.currentTimeMillis();
+//        System.out.println("50 times was " + (end - start));
+//
+//
+//        MVELThread[] threads = new MVELThread[50];
+//        for (int i = 0; i < 50; i++) {
+//            threads[i] = new MVELThread();
+//            threads[i].setName("" + i);
+//            threads[i].start();
+//        }
+//
+//        for (int i = 0; i < 50; i++) {
+//            threads[i].join();
+//        }
+//
+//    }
+//
+//
+//    public class MVELThread extends Thread {
+//        @Override
+//        public void run() {
+//            Cookie pookie = new Cookie();
+//
+//            long start = System.currentTimeMillis();
+//            for (int i = 0; i < 50000; i++) {
+//                MVEL.eval("pookie.dookies['bart'].name", pookie);
+//                //          if ((i % 25000 == 0)) System.out.println("run!");
+//            }
+//            long end = System.currentTimeMillis();
+//            System.out.println("50000 times for " + this.getName() + " was " + (end - start));
+//        }
+//    }
+//
+//    public class Cookie {
+//        private Pookie pookie = new Pookie();
+//
+//        public Pookie getPookie() {
+//            return pookie;
+//        }
+//
+//        public void setPookie(Pookie pookie) {
+//            this.pookie = pookie;
+//        }
+//    }
+//
+//
+//    public class Pookie {
+//        public HashMap dookies = new HashMap();
+//        private int age = 16;
+//
+//        public Pookie() {
+//            Dookie dookie = new Dookie();
+//            dookie.setName("Bart");
+//            this.dookies.put("bart", dookie);
+//        }
+//
+//        public int getAge() {
+//            return age;
+//        }
+//
+//        public void setAge(int age) {
+//            this.age = age;
+//        }
+//    }
+//
+//    public class Dookie {
+//        private String name;
+//
+//        public String getName() {
+//            return name;
+//        }
+//
+//        public void setName(String name) {
+//            this.name = name;
+//        }
+//    }
+
 }
 
 
