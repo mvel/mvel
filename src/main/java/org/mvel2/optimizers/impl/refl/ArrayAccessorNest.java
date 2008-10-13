@@ -37,7 +37,7 @@ public class ArrayAccessorNest implements AccessorNode {
     }
 
     public ArrayAccessorNest(String index) {
-        this.index = (ExecutableStatement) ParseTools.subCompileExpression(index);
+        this.index = (ExecutableStatement) ParseTools.subCompileExpression(index.toCharArray());
     }
 
     public ArrayAccessorNest(ExecutableStatement stmt) {

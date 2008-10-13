@@ -68,7 +68,7 @@ public class AbstractParser implements Serializable {
 
     protected ASTNode lastNode;
 
-    private static Map<String, char[]> EX_PRECACHE;
+    private volatile static Map<String, char[]> EX_PRECACHE;
 
     public static final Map<String, Object> LITERALS =
             new HashMap<String, Object>(35 * 2, 0.4f);
@@ -1843,8 +1843,8 @@ public class AbstractParser implements Serializable {
 
     protected void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
-            if ((this.expr = EX_PRECACHE.get(expression)) == null) {
-                synchronized (EX_PRECACHE) {
+            synchronized (EX_PRECACHE) {
+                if ((this.expr = EX_PRECACHE.get(expression)) == null) {
                     length = (this.expr = expression.toCharArray()).length;
 
                     // trim any whitespace.
@@ -1857,10 +1857,11 @@ public class AbstractParser implements Serializable {
 
                     EX_PRECACHE.put(expression, e);
                 }
+                else {
+                    length = this.expr.length;
+                }
             }
-            else {
-                length = this.expr.length;
-            }
+
         }
     }
 

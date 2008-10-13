@@ -199,7 +199,7 @@ public class CollectionParser {
                 list.add(ex = createStringTrimmed(property, start, cursor - start));
             }
 
-            if (subcompile) subCompileExpression(ex);
+            if (subcompile) subCompileExpression(ex.toCharArray());
         }
 
         switch (type) {
@@ -214,10 +214,10 @@ public class CollectionParser {
 
     private void subCompile(String ex) {
         if (colType == null) {
-            subCompileExpression(ex);
+            subCompileExpression(ex.toCharArray());
         }
         else {
-            Class r = ((ExecutableStatement) subCompileExpression(ex)).getKnownEgressType();
+            Class r = ((ExecutableStatement) subCompileExpression(ex.toCharArray())).getKnownEgressType();
             if (!colType.isAssignableFrom(r) && !DataConversion.canConvert(r, colType)) {
                 throw new CompileException("expected type: " + colType.getName() + "; but found:" + r.getName());
             }

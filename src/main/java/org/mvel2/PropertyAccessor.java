@@ -61,19 +61,16 @@ public class PropertyAccessor {
 
     private static final Object[] EMPTYARG = new Object[0];
 
-    private static Map<Class, Map<Integer, Member>> READ_PROPERTY_RESOLVER_CACHE;
-    private static Map<Class, Map<Integer, Member>> WRITE_PROPERTY_RESOLVER_CACHE;
-    private static Map<Class, Map<Integer, Object[]>> METHOD_RESOLVER_CACHE;
+    private static final Map<Class, Map<Integer, Member>> READ_PROPERTY_RESOLVER_CACHE;
+    private static final Map<Class, Map<Integer, Member>> WRITE_PROPERTY_RESOLVER_CACHE;
+    private static final Map<Class, Map<Integer, Object[]>> METHOD_RESOLVER_CACHE;
 
     static {
-        configureFactory();
-    }
-
-    static void configureFactory() {
         READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
         WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
         METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Object[]>>(10));
     }
+
 
     public PropertyAccessor(char[] property, Object ctx) {
         this.property = property;
@@ -366,13 +363,15 @@ public class PropertyAccessor {
     }
 
     private static void addReadCache(Class cls, Integer property, Member member) {
-        Map<Integer, Member> nestedMap = READ_PROPERTY_RESOLVER_CACHE.get(cls);
+        synchronized (READ_PROPERTY_RESOLVER_CACHE) {
+            Map<Integer, Member> nestedMap = READ_PROPERTY_RESOLVER_CACHE.get(cls);
 
-        if (nestedMap == null) {
-            READ_PROPERTY_RESOLVER_CACHE.put(cls, nestedMap = new WeakHashMap<Integer, Member>());
+            if (nestedMap == null) {
+                READ_PROPERTY_RESOLVER_CACHE.put(cls, nestedMap = new WeakHashMap<Integer, Member>());
+            }
+
+            nestedMap.put(property, member);
         }
-
-        nestedMap.put(property, member);
     }
 
     private static Member checkReadCache(Class cls, Integer property) {
@@ -384,11 +383,13 @@ public class PropertyAccessor {
     }
 
     private static void addWriteCache(Class cls, Integer property, Member member) {
-        Map<Integer, Member> map = WRITE_PROPERTY_RESOLVER_CACHE.get(cls);
-        if (map == null) {
-            WRITE_PROPERTY_RESOLVER_CACHE.put(cls, map = new WeakHashMap<Integer, Member>());
+        synchronized (WRITE_PROPERTY_RESOLVER_CACHE) {
+            Map<Integer, Member> map = WRITE_PROPERTY_RESOLVER_CACHE.get(cls);
+            if (map == null) {
+                WRITE_PROPERTY_RESOLVER_CACHE.put(cls, map = new WeakHashMap<Integer, Member>());
+            }
+            map.put(property, member);
         }
-        map.put(property, member);
     }
 
     private static Member checkWriteCache(Class cls, Integer property) {
@@ -400,11 +401,13 @@ public class PropertyAccessor {
     }
 
     private static void addMethodCache(Class cls, Integer property, Method member) {
-        Map<Integer, Object[]> map = METHOD_RESOLVER_CACHE.get(cls);
-        if (map == null) {
-            METHOD_RESOLVER_CACHE.put(cls, map = new WeakHashMap<Integer, Object[]>());
+        synchronized (METHOD_RESOLVER_CACHE) {
+            Map<Integer, Object[]> map = METHOD_RESOLVER_CACHE.get(cls);
+            if (map == null) {
+                METHOD_RESOLVER_CACHE.put(cls, map = new WeakHashMap<Integer, Object[]>());
+            }
+            map.put(property, new Object[]{member, member.getParameterTypes()});
         }
-        map.put(property, new Object[]{member, member.getParameterTypes()});
     }
 
     private static Object[] checkMethodCache(Class cls, Integer property) {

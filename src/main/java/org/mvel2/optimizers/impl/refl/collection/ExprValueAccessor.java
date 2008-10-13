@@ -35,11 +35,11 @@ public class ExprValueAccessor implements Accessor {
     public ExecutableStatement stmt;
 
     public ExprValueAccessor(String ex) {
-        stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex);
+        stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex.toCharArray());
     }
 
     public ExprValueAccessor(String ex, Class expectedType) {
-        stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex);
+        stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex.toCharArray());
 
         //if (expectedType.isArray()) {
         Class tt = getSubComponentType(expectedType);

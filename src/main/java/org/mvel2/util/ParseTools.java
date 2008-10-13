@@ -1841,9 +1841,9 @@ public class ParseTools {
                 || clazz == Float.class || clazz == Short.class || clazz == Byte.class || clazz == Character.class;
     }
 
-    public static Serializable subCompileExpression(String expression) {
-        return optimizeTree(new ExpressionCompiler(expression)._compile());
-    }
+//    public static Serializable subCompileExpression(String expression) {
+//        return optimizeTree(new ExpressionCompiler(expression)._compile());
+//    }
 
     public static Serializable subCompileExpression(char[] expression) {
         return optimizeTree(new ExpressionCompiler(expression)._compile());

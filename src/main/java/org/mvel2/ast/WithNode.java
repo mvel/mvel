@@ -50,7 +50,7 @@ public class WithNode extends BlockNode implements NestedStatement {
             (pCtx = getCurrentThreadParserContext()).setBlockSymbols(true);
         }
 
-        nestedStatement = (ExecutableStatement) subCompileExpression(nestParm = createStringTrimmed(expr));
+        nestedStatement = (ExecutableStatement) subCompileExpression((nestParm = createStringTrimmed(expr)).toCharArray());
         compileWithExpressions();
 
         if (pCtx != null) {
@@ -151,7 +151,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                                 new ParmValuePair(null, (ExecutableStatement)
                                         subCompileExpression(
                                                 new StringAppender(nestParm).append('.')
-                                                        .append(subset(block, start, end - start)).toString()))
+                                                        .append(subset(block, start, end - start)).toChars()))
                         );
 
                         oper = -1;
@@ -182,7 +182,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                 parms.add(
                         new ParmValuePair(null, (ExecutableStatement)
                                 subCompileExpression(new StringAppender(nestParm).append('.')
-                                        .append(subset(block, start, end - start)).toString()))
+                                        .append(subset(block, start, end - start)).toChars()))
                 );
             }
             else {

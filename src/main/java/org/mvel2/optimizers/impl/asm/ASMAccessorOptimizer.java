@@ -281,7 +281,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     //noinspection unchecked
                     ((Map) ctx).put(eval(ex, ctx, variableFactory), value);
 
-                    writeLiteralOrSubexpression(subCompileExpression(ex));
+                    writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()));
 
                     assert debug("ALOAD 4");
                     mv.visitVarInsn(ALOAD, 4);
@@ -299,7 +299,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     //noinspection unchecked
                     ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), value);
 
-                    writeLiteralOrSubexpression(subCompileExpression(ex));
+                    writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()));
                     unwrapPrimitive(int.class);
 
                     assert debug("ALOAD 4");
@@ -320,7 +320,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                     Object idx = eval(ex, ctx, variableFactory);
 
-                    writeLiteralOrSubexpression(subCompileExpression(ex));
+                    writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()));
                     if (!(idx instanceof Integer)) {
                         dataConversion(Integer.class);
                         idx = DataConversion.convert(idx, Integer.class);
@@ -635,7 +635,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 // Execute this interpretively now.
                 MVEL.eval(aPvp.getValue(), ctx, variableFactory);
 
-                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue()));
+                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue().toCharArray()));
             }
             else {
                 // Execute interpretively.
@@ -658,7 +658,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 assert debug("ALOAD 3");
                 mv.visitVarInsn(ALOAD, 3);
 
-                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue()));
+                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue().toCharArray()));
 
 
                 assert debug("INVOKEINTERFACE Accessor.setValue");
@@ -986,7 +986,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         assert debug("{collection token:<<" + tk + ">>}");
 
-        ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk);
+        ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk.toCharArray());
         Object item = compiled.getValue(ctx, variableFactory);
 
         ++cursor;
@@ -1138,7 +1138,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             for (int i = 0; i < subtokens.length; i++) {
                 assert debug("subtoken[" + i + "] { " + subtokens[i] + " }");
-                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i])).getValue(this.ctx, this.thisRef, variableFactory);
+                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray())).getValue(this.ctx, this.thisRef, variableFactory);
             }
         }
 
@@ -2209,10 +2209,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else {
             if (type.isArray()) {
-                writeLiteralOrSubexpression(subCompileExpression((String) o), getSubComponentType(type));
+                writeLiteralOrSubexpression(subCompileExpression(((String) o).toCharArray()), getSubComponentType(type));
             }
             else {
-                writeLiteralOrSubexpression(subCompileExpression((String) o));
+                writeLiteralOrSubexpression(subCompileExpression(((String) o).toCharArray()));
             }
             return VAL;
         }
@@ -2379,7 +2379,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         try {
             if (constructorParms != null) {
                 for (String constructorParm : constructorParms) {
-                    compiledInputs.add((ExecutableStatement) subCompileExpression(constructorParm));
+                    compiledInputs.add((ExecutableStatement) subCompileExpression(constructorParm.toCharArray()));
                 }
 
                 Class cls = findClass(factory, new String(subset(property, 0, findFirst('(', property))));

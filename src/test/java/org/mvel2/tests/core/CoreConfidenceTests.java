@@ -4492,41 +4492,46 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testThreadTest() throws InterruptedException {
-        Cookie cookie = new Cookie();
 
-        long start = System.currentTimeMillis();
+        for (int x = 0; x < 10000; x++) {
+            Cookie cookie = new Cookie();
 
-        MVEL.eval("pookie.age", cookie);
-        long end = System.currentTimeMillis();
-        System.out.println("Getting field time was " + (end - start));
+            long start = System.currentTimeMillis();
+
+            MVEL.eval("pookie.age", cookie);
+            long end = System.currentTimeMillis();
+            System.out.println("Getting field time was " + (end - start));
 
 
-        start = System.currentTimeMillis();
-        MVEL.eval("pookie.dookies['bart'].name", cookie);
-        end = System.currentTimeMillis();
-        System.out.println("Getting property time was " + (end - start));
-
-        // Loop
-
-        start = System.currentTimeMillis();
-        for (int i = 0; i < 50; i++) {
+            start = System.currentTimeMillis();
             MVEL.eval("pookie.dookies['bart'].name", cookie);
+            end = System.currentTimeMillis();
+            System.out.println("Getting property time was " + (end - start));
+
+            // Loop
+
+            start = System.currentTimeMillis();
+            for (int i = 0; i < 50; i++) {
+                MVEL.eval("pookie.dookies['bart'].name", cookie);
+            }
+            end = System.currentTimeMillis();
+            System.out.println("50 times was " + (end - start));
+
+
+            MVELThread[] threads = new MVELThread[50];
+            for (int i = 0; i < 50; i++) {
+                threads[i] = new MVELThread();
+                threads[i].setName("" + i);
+                threads[i].start();
+            }
+
+            for (int i = 0; i < 50; i++) {
+                threads[i].join();
+            }
+
+            System.out.println("done");
+
         }
-        end = System.currentTimeMillis();
-        System.out.println("50 times was " + (end - start));
-
-
-        MVELThread[] threads = new MVELThread[50];
-        for (int i = 0; i < 50; i++) {
-            threads[i] = new MVELThread();
-            threads[i].setName("" + i);
-            threads[i].start();
-        }
-
-        for (int i = 0; i < 50; i++) {
-            threads[i].join();
-        }
-
     }
 
 

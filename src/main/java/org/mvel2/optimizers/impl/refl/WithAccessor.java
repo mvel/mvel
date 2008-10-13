@@ -27,7 +27,8 @@ public class WithAccessor implements AccessorNode {
         withExpressions = new ExecutablePairs[pvp.length];
 
         for (int i = 0; i < pvp.length; i++) {
-            withExpressions[i] = new ExecutablePairs(pvp[i].getParm(), (ExecutableStatement) subCompileExpression(pvp[i].getValue()));
+            withExpressions[i] = new ExecutablePairs(pvp[i].getParm(),
+                    (ExecutableStatement) subCompileExpression(pvp[i].getValue().toCharArray()));
         }
 
         pCtx.setBlockSymbols(false);

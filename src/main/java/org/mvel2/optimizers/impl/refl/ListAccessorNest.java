@@ -33,7 +33,7 @@ public class ListAccessorNest implements AccessorNode {
     }
 
     public ListAccessorNest(String index) {
-        this.index = (ExecutableStatement) subCompileExpression(index);
+        this.index = (ExecutableStatement) subCompileExpression(index.toCharArray());
     }
 
     public ListAccessorNest(ExecutableStatement index) {

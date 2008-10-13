@@ -40,7 +40,7 @@ public class MapAccessorNest implements AccessorNode {
     }
 
     public MapAccessorNest(String property) {
-        this.property = (ExecutableStatement) subCompileExpression(property);
+        this.property = (ExecutableStatement) subCompileExpression(property.toCharArray());
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
