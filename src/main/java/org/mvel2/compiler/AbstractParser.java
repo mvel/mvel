@@ -155,7 +155,7 @@ public class AbstractParser implements Serializable {
     }
 
     public static void configureFactory() {
-        EX_PRECACHE = new WeakHashMap<String, char[]>(10);
+        EX_PRECACHE = (new WeakHashMap<String, char[]>(15));
     }
 
     protected ASTNode nextTokenSkipSymbols() {
@@ -1844,17 +1844,19 @@ public class AbstractParser implements Serializable {
     protected void setExpression(String expression) {
         if (expression != null && !"".equals(expression)) {
             if ((this.expr = EX_PRECACHE.get(expression)) == null) {
-                length = (this.expr = expression.toCharArray()).length;
+                synchronized (EX_PRECACHE) {
+                    length = (this.expr = expression.toCharArray()).length;
 
-                // trim any whitespace.
-                while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
+                    // trim any whitespace.
+                    while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
 
-                char[] e = new char[length];
-                //arraycopy(this.expr, 0, e, 0, length);
-                for (int i = 0; i != e.length; i++)
-                    e[i] = expr[i];
+                    char[] e = new char[length];
 
-                EX_PRECACHE.put(expression, e);
+                    for (int i = 0; i != e.length; i++)
+                        e[i] = expr[i];
+
+                    EX_PRECACHE.put(expression, e);
+                }
             }
             else {
                 length = this.expr.length;
