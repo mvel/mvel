@@ -84,7 +84,7 @@ public class IntegerCH implements ConversionHandler {
         CNV.put(Short.class,
                 new Converter() {
                     public Object convert(Object o) {
-                        return ((Short) o).floatValue();
+                        return ((Short) o).intValue();
                     }
                 }
         );

@@ -128,10 +128,11 @@ public class TypeDescriptor implements Serializable {
     }
 
     public boolean isUndimensionedArray() {
-        if (arraySize != null)
+        if (arraySize != null) {
             for (ArraySize anArraySize : arraySize) {
                 if (anArraySize.value.length == 0) return true;
             }
+        }
 
         return false;
     }
