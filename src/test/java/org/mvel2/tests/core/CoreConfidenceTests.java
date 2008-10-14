@@ -4490,7 +4490,7 @@ public class CoreConfidenceTests extends AbstractTest {
         setProperty(foo, "name", 12);
         assertEquals("12", foo.getName());
     }
-
+//
 //    public void testThreadTest() throws InterruptedException {
 //
 //        for (int x = 0; x < 10000; x++) {
