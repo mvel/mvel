@@ -449,6 +449,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("foobiebarbie", test("zero==1?'foobie':'foobie'+'barbie'"));
     }
 
+    public void testTernary5() {
+        assertEquals("skat!", test("isdef someWierdVar ? 'squid' : 'skat!';"));
+    }
+
     public void testStrAppend() {
         assertEquals("foobarcar", test("'foo' + 'bar' + 'car'"));
     }
@@ -3154,12 +3158,10 @@ public class CoreConfidenceTests extends AbstractTest {
             final Recipient other = (Recipient) obj;
             if (email == null) {
                 if (other.email != null) return false;
-            }
-            else if (!email.equals(other.email)) return false;
+            } else if (!email.equals(other.email)) return false;
             if (name == null) {
                 if (other.name != null) return false;
-            }
-            else if (!name.equals(other.name)) return false;
+            } else if (!name.equals(other.name)) return false;
             return true;
         }
     }
@@ -3259,12 +3261,10 @@ public class CoreConfidenceTests extends AbstractTest {
             final EmailMessage other = (EmailMessage) obj;
             if (from == null) {
                 if (other.from != null) return false;
-            }
-            else if (!from.equals(other.from)) return false;
+            } else if (!from.equals(other.from)) return false;
             if (recipients == null) {
                 if (other.recipients != null) return false;
-            }
-            else if (!recipients.equals(other.recipients)) return false;
+            } else if (!recipients.equals(other.recipients)) return false;
             return true;
         }
     }
@@ -3407,8 +3407,7 @@ public class CoreConfidenceTests extends AbstractTest {
         for (Object o : sorted) {
             if (last == -1) {
                 last = (Integer) o;
-            }
-            else {
+            } else {
                 assertTrue(((Integer) o) > last);
                 last = (Integer) o;
             }
@@ -3421,8 +3420,7 @@ public class CoreConfidenceTests extends AbstractTest {
         for (Object o : sorted) {
             if (last == -1) {
                 last = (Integer) o;
-            }
-            else {
+            } else {
                 assertTrue(((Integer) o) > last);
                 last = (Integer) o;
             }
@@ -4048,8 +4046,7 @@ public class CoreConfidenceTests extends AbstractTest {
         public boolean canConvertFrom(Class cls) {
             if (cls == String.class || cls.isAssignableFrom(Date.class)) {
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         }
@@ -4059,8 +4056,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
                 if (o instanceof String) {
                     return sdf.parse((String) o);
-                }
-                else {
+                } else {
                     return o;
                 }
             }
@@ -4458,7 +4454,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testDecl() {
-        assertEquals((char) 100, test("char c; c = 100; c"));
+        assertEquals((char) 100, test("char chr; chr = 100; chr"));
     }
 
     public void testInlineUnion() {
@@ -4490,6 +4486,17 @@ public class CoreConfidenceTests extends AbstractTest {
         setProperty(foo, "name", 12);
         assertEquals("12", foo.getName());
     }
+
+//
+//    public void testSetCoercion2() {
+//        Serializable s = compileSetExpression("sampleBean.map2['bleh']");
+//
+//        Foo foo = new Foo();
+//        executeSetExpression(s, foo, "12");
+//
+//        assertEquals(12, foo.getSampleBean().getMap2().get("bleh").intValue());
+//    }
+
 //
 //    public void testThreadTest() throws InterruptedException {
 //

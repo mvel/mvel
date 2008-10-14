@@ -18,6 +18,7 @@
  */
 package org.mvel2.ast;
 
+import org.mvel2.CompileException;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
@@ -39,12 +40,15 @@ public class DeclTypedVarNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory.createVariable(name, null, egressType);
+        if (!factory.isResolveable(name)) factory.createVariable(name, null, egressType);
+        else throw new CompileException("variable defined within scope: " + name);
         return null;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory.createVariable(name, null, egressType);
+        if (!factory.isResolveable(name)) factory.createVariable(name, null, egressType);
+        else throw new CompileException("variable defined within scope: " + name);
+
         return null;
     }
 
