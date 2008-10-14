@@ -1,5 +1,6 @@
 package org.mvel2.optimizers.dynamic;
 
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
@@ -13,14 +14,15 @@ public class DynamicSetAccessor implements DynamicAccessor {
     private int runcount = 0;
     private long stamp;
 
+    private ParserContext context;
     private final Accessor _safeAccessor;
     private Accessor _accessor;
-
     private String description;
 
-    public DynamicSetAccessor(char[] property, Accessor _accessor) {
+    public DynamicSetAccessor(ParserContext context, char[] property, Accessor _accessor) {
         assert _accessor != null;
         this._safeAccessor = this._accessor = _accessor;
+        this.context = context;
         this.property = property;
         this.stamp = System.currentTimeMillis();
     }
@@ -53,7 +55,8 @@ public class DynamicSetAccessor implements DynamicAccessor {
         }
 
         AccessorOptimizer ao = OptimizerFactory.getAccessorCompiler("ASM");
-        _accessor = ao.optimizeSetAccessor(property, ctx, elCtx, variableResolverFactory, false, value);
+        _accessor = ao.optimizeSetAccessor(context, property, ctx, elCtx,
+                variableResolverFactory, false, value);
         assert _accessor != null;
 
         return value;

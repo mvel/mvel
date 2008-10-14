@@ -1,5 +1,6 @@
 package org.mvel2.optimizers.dynamic;
 
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AbstractOptimizer;
@@ -43,8 +44,8 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
     public static final int SET_ACCESSOR = 1;
 
-    public Accessor optimizeSetAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value) {
-        return classLoader.registerDynamicAccessor(new DynamicSetAccessor(property, firstStage.optimizeSetAccessor(property, ctx, thisRef, factory, rootThisRef, value)));
+    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value) {
+        return classLoader.registerDynamicAccessor(new DynamicSetAccessor(pCtx, property, firstStage.optimizeSetAccessor(pCtx, property, ctx, thisRef, factory, rootThisRef, value)));
     }
 
     public static final int COLLECTION = 2;

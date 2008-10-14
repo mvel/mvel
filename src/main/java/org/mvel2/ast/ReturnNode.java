@@ -48,6 +48,4 @@ public class ReturnNode extends ASTNode {
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         throw new EndWithValue(eval(this.name, ctx, factory));
     }
-
-
 }

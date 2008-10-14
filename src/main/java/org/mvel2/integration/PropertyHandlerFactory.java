@@ -18,4 +18,8 @@ public class PropertyHandlerFactory {
     public static void registerPropertyHandler(Class clazz, PropertyHandler propertyHandler) {
         propertyHandlerClass.put(clazz, propertyHandler);
     }
+
+    public static void unregisterPropertyHandler(Class clazz) {
+        propertyHandlerClass.remove(clazz);
+    }
 }

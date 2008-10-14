@@ -18,6 +18,7 @@
  */
 package org.mvel2.optimizers;
 
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 
@@ -26,7 +27,7 @@ public interface AccessorOptimizer {
 
     public Accessor optimizeAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef);
 
-    public Accessor optimizeSetAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value);
+    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value);
 
     public Accessor optimizeCollection(Object collectionGraph, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
 

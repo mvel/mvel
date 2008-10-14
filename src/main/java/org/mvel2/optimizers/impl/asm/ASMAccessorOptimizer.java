@@ -217,7 +217,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         return compileAccessor();
     }
 
-    public Accessor optimizeSetAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value) {
+    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value) {
         this.start = this.cursor = 0;
         this.first = true;
 

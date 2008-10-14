@@ -3158,10 +3158,12 @@ public class CoreConfidenceTests extends AbstractTest {
             final Recipient other = (Recipient) obj;
             if (email == null) {
                 if (other.email != null) return false;
-            } else if (!email.equals(other.email)) return false;
+            }
+            else if (!email.equals(other.email)) return false;
             if (name == null) {
                 if (other.name != null) return false;
-            } else if (!name.equals(other.name)) return false;
+            }
+            else if (!name.equals(other.name)) return false;
             return true;
         }
     }
@@ -3261,10 +3263,12 @@ public class CoreConfidenceTests extends AbstractTest {
             final EmailMessage other = (EmailMessage) obj;
             if (from == null) {
                 if (other.from != null) return false;
-            } else if (!from.equals(other.from)) return false;
+            }
+            else if (!from.equals(other.from)) return false;
             if (recipients == null) {
                 if (other.recipients != null) return false;
-            } else if (!recipients.equals(other.recipients)) return false;
+            }
+            else if (!recipients.equals(other.recipients)) return false;
             return true;
         }
     }
@@ -3407,7 +3411,8 @@ public class CoreConfidenceTests extends AbstractTest {
         for (Object o : sorted) {
             if (last == -1) {
                 last = (Integer) o;
-            } else {
+            }
+            else {
                 assertTrue(((Integer) o) > last);
                 last = (Integer) o;
             }
@@ -3420,7 +3425,8 @@ public class CoreConfidenceTests extends AbstractTest {
         for (Object o : sorted) {
             if (last == -1) {
                 last = (Integer) o;
-            } else {
+            }
+            else {
                 assertTrue(((Integer) o) > last);
                 last = (Integer) o;
             }
@@ -3931,6 +3937,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testCustomPropertyHandler() {
         PropertyHandlerFactory.registerPropertyHandler(SampleBean.class, new SampleBeanAccessor());
         assertEquals("dog", test("foo.sampleBean.bar.name"));
+        PropertyHandlerFactory.unregisterPropertyHandler(SampleBean.class);
     }
 
     public void testSetAccessorOverloadedEqualsStrictMode() {
@@ -4046,7 +4053,8 @@ public class CoreConfidenceTests extends AbstractTest {
         public boolean canConvertFrom(Class cls) {
             if (cls == String.class || cls.isAssignableFrom(Date.class)) {
                 return true;
-            } else {
+            }
+            else {
                 return false;
             }
         }
@@ -4056,7 +4064,8 @@ public class CoreConfidenceTests extends AbstractTest {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
                 if (o instanceof String) {
                     return sdf.parse((String) o);
-                } else {
+                }
+                else {
                     return o;
                 }
             }
@@ -4487,17 +4496,33 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("12", foo.getName());
     }
 
-//
-//    public void testSetCoercion2() {
-//        Serializable s = compileSetExpression("sampleBean.map2['bleh']");
-//
-//        Foo foo = new Foo();
-//        executeSetExpression(s, foo, "12");
-//
-//        assertEquals(12, foo.getSampleBean().getMap2().get("bleh").intValue());
-//    }
 
-//
+    public void testSetCoercion2() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("sampleBean", SampleBean.class);
+
+        Serializable s = compileSetExpression("sampleBean.map2['bleh']", ctx);
+
+        Foo foo = new Foo();
+        executeSetExpression(s, foo, "12");
+
+        assertEquals(12, foo.getSampleBean().getMap2().get("bleh").intValue());
+
+
+        ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("sampleBean", SampleBean.class);
+
+        s = compileSetExpression("sampleBean.map2['bleh']", ctx);
+
+        foo = new Foo();
+        executeSetExpression(s, foo, "12");
+
+        assertEquals(12, foo.getSampleBean().getMap2().get("bleh").intValue());
+    }
+
+
 //    public void testThreadTest() throws InterruptedException {
 //
 //        for (int x = 0; x < 10000; x++) {
@@ -4599,6 +4624,7 @@ public class CoreConfidenceTests extends AbstractTest {
 //            this.name = name;
 //        }
 //    }
+
 
 }
 

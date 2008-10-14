@@ -122,10 +122,15 @@ public class MVEL {
     }
 
 
+    public static Serializable compileExpression(String expression, ParserContext ctx) {
+        return optimizeTree(new ExpressionCompiler(expression)
+                .compile(ctx));
+    }
+
     public static Serializable compileExpression(String expression, Map<String, Object> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
-        return optimizeTree(new ExpressionCompiler(expression)
-                .compile(new ParserContext(imports, interceptors, sourceName)));
+        return compileExpression(expression, new ParserContext(imports, interceptors, sourceName));
+
     }
 
     /**
@@ -147,6 +152,10 @@ public class MVEL {
         return compileExpression(expression, imports, interceptors, null);
     }
 
+    public static Serializable compileExpression(char[] expression, ParserContext ctx) {
+        return optimizeTree(new ExpressionCompiler(expression).compile(ctx));
+    }
+
     /**
      * Compiles an expression and returns a Serializable object containing the compiled
      * expression.
@@ -159,7 +168,7 @@ public class MVEL {
      */
     public static Serializable compileExpression(char[] expression, Map<String, Object> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
-        return optimizeTree(new ExpressionCompiler(expression).compile(new ParserContext(imports, interceptors, sourceName)));
+        return compileExpression(expression, new ParserContext(imports, interceptors, sourceName));
     }
 
     public static Serializable compileExpression(char[] expression) {
@@ -174,12 +183,22 @@ public class MVEL {
         return compileExpression(expression, imports, interceptors, null);
     }
 
+
     public static Serializable compileSetExpression(String expression) {
-        return new CompiledSetExpression(expression.toCharArray());
+        return new CompiledSetExpression(expression.toCharArray(), new ParserContext());
     }
 
+    public static Serializable compileSetExpression(String expression, ParserContext ctx) {
+        return new CompiledSetExpression(expression.toCharArray(), ctx);
+    }
+
+
     public static Serializable compileSetExpression(char[] expression) {
-        return new CompiledSetExpression(expression);
+        return new CompiledSetExpression(expression, new ParserContext());
+    }
+
+    public static Serializable compileSetExpression(char[] expression, ParserContext ctx) {
+        return new CompiledSetExpression(expression, ctx);
     }
 
     public static void executeSetExpression(Serializable compiledSet, Object ctx, Object value) {

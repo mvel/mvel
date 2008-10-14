@@ -209,15 +209,31 @@ public class PropertyVerifier extends AbstractOptimizer {
      * @return known egress type
      */
     private Class getCollectionProperty(Class ctx, String property) {
-        if (pCtx.hasVarOrInput(property)) {
-            ctx = getSubComponentType(pCtx.getVarOrInputType(property));
+        if (first) {
+            if (pCtx.hasVarOrInput(property)) {
+                ctx = getSubComponentType(pCtx.getVarOrInputType(property));
+            }
+            else if (pCtx.hasImport(property)) {
+                resolvedExternally = false;
+                ctx = getSubComponentType(pCtx.getImport(property));
+            }
+            else {
+                ctx = Object.class;
+            }
         }
-        else if (pCtx.hasImport(property)) {
-            resolvedExternally = false;
-            ctx = getSubComponentType(pCtx.getImport(property));
-        }
-        else {
-            ctx = Object.class;
+        else if (pCtx.isStrongTyping()) {
+            if (Map.class.isAssignableFrom(ctx = getBeanProperty(ctx, property))) {
+                ctx = (Class) pCtx.getLastTypeParameters()[1];
+            }
+            else if (Collection.class.isAssignableFrom(ctx)) {
+                ctx = (Class) pCtx.getLastTypeParameters()[0];
+            }
+            else if (ctx.isArray()) {
+                ctx = getBaseComponentType(ctx);
+            }
+            else {
+                throw new CompileException("unknown collection type");
+            }
         }
 
         ++cursor;
