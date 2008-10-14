@@ -265,6 +265,12 @@ public class AbstractParser implements Serializable {
 
                                 skipWhitespaceWithLineAccounting();
                                 if (cursor != length && expr[cursor] == '{') {
+                                    if (!((NewObjectNode) lastNode).getTypeDescr().isUndimensionedArray()) {
+                                        throw new CompileException(
+                                                "conflicting syntax: dimensioned array with initializer block", expr, cursor);
+                                    }
+
+
                                     start = cursor;
                                     Class egressType = ((NewObjectNode) lastNode).getEgressType();
 
@@ -289,6 +295,10 @@ public class AbstractParser implements Serializable {
                                                 egressType);
                                     }
                                 }
+                                else if (((NewObjectNode) lastNode).getTypeDescr().isUndimensionedArray()) {
+                                    throw new CompileException("array initializer expected", expr, cursor);
+                                }
+
                                 return lastNode;
 
                             case ASSERT:
