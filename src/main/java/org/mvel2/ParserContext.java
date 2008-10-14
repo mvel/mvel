@@ -28,17 +28,16 @@ public class ParserContext implements Serializable {
     private Map<String, Class> variables;
     private Map<String, Class> inputs;
 
-    private Map<String, Map<String, Class>> typeParameters;
-    private Type[] lastTypeParameters;
-
+    private transient Map<String, Map<String, Class>> typeParameters;
+    private transient Type[] lastTypeParameters;
     private Map<String, Function> globalFunctions;
 
-    private List<ErrorDetail> errorList;
+    private transient List<ErrorDetail> errorList;
 
     private Map<String, Set<Integer>> sourceMap;
     private LineLabel lastLineLabel;
 
-    private Object rootParser;
+    private transient Object rootParser;
 
     private boolean compiled = false;
     private boolean strictTypeEnforcement = false;
