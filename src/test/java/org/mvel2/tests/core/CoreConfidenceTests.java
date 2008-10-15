@@ -4572,10 +4572,47 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(12, foo.getBar().getTestList().get(0).intValue());
 
-        executeSetExpression(s, foo, new Integer(12));
+        executeSetExpression(s, foo, "13");
 
-        assertEquals(12, foo.getBar().getTestList().get(0).intValue());
+        assertEquals(13, foo.getBar().getTestList().get(0).intValue());
+    }
 
+    public void testArrayCoercion1() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("bar", Bar.class);
+
+        Serializable s = compileSetExpression("bar.intarray[0]", ctx);
+
+        Foo foo = new Foo();
+
+        executeSetExpression(s, foo, "12");
+
+        assertEquals(12, foo.getBar().getIntarray()[0].intValue());
+
+        foo = new Foo();
+
+        executeSetExpression(s, foo, "13");
+
+        assertEquals(13, foo.getBar().getIntarray()[0].intValue());
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("bar", Bar.class);
+
+        s = compileSetExpression("bar.intarray[0]", ctx);
+
+        foo = new Foo();
+
+        executeSetExpression(s, foo, "12");
+
+        assertEquals(12, foo.getBar().getIntarray()[0].intValue());
+
+        executeSetExpression(s, foo, "13");
+
+        assertEquals(13, foo.getBar().getIntarray()[0].intValue());
     }
 
 //    public void testThreadTest() throws InterruptedException {

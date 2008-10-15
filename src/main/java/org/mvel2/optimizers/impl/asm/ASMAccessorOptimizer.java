@@ -330,30 +330,33 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                     Object idx = eval(ex, ctx, variableFactory);
 
-                    writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()));
+                    writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()), int.class);
                     if (!(idx instanceof Integer)) {
                         dataConversion(Integer.class);
                         idx = DataConversion.convert(idx, Integer.class);
+                        unwrapPrimitive(int.class);
                     }
 
-                    unwrapPrimitive(int.class);
 
                     assert debug("ALOAD 4");
                     mv.visitVarInsn(ALOAD, 4);
 
-                    assert debug("CHECKCAST " + getInternalName(type));
-                    mv.visitTypeInsn(CHECKCAST, getInternalName(type));
+//                    assert debug("CHECKCAST " + getInternalName(type));
+//                    mv.visitTypeInsn(CHECKCAST, getInternalName(type));
 
                     assert debug("DUP_X2");
                     mv.visitInsn(DUP_X2);
 
-                    if (!type.equals(value.getClass())) dataConversion(type);
+                    if (!type.equals(value.getClass())) {
+                        dataConversion(type);
+                    }
                     if (type.isPrimitive()) wrapPrimitive(type);
+
 
                     arrayStore(type);
 
                     //noinspection unchecked
-                    Array.set(ctx, (Integer) idx, convert(value, getBaseComponentType(ctx.getClass())));
+                    Array.set(ctx, (Integer) idx, convert(value, type));
                 }
                 else {
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
@@ -2255,6 +2258,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 }
                 writeOutLiteralWrapped(convert(((ExecutableLiteral) stmt).getLiteral(), desiredTarget));
             }
+
             else {
                 writeOutLiteralWrapped(((ExecutableLiteral) stmt).getLiteral());
             }

@@ -15,7 +15,7 @@ public class AccessorBMModel implements Accessor {
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return ((Foo) ctx).getSampleBean().getMap2().put("blah", DataConversion.convert(value, Integer.class));
+        return ((Foo) ctx).getBar().getIntarray()[0] = DataConversion.convert(value, Integer.class);
     }
 
     public Class getKnownEgressType() {

@@ -9,6 +9,7 @@ public class Bar {
     private int age = 14;
     private String assignTest = "";
     private List<Integer> testList = new ArrayList<Integer>();
+    private Integer[] intarray = new Integer[1];
 
     public String getName() {
         return name;
@@ -62,6 +63,14 @@ public class Bar {
 
     public static int staticMethod() {
         return 1;
+    }
+
+    public Integer[] getIntarray() {
+        return intarray;
+    }
+
+    public void setIntarray(Integer[] intarray) {
+        this.intarray = intarray;
     }
 
     public boolean equals(Object o) {
