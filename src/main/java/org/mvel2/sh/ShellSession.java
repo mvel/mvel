@@ -3,11 +3,13 @@ package org.mvel2.sh;
 import static org.mvel2.MVEL.*;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.sh.command.basic.BasicCommandSet;
 import org.mvel2.sh.command.file.FileCommandSet;
 import org.mvel2.templates.TemplateRuntime;
 import static org.mvel2.util.PropertyTools.contains;
 import org.mvel2.util.StringAppender;
+import org.mvel2.ast.ASTNode;
 
 import java.io.*;
 import static java.lang.Boolean.parseBoolean;
@@ -29,7 +31,7 @@ public class ShellSession {
     private Map<String, String> env;
     private Object ctxObject;
 
-    DefaultLocalVariableResolverFactory lvrf;
+    VariableResolverFactory lvrf;
 
 
     private int depth;
@@ -83,8 +85,10 @@ public class ShellSession {
 
         }
 
-        lvrf = new DefaultLocalVariableResolverFactory(variables);
-        lvrf.appendFactory(new MapVariableResolverFactory(env));
+        lvrf =  new MapVariableResolverFactory(variables, new MapVariableResolverFactory(env));
+
+
+      //  lvrf.appendFactory(new MapVariableResolverFactory(env));
     }
 
     public ShellSession(String init) {

@@ -2069,6 +2069,17 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(0, executeExpression(s, new DefaultLocalVariableResolverFactory()));
     }
 
+    public void testDynamicImports3() {
+        String expression = "import java.util.*; HashMap map = new HashMap(); map.size()";
+
+        ExpressionCompiler compiler = new ExpressionCompiler(expression);
+        Serializable s = compiler.compile();
+
+        assertEquals(0, executeExpression(s, new DefaultLocalVariableResolverFactory()));
+
+        assertEquals(0, MVEL.eval(expression, new HashMap()));
+    }
+
     public void testDynamicImportsInList() {
         ParserContext ctx = new ParserContext();
         ctx.addPackageImport("org.mvel2.tests.core.res");

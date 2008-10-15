@@ -681,6 +681,15 @@ public class AbstractParser implements Serializable {
                                             return new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
                                                     lastNode.getLiteralValue(), pCtx);
                                         }
+                                        // needed to work with MVELSH properly.
+                                        else if ((fields & ASTNode.COMPILE_IMMEDIATE) == 0) {
+                                            if (stk.peek() instanceof Class) {
+
+                                                captureToEOS();
+                                                return new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
+                                                        stk.pop(), pCtx);
+                                            }
+                                        }
 
                                         throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
                                     }
