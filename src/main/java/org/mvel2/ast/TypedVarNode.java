@@ -19,7 +19,7 @@
 package org.mvel2.ast;
 
 import static org.mvel2.MVEL.eval;
-import org.mvel2.compiler.AbstractParser;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.*;
@@ -38,7 +38,7 @@ public class TypedVarNode extends ASTNode implements Assignment {
         this.egressType = type;
     }
 
-    public TypedVarNode(char[] expr, int fields, Class type) {
+    public TypedVarNode(char[] expr, int fields, Class type, ParserContext pCtx) {
         this.egressType = type;
         this.fields = fields;
 
@@ -58,7 +58,7 @@ public class TypedVarNode extends ASTNode implements Assignment {
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            AbstractParser.getCurrentThreadParserContext().addVariable(name, egressType, true);
+            pCtx.addVariable(name, egressType, true);
         }
     }
 

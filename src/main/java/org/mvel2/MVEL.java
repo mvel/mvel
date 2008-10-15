@@ -183,30 +183,44 @@ public class MVEL {
         return compileExpression(expression, imports, interceptors, null);
     }
 
+    public static Serializable compileGetExpression(String expression) {
+        return new CompiledAccExpression(expression.toCharArray(), new ParserContext());
+    }
+
+    public static Serializable compileGetExpression(String expression, ParserContext ctx) {
+        return new CompiledAccExpression(expression.toCharArray(), ctx);
+    }
+
+    public static Serializable compileGetExpression(char[] expression) {
+        return new CompiledAccExpression(expression, new ParserContext());
+    }
+
+    public static Serializable compileGetExpression(char[] expression, ParserContext ctx) {
+        return new CompiledAccExpression(expression, ctx);
+    }
 
     public static Serializable compileSetExpression(String expression) {
-        return new CompiledSetExpression(expression.toCharArray(), new ParserContext());
+        return new CompiledAccExpression(expression.toCharArray(), new ParserContext());
     }
 
     public static Serializable compileSetExpression(String expression, ParserContext ctx) {
-        return new CompiledSetExpression(expression.toCharArray(), ctx);
+        return new CompiledAccExpression(expression.toCharArray(), ctx);
     }
 
-
     public static Serializable compileSetExpression(char[] expression) {
-        return new CompiledSetExpression(expression, new ParserContext());
+        return new CompiledAccExpression(expression, new ParserContext());
     }
 
     public static Serializable compileSetExpression(char[] expression, ParserContext ctx) {
-        return new CompiledSetExpression(expression, ctx);
+        return new CompiledAccExpression(expression, ctx);
     }
 
     public static void executeSetExpression(Serializable compiledSet, Object ctx, Object value) {
-        ((CompiledSetExpression) compiledSet).setValue(ctx, ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY, value);
+        ((CompiledAccExpression) compiledSet).setValue(ctx, ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY, value);
     }
 
     public static void executeSetExpression(Serializable compiledSet, Object ctx, VariableResolverFactory vrf, Object value) {
-        ((CompiledSetExpression) compiledSet).setValue(ctx, ctx, vrf, value);
+        ((CompiledAccExpression) compiledSet).setValue(ctx, ctx, vrf, value);
     }
 
     public static Object executeExpression(Object compiledExpression) {

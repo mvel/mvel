@@ -21,9 +21,9 @@ package org.mvel2.ast;
 import org.mvel2.MVEL;
 import static org.mvel2.MVEL.compileSetExpression;
 import org.mvel2.Operator;
+import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessor;
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-import org.mvel2.compiler.CompiledSetExpression;
+import org.mvel2.compiler.CompiledAccExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ArrayTools.findFirst;
@@ -34,7 +34,7 @@ import static org.mvel2.util.ParseTools.*;
  */
 public class AssignmentNode extends ASTNode implements Assignment {
     private String varName;
-    private transient CompiledSetExpression setExpr;
+    private transient CompiledAccExpression accExpr;
 
     private char[] indexTarget;
     private String index;
@@ -43,7 +43,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
     private ExecutableStatement statement;
     private boolean col = false;
 
-    public AssignmentNode(char[] expr, int fields, int operation, String name) {
+    public AssignmentNode(char[] expr, int fields, int operation, String name, ParserContext pCtx) {
         super(expr, fields);
 
         int assignStart;
@@ -52,7 +52,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
             checkNameSafety(this.varName = name);
 
             if ((fields & COMPILE_IMMEDIATE) != 0 && operation == Operator.ADD) {
-                if (getCurrentThreadParserContext().getVariables().get(name) == String.class)
+                if (pCtx.getVariables().get(name) == String.class)
                     operation = Operator.STR_APPEND;
             }
 
@@ -69,7 +69,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
             if (col = ((endOfName = findFirst('[', indexTarget = this.varName.toCharArray())) > 0)) {
                 if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
-                    setExpr = (CompiledSetExpression) compileSetExpression(indexTarget);
+                    accExpr = (CompiledAccExpression) compileSetExpression(indexTarget);
                 }
 
                 this.varName = new String(expr, 0, endOfName);
@@ -83,23 +83,23 @@ public class AssignmentNode extends ASTNode implements Assignment {
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            getCurrentThreadParserContext().addVariable(this.varName, egressType);
+            pCtx.addVariable(this.varName, egressType);
         }
 
         this.name = this.varName.toCharArray();
     }
 
-    public AssignmentNode(char[] expr, int fields) {
-        this(expr, fields, -1, null);
+    public AssignmentNode(char[] expr, int fields, ParserContext pCtx) {
+        this(expr, fields, -1, null, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (setExpr == null) {
-            setExpr = (CompiledSetExpression) compileSetExpression(indexTarget);
+        if (accExpr == null) {
+            accExpr = (CompiledAccExpression) compileSetExpression(indexTarget);
         }
 
         if (col) {
-            return setExpr.setValue(ctx, thisValue, factory, statement.getValue(ctx, thisValue, factory));
+            return accExpr.setValue(ctx, thisValue, factory, statement.getValue(ctx, thisValue, factory));
         }
         else if (statement != null) {
             return factory.createVariable(varName, statement.getValue(ctx, thisValue, factory)).getValue();

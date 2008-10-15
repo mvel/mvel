@@ -52,11 +52,12 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
             parseAndExecuteInterpreted();
 
-            if (parserContext != null
-                    && (parserContext.get() == null || parserContext.get().getRootParser() == this)) {
+            if (parserContext != null) contextControl(REMOVE, null, null);
 
-                contextControl(REMOVE, null, null);
-            }
+//            if (parserContext != null
+//                    && (parserContext.get() == null || parserContext.get().getRootParser() == this)) {
+//                contextControl(REMOVE, null, null);
+//            }
 
             return stk.pop();
         }

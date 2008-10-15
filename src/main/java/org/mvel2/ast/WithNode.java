@@ -216,7 +216,8 @@ public class WithNode extends BlockNode implements NestedStatement {
         }
 
         public ParmValuePair(String parameter, ExecutableStatement statement) {
-            if (parameter != null) this.setExpression = MVEL.compileSetExpression(parameter);
+            if (parameter != null)
+                this.setExpression = MVEL.compileSetExpression(parameter, getCurrentThreadParserContext());
             this.statement = statement;
         }
 

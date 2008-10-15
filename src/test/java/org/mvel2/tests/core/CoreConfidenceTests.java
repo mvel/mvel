@@ -4283,6 +4283,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertTrue(false);
     }
 
+
     public void testDoLoop() {
         assertEquals(10, test("i = 0; do { i++ } while (i != 10); i"));
     }
@@ -4302,6 +4303,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testUntilLoop() {
         assertEquals("012345", test("String str = ''; int i = 0; until (i == 6) { str += i++; }; str"));
     }
+
 
     public void testEgressType1() {
         assertEquals(Boolean.class, new ExpressionCompiler("foo != null").compile().getKnownEgressType());

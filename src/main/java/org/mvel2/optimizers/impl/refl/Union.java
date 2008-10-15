@@ -18,6 +18,7 @@
  */
 package org.mvel2.optimizers.impl.refl;
 
+import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
@@ -37,7 +38,7 @@ public class Union implements Accessor {
             Object o = accessor.getValue(ctx, elCtx, variableFactory);
 
             AccessorOptimizer ao = OptimizerFactory.getDefaultAccessorCompiler();
-            nextAccessor = ao.optimizeAccessor(nextExpr, o, elCtx, variableFactory, false);
+            nextAccessor = ao.optimizeAccessor(getCurrentThreadParserContext(), nextExpr, o, elCtx, variableFactory, false);
 
             return ao.getResultOptPass();
             //   return nextAccessor.getValue(o, elCtx, variableFactory);

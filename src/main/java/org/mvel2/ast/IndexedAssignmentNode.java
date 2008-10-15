@@ -20,8 +20,8 @@ package org.mvel2.ast;
 
 import org.mvel2.MVEL;
 import static org.mvel2.MVEL.compileSetExpression;
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-import org.mvel2.compiler.CompiledSetExpression;
+import org.mvel2.ParserContext;
+import org.mvel2.compiler.CompiledAccExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ArrayTools.findFirst;
@@ -33,7 +33,7 @@ import static org.mvel2.util.ParseTools.*;
 public class IndexedAssignmentNode extends ASTNode implements Assignment {
     private String name;
     private int register;
-    private transient CompiledSetExpression setExpr;
+    private transient CompiledAccExpression accExpr;
 
     private char[] indexTarget;
     private char[] index;
@@ -43,7 +43,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
     private boolean col = false;
 
-    public IndexedAssignmentNode(char[] expr, int fields, int operation, String name, int register) {
+    public IndexedAssignmentNode(char[] expr, int fields, int operation, String name, int register, ParserContext pCtx) {
         super.name = expr;
         this.register = register;
 
@@ -63,7 +63,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
             if (col = ((endOfName = findFirst('[', indexTarget = this.name.toCharArray())) > 0)) {
                 if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
-                    setExpr = (CompiledSetExpression) compileSetExpression(indexTarget);
+                    accExpr = (CompiledAccExpression) compileSetExpression(indexTarget);
                 }
 
                 this.name = new String(expr, 0, endOfName);
@@ -77,21 +77,21 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            getCurrentThreadParserContext().addVariable(name, egressType);
+            pCtx.addVariable(name, egressType);
         }
     }
 
-    public IndexedAssignmentNode(char[] expr, int fields, int register) {
-        this(expr, fields, -1, null, register);
+    public IndexedAssignmentNode(char[] expr, int fields, int register, ParserContext pCtx) {
+        this(expr, fields, -1, null, register, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (setExpr == null) {
-            setExpr = (CompiledSetExpression) compileSetExpression(indexTarget);
+        if (accExpr == null) {
+            accExpr = (CompiledAccExpression) compileSetExpression(indexTarget);
         }
 
         if (col) {
-            setExpr.setValue(ctx, thisValue, factory, ctx = statement.getValue(ctx, thisValue, factory));
+            accExpr.setValue(ctx, thisValue, factory, ctx = statement.getValue(ctx, thisValue, factory));
         }
         else if (statement != null) {
             if (factory.isIndexedFactory()) {

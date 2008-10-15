@@ -1,5 +1,6 @@
 package org.mvel2.optimizers.dynamic;
 
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
@@ -17,13 +18,16 @@ public class DynamicGetAccessor implements DynamicAccessor {
 
     private boolean opt = false;
 
+    private ParserContext context;
+
     private Accessor _safeAccessor;
     private Accessor _accessor;
 
-    public DynamicGetAccessor(char[] property, int type, Accessor _accessor) {
+    public DynamicGetAccessor(ParserContext context, char[] property, int type, Accessor _accessor) {
         this._safeAccessor = this._accessor = _accessor;
         this.type = type;
         this.property = property;
+        this.context = context;
         stamp = currentTimeMillis();
     }
 
@@ -58,13 +62,13 @@ public class DynamicGetAccessor implements DynamicAccessor {
         AccessorOptimizer ao = OptimizerFactory.getAccessorCompiler("ASM");
         switch (type) {
             case DynamicOptimizer.REGULAR_ACCESSOR:
-                _accessor = ao.optimizeAccessor(property, ctx, elCtx, variableResolverFactory, false);
+                _accessor = ao.optimizeAccessor(context, property, ctx, elCtx, variableResolverFactory, false);
                 return ao.getResultOptPass();
             case DynamicOptimizer.OBJ_CREATION:
-                _accessor = ao.optimizeObjectCreation(property, ctx, elCtx, variableResolverFactory);
+                _accessor = ao.optimizeObjectCreation(context, property, ctx, elCtx, variableResolverFactory);
                 return _accessor.getValue(ctx, elCtx, variableResolverFactory);
             case DynamicOptimizer.COLLECTION:
-                _accessor = ao.optimizeCollection(null, null, property, ctx, elCtx, variableResolverFactory);
+                _accessor = ao.optimizeCollection(context, null, property, ctx, elCtx, variableResolverFactory);
                 return _accessor.getValue(ctx, elCtx, variableResolverFactory);
         }
         return null;

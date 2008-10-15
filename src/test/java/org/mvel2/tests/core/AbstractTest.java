@@ -7,6 +7,7 @@ import org.mvel2.MVEL;
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
 import org.mvel2.ParserContext;
+import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.debug.DebugTools;
@@ -407,7 +408,9 @@ public abstract class AbstractTest extends TestCase {
         }
 
         try {
-            eighth = executeExpression(serializationTest(compiledD), new Base(), new MapVariableResolverFactory(createTestMap()));
+            Serializable xx = serializationTest(compiledD);
+            AbstractParser.resetParserContext();
+            eighth = executeExpression(xx, new Base(), new MapVariableResolverFactory(createTestMap()));
         }
         catch (Exception e) {
             if (failErrors == null) failErrors = new StringAppender();
@@ -435,7 +438,7 @@ public abstract class AbstractTest extends TestCase {
         return fourth;
     }
 
-    protected static Object serializationTest(Serializable s) throws Exception {
+    protected static Serializable serializationTest(Serializable s) throws Exception {
         File file = new File("./mvel_ser_test" + currentTimeMillis() + Math.round(Math.random() * 1000) + ".tmp");
         InputStream inputStream = null;
         ObjectInputStream objectIn = null;
@@ -455,7 +458,7 @@ public abstract class AbstractTest extends TestCase {
 
             objectIn = new ObjectInputStream(inputStream);
 
-            return objectIn.readObject();
+            return (Serializable) objectIn.readObject();
         }
         finally {
             if (inputStream != null) inputStream.close();

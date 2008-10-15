@@ -28,6 +28,7 @@ import org.mvel2.UnresolveablePropertyException;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import org.mvel2.compiler.AbstractParser;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
+import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.integration.VariableResolverFactory;
@@ -134,11 +135,11 @@ public class ASTNode implements Cloneable, Serializable {
             }
 
             try {
-                setAccessor(optimizer.optimizeAccessor(name, ctx, thisValue, factory, true));
+                setAccessor(optimizer.optimizeAccessor(getCurrentThreadParserContext(), name, ctx, thisValue, factory, true));
             }
             catch (OptimizationNotSupported ne) {
                 setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
-                        .optimizeAccessor(name, ctx, thisValue, factory, true));
+                        .optimizeAccessor(getCurrentThreadParserContext(), name, ctx, thisValue, factory, true));
             }
 
 
@@ -238,7 +239,7 @@ public class ASTNode implements Cloneable, Serializable {
                 if (td.isArray()) {
                     try {
                         fields |= LITERAL;
-                        return literal = getClassReference(AbstractParser.getCurrentThreadParserContext(), td);
+                        return literal = getClassReference(getCurrentThreadParserContext(), td);
                     }
                     catch (Exception e) {
                         // fall through

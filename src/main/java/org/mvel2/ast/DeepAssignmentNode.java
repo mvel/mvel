@@ -20,9 +20,10 @@ package org.mvel2.ast;
 
 import static org.mvel2.MVEL.compileSetExpression;
 import static org.mvel2.MVEL.eval;
+import org.mvel2.ParserContext;
 import static org.mvel2.PropertyAccessor.set;
-import org.mvel2.compiler.AbstractParser;
-import org.mvel2.compiler.CompiledSetExpression;
+import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+import org.mvel2.compiler.CompiledAccExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.*;
@@ -34,10 +35,10 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
     private String property;
     private char[] stmt;
 
-    private CompiledSetExpression set;
+    private CompiledAccExpression acc;
     private ExecutableStatement statement;
 
-    public DeepAssignmentNode(char[] expr, int fields, int operation, String name) {
+    public DeepAssignmentNode(char[] expr, int fields, int operation, String name, ParserContext pCtx) {
         this.fields |= DEEP_PROPERTY | fields;
 
         this.name = expr;
@@ -62,21 +63,22 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            set = (CompiledSetExpression) compileSetExpression(property.toCharArray());
-            AbstractParser.getCurrentThreadParserContext().addVariable(name, egressType);
+            //   ParserContext pCtx = getCurrentThreadParserContext();
+            acc = (CompiledAccExpression) compileSetExpression(property.toCharArray(), pCtx);
+            pCtx.addVariable(name, egressType);
         }
     }
 
-    public DeepAssignmentNode(char[] expr, int fields) {
-        this(expr, fields, -1, null);
+    public DeepAssignmentNode(char[] expr, int fields, ParserContext pCtx) {
+        this(expr, fields, -1, null, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (statement == null) {
             statement = (ExecutableStatement) subCompileExpression(stmt);
-            set = (CompiledSetExpression) compileSetExpression(property.toCharArray());
+            acc = (CompiledAccExpression) compileSetExpression(property.toCharArray(), getCurrentThreadParserContext());
         }
-        set.setValue(ctx, thisValue, factory, ctx = statement.getValue(ctx, thisValue, factory));
+        acc.setValue(ctx, thisValue, factory, ctx = statement.getValue(ctx, thisValue, factory));
         return ctx;
     }
 

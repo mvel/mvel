@@ -76,7 +76,8 @@ public class WithAccessor implements AccessorNode {
         }
 
         public ExecutablePairs(String parameter, ExecutableStatement statement) {
-            if (parameter != null && parameter.length() != 0) this.setExpression = MVEL.compileSetExpression(parameter);
+            if (parameter != null && parameter.length() != 0)
+                this.setExpression = MVEL.compileSetExpression(parameter, getCurrentThreadParserContext());
             this.statement = statement;
         }
 

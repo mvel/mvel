@@ -19,6 +19,7 @@
 package org.mvel2.ast;
 
 import static org.mvel2.PropertyAccessor.get;
+import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
@@ -42,7 +43,7 @@ public class LiteralDeepPropertyNode extends ASTNode {
         }
         else {
             AccessorOptimizer aO = getThreadAccessorOptimizer();
-            accessor = aO.optimizeAccessor(name, literal, thisValue, factory, false);
+            accessor = aO.optimizeAccessor(getCurrentThreadParserContext(), name, literal, thisValue, factory, false);
             return aO.getResultOptPass();
         }
     }

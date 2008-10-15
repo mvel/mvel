@@ -196,7 +196,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     }
 
-    public Accessor optimizeAccessor(char[] property, Object staticContext, Object thisRef, VariableResolverFactory factory, boolean root) {
+    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object staticContext, Object thisRef, VariableResolverFactory factory, boolean root) {
         time = System.currentTimeMillis();
 
         compiledInputs = new ArrayList<ExecutableStatement>();
@@ -214,6 +214,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         if (!noinit) _initJIT();
 
+        //     this.pCtx = pCtx;
         return compileAccessor();
     }
 
@@ -624,7 +625,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         int start = cursor + 1;
         int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{');
         cursor = res[0];
-        getParserContext().incrementLineCount(res[1]);
+        (pCtx = getParserContext()).incrementLineCount(res[1]);
 
         WithStatementPair[] pvp = parseWithExpressions(root, subset(expr, start, cursor++ - start));
 
@@ -641,7 +642,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 // Execute interpretively.
                 MVEL.setProperty(ctx, aPvp.getParm(), MVEL.eval(aPvp.getValue(), ctx, variableFactory));
 
-                compiledInputs.add(((ExecutableStatement) MVEL.compileSetExpression(aPvp.getParm())));
+                compiledInputs.add(((ExecutableStatement) MVEL.compileSetExpression(aPvp.getParm(), pCtx)));
 
                 assert debug("ALOAD 0");
                 mv.visitVarInsn(ALOAD, 0);
@@ -2364,7 +2365,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    public Accessor optimizeObjectCreation(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+    public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         _initJIT();
 
         compiledInputs = new ArrayList<ExecutableStatement>();
@@ -2372,6 +2373,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.ctx = ctx;
         this.thisRef = thisRef;
         this.variableFactory = factory;
+        this.pCtx = pCtx;
 
         String[] cnsRes = captureContructorAndResidual(property);
         String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());

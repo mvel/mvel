@@ -40,14 +40,14 @@ public class Function extends ASTNode implements Safe {
     protected String[] parameters;
     protected int parmNum;
 
-    public Function(String name, char[] parameters, char[] block) {
+    public Function(String name, char[] parameters, char[] block, ParserContext pCtx) {
         if ((this.name = name) == null || name.length() == 0) {
             this.name = "AnonFunction" + this.hashCode();
         }
 
         parmNum = (this.parameters = parseParameterDefList(parameters, 0, parameters.length)).length;
 
-        ParserContext old = AbstractParser.getCurrentThreadParserContext();
+        ParserContext old = pCtx;
         old.declareFunction(this);
 
         ParserContext ctx = new ParserContext();

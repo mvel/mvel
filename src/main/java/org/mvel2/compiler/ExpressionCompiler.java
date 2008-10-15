@@ -47,7 +47,7 @@ public class ExpressionCompiler extends AbstractParser {
     private boolean secondPassOptimization = false;
 
     public CompiledExpression compile() {
-        return compile(contextControl(GET_OR_CREATE, null, null));
+        return compile(contextControl(GET_OR_CREATE, null, this));
     }
 
     public CompiledExpression compile(ParserContext ctx) {
@@ -76,6 +76,7 @@ public class ExpressionCompiler extends AbstractParser {
                             .append(" ").append(e.getMessage());
                 }
 
+                //noinspection ThrowFromFinallyBlock
                 throw new CompileException("Failed to compile: " + pCtx.getErrorList().size() + " compilation error(s): " + err.toString(), pCtx.getErrorList());
             }
         }

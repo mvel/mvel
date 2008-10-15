@@ -23,6 +23,7 @@ import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessor;
+import org.mvel2.compiler.AbstractParser;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.ExecutableStatement;
@@ -144,7 +145,7 @@ public class NewObjectNode extends ASTNode {
             }
 
             AccessorOptimizer optimizer = getThreadAccessorOptimizer();
-            newObjectOptimizer = optimizer.optimizeObjectCreation(name, ctx, thisValue, factory);
+            newObjectOptimizer = optimizer.optimizeObjectCreation(AbstractParser.getCurrentThreadParserContext(), name, ctx, thisValue, factory);
 
             /**
              * Check to see if the optimizer actually produced the object during optimization.  If so,

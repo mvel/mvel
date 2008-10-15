@@ -38,8 +38,8 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
     public static final int REGULAR_ACCESSOR = 0;
 
-    public Accessor optimizeAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef) {
-        return classLoader.registerDynamicAccessor(new DynamicGetAccessor(property, 0, firstStage.optimizeAccessor(property, ctx, thisRef, factory, rootThisRef)));
+    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef) {
+        return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, 0, firstStage.optimizeAccessor(pCtx, property, ctx, thisRef, factory, rootThisRef)));
     }
 
     public static final int SET_ACCESSOR = 1;
@@ -56,8 +56,8 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
     public static final int OBJ_CREATION = 3;
 
-    public Accessor optimizeObjectCreation(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        return classLoader.registerDynamicAccessor(new DynamicGetAccessor(property, 3, firstStage.optimizeObjectCreation(property, ctx, thisRef, factory)));
+    public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, 3, firstStage.optimizeObjectCreation(pCtx, property, ctx, thisRef, factory)));
     }
 
 

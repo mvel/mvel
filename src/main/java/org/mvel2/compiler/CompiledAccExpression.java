@@ -24,12 +24,12 @@ import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
 import java.io.Serializable;
 
-public class CompiledSetExpression implements ExecutableStatement, Serializable {
+public class CompiledAccExpression implements ExecutableStatement, Serializable {
     private char[] expression;
     private transient Accessor accessor;
     private ParserContext context;
 
-    public CompiledSetExpression(char[] expression, ParserContext context) {
+    public CompiledAccExpression(char[] expression, ParserContext context) {
         this.expression = expression;
         this.context = context;
     }
@@ -46,7 +46,10 @@ public class CompiledSetExpression implements ExecutableStatement, Serializable 
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
-        throw new RuntimeException("not supported");
+        if (accessor == null) {
+            accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, staticContext, staticContext, factory, false);
+        }
+        return accessor.getValue(staticContext, staticContext, factory);
     }
 
     public void setKnownIngressType(Class type) {
@@ -79,7 +82,10 @@ public class CompiledSetExpression implements ExecutableStatement, Serializable 
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        throw new RuntimeException("not supported");
+        if (accessor == null) {
+            accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, ctx, elCtx, variableFactory, false);
+        }
+        return accessor.getValue(ctx, elCtx, variableFactory);
     }
 
     public Accessor getAccessor() {
