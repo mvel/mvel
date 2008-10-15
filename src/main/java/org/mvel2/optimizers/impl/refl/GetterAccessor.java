@@ -79,9 +79,33 @@ public class GetterAccessor implements AccessorNode {
         return method.getDeclaringClass().getName() + "." + method.getName();
     }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        // not implemented
-        return null;
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
+        try {
+            if (nextNode != null) {
+                return nextNode.setValue(method.invoke(ctx, EMPTY), elCtx, vars, value);
+            }
+            else {
+                throw new CompileException("bad payload");
+            }
+        }
+        catch (IllegalArgumentException e) {
+            /**
+             * HACK: Try to access this another way.
+             */
+
+            if (nextNode != null) {
+                return nextNode.setValue(getProperty(method.getName() + "()", ctx), elCtx, vars, value);
+            }
+            else {
+                return getProperty(method.getName() + "()", ctx);
+            }
+        }
+        catch (CompileException e) {
+            throw e;
+        }
+        catch (Exception e) {
+            throw new CompileException("error " + method.getName() + ": " + e.getClass().getName() + ":" + e.getMessage(), e);
+        }
     }
 
     public Class getKnownEgressType() {

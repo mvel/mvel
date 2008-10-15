@@ -102,7 +102,7 @@ public class CompilerTools {
                     }
                 }
                 else if (!tkOp.isOperator() && tk.getLiteralValue() instanceof Class) {
-                    optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), (Class) tk.getLiteralValue(), 0));
+                    optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), (Class) tk.getLiteralValue(), 0, ctx));
                 }
                 else if (tkOp.isOperator(Operator.REGEX)) {
                     optimizedAst.addTokenNode(new RegExMatchNode(tk, astLinkedList.nextNode()));

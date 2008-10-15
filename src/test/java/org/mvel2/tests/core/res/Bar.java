@@ -8,7 +8,7 @@ public class Bar {
     private boolean woof = true;
     private int age = 14;
     private String assignTest = "";
-    private List testList = new ArrayList();
+    private List<Integer> testList = new ArrayList<Integer>();
 
     public String getName() {
         return name;
@@ -48,11 +48,11 @@ public class Bar {
     }
 
 
-    public List getTestList() {
+    public List<Integer> getTestList() {
         return testList;
     }
 
-    public void setTestList(List testList) {
+    public void setTestList(List<Integer> testList) {
         this.testList = testList;
     }
 

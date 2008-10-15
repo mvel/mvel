@@ -18,6 +18,7 @@
  */
 package org.mvel2.optimizers.impl.refl;
 
+import org.mvel2.DataConversion;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
@@ -28,16 +29,20 @@ import java.util.List;
 public class ListAccessorNest implements AccessorNode {
     private AccessorNode nextNode;
     private ExecutableStatement index;
+    private Class conversionType;
+
 
     public ListAccessorNest() {
     }
 
-    public ListAccessorNest(String index) {
+    public ListAccessorNest(String index, Class conversionType) {
         this.index = (ExecutableStatement) subCompileExpression(index.toCharArray());
+        this.conversionType = conversionType;
     }
 
-    public ListAccessorNest(ExecutableStatement index) {
+    public ListAccessorNest(ExecutableStatement index, Class conversionType) {
         this.index = index;
+        this.conversionType = conversionType;
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
@@ -49,10 +54,22 @@ public class ListAccessorNest implements AccessorNode {
         }
     }
 
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vars, Object value) {
         //noinspection unchecked
-        ((List) ctx).set((Integer) index.getValue(ctx, elCtx, variableFactory), value);
-        return value;
+
+        if (nextNode != null) {
+            return nextNode.setValue(((List) ctx).get((Integer) index.getValue(ctx, elCtx, vars)), elCtx, vars, value);
+        }
+        else {
+            if (conversionType != null) {
+                ((List) ctx).set((Integer) index.getValue(ctx, elCtx, vars), value = DataConversion.convert(value, conversionType));
+            }
+            else {
+                ((List) ctx).set((Integer) index.getValue(ctx, elCtx, vars), value);
+            }
+            return value;
+        }
+
     }
 
     public ExecutableStatement getIndex() {

@@ -1,8 +1,10 @@
 package org.mvel2.tests;
 
+import org.mvel2.DataConversion;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.tests.core.res.Foo;
 
 
 public class AccessorBMModel implements Accessor {
@@ -13,8 +15,7 @@ public class AccessorBMModel implements Accessor {
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        // ((List) ctx).set(55, value);
-        return ((String[]) ctx)[(Integer) p0.getValue(ctx, variableFactory)] = (String) value;
+        return ((Foo) ctx).getSampleBean().getMap2().put("blah", DataConversion.convert(value, Integer.class));
     }
 
     public Class getKnownEgressType() {

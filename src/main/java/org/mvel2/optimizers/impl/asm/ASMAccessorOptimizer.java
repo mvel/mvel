@@ -32,10 +32,7 @@ import static org.mvel2.asm.Type.*;
 import org.mvel2.ast.Function;
 import org.mvel2.ast.TypeDescriptor;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
-import org.mvel2.compiler.Accessor;
-import org.mvel2.compiler.AccessorNode;
-import org.mvel2.compiler.ExecutableLiteral;
-import org.mvel2.compiler.ExecutableStatement;
+import org.mvel2.compiler.*;
 import org.mvel2.integration.PropertyHandler;
 import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
 import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
@@ -231,6 +228,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         char[] root = null;
 
+        PropertyVerifier verifier = new PropertyVerifier(property, this.pCtx = pCtx);
+
         int split = findLastUnion();
 
         if (split != -1) {
@@ -280,15 +279,20 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 if (ctx instanceof Map) {
                     //noinspection unchecked
-                    ((Map) ctx).put(eval(ex, ctx, variableFactory), value);
+                    ((Map) ctx).put(eval(ex, ctx, variableFactory), convert(value, returnType = verifier.analyze()));
 
                     writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()));
 
                     assert debug("ALOAD 4");
                     mv.visitVarInsn(ALOAD, 4);
 
-                    assert debug("DUP_X1");
-                    mv.visitInsn(DUP_X1);
+                    if (value != null & returnType != value.getClass()) {
+                        dataConversion(returnType);
+                        checkcast(returnType);
+                    }
+
+                    assert debug("DUP_X2");
+                    mv.visitInsn(DUP_X2);
 
                     assert debug("INVOKEINTERFACE Map.put");
                     mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
@@ -298,7 +302,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 }
                 else if (ctx instanceof List) {
                     //noinspection unchecked
-                    ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), value);
+                    ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), convert(value, returnType = verifier.analyze()));
 
                     writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()));
                     unwrapPrimitive(int.class);
@@ -306,8 +310,13 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     assert debug("ALOAD 4");
                     mv.visitVarInsn(ALOAD, 4);
 
-                    assert debug("DUP_X1");
-                    mv.visitInsn(DUP_X1);
+                    if (value != null & returnType != value.getClass()) {
+                        dataConversion(returnType);
+                        checkcast(returnType);
+                    }
+
+                    assert debug("DUP_X2");
+                    mv.visitInsn(DUP_X2);
 
                     assert debug("INVOKEINTERFACE List.set");
                     mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "set", "(ILjava/lang/Object;)Ljava/lang/Object;");
@@ -732,10 +741,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     return variableFactory.getVariableResolver(property).getValue();
                 }
             }
-            else {
-                assert debug("ALOAD 1");
-                mv.visitVarInsn(ALOAD, 1);
-            }
+//            else {
+//                assert debug("ALOAD 1");
+//                mv.visitVarInsn(ALOAD, 1);
+//            }
         }
 
         if (member instanceof Field) {
@@ -2237,8 +2246,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 intPush(((ExecutableLiteral) stmt).getInteger32());
                 type = int.class;
             }
-            else if (desiredTarget != null && type != desiredTarget) {
+            else if (desiredTarget != null && desiredTarget != type) {
                 assert debug("*** Converting because desiredType(" + desiredTarget.getClass() + ") is not: " + type);
+
 
                 if (!DataConversion.canConvert(type, desiredTarget)) {
                     throw new CompileException("was expecting type: " + desiredTarget.getName() + "; but found type: " + type.getName());

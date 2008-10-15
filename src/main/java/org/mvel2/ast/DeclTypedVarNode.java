@@ -19,7 +19,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.checkNameSafety;
@@ -30,12 +30,12 @@ import static org.mvel2.util.ParseTools.checkNameSafety;
 public class DeclTypedVarNode extends ASTNode implements Assignment {
     private String name;
 
-    public DeclTypedVarNode(String name, Class type, int fields) {
+    public DeclTypedVarNode(String name, Class type, int fields, ParserContext pCtx) {
         this.egressType = type;
         checkNameSafety(this.name = name);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            getCurrentThreadParserContext().addVariable(name, egressType, true);
+            pCtx.addVariable(name, egressType, true);
         }
     }
 

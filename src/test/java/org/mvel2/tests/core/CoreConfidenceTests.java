@@ -4511,6 +4511,12 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(12, foo.getSampleBean().getMap2().get("bleh").intValue());
 
+        foo = new Foo();
+        executeSetExpression(s, foo, "13");
+
+        assertEquals(13, foo.getSampleBean().getMap2().get("bleh").intValue());
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
 
         ctx = new ParserContext();
         ctx.setStrongTyping(true);
@@ -4522,8 +4528,55 @@ public class CoreConfidenceTests extends AbstractTest {
         executeSetExpression(s, foo, "12");
 
         assertEquals(12, foo.getSampleBean().getMap2().get("bleh").intValue());
+
+        executeSetExpression(s, foo, new Integer(12));
+
+        assertEquals(12, foo.getSampleBean().getMap2().get("bleh").intValue());
+
     }
 
+
+    public void testListCoercion() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("bar", Bar.class);
+
+        Serializable s = compileSetExpression("bar.testList[0]", ctx);
+
+        Foo foo = new Foo();
+        foo.getBar().getTestList().add(new Integer(-1));
+
+        executeSetExpression(s, foo, "12");
+
+        assertEquals(12, foo.getBar().getTestList().get(0).intValue());
+
+        foo = new Foo();
+        foo.getBar().getTestList().add(new Integer(-1));
+
+        executeSetExpression(s, foo, "13");
+
+        assertEquals(13, foo.getBar().getTestList().get(0).intValue());
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("bar", Bar.class);
+
+        s = compileSetExpression("bar.testList[0]", ctx);
+
+        foo = new Foo();
+        foo.getBar().getTestList().add(new Integer(-1));
+
+        executeSetExpression(s, foo, "12");
+
+        assertEquals(12, foo.getBar().getTestList().get(0).intValue());
+
+        executeSetExpression(s, foo, new Integer(12));
+
+        assertEquals(12, foo.getBar().getTestList().get(0).intValue());
+
+    }
 
 //    public void testThreadTest() throws InterruptedException {
 //

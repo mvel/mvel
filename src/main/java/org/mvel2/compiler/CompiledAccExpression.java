@@ -20,6 +20,7 @@ package org.mvel2.compiler;
 
 import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.optimizers.AccessorOptimizer;
 import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
 import java.io.Serializable;
@@ -37,7 +38,8 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vrf, Object value) {
         if (accessor == null) {
-            accessor = getThreadAccessorOptimizer().optimizeSetAccessor(context, expression, ctx, ctx, vrf, false, value);
+            AccessorOptimizer ao = getThreadAccessorOptimizer();
+            accessor = ao.optimizeSetAccessor(context, expression, ctx, ctx, vrf, false, value);
         }
         else {
             accessor.setValue(ctx, elCtx, vrf, value);

@@ -185,17 +185,17 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
                 if (ctx instanceof Map) {
                     //noinspection unchecked
-                    ((Map) ctx).put(eval(ex, ctx, variableFactory), convert(value, verifier.analyze()));
+                    ((Map) ctx).put(eval(ex, ctx, variableFactory), convert(value, returnType = verifier.analyze()));
 
-                    addAccessorNode(new MapAccessorNest(ex));
+                    addAccessorNode(new MapAccessorNest(ex, returnType));
 
                     return rootNode;
                 }
                 else if (ctx instanceof List) {
                     //noinspection unchecked
-                    ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), convert(value, verifier.analyze()));
+                    ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), convert(value, returnType = verifier.analyze()));
 
-                    addAccessorNode(new ListAccessorNest(ex));
+                    addAccessorNode(new ListAccessorNest(ex, returnType));
                     return rootNode;
                 }
                 else if (ctx.getClass().isArray()) {
@@ -505,7 +505,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         if (ctx instanceof Map) {
             if (itemSubExpr) {
-                addAccessorNode(new MapAccessorNest(itemStmt));
+                addAccessorNode(new MapAccessorNest(itemStmt, null));
             }
             else {
                 addAccessorNode(new MapAccessor(parseInt(item)));
@@ -515,7 +515,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
         else if (ctx instanceof List) {
             if (itemSubExpr) {
-                addAccessorNode(new ListAccessorNest(itemStmt));
+                addAccessorNode(new ListAccessorNest(itemStmt, null));
             }
             else {
                 addAccessorNode(new ListAccessor(parseInt(item)));

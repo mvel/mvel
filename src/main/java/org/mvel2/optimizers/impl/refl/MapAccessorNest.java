@@ -18,6 +18,7 @@
  */
 package org.mvel2.optimizers.impl.refl;
 
+import org.mvel2.DataConversion;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
@@ -31,17 +32,21 @@ import java.util.Map;
 public class MapAccessorNest implements AccessorNode {
     private AccessorNode nextNode;
     private ExecutableStatement property;
+    private Class conversionType;
 
     public MapAccessorNest() {
     }
 
-    public MapAccessorNest(ExecutableStatement property) {
+    public MapAccessorNest(ExecutableStatement property, Class conversionType) {
         this.property = property;
+        this.conversionType = conversionType;
     }
 
-    public MapAccessorNest(String property) {
+    public MapAccessorNest(String property, Class conversionType) {
         this.property = (ExecutableStatement) subCompileExpression(property.toCharArray());
+        this.conversionType = conversionType;
     }
+
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
         if (nextNode != null) {
@@ -57,8 +62,12 @@ public class MapAccessorNest implements AccessorNode {
             return nextNode.setValue(((Map) ctx).get(property.getValue(ctx, elCtx, vars)), elCtx, vars, value);
         }
         else {
-            //noinspection unchecked
-            ((Map) ctx).put(property.getValue(ctx, elCtx, vars), value);
+            if (conversionType != null) {
+                ((Map) ctx).put(property.getValue(ctx, elCtx, vars), value = DataConversion.convert(value, conversionType));
+            }
+            else {
+                ((Map) ctx).put(property.getValue(ctx, elCtx, vars), value);
+            }
             return value;
         }
     }
