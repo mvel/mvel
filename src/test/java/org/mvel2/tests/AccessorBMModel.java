@@ -1,5 +1,7 @@
 package org.mvel2.tests;
 
+import java.util.Map;
+
 import org.mvel2.DataConversion;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.ExecutableStatement;
@@ -15,7 +17,8 @@ public class AccessorBMModel implements Accessor {
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return ((Foo) ctx).getBar().getIntarray()[0] = DataConversion.convert(value, Integer.class);
+        ((Map)((Map) ctx).get("innermap")).put("test", value);
+        return value;
     }
 
     public Class getKnownEgressType() {

@@ -1312,6 +1312,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testBreakpoints5() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
         String expression = "System.out.println('foo');\r\n" +
                 "a = new Foo();\r\n" +
                 "a.name = 'bar';\r\n" +
@@ -1554,6 +1555,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testSataticClassImportViaFactoryAndWithModification() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
         MapVariableResolverFactory mvf = new MapVariableResolverFactory(createTestMap());
         ClassImportResolverFactory classes = new ClassImportResolverFactory();
         classes.addClass(Person.class);
@@ -1700,6 +1702,8 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testExecuteCoercionTwice() {
+        OptimizerFactory.setDefaultOptimizer("reflective");
+
         Map<String, Object> vars = new HashMap<String, Object>();
         vars.put("foo", new Foo());
         vars.put("$value", new Long(5));
@@ -1715,6 +1719,26 @@ public class CoreConfidenceTests extends AbstractTest {
         executeExpression(compiled, null, vars);
         executeExpression(compiled, null, vars);
     }
+
+    public void testExecuteCoercionTwice2() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put("foo", new Foo());
+        vars.put("$value", new Long(5));
+
+        ExpressionCompiler compiler = new ExpressionCompiler("with (foo) { countTest = $value };");
+        compiler.setDebugSymbols(true);
+
+        ParserContext ctx = new ParserContext();
+        ctx.setSourceFile("test.mv");
+
+        CompiledExpression compiled = compiler.compile(ctx);
+
+        executeExpression(compiled, null, vars);
+        executeExpression(compiled, null, vars);
+    }
+
 
     public void testComments() {
         assertEquals(10, test("// This is a comment\n5 + 5"));
@@ -2018,6 +2042,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMapBindingSemantics2() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
         Map<String, Object> outermap = new HashMap<String, Object>();
         Map<String, Object> innermap = new HashMap<String, Object>();
 
@@ -4034,6 +4059,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testDataConverterStrictMode() throws Exception {
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
         DataConversion.addConversionHandler(Date.class, new MVELDateCoercion());
 
         ParserContext ctx = new ParserContext();
@@ -4613,6 +4640,44 @@ public class CoreConfidenceTests extends AbstractTest {
         executeSetExpression(s, foo, "13");
 
         assertEquals(13, foo.getBar().getIntarray()[0].intValue());
+    }
+
+    public void testFieldCoercion1() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("bar", Bar.class);
+
+        Serializable s = compileSetExpression("bar.assignTest", ctx);
+
+        Foo foo = new Foo();
+
+        executeSetExpression(s, foo, 12);
+
+        assertEquals("12", foo.getBar().getAssignTest());
+
+        foo = new Foo();
+
+        executeSetExpression(s, foo, 13);
+
+        assertEquals("13", foo.getBar().getAssignTest());
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("bar", Bar.class);
+
+        s = compileSetExpression("bar.assignTest", ctx);
+
+        foo = new Foo();
+
+        executeSetExpression(s, foo, 12);
+
+        assertEquals("12", foo.getBar().getAssignTest());
+
+        executeSetExpression(s, foo, 13);
+
+        assertEquals("13", foo.getBar().getAssignTest());
     }
 
 //    public void testThreadTest() throws InterruptedException {
