@@ -667,8 +667,8 @@ public class ParseTools {
                 if (s + 4 > escapeStr.length) throw new CompileException("illegal unicode escape sequence");
                 else {
                     while (++pos - s != 5) {
-                        if ((escapeStr[pos] >= '0' && escapeStr[pos] <= '9') ||
-                                (escapeStr[pos] >= 'A' && escapeStr[pos] <= 'F')) {
+                        if ((escapeStr[pos] > ('0'-1) && escapeStr[pos] < ('9'+1)) ||
+                                (escapeStr[pos] > ('A'-1) && escapeStr[pos] < ('F'+1))) {
                         } else {
                             throw new CompileException("illegal unicode escape sequence");
                         }
@@ -1579,17 +1579,17 @@ public class ParseTools {
 
     public static String createStringTrimmed(char[] s) {
         int start = 0, end = s.length;
-        while (start != end && s[start] <= '\u0020') start++;
-        while (end != start && s[end - 1] <= '\u0020') end--;
+        while (start != end && s[start] < '\u0020'+1) start++;
+        while (end != start && s[end - 1] < '\u0020'+1) end--;
         return new String(s, start, end - start);
     }
 
     public static String createStringTrimmed(char[] s, int start, int length) {
         if ((length = start + length) > s.length) return new String(s);
-        while (start != length && s[start] <= '\u0020') {
+        while (start != length && s[start] < '\u0020'+1) {
             start++;
         }
-        while (length != start && s[length - 1] <= '\u0020') {
+        while (length != start && s[length - 1] < '\u0020'+1) {
             length--;
         }
         return new String(s, start, length - start);
@@ -1791,7 +1791,7 @@ public class ParseTools {
     }
 
     public static boolean isWhitespace(char c) {
-        return c <= '\u0020';
+        return c < '\u0020'+1;
     }
 
     public static String repeatChar(char c, int times) {
