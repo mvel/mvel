@@ -68,7 +68,7 @@ public class AbstractParser implements Serializable {
 
     protected ASTNode lastNode;
 
-    private volatile static Map<String, char[]> EX_PRECACHE;
+    private static final Map<String, char[]> EX_PRECACHE = new WeakHashMap<String, char[]>(15);
 
     public static final Map<String, Object> LITERALS =
             new HashMap<String, Object>(35 * 2, 0.4f);
@@ -86,7 +86,7 @@ public class AbstractParser implements Serializable {
     protected VariableResolverFactory variableFactory;
 
     static {
-        configureFactory();
+ 
         /**
          * Setup the basic literals
          */
@@ -154,9 +154,6 @@ public class AbstractParser implements Serializable {
         setLanguageLevel(5);
     }
 
-    public static void configureFactory() {
-        EX_PRECACHE = (new WeakHashMap<String, char[]>(15));
-    }
 
     protected ASTNode nextTokenSkipSymbols() {
         ASTNode n = nextToken();
@@ -272,7 +269,7 @@ public class AbstractParser implements Serializable {
 
 
                                     start = cursor;
-                                    Class egressType = ((NewObjectNode) lastNode).getEgressType();
+                                    Class egressType = lastNode.getEgressType();
 
                                     if (egressType == null) {
                                         try {
@@ -358,8 +355,8 @@ public class AbstractParser implements Serializable {
                                 return lastNode = new StaticImportNode(subArray(start, cursor));
 
                             case FUNCTION:
-                                lastNode = (Function) captureCodeBlock(FUNCTION);
-                                capture = false;
+                                lastNode = captureCodeBlock(FUNCTION);
+                           //     capture = false;
                                 start = cursor + 1;
                                 return lastNode;
 
@@ -701,7 +698,7 @@ public class AbstractParser implements Serializable {
 
                                         if (idx == -1) {
                                             pCtx.addIndexedVariable(t = ian.getAssignmentVar());
-                                            ian.setRegister(idx = pCtx.variableIndexOf(t));
+                                            ian.setRegister(pCtx.variableIndexOf(t));
                                         }
                                         return lastNode = ian;
                                     }
@@ -1519,7 +1516,7 @@ public class AbstractParser implements Serializable {
     /**
      * Checking from the current cursor position, check to see if we're inside a contiguous identifier.
      *
-     * @return
+     * @return -
      */
     protected boolean tokenContinues() {
         if (cursor == length) return false;
@@ -1770,8 +1767,8 @@ public class AbstractParser implements Serializable {
      * From the specified cursor position, trim out any whitespace between the current position and beginning of the
      * first non-whitespace character.
      *
-     * @param pos
-     * @return
+     * @param pos -
+     * @return -
      */
     protected int trimRight(int pos) {
         while (pos != length && isWhitespace(expr[pos])) pos++;
