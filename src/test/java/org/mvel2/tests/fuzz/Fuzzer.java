@@ -16,7 +16,7 @@ public class Fuzzer {
 
     private static final int[] SALTS = {83, 301, 320, 102, 105, 993, 203, 102, 4904, 1202,
             102, 303, 83, 1, 5, 85, 19, 20, 193, 669, 344, 901,
-            930, 12, 1, 1, 89, 61, 8392, 2, 2038, 9, 7, 10};
+            930, 12, 1, 1, 89, 61, 8392, 2, 2038, 9, 7, 10, 484, 2301};
 
     private static final char[] CHAR_TABLE = {
             'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
@@ -29,7 +29,6 @@ public class Fuzzer {
     public static void main(String[] args) throws IOException {
         DecimalFormat df = new DecimalFormat("###,###.##");
         StringAppender append = new StringAppender();
-        //  char[] append;
         int len;
         long start = currentTimeMillis();
         long time;
@@ -50,12 +49,7 @@ public class Fuzzer {
             append.reset();
 
             for (int i = 0; i < len; i++) {
-                seed = (rand.nextInt(1000)) + 1;
-                seed = (SALTS[seed % SALTS.length]) * ((flip = !flip) ? rand1.nextInt(1000) : rand2.nextInt(1000)) + 1;
-
-                append.append(CHAR_TABLE[seed % CHAR_TABLE.length]);
-
-
+                append.append(CHAR_TABLE[((SALTS[ ((rand.nextInt(1000)) + 1) % SALTS.length]) * ((flip = !flip) ? rand1.nextInt(1000) : rand2.nextInt(1000)) + 1) % CHAR_TABLE.length]);
                 SALTS[rand3.nextInt(SALTS.length - 1)] ^= rand4.nextInt(1000) + 1;
             }
 
