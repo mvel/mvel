@@ -19,6 +19,7 @@
 package org.mvel2.integration.impl;
 
 import org.mvel2.CompileException;
+import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 
@@ -59,7 +60,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
             (vr = getVariableResolver(name)).setValue(value);
             return vr;
         }
-        catch (CompileException e) {
+        catch (UnresolveablePropertyException e) {
             (vr = new MapVariableResolver(variables, name, cachingSafe)).setValue(value);
             return vr;
         }
@@ -71,7 +72,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         try {
             vr = getVariableResolver(name);
         }
-        catch (CompileException e) {
+        catch (UnresolveablePropertyException e) {
             vr = null;
         }
 
@@ -96,7 +97,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         }
         else if (nextFactory != null) return nextFactory.getVariableResolver(name);
 
-        throw new CompileException("unable to resolve variable '" + name + "'");
+        throw new UnresolveablePropertyException("unable to resolve variable '" + name + "'");
     }
 
 

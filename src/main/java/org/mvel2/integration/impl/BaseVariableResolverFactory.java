@@ -19,6 +19,7 @@
 package org.mvel2.integration.impl;
 
 import org.mvel2.CompileException;
+import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 
@@ -55,7 +56,7 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
             }
         }
 
-        throw new CompileException("unable to resolve variable '" + name + "'");
+        throw new UnresolveablePropertyException("unable to resolve variable '" + name + "'");
     }
 
     public boolean isNextResolveable(String name) {
