@@ -592,7 +592,6 @@ public class AbstractParser implements Serializable {
                                 cursor = balancedCapture(expr, cursor, '{') + 1;
                                 continue;
 
-
                             case '~':
                                 if (lookAhead() == '=') {
                                     tmp = subArray(start, trimLeft(cursor));

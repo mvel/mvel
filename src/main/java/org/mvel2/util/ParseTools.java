@@ -1615,13 +1615,13 @@ public class ParseTools {
     }
 
     public static boolean isIdentifierPart(final int c) {
-        return ((c >= 97 && c <= 122)
-                || (c >= 65 && c <= 90) || (c >= 48 && c <= 57) || (c == '_') || (c == '$')
+        return ((c > 96 && c < 123)
+                || (c > 64 && c < 91) || (c > 47 && c < 58) || (c == '_') || (c == '$')
                 || Character.isJavaIdentifierPart(c));
     }
 
     public static boolean isDigit(final int c) {
-        return c >= '0' && c <= '9';
+        return c > ('0'-1) && c < ('9'+1);
     }
 
     public static float similarity(String s1, String s2) {
