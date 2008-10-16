@@ -138,7 +138,7 @@ public class CollectionParser {
                     continue;
 
                 case '(':
-                    cursor = balancedCapture(property, cursor, property[cursor]);
+                    cursor = balancedCapture(property, cursor, '(');
 
                     break;
 
