@@ -1215,7 +1215,7 @@ public class AbstractParser implements Serializable {
                         captureToNextTokenJunction();
                         skipWhitespace();
                         cond = expr[cursor] != '{' && expr[cursor] == 'i' && expr[++cursor] == 'f'
-                                && (isWhitespace(expr[++cursor]) || expr[cursor] == '(');
+                                && expr[cursor = incNextNonBlank()] == '(';
                     }
 
                     if (((IfNode) (tk = _captureBlock(tk, expr, cond, type))).getElseBlock() != null) {
@@ -1274,7 +1274,7 @@ public class AbstractParser implements Serializable {
                     || isNotValidNameorLabel(name))
                 throw new CompileException("illegal function name or use of reserved word", expr, cursor);
 
-            if (expr[cursor] == '(') {
+            if (expr[cursor=nextNonBlank()] == '(') {
                 /**
                  * If we discover an opening bracket after the function name, we check to see
                  * if this function accepts parameters.
@@ -1941,6 +1941,11 @@ public class AbstractParser implements Serializable {
             char n = expr[tmp];
             return isIdentifierPart(n) || isDigit(n) || n == '\'' || n == '"';
         }
+    }
+
+    public int incNextNonBlank() {
+        cursor++;
+        return nextNonBlank();
     }
 
     public int nextNonBlank() {
