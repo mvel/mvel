@@ -367,7 +367,6 @@ public class DebugTools {
         do {
             for (String var : vrf.getKnownVariables()) {
                 allVariableResolvers.put(var, vrf.getVariableResolver(var));
-
             }
         }
         while ((vrf = vrf.getNextFactory()) != null);

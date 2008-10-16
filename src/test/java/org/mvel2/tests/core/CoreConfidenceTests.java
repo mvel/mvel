@@ -4668,7 +4668,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         foo = new Foo();
 
-        executeSetExpression(s, foo, 13);
+        executeSetExpression(s, foo, 13);                           
 
         assertEquals("13", foo.getBar().getAssignTest());
 
@@ -4690,6 +4690,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("13", foo.getBar().getAssignTest());
     }
+
+
 
 //    public void testThreadTest() throws InterruptedException {
 //

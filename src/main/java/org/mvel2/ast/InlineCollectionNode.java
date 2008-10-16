@@ -18,7 +18,6 @@
  */
 package org.mvel2.ast;
 
-import org.mvel2.ast.cache.CachedListAccessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
@@ -65,20 +64,19 @@ public class InlineCollectionNode extends ASTNode {
             accessor = ao.optimizeCollection(collectionGraph, egressType, trailing, ctx, thisValue, factory);
             egressType = ao.getEgressType();
 
-            if (ao.isLiteralOnly()) {
-                if (egressType == List.class) {
-                    List v = (List) accessor.getValue(null, null, null);
-                    accessor = new CachedListAccessor(v);
-                    return v;
-                }
-            }
+//            if (ao.isLiteralOnly()) {
+//                if (egressType == List.class) {
+//                    List v = (List) accessor.getValue(null, null, null);
+//                    accessor = new CachedListAccessor(v);
+//                    return v;
+//                }
+//            }
             return accessor.getValue(ctx, thisValue, factory);
         }
 
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-
         parseGraph(false, egressType);
 
         return getAccessorCompiler(SAFE_REFLECTIVE)

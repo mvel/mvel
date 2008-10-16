@@ -216,15 +216,6 @@ public class AbstractOptimizer extends AbstractParser {
         return true;
     }
 
-    protected int containsStringLiteralTermination() {
-        int pos = cursor;
-        for (pos--; pos != 0; pos--) {
-            if (expr[pos] == '\'' || expr[pos] == '"') return pos;
-            else if (!isWhitespace(expr[pos])) return pos;
-        }
-        return -1;
-    }
-
     protected int findLastUnion() {
         int split = -1;
         int depth = 0;

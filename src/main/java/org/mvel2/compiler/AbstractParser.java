@@ -673,7 +673,6 @@ public class AbstractParser implements Serializable {
 
                                         if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
                                             lastNode.discard();
-
                                             captureToEOS();
                                             return new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
                                                     lastNode.getLiteralValue(), pCtx);
@@ -681,7 +680,6 @@ public class AbstractParser implements Serializable {
                                         // needed to work with MVELSH properly.
                                         else if ((fields & ASTNode.COMPILE_IMMEDIATE) == 0) {
                                             if (stk.peek() instanceof Class) {
-
                                                 captureToEOS();
                                                 return new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
                                                         stk.pop(), pCtx);
