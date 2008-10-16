@@ -387,11 +387,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         Member member = cls != null ? getFieldOrAccessor(cls, property) : null;
 
-        if (member instanceof Field) {
-            addAccessorNode(new FieldAccessor((Field) member));
-            return ((Field) member).get(ctx);
-        }
-        else if (member != null) {
+        if (member instanceof Method) {
             Object o;
 
             try {
@@ -408,6 +404,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 o = iFaceMeth.invoke(ctx, EMPTYARG);
             }
             return o;
+        }
+        else if (member != null) {
+            addAccessorNode(new FieldAccessor((Field) member));
+            return ((Field) member).get(ctx);
         }
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
             addAccessorNode(new MapAccessor(property));

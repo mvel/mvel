@@ -24,6 +24,8 @@ import static org.mvel2.MVEL.eval;
 import org.mvel2.ast.Function;
 import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.VariableResolverFactory;
+import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.*;
@@ -214,10 +216,7 @@ public class PropertyAccessor {
 
                 whiteSpaceSkip();
 
-                if (cursor == length)
-                    throw new PropertyAccessException("unterminated '['");
-
-                if (scanTo(']'))
+                if (cursor == length || scanTo(']'))
                     throw new PropertyAccessException("unterminated '['");
 
                 String ex = new String(property, start, cursor - start);
@@ -247,7 +246,21 @@ public class PropertyAccessor {
                 addWriteCache(curr.getClass(), tk.hashCode(), (member = getFieldOrWriteAccessor(curr.getClass(), tk)));
             }
 
-            if (member instanceof Field) {
+            if (member instanceof Method) {
+                Method meth = (Method) member;
+
+                if (value != null && !meth.getParameterTypes()[0].isAssignableFrom(value.getClass())) {
+                    if (!canConvert(meth.getParameterTypes()[0], value.getClass())) {
+                        throw new ConversionException("cannot convert type: "
+                                + value.getClass() + ": to " + meth.getParameterTypes()[0]);
+                    }
+                    meth.invoke(curr, convert(value, meth.getParameterTypes()[0]));
+                }
+                else {
+                    meth.invoke(curr, value);
+                }
+            }
+            else if (member != null) {
                 Field fld = (Field) member;
 
                 if (value != null && !fld.getType().isAssignableFrom(value.getClass())) {
@@ -260,20 +273,6 @@ public class PropertyAccessor {
                 }
                 else {
                     fld.set(curr, value);
-                }
-            }
-            else if (member != null) {
-                Method meth = (Method) member;
-
-                if (value != null && !meth.getParameterTypes()[0].isAssignableFrom(value.getClass())) {
-                    if (!canConvert(meth.getParameterTypes()[0], value.getClass())) {
-                        throw new ConversionException("cannot convert type: "
-                                + value.getClass() + ": to " + meth.getParameterTypes()[0]);
-                    }
-                    meth.invoke(curr, convert(value, meth.getParameterTypes()[0]));
-                }
-                else {
-                    meth.invoke(curr, value);
                 }
             }
             else if (curr instanceof Map) {
@@ -437,10 +436,7 @@ public class PropertyAccessor {
             addReadCache(cls, property.hashCode(), member = getFieldOrAccessor(cls, property));
         }
 
-        if (member instanceof Field) {
-            return ((Field) member).get(ctx);
-        }
-        else if (member != null) {
+        if (member instanceof Method) {
             try {
                 return ((Method) member).invoke(ctx, EMPTYARG);
             }
@@ -455,7 +451,9 @@ public class PropertyAccessor {
                     }
                 }
             }
-
+        }
+        else if (member != null) {
+            return ((Field) member).get(ctx);
         }
         else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
             return ((Map) ctx).get(property);
@@ -474,8 +472,8 @@ public class PropertyAccessor {
                 }
             }
         }
-        else if (PropertyHandlerFactory.hasPropertyHandler(cls)) {
-            return PropertyHandlerFactory.getPropertyHandler(cls).getProperty(property, ctx, variableFactory);
+        else if (hasPropertyHandler(cls)) {
+            return getPropertyHandler(cls).getProperty(property, ctx, variableFactory);
         }
 
         throw new PropertyAccessException("could not access property (" + property + ")");
@@ -517,7 +515,6 @@ public class PropertyAccessor {
             else {
                 // Execute interpretively.
                 MVEL.setProperty(ctx, aPvp.getParm(), MVEL.eval(aPvp.getValue(), ctx, variableFactory));
-
             }
         }
 
@@ -538,28 +535,21 @@ public class PropertyAccessor {
         }
 
         int start = ++cursor;
-
         whiteSpaceSkip();
 
-        if (cursor == length)
+        if (cursor == length || scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
-        Object item;
-
-        if (scanTo(']'))
-            throw new PropertyAccessException("unterminated '['");
-
-        // String ex = new String(property, start, cursor++ - start);
-        item = eval(new String(property, start, cursor++ - start), ctx, variableFactory);
+        prop = new String(property, start, cursor++ - start);
 
         if (ctx instanceof Map) {
-            return ((Map) ctx).get(item);
+            return ((Map) ctx).get(eval(prop, ctx, variableFactory));
         }
         else if (ctx instanceof List) {
-            return ((List) ctx).get((Integer) item);
+            return ((List) ctx).get((Integer) eval(prop, ctx, variableFactory));
         }
         else if (ctx instanceof Collection) {
-            int count = (Integer) item;
+            int count = (Integer) eval(prop, ctx, variableFactory);
             if (count > ((Collection) ctx).size())
                 throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
 
@@ -568,10 +558,10 @@ public class PropertyAccessor {
             return iter.next();
         }
         else if (ctx.getClass().isArray()) {
-            return Array.get(ctx, (Integer) item);
+            return Array.get(ctx, (Integer) eval(prop, ctx, variableFactory));
         }
         else if (ctx instanceof CharSequence) {
-            return ((CharSequence) ctx).charAt((Integer) item);
+            return ((CharSequence) ctx).charAt((Integer) eval(prop, ctx, variableFactory));
         }
         else {
             throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
