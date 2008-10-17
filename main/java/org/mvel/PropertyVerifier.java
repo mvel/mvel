@@ -19,11 +19,12 @@
 package org.mvel;
 
 import org.mvel.optimizers.AbstractOptimizer;
+import org.mvel.util.ParseTools;
 import static org.mvel.util.ParseTools.getBestCandidate;
 import static org.mvel.util.ParseTools.parseParameterList;
-import org.mvel.util.*;
-import static org.mvel.util.PropertyTools.getBaseComponentType;
+import org.mvel.util.PropertyTools;
 import static org.mvel.util.PropertyTools.getSubComponentType;
+import org.mvel.util.StringAppender;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -120,11 +121,19 @@ public class PropertyVerifier extends AbstractOptimizer {
 
             if (tryStaticMethodRef != null) {
                 if (tryStaticMethodRef instanceof Class) {
-                    return tryStaticMethodRef.getClass();
+                    return (Class) tryStaticMethodRef;
+                }
+                else if (tryStaticMethodRef instanceof Field) {
+                    try {
+                        return ((Field) tryStaticMethodRef).get(null).getClass();
+                    }
+                    catch (Exception e) {
+                        throw new CompileException("in verifier: ", e);
+                    }
                 }
                 else {
                     try {
-                        return ((Field) tryStaticMethodRef).get(null).getClass();
+                        return ((Method) tryStaticMethodRef).getReturnType();
                     }
                     catch (Exception e) {
                         throw new CompileException("in verifier: ", e);
@@ -148,24 +157,23 @@ public class PropertyVerifier extends AbstractOptimizer {
     }
 
     private Class getCollectionProperty(Class ctx, String property) {
-   //     if (first) {
-            if (parserContext.hasVarOrInput(property)) {
-                ctx = getSubComponentType(parserContext.getVarOrInputType(property));
-            }
-            else if (parserContext.hasImport(property)) {
-                resolvedExternally = false;
-                ctx = getSubComponentType(parserContext.getImport(property));
-            }
-            else {
-                ctx = Object.class;
-            }
-   //     }
+        //     if (first) {
+        if (parserContext.hasVarOrInput(property)) {
+            ctx = getSubComponentType(parserContext.getVarOrInputType(property));
+        }
+        else if (parserContext.hasImport(property)) {
+            resolvedExternally = false;
+            ctx = getSubComponentType(parserContext.getImport(property));
+        }
+        else {
+            ctx = Object.class;
+        }
+        //     }
 
-
-     //   int start = ++cursor;
+        //   int start = ++cursor;
 
         ++cursor;
-        
+
         whiteSpaceSkip();
 
         if (cursor == length)

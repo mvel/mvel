@@ -33,7 +33,6 @@ import java.nio.ByteBuffer;
 import static java.nio.ByteBuffer.allocateDirect;
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
-import static java.util.Collections.synchronizedMap;
 
 /**
  * The MVEL Template Interpreter.    All template expressions
@@ -141,12 +140,7 @@ public class TemplateInterpreter {
     private static boolean CACHE_DISABLE = false;
 
     static {
-        if (MVEL.THREAD_SAFE) {
-            EX_PRECACHE = synchronizedMap(new WeakHashMap<CharSequence, char[]>());
-            EX_NODE_CACHE = synchronizedMap(new WeakHashMap<Object, Node[]>());
-            EX_PRECOMP_CACHE = synchronizedMap(new WeakHashMap<Object, Serializable>());
-        }
-        else if (MVEL.WEAK_CACHE || MVEL.NO_JIT) {
+        if (MVEL.WEAK_CACHE || MVEL.NO_JIT) {
             EX_PRECACHE = (new WeakHashMap<CharSequence, char[]>());
             EX_NODE_CACHE = (new WeakHashMap<Object, Node[]>());
             EX_PRECOMP_CACHE = (new WeakHashMap<Object, Serializable>());

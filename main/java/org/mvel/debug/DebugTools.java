@@ -208,6 +208,10 @@ public class DebugTools {
             case Operator.CHOR:
                 return "or";
 
+            case Operator.TYPED_VAR:
+                return "var";
+
+
         }
 
         return "UNKNOWN_OPERATOR";
@@ -320,6 +324,9 @@ public class DebugTools {
                 return "STK_SWAP";
             case Operator.STK_XSWAP:
                 return "STK_XSWAP";
+
+            case Operator.TYPED_VAR:
+                return "TYPED_VAR";
         }
 
 

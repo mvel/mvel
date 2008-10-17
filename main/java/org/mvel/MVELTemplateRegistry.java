@@ -5,7 +5,6 @@ import org.mvel.util.StringAppender;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Collections;
-import static java.util.Collections.synchronizedMap;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -24,12 +23,8 @@ public class MVELTemplateRegistry implements TemplateRegistry {
 
     public void registerTemplate(String name, String template) {
         if (this.registry == Collections.EMPTY_MAP) {
-            if (MVEL.THREAD_SAFE) {
-                this.registry = synchronizedMap(new HashMap<String, String>());
-            }
-            else {
+
                 this.registry = new HashMap<String, String>();
-            }
 
         }
         this.registry.put(name, template);

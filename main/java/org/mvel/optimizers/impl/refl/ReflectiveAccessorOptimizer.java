@@ -31,8 +31,7 @@ import org.mvel.optimizers.impl.refl.collection.ListCreator;
 import org.mvel.optimizers.impl.refl.collection.MapCreator;
 import org.mvel.util.*;
 import static org.mvel.util.ParseTools.*;
-import static org.mvel.util.PropertyTools.getBaseComponentType;
-import static org.mvel.util.PropertyTools.getFieldOrWriteAccessor;
+import static org.mvel.util.PropertyTools.*;
 
 import static java.lang.Integer.parseInt;
 import java.lang.reflect.*;
@@ -333,7 +332,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         //noinspection unchecked
         Class<? extends Object> cls = (ctx instanceof Class ? ((Class<? extends Object>) ctx) : ctx != null ? ctx.getClass() : null);
-        Member member = cls != null ? PropertyTools.getFieldOrAccessor(cls, property) : null;
+        Member member = cls != null ? getFieldOrAccessor(cls, property) : null;
 
         if (member instanceof Field) {
             addAccessorNode(new FieldAccessor((Field) member));
@@ -374,11 +373,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     addAccessorNode(new StaticReferenceAccessor(tryStaticMethodRef));
                     return tryStaticMethodRef;
                 }
-                else {
+                else if (tryStaticMethodRef instanceof Field) {
                     addAccessorNode(new StaticVarAccessor((Field) tryStaticMethodRef));
                     return ((Field) tryStaticMethodRef).get(null);
                 }
-
+                else {
+                    addAccessorNode(new StaticReferenceAccessor(tryStaticMethodRef));
+                    return tryStaticMethodRef;
+                }
             }
             else if (ctx instanceof Class) {
                 Class c = (Class) ctx;
@@ -670,7 +672,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     public Accessor optimizeCollection(char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         CollectionParser parser = new CollectionParser();
-        ctx = ((List) parser.parseCollection(property)).get(0);
+        ctx = ((List) parser.parseCollection(property, false)).get(0);
 
         Accessor root = _getAccessor(ctx);
         int end = parser.getCursor() + 2;

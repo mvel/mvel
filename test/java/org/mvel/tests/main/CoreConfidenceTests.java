@@ -209,44 +209,44 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testMath18() {
         String ex = "a = 100; b = 50; c = 20; d = 30; e = 2; (a * b) * c / d * e";
-    //    System.out.println("Expression: " + ex);
+        //    System.out.println("Expression: " + ex);
         assertNumEquals((100d * 50d) * 20d / 30d * 2d, test(ex));
     }
 
     public void testMath19() {
         String ex = "a = 100; b = 500; c = 200; d = 150; e = 500; f = 800; g = 400; a-b*c*d + e*f-g";
-   //     System.out.println("Expression: " + ex);
+        //     System.out.println("Expression: " + ex);
         assertNumEquals(100 - 500 * 200 * 150 + 500 * 800 - 400, test(ex));
     }
 
     public void testMath20() {
         String ex = "10-5*7-3*8-6";
-     //   System.out.println("Expression: " + ex);
+        //   System.out.println("Expression: " + ex);
         assertNumEquals(10 - 5 * 7 - 3 * 8 - 6, test(ex));
     }
 
     public void testMath21() {
         String expression = "100-50*70-30*80-60";
-     //   System.out.println("Expression: " + expression);
+        //   System.out.println("Expression: " + expression);
         assertNumEquals(100 - 50 * 70 - 30 * 80 - 60, test(expression));
     }
 
     public void testMath22() {
         String expression = "(100-50)*70-30*(20-9)**3";
-      //  System.out.println("Expression: " + expression);
+        //  System.out.println("Expression: " + expression);
         assertNumEquals((int) ((100 - 50) * 70 - 30 * Math.pow(20 - 9, 3)), test(expression));
     }
 
     public void testMath22b() {
         String expression = "a = 100; b = 50; c = 70; d = 30; e = 20; f = 9; g = 3; (a-b)*c-d*(e-f)**g";
-  //      System.out.println("Expression: " + expression);
+        //      System.out.println("Expression: " + expression);
         assertNumEquals((int) ((100 - 50) * 70 - 30 * Math.pow(20 - 9, 3)), testCompiledSimple(expression, new HashMap()));
     }
 
 
     public void testMath23() {
         String expression = "10 ** (3)*10**3";
- //       System.out.println("Expression: " + expression);
+        //       System.out.println("Expression: " + expression);
         assertNumEquals((int) (Math.pow(10, 3) * Math.pow(10, 3)), test(expression));
     }
 
@@ -3414,7 +3414,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("bar", MVEL.eval(ex, map));
     }
 
-        public void testMapAssignmentNestedExpression2() {
+    public void testMapAssignmentNestedExpression2() {
         Map map = new HashMap();
         map.put("x", "bar");
         map.put("map", new HashMap());
@@ -3425,7 +3425,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("foo", MVEL.eval(ex, map));
     }
 
-        /**
+    /**
      * MVEL-103
      */
     public static class MvelContext {
@@ -3468,98 +3468,175 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testIfComment() throws Exception {
         // No quote?  OK!
         MVEL.compileExpression("if(1 == 1) {\n" +
-                                                "  // Quote & Double-quote seem to break this expression\n" +
-                                                "}");
+                "  // Quote & Double-quote seem to break this expression\n" +
+                "}");
     }
 
     public void testIfQuoteCommentBug() throws Exception {
         // Comments in an if seem to fail if they contain a '
         MVEL.compileExpression("if(1 == 1) {\n" +
-                                                  "  // ' seems to break this expression\n" +
-                                                  "}");
+                "  // ' seems to break this expression\n" +
+                "}");
     }
 
     public void testIfDblQuoteCommentBug() throws Exception {
         // Comments in a foreach seem to fail if they contain a '
         MVEL.compileExpression("if(1 == 1) {\n" +
-                                                           "  // ' seems to break this expression\n" +
-                                                           "}");
+                "  // ' seems to break this expression\n" +
+                "}");
     }
 
     public void testForEachQuoteCommentBug() throws Exception {
         // Comments in a foreach seem to fail if they contain a '
         MVEL.compileExpression("foreach ( item : 10 ) {\n" +
-                                                    "  // The ' character causes issues\n" +
-                                                    "}");
+                "  // The ' character causes issues\n" +
+                "}");
     }
 
     public void testForEachDblQuoteCommentBug() throws Exception {
         // Comments in a foreach seem to fail if they contain a '
         MVEL.compileExpression("foreach ( item : 10 ) {\n" +
-                                                            "  // The \" character causes issues\n" +
-                                                            "}");
+                "  // The \" character causes issues\n" +
+                "}");
     }
 
     public void testForEachCommentOK() throws Exception {
         // No quote?  OK!
         MVEL.compileExpression("foreach ( item : 10 ) {\n" +
-                                                    "  // The quote & double quote characters cause issues\n" +
-                                                    "}");
+                "  // The quote & double quote characters cause issues\n" +
+                "}");
     }
 
     public void testElseIfCommentBugPreCompiled() throws Exception {
         // Comments can't appear before else if() - compilation works, but evaluation fails
-        MVEL.executeExpression( (Object) MVEL.compileExpression("// This is never true\n" + 
-                                                       "if (1==0) {\n" +
-                                                          "  // Never reached\n" +
-                                                          "}\n" +
-                                                          "// This is always true...\n" +
-                                                          "else if (1==1) {" +
-                                                          "  System.out.println('Got here!');" +
-                                                          "}\n") );
+        MVEL.executeExpression((Object) MVEL.compileExpression("// This is never true\n" +
+                "if (1==0) {\n" +
+                "  // Never reached\n" +
+                "}\n" +
+                "// This is always true...\n" +
+                "else if (1==1) {" +
+                "  System.out.println('Got here!');" +
+                "}\n"));
     }
 
     public void testElseIfCommentBugEvaluated() throws Exception {
         // Comments can't appear before else if()
         MVEL.eval("// This is never true\n" +
-                                                       "if (1==0) {\n" +
-                                                          "  // Never reached\n" +
-                                                          "}\n" +
-                                                          "// This is always true...\n" +
-                                                          "else if (1==1) {" +
-                                                          "  System.out.println('Got here!');" +
-                                                          "}\n");
+                "if (1==0) {\n" +
+                "  // Never reached\n" +
+                "}\n" +
+                "// This is always true...\n" +
+                "else if (1==1) {" +
+                "  System.out.println('Got here!');" +
+                "}\n");
     }
 
 
     public void testRegExpOK() throws Exception {
         // This works OK intepreted
-        assertEquals( Boolean.TRUE, MVEL.eval("'Hello'.toUpperCase() ~= '[A-Z]{0,5}'"));
-        assertEquals( Boolean.TRUE, MVEL.eval("1 == 0 || ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')"));
+        assertEquals(Boolean.TRUE, MVEL.eval("'Hello'.toUpperCase() ~= '[A-Z]{0,5}'"));
+        assertEquals(Boolean.TRUE, MVEL.eval("1 == 0 || ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')"));
         // This works OK if toUpperCase() is avoided in pre-compiled
         Object ser = MVEL.compileExpression("'Hello' ~= '[a-zA-Z]{0,5}'");
-        assertEquals( Boolean.TRUE, MVEL.executeExpression(ser));
+        assertEquals(Boolean.TRUE, MVEL.executeExpression(ser));
     }
 
     public void testRegExpPreCompiledBug() throws Exception {
         // If toUpperCase() is used in the expression then this fails; returns null not
         // a boolean.
         Object ser = MVEL.compileExpression("'Hello'.toUpperCase() ~= '[a-zA-Z]{0,5}'");
-        assertEquals( Boolean.TRUE, MVEL.executeExpression(ser));
+        assertEquals(Boolean.TRUE, MVEL.executeExpression(ser));
     }
 
     public void testRegExpOrBug() throws Exception {
         // This fails during execution due to returning null, I think...
         Object ser = MVEL.compileExpression("1 == 0 || ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')");
-        assertEquals( Boolean.TRUE, MVEL.executeExpression(ser));
+        assertEquals(Boolean.TRUE, MVEL.executeExpression(ser));
     }
 
     public void testRegExpAndBug() throws Exception {
         // This also fails due to returning null, I think...
         Object ser = MVEL.compileExpression("1 == 1 && ('Hello'.toUpperCase() ~= '[A-Z]{0,5}')");
-        assertEquals( Boolean.TRUE, MVEL.executeExpression(ser) );
+        assertEquals(Boolean.TRUE, MVEL.executeExpression(ser));
     }
-    
+
+    public void testSetAccessorOverloadedEqualsStrictMode() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement(true);
+        ctx.addInput("foo", Foo.class);
+
+        try {
+            CompiledExpression expr = new ExpressionCompiler("foo.bar = 0").compile(ctx);
+        }
+        catch (CompileException e) {
+            // should fail.
+
+            e.printStackTrace();
+            return;
+        }
+
+        assertTrue(false);
+    }
+
+    public void testAnalysisCompile() {
+        CompiledExpression ce = new ExpressionCompiler("foo.aValue = 'bar'").compile();
+        assertTrue(ce.getParserContext().getInputs().keySet().contains("foo"));
+    }
+
+    public interface FooHolder {
+        public Foo getFoo();
+    }
+
+    public class FooHolderImpl {
+        private Foo foo = new Foo();
+
+        public Foo getFoo() {
+            return foo;
+        }
+    }
+
+    public class DerivedFooHolderImpl {
+        private Foo foo = new Foo();
+
+        public Foo getFoo() {
+            return foo;
+        }
+    }
+
+    public void testJIRA111() {
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        Serializable compiled = MVEL.compileExpression("foo.bar.name");
+
+        Object obj = executeExpression(compiled, new FooHolderImpl());
+        assertEquals("dog", obj);
+
+        obj = executeExpression(compiled, new DerivedFooHolderImpl());
+        assertEquals("dog", obj);
+    }
+
+    public static double minim(double[] tab) {
+        double min = Float.MAX_VALUE;
+        for (int i = 0; i < tab.length; i++) {
+            if (min > tab[i]) {
+                min = tab[i];
+            }
+        }
+        return min;
+    }
+
+    public void testJIRA113() {
+        assertEquals(true, test("org.mvel.tests.main.CoreConfidenceTests.minim( {456.2, 2.3} ) == 2.3"));
+    }
+
+    public void testJIRA115() {
+   //     OptimizerFactory.setDefaultOptimizer("ASM");
+        String exp = "results = new java.util.ArrayList(); foreach (element : elements) { if( {1,32769,32767} contains element ) { results.add(element) }  }; results";
+        Map map = new HashMap();
+        map.put("elements", new int[]{1, 32769, 32767});
+        ArrayList result = (ArrayList) MVEL.eval(exp, map);
+
+        assertEquals(3, result.size());
+    }
 
 }
 

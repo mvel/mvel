@@ -111,14 +111,13 @@ public class PropertyTools {
     public static Member getFieldOrAccessor(Class clazz, String property) {
         if (property.charAt(property.length() - 1) == ')') return getGetter(clazz, property);
 
-        try {
-            Field fld = clazz.getField(property);
+        for (Field f : clazz.getFields()) {
+            if (property.equals(f.getName())) {
+                if ((f.getModifiers() & PUBLIC) != 0) return f;
+                break;
+            }
+        }
 
-            if ((fld.getModifiers() & PUBLIC) != 0) return fld;
-        }
-        catch (Exception e) {
-            // do nothing.
-        }
         return getGetter(clazz, property);
     }
 
@@ -317,6 +316,26 @@ public class PropertyTools {
         for (int i = 0; i < c.length; i++) if (c[i] == find) return i;
         return -1;
     }
+
+    public static String createStringTrimmed(char[] s) {
+        int start = 0, end = s.length;
+        while (start != end && s[start] <= '\u0020') start++;
+        while (end != start && s[end - 1] <= '\u0020') end--;
+
+        return new String(s, start, end - start);
+    }
+
+    public static String createStringTrimmed(char[] s, int start, int length) {
+        int end = start + length;
+        while (start != end && s[start] <= '\u0020') {
+            start++;
+        }
+        while (end != start && s[end - 1] <= '\u0020') {
+            end--;
+        }
+        return new String(s, start, end - start);
+    }
+
 
     public static boolean equals(char[] obj1, String obj2) {
         for (int i = 0; i < obj1.length && i < obj2.length(); i++) {

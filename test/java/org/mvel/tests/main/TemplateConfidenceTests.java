@@ -97,7 +97,7 @@ public class TemplateConfidenceTests extends TestCase {
     }
 
     public void testMath() {
-        assertEquals(188.4f, parse("@{pi * hour}"));
+        assertEquals(188.4d, parse("@{pi * hour}"));
     }
 
     public void testTemplating() {

@@ -33,7 +33,6 @@ import static java.lang.Character.isWhitespace;
 import java.lang.reflect.*;
 import static java.lang.reflect.Array.getLength;
 import java.util.*;
-import static java.util.Collections.synchronizedMap;
 
 public class PropertyAccessor {
     private int start = 0;
@@ -66,18 +65,10 @@ public class PropertyAccessor {
     }
 
     static void configureFactory() {
-        if (MVEL.THREAD_SAFE) {
-            READ_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
-            WRITE_PROPERTY_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Member>>(10));
-            METHOD_RESOLVER_CACHE = synchronizedMap(new WeakHashMap<Class, Map<Integer, Object[]>>(10));
-        }
-        else {
-            READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
-            WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
-            METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Object[]>>(10));
-        }
+        READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
+        WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Member>>(10));
+        METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, Map<Integer, Object[]>>(10));
     }
-
     public PropertyAccessor(char[] property, Object ctx) {
         this.property = property;
         this.length = property.length;

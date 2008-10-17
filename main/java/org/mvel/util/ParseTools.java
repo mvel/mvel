@@ -837,7 +837,7 @@ public class ParseTools {
             }
         }
 
-        return null;
+        return method;
     }
 
     public static Object doOperations(Object val1, int operation, Object val2) {

@@ -5,6 +5,7 @@ import static org.mvel.util.PropertyTools.isIdentifierPart;
 
 import static java.lang.Character.isWhitespace;
 import static java.lang.Thread.currentThread;
+import java.lang.reflect.Method;
 
 /**
  * @author Christopher Brock
@@ -16,7 +17,7 @@ public class AbstractOptimizer extends AbstractParser {
 
     protected int start = 0;
 
-    protected Object tryStaticAccess() {
+      protected Object tryStaticAccess() {
         int begin = cursor;
         try {
             /**
@@ -30,34 +31,58 @@ public class AbstractOptimizer extends AbstractParser {
              *
              */
             boolean meth = false;
-            int depth = 0;
+            //  int depth = 0;
             int last = length;
             for (int i = length - 1; i > 0; i--) {
                 switch (expr[i]) {
                     case '.':
                         if (!meth) {
                             try {
-                                cursor = last;
-                                return currentThread().getContextClassLoader().loadClass(new String(expr, 0, last));
+                                return currentThread().getContextClassLoader().loadClass(new String(expr, 0, cursor = last));
                             }
                             catch (ClassNotFoundException e) {
-                                // return a field instead
-
-                                return currentThread().getContextClassLoader().loadClass(new String(expr, 0, i))
-                                        .getField(new String(expr, i + 1, expr.length - i - 1));
+                                Class cls = currentThread().getContextClassLoader().loadClass(new String(expr, 0, i));
+                                String name = new String(expr, i + 1, expr.length - i - 1);
+                                try {
+                                    return cls.getField(name);
+                                }
+                                catch (NoSuchFieldException nfe) {
+                                    for (Method m : cls.getMethods()) {
+                                        if (name.equals(m.getName())) return m;
+                                    }
+                                    return null;
+                                }
                             }
                         }
 
                         meth = false;
                         last = i;
                         break;
+
                     case ')':
-                        if (depth++ == 0)
-                            meth = true;
+                        i--;
+
+                        for (int d = 1; i > 0 && d != 0; i--) {
+                            switch (expr[i]) {
+                                case ')':
+                                    d++;
+                                    break;
+                                case '(':
+                                    d--;
+                                    break;
+                                case '"':
+                                case '\'':
+                                    char s = expr[i];
+                                    while (i > 0 && (expr[i] != s && expr[i - 1] != '\\')) i--;
+                            }
+                        }
+
+                        meth = true;
+
+                        last = i++;
+
                         break;
-                    case '(':
-                        depth--;
-                        break;
+
 
                     case '\'':
                         while (--i > 0) {
