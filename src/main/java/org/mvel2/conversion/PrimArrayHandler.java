@@ -23,9 +23,13 @@ import org.mvel2.ConversionHandler;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import org.mvel2.util.ParseTools;
+import static org.mvel2.util.ParseTools.getBaseComponentType;
 
 import static java.lang.reflect.Array.newInstance;
 import static java.lang.reflect.Array.set;
+import static java.lang.reflect.Array.getLength;
+import static java.lang.reflect.Array.get;
+import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,30 +39,15 @@ public class PrimArrayHandler implements ConversionHandler {
     private final Class primitiveType;
 
     public PrimArrayHandler(Class type) {
-        this.primitiveType = type;
-
-        CNV.put(Object[].class, new Converter() {
-            public Object convert(Object o) {
-                return handleLooseTypeConversion(o.getClass(), (Object[]) o, primitiveType);
-            }
-        });
-
-        CNV.put(String[].class, new Converter() {
-            public Object convert(Object o) {
-                return handleLooseTypeConversion(o.getClass(), (String[]) o, primitiveType);
-            }
-        });
+        this.primitiveType = getBaseComponentType(type);
     }
 
     public Object convertFrom(Object in) {
-        if (!CNV.containsKey(in.getClass())) throw new ConversionException("cannot convert type: "
-                + in.getClass().getName() + " to: " + primitiveType.getName());
-
-        return CNV.get(in.getClass()).convert(in);
+        return handleLooseTypeConversion(in.getClass(), in, primitiveType);
     }
 
     public boolean canConvertFrom(Class cls) {
-        return CNV.containsKey(cls);
+        return cls.isArray();
     }
 
 
@@ -71,20 +60,20 @@ public class PrimArrayHandler implements ConversionHandler {
      * @param targetType
      * @return
      */
-    private static Object handleLooseTypeConversion(Class sourceType, Object[] input, Class targetType) {
-        Class targType = ParseTools.getBaseComponentType(targetType);
+    private static Object handleLooseTypeConversion(Class sourceType, Object input, Class targetType) {
+        Class targType = getBaseComponentType(targetType);
 
-        Object target = newInstance(targType, input.length);
+        int len = getLength(input);
+        Object target = newInstance(targType, len);
 
-        if (input.length > 0
-                && canConvert(targetType.getComponentType(), ParseTools.getBaseComponentType(sourceType))) {
-            for (int i = 0; i < input.length; i++) {
-                set(target, i, convert(input[i], targType));
+        if (len > 0 && canConvert(targetType, getBaseComponentType(sourceType))) {
+            for (int i = 0; i < len; i++) {
+                set(target, i, convert(get(input,i), targType));
             }
         }
         else {
             throw new ConversionException("cannot convert to type: "
-                    + targetType.getComponentType().getName() + "[] from " + ParseTools.getBaseComponentType(sourceType).getName());
+                    + targetType.getComponentType().getName() + "[] from " + getBaseComponentType(sourceType).getName());
         }
 
         return target;

@@ -4521,7 +4521,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testJIRA113() {
-        assertEquals(true, test("org.mvel2.tests.core.CoreConfidenceTests.minim( {456.2, 2.3} ) == 2.3"));
+        assertEquals(true, test("org.mvel2.tests.core.CoreConfidenceTests.minim( new double[] {456.2, 2.3} ) == 2.3"));
     }
 
     public void testSetCoercion() {
