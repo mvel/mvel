@@ -1756,7 +1756,7 @@ public class AbstractParser implements Serializable {
      * @return new position.
      */
     protected int trimLeft(int pos) {
-        while (pos != 0 && pos != start && isWhitespace(expr[pos - 1])) pos--;
+        while (pos != 0 && pos > start && isWhitespace(expr[pos - 1])) pos--;
         return pos;
     }
 
