@@ -283,13 +283,13 @@ public class AbstractParser implements Serializable {
                                     cursor = balancedCapture(expr, cursor, expr[cursor]) + 1;
                                     if (tokenContinues()) {
                                         lastNode = new InlineCollectionNode(expr, start, start = cursor, fields,
-                                                egressType);
+                                                egressType, pCtx);
                                         captureToEOT();
                                         return lastNode = new Union(expr, start + 1, cursor, fields, lastNode);
                                     }
                                     else {
                                         return lastNode = new InlineCollectionNode(expr, start, cursor, fields,
-                                                egressType);
+                                                egressType, pCtx);
                                     }
                                 }
                                 else if (((NewObjectNode) lastNode).getTypeDescr().isUndimensionedArray()) {
@@ -1042,13 +1042,13 @@ public class AbstractParser implements Serializable {
                         case '{':
                             cursor = balancedCapture(expr, cursor, expr[cursor]) + 1;
                             if (tokenContinues()) {
-                                lastNode = new InlineCollectionNode(expr, start, start = cursor, fields);
+                                lastNode = new InlineCollectionNode(expr, start, start = cursor, fields, pCtx);
                                 captureToEOT();
                                 if (expr[start] == '.') start++;
                                 return lastNode = new Union(expr, start, cursor, fields, lastNode);
                             }
                             else {
-                                return lastNode = new InlineCollectionNode(expr, start, cursor, fields);
+                                return lastNode = new InlineCollectionNode(expr, start, cursor, fields, pCtx);
                             }
 
                         default:

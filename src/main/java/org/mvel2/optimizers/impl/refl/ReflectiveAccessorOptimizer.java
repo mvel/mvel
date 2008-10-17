@@ -755,7 +755,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         else {
             if (returnType == null) returnType = Object.class;
             if (type.isArray()) {
-                return new ExprValueAccessor((String) o, type);
+                return new ExprValueAccessor((String) o, type, pCtx != null && pCtx.isStrongTyping());
             }
             else {
                 return new ExprValueAccessor((String) o);

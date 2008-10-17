@@ -49,6 +49,7 @@ public class CollectionParser {
     public static final int MAP = 2;
 
     private Class colType;
+    private boolean strongType;
 
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
@@ -59,8 +60,9 @@ public class CollectionParser {
         this.type = type;
     }
 
-    public Object parseCollection(char[] property, boolean subcompile) {
+    public Object parseCollection(char[] property, boolean subcompile, boolean strongType) {
         this.cursor = 0;
+        this.strongType = strongType;
         if ((this.length = (this.property = property).length) > 0)
             while (length > 0 && isWhitespace(property[length - 1]))
                 length--;
@@ -68,9 +70,10 @@ public class CollectionParser {
         return parseCollection(subcompile);
     }
 
-    public Object parseCollection(char[] property, boolean subcompile, Class colType) {
+    public Object parseCollection(char[] property, boolean subcompile, Class colType, boolean strongType) {
         if (colType != null) this.colType = getBaseComponentType(colType);
         this.cursor = 0;
+        this.strongType = strongType;
         if ((this.length = (this.property = property).length) > 0)
             while (length > 0 && isWhitespace(property[length - 1]))
                 length--;
@@ -121,7 +124,7 @@ public class CollectionParser {
                      * Sub-parse nested collections.
                      */
                     Object o = new CollectionParser(newType).parseCollection(subset(property, (start = cursor) + 1,
-                            cursor = balancedCapture(property, start, property[start])), subcompile, colType);
+                            cursor = balancedCapture(property, start, property[start])), subcompile, colType, strongType);
 
                     if (type == MAP) {
                         map.put(curr, o);
@@ -199,7 +202,7 @@ public class CollectionParser {
                 list.add(ex = createStringTrimmed(property, start, cursor - start));
             }
 
-            if (subcompile) subCompileExpression(ex.toCharArray());
+            if (subcompile) subCompile(ex);
         }
 
         switch (type) {
@@ -218,7 +221,7 @@ public class CollectionParser {
         }
         else {
             Class r = ((ExecutableStatement) subCompileExpression(ex.toCharArray())).getKnownEgressType();
-            if (!colType.isAssignableFrom(r) && !DataConversion.canConvert(r, colType)) {
+            if (!colType.isAssignableFrom(r) && (strongType || !DataConversion.canConvert(r, colType))) {
                 throw new CompileException("expected type: " + colType.getName() + "; but found:" + r.getName());
             }
         }

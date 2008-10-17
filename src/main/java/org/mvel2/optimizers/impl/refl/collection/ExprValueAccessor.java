@@ -19,6 +19,7 @@
 package org.mvel2.optimizers.impl.refl.collection;
 
 import org.mvel2.CompileException;
+import org.mvel2.ParserContext;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import org.mvel2.compiler.Accessor;
@@ -38,14 +39,14 @@ public class ExprValueAccessor implements Accessor {
         stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex.toCharArray());
     }
 
-    public ExprValueAccessor(String ex, Class expectedType) {
+    public ExprValueAccessor(String ex, Class expectedType, boolean strongType) {
         stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex.toCharArray());
 
         //if (expectedType.isArray()) {
         Class tt = getSubComponentType(expectedType);
         Class et = stmt.getKnownEgressType();
         if (stmt.getKnownEgressType() != null && !tt.isAssignableFrom(et)) {
-            if ((stmt instanceof ExecutableLiteral) && canConvert(et, tt)) {
+            if (!strongType && (stmt instanceof ExecutableLiteral) && canConvert(et, tt)) {
                 try {
                     stmt = new ExecutableLiteral(convert(stmt.getValue(null, null), tt));
                     return;

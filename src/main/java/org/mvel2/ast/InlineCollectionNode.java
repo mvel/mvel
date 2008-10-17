@@ -25,6 +25,7 @@ import static org.mvel2.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
 import static org.mvel2.optimizers.OptimizerFactory.getAccessorCompiler;
 import org.mvel2.util.CollectionParser;
 import static org.mvel2.util.ParseTools.subset;
+import org.mvel2.ParserContext;
 
 import java.util.List;
 
@@ -35,21 +36,21 @@ public class InlineCollectionNode extends ASTNode {
     private Object collectionGraph;
     private char[] trailing;
 
-    public InlineCollectionNode(char[] expr, int start, int end, int fields) {
+    public InlineCollectionNode(char[] expr, int start, int end, int fields, ParserContext pctx) {
         super(expr, start, end, fields | INLINE_COLLECTION);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            parseGraph(true, null);
+            parseGraph(true, null, pctx.isStrongTyping());
         }
     }
 
-    public InlineCollectionNode(char[] expr, int start, int end, int fields, Class type) {
+    public InlineCollectionNode(char[] expr, int start, int end, int fields, Class type, ParserContext pctx) {
         super(expr, start, end, fields | INLINE_COLLECTION);
 
         this.egressType = type;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            parseGraph(true, type);
+            parseGraph(true, type, pctx.isStrongTyping());
         }
     }
 
@@ -59,7 +60,7 @@ public class InlineCollectionNode extends ASTNode {
         }
         else {
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-            if (collectionGraph == null) parseGraph(true, null);
+            if (collectionGraph == null) parseGraph(true, null, false);
 
             accessor = ao.optimizeCollection(collectionGraph, egressType, trailing, ctx, thisValue, factory);
             egressType = ao.getEgressType();
@@ -77,20 +78,20 @@ public class InlineCollectionNode extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        parseGraph(false, egressType);
+        parseGraph(false, egressType, false);
 
         return getAccessorCompiler(SAFE_REFLECTIVE)
                 .optimizeCollection(collectionGraph, egressType, trailing, ctx, thisValue, factory).getValue(ctx, thisValue, factory);
     }
 
-    private void parseGraph(boolean compile, Class type) {
+    private void parseGraph(boolean compile, Class type, boolean strongType) {
         CollectionParser parser = new CollectionParser();
 
         if (type == null) {
-            collectionGraph = ((List) parser.parseCollection(name, compile)).get(0);
+            collectionGraph = ((List) parser.parseCollection(name, compile, strongType)).get(0);
         }
         else {
-            collectionGraph = ((List) parser.parseCollection(name, compile, type)).get(0);
+            collectionGraph = ((List) parser.parseCollection(name, compile, type, strongType)).get(0);
         }
 
         if (parser.getCursor() + 2 < name.length)

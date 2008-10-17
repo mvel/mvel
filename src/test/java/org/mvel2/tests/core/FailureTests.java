@@ -1,6 +1,7 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 
 import java.util.HashMap;
 
@@ -71,7 +72,9 @@ public class FailureTests extends AbstractTest {
 
     public void testShouldFail6() {
         try {
-            MVEL.eval("new int[] {1.5}");
+            ParserContext pctx = new ParserContext();
+            pctx.setStrongTyping(true);
+            MVEL.compileExpression("new int[] {1.5}", pctx);
         }
         catch (Exception e) {
             return;
