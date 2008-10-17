@@ -11,9 +11,9 @@ import java.util.HashMap;
 public class FailureTests extends AbstractTest {
     public void testBadParserConstruct() {
         try {
-            test("a = 0; a =+++ 5;");
+            MVEL.eval("a = 0; a =+++ 5;");
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
            return;
         }
 
