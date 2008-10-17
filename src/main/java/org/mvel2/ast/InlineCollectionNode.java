@@ -65,13 +65,6 @@ public class InlineCollectionNode extends ASTNode {
             accessor = ao.optimizeCollection(collectionGraph, egressType, trailing, ctx, thisValue, factory);
             egressType = ao.getEgressType();
 
-//            if (ao.isLiteralOnly()) {
-//                if (egressType == List.class) {
-//                    List v = (List) accessor.getValue(null, null, null);
-//                    accessor = new CachedListAccessor(v);
-//                    return v;
-//                }
-//            }
             return accessor.getValue(ctx, thisValue, factory);
         }
 

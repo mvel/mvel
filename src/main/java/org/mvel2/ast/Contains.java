@@ -2,6 +2,7 @@ package org.mvel2.ast;
 
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ParseTools;
+import static org.mvel2.util.ParseTools.containsCheck;
 
 public class Contains extends ASTNode {
     private ASTNode stmt;
@@ -13,7 +14,7 @@ public class Contains extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return ParseTools.containsCheck(stmt.getReducedValueAccelerated(ctx, thisValue, factory), stmt2.getReducedValueAccelerated(ctx, thisValue, factory));
+        return containsCheck(stmt.getReducedValueAccelerated(ctx, thisValue, factory), stmt2.getReducedValueAccelerated(ctx, thisValue, factory));
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {

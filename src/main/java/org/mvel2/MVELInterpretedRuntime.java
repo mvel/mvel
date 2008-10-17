@@ -28,6 +28,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.util.ExecutionStack;
 import static org.mvel2.util.ParseTools.findClassImportResolverFactory;
+import org.mvel2.optimizers.OptimizerFactory;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -53,11 +54,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
             parseAndExecuteInterpreted();
 
             if (parserContext != null) contextControl(REMOVE, null, null);
-
-//            if (parserContext != null
-//                    && (parserContext.get() == null || parserContext.get().getRootParser() == this)) {
-//                contextControl(REMOVE, null, null);
-//            }
 
             return stk.pop();
         }

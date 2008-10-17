@@ -86,7 +86,6 @@ public class OptimizerFactory {
         if (threadOptimizer.get() == null) {
             threadOptimizer.set(getDefaultAccessorCompiler().getClass());
         }
-
         try {
             return threadOptimizer.get().newInstance();
         }

@@ -4668,7 +4668,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         foo = new Foo();
 
-        executeSetExpression(s, foo, 13);                           
+        executeSetExpression(s, foo, 13);
 
         assertEquals("13", foo.getBar().getAssignTest());
 
@@ -4691,7 +4691,15 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("13", foo.getBar().getAssignTest());
     }
 
+    public void testJIRA115() {
+  //      OptimizerFactory.setDefaultOptimizer("ASM");
+        String exp = "results = new java.util.ArrayList(); foreach (element : elements) { if( {1,32769,32767} contains element ) { results.add(element);  } }; results";
+        Map map = new HashMap();
+        map.put("elements",new int[]{1, 32769, 32767} );
+        ArrayList result = (ArrayList) MVEL.eval(exp, map );
 
+        assertEquals(3, result.size());
+    }
 
 //    public void testThreadTest() throws InterruptedException {
 //

@@ -15,7 +15,7 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
     private AccessorOptimizer firstStage = getAccessorCompiler(SAFE_REFLECTIVE);
 
     public static DynamicClassLoader classLoader;
-    public static int tenuringThreshold = 10;
+    public static int tenuringThreshold = 50;
     public static long timeSpan = 100;
     public static int maximumTenure = 1500;
     public static int totalRecycled = 0;

@@ -35,6 +35,7 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
             if (++runcount > DynamicOptimizer.tenuringThreshold) {
                 if ((currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
                     opt = true;
+
                     return optimize(ctx, elCtx, variableFactory);
                 }
                 else {
@@ -60,7 +61,6 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
 
         _accessor = OptimizerFactory.getAccessorCompiler("ASM").optimizeCollection(rootObject, colType, property, ctx, elCtx, variableResolverFactory);
         return _accessor.getValue(ctx, elCtx, variableResolverFactory);
-
     }
 
 

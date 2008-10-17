@@ -40,6 +40,7 @@ import static java.lang.System.arraycopy;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import static java.lang.Character.isDigit;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -1739,7 +1740,7 @@ public class ParseTools {
     public static void checkNameSafety(String name) {
         if (isReservedWord(name)) {
             throw new CompileException("illegal use of reserved word: " + name);
-        } else if (Character.isDigit(name.charAt(0))) {
+        } else if (isDigit(name.charAt(0))) {
             throw new CompileException("not an identifier");
         }
     }
@@ -1752,10 +1753,6 @@ public class ParseTools {
         return clazz == Integer.class || clazz == Boolean.class || clazz == Long.class || clazz == Double.class
                 || clazz == Float.class || clazz == Short.class || clazz == Byte.class || clazz == Character.class;
     }
-
-//    public static Serializable subCompileExpression(String expression) {
-//        return optimizeTree(new ExpressionCompiler(expression)._compile());
-//    }
 
     public static Serializable subCompileExpression(char[] expression) {
         return optimizeTree(new ExpressionCompiler(expression)._compile());

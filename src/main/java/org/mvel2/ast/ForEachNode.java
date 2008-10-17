@@ -29,6 +29,7 @@ import static org.mvel2.util.ParseTools.subCompileExpression;
 import static org.mvel2.util.ParseTools.subset;
 
 import java.util.Collection;
+import java.lang.reflect.Array;
 
 /**
  * @author Christopher Brock
@@ -101,8 +102,9 @@ public class ForEachNode extends BlockNode {
                 }
                 break;
             case ARRAY:
-                for (Object o : (Object[]) iterCond) {
-                    itemR.setValue(o);
+                int len = Array.getLength(iterCond);
+                for (int i = 0; i < len; i++) {
+                    itemR.setValue(Array.get(iterCond, i));
                     compiledBlock.getValue(ctx, thisValue, itemFactory);
                 }
                 break;
@@ -147,9 +149,10 @@ public class ForEachNode extends BlockNode {
                 compiledBlock.getValue(ctx, thisValue, itemFactory);
             }
         }
-        else if (iterCond instanceof Object[]) {
-            for (Object o : (Object[]) iterCond) {
-                itemR.setValue(o);
+        else if (iterCond != null && iterCond.getClass().isArray()) {
+            int len = Array.getLength(iterCond);
+            for (int i = 0; i < len; i++) {
+                itemR.setValue(Array.get(iterCond, i));
                 compiledBlock.getValue(ctx, thisValue, itemFactory);
             }
         }

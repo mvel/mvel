@@ -35,16 +35,16 @@ public class ArrayCreator implements Accessor {
         if (Object.class.equals(arrayType)) {
             Object[] newArray = new Object[template.length];
 
-            for (int i = 0; i < newArray.length; i++)
+            for (int i = 0; i < newArray.length; i++) {
                 newArray[i] = template[i].getValue(ctx, elCtx, variableFactory);
+            }
 
             return newArray;
         }
         else {
             Object newArray = newInstance(arrayType, template.length);
             for (int i = 0; i < template.length; i++) {
-                Object o = template[i].getValue(ctx, elCtx, variableFactory);
-                Array.set(newArray, i, o);
+                Array.set(newArray, i, template[i].getValue(ctx, elCtx, variableFactory));
             }
 
             return newArray;
@@ -54,7 +54,6 @@ public class ArrayCreator implements Accessor {
     public ArrayCreator(Accessor[] template, Class arrayType) {
         this.template = template;
         this.arrayType = arrayType;
-
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
