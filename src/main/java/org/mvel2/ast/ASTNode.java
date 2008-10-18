@@ -67,7 +67,6 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int BLOCK_FOR = 1 << 23;
 
 
-
     public static final int NOJIT = 1 << 25;
     public static final int DEOP = 1 << 26;
 
@@ -272,7 +271,8 @@ public class ASTNode implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     protected void setName(char[] name) {
-         if (isNumber(name)) {
+
+        if (isNumber(name)) {
             egressType = (literal = handleNumericConversion(name)).getClass();
             if (((fields |= NUMERIC | LITERAL | IDENTIFIER) & INVERT) != 0) {
                 try {
@@ -285,20 +285,33 @@ public class ASTNode implements Cloneable, Serializable {
             return;
         }
 
-        this.literal = new String(this.name = name);
-       
+        this.literal = new String(name);
+
         if ((fields & INLINE_COLLECTION) != 0) {
             return;
         }
-        else if ((firstUnion = findFirst('.', name)) > 0) {
+
+        for (int i = 0; i < name.length; i++) {
+            switch (name[i]) {
+                case '.':
+                    if (firstUnion == 0) {
+                        firstUnion = i;
+                    }
+                    break;
+                case '[':
+                    if (endOfName == 0) {
+                        endOfName = i;
+                    }
+            }
+        }
+
+
+        if (firstUnion > 0) {
             fields |= DEEP_PROPERTY | IDENTIFIER;
         }
         else {
             fields |= IDENTIFIER;
         }
-
-
-        if ((endOfName = findFirst('[', name)) > 0) fields |= COLLECTION;
     }
 
     public Accessor setAccessor(Accessor accessor) {
@@ -387,17 +400,17 @@ public class ASTNode implements Cloneable, Serializable {
     public ASTNode(char[] expr, int start, int end, int fields) {
         this.fields = fields;
 
-        char[] name = new char[end - (this.cursorPosition = start)];
-        for (int i = 0; i < name.length; i++)
+        name = new char[end - (this.cursorPosition = start)];
+        for (int i = 0; i < name.length; i++) {
             name[i] = expr[i + start];
+        }
 
         setName(name);
+
+        //   endOfName = findFirst('[', name);
+
     }
 
-    public ASTNode(char[] expr, int fields) {
-        this.fields = fields;
-        this.name = expr;
-    }
 
     public String toString() {
         return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" : String.valueOf(literal);

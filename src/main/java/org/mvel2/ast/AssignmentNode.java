@@ -44,8 +44,8 @@ public class AssignmentNode extends ASTNode implements Assignment {
     private boolean col = false;
 
     public AssignmentNode(char[] expr, int fields, int operation, String name, ParserContext pCtx) {
-        super(expr, fields);
-
+        //super(expr, fields);
+        this.name = expr;
         int assignStart;
 
         if (operation != -1) {
