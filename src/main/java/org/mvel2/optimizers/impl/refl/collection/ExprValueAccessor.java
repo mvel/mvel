@@ -39,16 +39,16 @@ public class ExprValueAccessor implements Accessor {
         stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex.toCharArray());
     }
 
-    public ExprValueAccessor(String ex, Class expectedType, boolean strongType) {
+    public ExprValueAccessor(String ex, Class expectedType, boolean strongType, Object ctx, VariableResolverFactory factory) {
         stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex.toCharArray());
 
         //if (expectedType.isArray()) {
         Class tt = getSubComponentType(expectedType);
         Class et = stmt.getKnownEgressType();
         if (stmt.getKnownEgressType() != null && !tt.isAssignableFrom(et)) {
-            if (!strongType && (stmt instanceof ExecutableLiteral) && canConvert(et, tt)) {
+            if (!strongType || (stmt instanceof ExecutableLiteral) && canConvert(et, tt)) {
                 try {
-                    stmt = new ExecutableLiteral(convert(stmt.getValue(null, null), tt));
+                    stmt = new ExecutableLiteral(convert(stmt.getValue(ctx, factory), tt));
                     return;
                 }
                 catch (IllegalArgumentException e) {

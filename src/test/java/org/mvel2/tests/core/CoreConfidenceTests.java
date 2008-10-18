@@ -4701,6 +4701,14 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(3, result.size());
     }
 
+    public void testStaticTyping2() {
+        String exp = "int x = 5; int y = 2; new int[] { x, y }";
+        Integer[] res = (Integer[]) MVEL.eval(exp, new HashMap());
+
+        assertEquals(5, res[0].intValue());
+        assertEquals(2, res[1].intValue());
+    }
+
 //    public void testThreadTest() throws InterruptedException {
 //
 //        for (int x = 0; x < 10000; x++) {
