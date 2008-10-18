@@ -86,7 +86,7 @@ public class AbstractParser implements Serializable {
     protected VariableResolverFactory variableFactory;
 
     static {
- 
+
         /**
          * Setup the basic literals
          */
@@ -356,7 +356,7 @@ public class AbstractParser implements Serializable {
 
                             case FUNCTION:
                                 lastNode = captureCodeBlock(FUNCTION);
-                           //     capture = false;
+                                //     capture = false;
                                 start = cursor + 1;
                                 return lastNode;
 
@@ -1151,10 +1151,7 @@ public class AbstractParser implements Serializable {
             }
         }
 
-        if ((fields & ASTNode.METHOD) != 0) {
-            return lastNode = new ASTNode(expr, start, end, fields);
-        }
-        else if (LITERALS.containsKey(tmp = new String(expr, start, end - start))) {
+        if (LITERALS.containsKey(tmp = new String(expr, start, end - start))) {
             return lastNode = new LiteralNode(LITERALS.get(tmp));
         }
         else if (OPERATORS.containsKey(tmp)) {
@@ -1271,7 +1268,7 @@ public class AbstractParser implements Serializable {
                     || isNotValidNameorLabel(name))
                 throw new CompileException("illegal function name or use of reserved word", expr, cursor);
 
-            if (expr[cursor=nextNonBlank()] == '(') {
+            if (expr[cursor = nextNonBlank()] == '(') {
                 /**
                  * If we discover an opening bracket after the function name, we check to see
                  * if this function accepts parameters.

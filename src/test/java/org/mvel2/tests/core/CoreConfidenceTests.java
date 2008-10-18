@@ -4707,8 +4707,11 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(5, res[0].intValue());
         assertEquals(2, res[1].intValue());
+    }
 
-
+    public void testFunctions5() {
+        String exp = "def foo(a,b) { a + b }; foo(1.5,5.25)";
+        System.out.println(MVEL.eval(exp, new HashMap()));
     }
 
 //    public void testThreadTest() throws InterruptedException {

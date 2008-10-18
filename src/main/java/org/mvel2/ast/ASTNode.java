@@ -22,10 +22,7 @@ package org.mvel2.ast;
 import org.mvel2.CompileException;
 import static org.mvel2.Operator.NOOP;
 import org.mvel2.OptimizationFailure;
-import org.mvel2.PropertyAccessException;
 import static org.mvel2.PropertyAccessor.get;
-import org.mvel2.UnresolveablePropertyException;
-import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import org.mvel2.compiler.AbstractParser;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
@@ -41,7 +38,6 @@ import org.mvel2.util.ThisLiteral;
 
 import java.io.Serializable;
 import static java.lang.Thread.currentThread;
-import java.lang.reflect.Method;
 
 @SuppressWarnings({"ManualArrayCopy", "CaughtExceptionImmediatelyRethrown"})
 public class ASTNode implements Cloneable, Serializable {
@@ -160,123 +156,12 @@ public class ASTNode implements Cloneable, Serializable {
 
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        String s;
         if ((fields & (LITERAL)) != 0) {
             return literal;
         }
-
-        if ((fields & DEEP_PROPERTY) != 0) {
-            /**
-             * The token is a DEEP PROPERTY (meaning it contains unions) in which case we need to traverse an object
-             * graph.
-             */
-            if (LITERALS.containsKey(s = getAbsoluteRootElement())) {
-                /**
-                 * The root of the DEEP PROPERTY is a literal.
-                 */
-                return get(getAbsoluteRemainder(), LITERALS.get(s), factory, thisValue);
-            }
-            else if (factory != null && factory.isResolveable(s)) {
-                /**
-                 * The root of the DEEP PROPERTY is a local or global var.
-                 */
-                return get(name, ctx, factory, thisValue);
-            }
-            else if (ctx != null) {
-                /**
-                 * We didn't resolve the root, yet, so we assume that if we have a VROOT then the property must be
-                 * accessible as a field of the VROOT.
-                 */
-
-                try {
-                    return get(name, ctx, factory, thisValue);
-                }
-                catch (PropertyAccessException e) {
-                    /**
-                     * No luck. Make a last-ditch effort to resolve this as a static-class reference.
-                     */
-                    if ((literal = tryStaticAccess(ctx, factory)) == null) throw e;
-
-                    /**
-                     * Since this clearly is a class literal, we change the nature of theis node to
-                     * make it a literal to prevent re-evaluation.
-                     */
-                    fields |= LITERAL;
-                    return literal;
-                }
-            }
-        }
         else {
-            if (factory != null && factory.isResolveable(s = getAbsoluteName())) {
-                /**
-                 * The token is a local or global var.
-                 */
-
-                if (isCollection()) {
-                    return get(new String(name, endOfName, name.length - endOfName),
-                            factory.getVariableResolver(s).getValue(), factory, thisValue);
-                }
-
-                return factory.getVariableResolver(s).getValue();
-            }
-            else if (ctx != null) {
-                /**
-                 * Check to see if the var exists in the VROOT.
-                 */
-                try {
-                    return get(name, ctx, factory, thisValue);
-                }
-                catch (RuntimeException e) {
-                    // fall through
-                }
-            }
-
-            if (isOperator()) {
-                throw new CompileException("incomplete statement: " + new String(name));
-            }
-            else {
-                TypeDescriptor td = new TypeDescriptor(name, 0);
-                if (td.isArray()) {
-                    try {
-                        fields |= LITERAL;
-                        return literal = getClassReference(getCurrentThreadParserContext(), td);
-                    }
-                    catch (Exception e) {
-                        // fall through
-                    }
-                }
-                else if (factory != null && factory.isResolveable(td.getClassName())) {
-                    Object o = factory.getVariableResolver(td.getClassName()).getValue();
-
-                    if (o instanceof Method) {
-                        Method m = (Method) o;
-                        return get(m.getName() + new String(name, td.getEndRange(), name.length - td.getEndRange()),
-                                m.getDeclaringClass(), factory, thisValue);
-                    }
-                    else if (o instanceof Function) {
-                        Function f = (Function) o;
-                        return get(f.getName() + new String(name, td.getEndRange(), name.length - td.getEndRange()),
-                                null, factory, thisValue);
-                    }
-                    else {
-                        throw new CompileException("call to non-callable object: " + o.getClass().getName());
-                    }
-                }
-
-            }
-
-            throw new CompileException("cannot resolve identifier: " + new String(name));
+            return get(name, ctx, factory, thisValue);
         }
-
-
-        if ((literal = tryStaticAccess(ctx, factory)) == null) {
-            throw new UnresolveablePropertyException(this);
-        }
-        else {
-            fields |= LITERAL;
-        }
-
-        return literal;
     }
 
     protected String getAbsoluteRootElement() {
@@ -420,17 +305,7 @@ public class ASTNode implements Cloneable, Serializable {
             return;
         }
         else if ((firstUnion = findFirst('.', name)) > 0) {
-            if ((fields & METHOD) != 0) {
-                if (firstUnion < findFirst('(', name)) {
-                    fields |= DEEP_PROPERTY | IDENTIFIER;
-                }
-                else {
-                    fields |= IDENTIFIER;
-                }
-            }
-            else {
-                fields |= DEEP_PROPERTY | IDENTIFIER;
-            }
+            fields |= DEEP_PROPERTY | IDENTIFIER;
         }
         else {
             fields |= IDENTIFIER;

@@ -22,10 +22,13 @@ import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import org.mvel2.ast.Function;
-import org.mvel2.integration.PropertyHandlerFactory;
-import org.mvel2.integration.VariableResolverFactory;
-import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
+import org.mvel2.ast.TypeDescriptor;
+import static org.mvel2.ast.TypeDescriptor.getClassReference;
+import org.mvel2.compiler.AbstractParser;
+import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
+import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.*;
@@ -34,6 +37,7 @@ import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import org.mvel2.util.StringAppender;
 
 import static java.lang.Character.isJavaIdentifierPart;
+import static java.lang.Thread.currentThread;
 import java.lang.reflect.*;
 import static java.lang.reflect.Array.getLength;
 import java.util.*;
@@ -424,57 +428,74 @@ public class PropertyAccessor {
             if ("this".equals(property)) {
                 return this.ctx;
             }
+            else if (AbstractParser.LITERALS.containsKey(property)) {
+                return AbstractParser.LITERALS.get(property);
+            }
             else if (variableFactory != null && variableFactory.isResolveable(property)) {
                 return variableFactory.getVariableResolver(property).getValue();
             }
         }
 
-        Class cls;
-        Member member = checkReadCache(cls = (ctx instanceof Class ? ((Class) ctx) : ctx.getClass()), property.hashCode());
+        if (ctx != null) {
+            Class cls;
+            Member member = checkReadCache(cls = (ctx instanceof Class ? ((Class) ctx) : ctx.getClass()), property.hashCode());
 
-        if (member == null) {
-            addReadCache(cls, property.hashCode(), member = getFieldOrAccessor(cls, property));
-        }
-
-        if (member instanceof Method) {
-            try {
-                return ((Method) member).invoke(ctx, EMPTYARG);
+            if (member == null) {
+                addReadCache(cls, property.hashCode(), member = getFieldOrAccessor(cls, property));
             }
-            catch (IllegalAccessException e) {
-                synchronized (member) {
-                    try {
-                        ((Method) member).setAccessible(true);
-                        return ((Method) member).invoke(ctx, EMPTYARG);
-                    }
-                    finally {
-                        ((Method) member).setAccessible(false);
+
+            if (member instanceof Method) {
+                try {
+                    return ((Method) member).invoke(ctx, EMPTYARG);
+                }
+                catch (IllegalAccessException e) {
+                    synchronized (member) {
+                        try {
+                            ((Method) member).setAccessible(true);
+                            return ((Method) member).invoke(ctx, EMPTYARG);
+                        }
+                        finally {
+                            ((Method) member).setAccessible(false);
+                        }
                     }
                 }
             }
-        }
-        else if (member != null) {
-            return ((Field) member).get(ctx);
-        }
-        else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
-            return ((Map) ctx).get(property);
-        }
-        else if ("length".equals(property) && ctx.getClass().isArray()) {
-            return getLength(ctx);
-        }
-        else if (ctx instanceof Class) {
-            Class c = (Class) ctx;
-            for (Method m : c.getMethods()) {
-                if (property.equals(m.getName())) {
-                    if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
-                        return m.invoke(ctx, EMPTY_OBJ_ARR);
+            else if (member != null) {
+                return ((Field) member).get(ctx);
+            }
+            else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
+                return ((Map) ctx).get(property);
+            }
+            else if ("length".equals(property) && ctx.getClass().isArray()) {
+                return getLength(ctx);
+            }
+            else if (ctx instanceof Class) {
+                Class c = (Class) ctx;
+                for (Method m : c.getMethods()) {
+                    if (property.equals(m.getName())) {
+                        if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+                            return m.invoke(ctx, EMPTY_OBJ_ARR);
+                        }
+                        return m;
                     }
-                    return m;
                 }
             }
+            else if (hasPropertyHandler(cls)) {
+                return getPropertyHandler(cls).getProperty(property, ctx, variableFactory);
+            }
         }
-        else if (hasPropertyHandler(cls)) {
-            return getPropertyHandler(cls).getProperty(property, ctx, variableFactory);
+
+
+        Object tryStatic = tryStaticAccess();
+
+        if (tryStatic != null) {
+            if (tryStatic instanceof Class || tryStatic instanceof Method) return tryStatic;
+            else {
+                return ((Field) tryStatic).get(null);
+            }
         }
+        //       System.out.println(tryStatic);
+
 
         throw new PropertyAccessException("could not access property (" + property + ")");
     }
@@ -564,7 +585,13 @@ public class PropertyAccessor {
             return ((CharSequence) ctx).charAt((Integer) eval(prop, ctx, variableFactory));
         }
         else {
-            throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+            TypeDescriptor td = new TypeDescriptor(property, 0);
+            try {
+                return getClassReference(getCurrentThreadParserContext(), td);
+            }
+            catch (Exception e) {
+                throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+            }
         }
     }
 
@@ -708,5 +735,104 @@ public class PropertyAccessor {
 
     public int getCursorPosition() {
         return cursor;
+    }
+
+
+    /**
+     * Try static access of the property, and return an instance of the Field, Method of Class if successful.
+     *
+     * @return - Field, Method or Class instance.
+     */
+    protected Object tryStaticAccess() {
+        int begin = cursor;
+        try {
+            /**
+             * Try to resolve this *smartly* as a static class reference.
+             *
+             * This starts at the end of the token and starts to step backwards to figure out whether
+             * or not this may be a static class reference.  We search for method calls simply by
+             * inspecting for ()'s.  The first union area we come to where no brackets are present is our
+             * test-point for a class reference.  If we find a class, we pass the reference to the
+             * property accessor along  with trailing methods (if any).
+             *
+             */
+            boolean meth = false;
+            //  int depth = 0;
+            int last = length;
+            for (int i = length - 1; i > 0; i--) {
+                switch (property[i]) {
+                    case '.':
+                        if (!meth) {
+                            try {
+                                //   return Class.forName(new String(expr, 0, cursor = last));
+                                return currentThread().getContextClassLoader().loadClass(new String(property, 0, cursor = last));
+                            }
+                            catch (ClassNotFoundException e) {
+                                Class cls = currentThread().getContextClassLoader().loadClass(new String(property, 0, i));
+                                String name = new String(property, i + 1, property.length - i - 1);
+                                try {
+                                    return cls.getField(name);
+                                }
+                                catch (NoSuchFieldException nfe) {
+                                    for (Method m : cls.getMethods()) {
+                                        if (name.equals(m.getName())) return m;
+                                    }
+                                    return null;
+                                }
+                            }
+                        }
+
+                        meth = false;
+                        last = i;
+                        break;
+
+                    case ')':
+                        i--;
+
+                        for (int d = 1; i > 0 && d != 0; i--) {
+                            switch (property[i]) {
+                                case ')':
+                                    d++;
+                                    break;
+                                case '(':
+                                    d--;
+                                    break;
+                                case '"':
+                                case '\'':
+                                    char s = property[i];
+                                    while (i > 0 && (property[i] != s && property[i - 1] != '\\')) i--;
+                            }
+                        }
+
+                        meth = true;
+
+                        last = i++;
+
+                        break;
+
+
+                    case '\'':
+                        while (--i > 0) {
+                            if (property[i] == '\'' && property[i - 1] != '\\') {
+                                break;
+                            }
+                        }
+                        break;
+
+                    case '"':
+                        while (--i > 0) {
+                            if (property[i] == '"' && property[i - 1] != '\\') {
+                                break;
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+        catch (Exception cnfe) {
+            cursor = begin;
+        }
+
+        return null;
     }
 }
