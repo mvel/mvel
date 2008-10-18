@@ -272,7 +272,6 @@ public class ASTNode implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     protected void setName(char[] name) {
-        this.literal = new String(this.name = name);
          if (isNumber(name)) {
             egressType = (literal = handleNumericConversion(name)).getClass();
             if (((fields |= NUMERIC | LITERAL | IDENTIFIER) & INVERT) != 0) {
@@ -285,7 +284,10 @@ public class ASTNode implements Cloneable, Serializable {
             }
             return;
         }
-        else if ((fields & INLINE_COLLECTION) != 0) {
+
+        this.literal = new String(this.name = name);
+       
+        if ((fields & INLINE_COLLECTION) != 0) {
             return;
         }
         else if ((firstUnion = findFirst('.', name)) > 0) {
@@ -294,6 +296,7 @@ public class ASTNode implements Cloneable, Serializable {
         else {
             fields |= IDENTIFIER;
         }
+
 
         if ((endOfName = findFirst('[', name)) > 0) fields |= COLLECTION;
     }
