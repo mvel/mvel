@@ -455,6 +455,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
             }
             else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) return getMethod(ctx, property);
+
             throw new PropertyAccessException(property);
         }
     }
@@ -755,7 +756,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         else {
             if (returnType == null) returnType = Object.class;
             if (type.isArray()) {
-                return new ExprValueAccessor((String) o, type, pCtx != null && pCtx.isStrongTyping());
+                return new ExprValueAccessor((String) o, type, pCtx != null && pCtx.isStrongTyping(), ctx, variableFactory);
             }
             else {
                 return new ExprValueAccessor((String) o);
@@ -767,6 +768,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     public Accessor optimizeCollection(Object o, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         this.returnType = type;
+        this.ctx = ctx;
+        this.variableFactory = factory;
+        
         Accessor root = _getAccessor(o, returnType);
 
         if (property != null && property.length > 0) {

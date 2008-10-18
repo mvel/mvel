@@ -2364,10 +2364,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     break;
             }
         }
-//        else if (index > Integer.MAX_VALUE) {
-//            assert debug("BIPUSH " + index);
-//            mv.visitIntInsn(BIPUSH, index);
-//        }
+        else if (index > -127 && index < 128) {
+            assert debug("BIPUSH " + index);
+            mv.visitIntInsn(BIPUSH, index);
+        }
         else if (index > Short.MAX_VALUE) {
             assert debug("LDC " + index);
             mv.visitLdcInsn(index);

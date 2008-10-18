@@ -14,7 +14,7 @@ public class FailureTests extends AbstractTest {
             MVEL.eval("a = 0; a =+++ 5;");
         }
         catch (RuntimeException e) {
-           return;
+            return;
         }
 
         assertTrue(false);
@@ -80,5 +80,19 @@ public class FailureTests extends AbstractTest {
             return;
         }
         assertTrue(false);
+    }
+
+    public void testShouldFail7() {
+        try {
+            ParserContext pctx = new ParserContext();
+            pctx.setStrongTyping(true);
+            MVEL.compileExpression("String x = 'foo'; int y = 2; new int[] { x, y }", pctx);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+        assertTrue(false);
+
     }
 }
