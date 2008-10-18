@@ -4707,6 +4707,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(5, res[0].intValue());
         assertEquals(2, res[1].intValue());
+
+
     }
 
 //    public void testThreadTest() throws InterruptedException {
