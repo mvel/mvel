@@ -25,11 +25,11 @@ public class PropertyAccessException extends CompileException {
     }
 
     public PropertyAccessException(String message) {
-        super("unable to resolve property: " + message);
+        super( message);
     }
 
     public PropertyAccessException(String message, Throwable cause) {
-        super("unable to resolve property: " + message, cause);
+        super( message, cause);
     }
 
     public PropertyAccessException(Throwable cause) {

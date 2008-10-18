@@ -23,7 +23,6 @@ import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessor;
-import org.mvel2.compiler.AbstractParser;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.ExecutableStatement;
@@ -68,7 +67,8 @@ public class NewObjectNode extends ASTNode {
                 rewriteClassReferenceToFQCN(fields);
                 if (typeDescr.isArray()) {
                     try {
-                        egressType = findClass(null, repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";");
+                        egressType = findClass(null,
+                                repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";");
                     }
                     catch (Exception e) {
                         e.printStackTrace();
@@ -125,7 +125,8 @@ public class NewObjectNode extends ASTNode {
 
                         if (typeDescr.isArray()) {
                             try {
-                                egressType = findClass(factory, repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";");
+                                egressType = findClass(factory,
+                                        repeatChar('[', typeDescr.getArrayLength()) + "L" + egressType.getName() + ";");
                             }
                             catch (Exception e) {
                                 // for now, don't handle this.
@@ -145,7 +146,7 @@ public class NewObjectNode extends ASTNode {
             }
 
             AccessorOptimizer optimizer = getThreadAccessorOptimizer();
-            newObjectOptimizer = optimizer.optimizeObjectCreation(AbstractParser.getCurrentThreadParserContext(), name, ctx, thisValue, factory);
+            newObjectOptimizer = optimizer.optimizeObjectCreation(getCurrentThreadParserContext(), name, ctx, thisValue, factory);
 
             /**
              * Check to see if the optimizer actually produced the object during optimization.  If so,
