@@ -1774,11 +1774,11 @@ public class ParseTools {
             ASTNode tk = compiled.getInstructions().firstNode();
 
             if (tk.isLiteral() && !tk.isThisVal()) {
-                if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
-                    return new ExecutableLiteral(tk.getIntRegister());
-                } else {
+//                if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
+//                    return new ExecutableLiteral(tk.getIntRegister());
+//                } else {
                     return new ExecutableLiteral(tk.getLiteralValue());
-                }
+//                }
             }
             return tk.canSerializeAccessor() ? new ExecutableAccessorSafe(tk, false, compiled.getKnownEgressType()) :
                     new ExecutableAccessor(tk, compiled.getKnownEgressType());

@@ -23,10 +23,8 @@ import org.mvel2.CompileException;
 import static org.mvel2.Operator.NOOP;
 import org.mvel2.OptimizationFailure;
 import static org.mvel2.PropertyAccessor.get;
-import org.mvel2.compiler.AbstractParser;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-import static org.mvel2.compiler.AbstractParser.OPERATORS;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.integration.VariableResolverFactory;
@@ -34,8 +32,7 @@ import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizationNotSupported;
 import static org.mvel2.optimizers.OptimizerFactory.*;
 import static org.mvel2.util.ArrayTools.findFirst;
-import org.mvel2.util.ParseTools;
-import org.mvel2.util.ThisLiteral;
+import static org.mvel2.util.ParseTools.handleNumericConversion;
 import static org.mvel2.util.ParseTools.isNumber;
 
 import java.io.Serializable;
@@ -69,7 +66,7 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int BLOCK_DO_UNTIL = 1 << 22;
     public static final int BLOCK_FOR = 1 << 23;
 
-    public static final int INTEGER32 = 1 << 24;
+
 
     public static final int NOJIT = 1 << 25;
     public static final int DEOP = 1 << 26;
@@ -95,7 +92,6 @@ public class ASTNode implements Cloneable, Serializable {
     // that it's safe to remove this node.
     protected boolean discard;
 
-    protected int intRegister;
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (accessor != null) {
@@ -276,18 +272,9 @@ public class ASTNode implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     protected void setName(char[] name) {
-        if (LITERALS.containsKey(this.literal = new String(this.name = name))) {
-            fields |= LITERAL | IDENTIFIER;
-            if ("this".equals(literal)) fields |= THISREF;
-            else if (literal != null) egressType = literal.getClass();
-        }
-//        else if (OPERATORS.containsKey(literal)) {
-//            fields |= OPERATOR;
-//            egressType = (literal = OPERATORS.get(literal)).getClass();
-//            return;
-//        }
-        else if (isNumber(name)) {
-            egressType = (literal = ParseTools.handleNumericConversion(name)).getClass();
+        this.literal = new String(this.name = name);
+         if (isNumber(name)) {
+            egressType = (literal = handleNumericConversion(name)).getClass();
             if (((fields |= NUMERIC | LITERAL | IDENTIFIER) & INVERT) != 0) {
                 try {
                     literal = ~((Integer) literal);
@@ -295,11 +282,6 @@ public class ASTNode implements Cloneable, Serializable {
                 catch (ClassCastException e) {
                     throw new CompileException("bitwise (~) operator can only be applied to integers");
                 }
-            }
-
-            if (literal instanceof Integer) {
-                intRegister = (Integer) literal;
-                fields |= INTEGER32;
             }
             return;
         }
@@ -382,14 +364,6 @@ public class ASTNode implements Cloneable, Serializable {
 
     public boolean isDebuggingSymbol() {
         return this.fields == -1;
-    }
-
-    public int getIntRegister() {
-        return intRegister;
-    }
-
-    public void setIntRegister(int intRegister) {
-        this.intRegister = intRegister;
     }
 
     public int getFields() {

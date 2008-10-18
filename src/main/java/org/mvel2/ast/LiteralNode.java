@@ -30,17 +30,17 @@ public class LiteralNode extends ASTNode {
     }
 
     public LiteralNode(Object literal) {
-        this.fields |= LITERAL;
-        if (literal instanceof Integer) {
-            this.fields |= INTEGER32;
-            this.intRegister = ((Integer) (this.literal = literal));
-            this.egressType = Integer.class;
-        }
-        else {
+   //     this.fields |= LITERAL;
+//        if (literal instanceof Integer) {
+//            this.fields |= INTEGER32;
+//            this.intRegister = ((Integer) (this.literal = literal));
+//            this.egressType = Integer.class;
+//        }
+//        else {
             if ((this.literal = literal) != null) {
                 this.egressType = literal.getClass();
             }
-        }
+//        }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
