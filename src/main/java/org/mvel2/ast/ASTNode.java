@@ -26,6 +26,7 @@ import static org.mvel2.PropertyAccessor.get;
 import org.mvel2.compiler.AbstractParser;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+import static org.mvel2.compiler.AbstractParser.OPERATORS;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.integration.VariableResolverFactory;
@@ -35,6 +36,7 @@ import static org.mvel2.optimizers.OptimizerFactory.*;
 import static org.mvel2.util.ArrayTools.findFirst;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.ThisLiteral;
+import static org.mvel2.util.ParseTools.isNumber;
 
 import java.io.Serializable;
 import static java.lang.Thread.currentThread;
@@ -276,15 +278,15 @@ public class ASTNode implements Cloneable, Serializable {
     protected void setName(char[] name) {
         if (LITERALS.containsKey(this.literal = new String(this.name = name))) {
             fields |= LITERAL | IDENTIFIER;
-            if ((literal = LITERALS.get(literal)) == ThisLiteral.class) fields |= THISREF;
-            if (literal != null) egressType = literal.getClass();
+            if ("this".equals(literal)) fields |= THISREF;
+            else if (literal != null) egressType = literal.getClass();
         }
-        else if (AbstractParser.OPERATORS.containsKey(literal)) {
-            fields |= OPERATOR;
-            egressType = (literal = AbstractParser.OPERATORS.get(literal)).getClass();
-            return;
-        }
-        else if (ParseTools.isNumber(name)) {
+//        else if (OPERATORS.containsKey(literal)) {
+//            fields |= OPERATOR;
+//            egressType = (literal = OPERATORS.get(literal)).getClass();
+//            return;
+//        }
+        else if (isNumber(name)) {
             egressType = (literal = ParseTools.handleNumericConversion(name)).getClass();
             if (((fields |= NUMERIC | LITERAL | IDENTIFIER) & INVERT) != 0) {
                 try {

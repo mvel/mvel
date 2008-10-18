@@ -26,6 +26,7 @@ import org.mvel2.ast.TypeDescriptor;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import org.mvel2.compiler.AbstractParser;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
 import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;
@@ -428,8 +429,8 @@ public class PropertyAccessor {
             if ("this".equals(property)) {
                 return this.ctx;
             }
-            else if (AbstractParser.LITERALS.containsKey(property)) {
-                return AbstractParser.LITERALS.get(property);
+            else if (LITERALS.containsKey(property)) {
+                return LITERALS.get(property);
             }
             else if (variableFactory != null && variableFactory.isResolveable(property)) {
                 return variableFactory.getVariableResolver(property).getValue();
@@ -494,8 +495,6 @@ public class PropertyAccessor {
                 return ((Field) tryStatic).get(null);
             }
         }
-        //       System.out.println(tryStatic);
-
 
         throw new PropertyAccessException("could not access property (" + property + ")");
     }
