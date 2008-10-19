@@ -23,7 +23,6 @@ import org.mvel2.CompileException;
 import static org.mvel2.Operator.NOOP;
 import org.mvel2.OptimizationFailure;
 import static org.mvel2.PropertyAccessor.get;
-import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.debug.DebugTools;
@@ -31,7 +30,6 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizationNotSupported;
 import static org.mvel2.optimizers.OptimizerFactory.*;
-import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ParseTools.handleNumericConversion;
 import static org.mvel2.util.ParseTools.isNumber;
 
@@ -118,7 +116,6 @@ public class ASTNode implements Cloneable, Serializable {
 
             AccessorOptimizer optimizer;
             Object retVal = null;
-
 
             if ((fields & NOJIT) != 0) {
                 optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
@@ -208,8 +205,12 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public String getName() {
-        if (nameCache != null) return nameCache;
-        else if (name != null) return nameCache = new String(name);
+        if (nameCache != null) {
+            return nameCache;
+        }
+        else if (name != null) {
+            return nameCache = new String(name);
+        }
         return "";
     }
 
@@ -271,7 +272,6 @@ public class ASTNode implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     protected void setName(char[] name) {
-
         if (isNumber(name)) {
             egressType = (literal = handleNumericConversion(name)).getClass();
             if (((fields |= NUMERIC | LITERAL | IDENTIFIER) & INVERT) != 0) {
@@ -301,6 +301,7 @@ public class ASTNode implements Cloneable, Serializable {
                 case '[':
                     if (endOfName == 0) {
                         endOfName = i;
+                        i = name.length;
                     }
             }
         }
@@ -406,9 +407,6 @@ public class ASTNode implements Cloneable, Serializable {
         }
 
         setName(name);
-
-        //   endOfName = findFirst('[', name);
-
     }
 
 

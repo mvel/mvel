@@ -23,6 +23,7 @@ import org.mvel2.ConversionException;
 import static org.mvel2.DataConversion.convert;
 import org.mvel2.DataTypes;
 import static org.mvel2.DataTypes.EMPTY;
+import static org.mvel2.DataTypes.BIG_DECIMAL;
 import static org.mvel2.Operator.*;
 import static org.mvel2.Soundex.soundex;
 import org.mvel2.Unit;
@@ -31,6 +32,7 @@ import org.mvel2.util.InternalNumber;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.narrowType;
 import static org.mvel2.util.ParseTools.resolveType;
+import static org.mvel2.util.ParseTools.isNumber;
 
 import static java.lang.String.valueOf;
 import java.math.BigDecimal;
@@ -44,27 +46,46 @@ public strictfp class IEEEFloatingPointMath implements MathProcessor {
     private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
 
     public Object doOperation(final Object val1, final int operation, final Object val2) {
-        final int type1 = val1 == null ? DataTypes.NULL : resolveType(val1.getClass());
-        final int type2 = val2 == null ? DataTypes.NULL : resolveType(val2.getClass());
+        int type1 = val1 == null ? DataTypes.NULL : resolveType(val1.getClass());
+        int type2 = val2 == null ? DataTypes.NULL : resolveType(val2.getClass());
 
-        if (type1 == DataTypes.BIG_DECIMAL) {
-            if (type2 == DataTypes.BIG_DECIMAL) {
-                return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false);
-            }
-            else if (type2 > 99) {
-                return doBigDecimalArithmetic((BigDecimal) val1, operation, getInternalNumberFromType(val2, type2), false);
-            }
-            else {
+        switch (type1) {
+            case BIG_DECIMAL:
+                switch (type2) {
+                    case BIG_DECIMAL:
+                        return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false);
+                    default:
+                        if (type2 > 99) {
+                            return doBigDecimalArithmetic((BigDecimal) val1, operation, getInternalNumberFromType(val2, type2), false);
+                        }
+                        else {
+                            return _doOperations(type1, val1, operation, type2, val2);
+                        }
+                }
+            default:
                 return _doOperations(type1, val1, operation, type2, val2);
-            }
+
         }
-        else if (type2 == DataTypes.BIG_DECIMAL && (type1 > 99 ||
-                (type1 == DataTypes.STRING && ParseTools.isNumber(val1)))) {
-            return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1), operation, (BigDecimal) val2, true);
-        }
-        else {
-            return _doOperations(type1, val1, operation, type2, val2);
-        }
+
+
+//        if (type1 == DataTypes.BIG_DECIMAL) {
+//            if (type2 == DataTypes.BIG_DECIMAL) {
+//                return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false);
+//            }
+//            else if (type2 > 99) {
+//                return doBigDecimalArithmetic((BigDecimal) val1, operation, getInternalNumberFromType(val2, type2), false);
+//            }
+//            else {
+//                return _doOperations(type1, val1, operation, type2, val2);
+//            }
+//        }
+//        if (type2 == DataTypes.BIG_DECIMAL && (type1 > 99 ||
+//                (type1 == DataTypes.STRING && ParseTools.isNumber(val1)))) {
+//            return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1), operation, (BigDecimal) val2, true);
+//        }
+//        else {
+       //     return _doOperations(type1, val1, operation, type2, val2);
+//        }
     }
 
     private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2, boolean iNumber) {
@@ -131,14 +152,16 @@ public strictfp class IEEEFloatingPointMath implements MathProcessor {
         return null;
     }
 
-    private static Object _doOperations(final int type1, final Object val1, final int operation, final int type2, final Object val2) {
+    private static Object _doOperations(int type1, Object val1, int operation, int type2, Object val2) {
         if (operation < 20) {
             if (type1 > 99 && type1 == type2) {
                 return doOperationsSameType(type1, val1, operation, val2);
             }
-            else
-            if ((type1 > 99 && (type2 > 99)) || (operation != 0 && ParseTools.isNumber(val1) && ParseTools.isNumber(val2))) {
-                return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1), operation, getInternalNumberFromType(val2, type2), true);
+            else if ((type1 > 99 && (type2 > 99))
+                    || (operation != 0 && isNumber(val1) && isNumber(val2))) {
+                return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1),
+                        operation,
+                        getInternalNumberFromType(val2, type2), true);
             }
             else if (operation != ADD &&
                     (type1 == 15 || type2 == 15) &&
@@ -516,7 +539,7 @@ public strictfp class IEEEFloatingPointMath implements MathProcessor {
         if (in == null)
             return new InternalNumber(0, MATH_CONTEXT);
         switch (type) {
-            case DataTypes.BIG_DECIMAL:
+            case BIG_DECIMAL:
                 return new InternalNumber(((BigDecimal) in).doubleValue());
             case DataTypes.BIG_INTEGER:
                 return new InternalNumber((BigInteger) in, MathContext.DECIMAL128);
