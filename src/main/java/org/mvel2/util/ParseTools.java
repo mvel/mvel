@@ -53,7 +53,7 @@ import java.util.*;
 @SuppressWarnings({"ManualArrayCopy"})
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
-    public static final MathProcessor MATH_PROCESSOR;
+   // public static final MathProcessor MATH_PROCESSOR;
 
     static {
         try {
@@ -61,7 +61,7 @@ public class ParseTools {
             if (version < 1.5) {
                 throw new RuntimeException("unsupported java version: " + version);
             }
-            MATH_PROCESSOR = (MathProcessor) forName("org.mvel2.math.IEEEFloatingPointMath").newInstance();
+       //     MATH_PROCESSOR = (MathProcessor) forName("org.mvel2.math.MathProcessor").newInstance();
         }
         catch (RuntimeException e) {
             throw e;
@@ -610,7 +610,7 @@ public class ParseTools {
             for (Object o : ((Object[]) compareTo)) {
                 if (compareTest == null && o == null)
                     return true;
-                else if ((Boolean) doOperations(o, Operator.EQUAL, compareTest))
+                else if ((Boolean) MathProcessor.doOperations(o, Operator.EQUAL, compareTest))
                     return true;
             }
         }
@@ -1005,9 +1005,9 @@ public class ParseTools {
         return null;
     }
 
-    public static Object doOperations(Object val1, int operation, Object val2) {
-        return MATH_PROCESSOR.doOperation(val1, operation, val2);
-    }
+//    public static Object doOperations(Object val1, int operation, Object val2) {
+//        return MATH_PROCESSOR.doOperation(val1, operation, val2);
+//    }
 
     public static Object increment(Object o) {
         if (o instanceof Integer) {

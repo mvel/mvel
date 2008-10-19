@@ -23,10 +23,10 @@ import org.mvel2.DataConversion;
 import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
+import org.mvel2.math.MathProcessor;
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;
-import static org.mvel2.util.ParseTools.doOperations;
 
 public class BinaryOperation extends ASTNode {
     private final int operation;
@@ -78,7 +78,7 @@ public class BinaryOperation extends ASTNode {
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return doOperations(left.getReducedValueAccelerated(ctx, thisValue, factory), operation, right.getReducedValueAccelerated(ctx, thisValue, factory));
+        return MathProcessor.doOperations(left.getReducedValueAccelerated(ctx, thisValue, factory), operation, right.getReducedValueAccelerated(ctx, thisValue, factory));
     }
 
 

@@ -19,9 +19,10 @@
 package org.mvel2.ast;
 
 import org.mvel2.Operator;
+import org.mvel2.math.MathProcessor;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
-import static org.mvel2.util.ParseTools.doOperations;
+
 
 /**
  * @author Christopher Brock
@@ -35,7 +36,7 @@ public class PreFixIncNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver vResolver = factory.getVariableResolver(name);
-        vResolver.setValue(ctx = doOperations(vResolver.getValue(), Operator.ADD, 1));
+        vResolver.setValue(ctx = MathProcessor.doOperations(vResolver.getValue(), Operator.ADD, 1));
         return ctx;
     }
 

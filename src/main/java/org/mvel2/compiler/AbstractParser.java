@@ -19,6 +19,7 @@
 package org.mvel2.compiler;
 
 import org.mvel2.*;
+import org.mvel2.math.MathProcessor;
 import static org.mvel2.Operator.*;
 import org.mvel2.ast.*;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
@@ -2397,7 +2398,7 @@ public class AbstractParser implements Serializable {
                 case GETHAN:
                 case LETHAN:
                 case POWER:
-                    stk.push(doOperations(stk.peek2(), operator, stk.pop2()));
+                    stk.push(MathProcessor.doOperations(stk.peek2(), operator, stk.pop2()));
                     break;
 
                 case AND:

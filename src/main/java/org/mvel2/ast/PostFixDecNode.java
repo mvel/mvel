@@ -19,9 +19,9 @@
 package org.mvel2.ast;
 
 import org.mvel2.Operator;
+import org.mvel2.math.MathProcessor;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
-import static org.mvel2.util.ParseTools.doOperations;
 
 /**
  * @author Christopher Brock
@@ -35,7 +35,7 @@ public class PostFixDecNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver vResolver = factory.getVariableResolver(name);
-        vResolver.setValue(doOperations(ctx = vResolver.getValue(), Operator.SUB, 1));
+        vResolver.setValue(MathProcessor.doOperations(ctx = vResolver.getValue(), Operator.SUB, 1));
         return ctx;
     }
 

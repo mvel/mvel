@@ -22,8 +22,9 @@ import static org.mvel2.MVEL.eval;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
-import static org.mvel2.util.ParseTools.doOperations;
+
 import static org.mvel2.util.ParseTools.subCompileExpression;
+import org.mvel2.math.MathProcessor;
 
 public class OperativeAssign extends ASTNode {
     private String varName;
@@ -42,13 +43,13 @@ public class OperativeAssign extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver resolver = factory.getVariableResolver(varName);
-        resolver.setValue(ctx = doOperations(resolver.getValue(), operation, statement.getValue(ctx, thisValue, factory)));
+        resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, statement.getValue(ctx, thisValue, factory)));
         return ctx;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver resolver = factory.getVariableResolver(varName);
-        resolver.setValue(ctx = doOperations(resolver.getValue(), operation, eval(name, ctx, factory)));
+        resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, eval(name, ctx, factory)));
         return ctx;
     }
 }

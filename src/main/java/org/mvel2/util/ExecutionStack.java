@@ -20,6 +20,8 @@ package org.mvel2.util;
 
 import org.mvel2.CompileException;
 
+import static java.lang.String.valueOf;
+
 public class ExecutionStack implements Stack {
     private StackElement element;
     private int size = 0;
@@ -140,7 +142,7 @@ public class ExecutionStack implements Stack {
 
         StringAppender appender = new StringAppender().append("[");
         do {
-            appender.append(String.valueOf(el.value));
+            appender.append(valueOf(el.value));
             if (el.next != null) appender.append(", ");
         }
         while ((el = el.next) != null);
