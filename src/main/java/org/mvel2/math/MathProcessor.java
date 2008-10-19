@@ -42,7 +42,7 @@ import java.math.MathContext;
 public strictfp class MathProcessor {
     private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
 
-    public static Object doOperations(final Object val1, final int operation, final Object val2) {
+    public static Object doOperations(Object val1, int operation, Object val2) {
         int type1 = val1 == null ? DataTypes.NULL : resolveType(val1.getClass());
         int type2 = val2 == null ? DataTypes.NULL : resolveType(val2.getClass());
 
@@ -63,26 +63,6 @@ public strictfp class MathProcessor {
                 return _doOperations(type1, val1, operation, type2, val2);
 
         }
-
-
-//        if (type1 == DataTypes.BIG_DECIMAL) {
-//            if (type2 == DataTypes.BIG_DECIMAL) {
-//                return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false);
-//            }
-//            else if (type2 > 99) {
-//                return doBigDecimalArithmetic((BigDecimal) val1, operation, getInternalNumberFromType(val2, type2), false);
-//            }
-//            else {
-//                return _doOperations(type1, val1, operation, type2, val2);
-//            }
-//        }
-//        if (type2 == DataTypes.BIG_DECIMAL && (type1 > 99 ||
-//                (type1 == DataTypes.STRING && ParseTools.isNumber(val1)))) {
-//            return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1), operation, (BigDecimal) val2, true);
-//        }
-//        else {
-       //     return _doOperations(type1, val1, operation, type2, val2);
-//        }
     }
 
     private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2, boolean iNumber) {

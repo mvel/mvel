@@ -40,7 +40,6 @@ import static java.lang.System.arraycopy;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import static java.lang.Character.isDigit;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -53,7 +52,7 @@ import java.util.*;
 @SuppressWarnings({"ManualArrayCopy"})
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
-   // public static final MathProcessor MATH_PROCESSOR;
+    // public static final MathProcessor MATH_PROCESSOR;
 
     static {
         try {
@@ -61,7 +60,7 @@ public class ParseTools {
             if (version < 1.5) {
                 throw new RuntimeException("unsupported java version: " + version);
             }
-       //     MATH_PROCESSOR = (MathProcessor) forName("org.mvel2.math.MathProcessor").newInstance();
+            //     MATH_PROCESSOR = (MathProcessor) forName("org.mvel2.math.MathProcessor").newInstance();
         }
         catch (RuntimeException e) {
             throw e;
@@ -171,7 +170,8 @@ public class ParseTools {
                 checkNameSafety(s);
                 list.add(s);
             }
-        } else if (list.size() == 0) {
+        }
+        else if (list.size() == 0) {
             s = createStringTrimmed(parm, start, length);
             if (s.length() > 0) {
                 checkNameSafety(s);
@@ -228,7 +228,8 @@ public class ParseTools {
             String s = createStringTrimmed(parm, start, i - start);
             if (s.length() > 0)
                 list.add(s);
-        } else if (list.size() == 0) {
+        }
+        else if (list.size() == 0) {
             String s = createStringTrimmed(parm, start, length);
             if (s.length() > 0)
                 list.add(s);
@@ -268,7 +269,8 @@ public class ParseTools {
             if (method.equals(meth.getName())) {
                 if ((parmTypes = meth.getParameterTypes()).length != arguments.length) {
                     continue;
-                } else if (arguments.length == 0 && parmTypes.length == 0) {
+                }
+                else if (arguments.length == 0 && parmTypes.length == 0) {
                     bestCandidate = meth;
                     break;
                 }
@@ -277,26 +279,35 @@ public class ParseTools {
                     if (arguments[i] == null) {
                         if (!parmTypes[i].isPrimitive()) {
                             score += 5;
-                        } else {
+                        }
+                        else {
                             score = 0;
                             break;
                         }
-                    } else if (parmTypes[i] == arguments[i]) {
+                    }
+                    else if (parmTypes[i] == arguments[i]) {
                         score += 5;
-                    } else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
+                    }
+                    else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
                         score += 4;
-                    } else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
+                    }
+                    else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
                         score += 4;
-                    } else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
+                    }
+                    else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
                         score += 3;
-                    } else if (parmTypes[i].isAssignableFrom(arguments[i])) {
+                    }
+                    else if (parmTypes[i].isAssignableFrom(arguments[i])) {
                         score += 2;
-                    } else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
+                    }
+                    else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
                         if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
                         score += 1;
-                    } else if (arguments[i] == Object.class) {
+                    }
+                    else if (arguments[i] == Object.class) {
                         score += 1;
-                    } else {
+                    }
+                    else {
                         score = 0;
                         break;
                     }
@@ -394,7 +405,8 @@ public class ParseTools {
         for (Constructor construct : getConstructors(cls)) {
             if ((parmTypes = getConstructors(construct)).length != arguments.length) {
                 continue;
-            } else if (arguments.length == 0 && parmTypes.length == 0) {
+            }
+            else if (arguments.length == 0 && parmTypes.length == 0) {
                 return construct;
             }
 
@@ -405,19 +417,26 @@ public class ParseTools {
                         score = 0;
                         break;
                     }
-                } else if (parmTypes[i] == targetParms[i]) {
+                }
+                else if (parmTypes[i] == targetParms[i]) {
                     score += 5;
-                } else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
+                }
+                else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
                     score += 4;
-                } else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
+                }
+                else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
                     score += 4;
-                } else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
+                }
+                else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
                     score += 3;
-                } else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
+                }
+                else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
                     score += 2;
-                } else if (canConvert(parmTypes[i], targetParms[i])) {
+                }
+                else if (canConvert(parmTypes[i], targetParms[i])) {
                     score += 1;
-                } else {
+                }
+                else {
                     score = 0;
                     break;
                 }
@@ -466,7 +485,8 @@ public class ParseTools {
 
         if ((cls = cache.get(className)) != null) {
             return cls;
-        } else {
+        }
+        else {
             try {
                 cls = getCurrentThreadParserContext().getParserConfiguration().getClassLoader().loadClass(className);
             }
@@ -487,7 +507,8 @@ public class ParseTools {
         Constructor[] cns = CLASS_CONSTRUCTOR_CACHE.get(cls);
         if (cns != null) {
             return cns;
-        } else {
+        }
+        else {
             CLASS_CONSTRUCTOR_CACHE.put(cls, cns = cls.getConstructors());
             return cns;
         }
@@ -532,31 +553,44 @@ public class ParseTools {
     public static Class boxPrimitive(Class cls) {
         if (cls == int.class || cls == Integer.class) {
             return Integer.class;
-        } else if (cls == int[].class || cls == Integer[].class) {
+        }
+        else if (cls == int[].class || cls == Integer[].class) {
             return Integer[].class;
-        } else if (cls == long.class || cls == Long.class) {
+        }
+        else if (cls == long.class || cls == Long.class) {
             return Long.class;
-        } else if (cls == long[].class || cls == Long[].class) {
+        }
+        else if (cls == long[].class || cls == Long[].class) {
             return Long[].class;
-        } else if (cls == short.class || cls == Short.class) {
+        }
+        else if (cls == short.class || cls == Short.class) {
             return Short.class;
-        } else if (cls == short[].class || cls == Short[].class) {
+        }
+        else if (cls == short[].class || cls == Short[].class) {
             return Short[].class;
-        } else if (cls == double.class || cls == Double.class) {
+        }
+        else if (cls == double.class || cls == Double.class) {
             return Double.class;
-        } else if (cls == double[].class || cls == Double[].class) {
+        }
+        else if (cls == double[].class || cls == Double[].class) {
             return Double[].class;
-        } else if (cls == float.class || cls == Float.class) {
+        }
+        else if (cls == float.class || cls == Float.class) {
             return Float.class;
-        } else if (cls == float[].class || cls == Float[].class) {
+        }
+        else if (cls == float[].class || cls == Float[].class) {
             return Float[].class;
-        } else if (cls == boolean.class || cls == Boolean.class) {
+        }
+        else if (cls == boolean.class || cls == Boolean.class) {
             return Boolean.class;
-        } else if (cls == boolean[].class || cls == Boolean[].class) {
+        }
+        else if (cls == boolean[].class || cls == Boolean[].class) {
             return Boolean[].class;
-        } else if (cls == byte.class || cls == Byte.class) {
+        }
+        else if (cls == byte.class || cls == Byte.class) {
             return Byte.class;
-        } else if (cls == byte[].class || cls == Byte[].class) {
+        }
+        else if (cls == byte[].class || cls == Byte[].class) {
             return Byte[].class;
         }
 
@@ -566,31 +600,44 @@ public class ParseTools {
     public static Class unboxPrimitive(Class cls) {
         if (cls == Integer.class || cls == int.class) {
             return int.class;
-        } else if (cls == Integer[].class || cls == int[].class) {
+        }
+        else if (cls == Integer[].class || cls == int[].class) {
             return int[].class;
-        } else if (cls == Long.class || cls == long.class) {
+        }
+        else if (cls == Long.class || cls == long.class) {
             return long.class;
-        } else if (cls == Long[].class || cls == long[].class) {
+        }
+        else if (cls == Long[].class || cls == long[].class) {
             return long[].class;
-        } else if (cls == Short.class || cls == short.class) {
+        }
+        else if (cls == Short.class || cls == short.class) {
             return short.class;
-        } else if (cls == Short[].class || cls == short[].class) {
+        }
+        else if (cls == Short[].class || cls == short[].class) {
             return short[].class;
-        } else if (cls == Double.class || cls == double.class) {
+        }
+        else if (cls == Double.class || cls == double.class) {
             return double.class;
-        } else if (cls == Double[].class || cls == double[].class) {
+        }
+        else if (cls == Double[].class || cls == double[].class) {
             return double[].class;
-        } else if (cls == Float.class || cls == float.class) {
+        }
+        else if (cls == Float.class || cls == float.class) {
             return float.class;
-        } else if (cls == Float[].class || cls == float[].class) {
+        }
+        else if (cls == Float[].class || cls == float[].class) {
             return float[].class;
-        } else if (cls == Boolean.class || cls == boolean.class) {
+        }
+        else if (cls == Boolean.class || cls == boolean.class) {
             return boolean.class;
-        } else if (cls == Boolean[].class || cls == boolean[].class) {
+        }
+        else if (cls == Boolean[].class || cls == boolean[].class) {
             return boolean[].class;
-        } else if (cls == Byte.class || cls == byte.class) {
+        }
+        else if (cls == Byte.class || cls == byte.class) {
             return byte.class;
-        } else if (cls == Byte[].class || cls == byte[].class) {
+        }
+        else if (cls == Byte[].class || cls == byte[].class) {
             return byte[].class;
         }
 
@@ -668,9 +715,10 @@ public class ParseTools {
                 if (s + 4 > escapeStr.length) throw new CompileException("illegal unicode escape sequence");
                 else {
                     while (++pos - s != 5) {
-                        if ((escapeStr[pos] > ('0'-1) && escapeStr[pos] < ('9'+1)) ||
-                                (escapeStr[pos] > ('A'-1) && escapeStr[pos] < ('F'+1))) {
-                        } else {
+                        if ((escapeStr[pos] > ('0' - 1) && escapeStr[pos] < ('9' + 1)) ||
+                                (escapeStr[pos] > ('A' - 1) && escapeStr[pos] < ('F' + 1))) {
+                        }
+                        else {
                             throw new CompileException("illegal unicode escape sequence");
                         }
                     }
@@ -695,7 +743,8 @@ public class ParseTools {
                         escapeStr[s] = 0;
                         escapeStr[s + 1] = 0;
                         return 2;
-                    } else if ((pos - s) == 2) {
+                    }
+                    else if ((pos - s) == 2) {
                         escapeStr[s - 1] = (char) Integer.decode("0" + new String(escapeStr, s, pos - s + 1)).intValue();
                         escapeStr[s] = 0;
                         escapeStr[s + 1] = 0;
@@ -779,7 +828,8 @@ public class ParseTools {
 
         if (factory == null) {
             throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
-        } else {
+        }
+        else {
             return ResolverTools.appendFactory(factory, new TypeInjectionResolverFactoryImpl());
         }
     }
@@ -796,7 +846,8 @@ public class ParseTools {
 
         if (factory == null) {
             throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
-        } else {
+        }
+        else {
             return insertFactory(factory, new ClassImportResolverFactory());
         }
     }
@@ -812,7 +863,8 @@ public class ParseTools {
 
         if (factory == null) {
             throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
-        } else {
+        }
+        else {
             return insertFactory(factory, new StaticMethodImportResolverFactory());
         }
     }
@@ -821,11 +873,14 @@ public class ParseTools {
         try {
             if (LITERALS.containsKey(name)) {
                 return (Class) LITERALS.get(name);
-            } else if (factory != null && factory.isResolveable(name)) {
+            }
+            else if (factory != null && factory.isResolveable(name)) {
                 return (Class) factory.getVariableResolver(name).getValue();
-            } else if (getCurrentThreadParserContext() != null && getCurrentThreadParserContext().hasImport(name)) {
+            }
+            else if (getCurrentThreadParserContext() != null && getCurrentThreadParserContext().hasImport(name)) {
                 return getCurrentThreadParserContext().getImport(name);
-            } else {
+            }
+            else {
                 return createClass(name);
             }
         }
@@ -863,7 +918,7 @@ public class ParseTools {
         return newArray;
     }
 
-    private static Map<Class, Integer> typeResolveMap = new HashMap<Class, Integer>();
+    private static final HashMap<Class, Integer> typeResolveMap = new HashMap<Class, Integer>();
 
     static {
         Map<Class, Integer> t = typeResolveMap;
@@ -981,9 +1036,11 @@ public class ParseTools {
     public static Object narrowType(final BigDecimal result) {
         if (result.scale() > 0) {
             return result.doubleValue();
-        } else if (result.longValue() > Integer.MAX_VALUE) {
+        }
+        else if (result.longValue() > Integer.MAX_VALUE) {
             return result.longValue();
-        } else {
+        }
+        else {
             return result.intValue();
         }
     }
@@ -1012,15 +1069,20 @@ public class ParseTools {
     public static Object increment(Object o) {
         if (o instanceof Integer) {
             return (Integer) o + 1;
-        } else if (o instanceof Double) {
+        }
+        else if (o instanceof Double) {
             return (Double) o + 1;
-        } else if (o instanceof Float) {
+        }
+        else if (o instanceof Float) {
             return (Float) o + 1;
-        } else if (o instanceof Short) {
+        }
+        else if (o instanceof Short) {
             return (Short) o + 1;
-        } else if (o instanceof Character) {
+        }
+        else if (o instanceof Character) {
             return (Character) o + 1;
-        } else {
+        }
+        else {
             throw new CompileException("unable to increment type: " + (o != null ? o.getClass().getName() : "null"));
         }
     }
@@ -1097,14 +1159,16 @@ public class ParseTools {
                     return start;
                 }
             }
-        } else {
+        }
+        else {
             for (start++; start < chars.length; start++) {
                 if (start < chars.length && chars[start] == '/') {
                     if (start + 1 == chars.length) return start;
                     if (chars[start + 1] == '/') {
                         start++;
                         while (start < chars.length && chars[start] != '\n') start++;
-                    } else if (chars[start + 1] == '*') {
+                    }
+                    else if (chars[start + 1] == '*') {
                         start += 2;
                         while (start < chars.length) {
                             switch (chars[start]) {
@@ -1123,9 +1187,11 @@ public class ParseTools {
                 if (start == chars.length) return start;
                 if (chars[start] == '\'' || chars[start] == '"') {
                     start = captureStringLiteral(chars[start], chars, start, chars.length);
-                } else if (chars[start] == type) {
+                }
+                else if (chars[start] == type) {
                     depth++;
-                } else if (chars[start] == term && --depth == 0) {
+                }
+                else if (chars[start] == term && --depth == 0) {
                     return start;
                 }
             }
@@ -1164,7 +1230,8 @@ public class ParseTools {
                     return new int[]{start, 0};
                 }
             }
-        } else {
+        }
+        else {
             int lines = 0;
 
             for (start++; start < chars.length; start++) {
@@ -1175,11 +1242,13 @@ public class ParseTools {
                         case '\n':
                             lines++;
                     }
-                } else if (chars[start] == '/' && start < chars.length) {
+                }
+                else if (chars[start] == '/' && start < chars.length) {
                     if (chars[start + 1] == '/') {
                         start++;
                         while (start < chars.length && chars[start] != '\n') start++;
-                    } else if (chars[start + 1] == '*') {
+                    }
+                    else if (chars[start + 1] == '*') {
                         start += 2;
                         while (start < chars.length) {
                             switch (chars[start]) {
@@ -1196,11 +1265,14 @@ public class ParseTools {
                             start++;
                         }
                     }
-                } else if (chars[start] == '\'' || chars[start] == '"') {
+                }
+                else if (chars[start] == '\'' || chars[start] == '"') {
                     start = captureStringLiteral(chars[start], chars, start, chars.length);
-                } else if (chars[start] == type) {
+                }
+                else if (chars[start] == type) {
                     depth++;
-                } else if (chars[start] == term && --depth == 0) {
+                }
+                else if (chars[start] == term && --depth == 0) {
                     return new int[]{start, lines};
                 }
             }
@@ -1279,7 +1351,8 @@ public class ParseTools {
                         end = i;
                         while (i < block.length && block[i] != '\n') i++;
                         if (parm == null) start = i;
-                    } else if (i < block.length && block[i + 1] == '*') {
+                    }
+                    else if (i < block.length && block[i + 1] == '*') {
                         end = i;
 
                         while (i < block.length) {
@@ -1292,7 +1365,8 @@ public class ParseTools {
                         }
 
                         if (parm == null) start = i;
-                    } else if (i < block.length && block[i + 1] == '=') {
+                    }
+                    else if (i < block.length && block[i + 1] == '=') {
                         oper = Operator.DIV;
                     }
                     continue;
@@ -1325,7 +1399,8 @@ public class ParseTools {
 
                         oper = -1;
                         start = ++i;
-                    } else {
+                    }
+                    else {
                         parms.add(new WithStatementPair(parm, new String(createShortFormOperativeAssignment(nestParm + "." + parm,
                                 subset(block, start, end - start), oper))));
 
@@ -1344,7 +1419,8 @@ public class ParseTools {
                 parms.add(new WithStatementPair(null, new StringAppender(nestParm).append('.')
                         .append(subset(block, start, end - start)).toString()));
 
-            } else {
+            }
+            else {
                 parms.add(new WithStatementPair(
                         parm,
                         new String(createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper))
@@ -1372,7 +1448,8 @@ public class ParseTools {
             }
 
             return Integer.decode(new String(val));
-        } else if (!isDigit(val[val.length - 1])) {
+        }
+        else if (!isDigit(val[val.length - 1])) {
             switch (val[val.length - 1]) {
                 case 'l':
                 case 'L':
@@ -1390,7 +1467,8 @@ public class ParseTools {
                     return new BigDecimal(new String(val, 0, val.length - 1));
             }
             throw new CompileException("unrecognized numeric literal");
-        } else {
+        }
+        else {
             switch (numericTest(val)) {
                 case DataTypes.FLOAT:
                     return java.lang.Float.parseFloat(new String(val));
@@ -1414,7 +1492,8 @@ public class ParseTools {
         Class clz;
         if (val instanceof Class) {
             clz = (Class) val;
-        } else {
+        }
+        else {
             clz = val.getClass();
         }
 
@@ -1460,9 +1539,11 @@ public class ParseTools {
         if (len > 0) {
             if (fp) {
                 return DataTypes.DOUBLE;
-            } else if (len > 9) {
+            }
+            else if (len > 9) {
                 return DataTypes.LONG;
-            } else {
+            }
+            else {
                 return DataTypes.INTEGER;
             }
         }
@@ -1494,7 +1575,8 @@ public class ParseTools {
             if (!isDigit(c = val.charAt(i))) {
                 if (c == '.' && f) {
                     f = false;
-                } else {
+                }
+                else {
                     return false;
                 }
             }
@@ -1520,7 +1602,8 @@ public class ParseTools {
             if (!isDigit(c = val[i])) {
                 if (c == '.' && f) {
                     f = false;
-                } else if (len != 1 && i == len - 1) {
+                }
+                else if (len != 1 && i == len - 1) {
                     switch (c) {
                         case 'l':
                         case 'L':
@@ -1535,7 +1618,8 @@ public class ParseTools {
                             throw new CompileException("invalid number literal");
                     }
                     return false;
-                } else if (i == 1 && c == 'x' && val[0] == '0') {
+                }
+                else if (i == 1 && c == 'x' && val[0] == '0') {
                     for (i++; i < len; i++) {
                         if (!isDigit(c = val[i])) {
                             if ((c < 'A' || c > 'F') && (c < 'a' || c > 'f')) {
@@ -1556,9 +1640,11 @@ public class ParseTools {
                     }
                     return len - 2 > 0;
 
-                } else if (i != 0 && (i + 1) < len && (c == 'E' || c == 'e')) {
+                }
+                else if (i != 0 && (i + 1) < len && (c == 'E' || c == 'e')) {
                     if (val[++i] == '-' || val[i] == '+') i++;
-                } else {
+                }
+                else {
                     if (i != 0) throw new CompileException("invalid number literal");
                     return false;
                 }
@@ -1580,17 +1666,17 @@ public class ParseTools {
 
     public static String createStringTrimmed(char[] s) {
         int start = 0, end = s.length;
-        while (start != end && s[start] < '\u0020'+1) start++;
-        while (end != start && s[end - 1] < '\u0020'+1) end--;
+        while (start != end && s[start] < '\u0020' + 1) start++;
+        while (end != start && s[end - 1] < '\u0020' + 1) end--;
         return new String(s, start, end - start);
     }
 
     public static String createStringTrimmed(char[] s, int start, int length) {
         if ((length = start + length) > s.length) return new String(s);
-        while (start != length && s[start] < '\u0020'+1) {
+        while (start != length && s[start] < '\u0020' + 1) {
             start++;
         }
-        while (length != start && s[length - 1] < '\u0020'+1) {
+        while (length != start && s[length - 1] < '\u0020' + 1) {
             length--;
         }
         return new String(s, start, length - start);
@@ -1622,7 +1708,7 @@ public class ParseTools {
     }
 
     public static boolean isDigit(final int c) {
-        return c > ('0'-1) && c < ('9'+1);
+        return c > ('0' - 1) && c < ('9' + 1);
     }
 
     public static float similarity(String s1, String s2) {
@@ -1644,7 +1730,8 @@ public class ParseTools {
             baselength = c1.length;
             comp = c1;
             against = c2;
-        } else {
+        }
+        else {
             baselength = c2.length;
             comp = c2;
             against = c1;
@@ -1740,7 +1827,8 @@ public class ParseTools {
     public static void checkNameSafety(String name) {
         if (isReservedWord(name)) {
             throw new CompileException("illegal use of reserved word: " + name);
-        } else if (isDigit(name.charAt(0))) {
+        }
+        else if (isDigit(name.charAt(0))) {
             throw new CompileException("not an identifier");
         }
     }
@@ -1777,7 +1865,7 @@ public class ParseTools {
 //                if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
 //                    return new ExecutableLiteral(tk.getIntRegister());
 //                } else {
-                    return new ExecutableLiteral(tk.getLiteralValue());
+                return new ExecutableLiteral(tk.getLiteralValue());
 //                }
             }
             return tk.canSerializeAccessor() ? new ExecutableAccessorSafe(tk, false, compiled.getKnownEgressType()) :
@@ -1788,7 +1876,7 @@ public class ParseTools {
     }
 
     public static boolean isWhitespace(char c) {
-        return c < '\u0020'+1;
+        return c < '\u0020' + 1;
     }
 
     public static String repeatChar(char c, int times) {
