@@ -88,30 +88,6 @@ public class PropertyTools {
         return null;
     }
 
-    public static boolean isPropertyReadAndWrite(Field field) {
-        return isPublic(field.getModifiers()) || hasGetter(field) && hasSetter(field);
-    }
-
-    public static boolean isPropertyReadAndWrite(Class clazz, String property) {
-        return getWritableFieldOrAccessor(clazz, property) != null &&
-                getFieldOrAccessor(clazz, property) != null;
-    }
-
-    public static Member getWritableFieldOrAccessor(Class clazz, String property) {
-        Field field;
-        try {
-            if ((field = clazz.getField(property)) != null &&
-                    isPublic(field.getModifiers())) return field;
-        }
-        catch (NullPointerException e) {
-            return null;
-        }
-        catch (NoSuchFieldException e) {
-            // do nothing.
-        }
-
-        return getSetter(clazz, property);
-    }
 
     public static Member getFieldOrAccessor(Class clazz, String property) {
         if (property.charAt(property.length() - 1) == ')') return getGetter(clazz, property);

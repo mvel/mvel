@@ -22,7 +22,7 @@ import org.mvel2.CompileException;
 
 import static java.lang.String.valueOf;
 
-public class ExecutionStack implements Stack {
+public class ExecutionStack {
     private StackElement element;
     private int size = 0;
 
