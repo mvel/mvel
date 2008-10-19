@@ -1683,62 +1683,6 @@ public class AbstractParser implements Serializable {
         while (++cursor != length);
     }
 
-    protected void captureToEOTNEW() {
-        skipWhitespace();
-        boolean dims = false;
-        do {
-            switch (expr[cursor]) {
-                case '{':
-                    if (dims) return;
-
-                case '[':
-                    dims = true;
-                    if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
-                        throw new CompileException("unbalanced braces", expr, cursor);
-                    }
-                    break;
-                case '(':
-                    if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
-                        throw new CompileException("unbalanced braces", expr, cursor);
-                    }
-                    break;
-
-                case '=':
-                case '&':
-                case '|':
-                case ';':
-                    return;
-
-                case '.':
-                    skipWhitespace();
-                    break;
-
-                case '\'':
-                    cursor = captureStringLiteral('\'', expr, cursor, length);
-                    break;
-                case '"':
-                    cursor = captureStringLiteral('"', expr, cursor, length);
-                    break;
-
-                default:
-                    if (isWhitespace(expr[cursor])) {
-                        skipWhitespace();
-
-                        if (expr[cursor] == '.') {
-                            if (cursor != length) cursor++;
-                            skipWhitespace();
-                            break;
-                        }
-                        else {
-                            trimWhitespace();
-                            return;
-                        }
-                    }
-            }
-        }
-        while (++cursor != length);
-    }
-
 
     protected boolean lastNonWhite(char c) {
         int i = cursor - 1;

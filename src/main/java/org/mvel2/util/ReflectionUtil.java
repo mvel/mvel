@@ -98,17 +98,4 @@ public class ReflectionUtil {
         return new String(chars);
     }
 
-    private static String parameterizeClassName(String s) {
-        char[] chars = s.toCharArray();
-        if (s.charAt(0) < 'a') {
-            chars[0] = (char) (chars[0] + ('z' - 'Z'));
-        }
-
-        return new String(chars);
-    }
-
-    public static String parameterizeClassName(Class c) {
-        return parameterizeClassName(c.getName().substring(c.getName().lastIndexOf('.') + 1));
-    }
-
 }
