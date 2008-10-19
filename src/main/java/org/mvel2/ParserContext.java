@@ -4,7 +4,6 @@ import org.mvel2.ast.Function;
 import org.mvel2.ast.LineLabel;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.util.MethodStub;
-import static org.mvel2.util.ParseTools.getSimpleClassName;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -131,7 +130,7 @@ public class ParserContext implements Serializable {
     }
 
     public void addImport(Class cls) {
-        addImport(getSimpleClassName(cls), cls);
+        addImport(cls.getSimpleName(), cls);
     }
 
     public void addImport(String name, Class cls) {

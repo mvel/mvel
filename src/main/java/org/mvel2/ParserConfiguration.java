@@ -3,7 +3,6 @@ package org.mvel2;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.util.MethodStub;
-import static org.mvel2.util.ParseTools.getSimpleClassName;
 import org.mvel2.util.PropertyTools;
 
 import java.io.Serializable;
@@ -108,7 +107,7 @@ public class ParserConfiguration implements Serializable {
     }
 
     public void addImport(Class cls) {
-        addImport(getSimpleClassName(cls), cls);
+        addImport(cls.getSimpleName(), cls);
     }
 
     public void addImport(String name, Class cls) {

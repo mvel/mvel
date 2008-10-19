@@ -346,7 +346,7 @@ public class AbstractParser implements Serializable {
                                     pCtx.addPackageImport(importNode.getPackageImport());
                                 }
                                 else {
-                                    pCtx.addImport(getSimpleClassName(importNode.getImportClass()), importNode.getImportClass());
+                                    pCtx.addImport(importNode.getImportClass().getSimpleName(), importNode.getImportClass());
                                 }
                                 return lastNode = importNode;
 

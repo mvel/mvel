@@ -22,7 +22,6 @@ import org.mvel2.ParserConfiguration;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.createClass;
-import static org.mvel2.util.ParseTools.getSimpleClassName;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,7 +67,7 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     }
 
     public Class addClass(Class clazz) {
-        variableResolvers.put(getSimpleClassName(clazz), new SimpleValueResolver(clazz));
+        variableResolvers.put(clazz.getSimpleName(), new SimpleValueResolver(clazz));
         return clazz;
     }
 

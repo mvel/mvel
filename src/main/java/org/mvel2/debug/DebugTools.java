@@ -31,7 +31,6 @@ import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ASTIterator;
-import static org.mvel2.util.ParseTools.getSimpleClassName;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -76,13 +75,13 @@ public class DebugTools {
             if ((tk = iter.nextNode()) instanceof NestedStatement
                     && ((NestedStatement) tk).getNestedStatement() instanceof CompiledExpression) {
                 //noinspection StringConcatenationInsideStringBufferAppend
-                sbuf.append("NEST [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }\n");
+                sbuf.append("NEST [" + tk.getClass().getSimpleName() + "]: { " + tk.getName() + " }\n");
                 sbuf.append(decompile((CompiledExpression) ((NestedStatement) tk).getNestedStatement(), true, context));
             }
             if (tk instanceof Substatement
                     && ((Substatement) tk).getStatement() instanceof CompiledExpression) {
                 //noinspection StringConcatenationInsideStringBufferAppend
-                sbuf.append("NEST [" + getSimpleClassName(tk.getClass()) + "]: { " + tk.getName() + " }\n");
+                sbuf.append("NEST [" + tk.getClass().getSimpleName() + "]: { " + tk.getName() + " }\n");
                 sbuf.append(decompile((CompiledExpression) ((Substatement) tk).getStatement(), true, context));
             }
             else if (tk.isDebuggingSymbol()) {
@@ -99,7 +98,7 @@ public class DebugTools {
                 if (tk.isOperator(Operator.END_OF_STMT)) sbuf.append("\n");
             }
             else if (tk.isIdentifier()) {
-                sbuf.append("REFERENCE :: ").append(getSimpleClassName(tk.getClass())).append(":").append(tk.getName());
+                sbuf.append("REFERENCE :: ").append(tk.getClass().getSimpleName()).append(":").append(tk.getName());
             }
             else if (tk instanceof BinaryOperation) {
                 BinaryOperation bo = (BinaryOperation) tk;
@@ -108,7 +107,7 @@ public class DebugTools {
             }
             else {
                 //noinspection StringConcatenationInsideStringBufferAppend
-                sbuf.append("NODE [" + getSimpleClassName(tk.getClass()) + "] :: " + tk.getName());
+                sbuf.append("NODE [" + tk.getClass().getSimpleName() + "] :: " + tk.getName());
             }
 
             sbuf.append("\n");

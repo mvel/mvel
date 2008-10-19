@@ -24,12 +24,9 @@ import static org.mvel2.MVEL.getDebuggingOutputFileName;
 import org.mvel2.ast.ASTNode;
 import static org.mvel2.compiler.AbstractParser.*;
 import org.mvel2.compiler.*;
-import org.mvel2.integration.ResolverTools;
 import static org.mvel2.integration.ResolverTools.insertFactory;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
-import org.mvel2.integration.impl.StaticMethodImportResolverFactory;
-import org.mvel2.integration.impl.TypeInjectionResolverFactoryImpl;
 import org.mvel2.math.MathProcessor;
 
 import java.io.*;
@@ -52,7 +49,6 @@ import java.util.*;
 @SuppressWarnings({"ManualArrayCopy"})
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
-    // public static final MathProcessor MATH_PROCESSOR;
 
     static {
         try {
@@ -60,7 +56,6 @@ public class ParseTools {
             if (version < 1.5) {
                 throw new RuntimeException("unsupported java version: " + version);
             }
-            //     MATH_PROCESSOR = (MathProcessor) forName("org.mvel2.math.MathProcessor").newInstance();
         }
         catch (RuntimeException e) {
             throw e;
@@ -79,40 +74,12 @@ public class ParseTools {
             }
         }
         if (start != -1) {
-            start--;
-            return parseParameterList(parm, start + 1, balancedCapture(parm, start, '(') - start - 1);
+            return parseParameterList(parm, --start + 1, balancedCapture(parm, start, '(') - start - 1);
         }
 
         return null;
     }
 
-    public static String[] getMethodNameAndParms(char[] parm) {
-        int start = -1;
-        String methName = null;
-
-        for (int i = 0; i < parm.length; i++) {
-            if (parm[i] == '(') {
-                methName = new String(parm, 0, i);
-
-                start = ++i;
-                break;
-            }
-        }
-        if (start != -1) {
-            start--;
-            String[] parms = parseParameterList(parm, start + 1, balancedCapture(parm, start, '(') - start - 1);
-            String[] nArray = new String[parms.length + 1];
-            nArray[0] = methName;
-
-            for (int i = 0; i < parms.length; i++) {
-                nArray[i + 1] = parms[i];
-            }
-
-            return nArray;
-        }
-
-        return null;
-    }
 
     public static String[] parseParameterDefList(char[] parm, int offset, int length) {
         List<String> list = new LinkedList<String>();
@@ -165,15 +132,13 @@ public class ParseTools {
         }
 
         if (start < (length + offset) && i > start) {
-            s = createStringTrimmed(parm, start, i - start);
-            if (s.length() > 0) {
+            if ((s = createStringTrimmed(parm, start, i - start)).length() > 0) {
                 checkNameSafety(s);
                 list.add(s);
             }
         }
         else if (list.size() == 0) {
-            s = createStringTrimmed(parm, start, length);
-            if (s.length() > 0) {
+            if ((s = createStringTrimmed(parm, start, length)).length() > 0) {
                 checkNameSafety(s);
                 list.add(s);
             }
@@ -465,14 +430,6 @@ public class ParseTools {
     private static Map<ClassLoader, Map<String, Class>> CLASS_RESOLVER_CACHE = new WeakHashMap<ClassLoader, Map<String, Class>>(1, 1.0f);
     private static Map<Class, Constructor[]> CLASS_CONSTRUCTOR_CACHE = new WeakHashMap<Class, Constructor[]>(10);
 
-    public static Class createClassSafe(String className) {
-        try {
-            return createClass(className);
-        }
-        catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
 
     public static Class createClass(String className) throws ClassNotFoundException {
         ClassLoader classLoader = currentThread().getContextClassLoader();
@@ -514,25 +471,6 @@ public class ParseTools {
         }
     }
 
-
-    public static String[] captureContructorAndResidual(String token) {
-        char[] cs = token.toCharArray();
-
-        int depth = 0;
-
-        for (int i = 0; i < cs.length; i++) {
-            switch (cs[i]) {
-                case '(':
-                    depth++;
-                    continue;
-                case ')':
-                    if (1 == depth--) {
-                        return new String[]{new String(cs, 0, ++i), new String(cs, i, cs.length - i)};
-                    }
-            }
-        }
-        return new String[]{token};
-    }
 
     public static String[] captureContructorAndResidual(char[] cs) {
         int depth = 0;
@@ -760,7 +698,6 @@ public class ParseTools {
 
                     pos++;
                 }
-
                 throw new CompileException("illegal escape sequence: " + escapeStr[pos]);
         }
     }
@@ -817,24 +754,6 @@ public class ParseTools {
     }
 
 
-    public static TypeInjectionResolverFactoryImpl findTypeInjectionResolverFactory(VariableResolverFactory factory) {
-        VariableResolverFactory v = factory;
-        while (v != null) {
-            if (v instanceof TypeInjectionResolverFactoryImpl) {
-                return (TypeInjectionResolverFactoryImpl) v;
-            }
-            v = v.getNextFactory();
-        }
-
-        if (factory == null) {
-            throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
-        }
-        else {
-            return ResolverTools.appendFactory(factory, new TypeInjectionResolverFactoryImpl());
-        }
-    }
-
-
     public static ClassImportResolverFactory findClassImportResolverFactory(VariableResolverFactory factory) {
         VariableResolverFactory v = factory;
         while (v != null) {
@@ -849,23 +768,6 @@ public class ParseTools {
         }
         else {
             return insertFactory(factory, new ClassImportResolverFactory());
-        }
-    }
-
-    public static StaticMethodImportResolverFactory findStaticMethodImportResolverFactory(VariableResolverFactory factory) {
-        VariableResolverFactory v = factory;
-        while (v != null) {
-            if (v instanceof StaticMethodImportResolverFactory) {
-                return (StaticMethodImportResolverFactory) v;
-            }
-            v = v.getNextFactory();
-        }
-
-        if (factory == null) {
-            throw new OptimizationFailure("unable to import classes.  no variable resolver factory available.");
-        }
-        else {
-            return insertFactory(factory, new StaticMethodImportResolverFactory());
         }
     }
 
@@ -890,11 +792,6 @@ public class ParseTools {
         catch (Exception e) {
             throw new CompileException("class not found: " + name, e);
         }
-    }
-
-    public static boolean debug(Throwable t) {
-        t.printStackTrace();
-        return true;
     }
 
     public static char[] subset(char[] array, int start, int length) {
@@ -1017,10 +914,6 @@ public class ParseTools {
         return DataTypes.OBJECT;
     }
 
-    public static Object valueOnly(Object o) {
-        return (o instanceof ASTNode) ? ((ASTNode) o).getLiteralValue() : o;
-    }
-
     public static boolean isNumericallyCoercible(Class target, Class parm) {
         Class boxedTarget = target.isPrimitive() ? boxPrimitive(target) : target;
 
@@ -1062,63 +955,6 @@ public class ParseTools {
         return null;
     }
 
-//    public static Object doOperations(Object val1, int operation, Object val2) {
-//        return MATH_PROCESSOR.doOperation(val1, operation, val2);
-//    }
-
-    public static Object increment(Object o) {
-        if (o instanceof Integer) {
-            return (Integer) o + 1;
-        }
-        else if (o instanceof Double) {
-            return (Double) o + 1;
-        }
-        else if (o instanceof Float) {
-            return (Float) o + 1;
-        }
-        else if (o instanceof Short) {
-            return (Short) o + 1;
-        }
-        else if (o instanceof Character) {
-            return (Character) o + 1;
-        }
-        else {
-            throw new CompileException("unable to increment type: " + (o != null ? o.getClass().getName() : "null"));
-        }
-    }
-
-    public static Map<String, String> parseParameters(char[] parms) {
-        Map<String, String> allParms = new HashMap<String, String>();
-
-        boolean capture = false;
-        int start = 0;
-
-        String parmName = null;
-        int i = 0;
-        for (; i < parms.length; i++) {
-            switch (parms[i]) {
-                case '=':
-                    parmName = createStringTrimmed(parms, start, ++i - start - 1);
-                    capture = true;
-                    start = i;
-                    break;
-
-                case ',':
-                    if (capture) {
-                        allParms.put(parmName, createStringTrimmed(parms, start, i - start));
-                        start = ++i;
-                        capture = false;
-                        break;
-                    }
-            }
-        }
-
-        if (capture) {
-            allParms.put(parmName, createStringTrimmed(parms, start, i - start));
-        }
-
-        return allParms;
-    }
 
     /**
      * This is an important aspect of the core parser tools.  This method is used throughout the core parser
@@ -1694,12 +1530,6 @@ public class ParseTools {
         return true;
     }
 
-    public static boolean equals(char[] obj1, String obj2) {
-        for (int i = 0; i < obj1.length && i < obj2.length(); i++) {
-            if (obj1[i] == obj2.charAt(i)) return false;
-        }
-        return true;
-    }
 
     public static boolean isIdentifierPart(final int c) {
         return ((c > 96 && c < 123)
@@ -1814,16 +1644,6 @@ public class ParseTools {
         }
     }
 
-    /**
-     * REMOVE THIS WITH JDK1.4 COMPATIBILITY!  COMPENSATES FOR LACK OF getSimpleName IN java.lang.Class -- DIE 1.4!
-     *
-     * @param cls -- class reference
-     * @return Simple name of class
-     */
-    public static String getSimpleClassName(Class cls) {
-        return cls.getSimpleName();
-    }
-
     public static void checkNameSafety(String name) {
         if (isReservedWord(name)) {
             throw new CompileException("illegal use of reserved word: " + name);
@@ -1862,11 +1682,7 @@ public class ParseTools {
             ASTNode tk = compiled.getInstructions().firstNode();
 
             if (tk.isLiteral() && !tk.isThisVal()) {
-//                if ((tk.getFields() & ASTNode.INTEGER32) != 0) {
-//                    return new ExecutableLiteral(tk.getIntRegister());
-//                } else {
                 return new ExecutableLiteral(tk.getLiteralValue());
-//                }
             }
             return tk.canSerializeAccessor() ? new ExecutableAccessorSafe(tk, false, compiled.getKnownEgressType()) :
                     new ExecutableAccessor(tk, compiled.getKnownEgressType());
@@ -1923,6 +1739,4 @@ public class ParseTools {
 
         return null;
     }
-
-
 }
