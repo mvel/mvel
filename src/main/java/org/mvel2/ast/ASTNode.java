@@ -291,7 +291,7 @@ public class ASTNode implements Cloneable, Serializable {
             return;
         }
 
-        for (int i = 0; i < name.length; i++) {
+        Scan: for (int i = 0; i < name.length; i++) {
             switch (name[i]) {
                 case '.':
                     if (firstUnion == 0) {
@@ -301,7 +301,7 @@ public class ASTNode implements Cloneable, Serializable {
                 case '[':
                     if (endOfName == 0) {
                         endOfName = i;
-                        i = name.length;
+                        break Scan;
                     }
             }
         }

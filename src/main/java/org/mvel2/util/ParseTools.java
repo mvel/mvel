@@ -859,16 +859,33 @@ public class ParseTools {
     }
 
     public static int __resolveType(Class cls) {
-        if (cls == null)
-            return 0;
+
+        if (Integer.class == cls)
+            return DataTypes.W_INTEGER;
+        if (Double.class == cls)
+            return DataTypes.W_DOUBLE;
+        if (Boolean.class == cls)
+            return DataTypes.W_BOOLEAN;
+        if (String.class == cls)
+            return DataTypes.STRING;
+        if (Long.class == cls)
+            return DataTypes.W_LONG;
+
+        if (Short.class == cls)
+            return DataTypes.W_SHORT;
+        if (Float.class == cls)
+            return DataTypes.W_FLOAT;
+
+        if (Byte.class == cls)
+            return DataTypes.W_BYTE;
+        if (Character.class == cls)
+            return DataTypes.W_CHAR;
+
         if (BigDecimal.class == cls)
             return DataTypes.BIG_DECIMAL;
 
         if (BigInteger.class == cls)
             return DataTypes.BIG_INTEGER;
-
-        if (String.class == cls)
-            return DataTypes.STRING;
 
         if (int.class == cls)
             return DataTypes.INTEGER;
@@ -887,29 +904,11 @@ public class ParseTools {
         if (char.class == cls)
             return DataTypes.CHAR;
 
-
-        if (Integer.class == cls)
-            return DataTypes.W_INTEGER;
-        if (Short.class == cls)
-            return DataTypes.W_SHORT;
-        if (Float.class == cls)
-            return DataTypes.W_FLOAT;
-        if (Double.class == cls)
-            return DataTypes.W_DOUBLE;
-        if (Long.class == cls)
-            return DataTypes.W_LONG;
-        if (Boolean.class == cls)
-            return DataTypes.W_BOOLEAN;
-        if (Byte.class == cls)
-            return DataTypes.W_BYTE;
-        if (Character.class == cls)
-            return DataTypes.W_CHAR;
-
         if (BlankLiteral.class == cls)
             return DataTypes.EMPTY;
 
-        if (Unit.class.isAssignableFrom(cls))
-            return DataTypes.UNIT;
+//        if (Unit.class.isAssignableFrom(cls))
+//            return DataTypes.UNIT;
 
         return DataTypes.OBJECT;
     }

@@ -1,7 +1,9 @@
 package org.mvel2.tests.perftests;
 
 import org.mvel2.MVEL;
+import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
+import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.QuickSort;
@@ -14,6 +16,7 @@ import java.io.Serializable;
 import static java.lang.Runtime.getRuntime;
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 
 public class SimpleTests {
     private static final double COUNT = 30000;
@@ -72,16 +75,5 @@ public class SimpleTests {
         ps.println("Rate  : " + (COUNT / (time / 1000)) + " per second.");
     }
 
-    private static Unsafe getUnsafe() {
-        try {
-            Field field = Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            return (Unsafe) field.get(null);
-        }
-        catch (Exception ex) {
-            throw new RuntimeException("can't get Unsafe instance", ex);
-        }
-    }
 
-    private static final Unsafe unsafe__ = getUnsafe();
 }

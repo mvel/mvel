@@ -187,10 +187,10 @@ public class PropertyAccessor {
             throw new PropertyAccessException("could not access property", e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException("array or collections index out of bounds (property: " + new String(property) + ")", e);
+            throw new PropertyAccessException("array or collections index out of bounds in property: " + new String(property), e);
         }
         catch (PropertyAccessException e) {
-            throw new PropertyAccessException("failed to access property: <<" + new String(property) + ">> in: " + (ctx != null ? ctx.getClass() : null), e);
+            throw new PropertyAccessException("failed to access property: " + new String(property) + ": " + e.getMessage(), e);
         }
         catch (CompileException e) {
             throw e;
@@ -756,7 +756,6 @@ public class PropertyAccessor {
              *
              */
             boolean meth = false;
-            //  int depth = 0;
             int last = length;
             for (int i = length - 1; i > 0; i--) {
                 switch (property[i]) {

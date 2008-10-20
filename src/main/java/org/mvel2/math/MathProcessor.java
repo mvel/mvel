@@ -43,8 +43,8 @@ public strictfp class MathProcessor {
     private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
 
     public static Object doOperations(Object val1, int operation, Object val2) {
-        int type1 = val1 == null ? DataTypes.NULL : resolveType(val1.getClass());
-        int type2 = val2 == null ? DataTypes.NULL : resolveType(val2.getClass());
+        int type1 = val1 == null ? DataTypes.NULL : __resolveType(val1.getClass());
+        int type2 = val2 == null ? DataTypes.NULL : __resolveType(val2.getClass());
 
         switch (type1) {
             case BIG_DECIMAL:
