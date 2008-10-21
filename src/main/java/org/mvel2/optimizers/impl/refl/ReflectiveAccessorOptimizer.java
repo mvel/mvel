@@ -1,7 +1,7 @@
 /**
- * MVEL (The MVFLEX Expression Language)
- *
- * Copyright (C) 2007 Christopher Brock, MVFLEX/Valhalla Project and the Codehaus
+ * MVEL 2.0
+ * Copyright (C) 2007 The Codehaus
+ * Mike Brock, Dhanji Prasanna, John Graham, Mark Proctor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 package org.mvel2.optimizers.impl.refl;
 
@@ -39,6 +38,7 @@ import org.mvel2.optimizers.impl.refl.collection.ArrayCreator;
 import org.mvel2.optimizers.impl.refl.collection.ExprValueAccessor;
 import org.mvel2.optimizers.impl.refl.collection.ListCreator;
 import org.mvel2.optimizers.impl.refl.collection.MapCreator;
+import org.mvel2.optimizers.impl.refl.nodes.*;
 import org.mvel2.util.ArrayTools;
 import static org.mvel2.util.CompilerTools.expectType;
 import org.mvel2.util.MethodStub;

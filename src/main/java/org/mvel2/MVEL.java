@@ -1,7 +1,7 @@
 /**
- * MVEL (The MVFLEX Expression Language)
- *
- * Copyright (C) 2007 Christopher Brock, MVFLEX/Valhalla Project and the Codehaus
+ * MVEL 2.0
+ * Copyright (C) 2007  MVFLEX/Valhalla Project and the Codehaus
+ * Mike Brock, Dhanji Prasanna, John Graham, Mark Proctor
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,7 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package org.mvel2;
 
 import static org.mvel2.DataConversion.convert;
@@ -25,7 +23,7 @@ import org.mvel2.compiler.*;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
-import org.mvel2.optimizers.impl.refl.GetterAccessor;
+import org.mvel2.optimizers.impl.refl.nodes.GetterAccessor;
 import static org.mvel2.util.ParseTools.loadFromFile;
 import static org.mvel2.util.ParseTools.optimizeTree;
 
