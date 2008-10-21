@@ -93,6 +93,5 @@ public class FailureTests extends AbstractTest {
             return;
         }
         assertTrue(false);
-
     }
 }

@@ -496,7 +496,7 @@ public class PropertyAccessor {
             }
         }
 
-        throw new PropertyAccessException("could not access property (" + property + ")");
+        throw new PropertyAccessException("could not access property: " + property);
     }
 
     private void whiteSpaceSkip() {
