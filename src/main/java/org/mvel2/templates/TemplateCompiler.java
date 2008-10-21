@@ -32,7 +32,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The TemplateCompiler class is used for pre-compiling MVEL Templates.  To execute a compiled template see {@link TemplateRuntime}
+ * The TemplateCompiler class is used for pre-compiling MVEL Templates.  To execute a compiled template see
+ * {@link TemplateRuntime}
+ *
+ * @author Mike Brock
  */
 @SuppressWarnings({"ManualArrayCopy"})
 public class TemplateCompiler {

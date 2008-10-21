@@ -30,6 +30,13 @@ import org.mvel2.util.StringAppender;
 import java.lang.reflect.*;
 import java.util.*;
 
+/**
+ * This verifier is used by the compiler to enforce rules such as type strictness.  It is, as side-effect, also
+ * responsible for extracting type information.
+ *
+ * @author Mike Brock
+ * @author Dhanji Prasanna
+ */
 public class PropertyVerifier extends AbstractOptimizer {
     private static final int DONE = -1;
     private static final int NORM = 0;
