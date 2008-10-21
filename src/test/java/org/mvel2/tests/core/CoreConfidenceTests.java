@@ -4693,7 +4693,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testJIRA115() {
-  //      OptimizerFactory.setDefaultOptimizer("ASM");
         String exp = "results = new java.util.ArrayList(); foreach (element : elements) { if( {1,32769,32767} contains element ) { results.add(element);  } }; results";
         Map map = new HashMap();
         map.put("elements",new int[]{1, 32769, 32767} );
@@ -4713,126 +4712,6 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testFunctions5() {
         String exp = "def foo(a,b) { a + b }; foo(1.5,5.25)";
         System.out.println(MVEL.eval(exp, new HashMap()));
-    }
-
-//    public void testThreadTest() throws InterruptedException {
-//
-//        for (int x = 0; x < 10000; x++) {
-//            Cookie cookie = new Cookie();
-//
-//            long start = System.currentTimeMillis();
-//
-//            MVEL.eval("pookie.age", cookie);
-//            long end = System.currentTimeMillis();
-//            System.out.println("Getting field time was " + (end - start));
-//
-//
-//            start = System.currentTimeMillis();
-//            MVEL.eval("pookie.dookies['bart'].name", cookie);
-//            end = System.currentTimeMillis();
-//            System.out.println("Getting property time was " + (end - start));
-//
-//            // Loop
-//
-//            start = System.currentTimeMillis();
-//            for (int i = 0; i < 50; i++) {
-//                MVEL.eval("pookie.dookies['bart'].name", cookie);
-//            }
-//            end = System.currentTimeMillis();
-//            System.out.println("50 times was " + (end - start));
-//
-//
-//            MVELThread[] threads = new MVELThread[50];
-//            for (int i = 0; i < 50; i++) {
-//                threads[i] = new MVELThread();
-//                threads[i].setName("" + i);
-//                threads[i].start();
-//            }
-//
-//            for (int i = 0; i < 50; i++) {
-//                threads[i].join();
-//            }
-//
-//            System.out.println("done");
-//
-//        }
-//    }
-//
-//
-//    public class MVELThread extends Thread {
-//        @Override
-//        public void run() {
-//            Cookie pookie = new Cookie();
-//
-//            long start = System.currentTimeMillis();
-//            for (int i = 0; i < 50000; i++) {
-//                MVEL.eval("pookie.dookies['bart'].name", pookie);
-//            }
-//            long end = System.currentTimeMillis();
-//            System.out.println("50000 times for " + this.getName() + " was " + (end - start));
-//        }
-//    }
-//
-//    public class Cookie {
-//        private Pookie pookie = new Pookie();
-//
-//        public Pookie getPookie() {
-//            return pookie;
-//        }
-//
-//        public void setPookie(Pookie pookie) {
-//            this.pookie = pookie;
-//        }
-//    }
-//
-//
-//    public class Pookie {
-//        public HashMap dookies = new HashMap();
-//        private int age = 16;
-//
-//        public Pookie() {
-//            Dookie dookie = new Dookie();
-//            dookie.setName("Bart");
-//            this.dookies.put("bart", dookie);
-//        }
-//
-//        public int getAge() {
-//            return age;
-//        }
-//
-//        public void setAge(int age) {
-//            this.age = age;
-//        }
-//    }
-//
-//    public class Dookie {
-//        private String name;
-//
-//        public String getName() {
-//            return name;
-//        }
-//
-//        public void setName(String name) {
-//            this.name = name;
-//        }
-//    }
-//
-
-
-
-    public void testArithPerf() {
-        HashMap map = new HashMap();
-        map.put("a", 12);
-        map.put("b", 9);
-        map.put("c", 40);
-
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("a * b - c");
-        MapVariableResolverFactory mvrf = new MapVariableResolverFactory(map);
-
-        for (int i = 0; i < 100000000; i++) {
-            stmt.getValue(null,null,mvrf);
-        }
-
     }
 }
 
