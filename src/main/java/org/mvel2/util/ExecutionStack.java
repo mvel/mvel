@@ -122,19 +122,15 @@ public class ExecutionStack {
         return size;
     }
 
+    public boolean isReduceable() {
+        return size>1;
+    }
+
     public void clear() {
         size = 0;
         element = null;
     }
-
-    public void showStack() {
-        StackElement el = element;
-        do {
-            System.out.println("->" + el.value);
-        }
-        while ((el = el.next) != null);
-    }
-
+    
     public String toString() {
         StackElement el = element;
 

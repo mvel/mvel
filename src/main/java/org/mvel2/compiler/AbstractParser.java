@@ -2283,9 +2283,9 @@ public class AbstractParser implements Serializable {
 
         // while any values remain on the stack
         // keep XSWAPing and reducing, until there is nothing left.
-        while (stk.size() > 1) {
+        while (stk.isReduceable()) {
             reduce();
-            if (stk.size() > 1) xswap();
+            if (stk.isReduceable()) xswap();
         }
 
         return OP_RESET_FRAME;
@@ -2370,18 +2370,11 @@ public class AbstractParser implements Serializable {
                     break;
 
                 case INSTANCEOF:
-                    if ((v1 = stk.pop()) instanceof Class)
-                        stk.push(((Class) v1).isInstance(stk.pop()));
-                    else
-                        stk.push(currentThread().getContextClassLoader().loadClass(java.lang.String.valueOf(v1)).isInstance(stk.pop()));
-
+                    stk.push(((Class) stk.pop()).isInstance(stk.pop()));
                     break;
 
                 case CONVERTABLE_TO:
-                    if ((v1 = stk.pop()) instanceof Class)
-                        stk.push(org.mvel2.DataConversion.canConvert(stk.pop().getClass(), (Class) v1));
-                    else
-                        stk.push(org.mvel2.DataConversion.canConvert(stk.pop().getClass(), currentThread().getContextClassLoader().loadClass(java.lang.String.valueOf(v1))));
+                    stk.push(org.mvel2.DataConversion.canConvert(stk.peek2().getClass(), (Class) stk.pop2()));
                     break;
 
                 case CONTAINS:
@@ -2416,11 +2409,6 @@ public class AbstractParser implements Serializable {
 
                 case BW_USHIFT_RIGHT:
                     stk.push(asInt(stk.peek2()) >>> asInt(stk.pop2()));
-                    break;
-
-                case STR_APPEND:
-                    stk.push(new StringAppender(java.lang.String.valueOf(stk.peek2()))
-                            .append(java.lang.String.valueOf(stk.pop2())).toString());
                     break;
 
                 case SOUNDEX:

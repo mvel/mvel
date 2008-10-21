@@ -486,11 +486,11 @@ public class TemplateTests extends TestCase {
     }
 
     public void testInstanceCheck1() {
-        assertEquals(true, test("@{c is 'java.lang.String'}"));
+        assertEquals(true, test("@{c is java.lang.String}"));
     }
 
     public void testInstanceCheck2() {
-        assertEquals(false, test("@{pi is 'java.lang.Integer'}"));
+        assertEquals(false, test("@{pi is java.lang.Integer}"));
     }
 
     public void testBitwiseOr1() {

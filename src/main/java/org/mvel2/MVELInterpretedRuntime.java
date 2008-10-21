@@ -28,7 +28,6 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.util.ExecutionStack;
 import static org.mvel2.util.ParseTools.findClassImportResolverFactory;
-import org.mvel2.optimizers.OptimizerFactory;
 
 import java.math.BigDecimal;
 import java.util.Map;

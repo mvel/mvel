@@ -14,11 +14,9 @@ import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.util.ASTLinkedList;
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.ParseTools;
-import static org.mvel2.util.ParseTools.containsCheck;
 import static org.mvel2.util.PropertyTools.isEmpty;
 
 import static java.lang.String.valueOf;
-import static java.lang.Thread.currentThread;
 
 /**
  * This class contains the runtime for running compiled MVEL expressions.
@@ -39,7 +37,7 @@ public class MVELRuntime {
      * @see org.mvel2.MVEL
      */
     public static Object execute(boolean debugger, final CompiledExpression expression, final Object ctx, VariableResolverFactory variableFactory) {
-         ASTLinkedList node = new ASTLinkedList(expression.getInstructions().firstNode());
+        ASTLinkedList node = new ASTLinkedList(expression.getInstructions().firstNode());
 
         if (expression.isImportInjectionRequired()) {
             variableFactory = new ClassImportResolverFactory(expression.getParserContext().getParserConfiguration(), variableFactory);
@@ -109,7 +107,7 @@ public class MVELRuntime {
                 stk.push(node.nextNode().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
 
                 try {
-                    while (stk.size() > 1) {
+                    while (stk.isReduceable()) {
                         switch ((Integer) stk.pop()) {
                             case CHOR:
                                 v1 = stk.pop();
@@ -123,21 +121,11 @@ public class MVELRuntime {
                                 break;
 
                             case INSTANCEOF:
-                                if ((v1 = stk.pop()) instanceof Class)
-                                    stk.push(((Class) v1).isInstance(stk.pop()));
-                                else
-                                    stk.push(currentThread().getContextClassLoader().loadClass(valueOf(v1)).isInstance(stk.pop()));
+                                stk.push(((Class) stk.pop()).isInstance(stk.pop()));
                                 break;
 
                             case CONVERTABLE_TO:
-                                if ((v1 = stk.pop()) instanceof Class)
-                                    stk.push(canConvert((stk.pop()).getClass(), (Class) v1));
-                                else
-                                    stk.push(canConvert((stk.pop()).getClass(), currentThread().getContextClassLoader().loadClass(valueOf(v1))));
-                                break;
-
-                            case CONTAINS:
-                                stk.push(containsCheck(stk.peek2(), stk.pop2()));
+                                stk.push(canConvert((stk.peek2()).getClass(), (Class) stk.pop2()));
                                 break;
 
                             case SOUNDEX:
