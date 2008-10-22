@@ -35,8 +35,11 @@ import static java.lang.String.valueOf;
 import java.util.HashMap;
 import java.util.Map;
 
-public class
-        MVEL {
+/**
+ * The MVEL convienence class is a collection of static methods that provides a set of easy integration points for
+ * MVEL.  The vast majority of MVEL's core functionality can be directly accessed through methods in this class.
+ */
+public class MVEL {
     public static final String NAME = "MVEL (MVFLEX Expression Language)";
     public static final String VERSION = "2.0";
     public static final String VERSION_SUB = "RC";
@@ -482,6 +485,15 @@ public class
     }
 
 
+    /**
+     * Evaluate an expression against a context object and return the value
+     *
+     * @param expression A char[] containing the expression to be evaluated.
+     * @param ctx        The context object to evaluate against
+     * @param vars       A Map of variables to be injected
+     * @return The resultant value
+     * @see #eval(String,Object,Map)
+     */
     public static Object eval(char[] expression, Object ctx, Map vars) {
         try {
             return new MVELInterpretedRuntime(expression, ctx, vars).parse();
@@ -491,6 +503,17 @@ public class
         }
     }
 
+    /**
+     * Evaluate an expression with a context object and injected variables and return the value. If necessary convert
+     * the resultant value to the specified type.
+     *
+     * @param expression A char[] containing the expression to be evaluated.
+     * @param ctx        The context object to evaluate against
+     * @param vars       A Map of variables to be injected
+     * @param toType     The target type the resultant value will be converted to, if necessary.
+     * @return The resultant value
+     * @see #eval(String,Object,Map,Class)
+     */
     public static <T> T eval(char[] expression, Object ctx, Map<String, Object> vars, Class<T> toType) {
         try {
             return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
@@ -500,6 +523,17 @@ public class
         }
     }
 
+
+    /**
+     * Evaluate an expression with a context object and return the value. If necessary convert
+     * the resultant value to the specified type.
+     *
+     * @param expression A char[] containing the expression to be evaluated.
+     * @param ctx        The context object to evaluate against
+     * @param toType     The target type the resultant value will be converted to, if necessary.
+     * @return The resultant value
+     * @see #eval(String,Object,Class)
+     */
     public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
         try {
             return convert(new MVELInterpretedRuntime(expression, ctx).parse(), toType);
@@ -509,7 +543,17 @@ public class
         }
     }
 
-
+    /**
+     * Evaluate an expression with a context object and injected variables and return the value. If necessary convert
+     * the resultant value to the specified type.
+     *
+     * @param expression A char[] containing the expression to be evaluated.
+     * @param ctx        The context object to evaluate against
+     * @param vars       The variables to be injected
+     * @param toType     The target type the resultant value will be converted to, if necessary.
+     * @return The resultant value
+     * @see #eval(String,Object,VariableResolverFactory,Class)
+     */
     public static <T> T eval(char[] expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
         try {
             return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
@@ -519,6 +563,36 @@ public class
         }
     }
 
+
+    /**
+     * Evaluate an expression with injected variables and return the value. If necessary convert
+     * the resultant value to the specified type.
+     *
+     * @param expression A char[] containing the expression to be evaluated.
+     * @param vars       The variables to be injected
+     * @param toType     The target type the resultant value will be converted to, if necessary.
+     * @return The resultant value
+     * @see #eval(String,VariableResolverFactory,Class)
+     */
+    public static <T> T eval(char[] expression, VariableResolverFactory vars, Class<T> toType) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+    /**
+     * Evaluate an expression with injected variables and return the value. If necessary convert
+     * the resultant value to the specified type.
+     *
+     * @param expression A char[] containing the expression to be evaluated.
+     * @param vars       The variables to be injected
+     * @param toType     The target type the resultant value will be converted to, if necessary.
+     * @return The resultant value
+     * @see #eval(String,Map,Class)
+     */
     public static <T> T eval(char[] expression, Map<String, Object> vars, Class<T> toType) {
         try {
             return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
@@ -705,11 +779,11 @@ public class
      * Compiles an expression and returns a Serializable object containing the compiled
      * expression.
      *
-     * @param expression   - the expression to be compiled
-     * @param imports      -
-     * @param interceptors -
-     * @param sourceName   -
-     * @return -
+     * @param expression   The expression to be compiled
+     * @param imports      Imported classes
+     * @param interceptors Map of named interceptos
+     * @param sourceName   The name of the source file being evaluated (optional)
+     * @return The cacheable compiled payload
      */
     public static Serializable compileExpression(char[] expression, Map<String, Object> imports,
                                                  Map<String, Interceptor> interceptors, String sourceName) {
