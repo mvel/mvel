@@ -75,63 +75,597 @@ public class
     }
 
     /**
-     * Evaluate an expression
+     * Evaluate an expression and return the value.
+     *
      * @param expression A String containing the expression to be evaluated.
      * @return the resultant value
      */
     public static Object eval(String expression) {
-        return new MVELInterpretedRuntime(expression, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
+        try {
+            return new MVELInterpretedRuntime(expression, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
     }
 
     /**
-     * Evaluate an expression
-     * @param expression A char[] containing the expressin to be evaluated.
-     * @return
-     */
-    public static Object eval(char[] expression) {
-        return new MVELInterpretedRuntime(expression, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
-    }
-
-    /**
-     * Evaluate an expression against a context object.  
-     * @param expression
-     * @param ctx
-     * @return
+     * Evaluate an expression against a context object.  Expressions evaluated against a context object are designed
+     * to treat members of that context object as variables in the expression.  For example:
+     * <pre><code>
+     * MVEL.eval("foo == 1", ctx);
+     * </code></pre>
+     * In this case, the identifier <tt>foo</tt> would be resolved against the <tt>ctx</tt> object.  So it would have
+     * the equivalent of: <tt>ctc.getFoo() == 1</tt> in Java.
+     *
+     * @param expression A String containing the expression to be evaluated.
+     * @param ctx        The context object to evaluate against.
+     * @return The resultant value
      */
     public static Object eval(String expression, Object ctx) {
-        return new MVELInterpretedRuntime(expression, ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
+        try {
+            return new MVELInterpretedRuntime(expression, ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
     }
 
+    /**
+     * Evaluate an expression with externally injected variables via a {@link VariableResolverFactory}.  A factory
+     * provides the means by which MVEL can resolve external variables.  MVEL contains a straight-forward implementation
+     * for wrapping Maps: {@link MapVariableResolverFactory}, which is used implicitly when calling overloaded methods
+     * in this class that use Maps.
+     * <p/>
+     * An example:
+     * <pre><code>
+     * Map varsMap = new HashMap();
+     * varsMap.put("x", 5);
+     * varsMap.put("y", 2);
+     * <p/>
+     * VariableResolverFactory factory = new MapVariableResolverFactory(varsMap);
+     * <p/>
+     * Integer i = (Integer) MVEL.eval("x * y", factory);
+     * <p/>
+     * assert i == 10;
+     * </code></pre>
+     *
+     * @param expression      A String containing the expression to be evaluated.
+     * @param resolverFactory The instance of the VariableResolverFactory to be used.
+     * @return The resultant value.
+     */
     public static Object eval(String expression, VariableResolverFactory resolverFactory) {
-        return new MVELInterpretedRuntime(expression, resolverFactory).parse();
+        try {
+            return new MVELInterpretedRuntime(expression, resolverFactory).parse();
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
     }
 
-    public static Object eval(char[] expression, Object ctx, VariableResolverFactory resolverFactory) {
-        return new MVELInterpretedRuntime(expression, ctx, resolverFactory).parse();
-    }
-
-    public static Object eval(char[] expression, Object ctx, VariableResolverFactory resolverFactory, boolean returnBigDecimal) {
-        return new MVELInterpretedRuntime(expression, ctx, resolverFactory, returnBigDecimal).parse();
-    }
-
+    /**
+     * Evaluates an expression against a context object and injected variables from a {@link VariableResolverFactory}.
+     * This method of execution will prefer to find variables from the factory and <em>then</em> from the context.
+     *
+     * @param expression      A string containing the expression to be evaluated
+     * @param ctx             The context object to evaluate against.
+     * @param resolverFactory The instance of the VariableResolverFactory to be used.
+     * @return The resultant value
+     * @see #eval(String, org.mvel2.integration.VariableResolverFactory)
+     */
     public static Object eval(String expression, Object ctx, VariableResolverFactory resolverFactory) {
-        return new MVELInterpretedRuntime(expression, ctx, resolverFactory).parse();
+        try {
+            return new MVELInterpretedRuntime(expression, ctx, resolverFactory).parse();
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
     }
 
-    public static Object eval(String expression, Object ctx, VariableResolverFactory resolverFactory, boolean returnBigDecimal) {
-        return new MVELInterpretedRuntime(expression, ctx, resolverFactory, returnBigDecimal).parse();
+    /**
+     * Evaluates an expression against externally injected variables.  This is a wrapper convenience method which
+     * wraps the provided Map of vars in a {@link MapVariableResolverFactory}
+     *
+     * @param expression A string containing the expression to be evaluated.
+     * @param vars       A map of vars to be injected
+     * @return The resultant value
+     * @see #eval(String, org.mvel2.integration.VariableResolverFactory)
+     */
+    public static Object eval(String expression, Map<String, Object> vars) {
+        try {
+            return new MVELInterpretedRuntime(expression, null, new MapVariableResolverFactory(vars)).parse();
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
     }
 
+    /**
+     * Evaluates an expression against a context object and externally injected variables.  This is a wrapper
+     * convenience method which wraps the provided Map of vars in a {@link MapVariableResolverFactory}
+     *
+     * @param expression A string containing the expression to be evaluated.
+     * @param ctx        The context object to evaluate against.
+     * @param vars       A map of vars to be injected
+     * @return The resultant value
+     * @see #eval(String, VariableResolverFactory)
+     */
+    public static Object eval(String expression, Object ctx, Map<String, Object> vars) {
+        try {
+            return new MVELInterpretedRuntime(expression, ctx, new MapVariableResolverFactory(vars)).parse();
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
+    }
+
+
+    /**
+     * Evaluates an expression and, if necessary, coerces the resultant value to the specified type. Example:
+     * <pre><code>
+     * Float output = MVEL.eval("5 + 5", Float.class);
+     * </code></pre>
+     * <p/>
+     * This converts an expression that would otherwise return an <tt>Integer</tt> to a <tt>Float</tt>.
+     *
+     * @param expression A string containing the expression to be evaluated.
+     * @param toType     The target type that the resultant value will be converted to, if necessary.
+     * @return The resultant value.
+     */
+    public static <T> T eval(String expression, Class<T> toType) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+
+    /**
+     * Evaluates an expression against a context object and, if necessary, coerces the resultant value to the specified
+     * type.
+     *
+     * @param expression A string containing the expression to be evaluated.
+     * @param ctx        The context object to evaluate against.
+     * @param toType     The target type that the resultant value will be converted to, if necessary.
+     * @return The resultant value
+     * @see #eval(String,Class)
+     */
+    public static <T> T eval(String expression, Object ctx, Class<T> toType) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression, ctx).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+
+    /**
+     * Evaluates an expression against externally injected variables and, if necessary, coerces the resultant value
+     * to the specified type.
+     *
+     * @param expression A string containing the expression to be evaluated
+     * @param vars       The variables to be injected
+     * @param toType     The target type that the resultant value will be converted to, if necessary.
+     * @return The resultant value
+     * @see #eval(String,VariableResolverFactory)
+     * @see #eval(String,Class)
+     */
+    public static <T> T eval(String expression, VariableResolverFactory vars, Class<T> toType) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+
+    /**
+     * Evaluates an expression against externally injected variables.  The resultant value is coerced to the specified
+     * type if necessary. This is a wrapper convenience method which wraps the provided Map of vars in a
+     * {@link MapVariableResolverFactory}
+     *
+     * @param expression A string containing the expression to be evaluated.
+     * @param vars       A map of vars to be injected
+     * @param toType     The target type the resultant value will be converted to, if necessary.
+     * @return The resultant value
+     * @see #eval(String, org.mvel2.integration.VariableResolverFactory)
+     */
+    public static <T> T eval(String expression, Map<String, Object> vars, Class<T> toType) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression, null, new MapVariableResolverFactory(vars)).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+    /**
+     * Evaluates an expression against a context object and externally injected variables.  If necessary, the resultant
+     * value is coerced to the specified type.
+     *
+     * @param expression A string containing the expression to be evaluated.
+     * @param ctx        The context object to evaluate against
+     * @param vars       The vars to be injected
+     * @param toType     The target type that the resultant value will be converted to, if necessary.
+     * @return The resultant value.
+     * @see #eval(String,Object,VariableResolverFactory)
+     * @see #eval(String,Class)
+     */
+    public static <T> T eval(String expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+    /**
+     * Evaluates an expression against a context object and externally injected variables.  If necessary, the resultant
+     * value is coerced to the specified type.
+     *
+     * @param expression A string containing the expression to be evaluated.
+     * @param ctx        The context object to evaluate against
+     * @param vars       A Map of variables to be injected.
+     * @param toType     The target type that the resultant value will be converted to, if necessary.
+     * @return The resultant value.
+     * @see #eval(String,Object,VariableResolverFactory)
+     * @see #eval(String,Class)
+     */
+    public static <T> T eval(String expression, Object ctx, Map<String, Object> vars, Class<T> toType) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression, ctx, new MapVariableResolverFactory(vars)).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+    /**
+     * Evaluates an expression and returns the resultant value as a String.
+     *
+     * @param expression A string containing the expressino to be evaluated.
+     * @return The resultant value
+     */
+    public static String evalToString(String expression) {
+        try {
+            return valueOf(eval(expression));
+        }
+        catch (EndWithValue end) {
+            return valueOf(end.getValue());
+        }
+    }
+
+
+    /**
+     * Evaluates an expression and returns the resultant value as a String.
+     *
+     * @param expression A string containing the expressino to be evaluated.
+     * @param ctx        The context object to evaluate against
+     * @return The resultant value
+     * @see #eval(String,Object)
+     */
+    public static String evalToString(String expression, Object ctx) {
+        try {
+            return valueOf(eval(expression, ctx));
+        }
+        catch (EndWithValue end) {
+            return valueOf(end.getValue());
+        }
+    }
+
+    /**
+     * Evaluates an expression and returns the resultant value as a String.
+     *
+     * @param expression A string containing the expressino to be evaluated.
+     * @param vars       The variables to be injected
+     * @return The resultant value
+     * @see #eval(String,VariableResolverFactory)
+     */
+    public static String evalToString(String expression, VariableResolverFactory vars) {
+        try {
+            return valueOf(eval(expression, vars));
+        }
+        catch (EndWithValue end) {
+            return valueOf(end.getValue());
+        }
+    }
+
+
+    /**
+     * Evaluates an expression and returns the resultant value as a String.
+     *
+     * @param expression A string containing the expressino to be evaluated.
+     * @param vars       A Map of variables to be injected
+     * @return The resultant value
+     * @see #eval(String,Map)
+     */
+    public static String evalToString(String expression, Map vars) {
+        try {
+            return valueOf(eval(expression, vars));
+        }
+        catch (EndWithValue end) {
+            return valueOf(end.getValue());
+        }
+    }
+
+    /**
+     * Evaluates an expression and returns the resultant value as a String.
+     *
+     * @param expression A string containing the expressino to be evaluated.
+     * @param ctx        The context object to evaluate against.
+     * @param vars       The variables to be injected
+     * @return The resultant value
+     * @see #eval(String,Map)
+     */
+    public static String evalToString(String expression, Object ctx, VariableResolverFactory vars) {
+        try {
+            return valueOf(eval(expression, ctx, vars));
+        }
+        catch (EndWithValue end) {
+            return valueOf(end.getValue());
+        }
+    }
+
+    /**
+     * Evaluates an expression and returns the resultant value as a String.
+     *
+     * @param expression A string containing the expressino to be evaluated.
+     * @param ctx        The context object to evaluate against.
+     * @param vars       A Map of variables to be injected
+     * @return The resultant value
+     * @see #eval(String,Map)
+     */
+    public static String evalToString(String expression, Object ctx, Map vars) {
+        try {
+            return valueOf(eval(expression, ctx, vars));
+        }
+        catch (EndWithValue end) {
+            return valueOf(end.getValue());
+        }
+    }
+
+
+    /**
+     * Evaluate an expression and return the value.
+     *
+     * @param expression A char[] containing the expression to be evaluated.
+     * @return The resultant value
+     * @see #eval(String)
+     */
+    public static Object eval(char[] expression) {
+        try {
+            return new MVELInterpretedRuntime(expression, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
+    }
+
+    /**
+     * Evaluate an expression against a context object and return the value
+     *
+     * @param expression A char[] containing the expression to be evaluated.
+     * @param ctx        The context object to evaluate against
+     * @return The resultant value
+     * @see #eval(String,Object)
+     */
+    public static Object eval(char[] expression, Object ctx) {
+        try {
+            return new MVELInterpretedRuntime(expression, ctx).parse();
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
+    }
+
+    /**
+     * Evaluate an expression against a context object and return the value
+     *
+     * @param expression A char[] containing the expression to be evaluated.
+     * @param ctx        The context object to evaluate against
+     * @param vars       The variables to be injected
+     * @return The resultant value
+     * @see #eval(String,Object,VariableResolverFactory)
+     */
+    public static Object eval(char[] expression, Object ctx, VariableResolverFactory vars) {
+        try {
+            return new MVELInterpretedRuntime(expression, ctx, vars).parse();
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
+    }
+
+
+    public static Object eval(char[] expression, Object ctx, Map vars) {
+        try {
+            return new MVELInterpretedRuntime(expression, ctx, vars).parse();
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
+    }
+
+    public static <T> T eval(char[] expression, Object ctx, Map<String, Object> vars, Class<T> toType) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+    public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression, ctx).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+
+    public static <T> T eval(char[] expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+    public static <T> T eval(char[] expression, Map<String, Object> vars, Class<T> toType) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+
+    public static Object evalFile(File file) throws IOException {
+        try {
+            return _evalFile(file, null, new MapVariableResolverFactory(new HashMap()));
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
+    }
+
+    public static Object evalFile(File file, Object ctx) throws IOException {
+        try {
+            return _evalFile(file, ctx, new MapVariableResolverFactory(new HashMap()));
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
+    }
+
+    public static Object evalFile(File file, Map<String, Object> vars) throws IOException {
+        try {
+            return evalFile(file, null, vars);
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
+    }
+
+    public static Object evalFile(File file, Object ctx, Map<String, Object> vars) throws IOException {
+        try {
+            return _evalFile(file, ctx, new MapVariableResolverFactory(vars));
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
+    }
+
+    public static Object evalFile(File file, Object ctx, VariableResolverFactory factory) throws IOException {
+        try {
+            return _evalFile(file, ctx, factory);
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
+    }
+
+    private static Object _evalFile(File file, Object ctx, VariableResolverFactory factory) throws IOException {
+        try {
+            return eval(loadFromFile(file), ctx, factory);
+        }
+        catch (EndWithValue end) {
+            return end.getValue();
+        }
+    }
+
+
+    /**
+     * Evaluate an expression in Boolean-only mode.
+     *
+     * @param expression -
+     * @param ctx        -
+     * @param vars       -
+     * @return -
+     */
     @SuppressWarnings({"unchecked"})
-    public static Object eval(String expression, Map tokens) {
-        return new MVELInterpretedRuntime(expression, null, tokens).parse();
+    public static Boolean evalToBoolean(String expression, Object ctx, Map vars) {
+        try {
+            return eval(expression, ctx, vars, Boolean.class);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), Boolean.class);
+        }
     }
 
-    @SuppressWarnings({"unchecked"})
-    public static Object eval(String expression, Object ctx, Map tokens) {
-        return new MVELInterpretedRuntime(expression, ctx, tokens).parse();
+    /**
+     * Evaluate an expression in Boolean-only mode.
+     *
+     * @param expression -
+     * @param ctx        -
+     * @return -
+     */
+    public static Boolean evalToBoolean(String expression, Object ctx) {
+        try {
+            return eval(expression, ctx, Boolean.class);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), Boolean.class);
+        }
     }
 
+    /**
+     * Evaluate an expression in Boolean-only mode.
+     *
+     * @param expression -
+     * @param ctx        -
+     * @param factory    -
+     * @return -
+     */
+    public static Boolean evalToBoolean(String expression, Object ctx, VariableResolverFactory factory) {
+        try {
+            return eval(expression, ctx, factory, Boolean.class);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), Boolean.class);
+        }
+    }
+
+    /**
+     * Evaluate an expression in Boolean-only mode.
+     *
+     * @param expression -
+     * @param factory    -
+     * @return -
+     */
+    public static Boolean evalToBoolean(String expression, VariableResolverFactory factory) {
+        try {
+            return eval(expression, factory, Boolean.class);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), Boolean.class);
+        }
+    }
+
+    /**
+     * Evaluate an expression in Boolean-only mode.
+     *
+     * @param expression -
+     * @param vars       -
+     * @return -
+     */
+    public static Boolean evalToBoolean(String expression, Map vars) {
+        try {
+            return evalToBoolean(expression, null, vars);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), Boolean.class);
+        }
+    }
 
     public static Serializable compileExpression(String expression, ParserContext ctx) {
         return optimizeTree(new ExpressionCompiler(expression)
@@ -423,215 +957,6 @@ public class
         }
     }
 
-
-    @SuppressWarnings({"unchecked"})
-    public static <T> T eval(char[] expression, Object ctx, Map vars, Class<T> toType) {
-        try {
-            return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
-        }
-        catch (EndWithValue end) {
-            return convert(end.getValue(), toType);
-        }
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
-        try {
-            return convert(new MVELInterpretedRuntime(expression, ctx).parse(), toType);
-        }
-        catch (EndWithValue end) {
-            return convert(end.getValue(), toType);
-        }
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static <T> T eval(String expression, Object ctx, Class<T> toType) {
-        try {
-            return convert(new MVELInterpretedRuntime(expression, ctx).parse(), toType);
-        }
-        catch (EndWithValue end) {
-            return convert(end.getValue(), toType);
-        }
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static <T> T eval(String expression, Object ctx, Map vars, Class<T> toType) {
-        try {
-            return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
-        }
-        catch (EndWithValue end) {
-            return convert(end.getValue(), toType);
-        }
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static <T> T eval(char[] expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
-        try {
-            return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
-        }
-        catch (EndWithValue end) {
-            return convert(end.getValue(), toType);
-        }
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static <T> T eval(String expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
-        try {
-            return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
-        }
-        catch (EndWithValue end) {
-            return convert(end.getValue(), toType);
-        }
-    }
-
-
-    @SuppressWarnings({"unchecked"})
-    public static <T> T eval(String expression, Map vars, Class<T> toType) {
-        try {
-            return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
-        }
-        catch (EndWithValue end) {
-            return convert(end.getValue(), toType);
-        }
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static <T> T eval(String expression, VariableResolverFactory vars, Class<T> toType) {
-        try {
-            return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
-        }
-        catch (EndWithValue end) {
-            return convert(end.getValue(), toType);
-        }
-    }
-
-
-    @SuppressWarnings({"unchecked"})
-    public static <T> T eval(char[] expression, Map vars, Class<T> toType) {
-        try {
-            return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
-        }
-        catch (EndWithValue end) {
-            return convert(end.getValue(), toType);
-        }
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static Object eval(char[] expression, Object ctx, Map vars) {
-        try {
-            return new MVELInterpretedRuntime(expression, ctx, vars).parse();
-        }
-        catch (EndWithValue end) {
-            return end.getValue();
-        }
-    }
-
-    public static String evalToString(String expression, Object ctx) {
-        try {
-            return valueOf(eval(expression, ctx));
-        }
-        catch (EndWithValue end) {
-            return valueOf(end.getValue());
-        }
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static String evalToString(String expression, Map vars) {
-        return valueOf(eval(expression, vars));
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public static String evalToString(String expression, Object ctx, Map vars) {
-        try {
-            return valueOf(eval(expression, ctx, vars));
-        }
-        catch (EndWithValue end) {
-            return valueOf(end.getValue());
-        }
-    }
-
-    public static Object evalFile(File file) throws IOException {
-        return _evalFile(file, null, new MapVariableResolverFactory(new HashMap()));
-    }
-
-    public static Object evalFile(File file, Object ctx) throws IOException {
-        return _evalFile(file, ctx, new MapVariableResolverFactory(new HashMap()));
-    }
-
-    public static Object evalFile(File file, Map vars) throws IOException {
-        return evalFile(file, null, vars);
-    }
-
-    public static Object evalFile(File file, Object ctx, Map vars) throws IOException {
-        return _evalFile(file, ctx, new MapVariableResolverFactory(vars));
-    }
-
-    public static Object evalFile(File file, Object ctx, VariableResolverFactory factory) throws IOException {
-        return _evalFile(file, ctx, factory);
-    }
-
-    private static Object _evalFile(File file, Object ctx, VariableResolverFactory factory) throws IOException {
-        return eval(loadFromFile(file), ctx, factory);
-    }
-
-
-    /**
-     * Evaluate an expression in Boolean-only mode.
-     *
-     * @param expression -
-     * @param ctx        -
-     * @param vars       -
-     * @return -
-     */
-    @SuppressWarnings({"unchecked"})
-    public static Boolean evalToBoolean(String expression, Object ctx, Map vars) {
-        return eval(expression, ctx, vars, Boolean.class);
-    }
-
-    /**
-     * Evaluate an expression in Boolean-only mode.
-     *
-     * @param expression -
-     * @param ctx        -
-     * @return -
-     */
-    public static Boolean evalToBoolean(String expression, Object ctx) {
-        return eval(expression, ctx, Boolean.class);
-    }
-
-    /**
-     * Evaluate an expression in Boolean-only mode.
-     *
-     * @param expression -
-     * @param ctx        -
-     * @param factory    -
-     * @return -
-     */
-    public static Boolean evalToBoolean(String expression, Object ctx, VariableResolverFactory factory) {
-        return eval(expression, ctx, factory, Boolean.class);
-    }
-
-    /**
-     * Evaluate an expression in Boolean-only mode.
-     *
-     * @param expression -
-     * @param factory    -
-     * @return -
-     */
-    public static Boolean evalToBoolean(String expression, VariableResolverFactory factory) {
-        return eval(expression, factory, Boolean.class);
-    }
-
-    /**
-     * Evaluate an expression in Boolean-only mode.
-     *
-     * @param expression -
-     * @param vars       -
-     * @return -
-     */
-    public static Boolean evalToBoolean(String expression, Map vars) {
-        return evalToBoolean(expression, null, vars);
-    }
 
     public static String parseMacros(String input, Map<String, Macro> macros) {
         return new MacroProcessor(macros).parse(input);

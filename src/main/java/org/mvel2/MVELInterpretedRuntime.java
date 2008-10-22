@@ -331,14 +331,10 @@ public class MVELInterpretedRuntime extends AbstractParser {
         this.variableFactory = MVELRuntime.IMMUTABLE_DEFAULT_FACTORY;
     }
 
-    MVELInterpretedRuntime(String expression, Object ctx, Map<String, Object> variables) {
-        setExpression(expression);
-        this.ctx = ctx;
-        this.variableFactory = new MapVariableResolverFactory(variables);
-    }
 
     MVELInterpretedRuntime(String expression) {
         setExpression(expression);
+        this.variableFactory = MVELRuntime.IMMUTABLE_DEFAULT_FACTORY;
     }
 
     MVELInterpretedRuntime(char[] expression) {
