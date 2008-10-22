@@ -42,16 +42,16 @@ public class ParserContext implements Serializable {
     private ParserConfiguration parserConfiguration = new ParserConfiguration();
 
     private ArrayList<String> indexedVariables;
-    private Map<String, Class> variables;
-    private Map<String, Class> inputs;
+    private HashMap<String, Class> variables;
+    private HashMap<String, Class> inputs;
 
-    private transient Map<String, Map<String, Class>> typeParameters;
+    private transient HashMap<String, Map<String, Class>> typeParameters;
     private transient Type[] lastTypeParameters;
-    private Map<String, Function> globalFunctions;
+    private HashMap<String, Function> globalFunctions;
 
     private transient List<ErrorDetail> errorList;
 
-    private Map<String, Set<Integer>> sourceMap;
+    private HashMap<String, Set<Integer>> sourceMap;
     private LineLabel lastLineLabel;
 
     private transient Object rootParser;
@@ -238,11 +238,11 @@ public class ParserContext implements Serializable {
         }
     }
 
-    public Map<String, Class> getInputs() {
+    public HashMap<String, Class> getInputs() {
         return inputs;
     }
 
-    public void setInputs(Map<String, Class> inputs) {
+    public void setInputs(HashMap<String, Class> inputs) {
         this.inputs = inputs;
     }
 
@@ -344,11 +344,11 @@ public class ParserContext implements Serializable {
         }
     }
 
-    public Map<String, Class> getVariables() {
+    public HashMap<String, Class> getVariables() {
         return variables;
     }
 
-    public void setVariables(Map<String, Class> variables) {
+    public void setVariables(HashMap<String, Class> variables) {
         this.variables = variables;
     }
 

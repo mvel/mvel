@@ -2030,8 +2030,8 @@ public class AbstractParser implements Serializable {
         OPERATORS.putAll(loadLanguageFeaturesByLevel(level));
     }
 
-    public static Map<String, Integer> loadLanguageFeaturesByLevel(int languageLevel) {
-        Map<String, Integer> operatorsTable = new HashMap<String, Integer>();
+    public static HashMap<String, Integer> loadLanguageFeaturesByLevel(int languageLevel) {
+        HashMap<String, Integer> operatorsTable = new HashMap<String, Integer>();
         switch (languageLevel) {
             case 5:  // control flow operations
                 operatorsTable.put("if", IF);
