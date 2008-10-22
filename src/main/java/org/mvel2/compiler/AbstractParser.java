@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
+ * This is the core parser that the subparsers extend.
+ * 
  * @author Christopher Brock
  */
 public class AbstractParser implements Serializable {
@@ -69,12 +71,12 @@ public class AbstractParser implements Serializable {
 
     protected ASTNode lastNode;
 
-    private static final Map<String, char[]> EX_PRECACHE = new WeakHashMap<String, char[]>(15);
+    private static final WeakHashMap<String, char[]> EX_PRECACHE = new WeakHashMap<String, char[]>(15);
 
-    public static final Map<String, Object> LITERALS =
+    public static final HashMap<String, Object> LITERALS =
             new HashMap<String, Object>(35 * 2, 0.4f);
 
-    public static final Map<String, Integer> OPERATORS =
+    public static final HashMap<String, Integer> OPERATORS =
             new HashMap<String, Integer>(25 * 2, 0.4f);
 
     protected ExecutionStack stk;

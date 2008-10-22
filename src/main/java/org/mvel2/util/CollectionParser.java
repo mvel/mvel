@@ -222,7 +222,7 @@ public class CollectionParser {
         else {
             Class r = ((ExecutableStatement) subCompileExpression(ex.toCharArray())).getKnownEgressType();
             if (!colType.isAssignableFrom(r) && (strongType || !DataConversion.canConvert(r, colType))) {
-                throw new CompileException("expected type: " + colType.getName() + "; but found:" + r.getName());
+                 throw new CompileException("expected type: " + colType.getName() + "; but found: " + r.getName());
             }
         }
     }
@@ -232,8 +232,10 @@ public class CollectionParser {
             start++;
 
         char[] newA = new char[end - start];
-        for (int i = 0; i < newA.length; i++) {
+        int i = 0;
+        while (i != newA.length) {
             newA[i] = property[i + start];
+            i++;
         }
 
         return newA;

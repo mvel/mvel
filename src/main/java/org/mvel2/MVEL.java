@@ -35,7 +35,8 @@ import static java.lang.String.valueOf;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MVEL {
+public class
+        MVEL {
     public static final String NAME = "MVEL (MVFLEX Expression Language)";
     public static final String VERSION = "2.0";
     public static final String VERSION_SUB = "RC";
@@ -73,18 +74,30 @@ public class MVEL {
         return DEBUG_FILE;
     }
 
-    public static boolean isOptimizationEnabled() {
-        return OPTIMIZER;
-    }
-
+    /**
+     * Evaluate an expression
+     * @param expression A String containing the expression to be evaluated.
+     * @return the resultant value
+     */
     public static Object eval(String expression) {
         return new MVELInterpretedRuntime(expression, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
     }
 
+    /**
+     * Evaluate an expression
+     * @param expression A char[] containing the expressin to be evaluated.
+     * @return
+     */
     public static Object eval(char[] expression) {
         return new MVELInterpretedRuntime(expression, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
     }
 
+    /**
+     * Evaluate an expression against a context object.  
+     * @param expression
+     * @param ctx
+     * @return
+     */
     public static Object eval(String expression, Object ctx) {
         return new MVELInterpretedRuntime(expression, ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
     }
