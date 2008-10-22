@@ -43,7 +43,7 @@ public class ParserContext implements Serializable {
 
     private ArrayList<String> indexedVariables;
     private HashMap<String, Class> variables;
-    private HashMap<String, Class> inputs;
+    private Map<String, Class> inputs;
 
     private transient HashMap<String, Map<String, Class>> typeParameters;
     private transient Type[] lastTypeParameters;
@@ -238,11 +238,11 @@ public class ParserContext implements Serializable {
         }
     }
 
-    public HashMap<String, Class> getInputs() {
+    public Map<String, Class> getInputs() {
         return inputs;
     }
 
-    public void setInputs(HashMap<String, Class> inputs) {
+    public void setInputs(Map<String, Class> inputs) {
         this.inputs = inputs;
     }
 
