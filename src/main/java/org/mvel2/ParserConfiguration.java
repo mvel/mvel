@@ -29,8 +29,8 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class ParserConfiguration implements Serializable {
-    protected Map<String, Object> imports;
-    protected Set<String> packageImports;
+    protected HashMap<String, Object> imports;
+    protected HashSet<String> packageImports;
     protected Map<String, Interceptor> interceptors;
     protected transient ClassLoader classLoader = currentThread().getContextClassLoader();
 
@@ -55,11 +55,11 @@ public class ParserConfiguration implements Serializable {
         this.interceptors = interceptors;
     }
 
-    public Set<String> getPackageImports() {
+    public HashSet<String> getPackageImports() {
         return packageImports;
     }
 
-    public void setPackageImports(Set<String> packageImports) {
+    public void setPackageImports(HashSet<String> packageImports) {
         this.packageImports = packageImports;
     }
 
