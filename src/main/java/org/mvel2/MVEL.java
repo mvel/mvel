@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import static java.lang.Boolean.getBoolean;
 import static java.lang.String.valueOf;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -584,7 +586,7 @@ public class MVEL {
     }
 
     /**
-     * Evaluate an expression with injected variables and return the value. If necessary convert
+     * Evaluate an expression with injected variables and return the resultant value. If necessary convert
      * the resultant value to the specified type.
      *
      * @param expression A char[] containing the expression to be evaluated.
@@ -602,7 +604,13 @@ public class MVEL {
         }
     }
 
-
+    /**
+     * Evaluate a script from a file and return the resultant value.
+     *
+     * @param file The file to process
+     * @return The resultant value
+     * @throws IOException Exception thrown if there is an IO problem accessing the file.
+     */
     public static Object evalFile(File file) throws IOException {
         try {
             return _evalFile(file, null, new MapVariableResolverFactory(new HashMap()));
@@ -612,6 +620,14 @@ public class MVEL {
         }
     }
 
+    /**
+     * Evaluate a script from a file, against a context object and return the resultant value.
+     *
+     * @param file The file to process
+     * @param ctx  The context to evaluate the script against.
+     * @return The resultant value
+     * @throws IOException Exception thrown if there is an IO problem accessing the file.
+     */
     public static Object evalFile(File file, Object ctx) throws IOException {
         try {
             return _evalFile(file, ctx, new MapVariableResolverFactory(new HashMap()));
@@ -621,6 +637,14 @@ public class MVEL {
         }
     }
 
+    /**
+     * Evaluate a script from a file with injected variables and return the resultant value.
+     *
+     * @param file The file to process
+     * @param vars Variables to be injected
+     * @return The resultant value
+     * @throws IOException Exception thrown if there is an IO problem accessing the file.
+     */
     public static Object evalFile(File file, Map<String, Object> vars) throws IOException {
         try {
             return evalFile(file, null, vars);
@@ -630,6 +654,15 @@ public class MVEL {
         }
     }
 
+    /**
+     * Evaluate a script from a file with injected variables and a context object, then return the resultant value.
+     *
+     * @param file The file to process
+     * @param ctx  The context to evaluate the script against.
+     * @param vars Variables to be injected
+     * @return The resultant value
+     * @throws IOException Exception thrown if there is an IO problem accessing the file.
+     */
     public static Object evalFile(File file, Object ctx, Map<String, Object> vars) throws IOException {
         try {
             return _evalFile(file, ctx, new MapVariableResolverFactory(vars));
@@ -639,9 +672,18 @@ public class MVEL {
         }
     }
 
-    public static Object evalFile(File file, Object ctx, VariableResolverFactory factory) throws IOException {
+    /**
+     * Evaluate a script from a file with injected variables and a context object, then return the resultant value.
+     *
+     * @param file The file to process
+     * @param ctx  The context to evaluate the script against.
+     * @param vars Variables to be injected
+     * @return The resultant value
+     * @throws IOException Exception thrown if there is an IO problem accessing the file.
+     */
+    public static Object evalFile(File file, Object ctx, VariableResolverFactory vars) throws IOException {
         try {
-            return _evalFile(file, ctx, factory);
+            return _evalFile(file, ctx, vars);
         }
         catch (EndWithValue end) {
             return end.getValue();
@@ -659,15 +701,14 @@ public class MVEL {
 
 
     /**
-     * Evaluate an expression in Boolean-only mode.
+     * Evaluate an expression in Boolean-only mode against a root context object and injected variables.
      *
-     * @param expression -
-     * @param ctx        -
-     * @param vars       -
-     * @return -
+     * @param expression A string containing the expression to be evaluated.
+     * @param ctx        The context against which to evaluate the expression
+     * @param vars       The variables to be injected
+     * @return The resultant value as a Boolean
      */
-    @SuppressWarnings({"unchecked"})
-    public static Boolean evalToBoolean(String expression, Object ctx, Map vars) {
+    public static Boolean evalToBoolean(String expression, Object ctx, Map<String, Object> vars) {
         try {
             return eval(expression, ctx, vars, Boolean.class);
         }
@@ -677,11 +718,11 @@ public class MVEL {
     }
 
     /**
-     * Evaluate an expression in Boolean-only mode.
+     * Evaluate an expression in Boolean-only mode against a root context object.
      *
-     * @param expression -
-     * @param ctx        -
-     * @return -
+     * @param expression A string containing the expression to be evaluated.
+     * @param ctx        The context against which to evaluate the expression
+     * @return The resultant value as a Boolean
      */
     public static Boolean evalToBoolean(String expression, Object ctx) {
         try {
@@ -693,16 +734,16 @@ public class MVEL {
     }
 
     /**
-     * Evaluate an expression in Boolean-only mode.
+     * Evaluate an expression in Boolean-only mode against a root context object and injected variables.
      *
-     * @param expression -
-     * @param ctx        -
-     * @param factory    -
-     * @return -
+     * @param expression A string containing the expression to be evaluated.
+     * @param ctx        The context against which to evaluate the expression
+     * @param vars       The variables to be injected
+     * @return The resultant value as a Boolean
      */
-    public static Boolean evalToBoolean(String expression, Object ctx, VariableResolverFactory factory) {
+    public static Boolean evalToBoolean(String expression, Object ctx, VariableResolverFactory vars) {
         try {
-            return eval(expression, ctx, factory, Boolean.class);
+            return eval(expression, ctx, vars, Boolean.class);
         }
         catch (EndWithValue end) {
             return convert(end.getValue(), Boolean.class);
@@ -710,15 +751,15 @@ public class MVEL {
     }
 
     /**
-     * Evaluate an expression in Boolean-only mode.
+     * Evaluate an expression in Boolean-only with injected variables.
      *
-     * @param expression -
-     * @param factory    -
-     * @return -
+     * @param expression A string containing the expression to be evaluated.
+     * @param vars       The variables to be injected
+     * @return The resultant value as a Boolean
      */
-    public static Boolean evalToBoolean(String expression, VariableResolverFactory factory) {
+    public static Boolean evalToBoolean(String expression, VariableResolverFactory vars) {
         try {
-            return eval(expression, factory, Boolean.class);
+            return eval(expression, vars, Boolean.class);
         }
         catch (EndWithValue end) {
             return convert(end.getValue(), Boolean.class);
@@ -726,13 +767,13 @@ public class MVEL {
     }
 
     /**
-     * Evaluate an expression in Boolean-only mode.
+     * Evaluate an expression in Boolean-only with injected variables.
      *
-     * @param expression -
-     * @param vars       -
-     * @return -
+     * @param expression A string containing the expression to be evaluated.
+     * @param vars       The variables to be injected
+     * @return The resultant value as a Boolean
      */
-    public static Boolean evalToBoolean(String expression, Map vars) {
+    public static Boolean evalToBoolean(String expression, Map<String, Object> vars) {
         try {
             return evalToBoolean(expression, null, vars);
         }
@@ -741,6 +782,130 @@ public class MVEL {
         }
     }
 
+
+    /**
+     * Compiles an expression and returns a Serializable object containing the compiled expression.  The returned value
+     * can be reused for higher-performance evaluation of the expression.  It is used in a straight forward way:
+     * <pre><code>
+     *
+     * // Compile the expression
+     * Serializable compiled = MVEL.compileExpression("x * 10");
+     *
+     * // Create a Map to hold the variables.
+     * Map vars = new HashMap();
+     *
+     * // Create a factory to envelop the variable map
+     * VariableResolverFactory factory = new MapVariableResolverFactory(vars);
+     *
+     * int total = 0;
+     * for (int i = 0; i < 100; i++) {
+     *     // Update the 'x' variable.
+     *     vars.put("x", i);
+     *
+     *     // Execute the expression against the compiled payload and factory, and add the result to the total variable.
+     *     total += (Integer) MVEL.executeExpression(compiled, factory);
+     * }
+     *
+     * // Total should be 49500
+     * assert total == 49500;
+     * </code></pre>
+     *
+     * The above example demonstrates a compiled expression being reused ina tight, closed, loop.  Doing this greatly
+     * improves performance as re-parsing of the expression is not required, and the runtime can dynamically compile
+     * the expression to bytecode of necessary.
+     *
+     * @param expression A String contaiing the expression to be compiled.
+     * @return The cacheable compiled payload.
+     */
+    public static Serializable compileExpression(String expression) {
+        return compileExpression(expression, null, null, null);
+    }
+
+    /**
+     * Compiles an expression and returns a Serializable object containing the compiled expression.  This method
+     * also accept a Map of imports.  The Map's keys are String's representing the imported, short-form name of the
+     * Classes or Methods imported.  An import of a Method is essentially a static import.  This is a substitute for
+     * needing to declare <tt>import</tt> statements within the actual script.
+     *
+     * <pre><code>
+     * Map imports = new HashMap();
+     * imports.put("HashMap", java.util.HashMap.class); // import a class
+     * imports.put("time", MVEL.getStaticMethod(System.class, "currentTimeMillis", new Class[0])); // import a static method
+     *
+     * // Compile the expression
+     * Serializable compiled = MVEL.compileExpression("map = new HashMap(); map.put('time', time()); map.time");
+     *
+     * // Execute with a blank Map to allow vars to be declared.
+     * Long val = (Long) MVEL.executeExpression(compiled, new HashMap());
+     *
+     * assert val > 0;
+     * </code></pre>
+     *
+     * @param expression A String contaiing the expression to be compiled.
+     * @param imports A String-Class/String-Method pair Map containing imports for the compiler.
+     * @return The cacheable compiled payload.
+     */
+    public static Serializable compileExpression(String expression, Map<String, Object> imports) {
+        return compileExpression(expression, imports, null, null);
+    }
+
+    /**
+     * Compiles an expression and returns a Serializable object containing the compiled expression. This method
+     * accepts a Map of imports and Interceptors.  See {@link #compileExpression(String,Map)} for information on
+     * imports.  The imports parameter in this method is <em>optional</em> and it is safe to pass a <tt>null</tt>
+     * value.<br/>
+     * {@link org.mvel2.integration.Interceptor Interceptors} are markers within an expression that allow external hooks
+     * to be tied into the expression.
+     *
+     * <pre><code>
+     * // Create a Map to hold the interceptors.
+     * Map interceptors = new HashMap();
+     *
+     * // Create a simple interceptor.
+     * Interceptor logInterceptor = new Interceptor() {
+     *   public int doBefore(ASTNode node, VariableResolverFactory factory) {
+     *       System.out.println("Interceptor called before!");
+     *   }
+     *
+     *   public int doAfter(Object exitValue, ASTNode node, VariableResolverFactory factory) {
+     *       System.out.println("Interceptor called after!");
+     *   }
+     * };
+     *
+     * // Add the interceptor to the Map.
+     * interceptors.put("log", logInterceptor);
+     *
+     * // Create an expression
+     * String expr = "list = [1,2,3,4,5]; @log for (item : list) { System.out.println(item); };
+     *
+     * Serializable compiled = MVEL.compileExpression(expr, null, interceptors);
+     *
+     * // Execute expression with a blank Map to allow vars to be declared.
+     * MVEL.executeExpression(compiled, new HashMap());
+     * </code></pre>
+     *
+     * The above example demonstrates inserting an interceptor into a piece of code.  The <tt>@log</tt> interceptor
+     * wraps the subsequent statement.  In this case, the interceptor is fired before the <tt>for</tt> loop and
+     * after the <tt>for</tt> loop finishes.
+     *
+     * @param expression A String containing the expression to be evaluated.
+     * @param imports A String-Class/String-Method pair Map containing imports for the compiler.
+     * @param interceptors A Map of registered interceptors.
+     * @return A cacheable compiled payload.
+     */
+    public static Serializable compileExpression(String expression, Map<String, Object> imports,
+                                                 Map<String, Interceptor> interceptors) {
+        return compileExpression(expression, imports, interceptors, null);
+    }
+
+    /**
+     * Compiles an expression, and accepts a {@link ParserContext} instance.  The ParserContext object is the
+     * fine-grained configuration object for the MVEL parser and compiler.
+     *
+     * @param expression A string containing the expression to be compiled.
+     * @param ctx The parser context
+     * @return A cacheable compiled payload.
+     */
     public static Serializable compileExpression(String expression, ParserContext ctx) {
         return optimizeTree(new ExpressionCompiler(expression)
                 .compile(ctx));
@@ -750,25 +915,6 @@ public class MVEL {
                                                  Map<String, Interceptor> interceptors, String sourceName) {
         return compileExpression(expression, new ParserContext(imports, interceptors, sourceName));
 
-    }
-
-    /**
-     * Compiles an expression and returns a Serializable object containing the compiled
-     * expression.
-     *
-     * @param expression - the expression to be compiled
-     * @return -
-     */
-    public static Serializable compileExpression(String expression) {
-        return compileExpression(expression, null, null, null);
-    }
-
-    public static Serializable compileExpression(String expression, Map<String, Object> imports) {
-        return compileExpression(expression, imports, null, null);
-    }
-
-    public static Serializable compileExpression(String expression, Map<String, Object> imports, Map<String, Interceptor> interceptors) {
-        return compileExpression(expression, imports, interceptors, null);
     }
 
     public static Serializable compileExpression(char[] expression, ParserContext ctx) {
@@ -1055,5 +1201,26 @@ public class MVEL {
 
     public static void setProperty(Object ctx, String property, Object value) {
         PropertyAccessor.set(ctx, property, value);
+    }
+
+    /**
+     * A simple utility method to get a static method from a class with no checked exception.  With throw a
+     * RuntimeException if the method is not found or is not a static method.
+     * @param cls The class containing the static method
+     * @param methodName The method name
+     * @param signature The signature of the method
+     * @return An instance of the Method
+     */
+    public static Method getStaticMethod(Class cls, String methodName, Class[] signature) {
+        try {
+            Method m = cls.getMethod(methodName, signature);
+            if ((m.getModifiers() & Modifier.STATIC) == 0)
+                throw new RuntimeException("method not a static method: " + methodName);
+
+            return m;
+        }
+        catch (NoSuchMethodException e) {
+            throw new RuntimeException("no such method: " + methodName);
+        }
     }
 }

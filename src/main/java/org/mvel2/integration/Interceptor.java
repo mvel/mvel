@@ -20,7 +20,8 @@ package org.mvel2.integration;
 import org.mvel2.ast.ASTNode;
 
 /**
- * An interceptor can be used to decorate functionality into an expression.
+ * An interceptor can be used to decorate functionality into an expression or to hook into external functionality, such
+ * as to log an event or fire some other event.
  *
  * @author Christopher Brock
  */
@@ -39,6 +40,9 @@ public interface Interceptor {
     public int doBefore(ASTNode node, VariableResolverFactory factory);
 
     /**
+     * This method is called after the wrapped statement has completed.  A copy of the top-value of the execution
+     * stack is also availablehere.
+     *
      * @param exitStackValue The value on the top of the stack after executing the statement.
      * @param node           The ASTNode wrapped by the interceptor
      * @param factory        The variable factory
