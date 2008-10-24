@@ -25,7 +25,7 @@ import org.mvel2.util.StringAppender;
 import java.util.Map;
 
 /**
- * @author Mike Brock
+ * A simple, fast, macro processor.  This processor works by simply replacing a matched identifier with a set of code.
  */
 public class MacroProcessor extends AbstractParser implements PreProcessor {
     private Map<String, Macro> macros;

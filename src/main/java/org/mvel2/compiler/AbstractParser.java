@@ -28,7 +28,7 @@ import static org.mvel2.util.ArrayTools.findFirst;
 import org.mvel2.util.ExecutionStack;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.isEmpty;
-import org.mvel2.util.StringAppender;
+import org.mvel2.util.Soundex;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -38,7 +38,6 @@ import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.WeakHashMap;
 
 /**
@@ -580,10 +579,10 @@ public class AbstractParser implements Serializable {
                                 }
                                 break;
 
-                            case ']':
                             case '[':
                                 cursor = balancedCapture(expr, cursor, '[') + 1;
                                 continue;
+                                
                             case '.':
                                 union = true;
                                 cursor++;
@@ -1143,11 +1142,7 @@ public class AbstractParser implements Serializable {
             }
             else {
                 if (pCtx.hasImport(tmp = new String(_subset))) {
-                    Object i = pCtx.getStaticOrClassImport(tmp);
-
-                    if (i instanceof Class) {
-                        return lastNode = new LiteralNode(i, Class.class);
-                    }
+                    return lastNode = new LiteralNode(pCtx.getStaticOrClassImport(tmp));
                 }
 
                 lastWasIdentifier = true;
@@ -1799,7 +1794,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected void setExpression(String expression) {
-        if (expression != null && !"".equals(expression)) {
+        if (expression != null && expression.length() != 0) {
             synchronized (EX_PRECACHE) {
                 if ((this.expr = EX_PRECACHE.get(expression)) == null) {
                     length = (this.expr = expression.toCharArray()).length;
@@ -1835,7 +1830,7 @@ public class AbstractParser implements Serializable {
     protected char lookToLast() {
         if (cursor == 0) return 0;
         int temp = cursor;
-        while (temp != 0 && isWhitespace(expr[--temp])) ;
+        while (temp != 0 && isWhitespace(expr[--temp]));
         return expr[temp];
     }
 

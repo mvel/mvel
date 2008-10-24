@@ -19,6 +19,9 @@
 
 package org.mvel2;
 
+/**
+ *  Exception thrown by internal immutable structures if any modifications are attempted.
+ */
 public class ImmutableElementException extends RuntimeException {
 
     public ImmutableElementException() {

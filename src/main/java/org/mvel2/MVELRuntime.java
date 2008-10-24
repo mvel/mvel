@@ -20,7 +20,7 @@ package org.mvel2;
 
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.Operator.*;
-import static org.mvel2.Soundex.soundex;
+import static org.mvel2.util.Soundex.soundex;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.LineLabel;
 import org.mvel2.compiler.CompiledExpression;
@@ -47,14 +47,16 @@ public class MVELRuntime {
     /**
      * Main interpreter.
      *
-     * @param debugger        -
-     * @param expression      -
-     * @param ctx             -
-     * @param variableFactory -
-     * @return -
+     * @param debugger        Run in debug mode
+     * @param expression      The compiled expression object
+     * @param ctx             The root context object
+     * @param variableFactory The variable factory to be injected
+     * @return The resultant value
      * @see org.mvel2.MVEL
      */
-    public static Object execute(boolean debugger, final CompiledExpression expression, final Object ctx, VariableResolverFactory variableFactory) {
+    public static Object execute(boolean debugger, final CompiledExpression expression, final Object ctx,
+                                 VariableResolverFactory variableFactory) {
+
         ASTLinkedList node = new ASTLinkedList(expression.getInstructions().firstNode());
 
         if (expression.isImportInjectionRequired()) {
@@ -204,10 +206,18 @@ public class MVELRuntime {
         }
     }
 
+    /**
+     * Tests whether or not a debugger context exist.
+     *
+     * @return boolean
+     */
     private static boolean hasDebuggerContext() {
         return debuggerContext != null && debuggerContext.get() != null;
     }
 
+    /**
+     * Ensures that debugger context exists.
+     */
     private static void ensureDebuggerContext() {
         if (debuggerContext == null) debuggerContext = new ThreadLocal<DebuggerContext>();
         if (debuggerContext.get() == null) debuggerContext.set(new DebuggerContext());
@@ -222,6 +232,10 @@ public class MVELRuntime {
         }
     }
 
+    /**
+     * Tests whether or not breakpoints have been declared.
+     * @return boolean
+     */
     public static boolean hasBreakpoints() {
         return hasDebuggerContext() && debuggerContext.get().hasBreakpoints();
     }
