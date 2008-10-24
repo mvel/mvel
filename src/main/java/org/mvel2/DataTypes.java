@@ -19,8 +19,9 @@
 
 package org.mvel2;
 
+
 /**
- * @author Christopher Brock
+ * Contains constants for standard internal types.
  */
 public interface DataTypes {
     public static final int NULL = -1;

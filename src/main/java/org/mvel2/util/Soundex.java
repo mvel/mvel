@@ -16,11 +16,14 @@
  * limitations under the License.
  */
 
-package org.mvel2;
+package org.mvel2.util;
 
 import org.mvel2.util.StringAppender;
 
 
+/**
+ * An implementation of Knuth's soundex algorithm.  Used by the <tt>soundslike</tt> operator.
+ */
 public class Soundex {
 
     /* Implements the mapping

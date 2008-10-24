@@ -17,6 +17,9 @@
  */
 package org.mvel2;
 
+/**
+ * Contains a list of constants representing internal operators.
+ */
 public interface Operator {
 
     public static final int NOOP = -1;

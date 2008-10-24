@@ -18,6 +18,9 @@
 
 package org.mvel2;
 
+/**
+ * A preprocessor used for pre-processing any expressions before being parsed/compiled.
+ */
 public interface PreProcessor {
     public char[] parse(char[] input);
 

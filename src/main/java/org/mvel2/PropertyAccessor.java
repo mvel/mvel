@@ -41,7 +41,11 @@ import java.lang.reflect.*;
 import static java.lang.reflect.Array.getLength;
 import java.util.*;
 
+
 @SuppressWarnings({"unchecked"})
+/**
+ * The property accessor class is used for extracting properties from objects instances.
+ */
 public class PropertyAccessor {
     private int start = 0;
     private int cursor = 0;
