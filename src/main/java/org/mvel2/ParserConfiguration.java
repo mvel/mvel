@@ -28,6 +28,9 @@ import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
 import java.util.*;
 
+/**
+ * The resusable parser configuration object.
+ */
 public class ParserConfiguration implements Serializable {
     protected HashMap<String, Object> imports;
     protected HashSet<String> packageImports;

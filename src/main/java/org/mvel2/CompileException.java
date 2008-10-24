@@ -25,6 +25,9 @@ import static java.lang.String.copyValueOf;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Standard exception thrown for all general compile and some runtime failures.
+ */
 public class CompileException extends RuntimeException {
     private char[] expr;
     private int cursor = -1;

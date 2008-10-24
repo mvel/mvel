@@ -28,7 +28,7 @@ import static org.mvel2.util.ArrayTools.findFirst;
 import org.mvel2.util.ExecutionStack;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.isEmpty;
-import org.mvel2.util.StringAppender;
+import org.mvel2.util.Soundex;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -38,7 +38,6 @@ import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.WeakHashMap;
 
 /**

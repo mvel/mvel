@@ -24,7 +24,7 @@ import org.mvel2.DataTypes;
 import static org.mvel2.DataTypes.BIG_DECIMAL;
 import static org.mvel2.DataTypes.EMPTY;
 import static org.mvel2.Operator.*;
-import static org.mvel2.Soundex.soundex;
+import static org.mvel2.util.Soundex.soundex;
 import org.mvel2.Unit;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.util.InternalNumber;

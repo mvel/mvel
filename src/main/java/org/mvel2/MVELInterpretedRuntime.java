@@ -33,7 +33,7 @@ import java.util.Map;
 
 
 /**
- * The interpreted runtime.
+ * The MVEL interpreted runtime, used for fast parse and execution of scripts.  
  */
 @SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class MVELInterpretedRuntime extends AbstractParser {

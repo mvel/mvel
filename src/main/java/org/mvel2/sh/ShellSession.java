@@ -38,7 +38,7 @@ import java.util.*;
 import static java.util.ResourceBundle.getBundle;
 
 /**
- * @author Christopher Brock
+ * A shell session.
  */
 public class ShellSession {
     public static final String PROMPT_VAR = "$PROMPT";

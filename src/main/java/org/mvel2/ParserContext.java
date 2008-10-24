@@ -87,11 +87,24 @@ public class ParserContext implements Serializable {
         this.parserConfiguration = new ParserConfiguration(imports, interceptors);
     }
 
+    /**
+     * Tests whether or not a variable or input exists in the current parser context.
+     *
+     * @param name The name of the identifier.
+     * @return boolean
+     */
     public boolean hasVarOrInput(String name) {
         return (variables != null && variables.containsKey(name))
                 || (inputs != null && inputs.containsKey(name));
     }
 
+    /**
+     * Return the variable or input type froom the current parser context.  Returns <tt>Object.class</tt> if the
+     * type cannot be determined.
+     *
+     * @param name The name of the identifier
+     * @return boolean
+     */
     public Class getVarOrInputType(String name) {
         if (variables != null && variables.containsKey(name)) {
             return variables.get(name);
@@ -102,71 +115,173 @@ public class ParserContext implements Serializable {
         return Object.class;
     }
 
+    /**
+     * Get total number of lines declared in the current context.
+     *
+     * @return int of lines
+     */
     public int getLineCount() {
         return lineCount;
     }
 
+    /**
+     * Set the current number of lines in the current context. (Generally only used by the compiler)
+     *
+     * @param lineCount The number of lines
+     * @return int of lines
+     */
     public int setLineCount(int lineCount) {
         return this.lineCount = (short) lineCount;
     }
 
+    /**
+     * Increments the current line count by the specified amount
+     *
+     * @param increment The number of lines to increment
+     * @return int of lines
+     */
     public int incrementLineCount(int increment) {
         return this.lineCount += increment;
     }
 
+    /**
+     * Get the current line offset.  This measures the number of cursor positions back to the beginning of the line.
+     *
+     * @return int offset
+     */
     public int getLineOffset() {
         return lineOffset;
     }
 
+    /**
+     * Sets the current line offset. (Generally only used by the compiler)
+     *
+     * @param lineOffset The offset amount
+     */
     public void setLineOffset(short lineOffset) {
         this.lineOffset = lineOffset;
     }
 
+    /**
+     * Sets both the current line count and line offset
+     *
+     * @param lineCount  The line count
+     * @param lineOffset The line offset
+     */
     public void setLineAndOffset(int lineCount, int lineOffset) {
         addKnownLine(this.lineCount = lineCount);
         this.lineOffset = lineOffset;
     }
 
+    /**
+     * Get an import that has been declared, either in the parsed script or programatically
+     *
+     * @param name The name identifier for the imported class (ie. "HashMap")
+     * @return An instance of <tt>Class</tt> denoting the imported class.
+     */
     public Class getImport(String name) {
         return parserConfiguration.getImport(name);
     }
 
+    /**
+     * Get a {@link MethodStub} which wraps a static method import.
+     *
+     * @param name The name identifier
+     * @return An instance of {@link MethodStub}
+     */
     public MethodStub getStaticImport(String name) {
         return parserConfiguration.getStaticImport(name);
     }
 
+    /**
+     * Returns either an instance of <tt>Class</tt> or {@link MethodStub} (whichever matches).
+     *
+     * @param name The name identifier.
+     * @return An instance of <tt>Class</tt> or {@link MethodStub}
+     */
     public Object getStaticOrClassImport(String name) {
         return parserConfiguration.getStaticOrClassImport(name);
     }
 
+    /**
+     * Adds a package import to a parse session.
+     *
+     * @param packageName A fully qualified package (eg. <tt>java.util.concurrent</tt>).
+     */
     public void addPackageImport(String packageName) {
         parserConfiguration.addPackageImport(packageName);
     }
 
+    /**
+     * Tests to see if the specified import exists.
+     *
+     * @param name A name identifier
+     * @return boolean
+     */
     public boolean hasImport(String name) {
         return parserConfiguration.hasImport(name);
     }
 
+    /**
+     * Adds an import for the specified <tt>Class</tt>.
+     *
+     * @param cls The instance of the <tt>Class</tt> which represents the imported class.
+     */
     public void addImport(Class cls) {
         addImport(cls.getSimpleName(), cls);
     }
 
+    /**
+     * Adds an import for a specified <tt>Class</tt> using an alias.  For example:
+     * <pre><code>
+     * parserContext.addImport("sys", System.class);
+     * </code></pre>
+     * ... doing this would allow an MVEL script to be written as such:
+     * <pre><code>
+     * sys.currentTimeMillis();
+     * </code></pre>
+     *
+     * @param name The alias to use
+     * @param cls The instance of the <tt>Class</tt> which represents the imported class.
+     */
     public void addImport(String name, Class cls) {
         parserConfiguration.addImport(name, cls);
     }
 
+    /**
+     * Adds an import for a specified <tt>Method</tt> representing a static method import using an alias. For example:
+     * <pre><code>
+     * parserContext.addImport("time", MVEL.getStaticMethod(System.class, "currentTimeMillis", new Class[0]));
+     * </code></pre>
+     * ... doing this allows the <tt>System.currentTimeMillis()</tt> method to be executed in a script simply by writing
+     * <tt>time()</tt>.
+     *
+     * @param name The alias to use
+     * @param method The instance of <tt>Method</tt> which represents the static import.
+     */
     public void addImport(String name, Method method) {
         addImport(name, new MethodStub(method));
     }
 
+    /**
+     * Adds a static import for the specified {@link MethodStub} with an alias.
+     *
+     * @param name The alias to use
+     * @param method The instance of <tt>Method</tt> which represents the static import.
+     * @see #addImport(String, org.mvel2.util.MethodStub)
+     */
     public void addImport(String name, MethodStub method) {
         parserConfiguration.addImport(name, method);
     }
 
+    /**
+     * Initializes internal Maps.  Called by the compiler.
+     */
     public void initializeTables() {
         if (variables == null) variables = new LinkedHashMap<String, Class>();
         if (inputs == null) inputs = new LinkedHashMap<String, Class>();
     }
+
 
     public void addVariable(String name, Class type, boolean failIfNewAssignment) {
         initializeTables();
@@ -272,6 +387,10 @@ public class ParserContext implements Serializable {
         return strictTypeEnforcement;
     }
 
+    /**
+     * Enables strict type enforcement
+     * @param strictTypeEnforcement
+     */
     public void setStrictTypeEnforcement(boolean strictTypeEnforcement) {
         this.strictTypeEnforcement = strictTypeEnforcement;
     }
@@ -280,6 +399,10 @@ public class ParserContext implements Serializable {
         return strongTyping;
     }
 
+    /**
+     * Enables strong type enforcement.
+     * @param strongTyping
+     */
     public void setStrongTyping(boolean strongTyping) {
         if (this.strongTyping = strongTyping) {
             // implies strict-type enforcement too
