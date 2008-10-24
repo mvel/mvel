@@ -30,8 +30,15 @@ import java.lang.reflect.TypeVariable;
 import java.util.*;
 
 /**
- * The ParserContext is the main enviroment object used for sharing state throughout the entire
- * parser/compile process.
+ * The <tt>ParserContext</tt> is the main enviroment object used for sharing state throughout the entire
+ * parser/compile process.<br/><br/>
+ * The <tt>ParserContext</tt> is used to configure the parser/compiler.  For example:
+ * <pre><code>
+ * ParserContext parserContext = new ParserContext();
+ * parserContext.setStrongTyping(true); // turn on strong typing.
+ *
+ * Serializable comp = MVEL.compileExpression("foo.bar", parserContext);
+ * </code</pre>
  */
 public class ParserContext implements Serializable {
     private String sourceFile;

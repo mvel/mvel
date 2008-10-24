@@ -51,7 +51,6 @@ public class ShellSession {
 
     VariableResolverFactory lvrf;
 
-
     private int depth;
 
     private boolean multi = false;
