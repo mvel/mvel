@@ -4713,6 +4713,10 @@ public class CoreConfidenceTests extends AbstractTest {
         String exp = "def foo(a,b) { a + b }; foo(1.5,5.25)";
         System.out.println(MVEL.eval(exp, new HashMap()));
     }
+
+    public void testChainedMethodCallsWithParams() {
+        assertEquals(true, test("foo.toUC(\"abcd\").equals(\"ABCD\")"));
+    }
 }
 
 
