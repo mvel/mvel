@@ -618,11 +618,16 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             first = false;
         }
 
+        if (ctx == null) throw new PropertyAccessException("unable to access property (null parent): " + name);
+
+
         /**
          * If the target object is an instance of java.lang.Class itself then do not
          * adjust the Class scope target.
          */
-        Class<?> cls = ctx == null || ctx instanceof Class ? (Class<?>) ctx : ctx.getClass();
+        Class<?> cls = ctx instanceof Class ? (Class<?>) ctx : ctx.getClass();
+
+
 
         Method m;
         Class[] parameterTypes = null;
