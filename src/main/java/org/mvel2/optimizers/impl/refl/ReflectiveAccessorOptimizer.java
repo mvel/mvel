@@ -312,9 +312,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         catch (IndexOutOfBoundsException e) {
             throw new PropertyAccessException(new String(expr) + ": array index out of bounds.", e);
         }
-        catch (PropertyAccessException e) {
-            throw new CompileException(e.getMessage(), e);
-        }
         catch (CompileException e) {
             throw e;
         }
@@ -454,7 +451,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     }
                 }
             }
-            else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) return getMethod(ctx, property);
+            else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+                return getMethod(ctx, property);
+            }
 
             throw new PropertyAccessException(property);
         }
@@ -568,7 +567,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     private Object getMethod(Object ctx, String name) throws Exception {
         int st = cursor;
         String tk = cursor != length
-                && ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
+                && expr[cursor] == '(' && ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ?
+                new String(expr, st + 1, cursor - st - 1) : "";
         cursor++;
 
         Object[] args;
