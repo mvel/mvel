@@ -455,7 +455,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 return getMethod(ctx, property);
             }
 
-            throw new PropertyAccessException(property);
+            throw new PropertyAccessException("could not access: " + property);
         }
     }
 

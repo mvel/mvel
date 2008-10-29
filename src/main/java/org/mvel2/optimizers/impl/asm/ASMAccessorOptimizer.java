@@ -923,7 +923,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return getMethod(ctx, property);
             }
 
-            throw new PropertyAccessException(property);
+            throw new PropertyAccessException("could not access: " + property);
         }
     }
 
