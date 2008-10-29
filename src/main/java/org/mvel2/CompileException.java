@@ -20,6 +20,9 @@ package org.mvel2;
 
 import static org.mvel2.util.ParseTools.isWhitespace;
 import org.mvel2.util.StringAppender;
+import org.mvel2.util.ArrayTools;
+import org.mvel2.util.PropertyTools;
+import org.mvel2.util.ParseTools;
 
 import static java.lang.String.copyValueOf;
 import java.util.ArrayList;
@@ -30,7 +33,9 @@ import java.util.List;
  */
 public class CompileException extends RuntimeException {
     private char[] expr;
+
     private int cursor = -1;
+    private int msgOffset = -1;
 
     private int lineNumber = -1;
     private int column = -1;
@@ -57,7 +62,24 @@ public class CompileException extends RuntimeException {
 
     public String toString() {
         StringAppender appender = new StringAppender();
-        appender.append("[Error: " + getMessage() + "]\n[Near : {... " + showCodeNearError(expr, cursor) + " ....}]");
+        appender.append("[Error: " + getMessage() + "]\n");
+
+        int offset = appender.length();
+
+        appender.append("[Near : {... ");
+
+        offset = appender.length() - offset;
+
+        appender.append(showCodeNearError(expr, cursor));
+        appender.append(" ....}]\n");
+        appender.append(ParseTools.repeatChar(' ', offset));
+
+        offset = cursor - msgOffset - 1;
+        if (offset < 0) offset = 0;
+
+        appender.append(ParseTools.repeatChar(' ', offset));
+        appender.append("^");
+
         if (lineNumber != -1) {
             appender.append('\n')
                     .append("[Line: " + lineNumber + ", Column: " + column + "]");
@@ -77,12 +99,6 @@ public class CompileException extends RuntimeException {
         this.cursor = cursor;
     }
 
-    public CompileException(String message, char[] expr, int cursor, boolean concatError, Exception e) {
-        super(concatError ? "Failed to compile:\n[Error: " + message + "]\n[Near: { ... " + showCodeNearError(expr, cursor) + " ... } ]\n[Position: " + cursor + "]" : message, e);
-        this.expr = expr;
-        this.cursor = cursor;
-    }
-
     public CompileException(String message, Throwable cause) {
         super(message, cause);
     }
@@ -91,7 +107,7 @@ public class CompileException extends RuntimeException {
         super(cause);
     }
 
-    private static CharSequence showCodeNearError(char[] expr, int cursor) {
+    private CharSequence showCodeNearError(char[] expr, int cursor) {
         if (expr == null) return "Unknown";
 
         int start = cursor - 10;
@@ -106,9 +122,15 @@ public class CompileException extends RuntimeException {
             start = 0;
         }
 
+
+
         while (start < end && isWhitespace(expr[start])) start++;
 
-        return copyValueOf(expr, start, end - start);
+        CharSequence cs = copyValueOf(expr, start, end - start);
+
+        msgOffset = start;
+
+        return cs;
     }
 
 
@@ -121,7 +143,7 @@ public class CompileException extends RuntimeException {
     }
 
     public List<ErrorDetail> getErrors() {
-        return errors != null ? errors : new ArrayList(0);
+        return errors != null ? errors : new ArrayList<ErrorDetail>(0);
     }
 
     public void setErrors(List<ErrorDetail> errors) {

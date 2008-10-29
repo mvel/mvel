@@ -1354,7 +1354,7 @@ public class AbstractParser implements Serializable {
         skipWhitespace();
 
         if (cursor >= length) {
-            throw new CompileException("unbalanced braces", expr, cursor);
+            throw new CompileException("unexpected end of statement", expr, cursor);
         }
         else if (expr[cursor] == '{') {
             int[] cap = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{');

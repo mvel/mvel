@@ -77,7 +77,7 @@ public class StringAppender implements CharSequence {
 
     public StringAppender append(CharSequence s) {
         if (s.length() > (capacity - size)) grow(s.length());
-        for (int i = 0; size < capacity; size++) {
+        for (int i = 0; i < s.length(); size++) {
             str[size] = s.charAt(i++);
         }
         return this;
