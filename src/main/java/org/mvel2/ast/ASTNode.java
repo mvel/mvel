@@ -196,10 +196,10 @@ public class ASTNode implements Cloneable, Serializable {
 
     public String getAbsoluteName() {
         if (firstUnion > 0) {
-            return new String(name, 0, getAbsoluteFirstPart());
+          return new String(name, 0, getAbsoluteFirstPart());
         }
         else {
-            return getName();
+           return getName();
         }
     }
 
@@ -286,11 +286,9 @@ public class ASTNode implements Cloneable, Serializable {
 
         this.literal = new String(name);
 
-        if ((fields & INLINE_COLLECTION) != 0) {
-            return;
-        }
 
-        Scan: for (int i = 0; i < name.length; i++) {
+        Scan:
+        for (int i = 0; i < name.length; i++) {
             switch (name[i]) {
                 case '.':
                     if (firstUnion == 0) {
@@ -298,11 +296,18 @@ public class ASTNode implements Cloneable, Serializable {
                     }
                     break;
                 case '[':
+                    if (firstUnion == 0) {
+                        firstUnion = i;
+                    }
                     if (endOfName == 0) {
                         endOfName = i;
                         break Scan;
                     }
             }
+        }
+
+        if ((fields & INLINE_COLLECTION) != 0) {
+            return;
         }
 
 
