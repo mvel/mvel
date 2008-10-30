@@ -195,7 +195,7 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public String getAbsoluteName() {
-        if ((fields & (COLLECTION | DEEP_PROPERTY)) != 0) {
+        if (firstUnion > 0) {
             return new String(name, 0, getAbsoluteFirstPart());
         }
         else {
