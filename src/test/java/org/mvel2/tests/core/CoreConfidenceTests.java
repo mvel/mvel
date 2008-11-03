@@ -4080,6 +4080,8 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrongTyping(true);
         ctx.setStrictTypeEnforcement(true);
 
+        Locale.setDefault(Locale.US);
+
         Cheese expectedCheese = new Cheese();
         expectedCheese.setUseBy(new SimpleDateFormat("dd-MMM-yyyy").parse("10-Jul-1974"));
 
