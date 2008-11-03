@@ -20,13 +20,16 @@ package org.mvel2.util;
 
 import static java.lang.System.arraycopy;
 
+import java.io.UnsupportedEncodingException;
+
 public class StringAppender implements CharSequence {
     private static final int DEFAULT_SIZE = 15;
 
     private char[] str;
     private int capacity;
     private int size = 0;
-
+	private byte[] btr;
+    private String encoding;
 
     public StringAppender() {
         str = new char[capacity = DEFAULT_SIZE];
@@ -34,6 +37,11 @@ public class StringAppender implements CharSequence {
 
     public StringAppender(int capacity) {
         str = new char[this.capacity = capacity];
+    }
+    
+    public StringAppender(int capacity, String encoding) {
+        str = new char[this.capacity = capacity];
+        this.encoding = encoding;
     }
 
     public StringAppender(char c) {
@@ -103,6 +111,15 @@ public class StringAppender implements CharSequence {
         return this;
     }
 
+	public StringAppender append(byte b) {
+		if (btr == null)
+			btr = new byte[capacity = DEFAULT_SIZE];
+		if (size >= capacity)
+			growByte(1);
+		btr[size++] = b;
+		return this;
+	}
+
     public int length() {
         return size;
     }
@@ -113,6 +130,12 @@ public class StringAppender implements CharSequence {
         arraycopy(str, 0, newArray, 0, size);
         str = newArray;
     }
+    
+	private void growByte(int s) {
+		final byte[] newByteArray = new byte[capacity += s];
+		arraycopy(btr, 0, newByteArray, 0, size);
+		btr = newByteArray;
+	}
 
     public char[] getChars(int start, int count) {
         char[] chars = new char[count];
@@ -121,12 +144,34 @@ public class StringAppender implements CharSequence {
     }
 
     public char[] toChars() {
+		if (btr != null) {
+			if (encoding == null)
+				encoding = System.getProperty("file.encoding");
+			String s;
+			try {
+				s = new String(btr, encoding);
+			} catch (UnsupportedEncodingException e) {
+				s = new String(btr);
+			}
+			return s.toCharArray();
+		}
         char[] chars = new char[size];
         arraycopy(str, 0, chars, 0, size);
         return chars;
     }
 
     public String toString() {
+		if (btr != null) {
+			if (encoding == null)
+				encoding = System.getProperty("file.encoding");
+			String s;
+			try {
+				s = new String(btr, encoding);
+			} catch (UnsupportedEncodingException e) {
+				s = new String(btr);
+			}
+			return s;
+		}
         if (size == capacity) return new String(str);
         else return new String(str, 0, size);
     }

@@ -612,12 +612,11 @@ public class MVEL {
      * @throws IOException Exception thrown if there is an IO problem accessing the file.
      */
     public static Object evalFile(File file) throws IOException {
-        try {
-            return _evalFile(file, null, new MapVariableResolverFactory(new HashMap()));
-        }
-        catch (EndWithValue end) {
-            return end.getValue();
-        }
+        return _evalFile(file, null, new MapVariableResolverFactory(new HashMap()));
+    }
+    
+    public static Object evalFile(File file, String encoding) throws IOException {
+        return _evalFile(file, encoding, null, new MapVariableResolverFactory(new HashMap()));
     }
 
     /**
@@ -629,14 +628,12 @@ public class MVEL {
      * @throws IOException Exception thrown if there is an IO problem accessing the file.
      */
     public static Object evalFile(File file, Object ctx) throws IOException {
-        try {
-            return _evalFile(file, ctx, new MapVariableResolverFactory(new HashMap()));
-        }
-        catch (EndWithValue end) {
-            return end.getValue();
-        }
+        return _evalFile(file, ctx, new MapVariableResolverFactory(new HashMap()));
     }
 
+    public static Object evalFile(File file, String encoding, Object ctx) throws IOException {
+        return _evalFile(file, encoding, ctx, new MapVariableResolverFactory(new HashMap()));
+    }
     /**
      * Evaluate a script from a file with injected variables and return the resultant value.
      *
@@ -645,13 +642,8 @@ public class MVEL {
      * @return The resultant value
      * @throws IOException Exception thrown if there is an IO problem accessing the file.
      */
-    public static Object evalFile(File file, Map<String, Object> vars) throws IOException {
-        try {
-            return evalFile(file, null, vars);
-        }
-        catch (EndWithValue end) {
-            return end.getValue();
-        }
+    public static Object evalFile(File file, Map<String, Object> vars) throws IOException { 
+    	return _evalFile(file, null, new MapVariableResolverFactory(vars));
     }
 
     /**
@@ -664,12 +656,11 @@ public class MVEL {
      * @throws IOException Exception thrown if there is an IO problem accessing the file.
      */
     public static Object evalFile(File file, Object ctx, Map<String, Object> vars) throws IOException {
-        try {
-            return _evalFile(file, ctx, new MapVariableResolverFactory(vars));
-        }
-        catch (EndWithValue end) {
-            return end.getValue();
-        }
+        return _evalFile(file, ctx, new MapVariableResolverFactory(vars));
+    }
+    
+    public static Object evalFile(File file, String encoding, Object ctx, Map<String, Object> vars) throws IOException {
+        return _evalFile(file, encoding, ctx, new MapVariableResolverFactory(vars));
     }
 
     /**
@@ -682,17 +673,20 @@ public class MVEL {
      * @throws IOException Exception thrown if there is an IO problem accessing the file.
      */
     public static Object evalFile(File file, Object ctx, VariableResolverFactory vars) throws IOException {
-        try {
-            return _evalFile(file, ctx, vars);
-        }
-        catch (EndWithValue end) {
-            return end.getValue();
-        }
+        return _evalFile(file, ctx, vars);
+    }
+    
+    public static Object evalFile(File file, String encoding, Object ctx, VariableResolverFactory vars) throws IOException {
+        return _evalFile(file, encoding, ctx, vars);
     }
 
-    private static Object _evalFile(File file, Object ctx, VariableResolverFactory factory) throws IOException {
+    private static Object _evalFile(File file, Object ctx, VariableResolverFactory factory) throws IOException { 
+        return _evalFile(file, null, ctx, factory);
+    }
+    
+    private static Object _evalFile(File file, String encoding, Object ctx, VariableResolverFactory factory) throws IOException {
         try {
-            return eval(loadFromFile(file), ctx, factory);
+            return eval(loadFromFile(file, encoding), ctx, factory);
         }
         catch (EndWithValue end) {
             return end.getValue();

@@ -1703,6 +1703,10 @@ public class ParseTools {
     }
 
     public static char[] loadFromFile(File file) throws IOException {
+    	return loadFromFile(file, null);
+    }
+    
+    public static char[] loadFromFile(File file, String encoding) throws IOException {
         if (!file.exists())
             throw new CompileException("cannot find file: " + file.getName());
 
@@ -1712,7 +1716,7 @@ public class ParseTools {
             fc = (inStream = new FileInputStream(file)).getChannel();
             ByteBuffer buf = allocateDirect(10);
 
-            StringAppender sb = new StringAppender((int) file.length());
+            StringAppender sb = new StringAppender((int) file.length(), encoding);
 
             int read = 0;
             while (read >= 0) {
@@ -1721,7 +1725,7 @@ public class ParseTools {
                 buf.rewind();
 
                 for (; read > 0; read--) {
-                    sb.append((char) buf.get());
+                    sb.append((byte) buf.get());
                 }
             }
 
