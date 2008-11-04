@@ -110,6 +110,9 @@ public class CompilerTools {
                 else if (tkOp.isOperator(Operator.CONTAINS)) {
                     optimizedAst.addTokenNode(new Contains(tk, astLinkedList.nextNode()));
                 }
+                else if (tkOp.isOperator(Operator.INSTANCEOF)) {
+                    optimizedAst.addTokenNode(new Instance(tk, astLinkedList.nextNode()));
+                }
                 else {
                     optimizedAst.addTokenNode(tk, tkOp);
                 }

@@ -4720,6 +4720,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("foo.toUC(\"abcd\").equals(\"ABCD\")"));
     }
 
+    public void testIsUsedInIf() {
+        assertEquals(true, test("c = 'str'; if (c is String) { true; } else { false; } "));
+    }
+
 }
 
 
