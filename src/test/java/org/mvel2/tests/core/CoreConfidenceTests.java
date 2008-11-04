@@ -4697,8 +4697,8 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testJIRA115() {
         String exp = "results = new java.util.ArrayList(); foreach (element : elements) { if( {1,32769,32767} contains element ) { results.add(element);  } }; results";
         Map map = new HashMap();
-        map.put("elements",new int[]{1, 32769, 32767} );
-        ArrayList result = (ArrayList) MVEL.eval(exp, map );
+        map.put("elements", new int[]{1, 32769, 32767});
+        ArrayList result = (ArrayList) MVEL.eval(exp, map);
 
         assertEquals(3, result.size());
     }
@@ -4715,10 +4715,11 @@ public class CoreConfidenceTests extends AbstractTest {
         String exp = "def foo(a,b) { a + b }; foo(1.5,5.25)";
         System.out.println(MVEL.eval(exp, new HashMap()));
     }
-
+         
     public void testChainedMethodCallsWithParams() {
         assertEquals(true, test("foo.toUC(\"abcd\").equals(\"ABCD\")"));
     }
+
 }
 
 

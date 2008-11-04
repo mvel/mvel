@@ -857,9 +857,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             return lit;
         }
-        else if (ctx == null) {
-            throw new NullPointerException("parent field of '" + property + "' is null in: " + new String(expr));
-        }
+//        else if (ctx == null) {
+//            throw new NullPointerException("parent field of '" + property + "' is null in: " + new String(expr));
+//        }
         else {
             Object ts = tryStaticAccess();
 
