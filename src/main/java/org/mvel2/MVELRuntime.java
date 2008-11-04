@@ -124,16 +124,13 @@ public class MVELRuntime {
                 try {
                     while (stk.isReduceable()) {
                         if ((Integer) stk.pop() == CHOR) {
-                        //    case CHOR:
-                                v1 = stk.pop();
-                                v2 = stk.pop();
-
-                                if (!isEmpty(v2) || !isEmpty(v1)) {
-                                    stk.clear();
-                                    stk.push(!isEmpty(v2) ? v2 : v1);
-                                }
-                                else stk.push(null);
-              //                  break;
+                            v1 = stk.pop();
+                            v2 = stk.pop();
+                            if (!isEmpty(v2) || !isEmpty(v1)) {
+                                stk.clear();
+                                stk.push(!isEmpty(v2) ? v2 : v1);
+                            }
+                            else stk.push(null);
                         }
                     }
                 }
@@ -212,6 +209,7 @@ public class MVELRuntime {
 
     /**
      * Tests whether or not breakpoints have been declared.
+     *
      * @return boolean
      */
     public static boolean hasBreakpoints() {
