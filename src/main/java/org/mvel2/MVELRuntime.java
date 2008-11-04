@@ -140,21 +140,21 @@ public class MVELRuntime {
                                 else stk.push(null);
                                 break;
 
-                            case INSTANCEOF:
-                                stk.push(((Class) stk.pop()).isInstance(stk.pop()));
-                                break;
+//                            case INSTANCEOF:
+//                                stk.push(((Class) stk.pop()).isInstance(stk.pop()));
+//                                break;
 
-                            case CONVERTABLE_TO:
-                                stk.push(canConvert((stk.peek2()).getClass(), (Class) stk.pop2()));
-                                break;
+//                            case CONVERTABLE_TO:
+//                                stk.push(canConvert((stk.peek2()).getClass(), (Class) stk.pop2()));
+//                                break;
 
-                            case SOUNDEX:
-                                stk.push(soundex(valueOf(stk.pop())).equals(soundex(valueOf(stk.pop()))));
-                                break;
-
-                            case SIMILARITY:
-                                stk.push(ParseTools.similarity(valueOf(stk.pop()), valueOf(stk.pop())));
-                                break;
+//                            case SOUNDEX:
+//                                stk.push(soundex(valueOf(stk.pop())).equals(soundex(valueOf(stk.pop()))));
+//                                break;
+//
+//                            case SIMILARITY:
+//                                stk.push(ParseTools.similarity(valueOf(stk.pop()), valueOf(stk.pop())));
+//                                break;
 
                         }
                     }

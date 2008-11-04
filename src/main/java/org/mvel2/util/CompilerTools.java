@@ -104,17 +104,35 @@ public class CompilerTools {
                 else if (!tkOp.isOperator() && tk.getLiteralValue() instanceof Class) {
                     optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), (Class) tk.getLiteralValue(), 0, ctx));
                 }
-                else if (tkOp.isOperator(Operator.REGEX)) {
-                    optimizedAst.addTokenNode(new RegExMatchNode(tk, astLinkedList.nextNode()));
-                }
-                else if (tkOp.isOperator(Operator.CONTAINS)) {
-                    optimizedAst.addTokenNode(new Contains(tk, astLinkedList.nextNode()));
-                }
-                else if (tkOp.isOperator(Operator.INSTANCEOF)) {
-                    optimizedAst.addTokenNode(new Instance(tk, astLinkedList.nextNode()));
+                else if (tkOp.isOperator()) {
+                    switch (tkOp.getOperator()) {
+                        case Operator.REGEX:
+                            optimizedAst.addTokenNode(new RegExMatchNode(tk, astLinkedList.nextNode()));
+                            break;
+                        case Operator.CONTAINS:
+                            optimizedAst.addTokenNode(new Contains(tk, astLinkedList.nextNode()));
+                            break;
+                        case Operator.INSTANCEOF:
+                            optimizedAst.addTokenNode(new Instance(tk, astLinkedList.nextNode()));
+                            break;
+                        case Operator.CONVERTABLE_TO:
+                            optimizedAst.addTokenNode((new Convertable(tk, astLinkedList.nextNode())));
+                            break;
+                        case Operator.SIMILARITY:
+                            optimizedAst.addTokenNode(new Strsim(tk, astLinkedList.nextNode()));
+                            break;
+                        case Operator.SOUNDEX:
+                            optimizedAst.addTokenNode(new Soundslike(tk, astLinkedList.nextNode()));
+                            break;
+
+                        default:
+                            optimizedAst.addTokenNode(tk, tkOp);
+
+                    }
                 }
                 else {
                     optimizedAst.addTokenNode(tk, tkOp);
+
                 }
             }
             else {
