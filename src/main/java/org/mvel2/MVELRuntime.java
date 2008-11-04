@@ -123,8 +123,8 @@ public class MVELRuntime {
 
                 try {
                     while (stk.isReduceable()) {
-                        switch ((Integer) stk.pop()) {
-                            case CHOR:
+                        if ((Integer) stk.pop() == CHOR) {
+                        //    case CHOR:
                                 v1 = stk.pop();
                                 v2 = stk.pop();
 
@@ -133,7 +133,7 @@ public class MVELRuntime {
                                     stk.push(!isEmpty(v2) ? v2 : v1);
                                 }
                                 else stk.push(null);
-                                break;
+              //                  break;
                         }
                     }
                 }
