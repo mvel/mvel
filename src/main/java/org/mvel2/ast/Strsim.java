@@ -4,7 +4,6 @@ import org.mvel2.CompileException;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;
 import static org.mvel2.util.ParseTools.similarity;
-import static org.mvel2.util.Soundex.soundex;
 
 public class Strsim extends ASTNode {
     private ASTNode stmt;

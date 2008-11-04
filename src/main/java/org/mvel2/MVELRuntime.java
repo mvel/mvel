@@ -18,9 +18,7 @@
 
 package org.mvel2;
 
-import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.Operator.*;
-import static org.mvel2.util.Soundex.soundex;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.LineLabel;
 import org.mvel2.compiler.CompiledExpression;
@@ -31,10 +29,7 @@ import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.util.ASTLinkedList;
 import org.mvel2.util.ExecutionStack;
-import org.mvel2.util.ParseTools;
 import static org.mvel2.util.PropertyTools.isEmpty;
-
-import static java.lang.String.valueOf;
 
 /**
  * This class contains the runtime for running compiled MVEL expressions.
@@ -139,23 +134,6 @@ public class MVELRuntime {
                                 }
                                 else stk.push(null);
                                 break;
-
-//                            case INSTANCEOF:
-//                                stk.push(((Class) stk.pop()).isInstance(stk.pop()));
-//                                break;
-
-//                            case CONVERTABLE_TO:
-//                                stk.push(canConvert((stk.peek2()).getClass(), (Class) stk.pop2()));
-//                                break;
-
-//                            case SOUNDEX:
-//                                stk.push(soundex(valueOf(stk.pop())).equals(soundex(valueOf(stk.pop()))));
-//                                break;
-//
-//                            case SIMILARITY:
-//                                stk.push(ParseTools.similarity(valueOf(stk.pop()), valueOf(stk.pop())));
-//                                break;
-
                         }
                     }
                 }
