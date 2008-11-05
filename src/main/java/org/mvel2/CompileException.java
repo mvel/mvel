@@ -19,10 +19,8 @@
 package org.mvel2;
 
 import static org.mvel2.util.ParseTools.isWhitespace;
+import static org.mvel2.util.ParseTools.repeatChar;
 import org.mvel2.util.StringAppender;
-import org.mvel2.util.ArrayTools;
-import org.mvel2.util.PropertyTools;
-import org.mvel2.util.ParseTools;
 
 import static java.lang.String.copyValueOf;
 import java.util.ArrayList;
@@ -61,8 +59,7 @@ public class CompileException extends RuntimeException {
     }
 
     public String toString() {
-        StringAppender appender = new StringAppender();
-        appender.append("[Error: " + getMessage() + "]\n");
+        StringAppender appender = new StringAppender().append("[Error: " + getMessage() + "]\n");
 
         int offset = appender.length();
 
@@ -70,15 +67,13 @@ public class CompileException extends RuntimeException {
 
         offset = appender.length() - offset;
 
-        appender.append(showCodeNearError(expr, cursor));
-        appender.append(" ....}]\n");
-        appender.append(ParseTools.repeatChar(' ', offset));
+        appender.append(showCodeNearError(expr, cursor))
+                .append(" ....}]\n")
+                .append(repeatChar(' ', offset));
 
-        offset = cursor - msgOffset - 1;
-        if (offset < 0) offset = 0;
+        if ((offset = cursor - msgOffset - 1) < 0) offset = 0;
 
-        appender.append(ParseTools.repeatChar(' ', offset));
-        appender.append("^");
+        appender.append(repeatChar(' ', offset)).append("^");
 
         if (lineNumber != -1) {
             appender.append('\n')
@@ -121,8 +116,6 @@ public class CompileException extends RuntimeException {
         if (start < 0) {
             start = 0;
         }
-
-
 
         while (start < end && isWhitespace(expr[start])) start++;
 
