@@ -267,6 +267,8 @@ public class ParseTools {
                     }
                     else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
                         if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
+                        else if (parmTypes[i] == char.class && arguments[i] == String.class) score += 1;
+
                         score += 1;
                     }
                     else if (arguments[i] == Object.class) {
@@ -494,6 +496,12 @@ public class ParseTools {
         }
         else if (cls == int[].class || cls == Integer[].class) {
             return Integer[].class;
+        }
+        else if (cls == char.class || cls == Character.class) {
+            return Character.class;
+        }
+        else if (cls == char[].class || cls == Character[].class) {
+            return Character[].class;
         }
         else if (cls == long.class || cls == Long.class) {
             return Long.class;

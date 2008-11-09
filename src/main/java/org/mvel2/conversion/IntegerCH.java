@@ -75,7 +75,7 @@ public class IntegerCH implements ConversionHandler {
 
         CNV.put(String.class,
                 new Converter() {
-                    public Object convert(Object o) {
+                    public Object convert(Object o) {                        
                         return parseInt(((String) o));
                     }
                 }

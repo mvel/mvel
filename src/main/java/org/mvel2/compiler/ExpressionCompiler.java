@@ -51,13 +51,10 @@ public class ExpressionCompiler extends AbstractParser {
     }
 
     public CompiledExpression compile(ParserContext ctx) {
-        if (debugSymbols) {
-            ctx.setDebugSymbols(debugSymbols);
+        if (debugSymbols || ctx.isDebugSymbols()) {
+            ctx.setDebugSymbols(debugSymbols = true);
         }
-        else if (ctx.isDebugSymbols()) {
-            debugSymbols = true;
-        }
-
+  
         try {
             newContext(ctx);
             return _compile();
@@ -122,6 +119,9 @@ public class ExpressionCompiler extends AbstractParser {
                     continue;
                 }
 
+                /**
+                 * Record the type of the current node..
+                 */
                 returnType = tk.getEgressType();
 
                 if (tk instanceof Substatement) {
@@ -260,7 +260,6 @@ public class ExpressionCompiler extends AbstractParser {
             throw new CompileException("not a statement, or badly formed structure", e);
         }
         catch (CompileException e) {
-            //    CompileException ne = new CompileException(e.getMessage(), expr, cursor, e);
             e.setExpr(expr);
             e.setLineNumber(line);
             e.setColumn(cursor - lastLineStart);
@@ -283,11 +282,13 @@ public class ExpressionCompiler extends AbstractParser {
         if (tk.isOperator() && (tk.getOperator().equals(Operator.AND) || tk.getOperator().equals(Operator.OR))) {
             secondPassOptimization = true;
         }
-
         if (tk.isDiscard() || tk.isOperator()) {
             return tk;
         }
         else if (tk.isLiteral()) {
+            /**
+             * Convert literal values from the default ASTNode to the more-efficient LiteralNode.
+             */
             if ((fields & COMPILE_IMMEDIATE) != 0 && tk.getClass() == ASTNode.class) {
                 return new LiteralNode(tk.getLiteralValue());
             }

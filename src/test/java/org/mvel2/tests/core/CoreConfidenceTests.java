@@ -4724,6 +4724,21 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("c = 'str'; if (c is String) { true; } else { false; } "));
     }
 
+    public void testJIRA122() {
+        
+        Serializable s = MVEL.compileExpression("java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
+
+
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        Map map = new HashMap();
+        map.put("name", "Adam");
+        
+        assertEquals(true, MVEL.executeExpression(s,map));
+        assertEquals(true, MVEL.executeExpression(s,map));
+    }
+
 }
 
 
