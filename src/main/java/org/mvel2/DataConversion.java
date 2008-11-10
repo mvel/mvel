@@ -34,7 +34,7 @@ import java.util.*;
  */
 public class DataConversion {
     private static final Map<Class, ConversionHandler> CONVERTERS
-            = new HashMap<Class, ConversionHandler>();
+            = new HashMap<Class, ConversionHandler>(38 * 2, 0.5f);
 
     static {
         ConversionHandler ch;
@@ -108,7 +108,7 @@ public class DataConversion {
         }
         return (T) CONVERTERS.get(toType).convertFrom(in);
     }
-
+                                               
     /**
      * Register a new {@link ConversionHandler} with the factory.
      *
@@ -118,4 +118,6 @@ public class DataConversion {
     public static void addConversionHandler(Class type, ConversionHandler handler) {
         CONVERTERS.put(type, handler);
     }
+
+
 }
