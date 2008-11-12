@@ -158,7 +158,7 @@ public class ForEachNode extends BlockNode {
             }
         }
         else {
-            throw new CompileException("non-iterable type: " + iterCond.getClass().getName());
+            throw new CompileException("non-iterable type: " + (iterCond != null ? iterCond.getClass().getName() : "null"));
         }
 
         return null;
