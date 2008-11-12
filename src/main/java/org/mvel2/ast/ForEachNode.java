@@ -211,9 +211,7 @@ public class ForEachNode extends BlockNode {
                 else {
                     throw new CompileException("not a valid interable type: " + egress.getName());
                 }
-
             }
-
         }
     }
 
