@@ -94,4 +94,19 @@ public class FailureTests extends AbstractTest {
         }
         assertTrue(false);
     }
+
+    public void testShouldFail8() {
+        try {
+            ParserContext pCtx = new ParserContext();
+            pCtx.setStrongTyping(true);
+
+            MVEL.compileExpression("for (String s : new java.util.HashMap()) { }", pCtx);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        assertTrue(false);
+    }
 }

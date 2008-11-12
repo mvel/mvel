@@ -1180,7 +1180,7 @@ public class AbstractParser implements Serializable {
                 }
 
             case ASTNode.BLOCK_FOREACH:
-                return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+                return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields, pCtx);
             case ASTNode.BLOCK_WHILE:
                 return new WhileNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
             case ASTNode.BLOCK_UNTIL:

@@ -19,6 +19,7 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
@@ -27,7 +28,6 @@ import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 import static org.mvel2.util.ParseTools.subset;
 
-import java.util.Collection;
 import java.lang.reflect.Array;
 
 /**
@@ -41,17 +41,17 @@ public class ForEachNode extends BlockNode {
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
 
-    private static final int COLLECTION = 0;
+    private static final int ITERABLE = 0;
     private static final int ARRAY = 1;
     private static final int CHARSEQUENCE = 2;
     private static final int INTEGER = 3;
-    private static final int ITERABLE = 4;
+
 
     private int type = -1;
 
-    public ForEachNode(char[] condition, char[] block, int fields) {
+    public ForEachNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
         this.fields = fields;
-        handleCond(this.name = condition, fields);
+        handleCond(this.name = condition, fields, pCtx);
         this.block = block;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
@@ -70,10 +70,10 @@ public class ForEachNode extends BlockNode {
                 this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
             }
 
-            if (iterCond instanceof Collection) {
-                type = COLLECTION;
+            if (iterCond instanceof Iterable) {
+                type = ITERABLE;
             }
-            else if (iterCond instanceof Object[]) {
+            else if (iterCond.getClass().isArray()) {
                 type = ARRAY;
             }
             else if (iterCond instanceof CharSequence) {
@@ -83,23 +83,11 @@ public class ForEachNode extends BlockNode {
                 type = INTEGER;
             }
             else {
-                try {
-                    Class.forName("java.lang.Iterable");
-                    type = ITERABLE;
-                }
-                catch (Exception e) {
-                    throw new CompileException("non-iterable type: " + iterCond.getClass().getName());
-                }
+                throw new CompileException("non-iterable type: " + iterCond.getClass().getName());
             }
         }
 
         switch (type) {
-            case COLLECTION:
-                for (Object o : (Collection) iterCond) {
-                    itemR.setValue(o);
-                    compiledBlock.getValue(ctx, thisValue, itemFactory);
-                }
-                break;
             case ARRAY:
                 int len = Array.getLength(iterCond);
                 for (int i = 0; i < len; i++) {
@@ -138,12 +126,13 @@ public class ForEachNode extends BlockNode {
 
         Object iterCond = MVEL.eval(cond, thisValue, factory);
 
-        if (itemType != null) enforceTypeSafety(itemType, ParseTools.getBaseComponentType(iterCond.getClass()));
+        if (itemType != null && itemType.isArray())
+            enforceTypeSafety(itemType, ParseTools.getBaseComponentType(iterCond.getClass()));
 
         this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
 
-        if (iterCond instanceof Collection) {
-            for (Object o : (Collection) iterCond) {
+        if (iterCond instanceof Iterable) {
+            for (Object o : (Iterable) iterCond) {
                 itemR.setValue(o);
                 compiledBlock.getValue(ctx, thisValue, itemFactory);
             }
@@ -169,22 +158,13 @@ public class ForEachNode extends BlockNode {
             }
         }
         else {
-            try {
-                Class.forName("java.lang.Iterable");
-                for (Object o : (Iterable) iterCond) {
-                    itemR.setValue(o);
-                    compiledBlock.getValue(ctx, thisValue, itemFactory);
-                }
-            }
-            catch (Exception e) {
-                throw new CompileException("non-iterable type: " + iterCond.getClass().getName());
-            }
+            throw new CompileException("non-iterable type: " + iterCond.getClass().getName());
         }
 
         return null;
     }
 
-    private void handleCond(char[] condition, int fields) {
+    private void handleCond(char[] condition, int fields, ParserContext pCtx) {
         int cursor = 0;
         while (cursor < condition.length && condition[cursor] != ':') cursor++;
 
@@ -210,9 +190,30 @@ public class ForEachNode extends BlockNode {
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             this.condition = (ExecutableStatement) subCompileExpression(this.cond);
 
-            if (itemType != null) {
+            Class egress = this.condition.getKnownEgressType();
+
+            if (itemType != null && egress.isArray()) {
                 enforceTypeSafety(itemType, ParseTools.getBaseComponentType(this.condition.getKnownEgressType()));
             }
+            else if (pCtx.isStrongTyping()) {
+                if (Iterable.class.isAssignableFrom(egress)) {
+                    type = ITERABLE;
+                }
+                else if (egress.isArray()) {
+                    type = ARRAY;
+                }
+                else if (CharSequence.class.isAssignableFrom(egress)) {
+                    type = CHARSEQUENCE;
+                }
+                else if (Integer.class.isAssignableFrom(egress)) {
+                    type = INTEGER;
+                }
+                else {
+                    throw new CompileException("not a valid interable type: " + egress.getName());
+                }
+
+            }
+
         }
     }
 
