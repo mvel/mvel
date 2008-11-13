@@ -46,12 +46,10 @@ public class ForEachNode extends BlockNode {
     private static final int CHARSEQUENCE = 2;
     private static final int INTEGER = 3;
 
-
     private int type = -1;
 
     public ForEachNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
-        this.fields = fields;
-        handleCond(this.name = condition, fields, pCtx);
+        handleCond(this.name = condition, this.fields = fields, pCtx);
         this.block = block;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
@@ -69,7 +67,6 @@ public class ForEachNode extends BlockNode {
             if (compiledBlock == null) {
                 this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
             }
-
             if (iterCond instanceof Iterable) {
                 type = ITERABLE;
             }
@@ -188,9 +185,7 @@ public class ForEachNode extends BlockNode {
         this.cond = subset(condition, ++cursor);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            this.condition = (ExecutableStatement) subCompileExpression(this.cond);
-
-            Class egress = this.condition.getKnownEgressType();
+            Class egress = (this.condition = (ExecutableStatement) subCompileExpression(this.cond)).getKnownEgressType();
 
             if (itemType != null && egress.isArray()) {
                 enforceTypeSafety(itemType, ParseTools.getBaseComponentType(this.condition.getKnownEgressType()));

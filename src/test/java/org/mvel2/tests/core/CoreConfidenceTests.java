@@ -4725,10 +4725,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testJIRA122() {
-        
         Serializable s = MVEL.compileExpression("java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
-
-
 
         OptimizerFactory.setDefaultOptimizer("ASM");
 
@@ -4738,7 +4735,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, MVEL.executeExpression(s,map));
         assertEquals(true, MVEL.executeExpression(s,map));
     }
-
 }
 
 
