@@ -8,6 +8,7 @@ import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ParseTools;
+import org.mvel2.util.PropertyTools;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
 import java.io.Serializable;
@@ -19,7 +20,7 @@ public class WithAccessor implements AccessorNode {
     protected ExecutableStatement nestedStatement;
     protected ExecutablePairs[] withExpressions;
 
-    public WithAccessor(String property, char[] block) {
+    public WithAccessor(String property, char[] block, Class ingressType) {
         ParserContext pCtx = getCurrentThreadParserContext();
         pCtx.setBlockSymbols(true);
 
@@ -28,7 +29,7 @@ public class WithAccessor implements AccessorNode {
 
         for (int i = 0; i < pvp.length; i++) {
             withExpressions[i] = new ExecutablePairs(pvp[i].getParm(),
-                    (ExecutableStatement) subCompileExpression(pvp[i].getValue().toCharArray()));
+                    (ExecutableStatement) subCompileExpression(pvp[i].getValue().toCharArray()), ingressType);
         }
 
         pCtx.setBlockSymbols(false);
@@ -75,9 +76,13 @@ public class WithAccessor implements AccessorNode {
         public ExecutablePairs() {
         }
 
-        public ExecutablePairs(String parameter, ExecutableStatement statement) {
+        public ExecutablePairs(String parameter, ExecutableStatement statement, Class ingressType) {
             if (parameter != null && parameter.length() != 0)
-                this.setExpression = MVEL.compileSetExpression(parameter, getCurrentThreadParserContext());
+
+
+                this.setExpression = MVEL.compileSetExpression(parameter,
+                        ingressType != null ? PropertyTools.getReturnType(ingressType, parameter) : Object.class
+                        , getCurrentThreadParserContext());
             this.statement = statement;
         }
 

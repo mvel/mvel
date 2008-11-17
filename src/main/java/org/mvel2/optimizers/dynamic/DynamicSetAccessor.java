@@ -74,7 +74,7 @@ public class DynamicSetAccessor implements DynamicAccessor {
 
         AccessorOptimizer ao = OptimizerFactory.getAccessorCompiler("ASM");
         _accessor = ao.optimizeSetAccessor(context, property, ctx, elCtx,
-                variableResolverFactory, false, value);
+                variableResolverFactory, false, value, value != null ? value.getClass() : Object.class);
         assert _accessor != null;
 
         return value;

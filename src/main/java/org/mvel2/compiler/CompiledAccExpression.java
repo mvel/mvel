@@ -29,17 +29,25 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
     private char[] expression;
     private transient Accessor accessor;
     private ParserContext context;
+    private Class ingressType;
 
-    public CompiledAccExpression(char[] expression, ParserContext context) {
+    public CompiledAccExpression(char[] expression, Class ingressType, ParserContext context) {
         this.expression = expression;
         this.context = context;
+        assert ingressType != Object.class;
+
+        this.ingressType = ingressType != null ? ingressType : Object.class;
     }
 
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vrf, Object value) {
+//        assert ingressType.isAssignableFrom(value.getClass()) : "expected type for: " + new String(expression)
+//                + ":: " + ingressType.getName() + "!=" + value.getClass().getName();
+
         if (accessor == null) {
             AccessorOptimizer ao = getThreadAccessorOptimizer();
-            accessor = ao.optimizeSetAccessor(context, expression, ctx, ctx, vrf, false, value);
+
+            accessor = ao.optimizeSetAccessor(context, expression, ctx, ctx, vrf, false, value, ingressType);
         }
         else {
             accessor.setValue(ctx, elCtx, vrf, value);
@@ -49,7 +57,8 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         if (accessor == null) {
-            accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, staticContext, staticContext, factory, false);
+            accessor = getThreadAccessorOptimizer()
+                    .optimizeAccessor(context, expression, staticContext, staticContext, factory, false, ingressType);
         }
         return accessor.getValue(staticContext, staticContext, factory);
     }
@@ -85,7 +94,8 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         if (accessor == null) {
-            accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, ctx, elCtx, variableFactory, false);
+            accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, ctx, elCtx,
+                    variableFactory, false, ingressType);
         }
         return accessor.getValue(ctx, elCtx, variableFactory);
     }

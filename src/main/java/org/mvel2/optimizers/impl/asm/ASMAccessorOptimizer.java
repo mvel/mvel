@@ -118,6 +118,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private ArrayList<ExecutableStatement> compiledInputs;
 
+    private Class ingressType;
     private Class returnType;
 
     @SuppressWarnings({"StringBufferField"})
@@ -192,7 +193,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     }
 
-    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object staticContext, Object thisRef, VariableResolverFactory factory, boolean root) {
+    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object staticContext,
+                                     Object thisRef, VariableResolverFactory factory, boolean root, Class ingressType) {
         time = System.currentTimeMillis();
 
         compiledInputs = new ArrayList<ExecutableStatement>();
@@ -207,6 +209,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.ctx = staticContext;
         this.thisRef = thisRef;
         this.variableFactory = factory;
+        this.ingressType = ingressType;
 
         if (!noinit) _initJIT();
 
@@ -214,9 +217,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         return compileAccessor();
     }
 
-    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value) {
+    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
+                                        VariableResolverFactory factory, boolean rootThisRef, Object value, Class ingressType) {
         this.start = this.cursor = 0;
         this.first = true;
+        this.ingressType = ingressType;
 
         compiledInputs = new ArrayList<ExecutableStatement>();
 
@@ -372,7 +377,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             String tk = new String(property);
-            Member member = getFieldOrWriteAccessor(ctx.getClass(), tk);
+            Member member = getFieldOrWriteAccessor(ctx.getClass(), tk, ingressType);
+
+            if (member == null) {
+                System.out.println("!");
+            }
 
             if (member instanceof Field) {
                 assert debug("CHECKCAST " + ctx.getClass().getName());
@@ -466,6 +475,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 ((Map) ctx).put(tk, value);
             }
             else {
+                System.out.println("ingress:" + ingressType);
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
             }
         }
@@ -509,6 +519,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         mv.visitMaxs(stacksize, maxlocals);
         mv.visitEnd();
+
+
+        mv = cw.visitMethod(ACC_PUBLIC, "getKnownEgressType", "()Ljava/lang/Class;", null, null);
+        mv.visitCode();
+        mv.visitLdcInsn(org.mvel2.asm.Type.getType(returnType != null ? returnType : Object.class));
+        mv.visitInsn(ARETURN);
+     //   mv.visitLocalVariable("this", "Lorg/mvel2/tests/AccessorBMModel;", null, l0, l1, 0);
+        mv.visitMaxs(1, 1);
+        mv.visitEnd();
+
 
         buildInputs();
 
@@ -633,9 +653,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         cursor = res[0];
         (pCtx = getParserContext()).incrementLineCount(res[1]);
 
-        WithStatementPair[] pvp = parseWithExpressions(root, subset(expr, start, cursor++ - start));
+        this.returnType = ctx != null ? ctx.getClass() : null;
 
-        for (WithStatementPair aPvp : pvp) {
+        for (WithStatementPair aPvp : parseWithExpressions(root, subset(expr, start, cursor++ - start))) {
             assert debug("DUP");
             mv.visitInsn(DUP);
             if (aPvp.getParm() == null) {
@@ -647,8 +667,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             else {
                 // Execute interpretively.
                 MVEL.setProperty(ctx, aPvp.getParm(), MVEL.eval(aPvp.getValue(), ctx, variableFactory));
-
-                compiledInputs.add(((ExecutableStatement) MVEL.compileSetExpression(aPvp.getParm(), pCtx)));
+                compiledInputs.add(((ExecutableStatement) MVEL.compileSetExpression(aPvp.getParm(), PropertyTools.getReturnType(ingressType, aPvp.getParm()), pCtx)));
 
                 assert debug("ALOAD 0");
                 mv.visitVarInsn(ALOAD, 0);
@@ -1124,7 +1143,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         assert debug("\n  **  {method: " + name + "}");
 
         int st = cursor;
-        String tk = cursor != length &&  expr[cursor] == '(' && ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ?
+        String tk = cursor != length && expr[cursor] == '(' && ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ?
                 new String(expr, st + 1, cursor - st - 1) : "";
         cursor++;
 
@@ -2414,6 +2433,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 if (cns == null)
                     throw new CompileException("unable to find constructor for: " + cls.getName());
+
+                this.returnType = cns.getDeclaringClass();
 
                 Class tg;
                 for (i = 0; i < constructorParms.length; i++) {

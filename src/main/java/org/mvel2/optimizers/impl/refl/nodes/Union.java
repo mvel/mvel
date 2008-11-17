@@ -29,19 +29,18 @@ import org.mvel2.optimizers.OptimizerFactory;
  */
 public class Union implements Accessor {
     private Accessor accessor;
-
     private char[] nextExpr;
     private Accessor nextAccessor;
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         if (nextAccessor == null) {
             Object o = accessor.getValue(ctx, elCtx, variableFactory);
-
             AccessorOptimizer ao = OptimizerFactory.getDefaultAccessorCompiler();
-            nextAccessor = ao.optimizeAccessor(getCurrentThreadParserContext(), nextExpr, o, elCtx, variableFactory, false);
+            Class ingress = accessor.getKnownEgressType();
 
+            nextAccessor = ao.optimizeAccessor(getCurrentThreadParserContext(), nextExpr, o, elCtx, variableFactory,
+                    false, ingress);
             return ao.getResultOptPass();
-            //   return nextAccessor.getValue(o, elCtx, variableFactory);
         }
         else {
             return nextAccessor.getValue(accessor.getValue(ctx, elCtx, variableFactory), elCtx, variableFactory);
@@ -55,6 +54,10 @@ public class Union implements Accessor {
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         return null;
+    }
+
+    public Class getLeftIngressType() {
+        return accessor.getKnownEgressType();
     }
 
     public Class getKnownEgressType() {

@@ -79,7 +79,7 @@ public class DynamicGetAccessor implements DynamicAccessor {
         AccessorOptimizer ao = OptimizerFactory.getAccessorCompiler("ASM");
         switch (type) {
             case DynamicOptimizer.REGULAR_ACCESSOR:
-                _accessor = ao.optimizeAccessor(context, property, ctx, elCtx, variableResolverFactory, false);
+                _accessor = ao.optimizeAccessor(context, property, ctx, elCtx, variableResolverFactory, false, null);
                 return ao.getResultOptPass();
             case DynamicOptimizer.OBJ_CREATION:
                 _accessor = ao.optimizeObjectCreation(context, property, ctx, elCtx, variableResolverFactory);

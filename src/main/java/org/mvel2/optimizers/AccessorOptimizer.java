@@ -25,9 +25,11 @@ import org.mvel2.integration.VariableResolverFactory;
 public interface AccessorOptimizer {
     public void init();
 
-    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef);
+    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
+                                     VariableResolverFactory factory, boolean rootThisRef, Class ingressType);
 
-    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean rootThisRef, Object value);
+    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
+                                        VariableResolverFactory factory, boolean rootThisRef, Object value, Class ingressType);
 
     public Accessor optimizeCollection(Object collectionGraph, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
 

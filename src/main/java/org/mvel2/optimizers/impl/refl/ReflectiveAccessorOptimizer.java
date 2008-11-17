@@ -76,6 +76,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     private static final Map<Integer, Accessor> REFLECTIVE_ACCESSOR_CACHE =
             new WeakHashMap<Integer, Accessor>();
 
+    private Class ingressType;
     private Class returnType;
 
     public ReflectiveAccessorOptimizer() {
@@ -110,14 +111,15 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
         else {
             accessor = new ReflectiveAccessorOptimizer().optimizeAccessor(getCurrentThreadParserContext(),
-                    expression.toCharArray(), ctx, null, null, false);
+                    expression.toCharArray(), ctx, null, null, false, null);
 
             REFLECTIVE_ACCESSOR_CACHE.put(hash, accessor);
             return accessor.getValue(ctx, null, null);
         }
     }
 
-    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory, boolean root) {
+    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
+                                     VariableResolverFactory factory, boolean root, Class ingressType) {
         this.rootNode = this.currNode = null;
         this.start = this.cursor = 0;
         this.first = true;
@@ -126,13 +128,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.ctx = ctx;
         this.thisRef = thisRef;
         this.variableFactory = factory;
+        this.ingressType = ingressType;
 
         this.pCtx = pCtx;
         return compileGetChain();
     }
 
     public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
-                                        VariableResolverFactory factory, boolean rootThisRef, Object value) {
+                                        VariableResolverFactory factory, boolean rootThisRef, Object value, Class ingressType) {
         this.rootNode = this.currNode = null;
         this.start = this.cursor = 0;
         this.first = true;
@@ -141,6 +144,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.ctx = ctx;
         this.thisRef = thisRef;
         this.variableFactory = factory;
+        this.ingressType = ingressType;
 
         char[] root = null;
 
@@ -169,7 +173,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             this.cursor = this.start = 0;
 
             whiteSpaceSkip();
-
 
             if (collection) {
                 int start = cursor;
@@ -212,7 +215,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             String tk = new String(property);
-            Member member = getFieldOrWriteAccessor(ctx.getClass(), tk);
+            Member member = getFieldOrWriteAccessor(ctx.getClass(), tk, ingressType);
+
+
 
             if (member instanceof Field) {
                 Field fld = (Field) member;
@@ -255,6 +260,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 addAccessorNode(new MapAccessor(tk));
             }
             else {
+                System.out.println("ingress::" + ingressType);
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
             }
         }
@@ -339,7 +345,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         cursor = res[0];
         getParserContext().incrementLineCount(res[1]);
 
-        WithAccessor wa = new WithAccessor(root, subset(expr, start, cursor++ - start));
+        WithAccessor wa = new WithAccessor(root, subset(expr, start, cursor++ - start), ingressType);
 
         addAccessorNode(wa);
 
@@ -383,6 +389,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         Member member = cls != null ? getFieldOrAccessor(cls, property) : null;
+
+
 
         if (member instanceof Method) {
             Object o;
@@ -853,6 +861,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             if (cnsRes.length > 1) {
                 ReflectiveAccessorOptimizer compiledOptimizer
                         = new ReflectiveAccessorOptimizer(pCtx, cnsRes[1].toCharArray(), cns.newInstance(parms), ctx, vars);
+                compiledOptimizer.ingressType = cns.getDeclaringClass();
+
+
                 compiledOptimizer.setRootNode(ca);
                 compiledOptimizer.compileGetChain();
                 ca = compiledOptimizer.getRootNode();

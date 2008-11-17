@@ -42,7 +42,7 @@ public class LiteralDeepPropertyNode extends ASTNode {
         }
         else {
             AccessorOptimizer aO = getThreadAccessorOptimizer();
-            accessor = aO.optimizeAccessor(getCurrentThreadParserContext(), name, literal, thisValue, factory, false);
+            accessor = aO.optimizeAccessor(getCurrentThreadParserContext(), name, literal, thisValue, factory, false, null);
             return aO.getResultOptPass();
         }
     }

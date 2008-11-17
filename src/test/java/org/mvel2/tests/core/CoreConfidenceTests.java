@@ -4744,9 +4744,22 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, MVEL.executeExpression(s, map));
     }
 
-    public void testJIRA103() throws Exception {
+    public void testJIRA103()  {
         MvelContext mvelContext = new MvelContext();
         MVEL.setProperty(mvelContext, "regkeys", "s");
+    }
+
+    public void testJIRA103b() {
+        MvelContext mvelContext = new MvelContext();
+        Map map = new HashMap();
+        map.put("ctx", mvelContext);
+
+        Serializable c = MVEL.compileExpression("ctx.regkeys = 'foo'");
+
+        MVEL.executeExpression(c, map);
+
+        MVEL.executeExpression(c, map);
+
     }
 
 }

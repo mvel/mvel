@@ -124,11 +124,11 @@ public class ASTNode implements Cloneable, Serializable {
             }
 
             try {
-                setAccessor(optimizer.optimizeAccessor(getCurrentThreadParserContext(), name, ctx, thisValue, factory, true));
+                setAccessor(optimizer.optimizeAccessor(getCurrentThreadParserContext(), name, ctx, thisValue, factory, true, null));
             }
             catch (OptimizationNotSupported ne) {
                 setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
-                        .optimizeAccessor(getCurrentThreadParserContext(), name, ctx, thisValue, factory, true));
+                        .optimizeAccessor(getCurrentThreadParserContext(), name, ctx, thisValue, factory, true, null));
             }
 
 

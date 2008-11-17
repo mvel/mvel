@@ -40,7 +40,8 @@ public class Union extends ASTNode {
         }
         else {
             AccessorOptimizer o = OptimizerFactory.getThreadAccessorOptimizer();
-            accessor = o.optimizeAccessor(getCurrentThreadParserContext(), name, main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false);
+            accessor = o.optimizeAccessor(getCurrentThreadParserContext(), name,
+                    main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false, main.getEgressType());
             return o.getResultOptPass();
         }
     }

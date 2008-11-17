@@ -102,6 +102,14 @@ public class PropertyTools {
         return null;
     }
 
+    public static Class getReturnType(Class clazz, String property) {
+        Member m = getFieldOrAccessor(clazz, property);
+        if (m == null) return null;
+
+        if (m instanceof Field) return ((Field) m).getType();
+        else return ((Method) m).getReturnType();
+    }
+
 
     public static Member getFieldOrAccessor(Class clazz, String property) {
         if (property.charAt(property.length() - 1) == ')') return getGetter(clazz, property);
