@@ -7,7 +7,6 @@ import org.mvel2.ast.Function;
 import org.mvel2.ast.WithNode;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
-import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.debug.Debugger;
 import org.mvel2.debug.Frame;
@@ -3797,6 +3796,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public static class MvelContext {
         public boolean singleCalled;
         public boolean arrayCalled;
+        public String[] regkeys;
 
         public void methodForTest(String string) {
             System.out.println("sigle param method called!");
@@ -3806,6 +3806,14 @@ public class CoreConfidenceTests extends AbstractTest {
         public void methodForTest(String[] strings) {
             System.out.println("array param method called!");
             arrayCalled = true;
+        }
+
+        public void setRegkeys(String[] regkeys) {
+            this.regkeys = regkeys;
+        }
+
+        public void setRegkeys(String regkey) {
+            this.regkeys = regkey.split(",");
         }
     }
 
@@ -4715,7 +4723,7 @@ public class CoreConfidenceTests extends AbstractTest {
         String exp = "def foo(a,b) { a + b }; foo(1.5,5.25)";
         System.out.println(MVEL.eval(exp, new HashMap()));
     }
-         
+
     public void testChainedMethodCallsWithParams() {
         assertEquals(true, test("foo.toUC(\"abcd\").equals(\"ABCD\")"));
     }
@@ -4731,10 +4739,16 @@ public class CoreConfidenceTests extends AbstractTest {
 
         Map map = new HashMap();
         map.put("name", "Adam");
-        
-        assertEquals(true, MVEL.executeExpression(s,map));
-        assertEquals(true, MVEL.executeExpression(s,map));
+
+        assertEquals(true, MVEL.executeExpression(s, map));
+        assertEquals(true, MVEL.executeExpression(s, map));
     }
+
+    public void testJIRA103() throws Exception {
+        MvelContext mvelContext = new MvelContext();
+        MVEL.setProperty(mvelContext, "regkeys", "s");
+    }
+
 }
 
 

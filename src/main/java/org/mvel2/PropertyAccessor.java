@@ -250,7 +250,8 @@ public class PropertyAccessor {
 
             Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
             if (member == null) {
-                addWriteCache(curr.getClass(), tk.hashCode(), (member = getFieldOrWriteAccessor(curr.getClass(), tk)));
+                addWriteCache(curr.getClass(), tk.hashCode(),
+                        (member = value != null ? getFieldOrWriteAccessor(curr.getClass(), tk, value.getClass()) : getFieldOrWriteAccessor(curr.getClass(), tk)));
             }
 
             if (member instanceof Method) {

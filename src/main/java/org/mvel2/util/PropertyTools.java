@@ -18,6 +18,9 @@
 
 package org.mvel2.util;
 
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.util.ParseTools.boxPrimitive;
+
 import static java.lang.String.valueOf;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -48,10 +51,21 @@ public class PropertyTools {
         property = ReflectionUtil.getSetter(property);
 
         for (Method meth : clazz.getMethods()) {
-            if ((meth.getModifiers() & PUBLIC) == 0
-                    && meth.getParameterTypes().length != 0) continue;
+            if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 1
+                    && property.equals(meth.getName())) {
+                return meth;
+            }
+        }
 
-            if (property.equals(meth.getName())) {
+        return null;
+    }
+
+    public static Method getSetter(Class clazz, String property, Class type) {
+        property = ReflectionUtil.getSetter(property);
+
+        for (Method meth : clazz.getMethods()) {
+            if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 1 &&
+                    property.equals(meth.getName()) && canConvert(meth.getParameterTypes()[0], type)) {
                 return meth;
             }
         }
@@ -120,6 +134,16 @@ public class PropertyTools {
         return getSetter(clazz, property);
     }
 
+    public static Member getFieldOrWriteAccessor(Class clazz, String property, Class type) {
+        for (Field f : clazz.getFields()) {
+            if (property.equals(f.getName()) && canConvert(f.getType(), type)) {
+                return f;
+            }
+        }
+
+        return getSetter(clazz, property, type);
+    }
+
 
     public static boolean contains(Object toCompare, Object testValue) {
         if (toCompare == null)
@@ -141,4 +165,7 @@ public class PropertyTools {
     }
 
 
+    public static boolean isAssignable(Class to, Class from) {
+        return (to.isPrimitive() ? boxPrimitive(to) : to).isAssignableFrom(from.isPrimitive() ? boxPrimitive(from) : from);
+    }
 }
