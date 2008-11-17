@@ -662,7 +662,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             else {
                 // Execute interpretively.
                 MVEL.setProperty(ctx, aPvp.getParm(), MVEL.eval(aPvp.getValue(), ctx, variableFactory));
-                compiledInputs.add(((ExecutableStatement) MVEL.compileSetExpression(aPvp.getParm(), PropertyTools.getReturnType(ingressType, aPvp.getParm()), pCtx)));
+                compiledInputs.add(((ExecutableStatement) MVEL.compileSetExpression(aPvp.getParm(),
+                        PropertyTools.getReturnType(ingressType, aPvp.getParm()), pCtx)));
 
                 assert debug("ALOAD 0");
                 mv.visitVarInsn(ALOAD, 0);

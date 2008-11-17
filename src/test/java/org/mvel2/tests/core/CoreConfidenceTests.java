@@ -4068,6 +4068,8 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testInlineWith5() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
         ParserContext pCtx = new ParserContext();
         pCtx.setStrongTyping(true);
 
