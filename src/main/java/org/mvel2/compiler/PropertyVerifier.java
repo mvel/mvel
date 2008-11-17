@@ -23,6 +23,7 @@ import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessException;
 import org.mvel2.ast.Function;
 import org.mvel2.optimizers.AbstractOptimizer;
+import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import org.mvel2.util.StringAppender;
@@ -42,6 +43,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     private static final int NORM = 0;
     private static final int METH = 1;
     private static final int COL = 2;
+    private static final int WITH = 3;
 
     private List<String> inputs = new LinkedList<String>();
     private boolean first = true;
@@ -87,6 +89,10 @@ public class PropertyVerifier extends AbstractOptimizer {
                 case COL:
                     ctx = getCollectionProperty(ctx, capture());
                     break;
+                case WITH:
+                    ctx = getWithProperty(ctx);
+                    break;
+
                 case DONE:
                     break;
             }
@@ -415,6 +421,19 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
 
         return m.getReturnType();
+    }
+
+    private Class getWithProperty(Class ctx) {
+        String root = new String(expr, 0, cursor - 1).trim();
+
+        int start = cursor + 1;
+        int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{');
+        cursor = res[0];
+        getParserContext().incrementLineCount(res[1]);
+
+        new WithAccessor(root, subset(expr, start, cursor++ - start), ctx, pCtx.isStrictTypeEnforcement());
+
+        return ctx;
     }
 
     public boolean isResolvedExternally() {

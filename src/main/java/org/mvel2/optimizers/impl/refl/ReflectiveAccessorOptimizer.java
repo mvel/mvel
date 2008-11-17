@@ -260,7 +260,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 addAccessorNode(new MapAccessor(tk));
             }
             else {
-                System.out.println("ingress::" + ingressType);
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
             }
         }
@@ -345,7 +344,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         cursor = res[0];
         getParserContext().incrementLineCount(res[1]);
 
-        WithAccessor wa = new WithAccessor(root, subset(expr, start, cursor++ - start), ingressType);
+        WithAccessor wa = new WithAccessor(root, subset(expr, start, cursor++ - start), ingressType, false);
 
         addAccessorNode(wa);
 

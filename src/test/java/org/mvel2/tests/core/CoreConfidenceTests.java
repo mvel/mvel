@@ -4067,6 +4067,18 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("bar", f.getName());
     }
 
+    public void testInlineWith5() {
+        ParserContext pCtx = new ParserContext();
+        pCtx.setStrongTyping(true);
+
+        pCtx.addInput("foo", Foo.class);
+
+        CompiledExpression expr = new ExpressionCompiler("foo.{name='poopy', aValue='bar'}").compile(pCtx);
+        Foo f = (Foo) executeExpression(expr, createTestMap());
+        assertEquals("poopy", f.getName());
+        assertEquals("bar", f.aValue);
+    }
+
     public void testInlineWithImpliedThis() {
         Base b = new Base();
         ExpressionCompiler expr = new ExpressionCompiler(".{ data = 'foo' }");
@@ -4744,7 +4756,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, MVEL.executeExpression(s, map));
     }
 
-    public void testJIRA103()  {
+    public void testJIRA103() {
         MvelContext mvelContext = new MvelContext();
         MVEL.setProperty(mvelContext, "regkeys", "s");
     }
@@ -4753,13 +4765,9 @@ public class CoreConfidenceTests extends AbstractTest {
         MvelContext mvelContext = new MvelContext();
         Map map = new HashMap();
         map.put("ctx", mvelContext);
-
         Serializable c = MVEL.compileExpression("ctx.regkeys = 'foo'");
-
         MVEL.executeExpression(c, map);
-
         MVEL.executeExpression(c, map);
-
     }
 
 }

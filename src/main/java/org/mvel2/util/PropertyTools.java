@@ -20,6 +20,7 @@ package org.mvel2.util;
 
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.util.ParseTools.boxPrimitive;
+import org.mvel2.CompileException;
 
 import static java.lang.String.valueOf;
 import java.lang.reflect.Field;
@@ -101,6 +102,15 @@ public class PropertyTools {
 
         return null;
     }
+
+    public static Class getReturnTypeStrict(Class clazz, String property) {
+        Member m = getFieldOrAccessor(clazz, property);
+        if (m == null)  throw new CompileException("could not resolve property: " + clazz.getName() + "." + property);
+
+        if (m instanceof Field) return ((Field) m).getType();
+        else return ((Method) m).getReturnType();
+    }
+
 
     public static Class getReturnType(Class clazz, String property) {
         Member m = getFieldOrAccessor(clazz, property);

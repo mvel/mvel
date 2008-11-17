@@ -379,10 +379,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             String tk = new String(property);
             Member member = getFieldOrWriteAccessor(ctx.getClass(), tk, ingressType);
 
-            if (member == null) {
-                System.out.println("!");
-            }
-
             if (member instanceof Field) {
                 assert debug("CHECKCAST " + ctx.getClass().getName());
                 mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
@@ -475,7 +471,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 ((Map) ctx).put(tk, value);
             }
             else {
-                System.out.println("ingress:" + ingressType);
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
             }
         }
