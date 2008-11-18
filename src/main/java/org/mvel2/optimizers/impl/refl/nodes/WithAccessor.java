@@ -9,7 +9,6 @@ import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.PropertyTools;
-import static org.mvel2.util.PropertyTools.getReturnTypeStrict;
 import static org.mvel2.util.PropertyTools.getReturnType;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
@@ -31,7 +30,7 @@ public class WithAccessor implements AccessorNode {
 
         for (int i = 0; i < pvp.length; i++) {
             withExpressions[i] = new ExecutablePairs(pvp[i].getParm(),
-                    (ExecutableStatement) subCompileExpression(pvp[i].getValue().toCharArray()), ingressType, strict);
+                    (ExecutableStatement) subCompileExpression(pvp[i].getValue().toCharArray()), ingressType, pCtx);
         }
 
         pCtx.setBlockSymbols(false);
@@ -78,18 +77,18 @@ public class WithAccessor implements AccessorNode {
         public ExecutablePairs() {
         }
 
-        public ExecutablePairs(String parameter, ExecutableStatement statement, Class ingressType, boolean strict) {
+        public ExecutablePairs(String parameter, ExecutableStatement statement, Class ingressType, ParserContext pCtx) {
             if (parameter != null && parameter.length() != 0) {
-                if (strict) {
+//                if (strict) {
                     this.setExpression = MVEL.compileSetExpression(parameter,
-                            ingressType != null ? getReturnTypeStrict(ingressType, parameter) : Object.class
+                            ingressType != null ? getReturnType(ingressType, parameter, pCtx) : Object.class
                             , getCurrentThreadParserContext());
-                }
-                else {
-                    this.setExpression = MVEL.compileSetExpression(parameter,
-                            ingressType != null ? getReturnType(ingressType, parameter) : Object.class
-                            , getCurrentThreadParserContext());
-                }
+//                }
+//                else {
+//                    this.setExpression = MVEL.compileSetExpression(parameter,
+//                            ingressType != null ? getReturnType(ingressType, parameter) : Object.class
+//                            , getCurrentThreadParserContext());
+//                }
 
             }
             this.statement = statement;

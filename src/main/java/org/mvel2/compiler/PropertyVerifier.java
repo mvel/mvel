@@ -46,9 +46,12 @@ public class PropertyVerifier extends AbstractOptimizer {
     private static final int WITH = 3;
 
     private List<String> inputs = new LinkedList<String>();
-    private boolean first = true;
+    private boolean first = false;
     private boolean resolvedExternally;
     private Map<String, Class> paramTypes;
+
+    private Class ctx = null;
+
 
     public PropertyVerifier(char[] property, ParserContext parserContext) {
         this.length = (this.expr = property).length;
@@ -58,6 +61,12 @@ public class PropertyVerifier extends AbstractOptimizer {
     public PropertyVerifier(String property, ParserContext parserContext) {
         this.length = (this.expr = property.toCharArray()).length;
         this.pCtx = parserContext;
+    }
+
+    public PropertyVerifier(String property, ParserContext parserContext, Class root) {
+        this.length = (this.expr = property.toCharArray()).length;
+        this.pCtx = parserContext;
+        this.ctx = root;
     }
 
     public List<String> getInputs() {
@@ -74,9 +83,11 @@ public class PropertyVerifier extends AbstractOptimizer {
      * @return known engress type
      */
     public Class analyze() {
-        Class ctx = Object.class;
         resolvedExternally = true;
-        first = true;
+        if (ctx == null) {
+            ctx = Object.class;
+            first = true;
+        }
 
         while (cursor < length) {
             switch (nextSubToken()) {
@@ -438,5 +449,13 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     public boolean isResolvedExternally() {
         return resolvedExternally;
+    }
+
+    public Class getCtx() {
+        return ctx;
+    }
+
+    public void setCtx(Class ctx) {
+        this.ctx = ctx;
     }
 }

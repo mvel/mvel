@@ -217,8 +217,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             String tk = new String(property);
             Member member = getFieldOrWriteAccessor(ctx.getClass(), tk, ingressType);
 
-
-
             if (member instanceof Field) {
                 Field fld = (Field) member;
 
@@ -388,7 +386,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         Member member = cls != null ? getFieldOrAccessor(cls, property) : null;
-
 
 
         if (member instanceof Method) {
