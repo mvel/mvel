@@ -46,7 +46,6 @@ public class WithNode extends BlockNode implements NestedStatement {
         this.name = expr;
         this.block = block;
 
-//        ParserContext pCtx = null;
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             pCtx.setBlockSymbols(true);
         }

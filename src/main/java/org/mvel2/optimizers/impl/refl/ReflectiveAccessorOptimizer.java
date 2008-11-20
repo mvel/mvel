@@ -258,7 +258,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 addAccessorNode(new MapAccessor(tk));
             }
             else {
-                throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
+                throw new PropertyAccessException("could not access property (" + tk + ") in: " + ingressType.getName());
             }
         }
         catch (InvocationTargetException e) {

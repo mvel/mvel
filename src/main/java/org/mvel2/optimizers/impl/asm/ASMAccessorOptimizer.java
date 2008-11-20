@@ -471,7 +471,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 ((Map) ctx).put(tk, value);
             }
             else {
-                throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
+                throw new PropertyAccessException("could not access property (" + tk + ") in: " + ingressType.getName());
             }
         }
         catch (InvocationTargetException e) {

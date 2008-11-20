@@ -4774,13 +4774,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testNewUsingWith() {
         ParserContext ctx = new ParserContext();
-        ctx.setStrictTypeEnforcement(true);
+        ctx.setStrongTyping(
+                true);
         ctx.addImport(Foo.class);
         ctx.addImport(Bar.class);
 
-       Serializable s = MVEL.compileExpression("with (new Foo()) { bar = with (new Bar()) { name = 'ziggy' } }", ctx);
+        Serializable s = MVEL.compileExpression("with (new Foo()) { bar = with (new Bar()) { name = 'ziggy' } }", ctx);
 
-       assertEquals("ziggy", ((Foo)MVEL.executeExpression(s)).getBar().getName());
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        assertEquals("ziggy", ((Foo) MVEL.executeExpression(s)).getBar().getName());
 
     }
 
