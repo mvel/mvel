@@ -79,16 +79,9 @@ public class WithAccessor implements AccessorNode {
 
         public ExecutablePairs(String parameter, ExecutableStatement statement, Class ingressType, ParserContext pCtx) {
             if (parameter != null && parameter.length() != 0) {
-//                if (strict) {
-                    this.setExpression = MVEL.compileSetExpression(parameter,
-                            ingressType != null ? getReturnType(ingressType, parameter, pCtx) : Object.class
-                            , getCurrentThreadParserContext());
-//                }
-//                else {
-//                    this.setExpression = MVEL.compileSetExpression(parameter,
-//                            ingressType != null ? getReturnType(ingressType, parameter) : Object.class
-//                            , getCurrentThreadParserContext());
-//                }
+                this.setExpression = MVEL.compileSetExpression(parameter,
+                        ingressType != null ? getReturnType(ingressType, parameter, pCtx) : Object.class
+                        , getCurrentThreadParserContext());
 
             }
             this.statement = statement;

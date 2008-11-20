@@ -28,6 +28,7 @@ import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.*;
 import org.mvel2.util.StringAppender;
+import static org.mvel2.util.PropertyTools.getReturnType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -41,17 +42,19 @@ public class WithNode extends BlockNode implements NestedStatement {
     protected ExecutableStatement nestedStatement;
     protected ParmValuePair[] withExpressions;
 
-    public WithNode(char[] expr, char[] block, int fields) {
+    public WithNode(char[] expr, char[] block, int fields, ParserContext pCtx) {
         this.name = expr;
         this.block = block;
 
-        ParserContext pCtx = null;
+//        ParserContext pCtx = null;
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            (pCtx = getCurrentThreadParserContext()).setBlockSymbols(true);
+            pCtx.setBlockSymbols(true);
         }
 
         nestedStatement = (ExecutableStatement) subCompileExpression((nestParm = createStringTrimmed(expr)).toCharArray());
-        compileWithExpressions();
+        egressType = nestedStatement.getKnownEgressType();
+
+        compileWithExpressions(pCtx);
 
         if (pCtx != null) {
             pCtx.setBlockSymbols(false);
@@ -79,7 +82,7 @@ public class WithNode extends BlockNode implements NestedStatement {
         return getReducedValueAccelerated(ctx, thisValue, factory);
     }
 
-    private void compileWithExpressions() {
+    private void compileWithExpressions(ParserContext pCtx) {
         List<ParmValuePair> parms = new ArrayList<ParmValuePair>();
         String parm = "";
 
@@ -151,7 +154,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                                 new ParmValuePair(null, (ExecutableStatement)
                                         subCompileExpression(
                                                 new StringAppender(nestParm).append('.')
-                                                        .append(subset(block, start, end - start)).toChars()))
+                                                        .append(subset(block, start, end - start)).toChars()), egressType, pCtx)
                         );
 
                         oper = -1;
@@ -163,7 +166,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                                 (ExecutableStatement) subCompileExpression(
                                         createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper)
                                 )
-                        ));
+                        , egressType, pCtx));
 
                         parm = null;
                         oper = -1;
@@ -182,7 +185,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                 parms.add(
                         new ParmValuePair(null, (ExecutableStatement)
                                 subCompileExpression(new StringAppender(nestParm).append('.')
-                                        .append(subset(block, start, end - start)).toChars()))
+                                        .append(subset(block, start, end - start)).toChars()), egressType, pCtx)
                 );
             }
             else {
@@ -192,7 +195,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                                 createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper)
 
                         )
-                ));
+                , egressType, pCtx));
             }
         }
 
@@ -215,9 +218,12 @@ public class WithNode extends BlockNode implements NestedStatement {
         public ParmValuePair() {
         }
 
-        public ParmValuePair(String parameter, ExecutableStatement statement) {
-            if (parameter != null)
-                this.setExpression = MVEL.compileSetExpression(parameter, getCurrentThreadParserContext());
+        public ParmValuePair(String parameter, ExecutableStatement statement, Class ingressType, ParserContext pCtx ) {
+            if (parameter != null && parameter.length() != 0) {
+             this.setExpression = MVEL.compileSetExpression(parameter,
+                        ingressType != null ? getReturnType(ingressType, parameter, pCtx) : Object.class
+                        , pCtx);
+            }
             this.statement = statement;
         }
 

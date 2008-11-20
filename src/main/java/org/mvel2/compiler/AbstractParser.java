@@ -728,7 +728,7 @@ public class AbstractParser implements Serializable {
                             tmp = subArray(start, cursor - 1);
                             cursor = balancedCapture(expr, start = cursor, '{') + 1;
 
-                            return lastNode = new ThisWithNode(tmp, subArray(start + 1, cursor - 1), fields);
+                            return lastNode = new ThisWithNode(tmp, subArray(start + 1, cursor - 1), fields, pCtx);
                         }
 
                         case '@': {
@@ -1190,7 +1190,7 @@ public class AbstractParser implements Serializable {
             case ASTNode.BLOCK_DO_UNTIL:
                 return new DoUntilNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd));
             default:
-                return new WithNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+                return new WithNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields, pCtx);
         }
     }
 

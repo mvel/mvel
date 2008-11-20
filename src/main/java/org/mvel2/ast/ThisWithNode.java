@@ -19,6 +19,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.ParserContext;
 import static org.mvel2.MVEL.executeSetExpression;
 import org.mvel2.integration.VariableResolverFactory;
 
@@ -27,8 +28,8 @@ import org.mvel2.integration.VariableResolverFactory;
  */
 public class ThisWithNode extends WithNode {
 
-    public ThisWithNode(char[] expr, char[] block, int fields) {
-        super(expr, block, fields);
+    public ThisWithNode(char[] expr, char[] block, int fields, ParserContext pCtx) {
+        super(expr, block, fields, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
