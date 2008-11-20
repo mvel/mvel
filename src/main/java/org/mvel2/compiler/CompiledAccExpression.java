@@ -34,8 +34,6 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
     public CompiledAccExpression(char[] expression, Class ingressType, ParserContext context) {
         this.expression = expression;
         this.context = context;
-        assert ingressType != Object.class;
-
         this.ingressType = ingressType != null ? ingressType : Object.class;
     }
 
