@@ -35,8 +35,6 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
         this.expression = expression;
         this.context = context;
         this.ingressType = ingressType != null ? ingressType : Object.class;
-
-        assert ingressType != Object.class;
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vrf, Object value) {

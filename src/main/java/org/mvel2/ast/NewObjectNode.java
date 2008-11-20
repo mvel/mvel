@@ -76,8 +76,6 @@ public class NewObjectNode extends ASTNode {
                 }
             }
         }
-
-        assert egressType != null;
     }
 
     private void rewriteClassReferenceToFQCN(int fields) {
