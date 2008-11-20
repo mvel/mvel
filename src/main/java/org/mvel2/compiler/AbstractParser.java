@@ -260,7 +260,7 @@ public class AbstractParser implements Serializable {
                                  */
                                 if (cursor < length && !lastNonWhite(']')) captureToEOT();
 
-                                lastNode = new NewObjectNode(subArray(start, cursor), fields);
+                                lastNode = new NewObjectNode(subArray(start, cursor), fields, pCtx);
 
                                 skipWhitespaceWithLineAccounting();
                                 if (cursor != length && expr[cursor] == '{') {

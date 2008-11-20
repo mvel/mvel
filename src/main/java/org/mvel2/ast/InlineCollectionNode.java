@@ -41,6 +41,8 @@ public class InlineCollectionNode extends ASTNode {
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             parseGraph(true, null, pctx.isStrongTyping());
+            AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
+            accessor = ao.optimizeCollection(collectionGraph, egressType, trailing, null, null, null);                        
         }
     }
 
@@ -51,6 +53,8 @@ public class InlineCollectionNode extends ASTNode {
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             parseGraph(true, type, pctx.isStrongTyping());
+            AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
+            accessor = ao.optimizeCollection(collectionGraph, egressType, trailing, null, null, null);            
         }
     }
 

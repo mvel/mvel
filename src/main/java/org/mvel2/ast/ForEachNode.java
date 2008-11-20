@@ -174,7 +174,7 @@ public class ForEachNode extends BlockNode {
         if ((x = item.indexOf(' ')) != -1) {
             String tk = new String(condition, 0, x).trim();
             try {
-                itemType = ParseTools.findClass(null, tk);
+                itemType = ParseTools.findClass(null, tk, pCtx);
                 item = new String(condition, x, cursor - x).trim();
             }
             catch (ClassNotFoundException e) {

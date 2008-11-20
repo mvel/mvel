@@ -22,6 +22,8 @@ import org.mvel2.*;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.MVEL.getDebuggingOutputFileName;
 import org.mvel2.ast.ASTNode;
+import org.mvel2.ast.Substatement;
+import org.mvel2.ast.InlineCollectionNode;
 import static org.mvel2.compiler.AbstractParser.*;
 import org.mvel2.compiler.*;
 import static org.mvel2.integration.ResolverTools.insertFactory;
@@ -779,7 +781,7 @@ public class ParseTools {
         }
     }
 
-    public static Class findClass(VariableResolverFactory factory, String name) throws ClassNotFoundException {
+    public static Class findClass(VariableResolverFactory factory, String name, ParserContext ctx) throws ClassNotFoundException {
         try {
             if (LITERALS.containsKey(name)) {
                 return (Class) LITERALS.get(name);
@@ -787,7 +789,7 @@ public class ParseTools {
             else if (factory != null && factory.isResolveable(name)) {
                 return (Class) factory.getVariableResolver(name).getValue();
             }
-            else if (getCurrentThreadParserContext() != null && getCurrentThreadParserContext().hasImport(name)) {
+            else if (ctx != null && ctx.hasImport(name)) {
                 return getCurrentThreadParserContext().getImport(name);
             }
             else {
@@ -1685,7 +1687,7 @@ public class ParseTools {
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
-        if (compiled.getInstructions().size() == 1) {
+        if (compiled.getParserContext().isAllowBootstrapBypass() && compiled.getInstructions().size() == 1) {
             ASTNode tk = compiled.getInstructions().firstNode();
 
             if (tk.isLiteral() && !tk.isThisVal()) {

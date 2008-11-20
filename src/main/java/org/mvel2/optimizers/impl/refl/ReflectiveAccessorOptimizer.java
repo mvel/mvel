@@ -550,7 +550,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         else {
             TypeDescriptor tDescr = new TypeDescriptor(expr, 0);
             if (tDescr.isArray()) {
-                Class cls = getClassReference((Class) ctx, tDescr, variableFactory);
+                Class cls = getClassReference((Class) ctx, tDescr, variableFactory, pCtx);
                 rootNode = new StaticReferenceAccessor(cls);
                 return cls;
             }
@@ -749,7 +749,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             try {
                 Class base = getBaseComponentType(type);
-                Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + base.getName() + ";")
+                Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + base.getName() + ";", pCtx)
                         : type;
 
                 for (Object item : (Object[]) o) {
@@ -829,7 +829,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         if (constructorParms != null) {
             String s = new String(subset(expression, 0, ArrayTools.findFirst('(', expression)));
-            Class cls = ParseTools.findClass(vars, s);
+            Class cls = ParseTools.findClass(vars, s, pCtx);
 
             ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
 

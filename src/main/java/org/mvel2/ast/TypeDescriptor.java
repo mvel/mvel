@@ -123,8 +123,8 @@ public class TypeDescriptor implements Serializable {
 
     public static Class getClassReference(Class baseType,
                                           TypeDescriptor tDescr,
-                                          VariableResolverFactory factory) throws ClassNotFoundException {
-        return findClass(factory, repeatChar('[', tDescr.arraySize.length) + "L" + baseType.getName() + ";");
+                                          VariableResolverFactory factory, ParserContext ctx) throws ClassNotFoundException {
+        return findClass(factory, repeatChar('[', tDescr.arraySize.length) + "L" + baseType.getName() + ";", ctx);
     }
 
     public static Class getClassReference(ParserContext ctx, TypeDescriptor tDescr) throws ClassNotFoundException {
@@ -132,13 +132,13 @@ public class TypeDescriptor implements Serializable {
         if (ctx.hasImport(tDescr.className)) {
             cls = ctx.getImport(tDescr.className);
             if (tDescr.isArray()) {
-                cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";");
+                cls = findClass(null, repeatChar('[', tDescr.arraySize.length) + "L" + cls.getName() + ";", ctx);
             }
         }
         else {
             cls = createClass(tDescr.getClassName());
             if (tDescr.isArray()) {
-                cls = findClass(null, repeatChar('[', tDescr.getArrayLength()) + "L" + cls.getName() + ";");
+                cls = findClass(null, repeatChar('[', tDescr.getArrayLength()) + "L" + cls.getName() + ";", ctx);
             }
         }
 

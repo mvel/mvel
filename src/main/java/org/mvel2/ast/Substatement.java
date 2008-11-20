@@ -51,4 +51,5 @@ public class Substatement extends ASTNode {
     public String toString() {
         return "(" + new String(name) + ")";
     }
+
 }

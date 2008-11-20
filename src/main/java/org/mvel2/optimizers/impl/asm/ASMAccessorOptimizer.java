@@ -1119,7 +1119,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             TypeDescriptor tDescr = new TypeDescriptor(expr, 0);
             if (tDescr.isArray()) {
                 try {
-                    Class cls = getClassReference((Class) ctx, tDescr, variableFactory);
+                    Class cls = getClassReference((Class) ctx, tDescr, variableFactory, pCtx);
                     //   rootNode = new StaticReferenceAccessor(cls);
                     ldcClassConstant(cls);
                     return cls;
@@ -2198,7 +2198,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 assert debug("ANEWARRAY " + getInternalName(getSubComponentType(type)) + " (" + ((Object[]) o).length + ")");
                 mv.visitTypeInsn(ANEWARRAY, getInternalName(getSubComponentType(type)));
 
-                Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + getBaseComponentType(type).getName() + ";")
+                Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + getBaseComponentType(type).getName() + ";", pCtx)
                         : type;
 
 
@@ -2411,7 +2411,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     compiledInputs.add((ExecutableStatement) subCompileExpression(constructorParm.toCharArray()));
                 }
 
-                Class cls = findClass(factory, new String(subset(property, 0, findFirst('(', property))));
+                Class cls = findClass(factory, new String(subset(property, 0, findFirst('(', property))), pCtx);
 
                 assert debug("NEW " + getInternalName(cls));
                 mv.visitTypeInsn(NEW, getInternalName(cls));
@@ -2484,7 +2484,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return acc;
             }
             else {
-                Class cls = findClass(factory, new String(property));
+                Class cls = findClass(factory, new String(property), pCtx);
 
                 assert debug("NEW " + getInternalName(cls));
                 mv.visitTypeInsn(NEW, getInternalName(cls));
