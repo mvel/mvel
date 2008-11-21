@@ -4782,9 +4782,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         OptimizerFactory.setDefaultOptimizer("reflective");
         assertEquals("ziggy", (((Foo) ((Map) MVEL.executeExpression(s)).get("foo")).getBar().getName()));
-
     }
-
 }
 
 
