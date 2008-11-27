@@ -42,7 +42,7 @@ public class Function extends ASTNode implements Safe {
 
     public Function(String name, char[] parameters, char[] block, ParserContext pCtx) {
         if ((this.name = name) == null || name.length() == 0) {
-            this.name = "AnonFunction" + this.hashCode();
+            this.name = null;
         }
 
         parmNum = (this.parameters = parseParameterDefList(parameters, 0, parameters.length)).length;
@@ -95,12 +95,18 @@ public class Function extends ASTNode implements Safe {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory.createVariable(name, this);
+        if (name != null) {
+            if (factory.isResolveable(name)) throw new CompileException("duplicate function: " + name);
+            factory.createVariable(name, this);
+        }
         return this;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory.createVariable(name, this);
+        if (name != null) {
+            if (factory.isResolveable(name)) throw new CompileException("duplicate function: " + name);
+            factory.createVariable(name, this);
+        }
         return this;
     }
 
@@ -146,7 +152,7 @@ public class Function extends ASTNode implements Safe {
     }
 
     public String toString() {
-        return "FunctionDef:" + name;
+        return "FunctionDef:" + (name == null ? "Anonymous" : name);
     }
 }
 
