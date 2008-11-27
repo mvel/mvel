@@ -4784,33 +4784,52 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("ziggy", (((Foo) ((Map) MVEL.executeExpression(s)).get("foo")).getBar().getName()));
     }
 
-    private static final Map<String, Boolean> JIRA124_CTX = Collections.singletonMap("testValue", true);
+    private static Map<String, Boolean> JIRA124_CTX = Collections.singletonMap("testValue", true);
 
     public void testJIRA124() throws Exception {
-//        testTernary(1, "testValue ? 'A' :  'B' + 'C'");
-//        testTernary(2, "testValue ? 'A' +  'B' : 'C'");
-        testTernary(3, "(testValue ? 'A' :  'B' + 'C')");
-//        testTernary(4, "(testValue ? 'A' +  'B' : 'C')");
-//        testTernary(5, "(testValue ? 'A' :  ('B' + 'C'))");
-//        testTernary(6, "(testValue ? ('A' + 'B') : 'C')");
+        assertEquals("A", testTernary(1, "testValue ? 'A' :  'B' + 'C'"));
+        assertEquals("AB", testTernary(2, "testValue ? 'A' +  'B' : 'C'"));
+        assertEquals("A", testTernary(3, "(testValue ? 'A' :  'B' + 'C')"));
+        assertEquals("AB", testTernary(4, "(testValue ? 'A' +  'B' : 'C')"));
+        assertEquals("A", testTernary(5, "(testValue ? 'A' :  ('B' + 'C'))"));
+        assertEquals("AB", testTernary(6, "(testValue ? ('A' + 'B') : 'C')"));
+
+
+        JIRA124_CTX = Collections.singletonMap("testValue", false);
+
+        assertEquals("BC", testTernary(1, "testValue ? 'A' :  'B' + 'C'"));
+        assertEquals("C", testTernary(2, "testValue ? 'A' +  'B' : 'C'"));
+        assertEquals("BC", testTernary(3, "(testValue ? 'A' :  'B' + 'C')"));
+        assertEquals("C", testTernary(4, "(testValue ? 'A' +  'B' : 'C')"));
+        assertEquals("BC", testTernary(5, "(testValue ? 'A' :  ('B' + 'C'))"));
+        assertEquals("C", testTernary(6, "(testValue ? ('A' + 'B') : 'C')"));
     }
 
-    private static void testTernary(int i, String expression) throws Exception {
+    private static Object testTernary(int i, String expression) throws Exception {
+        Object val;
+        Object val2;
         try {
-            MVEL.executeExpression(MVEL.compileExpression(expression), JIRA124_CTX);
+            val = MVEL.executeExpression(MVEL.compileExpression(expression), JIRA124_CTX);
         }
         catch (Exception e) {
-            System.out.println("FailedCompiled[" +  i + "]:" + expression);
+            System.out.println("FailedCompiled[" + i + "]:" + expression);
             throw e;
         }
 
         try {
-            MVEL.eval(expression, JIRA124_CTX);
+            val2 = MVEL.eval(expression, JIRA124_CTX);
         }
         catch (Exception e) {
             System.out.println("FailedEval[" + i + "]:" + expression);
             throw e;
         }
+
+        if (((val == null || val2 == null) && val != val2) || (val != null && !val.equals(val2))) {
+            throw new AssertionError("results do not match (" + String.valueOf(val) + " != " + String.valueOf(val2) + ")");
+        }
+
+        return val;
+
     }
 }
 
