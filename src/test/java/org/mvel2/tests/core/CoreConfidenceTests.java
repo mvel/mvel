@@ -4774,7 +4774,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testNewUsingWith() {
         ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping( true);
+        ctx.setStrongTyping(true);
         ctx.addImport(Foo.class);
         ctx.addImport(Bar.class);
 
@@ -4782,6 +4782,35 @@ public class CoreConfidenceTests extends AbstractTest {
 
         OptimizerFactory.setDefaultOptimizer("reflective");
         assertEquals("ziggy", (((Foo) ((Map) MVEL.executeExpression(s)).get("foo")).getBar().getName()));
+    }
+
+    private static final Map<String, Boolean> JIRA124_CTX = Collections.singletonMap("testValue", true);
+
+    public void testJIRA124() throws Exception {
+//        testTernary(1, "testValue ? 'A' :  'B' + 'C'");
+//        testTernary(2, "testValue ? 'A' +  'B' : 'C'");
+        testTernary(3, "(testValue ? 'A' :  'B' + 'C')");
+//        testTernary(4, "(testValue ? 'A' +  'B' : 'C')");
+//        testTernary(5, "(testValue ? 'A' :  ('B' + 'C'))");
+//        testTernary(6, "(testValue ? ('A' + 'B') : 'C')");
+    }
+
+    private static void testTernary(int i, String expression) throws Exception {
+        try {
+            MVEL.executeExpression(MVEL.compileExpression(expression), JIRA124_CTX);
+        }
+        catch (Exception e) {
+            System.out.println("FailedCompiled[" +  i + "]:" + expression);
+            throw e;
+        }
+
+        try {
+            MVEL.eval(expression, JIRA124_CTX);
+        }
+        catch (Exception e) {
+            System.out.println("FailedEval[" + i + "]:" + expression);
+            throw e;
+        }
     }
 }
 

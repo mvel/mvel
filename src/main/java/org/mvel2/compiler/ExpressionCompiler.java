@@ -25,6 +25,7 @@ import org.mvel2.ErrorDetail;
 import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
+import org.mvel2.debug.DebugTools;
 import org.mvel2.ast.ASTNode;
 import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel2.ast.Assignment;
@@ -111,6 +112,8 @@ public class ExpressionCompiler extends AbstractParser {
             fields |= COMPILE_IMMEDIATE;
 
             while ((tk = nextToken()) != null) {
+
+
                 /**
                  * If this is a debug symbol, just add it and continue.
                  */
@@ -136,7 +139,7 @@ public class ExpressionCompiler extends AbstractParser {
                  * reducing for certain literals like, 'this', ternary and ternary else.
                  */
                 if (tk.isLiteral()) {
-                    literalOnly = true;
+                    if (literalOnly == -1) literalOnly = 1;
 
                     if ((tkOp = nextTokenSkipSymbols()) != null && tkOp.isOperator()
                             && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
@@ -183,7 +186,7 @@ public class ExpressionCompiler extends AbstractParser {
                                     }
 
                                     firstLA = false;
-                                    literalOnly = false;
+                                    literalOnly = 0;
                                 }
                                 else {
                                     if (firstLA) {
@@ -226,7 +229,7 @@ public class ExpressionCompiler extends AbstractParser {
                         throw new CompileException("unexpected token: " + tkOp.getName());
                     }
                     else {
-                        literalOnly = false;
+                        literalOnly = 0;
                         astBuild.addTokenNode(verify(pCtx, tk));
                         if (tkOp != null) astBuild.addTokenNode(verify(pCtx, tkOp));
                         continue;
@@ -237,7 +240,7 @@ public class ExpressionCompiler extends AbstractParser {
                         lastOp = tk.getOperator();
                     }
 
-                    literalOnly = false;
+                    literalOnly = 0;
                 }
 
                 astBuild.addTokenNode(verify(pCtx, tk));
@@ -247,13 +250,14 @@ public class ExpressionCompiler extends AbstractParser {
 
             if (verifying) {
                 pCtx.processTables();
-            }
+            }            
 
             if (!stk.isEmpty()) {
                 throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
             }
 
-            return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly);
+
+            return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly==1);
 
         }
         catch (NullPointerException e) {
@@ -275,7 +279,7 @@ public class ExpressionCompiler extends AbstractParser {
     }
 
     private static boolean isBooleanOperator(int operator) {
-        return operator == Operator.AND || operator == Operator.OR;
+        return operator == Operator.AND || operator == Operator.OR || operator == Operator.TERNARY || operator == Operator.TERNARY_ELSE;
     }
 
     protected ASTNode verify(ParserContext pCtx, ASTNode tk) {
@@ -409,6 +413,6 @@ public class ExpressionCompiler extends AbstractParser {
     }
 
     public boolean isLiteralOnly() {
-        return literalOnly;
+        return literalOnly == 1;
     }
 }
