@@ -51,6 +51,12 @@ public class IfNode extends ASTNode implements NestedStatement {
         }
     }
 
+    public IfNode(ExecutableStatement condition, ExecutableStatement nestedStatement, ExecutableStatement elseBlock) {
+        expectType(this.condition = condition, Boolean.class, true);
+        this.nestedStatement = nestedStatement;
+        this.elseBlock = elseBlock;
+    }
+
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
             return nestedStatement.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));

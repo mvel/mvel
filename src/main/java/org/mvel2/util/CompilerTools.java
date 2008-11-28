@@ -26,6 +26,8 @@ import org.mvel2.ast.*;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.ExecutableAccessor;
+import org.mvel2.compiler.ExecutableLiteral;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -95,40 +97,24 @@ public class CompilerTools {
                         tkOp = tkOp2;
                     }
 
-                    optimizedAst.addTokenNode(bo);
 
                     if (tkOp2 != null && tkOp2 != tkOp) {
-                        optimizedAst.addTokenNode(tkOp2);
+                      //  astLinkedList.setCurrentNode(tkOp2);
+
+                        optimizeOperator(tkOp2.getOperator(), bo, tkOp2, astLinkedList, optimizedAst);
+
+
+                    //       optimizedAst.addTokenNode(tkOp2);
+                    }
+                    else {
+                        optimizedAst.addTokenNode(bo);                        
                     }
                 }
                 else if (!tkOp.isOperator() && tk.getLiteralValue() instanceof Class) {
                     optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), (Class) tk.getLiteralValue(), 0, ctx));
                 }
                 else if (tkOp.isOperator()) {
-                    switch (tkOp.getOperator()) {
-                        case Operator.REGEX:
-                            optimizedAst.addTokenNode(new RegExMatchNode(tk, astLinkedList.nextNode()));
-                            break;
-                        case Operator.CONTAINS:
-                            optimizedAst.addTokenNode(new Contains(tk, astLinkedList.nextNode()));
-                            break;
-                        case Operator.INSTANCEOF:
-                            optimizedAst.addTokenNode(new Instance(tk, astLinkedList.nextNode()));
-                            break;
-                        case Operator.CONVERTABLE_TO:
-                            optimizedAst.addTokenNode((new Convertable(tk, astLinkedList.nextNode())));
-                            break;
-                        case Operator.SIMILARITY:
-                            optimizedAst.addTokenNode(new Strsim(tk, astLinkedList.nextNode()));
-                            break;
-                        case Operator.SOUNDEX:
-                            optimizedAst.addTokenNode(new Soundslike(tk, astLinkedList.nextNode()));
-                            break;
-
-                        default:
-                            optimizedAst.addTokenNode(tk, tkOp);
-
-                    }
+                     optimizeOperator(tkOp.getOperator(), tk, tkOp, astLinkedList, optimizedAst);
                 }
                 else {
                     optimizedAst.addTokenNode(tk, tkOp);
@@ -198,6 +184,39 @@ public class CompilerTools {
         }
 
         return optimizedAst;
+    }
+
+    private static void optimizeOperator(int operator, ASTNode tk, ASTNode tkOp,
+                                         ASTLinkedList astLinkedList,
+                                         ASTLinkedList optimizedAst) {
+
+        switch (operator) {
+            case Operator.REGEX:
+                optimizedAst.addTokenNode(new RegExMatchNode(tk, astLinkedList.nextNode()));
+                break;
+            case Operator.CONTAINS:
+                optimizedAst.addTokenNode(new Contains(tk, astLinkedList.nextNode()));
+                break;
+            case Operator.INSTANCEOF:
+                optimizedAst.addTokenNode(new Instance(tk, astLinkedList.nextNode()));
+                break;
+            case Operator.CONVERTABLE_TO:
+                optimizedAst.addTokenNode((new Convertable(tk, astLinkedList.nextNode())));
+                break;
+            case Operator.SIMILARITY:
+                optimizedAst.addTokenNode(new Strsim(tk, astLinkedList.nextNode()));
+                break;
+            case Operator.SOUNDEX:
+                optimizedAst.addTokenNode(new Soundslike(tk, astLinkedList.nextNode()));
+                break;
+//            case Operator.TERNARY:
+//                ExecutableAccessor cond = new ExecutableAccessor(tk, tk.getEgressType());
+//                ExecutableAccessor b
+
+
+            default:
+                optimizedAst.addTokenNode(tk, tkOp);
+        }
     }
 
     /**
@@ -285,10 +304,13 @@ public class CompilerTools {
 
             case Operator.STR_APPEND:
                 return String.class;
-
-
         }
         return null;
+    }
+
+    public static Accessor extractAccessor(ASTNode n) {
+        if (n instanceof LiteralNode) return new ExecutableLiteral(n.getLiteralValue());
+        else return new ExecutableAccessor(n, n.getEgressType());
     }
 
 }

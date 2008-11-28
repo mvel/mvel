@@ -4787,13 +4787,12 @@ public class CoreConfidenceTests extends AbstractTest {
     private static Map<String, Boolean> JIRA124_CTX = Collections.singletonMap("testValue", true);
 
     public void testJIRA124() throws Exception {
-        assertEquals("A", testTernary(1, "testValue ? 'A' :  'B' + 'C'"));
+        assertEquals("A", testTernary(1, "testValue == true ? 'A' :  'B' + 'C'"));
         assertEquals("AB", testTernary(2, "testValue ? 'A' +  'B' : 'C'"));
         assertEquals("A", testTernary(3, "(testValue ? 'A' :  'B' + 'C')"));
         assertEquals("AB", testTernary(4, "(testValue ? 'A' +  'B' : 'C')"));
         assertEquals("A", testTernary(5, "(testValue ? 'A' :  ('B' + 'C'))"));
         assertEquals("AB", testTernary(6, "(testValue ? ('A' + 'B') : 'C')"));
-
 
         JIRA124_CTX = Collections.singletonMap("testValue", false);
 

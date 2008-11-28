@@ -36,7 +36,7 @@ import java.io.Serializable;
 import static java.lang.Thread.currentThread;
 
 @SuppressWarnings({"ManualArrayCopy", "CaughtExceptionImmediatelyRethrown"})
-public class ASTNode implements Cloneable, Serializable {
+public class ASTNode implements Cloneable,  Serializable {
     public static final int LITERAL = 1;
     public static final int DEEP_PROPERTY = 1 << 1;
     public static final int OPERATOR = 1 << 2;
