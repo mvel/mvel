@@ -37,7 +37,7 @@ public class DefaultLocalVariableResolverFactory extends MapVariableResolverFact
     }
 
     public DefaultLocalVariableResolverFactory(Map<String, Object> variables, boolean cachingSafe) {
-        super(variables, cachingSafe);
+        super(variables);
     }
 
     public DefaultLocalVariableResolverFactory(VariableResolverFactory nextFactory) {

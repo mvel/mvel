@@ -29,7 +29,6 @@ public class MapVariableResolver implements VariableResolver {
     private String name;
     private Class<?> knownType;
     private Map<String, Object> variableMap;
-    private boolean cache = false;
 
     public MapVariableResolver(Map<String, Object> variableMap, String name) {
         this.variableMap = variableMap;
@@ -42,18 +41,6 @@ public class MapVariableResolver implements VariableResolver {
         this.variableMap = variableMap;
     }
 
-    public MapVariableResolver(Map<String, Object> variableMap, String name, boolean cache) {
-        this.variableMap = variableMap;
-        this.name = name;
-        this.cache = cache;
-    }
-
-    public MapVariableResolver(Map<String, Object> variableMap, String name, Class knownType, boolean cache) {
-        this.name = name;
-        this.knownType = knownType;
-        this.variableMap = variableMap;
-        this.cache = cache;
-    }
 
     public void setName(String name) {
         this.name = name;
@@ -101,13 +88,5 @@ public class MapVariableResolver implements VariableResolver {
 
     public int getFlags() {
         return 0;
-    }
-
-    public boolean isCache() {
-        return cache;
-    }
-
-    public void setCache(boolean cache) {
-        this.cache = cache;
     }
 }

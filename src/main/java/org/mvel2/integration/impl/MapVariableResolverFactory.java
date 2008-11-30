@@ -34,7 +34,6 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
      * Holds the instance of the variables.
      */
     protected Map<String, Object> variables;
-    private boolean cachingSafe = false;
 
     public MapVariableResolverFactory() {
     }
@@ -50,7 +49,6 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
 
     public MapVariableResolverFactory(Map<String, Object> variables, boolean cachingSafe) {
         this.variables = variables;
-        this.cachingSafe = cachingSafe;
     }
 
     public VariableResolver createVariable(String name, Object value) {
@@ -61,10 +59,9 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
             return vr;
         }
         catch (UnresolveablePropertyException e) {
-            (vr = new MapVariableResolver(variables, name, cachingSafe)).setValue(value);
+            addResolver(name, vr = new MapVariableResolver(variables, name)).setValue(value);
             return vr;
         }
-        //    vr.setValue(value);
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
@@ -80,8 +77,8 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
             throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
         }
         else {
-            addResolver(name, vr = new MapVariableResolver(variables, name, type, cachingSafe));
-            vr.setValue(value);
+            addResolver(name, vr = new MapVariableResolver(variables, name, type)).setValue(value);
+        //    vr.setValue(value);
             return vr;
         }
     }
@@ -92,7 +89,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         VariableResolver vr = variableResolvers.get(name);
         if (vr != null) return vr;
         else if (variables.containsKey(name)) {
-            variableResolvers.put(name, vr = new MapVariableResolver(variables, name, cachingSafe));
+            variableResolvers.put(name, vr = new MapVariableResolver(variables, name));
             return vr;
         }
         else if (nextFactory != null) return nextFactory.getVariableResolver(name);
@@ -107,9 +104,10 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
                 || (nextFactory != null && nextFactory.isResolveable(name));
     }
 
-    protected void addResolver(String name, VariableResolver vr) {
+    protected VariableResolver addResolver(String name, VariableResolver vr) {
         if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
         variableResolvers.put(name, vr);
+        return vr;
     }
 
 

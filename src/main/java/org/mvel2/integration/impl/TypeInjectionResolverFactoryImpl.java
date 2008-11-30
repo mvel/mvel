@@ -48,7 +48,7 @@ public class TypeInjectionResolverFactoryImpl extends MapVariableResolverFactory
     }
 
     public TypeInjectionResolverFactoryImpl(Map<String, Object> variables, boolean cachingSafe) {
-        super(variables, cachingSafe);
+        super(variables);
     }
 
     public VariableResolver createVariable(String name, Object value) {

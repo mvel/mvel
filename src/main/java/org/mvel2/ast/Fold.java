@@ -26,8 +26,8 @@ import org.mvel2.integration.impl.ItemResolverFactory;
 import org.mvel2.util.CompilerTools;
 import org.mvel2.util.FastList;
 import org.mvel2.util.ParseTools;
-import static org.mvel2.util.ParseTools.isWhitespace;
-import static org.mvel2.util.ParseTools.subCompileExpression;
+import static org.mvel2.util.CompilerTools.expectType;
+import static org.mvel2.util.ParseTools.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -44,31 +44,29 @@ public class Fold extends ASTNode {
             if (isWhitespace(name[cursor])) {
                 while (cursor < name.length && isWhitespace(name[cursor])) cursor++;
 
-                if (name[cursor] == 'i' && name[cursor + 1] == 'n' && ParseTools.isJunct(name[cursor + 2])) {
+                if (name[cursor] == 'i' && name[cursor + 1] == 'n' && isJunct(name[cursor + 2])) {
                     break;
                 }
             }
         }
 
-        subEx = (ExecutableStatement) subCompileExpression(ParseTools.subset(name, 0, cursor - 1));
+        subEx = (ExecutableStatement) subCompileExpression(subset(name, 0, cursor - 1));
         int start = cursor += 2; // skip 'in'
 
         for (; cursor < name.length; cursor++) {
             if (isWhitespace(name[cursor])) {
                 while (cursor < name.length && isWhitespace(name[cursor])) cursor++;
 
-                if (name[cursor] == 'i' && name[cursor + 1] == 'f' && ParseTools.isJunct(name[cursor + 2])) {
+                if (name[cursor] == 'i' && name[cursor + 1] == 'f' && isJunct(name[cursor + 2])) {
                     int s = cursor + 2;
-                    constraintEx = (ExecutableStatement) subCompileExpression(ParseTools.subset(name, s, name.length - s));
+                    constraintEx = (ExecutableStatement) subCompileExpression(subset(name, s, name.length - s));
                     break;
                 }
             }
         }
 
-        CompilerTools.expectType(dataEx = (ExecutableStatement) subCompileExpression(ParseTools.subset(name, start, cursor - start)),
+        expectType(dataEx = (ExecutableStatement) subCompileExpression(subset(name, start, cursor - start)),
                 Collection.class, ((fields & COMPILE_IMMEDIATE) != 0));
-
-
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -105,7 +103,6 @@ public class Fold extends ASTNode {
         List list;
 
         if (constraintEx != null) {
-
             Object x = dataEx.getValue(ctx, thisValue, factory);
 
             if (!(x instanceof Collection))
