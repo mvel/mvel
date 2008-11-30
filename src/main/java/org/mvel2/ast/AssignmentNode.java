@@ -57,19 +57,20 @@ public class AssignmentNode extends ASTNode implements Assignment {
             }
 
             this.egressType = (statement = (ExecutableStatement)
-                    subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation))).getKnownEgressType();
+                    subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation),pCtx))
+                    .getKnownEgressType();
         }
         else if ((assignStart = find(expr, '=')) != -1) {
             this.varName = createStringTrimmed(expr, 0, assignStart);
             stmt = subset(expr, assignStart + 1);
 
             if ((fields & COMPILE_IMMEDIATE) != 0) {
-                this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt)).getKnownEgressType();
+                this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt, pCtx)).getKnownEgressType();
             }
 
             if (col = ((endOfName = findFirst('[', indexTarget = this.varName.toCharArray())) > 0)) {
                 if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
-                    accExpr = (CompiledAccExpression) compileSetExpression(indexTarget);
+                    accExpr = (CompiledAccExpression) compileSetExpression(indexTarget, pCtx);
                 }
 
                 this.varName = new String(expr, 0, endOfName);

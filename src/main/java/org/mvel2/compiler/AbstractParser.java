@@ -1830,7 +1830,7 @@ public class AbstractParser implements Serializable {
     protected char lookToLast() {
         if (cursor == 0) return 0;
         int temp = cursor;
-        while (temp != 0 && isWhitespace(expr[--temp])) ;
+        while (temp != 0 && isWhitespace(expr[--temp]));
         return expr[temp];
     }
 
@@ -1985,14 +1985,6 @@ public class AbstractParser implements Serializable {
     protected static final int REMOVE = 1;
     protected static final int GET = 2;
     protected static final int GET_OR_CREATE = 3;
-
-//    public boolean isDebugSymbols() {
-//        return debugSymbols;
-//    }
-//
-//    public void setDebugSymbols(boolean debugSymbols) {
-//        this.debugSymbols = debugSymbols;
-//    }
 
     protected static String getCurrentSourceFileName() {
         if (parserContext != null && parserContext.get() != null) {
