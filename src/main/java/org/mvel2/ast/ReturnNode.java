@@ -22,17 +22,18 @@ import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.EndWithValue;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.subCompileExpression;
+import org.mvel2.ParserContext;
 
 /**
  * @author Christopher Brock
  */
 public class ReturnNode extends ASTNode {
 
-    public ReturnNode(char[] expr, int fields) {
+    public ReturnNode(char[] expr, int fields, ParserContext pCtx){
         this.name = expr;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            setAccessor((Accessor) subCompileExpression(expr));
+            setAccessor((Accessor) subCompileExpression(expr, pCtx));
         }
     }
 

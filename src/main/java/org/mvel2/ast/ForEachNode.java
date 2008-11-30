@@ -53,7 +53,7 @@ public class ForEachNode extends BlockNode {
         this.block = block;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
+            this.compiledBlock = (ExecutableStatement) subCompileExpression(block, pCtx);
         }
     }
 
@@ -64,9 +64,9 @@ public class ForEachNode extends BlockNode {
         Object iterCond = condition.getValue(ctx, thisValue, factory);
 
         if (type == -1) {
-            if (compiledBlock == null) {
-                this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
-            }
+//            if (compiledBlock == null) {
+//                this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
+//            }
             if (iterCond instanceof Iterable) {
                 type = ITERABLE;
             }

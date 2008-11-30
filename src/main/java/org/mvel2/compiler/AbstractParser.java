@@ -42,7 +42,7 @@ import java.util.WeakHashMap;
 
 /**
  * This is the core parser that the subparsers extend.
- * 
+ *
  * @author Christopher Brock
  */
 public class AbstractParser implements Serializable {
@@ -63,7 +63,7 @@ public class AbstractParser implements Serializable {
     protected boolean lastWasComment = false;
     protected int literalOnly = -1;
 
-    protected boolean debugSymbols = false;
+    //  protected boolean debugSymbols = false;
 
     protected int lastLineStart = -1;
     protected int line = 1;
@@ -195,9 +195,9 @@ public class AbstractParser implements Serializable {
 
             boolean capture = false, union = false;
 
-            pCtx = getParserContext();
+            if (pCtx == null) pCtx = getParserContext();
 
-            if (debugSymbols) {
+            if (pCtx.isDebugSymbols()) {
                 if (!lastWasLineLabel) {
                     if (pCtx.getSourceFile() == null) {
                         throw new CompileException("unable to produce debugging symbols: source name must be provided.");
@@ -308,7 +308,7 @@ public class AbstractParser implements Serializable {
                             case RETURN:
                                 start = cursor = trimRight(cursor);
                                 captureToEOS();
-                                return lastNode = new ReturnNode(subArray(start, cursor), fields);
+                                return lastNode = new ReturnNode(subArray(start, cursor), fields, pCtx);
 
                             case IF:
                                 return captureCodeBlock(ASTNode.BLOCK_IF);
@@ -582,7 +582,7 @@ public class AbstractParser implements Serializable {
                             case '[':
                                 cursor = balancedCapture(expr, cursor, '[') + 1;
                                 continue;
-                                
+
                             case '.':
                                 union = true;
                                 cursor++;
@@ -1170,11 +1170,11 @@ public class AbstractParser implements Serializable {
 
         switch (type) {
             case ASTNode.BLOCK_IF:
-                return new IfNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+                return new IfNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields, pCtx);
             case ASTNode.BLOCK_FOR:
                 for (int i = condStart; i < condEnd; i++) {
                     if (expr[i] == ';')
-                        return new ForNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+                        return new ForNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields, pCtx);
                     else if (expr[i] == ':')
                         break;
                 }
@@ -1182,13 +1182,13 @@ public class AbstractParser implements Serializable {
             case ASTNode.BLOCK_FOREACH:
                 return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields, pCtx);
             case ASTNode.BLOCK_WHILE:
-                return new WhileNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+                return new WhileNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields, pCtx);
             case ASTNode.BLOCK_UNTIL:
-                return new UntilNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+                return new UntilNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields, pCtx);
             case ASTNode.BLOCK_DO:
-                return new DoNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields);
+                return new DoNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields, pCtx);
             case ASTNode.BLOCK_DO_UNTIL:
-                return new DoUntilNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd));
+                return new DoUntilNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), pCtx);
             default:
                 return new WithNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields, pCtx);
         }
@@ -1772,8 +1772,8 @@ public class AbstractParser implements Serializable {
     /**
      * Check if the specified string is a reserved word in the parser.
      *
-     * @param name
-     * @return
+     * @param name -
+     * @return -
      */
     public static boolean isReservedWord(String name) {
         return LITERALS.containsKey(name) || OPERATORS.containsKey(name);
@@ -1782,8 +1782,8 @@ public class AbstractParser implements Serializable {
     /**
      * Check if the specfied string represents a valid name of label.
      *
-     * @param name
-     * @return
+     * @param name -
+     * @return -
      */
     public static boolean isNotValidNameorLabel(String name) {
         for (char c : name.toCharArray()) {
@@ -1825,19 +1825,19 @@ public class AbstractParser implements Serializable {
     /**
      * Return the previous non-whitespace character.
      *
-     * @return
+     * @return -
      */
     protected char lookToLast() {
         if (cursor == 0) return 0;
         int temp = cursor;
-        while (temp != 0 && isWhitespace(expr[--temp]));
+        while (temp != 0 && isWhitespace(expr[--temp])) ;
         return expr[temp];
     }
 
     /**
      * Return the last character (delta -1 of cursor position).
      *
-     * @return
+     * @return -
      */
     protected char lookBehind() {
         if (cursor == 0) return 0;
@@ -1847,7 +1847,7 @@ public class AbstractParser implements Serializable {
     /**
      * Return the next character (delta 1 of cursor position).
      *
-     * @return
+     * @return -
      */
     protected char lookAhead() {
         if (cursor < length) return expr[cursor + 1];
@@ -1857,8 +1857,8 @@ public class AbstractParser implements Serializable {
     /**
      * Return the character, forward of the currrent cursor position based on the specified range delta.
      *
-     * @param range
-     * @return
+     * @param range -
+     * @return -
      */
     protected char lookAhead(int range) {
         if ((cursor + range) >= length) return 0;
@@ -1986,13 +1986,13 @@ public class AbstractParser implements Serializable {
     protected static final int GET = 2;
     protected static final int GET_OR_CREATE = 3;
 
-    public boolean isDebugSymbols() {
-        return debugSymbols;
-    }
-
-    public void setDebugSymbols(boolean debugSymbols) {
-        this.debugSymbols = debugSymbols;
-    }
+//    public boolean isDebugSymbols() {
+//        return debugSymbols;
+//    }
+//
+//    public void setDebugSymbols(boolean debugSymbols) {
+//        this.debugSymbols = debugSymbols;
+//    }
 
     protected static String getCurrentSourceFileName() {
         if (parserContext != null && parserContext.get() != null) {
@@ -2457,5 +2457,13 @@ public class AbstractParser implements Serializable {
 
     private static int asInt(final Object o) {
         return (Integer) o;
+    }
+
+    public ParserContext getPCtx() {
+        return pCtx;
+    }
+
+    public void setPCtx(ParserContext pCtx) {
+        this.pCtx = pCtx;
     }
 }

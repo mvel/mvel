@@ -38,9 +38,10 @@ public class DebuggerTests extends TestCase {
 
         String src = "a1=7;\na2=8;\na3=9;\na4=10;\na5=11;\na6=12;\na7=13;\na8=14;";
         ExpressionCompiler c = new ExpressionCompiler(src);
-        c.setDebugSymbols(true);
+      //  c.setDebugSymbols(true);
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("mysource");
+        ctx.setDebugSymbols(true);
         CompiledExpression compexpr = c.compile(ctx);
 
         System.out.println(decompile(compexpr));
@@ -77,9 +78,10 @@ public class DebuggerTests extends TestCase {
         String src = "a1=7;\na2=8;\nSystem.out.println(\"h\");\nac=23;\nde=23;\nge=23;\ngef=34;";
 
         ExpressionCompiler c = new ExpressionCompiler(src);
-        c.setDebugSymbols(true);
+      //  c.setDebugSymbols(true);
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("mysource");
+        ctx.setDebugSymbols(true);
         CompiledExpression compexpr = c.compile(ctx);
 
         System.out.println(decompile(compexpr));

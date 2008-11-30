@@ -19,6 +19,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
@@ -39,9 +40,9 @@ public class ForNode extends BlockNode {
     protected ExecutableStatement compiledBlock;
     protected ExecutableStatement after;
 
-    public ForNode(char[] condition, char[] block, int fields) {
+    public ForNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
         handleCond(this.name = condition, fields);
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

@@ -1676,11 +1676,15 @@ public class ParseTools {
     }
 
     public static Serializable subCompileExpression(char[] expression, ParserContext ctx) {
-        return optimizeTree(new ExpressionCompiler(expression, ctx)._compile());
+        ExpressionCompiler c = new ExpressionCompiler(expression);
+        c.setPCtx(ctx);
+        return optimizeTree(c._compile());
     }
 
     public static Serializable subCompileExpression(String expression, ParserContext ctx) {
-        return optimizeTree(new ExpressionCompiler(expression, ctx)._compile());
+        ExpressionCompiler c = new ExpressionCompiler(expression);
+        c.setPCtx(ctx);
+        return optimizeTree(c._compile());
     }
 
     public static Serializable optimizeTree(final CompiledExpression compiled) {
@@ -1713,9 +1717,9 @@ public class ParseTools {
     }
 
     public static char[] loadFromFile(File file) throws IOException {
-    	return loadFromFile(file, null);
+        return loadFromFile(file, null);
     }
-    
+
     public static char[] loadFromFile(File file, String encoding) throws IOException {
         if (!file.exists())
             throw new CompileException("cannot find file: " + file.getName());

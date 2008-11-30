@@ -23,6 +23,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.subCompileExpression;
+import org.mvel2.ParserContext;
 
 import java.util.HashMap;
 
@@ -34,11 +35,11 @@ public class UntilNode extends BlockNode {
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
 
-    public UntilNode(char[] condition, char[] block, int fields) {
-        expectType(this.condition = (ExecutableStatement) subCompileExpression(this.name = condition),
+    public UntilNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
+        expectType(this.condition = (ExecutableStatement) subCompileExpression(this.name = condition, pCtx),
                 Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

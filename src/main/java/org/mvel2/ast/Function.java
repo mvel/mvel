@@ -47,8 +47,7 @@ public class Function extends ASTNode implements Safe {
 
         parmNum = (this.parameters = parseParameterDefList(parameters, 0, parameters.length)).length;
 
-        ParserContext old = pCtx;
-        old.declareFunction(this);
+        pCtx.declareFunction(this);
 
         ParserContext ctx = new ParserContext();
         ctx.setIndexAllocation(true);
@@ -70,8 +69,8 @@ public class Function extends ASTNode implements Safe {
         /**
          * Add globals as inputs
          */
-        if (old.getVariables() != null) {
-            for (Map.Entry<String, Class> e : old.getVariables().entrySet()) {
+        if (pCtx.getVariables() != null) {
+            for (Map.Entry<String, Class> e : pCtx.getVariables().entrySet()) {
                 ctx.addInput(e.getKey(), e.getValue());
             }
 
@@ -82,7 +81,7 @@ public class Function extends ASTNode implements Safe {
 
         this.compiledBlock = (ExecutableStatement) subCompileExpression(block, ctx);
 
-        AbstractParser.setCurrentThreadParserContext(old);
+        AbstractParser.setCurrentThreadParserContext(pCtx);
 
         this.parameters = new String[ctx.getIndexedVariables().size()];
 

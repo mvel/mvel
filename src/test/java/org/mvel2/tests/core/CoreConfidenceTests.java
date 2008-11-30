@@ -1065,10 +1065,11 @@ public class CoreConfidenceTests extends AbstractTest {
         ExpressionCompiler compiler = new ExpressionCompiler("a = 5;\nb = 5;\n\nif (a == b) {\n\nSystem.out.println('Good');\nreturn a + b;\n}\n");
         System.out.println("-------\n" + compiler.getExpression() + "\n-------\n");
 
-        compiler.setDebugSymbols(true);
+     //   compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("test.mv");
+        ctx.setDebugSymbols(true);
 
         CompiledExpression compiled = compiler.compile(ctx);
 
@@ -1091,10 +1092,11 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testBreakpoints2() {
         ExpressionCompiler compiler = new ExpressionCompiler("System.out.println('test the debugger');\n a = 0;");
-        compiler.setDebugSymbols(true);
+      //  compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("test.mv");
+        ctx.setDebugSymbols(true);
 
         CompiledExpression compiled = compiler.compile(ctx);
 
@@ -1176,7 +1178,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 "a + b";                        // 9
 
         ExpressionCompiler compiler = new ExpressionCompiler(expression);
-        compiler.setDebugSymbols(true);
+      //  compiler.setDebugSymbols(true);
 
         System.out.println("Expression:\n------------");
         System.out.println(expression);
@@ -1184,6 +1186,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("test2.mv");
+        ctx.setDebugSymbols(true);
 
         CompiledExpression compiled = compiler.compile(ctx);
 
@@ -1220,10 +1223,10 @@ public class CoreConfidenceTests extends AbstractTest {
                         "b = 1;\n" +                        // 9
                         " a + b");                          // 10
 
-        compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("test2.mv");
+        ctx.setDebugSymbols(true);
 
         CompiledExpression compiled = compiler.compile(ctx);
 
@@ -1280,9 +1283,10 @@ public class CoreConfidenceTests extends AbstractTest {
         expression = parseMacros(expression, macros);
 
         ExpressionCompiler compiler = new ExpressionCompiler(expression);
-        compiler.setDebugSymbols(true);
+      //  compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
+        ctx.setDebugSymbols(true);
         ctx.setSourceFile("test2.mv");
         ctx.addImport("Foo", Foo.class);
         ctx.setInterceptors(interceptors);
@@ -1348,10 +1352,11 @@ public class CoreConfidenceTests extends AbstractTest {
         expression = parseMacros(expression, macros);
 
         ExpressionCompiler compiler = new ExpressionCompiler(expression);
-        compiler.setDebugSymbols(true);
+      //  compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("test2.mv");
+        ctx.setDebugSymbols(true);
         ctx.addImport("Foo", Foo.class);
         ctx.setInterceptors(interceptors);
 
@@ -1385,12 +1390,13 @@ public class CoreConfidenceTests extends AbstractTest {
                 "   System.out.println( \"a4\" );\r\n";
 
         ExpressionCompiler compiler = new ExpressionCompiler(expr);
-        compiler.setDebugSymbols(true);
+       // compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
         ctx.setStrictTypeEnforcement(true);
         ctx.setDebugSymbols(true);
         ctx.setSourceFile("mysource");
+
 
         //   Serializable compiledExpression = compiler.compile(ctx);
 
@@ -1413,7 +1419,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 "   System.out.println( \"a4\" );\n";
 
         ExpressionCompiler compiler = new ExpressionCompiler(expr);
-        compiler.setDebugSymbols(true);
+      //  compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
         ctx.setStrictTypeEnforcement(true);
@@ -1440,7 +1446,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 "   System.out.println( \"a4\" );\r\n";
 
         ExpressionCompiler compiler = new ExpressionCompiler(expr);
-        compiler.setDebugSymbols(true);
+       // compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
         ctx.setStrictTypeEnforcement(true);
@@ -1630,10 +1636,11 @@ public class CoreConfidenceTests extends AbstractTest {
         });
 
         ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("modify (foo) { aValue = 'poo' }; mod", macros));
-        compiler.setDebugSymbols(true);
+     //   compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext(null, interceptors, null);
         ctx.setSourceFile("test.mv");
+        ctx.setDebugSymbols(true);
 
         //   CompiledExpression compiled = compiler.compile(ctx);
 
@@ -1677,10 +1684,11 @@ public class CoreConfidenceTests extends AbstractTest {
                                 "modify (foo) { aValue = 'poo', \n" +
                                 " aValue = 'poo' };\n mod", macros)
         );
-        compiler.setDebugSymbols(true);
+       // compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext(null, interceptors, null);
         ctx.setSourceFile("test.mv");
+        ctx.setDebugSymbols(true);
 
         CompiledExpression compiled = compiler.compile(ctx);
 
@@ -1709,10 +1717,11 @@ public class CoreConfidenceTests extends AbstractTest {
         vars.put("$value", new Long(5));
 
         ExpressionCompiler compiler = new ExpressionCompiler("with (foo) { countTest = $value };");
-        compiler.setDebugSymbols(true);
+      //  compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("test.mv");
+        ctx.setDebugSymbols(true);
 
         CompiledExpression compiled = compiler.compile(ctx);
 
@@ -1728,10 +1737,11 @@ public class CoreConfidenceTests extends AbstractTest {
         vars.put("$value", new Long(5));
 
         ExpressionCompiler compiler = new ExpressionCompiler("with (foo) { countTest = $value };");
-        compiler.setDebugSymbols(true);
+    //    compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("test.mv");
+        ctx.setDebugSymbols(true);
 
         CompiledExpression compiled = compiler.compile(ctx);
 

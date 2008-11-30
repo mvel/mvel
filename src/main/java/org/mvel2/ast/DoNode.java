@@ -23,6 +23,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.subCompileExpression;
+import org.mvel2.ParserContext;
 
 import java.util.HashMap;
 
@@ -34,12 +35,12 @@ public class DoNode extends BlockNode {
     protected ExecutableStatement condition;
     protected ExecutableStatement compiledBlock;
 
-    public DoNode(char[] condition, char[] block, int fields) {
-        this.condition = (ExecutableStatement) subCompileExpression(this.name = condition);
+    public DoNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
+        this.condition = (ExecutableStatement) subCompileExpression(this.name = condition, pCtx);
 
         expectType(this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

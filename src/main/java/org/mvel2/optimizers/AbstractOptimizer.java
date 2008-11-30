@@ -21,6 +21,7 @@ import org.mvel2.CompileException;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.isWhitespace;
+import static org.mvel2.util.ParseTools.isIdentifierPart;
 
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
@@ -57,7 +58,6 @@ public class AbstractOptimizer extends AbstractParser {
              *
              */
             boolean meth = false;
-            //  int depth = 0;
             int last = length;
             for (int i = length - 1; i > 0; i--) {
                 switch (expr[i]) {
@@ -105,9 +105,7 @@ public class AbstractOptimizer extends AbstractParser {
                         }
 
                         meth = true;
-
                         last = i++;
-
                         break;
 
 
@@ -168,7 +166,7 @@ public class AbstractOptimizer extends AbstractParser {
         }
 
         //noinspection StatementWithEmptyBody
-        while (++cursor < length && ParseTools.isIdentifierPart(expr[cursor])) ;
+        while (++cursor < length && isIdentifierPart(expr[cursor])) ;
 
         if (cursor < length) {
             skipWhitespace();

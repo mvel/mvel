@@ -52,9 +52,9 @@ public class ExpressionCompiler extends AbstractParser {
     }
 
     public CompiledExpression compile(ParserContext ctx) {
-        if (debugSymbols || ctx.isDebugSymbols()) {
-            ctx.setDebugSymbols(debugSymbols = true);
-        }
+//        if (debugSymbols || ctx.isDebugSymbols()) {
+//            ctx.setDebugSymbols(debugSymbols = true);
+//        }
   
         try {
             newContext(ctx);
@@ -102,8 +102,6 @@ public class ExpressionCompiler extends AbstractParser {
 
         if (pCtx == null) pCtx = getParserContext();
 
-        debugSymbols = pCtx.isDebugSymbols();
-
         try {
             if (verifying) {
                 pCtx.initializeTables();
@@ -112,8 +110,6 @@ public class ExpressionCompiler extends AbstractParser {
             fields |= COMPILE_IMMEDIATE;
 
             while ((tk = nextToken()) != null) {
-
-
                 /**
                  * If this is a debug symbol, just add it and continue.
                  */
@@ -415,4 +411,8 @@ public class ExpressionCompiler extends AbstractParser {
     public boolean isLiteralOnly() {
         return literalOnly == 1;
     }
+
+
+
+
 }
