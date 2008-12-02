@@ -24,19 +24,20 @@ import org.mvel2.integration.VariableResolverFactory;
 
 import static org.mvel2.util.ParseTools.subCompileExpression;
 import org.mvel2.math.MathProcessor;
+import org.mvel2.ParserContext;
 
 public class OperativeAssign extends ASTNode {
     private String varName;
     private ExecutableStatement statement;
     private final int operation;
 
-    public OperativeAssign(String variableName, char[] expr, int operation, int fields) {
+    public OperativeAssign(String variableName, char[] expr, int operation, int fields, ParserContext pCtx) {
         this.varName = variableName;
         this.operation = operation;
         this.name = expr;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            statement = (ExecutableStatement) subCompileExpression(expr);
+            statement = (ExecutableStatement) subCompileExpression(expr, pCtx);
         }
     }
 

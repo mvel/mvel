@@ -27,6 +27,7 @@ import org.mvel2.math.MathProcessor;
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;
+import static org.mvel2.util.CompilerTools.getReturnTypeFromOp;
 
 public class BinaryOperation extends ASTNode {
     private final int operation;
@@ -42,7 +43,7 @@ public class BinaryOperation extends ASTNode {
             throw new CompileException("not a statement");
         }
 
-        egressType = CompilerTools.getReturnTypeFromOp(operation, left.egressType, right.egressType);
+        egressType = getReturnTypeFromOp(operation, left.egressType, right.egressType);
     }
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
@@ -73,7 +74,7 @@ public class BinaryOperation extends ASTNode {
             }
         }
 
-        egressType = CompilerTools.getReturnTypeFromOp(operation, left.egressType, right.egressType);
+        egressType = getReturnTypeFromOp(operation, left.egressType, right.egressType);
     }
 
 

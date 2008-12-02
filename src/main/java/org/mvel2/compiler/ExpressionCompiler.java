@@ -52,11 +52,8 @@ public class ExpressionCompiler extends AbstractParser {
     }
 
     public CompiledExpression compile(ParserContext ctx) {
-//        if (debugSymbols || ctx.isDebugSymbols()) {
-//            ctx.setDebugSymbols(debugSymbols = true);
-//        }
-  
         try {
+            this.debugSymbols = (this.pCtx = ctx).isDebugSymbols();
             newContext(ctx);
             return _compile();
         }

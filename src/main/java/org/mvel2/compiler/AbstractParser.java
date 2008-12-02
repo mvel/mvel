@@ -63,8 +63,6 @@ public class AbstractParser implements Serializable {
     protected boolean lastWasComment = false;
     protected int literalOnly = -1;
 
-    //  protected boolean debugSymbols = false;
-
     protected int lastLineStart = -1;
     protected int line = 1;
 
@@ -86,6 +84,8 @@ public class AbstractParser implements Serializable {
     protected ExecutionStack dStack;
     protected Object ctx;
     protected VariableResolverFactory variableFactory;
+
+    protected boolean debugSymbols = false;
 
     static {
 
@@ -186,7 +186,6 @@ public class AbstractParser implements Serializable {
 
             char[] tmp;
             String name;
-
             /**
              * Because of parser recursion for sub-expression parsing, we sometimes need to remain
              * certain field states.  We do not reset for assignments, boolean mode, list creation or
@@ -195,9 +194,11 @@ public class AbstractParser implements Serializable {
 
             boolean capture = false, union = false;
 
-            if (pCtx == null) pCtx = getParserContext();
+            if (pCtx == null) {
+                debugSymbols = (pCtx = getParserContext()).isDebugSymbols();
+            }
 
-            if (pCtx.isDebugSymbols()) {
+            if (debugSymbols) {
                 if (!lastWasLineLabel) {
                     if (pCtx.getSourceFile() == null) {
                         throw new CompileException("unable to produce debugging symbols: source name must be provided.");
@@ -303,7 +304,7 @@ public class AbstractParser implements Serializable {
                             case ASSERT:
                                 start = cursor = trimRight(cursor);
                                 captureToEOS();
-                                return lastNode = new AssertNode(subArray(start, cursor--), fields);
+                                return lastNode = new AssertNode(subArray(start, cursor--), fields, pCtx);
 
                             case RETURN:
                                 start = cursor = trimRight(cursor);
@@ -358,7 +359,6 @@ public class AbstractParser implements Serializable {
 
                             case FUNCTION:
                                 lastNode = captureCodeBlock(FUNCTION);
-                                //     capture = false;
                                 start = cursor + 1;
                                 return lastNode;
 
@@ -475,10 +475,10 @@ public class AbstractParser implements Serializable {
                                             return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, SUB, t, pCtx);
                                         }
                                         else if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.SUB, idx, fields);
+                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.SUB, idx, fields, pCtx);
                                         }
                                         else {
-                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.SUB, fields);
+                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.SUB, fields, pCtx);
                                         }
                                 }
 
@@ -514,10 +514,10 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, _bwOpLookup(op), t, pCtx);
                                     }
                                     else if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), _bwOpLookup(op), idx, fields);
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), _bwOpLookup(op), idx, fields, pCtx);
                                     }
                                     else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), _bwOpLookup(op), fields);
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), _bwOpLookup(op), fields, pCtx);
                                     }
                                 }
 
@@ -533,10 +533,10 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_SHIFT_LEFT, t, pCtx);
                                     }
                                     else if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_SHIFT_LEFT, idx, fields);
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_SHIFT_LEFT, idx, fields, pCtx);
                                     }
                                     else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_SHIFT_LEFT, fields);
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_SHIFT_LEFT, fields, pCtx);
                                     }
                                 }
                                 break;
@@ -554,10 +554,10 @@ public class AbstractParser implements Serializable {
                                             return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_SHIFT_RIGHT, t, pCtx);
                                         }
                                         else if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_SHIFT_RIGHT, idx, fields);
+                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_SHIFT_RIGHT, idx, fields, pCtx);
                                         }
                                         else {
-                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_SHIFT_RIGHT, fields);
+                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_SHIFT_RIGHT, fields, pCtx);
                                         }
                                     }
                                     else if ((lookAhead(2) == '>' && lookAhead(3) == '=')) {
@@ -570,10 +570,10 @@ public class AbstractParser implements Serializable {
                                             return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_USHIFT_RIGHT, t, pCtx);
                                         }
                                         else if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_USHIFT_RIGHT, idx, fields);
+                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_USHIFT_RIGHT, idx, fields, pCtx);
                                         }
                                         else {
-                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_USHIFT_RIGHT, fields);
+                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_USHIFT_RIGHT, fields, pCtx);
                                         }
                                     }
                                 }
@@ -606,7 +606,7 @@ public class AbstractParser implements Serializable {
 
                                     captureToEOT();
 
-                                    return lastNode = new RegExMatch(tmp, fields, subArray(start, cursor));
+                                    return lastNode = new RegExMatch(tmp, fields, subArray(start, cursor), pCtx);
                                 }
                                 break;
 
@@ -623,10 +623,10 @@ public class AbstractParser implements Serializable {
                                     captureToEOS();
 
                                     if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), ADD, idx, fields);
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), ADD, idx, fields, pCtx);
                                     }
                                     else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), ADD, fields);
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), ADD, fields, pCtx);
                                     }
                                 }
                                 else if (lookAhead() == '-') {
@@ -641,10 +641,10 @@ public class AbstractParser implements Serializable {
                                     captureToEOS();
 
                                     if ((idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), SUB, idx, fields);
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), SUB, idx, fields, pCtx);
                                     }
                                     else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), SUB, fields);
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), SUB, fields, pCtx);
                                     }
                                 }
 
@@ -689,8 +689,7 @@ public class AbstractParser implements Serializable {
 
                                         throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
                                     }
-                                    else if (pCtx != null
-                                            && ((idx = pCtx.variableIndexOf(t)) != -1
+                                    else if ( ((idx = pCtx.variableIndexOf(t)) != -1
                                             || (pCtx.isIndexAllocation()))) {
 
                                         IndexedAssignmentNode ian = new IndexedAssignmentNode(subArray(start, cursor), ASTNode.ASSIGN, idx, pCtx);
@@ -844,14 +843,14 @@ public class AbstractParser implements Serializable {
                                                         if (--brace < level) {
                                                             cursor++;
                                                             if (tokenContinues()) {
-                                                                lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2), fields);
+                                                                lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2), fields, pCtx);
                                                                 start = cursor;
                                                                 if (expr[start] == '.') start++;
                                                                 captureToEOT();
                                                                 return lastNode = new Union(expr, trimRight(start), cursor, fields, lastNode);
                                                             }
                                                             else {
-                                                                return lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2), fields);
+                                                                return lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2), fields, pCtx);
                                                             }
 
                                                         }
@@ -922,10 +921,10 @@ public class AbstractParser implements Serializable {
                             }
 
                             if (tmp != null) {
-                                return handleUnion(handleSubstatement(new Substatement(tmp, fields)));
+                                return handleUnion(handleSubstatement(new Substatement(tmp, fields, pCtx)));
                             }
                             else {
-                                return handleUnion(handleSubstatement(new Substatement(subset(expr, start = trimRight(start + 1), trimLeft(cursor - 1) - start), fields)));
+                                return handleUnion(handleSubstatement(new Substatement(subset(expr, start = trimRight(start + 1), trimLeft(cursor - 1) - start), fields, pCtx)));
                             }
                         }
 
@@ -998,12 +997,12 @@ public class AbstractParser implements Serializable {
                                     && isDigit(expr[cursor])) {
                                 start = cursor;
                                 captureToEOT();
-                                return lastNode = new Invert(subset(expr, start, cursor - start), fields);
+                                return lastNode = new Invert(subset(expr, start, cursor - start), fields, pCtx);
                             }
                             else if (expr[cursor] == '(') {
                                 start = cursor--;
                                 captureToEOT();
-                                return lastNode = new Invert(subset(expr, start, cursor - start), fields);
+                                return lastNode = new Invert(subset(expr, start, cursor - start), fields, pCtx);
                             }
                             else {
                                 if (expr[cursor] == '=') cursor++;
@@ -1022,16 +1021,16 @@ public class AbstractParser implements Serializable {
                                 if ("new".equals(name = new String(expr, start, cursor - start))
                                         || "isdef".equals(name)) {
                                     captureToEOT();
-                                    return lastNode = new Negation(subset(expr, start, cursor - start), fields);
+                                    return lastNode = new Negation(subset(expr, start, cursor - start), fields, pCtx);
                                 }
                                 else {
-                                    return lastNode = new Negation(name.toCharArray(), fields);
+                                    return lastNode = new Negation(name.toCharArray(), fields, pCtx);
                                 }
                             }
                             else if (expr[cursor] == '(') {
                                 start = cursor--;
                                 captureToEOT();
-                                return lastNode = new Negation(subset(expr, start, cursor - start), fields);
+                                return lastNode = new Negation(subset(expr, start, cursor - start), fields, pCtx);
                             }
                             else if (expr[cursor] != '=')
                                 throw new CompileException("unexpected operator '!'", expr, cursor, null);
@@ -1129,7 +1128,7 @@ public class AbstractParser implements Serializable {
     private ASTNode createPropertyToken(int start, int end) {
         lastWasIdentifier = true;
         String tmp;
-        if (parserContext != null && parserContext.get() != null && parserContext.get().hasImports()) {
+        if (pCtx.hasImports()) {
             char[] _subset = subset(expr, start, cursor - start);
             int offset;
 
@@ -2456,6 +2455,6 @@ public class AbstractParser implements Serializable {
     }
 
     public void setPCtx(ParserContext pCtx) {
-        this.pCtx = pCtx;
+        this.debugSymbols = (this.pCtx = pCtx).isDebugSymbols();
     }
 }

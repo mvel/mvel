@@ -19,6 +19,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.subCompileExpression;
@@ -26,11 +27,11 @@ import static org.mvel2.util.ParseTools.subCompileExpression;
 public class Substatement extends ASTNode {
     private ExecutableStatement statement;
 
-    public Substatement(char[] expr, int fields) {
+    public Substatement(char[] expr, int fields, ParserContext pCtx) {
         this.name = expr;
 
         if (((this.fields = fields) & COMPILE_IMMEDIATE) != 0) {
-            this.egressType = (this.statement = (ExecutableStatement) subCompileExpression(this.name))
+            this.egressType = (this.statement = (ExecutableStatement) subCompileExpression(this.name, pCtx))
                     .getKnownEgressType();
         }
     }

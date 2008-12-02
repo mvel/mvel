@@ -53,17 +53,17 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
             checkNameSafety(this.name = name);
 
             this.egressType = (statement = (ExecutableStatement)
-                    subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation))).getKnownEgressType();
+                    subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation), pCtx)).getKnownEgressType();
         }
         else if ((assignStart = find(expr, '=')) != -1) {
             this.name = createStringTrimmed(expr, 0, assignStart);
             this.egressType = (statement
-                    = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1)))
+                    = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1), pCtx))
                     .getKnownEgressType();
 
             if (col = ((endOfName = findFirst('[', indexTarget = this.name.toCharArray())) > 0)) {
                 if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
-                    accExpr = (CompiledAccExpression) compileSetExpression(indexTarget);
+                    accExpr = (CompiledAccExpression) compileSetExpression(indexTarget, pCtx);
                 }
 
                 this.name = new String(expr, 0, endOfName);

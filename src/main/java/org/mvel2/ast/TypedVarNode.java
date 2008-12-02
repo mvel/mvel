@@ -48,7 +48,7 @@ public class TypedVarNode extends ASTNode implements Assignment {
             checkNameSafety(name = createStringTrimmed(expr, 0, assignStart));
 
             if (((fields |= ASSIGN) & COMPILE_IMMEDIATE) != 0) {
-                statement = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1));
+                statement = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1), pCtx);
             }
             else {
                 stmt = subset(expr, assignStart + 1);

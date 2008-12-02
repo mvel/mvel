@@ -19,14 +19,15 @@ package org.mvel2.ast;
 
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;
+import static org.mvel2.util.CompilerTools.expectType;
 
 public class And extends ASTNode {
     private ASTNode left;
     private ASTNode right;
 
     public And(ASTNode left, ASTNode right, boolean strongTyping) {
-        CompilerTools.expectType(this.left = left, Boolean.class, strongTyping);
-        CompilerTools.expectType(this.right = right, Boolean.class, strongTyping);
+        expectType(this.left = left, Boolean.class, strongTyping);
+        expectType(this.right = right, Boolean.class, strongTyping);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

@@ -19,6 +19,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
@@ -37,7 +38,7 @@ public class Fold extends ASTNode {
     private ExecutableStatement dataEx;
     private ExecutableStatement constraintEx;
 
-    public Fold(char[] name, int fields) {
+    public Fold(char[] name, int fields, ParserContext pCtx) {
         this.name = name;
         int cursor = 0;
         for (; cursor < name.length; cursor++) {
@@ -50,7 +51,7 @@ public class Fold extends ASTNode {
             }
         }
 
-        subEx = (ExecutableStatement) subCompileExpression(subset(name, 0, cursor - 1));
+        subEx = (ExecutableStatement) subCompileExpression(subset(name, 0, cursor - 1), pCtx);
         int start = cursor += 2; // skip 'in'
 
         for (; cursor < name.length; cursor++) {
@@ -59,13 +60,13 @@ public class Fold extends ASTNode {
 
                 if (name[cursor] == 'i' && name[cursor + 1] == 'f' && isJunct(name[cursor + 2])) {
                     int s = cursor + 2;
-                    constraintEx = (ExecutableStatement) subCompileExpression(subset(name, s, name.length - s));
+                    constraintEx = (ExecutableStatement) subCompileExpression(subset(name, s, name.length - s), pCtx);
                     break;
                 }
             }
         }
 
-        expectType(dataEx = (ExecutableStatement) subCompileExpression(subset(name, start, cursor - start)),
+        expectType(dataEx = (ExecutableStatement) subCompileExpression(subset(name, start, cursor - start), pCtx),
                 Collection.class, ((fields & COMPILE_IMMEDIATE) != 0));
     }
 

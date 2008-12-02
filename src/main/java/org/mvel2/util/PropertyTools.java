@@ -19,10 +19,9 @@
 package org.mvel2.util;
 
 import static org.mvel2.DataConversion.canConvert;
-import static org.mvel2.util.ParseTools.boxPrimitive;
-import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.PropertyVerifier;
+import static org.mvel2.util.ParseTools.boxPrimitive;
 
 import static java.lang.String.valueOf;
 import java.lang.reflect.Field;
@@ -92,51 +91,25 @@ public class PropertyTools {
         property = ReflectionUtil.getGetter(property);
 
         for (Method meth : clazz.getMethods()) {
-            if ((meth.getModifiers() & PUBLIC) == 0
-                    || meth.getParameterTypes().length != 0
-                    ) {
-            }
-            else if (property.equals(meth.getName()) ||
-                    isGet.equals(meth.getName())) {
+            if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 0
+                    && (property.equals(meth.getName()) || isGet.equals(meth.getName()))) {
                 return meth;
             }
         }
-
         return null;
     }
 
     public static Class getReturnType(Class clazz, String property, ParserContext ctx) {
         return new PropertyVerifier(property, ctx, clazz).analyze();
-
-
-//
-//        Member m = getFieldOrAccessor(clazz, property);
-//        if (m == null)  throw new CompileException("could not resolve property: " + clazz.getName() + "." + property);
-//
-//        if (m instanceof Field) return ((Field) m).getType();
-//        else return ((Method) m).getReturnType();
     }
 
-//
-//    public static Class getReturnType(Class clazz, String property) {
-//        Member m = getFieldOrAccessor(clazz, property);
-//        if (m == null) return null;
-//
-//        if (m instanceof Field) return ((Field) m).getType();
-//        else return ((Method) m).getReturnType();
-//    }
-
-
     public static Member getFieldOrAccessor(Class clazz, String property) {
-        if (property.charAt(property.length() - 1) == ')') return getGetter(clazz, property);
-
         for (Field f : clazz.getFields()) {
             if (property.equals(f.getName())) {
                 if ((f.getModifiers() & PUBLIC) != 0) return f;
                 break;
             }
         }
-
         return getGetter(clazz, property);
     }
 
@@ -168,7 +141,6 @@ public class PropertyTools {
         return getSetter(clazz, property, type);
     }
 
-
     public static boolean contains(Object toCompare, Object testValue) {
         if (toCompare == null)
             return false;
@@ -187,7 +159,6 @@ public class PropertyTools {
         }
         return false;
     }
-
 
     public static boolean isAssignable(Class to, Class from) {
         return (to.isPrimitive() ? boxPrimitive(to) : to).isAssignableFrom(from.isPrimitive() ? boxPrimitive(from) : from);

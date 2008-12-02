@@ -24,19 +24,20 @@ import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 import org.mvel2.math.MathProcessor;
+import org.mvel2.ParserContext;
 
 public class IndexedOperativeAssign extends ASTNode {
     private final int register;
     private ExecutableStatement statement;
     private final int operation;
 
-    public IndexedOperativeAssign(char[] expr, int operation, int register, int fields) {
+    public IndexedOperativeAssign(char[] expr, int operation, int register, int fields, ParserContext pCtx) {
         this.operation = operation;
         this.name = expr;
         this.register = register;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            statement = (ExecutableStatement) subCompileExpression(expr);
+            statement = (ExecutableStatement) subCompileExpression(expr, pCtx);
         }
     }
 

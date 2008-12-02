@@ -28,7 +28,6 @@ import org.mvel2.integration.VariableResolverFactory;
 public class PreFixDecNode extends ASTNode {
     private String name;
 
-
     public PreFixDecNode(String name) {
         this.name = name;
     }

@@ -18,6 +18,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.ParserContext;
 import static org.mvel2.MVEL.eval;
 import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.compiler.ExecutableStatement;
@@ -35,7 +36,7 @@ public class RegExMatch extends ASTNode {
     private char[] pattern;
     private Pattern p;
 
-    public RegExMatch(char[] expr, int fields, char[] pattern) {
+    public RegExMatch(char[] expr, int fields, char[] pattern, ParserContext pCtx) {
         //super(expr, fields);
         this.name = expr;
         this.pattern = pattern;
@@ -43,7 +44,7 @@ public class RegExMatch extends ASTNode {
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             this.stmt = (ExecutableStatement) subCompileExpression(expr);
             if ((this.patternStmt = (ExecutableStatement)
-                    subCompileExpression(pattern)) instanceof ExecutableLiteral) {
+                    subCompileExpression(pattern, pCtx)) instanceof ExecutableLiteral) {
 
                 try {
                     p = compile(valueOf(patternStmt.getValue(null, null)));

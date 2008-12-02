@@ -20,19 +20,21 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;
+import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
 public class Invert extends ASTNode {
     private ExecutableStatement stmt;
 
-    public Invert(char[] name, int fields) {
+    public Invert(char[] name, int fields, ParserContext pCtx) {
         this.name = name;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            CompilerTools.expectType(this.stmt = (ExecutableStatement) subCompileExpression(name), Integer.class, true);
+            expectType(this.stmt = (ExecutableStatement) subCompileExpression(name, pCtx), Integer.class, true);
         }
     }
 

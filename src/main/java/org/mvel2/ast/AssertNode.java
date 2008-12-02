@@ -20,6 +20,7 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.subCompileExpression;
@@ -30,10 +31,10 @@ import static org.mvel2.util.ParseTools.subCompileExpression;
 public class AssertNode extends ASTNode {
     public ExecutableStatement assertion;
 
-    public AssertNode(char[] expr, int fields) {
+    public AssertNode(char[] expr, int fields, ParserContext pCtx) {
         this.name = expr;
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            assertion = (ExecutableStatement) subCompileExpression(expr);
+            assertion = (ExecutableStatement) subCompileExpression(expr, pCtx);
         }
     }
 
