@@ -401,6 +401,12 @@ public class AbstractParser implements Serializable {
                      */
                     if (cursor != length) {
                         switch (expr[cursor]) {
+                            case '.':
+                                union = true;
+                                cursor++;
+                                skipWhitespaceWithLineAccounting();
+                                continue;
+
                             case '?':
                                 if (lookToLast() == '.') {
                                     capture = true;
@@ -583,11 +589,6 @@ public class AbstractParser implements Serializable {
                                 cursor = balancedCapture(expr, cursor, '[') + 1;
                                 continue;
 
-                            case '.':
-                                union = true;
-                                cursor++;
-                                skipWhitespaceWithLineAccounting();
-                                continue;
 
                             case '{':
                                 if (!union) break;
@@ -1841,7 +1842,7 @@ public class AbstractParser implements Serializable {
      */
     protected char lookBehind() {
         if (cursor == 0) return 0;
-        return expr[cursor - 1];
+        else return expr[cursor - 1];
     }
 
     /**
@@ -1851,7 +1852,7 @@ public class AbstractParser implements Serializable {
      */
     protected char lookAhead() {
         if (cursor < length) return expr[cursor + 1];
-        return 0;
+        else return 0;
     }
 
     /**
@@ -1866,7 +1867,6 @@ public class AbstractParser implements Serializable {
             return expr[cursor + range];
         }
     }
-
 
     protected boolean isNextIdentifierOrLiteral() {
         int tmp = cursor;
@@ -2231,7 +2231,7 @@ public class AbstractParser implements Serializable {
                             xswap();
                         }
 
-                        y = 0;
+                  //      y = 0;
                         break;
                     }
 

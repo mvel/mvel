@@ -88,16 +88,14 @@ public class PropertyAccessor {
     }
 
     public PropertyAccessor(char[] property, Object ctx, VariableResolverFactory resolver, Object thisReference) {
-        this.property = property;
-        this.length = property.length;
+        this.length = (this.property = property).length;
         this.ctx = ctx;
         this.variableFactory = resolver;
         this.thisReference = thisReference;
     }
 
     public PropertyAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory resolver, Object thisReference) {
-        this.property = property;
-        this.length = property.length;
+        this.length = (this.property = property).length;
         this.ctx = ctx;
         this.thisReference = thisRef;
         this.variableFactory = resolver;
