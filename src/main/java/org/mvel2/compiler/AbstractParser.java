@@ -689,7 +689,7 @@ public class AbstractParser implements Serializable {
 
                                         throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
                                     }
-                                    else if ( ((idx = pCtx.variableIndexOf(t)) != -1
+                                    else if (((idx = pCtx.variableIndexOf(t)) != -1
                                             || (pCtx.isIndexAllocation()))) {
 
                                         IndexedAssignmentNode ian = new IndexedAssignmentNode(subArray(start, cursor), ASTNode.ASSIGN, idx, pCtx);
@@ -844,8 +844,7 @@ public class AbstractParser implements Serializable {
                                                             cursor++;
                                                             if (tokenContinues()) {
                                                                 lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2), fields, pCtx);
-                                                                start = cursor;
-                                                                if (expr[start] == '.') start++;
+                                                                if (expr[start = cursor] == '.') start++;
                                                                 captureToEOT();
                                                                 return lastNode = new Union(expr, trimRight(start), cursor, fields, lastNode);
                                                             }
@@ -1058,8 +1057,10 @@ public class AbstractParser implements Serializable {
                 }
             }
 
-            if (start == cursor) return null;
-            return createPropertyToken(start, cursor);
+            if (start == cursor)
+                return null;
+            else
+                return createPropertyToken(start, cursor);
         }
         catch (NumberFormatException e) {
             CompileException c = new CompileException("badly formatted number: " + e.getMessage(), expr, cursor, e);
@@ -1829,7 +1830,7 @@ public class AbstractParser implements Serializable {
     protected char lookToLast() {
         if (cursor == 0) return 0;
         int temp = cursor;
-        while (temp != 0 && isWhitespace(expr[--temp]));
+        while (temp != 0 && isWhitespace(expr[--temp])) ;
         return expr[temp];
     }
 

@@ -24,6 +24,7 @@ import static org.mvel2.DataConversion.convert;
 import org.mvel2.integration.VariableResolver;
 
 import java.util.Map;
+import java.util.HashMap;
 
 public class MapVariableResolver implements VariableResolver {
     private String name;
@@ -40,7 +41,6 @@ public class MapVariableResolver implements VariableResolver {
         this.knownType = knownType;
         this.variableMap = variableMap;
     }
-
 
     public void setName(String name) {
         this.name = name;
@@ -82,7 +82,7 @@ public class MapVariableResolver implements VariableResolver {
         variableMap.put(name, value);
     }
 
-    public Object getValue() {
+    public Object getValue() {  
         return variableMap.get(name);
     }
 

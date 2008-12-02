@@ -78,7 +78,6 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         }
         else {
             addResolver(name, vr = new MapVariableResolver(variables, name, type)).setValue(value);
-        //    vr.setValue(value);
             return vr;
         }
     }
@@ -87,12 +86,16 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
 
         VariableResolver vr = variableResolvers.get(name);
-        if (vr != null) return vr;
+        if (vr != null) {
+            return vr;
+        }
         else if (variables.containsKey(name)) {
             variableResolvers.put(name, vr = new MapVariableResolver(variables, name));
             return vr;
         }
-        else if (nextFactory != null) return nextFactory.getVariableResolver(name);
+        else if (nextFactory != null) {
+            return nextFactory.getVariableResolver(name);
+        }
 
         throw new UnresolveablePropertyException("unable to resolve variable '" + name + "'");
     }
