@@ -59,6 +59,9 @@ public class MVEL {
     public static boolean COMPILER_OPT_ALLOW_NAKED_METH_CALL =
             getBoolean("mvel2.compiler.allow_naked_meth_calls");
 
+    public static boolean COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING =
+            getBoolean("mvel2.compiler.allow_override_all_prophandling");
+
     static boolean OPTIMIZER = true;
 
     static {

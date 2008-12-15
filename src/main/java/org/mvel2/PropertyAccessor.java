@@ -157,7 +157,9 @@ public class PropertyAccessor {
                         curr = getMethod(curr, capture());
                         break;
                     case COL:
-                        curr = getCollectionProperty(curr, capture());
+                        curr = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING ?
+                                getCollectionPropertyAO(curr, capture()) :
+                                getCollectionProperty(curr, capture());
                         break;
                     case WITH:
                         curr = getWithProperty(curr);
@@ -226,24 +228,51 @@ public class PropertyAccessor {
 
                 String ex = new String(property, start, cursor - start);
 
-                if (curr instanceof Map) {
-                    //noinspection unchecked
-                    ((Map) curr).put(eval(ex, this.ctx, this.variableFactory), value);
-                }
-                else if (curr instanceof List) {
-                    //noinspection unchecked
-                    ((List) curr).set(eval(ex, this.ctx, this.variableFactory, Integer.class), value);
-                }
-                else if (curr.getClass().isArray()) {
-                    Array.set(curr, eval(ex, this.ctx, this.variableFactory, Integer.class), convert(value, getBaseComponentType(curr.getClass())));
+                if (!MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING) {
+                    if (curr instanceof Map) {
+                        //noinspection unchecked
+                        ((Map) curr).put(eval(ex, this.ctx, this.variableFactory), value);
+                    }
+                    else if (curr instanceof List) {
+                        //noinspection unchecked
+                        ((List) curr).set(eval(ex, this.ctx, this.variableFactory, Integer.class), value);
+                    }
+                    else if (curr.getClass().isArray()) {
+                        Array.set(curr, eval(ex, this.ctx, this.variableFactory, Integer.class), convert(value, getBaseComponentType(curr.getClass())));
+                    }
+                    else {
+                        throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
+                    }
                 }
                 else {
-                    throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
+                    if (curr instanceof Map) {
+                        //noinspection unchecked
+                        if (hasPropertyHandler(Map.class))
+                            getPropertyHandler(Map.class).setProperty(ex, curr, variableFactory, value);
+                        else
+                            ((Map) curr).put(eval(ex, this.ctx, this.variableFactory), value);
+                    }
+                    else if (curr instanceof List) {
+                        //noinspection unchecked
+                        if (hasPropertyHandler(List.class))
+                            getPropertyHandler(List.class).setProperty(ex, curr, variableFactory, value);
+                        else
+                            ((List) curr).set(eval(ex, this.ctx, this.variableFactory, Integer.class), value);
+                    }
+                    else if (curr.getClass().isArray()) {
+                        if (hasPropertyHandler(Array.class))
+                            getPropertyHandler(Array.class).setProperty(ex, curr, variableFactory, value);
+                        else
+                            Array.set(curr, eval(ex, this.ctx, this.variableFactory, Integer.class), convert(value, getBaseComponentType(curr.getClass())));
+                    }
+                    else {
+                        throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
+                    }
+
+                    return;
                 }
-
-                return;
             }
-
+            
             String tk = capture();
 
             Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
@@ -289,13 +318,16 @@ public class PropertyAccessor {
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
             }
         }
-        catch (InvocationTargetException e) {
+        catch (InvocationTargetException
+                e) {
             throw new PropertyAccessException("could not access property", e);
         }
-        catch (IllegalAccessException e) {
+        catch (IllegalAccessException
+                e) {
             throw new PropertyAccessException("could not access property", e);
         }
     }
+
 
     private int nextToken() {
         switch (property[start = cursor]) {
@@ -594,6 +626,68 @@ public class PropertyAccessor {
             }
         }
     }
+
+    private Object getCollectionPropertyAO(Object ctx, String prop) throws Exception {
+        if (prop.length() != 0) {
+            ctx = getBeanProperty(ctx, prop);
+        }
+
+        int start = ++cursor;
+        whiteSpaceSkip();
+
+        if (cursor == length || scanTo(']'))
+            throw new PropertyAccessException("unterminated '['");
+
+        prop = new String(property, start, cursor++ - start);
+
+        if (ctx instanceof Map) {
+            if (hasPropertyHandler(Map.class))
+                return getPropertyHandler(Map.class).getProperty(prop, ctx, variableFactory);
+            else
+                return ((Map) ctx).get(eval(prop, ctx, variableFactory));
+        }
+        else if (ctx instanceof List) {
+            if (hasPropertyHandler(List.class))
+                return getPropertyHandler(List.class).getProperty(prop, ctx, variableFactory);
+            else
+                return ((List) ctx).get((Integer) eval(prop, ctx, variableFactory));
+        }
+        else if (ctx instanceof Collection) {
+            if (hasPropertyHandler(Collection.class))
+                return getPropertyHandler(Collection.class).getProperty(prop, ctx, variableFactory);
+            else {
+                int count = (Integer) eval(prop, ctx, variableFactory);
+                if (count > ((Collection) ctx).size())
+                    throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
+
+                Iterator iter = ((Collection) ctx).iterator();
+                for (int i = 0; i < count; i++) iter.next();
+                return iter.next();
+            }
+        }
+        else if (ctx.getClass().isArray()) {
+            if (hasPropertyHandler(Array.class))
+                return getPropertyHandler(Array.class).getProperty(prop, ctx, variableFactory);
+
+            return Array.get(ctx, (Integer) eval(prop, ctx, variableFactory));
+        }
+        else if (ctx instanceof CharSequence) {
+            if (hasPropertyHandler(CharSequence.class))
+                return getPropertyHandler(CharSequence.class).getProperty(prop, ctx, variableFactory);
+            else
+                return ((CharSequence) ctx).charAt((Integer) eval(prop, ctx, variableFactory));
+        }
+        else {
+            TypeDescriptor td = new TypeDescriptor(property, 0);
+            try {
+                return getClassReference(getCurrentThreadParserContext(), td);
+            }
+            catch (Exception e) {
+                throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+            }
+        }
+    }
+
 
     /**
      * Find an appropriate method, execute it, and return it's response.

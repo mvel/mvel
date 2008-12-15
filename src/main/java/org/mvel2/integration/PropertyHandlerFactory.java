@@ -34,8 +34,16 @@ public class PropertyHandlerFactory {
     }
 
     public static void registerPropertyHandler(Class clazz, PropertyHandler propertyHandler) {
-        propertyHandlerClass.put(clazz, propertyHandler);
+        do {
+            propertyHandlerClass.put(clazz, propertyHandler);
+
+            for (Class c : clazz.getInterfaces()) {
+                propertyHandlerClass.put(c, propertyHandler);
+            }
+        }
+        while ((clazz = clazz.getSuperclass()) != null && clazz != Object.class);
     }
+
 
     public static void unregisterPropertyHandler(Class clazz) {
         propertyHandlerClass.remove(clazz);
