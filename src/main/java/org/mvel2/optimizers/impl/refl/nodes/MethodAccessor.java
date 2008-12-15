@@ -23,6 +23,7 @@ import static org.mvel2.DataConversion.convert;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+import static org.mvel2.util.ParseTools.getBestCandidate;
 
 import java.lang.reflect.Method;
 
@@ -46,6 +47,13 @@ public class MethodAccessor implements AccessorNode {
                 }
             }
             catch (IllegalArgumentException e) {
+                if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
+                    Method o = getBestCandidate(parameterTypes, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
+                    if (o != null) {
+                        return executeOverrideTarget(o, ctx, elCtx, vars);
+                    }
+                }
+
                 coercionNeeded = true;
                 return getValue(ctx, elCtx, vars);
             }
@@ -66,6 +74,20 @@ public class MethodAccessor implements AccessorNode {
             catch (Exception e) {
                 throw new CompileException("cannot invoke method", e);
             }
+        }
+    }
+
+    private Object executeOverrideTarget(Method o, Object ctx, Object elCtx, VariableResolverFactory vars) {
+        try {
+            if (nextNode != null) {
+                return nextNode.getValue(o.invoke(ctx, executeAll(elCtx, vars)), elCtx, vars);
+            }
+            else {
+                return o.invoke(ctx, executeAll(elCtx, vars));
+            }
+        }
+        catch (Exception e2) {
+            throw new CompileException("unable to invoke method", e2);
         }
     }
 

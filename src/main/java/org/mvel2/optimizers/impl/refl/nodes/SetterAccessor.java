@@ -1,6 +1,7 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.CompileException;
+import static org.mvel2.util.ParseTools.getBestCandidate;
 import static org.mvel2.DataConversion.convert;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
@@ -26,6 +27,14 @@ public class SetterAccessor implements AccessorNode {
             }
         }
         catch (IllegalArgumentException e) {
+            if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
+                Method o = getBestCandidate(EMPTY, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
+                if (o != null) {
+                    return executeOverrideTarget(o, ctx, value);
+                }
+            }
+
+
             if (!coercionRequired) {
                 coercionRequired = true;
                 return setValue(ctx, elCtx, variableFactory, value);
@@ -64,5 +73,14 @@ public class SetterAccessor implements AccessorNode {
 
     public Class getKnownEgressType() {
         return method.getReturnType();
+    }
+
+    private Object executeOverrideTarget(Method o, Object ctx, Object value) {
+        try {
+            return o.invoke(ctx, convert(value, targetType));
+        }
+        catch (Exception e2) {
+            throw new CompileException("unable to invoke method", e2);
+        }
     }
 }
