@@ -32,6 +32,7 @@ import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
 import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.PropertyHandler;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.impl.refl.collection.ArrayCreator;
@@ -186,32 +187,58 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
                 String ex = new String(property, start, cursor - start);
 
-                if (ctx instanceof Map) {
-                    //noinspection unchecked
-                    ((Map) ctx).put(eval(ex, ctx, variableFactory), convert(value, returnType = verifier.analyze()));
 
-                    addAccessorNode(new MapAccessorNest(ex, returnType));
+                if (ctx instanceof Map) {
+                    if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(Map.class)) {
+                        propHandlerSet(ex, Map.class, value);
+                    }
+                    else {
+                        //noinspection unchecked
+                        ((Map) ctx).put(eval(ex, ctx, variableFactory), convert(value, returnType = verifier.analyze()));
+
+                        addAccessorNode(new MapAccessorNest(ex, returnType));
+                    }
 
                     return rootNode;
                 }
                 else if (ctx instanceof List) {
-                    //noinspection unchecked
-                    ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), convert(value, returnType = verifier.analyze()));
+                    if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(List.class)) {
+                        propHandlerSet(ex, List.class, value);
+                    }
+                    else {
 
-                    addAccessorNode(new ListAccessorNest(ex, returnType));
+                        //noinspection unchecked
+                        ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), convert(value, returnType = verifier.analyze()));
+
+                        addAccessorNode(new ListAccessorNest(ex, returnType));
+                    }
+
+                    return rootNode;
+                }
+                else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(ctx.getClass())) {
+                    propHandlerSet(ex, ctx.getClass(), value);
                     return rootNode;
                 }
                 else if (ctx.getClass().isArray()) {
-                    //noinspection unchecked
-                    Array.set(ctx, eval(ex, ctx, variableFactory, Integer.class), convert(value, getBaseComponentType(ctx.getClass())));
-
-                    addAccessorNode(new ArrayAccessorNest(ex));
+                    if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(Array.class)) {
+                        propHandlerSet(ex, Array.class, value);
+                    }
+                    else {
+                        //noinspection unchecked
+                        Array.set(ctx, eval(ex, ctx, variableFactory, Integer.class), convert(value, getBaseComponentType(ctx.getClass())));
+                        addAccessorNode(new ArrayAccessorNest(ex));
+                    }
                     return rootNode;
                 }
                 else {
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) +
                             ": not a recognized collection type: " + ctx.getClass());
                 }
+
+            }
+            else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(ctx.getClass())) {
+                propHandlerSet(new String(property), ctx.getClass(), value);
+                return rootNode;
             }
 
             String tk = new String(property);
@@ -276,26 +303,53 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         Object curr = ctx;
 
         try {
-            while (cursor < length) {
-                switch (nextSubToken()) {
-                    case BEAN:
-                        curr = getBeanProperty(curr, capture());
-                        break;
-                    case METH:
-                        curr = getMethod(curr, capture());
-                        break;
-                    case COL:
-                        curr = getCollectionProperty(curr, capture());
-                        break;
-                    case WITH:
-                        curr = getWithProperty(curr);
-                        break;
-                    case DONE:
-                        break;
+            if (!MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING) {
+                while (cursor < length) {
+                    switch (nextSubToken()) {
+                        case BEAN:
+                            curr = getBeanProperty(curr, capture());
+                            break;
+                        case METH:
+                            curr = getMethod(curr, capture());
+                            break;
+                        case COL:
+                            curr = getCollectionProperty(curr, capture());
+                            break;
+                        case WITH:
+                            curr = getWithProperty(curr);
+                            break;
+                        case DONE:
+                            break;
+                    }
+
+                    first = false;
+                    if (curr != null) returnType = curr.getClass();
                 }
 
-                first = false;
-                if (curr != null) returnType = curr.getClass();
+            }
+            else {
+                while (cursor < length) {
+                    switch (nextSubToken()) {
+                        case BEAN:
+                            curr = getBeanPropertyAO(curr, capture());
+                            break;
+                        case METH:
+                            curr = getMethod(curr, capture());
+                            break;
+                        case COL:
+                            curr = getCollectionPropertyAO(curr, capture());
+                            break;
+                        case WITH:
+                            curr = getWithProperty(curr);
+                            break;
+                        case DONE:
+                            break;
+                    }
+
+                    first = false;
+                    if (curr != null) returnType = curr.getClass();
+                }
+
             }
 
             val = curr;
@@ -347,6 +401,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         addAccessorNode(wa);
 
         return wa.getValue(ctx, thisRef, variableFactory);
+    }
+
+    private Object getBeanPropertyAO(Object ctx, String property)
+            throws Exception {
+        if (ctx != null && hasPropertyHandler(ctx.getClass())) return propHandler(property, ctx.getClass());
+        return getBeanProperty(ctx, property);
     }
 
     private Object getBeanProperty(Object ctx, String property)
@@ -559,6 +619,117 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
     }
 
+
+    private Object getCollectionPropertyAO(Object ctx, String prop) throws Exception {
+        if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
+
+        int start = ++cursor;
+
+        whiteSpaceSkip();
+
+        if (cursor == length)
+            throw new CompileException("unterminated '['");
+
+        String item;
+
+        if (scanTo(']'))
+            throw new CompileException("unterminated '['");
+
+        item = new String(expr, start, cursor - start);
+
+        boolean itemSubExpr = true;
+
+        Object idx = null;
+
+        try {
+            idx = parseInt(item);
+            itemSubExpr = false;
+        }
+        catch (Exception e) {
+            // not a number;
+        }
+
+        ExecutableStatement itemStmt = null;
+        if (itemSubExpr) {
+            idx = (itemStmt = (ExecutableStatement) subCompileExpression(item.toCharArray())).getValue(ctx, thisRef, variableFactory);
+        }
+
+        ++cursor;
+
+        if (ctx instanceof Map) {
+            if (hasPropertyHandler(Map.class)) {
+                return propHandler(item, Map.class);
+            }
+            else {
+                if (itemSubExpr) {
+                    addAccessorNode(new MapAccessorNest(itemStmt, null));
+                }
+                else {
+                    addAccessorNode(new MapAccessor(parseInt(item)));
+                }
+
+
+                return ((Map) ctx).get(idx);
+            }
+        }
+        else if (ctx instanceof List) {
+            if (hasPropertyHandler(List.class)) {
+                return propHandler(item, List.class);
+            }
+            else {
+                if (itemSubExpr) {
+                    addAccessorNode(new ListAccessorNest(itemStmt, null));
+                }
+                else {
+                    addAccessorNode(new ListAccessor(parseInt(item)));
+                }
+
+                return ((List) ctx).get((Integer) idx);
+            }
+        }
+        else if (ctx.getClass().isArray()) {
+            if (hasPropertyHandler(Array.class)) {
+                return propHandler(item, Array.class);
+            }
+            else {
+                if (itemSubExpr) {
+                    addAccessorNode(new ArrayAccessorNest(itemStmt));
+                }
+                else {
+                    addAccessorNode(new ArrayAccessor(parseInt(item)));
+                }
+
+                return Array.get(ctx, (Integer) idx);
+            }
+        }
+        else if (ctx instanceof CharSequence) {
+            if (hasPropertyHandler(CharSequence.class)) {
+                return propHandler(item, CharSequence.class);
+            }
+            else {
+                if (itemSubExpr) {
+                    addAccessorNode(new IndexedCharSeqAccessorNest(itemStmt));
+                }
+                else {
+                    addAccessorNode(new IndexedCharSeqAccessor(parseInt(item)));
+                }
+
+                return ((CharSequence) ctx).charAt((Integer) idx);
+            }
+        }
+        else {
+            TypeDescriptor tDescr = new TypeDescriptor(expr, 0);
+            if (tDescr.isArray()) {
+                Class cls = getClassReference((Class) ctx, tDescr, variableFactory, pCtx);
+                rootNode = new StaticReferenceAccessor(cls);
+                return cls;
+            }
+
+            throw new CompileException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+        }
+    }
+
+
     /**
      * Find an appropriate method, execute it, and return it's response.
      *
@@ -630,7 +801,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
          * adjust the Class scope target.
          */
         Class<?> cls = ctx instanceof Class ? (Class<?>) ctx : ctx.getClass();
-
 
 
         Method m;
@@ -779,7 +949,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.returnType = type;
         this.ctx = ctx;
         this.variableFactory = factory;
-        
+
         Accessor root = _getAccessor(o, returnType);
 
         if (property != null && property.length > 0) {
@@ -894,5 +1064,17 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     public boolean isLiteralOnly() {
         return literal;
+    }
+
+    private Object propHandler(String property, Class handler) {
+        PropertyHandler ph = getPropertyHandler(handler);
+        addAccessorNode(new PropertyHandlerAccessor(property, ph));
+        return ph.getProperty(property, ctx, variableFactory);
+    }
+
+    public void propHandlerSet(String property, Class handler, Object value) {
+        PropertyHandler ph = getPropertyHandler(handler);
+        addAccessorNode(new PropertyHandlerAccessor(property, ph));
+        ph.setProperty(property, ctx, variableFactory, value);
     }
 }

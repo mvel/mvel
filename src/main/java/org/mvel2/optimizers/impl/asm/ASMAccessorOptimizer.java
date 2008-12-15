@@ -281,86 +281,105 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 assert debug("CHECKCAST " + ctx.getClass().getName());
                 mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
 
+
                 if (ctx instanceof Map) {
-                    //noinspection unchecked
-                    ((Map) ctx).put(eval(ex, ctx, variableFactory), convert(value, returnType = verifier.analyze()));
-
-                    writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()));
-
-                    assert debug("ALOAD 4");
-                    mv.visitVarInsn(ALOAD, 4);
-
-                    if (value != null & returnType != value.getClass()) {
-                        dataConversion(returnType);
-                        checkcast(returnType);
+                    if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(Map.class)) {
+                        propHandlerByteCodePut(ex, Map.class, value);
                     }
+                    else {
+                        //noinspection unchecked
+                        ((Map) ctx).put(eval(ex, ctx, variableFactory), convert(value, returnType = verifier.analyze()));
 
-                    assert debug("INVOKEINTERFACE Map.put");
-                    mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+                        writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()));
 
-                    assert debug("POP");
-                    mv.visitInsn(POP);
+                        assert debug("ALOAD 4");
+                        mv.visitVarInsn(ALOAD, 4);
+
+                        if (value != null & returnType != value.getClass()) {
+                            dataConversion(returnType);
+                            checkcast(returnType);
+                        }
+
+                        assert debug("INVOKEINTERFACE Map.put");
+                        mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+                        assert debug("POP");
+                        mv.visitInsn(POP);
 
 
-                    assert debug("ALOAD 4");
-                    mv.visitVarInsn(ALOAD, 4);
+                        assert debug("ALOAD 4");
+                        mv.visitVarInsn(ALOAD, 4);
+                    }
                 }
                 else if (ctx instanceof List) {
-                    //noinspection unchecked
-                    ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), convert(value, returnType = verifier.analyze()));
-
-                    writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()));
-                    unwrapPrimitive(int.class);
-
-                    assert debug("ALOAD 4");
-                    mv.visitVarInsn(ALOAD, 4);
-
-                    if (value != null & returnType != value.getClass()) {
-                        dataConversion(returnType);
-                        checkcast(returnType);
+                    if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(List.class)) {
+                        propHandlerByteCodePut(ex, List.class, value);
                     }
+                    else {
+                        //noinspection unchecked
+                        ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), convert(value, returnType = verifier.analyze()));
+
+                        writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()));
+                        unwrapPrimitive(int.class);
+
+                        assert debug("ALOAD 4");
+                        mv.visitVarInsn(ALOAD, 4);
+
+                        if (value != null & returnType != value.getClass()) {
+                            dataConversion(returnType);
+                            checkcast(returnType);
+                        }
 
 
-                    assert debug("INVOKEINTERFACE List.set");
-                    mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "set", "(ILjava/lang/Object;)Ljava/lang/Object;");
+                        assert debug("INVOKEINTERFACE List.set");
+                        mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "set", "(ILjava/lang/Object;)Ljava/lang/Object;");
 
-                    assert debug("ALOAD 4");
-                    mv.visitVarInsn(ALOAD, 4);
-
+                        assert debug("ALOAD 4");
+                        mv.visitVarInsn(ALOAD, 4);
+                    }
+                }
+                else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(ctx.getClass())) {
+                     propHandlerByteCodePut(ex, ctx.getClass(), value);
                 }
                 else if (ctx.getClass().isArray()) {
-                    Class type = getBaseComponentType(ctx.getClass());
-
-                    Object idx = eval(ex, ctx, variableFactory);
-
-                    writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()), int.class);
-                    if (!(idx instanceof Integer)) {
-                        dataConversion(Integer.class);
-                        idx = DataConversion.convert(idx, Integer.class);
-                        unwrapPrimitive(int.class);
+                    if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(Array.class)) {
+                        propHandlerByteCodePut(ex, Array.class, value);
                     }
+                    else {
+                        Class type = getBaseComponentType(ctx.getClass());
+
+                        Object idx = eval(ex, ctx, variableFactory);
+
+                        writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()), int.class);
+                        if (!(idx instanceof Integer)) {
+                            dataConversion(Integer.class);
+                            idx = DataConversion.convert(idx, Integer.class);
+                            unwrapPrimitive(int.class);
+                        }
 
 
-                    assert debug("ALOAD 4");
-                    mv.visitVarInsn(ALOAD, 4);
+                        assert debug("ALOAD 4");
+                        mv.visitVarInsn(ALOAD, 4);
 
-                    if (!type.equals(value.getClass())) {
-                        dataConversion(type);
+                        if (!type.equals(value.getClass())) {
+                            dataConversion(type);
+                        }
+                        if (type.isPrimitive()) wrapPrimitive(type);
+
+
+                        arrayStore(type);
+
+                        //noinspection unchecked
+                        Array.set(ctx, (Integer) idx, convert(value, type));
+
+                        assert debug("ALOAD 4");
+                        mv.visitVarInsn(ALOAD, 4);
                     }
-                    if (type.isPrimitive()) wrapPrimitive(type);
-
-
-                    arrayStore(type);
-
-                    //noinspection unchecked
-                    Array.set(ctx, (Integer) idx, convert(value, type));
-
-                    assert debug("ALOAD 4");
-                    mv.visitVarInsn(ALOAD, 4);
                 }
                 else {
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
                 }
+
 
                 deferFinish = false;
                 noinit = false;
@@ -474,10 +493,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ingressType.getName());
             }
         }
-        catch (InvocationTargetException e) {
+        catch (InvocationTargetException
+                e) {
             throw new PropertyAccessException("could not access property", e);
         }
-        catch (IllegalAccessException e) {
+        catch (IllegalAccessException
+                e) {
             throw new PropertyAccessException("could not access property", e);
         }
 
@@ -520,7 +541,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         mv.visitCode();
         mv.visitLdcInsn(org.mvel2.asm.Type.getType(returnType != null ? returnType : Object.class));
         mv.visitInsn(ARETURN);
-     //   mv.visitLocalVariable("this", "Lorg/mvel2/tests/AccessorBMModel;", null, l0, l1, 0);
+        //   mv.visitLocalVariable("this", "Lorg/mvel2/tests/AccessorBMModel;", null, l0, l1, 0);
         mv.visitMaxs(1, 1);
         mv.visitEnd();
 
@@ -571,33 +592,67 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         Object curr = ctx;
 
         try {
-            while (cursor < length) {
-                switch (nextSubToken()) {
-                    case BEAN:
-                        curr = getBeanProperty(curr, capture());
-                        break;
-                    case METH:
-                        curr = getMethod(curr, capture());
-                        break;
-                    case COL:
-                        curr = getCollectionProperty(curr, capture());
-                        break;
-                    case WITH:
-                        curr = getWithProperty(curr);
-                        break;
+
+            if (!MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING) {
+                while (cursor < length) {
+                    switch (nextSubToken()) {
+                        case BEAN:
+                            curr = getBeanProperty(curr, capture());
+                            break;
+                        case METH:
+                            curr = getMethod(curr, capture());
+                            break;
+                        case COL:
+                            curr = getCollectionProperty(curr, capture());
+                            break;
+                        case WITH:
+                            curr = getWithProperty(curr);
+                            break;
+                    }
+
+                    // check to see if a null safety is enabled on this property.
+                    if (fields == -1) {
+                        if (curr == null) {
+                            break;
+                        }
+                        else {
+                            fields = 0;
+                        }
+                    }
+
+                    first = false;
+                }
+            }
+            else {
+                while (cursor < length) {
+                    switch (nextSubToken()) {
+                        case BEAN:
+                            curr = getBeanPropertyAO(curr, capture());
+                            break;
+                        case METH:
+                            curr = getMethod(curr, capture());
+                            break;
+                        case COL:
+                            curr = getCollectionPropertyAO(curr, capture());
+                            break;
+                        case WITH:
+                            curr = getWithProperty(curr);
+                            break;
+                    }
+
+                    // check to see if a null safety is enabled on this property.
+                    if (fields == -1) {
+                        if (curr == null) {
+                            break;
+                        }
+                        else {
+                            fields = 0;
+                        }
+                    }
+
+                    first = false;
                 }
 
-                // check to see if a null safety is enabled on this property.
-                if (fields == -1) {
-                    if (curr == null) {
-                        break;
-                    }
-                    else {
-                        fields = 0;
-                    }
-                }
-
-                first = false;
             }
 
             val = curr;
@@ -696,6 +751,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         return ctx;
 
+    }
+
+    private Object getBeanPropertyAO(Object ctx, String property)
+            throws IllegalAccessException, InvocationTargetException {
+        if (ctx != null && hasPropertyHandler(ctx.getClass())) {
+            return propHandlerByteCode(property, ctx.getClass());
+        }
+        return getBeanProperty(ctx, property);
     }
 
     private Object getBeanProperty(Object ctx, String property)
@@ -1132,6 +1195,171 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw new CompileException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
         }
     }
+
+    private Object getCollectionPropertyAO(Object ctx, String prop)
+            throws IllegalAccessException, InvocationTargetException {
+        if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
+
+        assert debug("\n  **  ENTER -> {collections: " + prop + "; ctx=" + ctx + "}");
+
+        int start = ++cursor;
+
+        whiteSpaceSkip();
+
+        if (cursor == length)
+            throw new CompileException("unterminated '['");
+
+        if (scanTo(']'))
+            throw new CompileException("unterminated '['");
+
+        String tk = new String(expr, start, cursor - start);
+
+        assert debug("{collection token:<<" + tk + ">>}");
+
+        ExecutableStatement compiled = (ExecutableStatement) subCompileExpression(tk.toCharArray());
+        Object item = compiled.getValue(ctx, variableFactory);
+
+        ++cursor;
+
+        if (ctx instanceof Map) {
+            if (hasPropertyHandler(Map.class)) {
+                return propHandlerByteCode(tk, Map.class);
+            }
+            else {
+                assert debug("CHECKCAST java/util/Map");
+                mv.visitTypeInsn(CHECKCAST, "java/util/Map");
+
+                Class c = writeLiteralOrSubexpression(compiled);
+                if (c != null && c.isPrimitive()) {
+                    wrapPrimitive(c);
+                }
+
+                assert debug("INVOKEINTERFACE: get");
+                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
+            }
+
+            return ((Map) ctx).get(item);
+        }
+        else if (ctx instanceof List) {
+            if (hasPropertyHandler(List.class)) {
+                return propHandlerByteCode(tk, List.class);
+            }
+            else {
+                assert debug("CHECKCAST java/util/List");
+                mv.visitTypeInsn(CHECKCAST, "java/util/List");
+
+                writeLiteralOrSubexpression(compiled, int.class);
+
+                assert debug("INVOKEINTERFACE: java/util/List.get");
+                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;");
+
+                return ((List) ctx).get(convert(item, Integer.class));
+            }
+        }
+        else if (ctx.getClass().isArray()) {
+            if (hasPropertyHandler(Array.class)) {
+                return propHandlerByteCode(tk, Array.class);
+            }
+            else {
+                assert debug("CHECKCAST " + getDescriptor(ctx.getClass()));
+                mv.visitTypeInsn(CHECKCAST, getDescriptor(ctx.getClass()));
+
+                writeLiteralOrSubexpression(compiled, int.class, item.getClass());
+
+                Class cls = getBaseComponentType(ctx.getClass());
+                if (cls.isPrimitive()) {
+                    if (cls == int.class) {
+                        assert debug("IALOAD");
+                        mv.visitInsn(IALOAD);
+                    }
+                    else if (cls == char.class) {
+                        assert debug("CALOAD");
+                        mv.visitInsn(CALOAD);
+                    }
+                    else if (cls == boolean.class) {
+                        assert debug("BALOAD");
+                        mv.visitInsn(BALOAD);
+                    }
+                    else if (cls == double.class) {
+                        assert debug("DALOAD");
+                        mv.visitInsn(DALOAD);
+                    }
+                    else if (cls == float.class) {
+                        assert debug("FALOAD");
+                        mv.visitInsn(FALOAD);
+                    }
+                    else if (cls == short.class) {
+                        assert debug("SALOAD");
+                        mv.visitInsn(SALOAD);
+                    }
+                    else if (cls == long.class) {
+                        assert debug("LALOAD");
+                        mv.visitInsn(LALOAD);
+                    }
+                    else if (cls == byte.class) {
+                        assert debug("BALOAD");
+                        mv.visitInsn(BALOAD);
+                    }
+
+                    wrapPrimitive(cls);
+                }
+                else {
+                    assert debug("AALOAD");
+                    mv.visitInsn(AALOAD);
+                }
+
+                return Array.get(ctx, convert(item, Integer.class));
+            }
+        }
+        else if (ctx instanceof CharSequence) {
+            if (hasPropertyHandler(CharSequence.class)) {
+                return propHandlerByteCode(tk, CharSequence.class);
+            }
+            else {
+                assert debug("CHECKCAST java/lang/CharSequence");
+                mv.visitTypeInsn(CHECKCAST, "java/lang/CharSequence");
+
+                if (item instanceof Integer) {
+                    intPush((Integer) item);
+
+                    assert debug("INVOKEINTERFACE java/lang/CharSequence.charAt");
+                    mv.visitMethodInsn(INVOKEINTERFACE, "java/lang/CharSequence", "charAt", "(I)C");
+
+                    wrapPrimitive(char.class);
+
+                    return ((CharSequence) ctx).charAt((Integer) item);
+                }
+                else {
+                    writeLiteralOrSubexpression(compiled, Integer.class);
+                    unwrapPrimitive(int.class);
+
+                    assert debug("INVOKEINTERFACE java/lang/CharSequence.charAt");
+                    mv.visitMethodInsn(INVOKEINTERFACE, "java/lang/CharSequence", "charAt", "(I)C");
+
+                    wrapPrimitive(char.class);
+
+                    return ((CharSequence) ctx).charAt(convert(item, Integer.class));
+                }
+            }
+        }
+        else {
+            TypeDescriptor tDescr = new TypeDescriptor(expr, 0);
+            if (tDescr.isArray()) {
+                try {
+                    Class cls = getClassReference((Class) ctx, tDescr, variableFactory, pCtx);
+                    //   rootNode = new StaticReferenceAccessor(cls);
+                    ldcClassConstant(cls);
+                    return cls;
+                }
+                catch (Exception e) {
+                    //fall through
+                }
+            }
+
+            throw new CompileException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+        }
+    }
+
 
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name)
@@ -2535,6 +2763,30 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             catch (IOException e) {
                 //empty
             }
+        }
+    }
+
+    private Object propHandlerByteCode(String property, Class handler) {
+        PropertyHandler ph = getPropertyHandler(handler);
+        if (ph instanceof ProducesBytecode) {
+            ((ProducesBytecode) ph).produceBytecodeGet(mv, property, variableFactory);
+            return ph.getProperty(property, ctx, variableFactory);
+        }
+        else {
+            throw new RuntimeException("unable to compile: custom accessor does not support producing bytecode: "
+                    + ph.getClass().getName());
+        }
+    }
+
+    private void propHandlerByteCodePut(String property, Class handler, Object value) {
+        PropertyHandler ph = getPropertyHandler(handler);
+        if (ph instanceof ProducesBytecode) {
+            ((ProducesBytecode) ph).produceBytecodePut(mv, property, variableFactory);
+            ph.setProperty(property, ctx, variableFactory, value);
+        }
+        else {
+            throw new RuntimeException("unable to compile: custom accessor does not support producing bytecode: "
+                    + ph.getClass().getName());
         }
     }
 

@@ -148,39 +148,72 @@ public class PropertyAccessor {
     private Object get() {
         curr = ctx;
         try {
-            while (cursor < length) {
-                switch (nextToken()) {
-                    case NORM:
-                        curr = getBeanProperty(curr, capture());
-                        break;
-                    case METH:
-                        curr = getMethod(curr, capture());
-                        break;
-                    case COL:
-                        curr = MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING ?
-                                getCollectionPropertyAO(curr, capture()) :
-                                getCollectionProperty(curr, capture());
-                        break;
-                    case WITH:
-                        curr = getWithProperty(curr);
-                        break;
+            if (!MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING) {
+                while (cursor < length) {
+                    switch (nextToken()) {
+                        case NORM:
+                            curr = getBeanProperty(curr, capture());
+                            break;
+                        case METH:
+                            curr = getMethod(curr, capture());
+                            break;
+                        case COL:
+                            curr = getCollectionProperty(curr, capture());
+                            break;
+                        case WITH:
+                            curr = getWithProperty(curr);
+                            break;
 
-                    case DONE:
-                }
-
-                if (nullHandle) {
-                    if (curr == null) {
-                        return null;
+                        case DONE:
                     }
-                    else {
-                        nullHandle = false;
-                    }
-                }
 
-                first = false;
+                    if (nullHandle) {
+                        if (curr == null) {
+                            return null;
+                        }
+                        else {
+                            nullHandle = false;
+                        }
+                    }
+
+                    first = false;
+                }
+                return curr;
+            }
+            else {
+                while (cursor < length) {
+                    switch (nextToken()) {
+                        case NORM:
+                            curr = getBeanPropertyAO(curr, capture());
+                            break;
+                        case METH:
+                            curr = getMethod(curr, capture());
+                            break;
+                        case COL:
+                            curr = getCollectionPropertyAO(curr, capture());
+                            break;
+                        case WITH:
+                            curr = getWithProperty(curr);
+                            break;
+
+                        case DONE:
+                    }
+
+                    if (nullHandle) {
+                        if (curr == null) {
+                            return null;
+                        }
+                        else {
+                            nullHandle = false;
+                        }
+                    }
+
+                    first = false;
+                }
+                return curr;
             }
 
-            return curr;
+
         }
         catch (InvocationTargetException e) {
             throw new PropertyAccessException("could not access property", e);
@@ -237,12 +270,18 @@ public class PropertyAccessor {
                         //noinspection unchecked
                         ((List) curr).set(eval(ex, this.ctx, this.variableFactory, Integer.class), value);
                     }
+                    else if (hasPropertyHandler(curr.getClass())) {
+                        getPropertyHandler(curr.getClass()).setProperty(ex, ctx, variableFactory, value);
+                    }
                     else if (curr.getClass().isArray()) {
                         Array.set(curr, eval(ex, this.ctx, this.variableFactory, Integer.class), convert(value, getBaseComponentType(curr.getClass())));
                     }
+
                     else {
                         throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
                     }
+
+                    return;
                 }
                 else {
                     if (curr instanceof Map) {
@@ -265,6 +304,9 @@ public class PropertyAccessor {
                         else
                             Array.set(curr, eval(ex, this.ctx, this.variableFactory, Integer.class), convert(value, getBaseComponentType(curr.getClass())));
                     }
+                    else if (hasPropertyHandler(curr.getClass())) {
+                        getPropertyHandler(curr.getClass()).setProperty(ex, curr, variableFactory, value);
+                    }
                     else {
                         throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
                     }
@@ -272,7 +314,11 @@ public class PropertyAccessor {
                     return;
                 }
             }
-            
+            else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(curr.getClass())) {
+                getPropertyHandler(curr.getClass()).setProperty(capture(), ctx, variableFactory, value);
+                return;
+            }
+
             String tk = capture();
 
             Member member = checkWriteCache(curr.getClass(), tk == null ? 0 : tk.hashCode());
@@ -318,12 +364,10 @@ public class PropertyAccessor {
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
             }
         }
-        catch (InvocationTargetException
-                e) {
+        catch (InvocationTargetException e) {
             throw new PropertyAccessException("could not access property", e);
         }
-        catch (IllegalAccessException
-                e) {
+        catch (IllegalAccessException e) {
             throw new PropertyAccessException("could not access property", e);
         }
     }
@@ -453,6 +497,13 @@ public class PropertyAccessor {
             return map.get(property);
         }
         return null;
+    }
+
+    private Object getBeanPropertyAO(Object ctx, String property)
+            throws IllegalAccessException, InvocationTargetException {
+        if (ctx != null && hasPropertyHandler(ctx.getClass()))
+            return getPropertyHandler(ctx.getClass()).getProperty(property, ctx, variableFactory);
+        return getBeanProperty(ctx, property);
     }
 
     private Object getBeanProperty(Object ctx, String property)
