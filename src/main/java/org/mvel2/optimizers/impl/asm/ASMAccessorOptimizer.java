@@ -2847,6 +2847,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private Object propHandlerByteCode(String property, Object ctx, Class handler) {
         PropertyHandler ph = getPropertyHandler(handler);
         if (ph instanceof ProducesBytecode) {
+            assert debug("<<3rd-Party Code Generation>>");            
             ((ProducesBytecode) ph).produceBytecodeGet(mv, property, variableFactory);
             return ph.getProperty(property, ctx, variableFactory);
         }
@@ -2859,6 +2860,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private void propHandlerByteCodePut(String property, Object ctx, Class handler, Object value) {
         PropertyHandler ph = getPropertyHandler(handler);
         if (ph instanceof ProducesBytecode) {
+            assert debug("<<3rd-Party Code Generation>>");
             ((ProducesBytecode) ph).produceBytecodePut(mv, property, variableFactory);
             ph.setProperty(property, ctx, variableFactory, value);
         }

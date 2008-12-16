@@ -20,7 +20,8 @@ public class AccessorBMModel implements Accessor {
     
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
       
-    	if (ctx instanceof List) ((List) ctx).set(0, "set");
+     ((List) ctx).set(0, "set");
+    	
     return null;    
      
     }

@@ -42,22 +42,16 @@ public class PropertyHandlerTests extends TestCase {
         }
 
         public void produceBytecodeGet(MethodVisitor mv, String propertyName, VariableResolverFactory factory) {
-//            mv.visitLdcInsn("gotcalled");
+            mv.visitLdcInsn("gotcalled");
         }
 
         public void produceBytecodePut(MethodVisitor mv, String propertyName, VariableResolverFactory factory) {
-//            mv.visitVarInsn(ALOAD, 1);
-//            mv.visitTypeInsn(INSTANCEOF, "java/util/List");
-//            Label l1 = new Label();
-//            mv.visitJumpInsn(IFEQ, l1);
-//            mv.visitVarInsn(ALOAD, 1);
-//            mv.visitTypeInsn(CHECKCAST, "java/util/List");
-//            mv.visitInsn(ICONST_0);
-//            mv.visitLdcInsn("set");
-//            mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "set", "(ILjava/lang/Object;)Ljava/lang/Object;");
-//            mv.visitInsn(POP);
-//            mv.visitLabel(l1);
-//            mv.visitInsn(ACONST_NULL);
+            mv.visitTypeInsn(CHECKCAST, "java/util/List");
+            mv.visitInsn(ICONST_0);
+            mv.visitLdcInsn("set");
+            mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "set", "(ILjava/lang/Object;)Ljava/lang/Object;");
+            mv.visitInsn(POP);
+            mv.visitInsn(ACONST_NULL);
         }
     }
 
@@ -91,19 +85,19 @@ public class PropertyHandlerTests extends TestCase {
         assertEquals("set", b.list.get(0));
     }
 
-//    public void testListPropertyHandler3() {
-//        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
-//
-//        OptimizerFactory.setDefaultOptimizer("ASM");
-//
-//        Serializable s = MVEL.compileSetExpression("list[0]");
-//
-//        Base b;
-//        MVEL.executeSetExpression(s, new Base(), "hey you");
-//        MVEL.executeSetExpression(s, b = new Base(), "hey you");
-//
-//        assertEquals("set", b.list.get(0));
-//    }
+    public void testListPropertyHandler3() {
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        Serializable s = MVEL.compileSetExpression("list[0]");
+
+        Base b;
+        MVEL.executeSetExpression(s, new Base(), "hey you");
+        MVEL.executeSetExpression(s, b = new Base(), "hey you");
+
+        assertEquals("set", b.list.get(0));
+    }
 
 
     public void testMapPropertyHandler() {
