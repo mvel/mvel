@@ -32,14 +32,12 @@ import org.mvel2.ast.Function;
 import org.mvel2.ast.TypeDescriptor;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import org.mvel2.compiler.*;
-import org.mvel2.integration.PropertyHandler;
-import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
-import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
-import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.GlobalListenerFactory;
 import static org.mvel2.integration.GlobalListenerFactory.hasGetListeners;
 import static org.mvel2.integration.GlobalListenerFactory.notifyGetListeners;
+import org.mvel2.integration.PropertyHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.*;
+import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizationNotSupported;
@@ -47,8 +45,8 @@ import org.mvel2.optimizers.impl.refl.nodes.Union;
 import static org.mvel2.util.ArrayTools.findFirst;
 import org.mvel2.util.*;
 import static org.mvel2.util.ParseTools.*;
-import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
-import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+import static org.mvel2.util.PropertyTools.*;
+import static org.mvel2.util.PropertyTools.getReturnType;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -110,6 +108,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private boolean noinit = false;
     private boolean deferFinish = false;
     private boolean literal = false;
+
+    private boolean propNull = false;
+    private boolean methNull = false;
 
     private String className;
     private ClassWriter cw;
@@ -286,7 +287,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 if (ctx instanceof Map) {
                     if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(Map.class)) {
-                        propHandlerByteCodePut(ex, Map.class, value);
+                        propHandlerByteCodePut(ex, ctx, Map.class, value);
                     }
                     else {
                         //noinspection unchecked
@@ -315,7 +316,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 }
                 else if (ctx instanceof List) {
                     if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(List.class)) {
-                        propHandlerByteCodePut(ex, List.class, value);
+                        propHandlerByteCodePut(ex, ctx, List.class, value);
                     }
                     else {
                         //noinspection unchecked
@@ -341,11 +342,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     }
                 }
                 else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(ctx.getClass())) {
-                     propHandlerByteCodePut(ex, ctx.getClass(), value);
+                    propHandlerByteCodePut(ex, ctx, ctx.getClass(), value);
                 }
                 else if (ctx.getClass().isArray()) {
                     if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(Array.class)) {
-                        propHandlerByteCodePut(ex, Array.class, value);
+                        propHandlerByteCodePut(ex, ctx, Array.class, value);
                     }
                     else {
                         Class type = getBaseComponentType(ctx.getClass());
@@ -382,7 +383,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
                 }
 
-
                 deferFinish = false;
                 noinit = false;
 
@@ -405,7 +405,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitLdcInsn(tk);
                 mv.visitVarInsn(ALOAD, 3);
                 mv.visitVarInsn(ALOAD, 4);
-                mv.visitMethodInsn(INVOKESTATIC, "org/mvel2/integration/GlobalListenerFactory", "notifySetListeners", "(Ljava/lang/Object;Ljava/lang/String;Lorg/mvel2/integration/VariableResolverFactory;Ljava/lang/Object;)V");
+                mv.visitMethodInsn(INVOKESTATIC, NAMESPACE + "integration/GlobalListenerFactory", "notifySetListeners", "(Ljava/lang/Object;Ljava/lang/String;L" + NAMESPACE + "integration/VariableResolverFactory;Ljava/lang/Object;)V");
 
                 GlobalListenerFactory.notifySetListeners(ctx, tk, variableFactory, value);
             }
@@ -506,12 +506,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 throw new PropertyAccessException("could not access property (" + tk + ") in: " + ingressType.getName());
             }
         }
-        catch (InvocationTargetException
-                e) {
+        catch (InvocationTargetException e) {
             throw new PropertyAccessException("could not access property", e);
         }
-        catch (IllegalAccessException
-                e) {
+        catch (IllegalAccessException e) {
             throw new PropertyAccessException("could not access property", e);
         }
 
@@ -554,10 +552,17 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         mv.visitCode();
         mv.visitLdcInsn(org.mvel2.asm.Type.getType(returnType != null ? returnType : Object.class));
         mv.visitInsn(ARETURN);
-        //   mv.visitLocalVariable("this", "Lorg/mvel2/tests/AccessorBMModel;", null, l0, l1, 0);
+
         mv.visitMaxs(1, 1);
         mv.visitEnd();
 
+        if (propNull) {
+            cw.visitField(ACC_PUBLIC, "nullPropertyHandler", "L" + NAMESPACE + "/integration/PropertyHandler;", null, null).visitEnd();
+        }
+
+        if (methNull) {
+            cw.visitField(ACC_PUBLIC, "nullMethodHandler", "L" + NAMESPACE + "integration/PropertyHandler;", null, null).visitEnd();
+        }
 
         buildInputs();
 
@@ -588,6 +593,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     parms[i] = ExecutableStatement.class;
                 }
                 o = cls.getConstructor(parms).newInstance(compiledInputs.toArray(new ExecutableStatement[compiledInputs.size()]));
+
+                if (propNull) cls.getField("nullPropertyHandler").set(o, getNullPropertyHandler());
+                if (methNull) cls.getField("nullMethodHandler").set(o, getNullMethodHandler());
             }
         }
         catch (VerifyError e) {
@@ -680,8 +688,23 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     }
 
                     first = false;
-                }
 
+                    if (nullSafe && cursor < length) {
+                        assert debug("DUP");
+                        mv.visitInsn(DUP);
+
+                        Label j = new Label();
+
+                        assert debug("IFNONNULL : jump");
+                        mv.visitJumpInsn(IFNONNULL, j);
+
+                        assert debug("ARETURN");
+                        mv.visitInsn(ARETURN);
+
+                        assert debug("LABEL:jump");
+                        mv.visitLabel(j);
+                    }
+                }
             }
 
             val = curr;
@@ -747,7 +770,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 // Execute interpretively.
                 MVEL.setProperty(ctx, aPvp.getParm(), MVEL.eval(aPvp.getValue(), ctx, variableFactory));
                 compiledInputs.add(((ExecutableStatement) MVEL.compileSetExpression(aPvp.getParm(),
-                        PropertyTools.getReturnType(ingressType, aPvp.getParm(), pCtx), pCtx)));
+                        getReturnType(ingressType, aPvp.getParm(), pCtx), pCtx)));
 
                 assert debug("ALOAD 0");
                 mv.visitVarInsn(ALOAD, 0);
@@ -766,9 +789,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue().toCharArray()));
 
-
                 assert debug("INVOKEINTERFACE Accessor.setValue");
-                mv.visitMethodInsn(INVOKEINTERFACE, "org/mvel2/compiler/ExecutableStatement",
+                mv.visitMethodInsn(INVOKEINTERFACE, NAMESPACE + "compiler/ExecutableStatement",
                         "setValue",
                         "(Ljava/lang/Object;Ljava/lang/Object;L"
                                 + NAMESPACE + "integration/VariableResolverFactory;Ljava/lang/Object;)Ljava/lang/Object;");
@@ -785,7 +807,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private Object getBeanPropertyAO(Object ctx, String property)
             throws IllegalAccessException, InvocationTargetException {
         if (ctx != null && hasPropertyHandler(ctx.getClass())) {
-            return propHandlerByteCode(property, ctx.getClass());
+            return propHandlerByteCode(property, ctx, ctx.getClass());
         }
         return getBeanProperty(ctx, property);
     }
@@ -820,7 +842,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             mv.visitVarInsn(ALOAD, 1);
             mv.visitLdcInsn(member.getName());
             mv.visitVarInsn(ALOAD, 3);
-            mv.visitMethodInsn(INVOKESTATIC, "org/mvel2/integration/GlobalListenerFactory", "notifyGetListeners", "(Ljava/lang/Object;Ljava/lang/String;Lorg/mvel2/integration/VariableResolverFactory;)V");
+            mv.visitMethodInsn(INVOKESTATIC, NAMESPACE + "integration/GlobalListenerFactory", "notifyGetListeners", "(Ljava/lang/Object;Ljava/lang/String;L" + NAMESPACE + "integration/VariableResolverFactory;)V");
 
             notifyGetListeners(ctx, member.getName(), variableFactory);
         }
@@ -863,6 +885,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (member instanceof Field) {
             Object o = ((Field) member).get(ctx);
 
+
             if (first) {
                 assert debug("ALOAD 1 (A)");
                 mv.visitVarInsn(ALOAD, 1);
@@ -894,6 +917,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             returnType = ((Field) member).getType();
+
+            if (hasNullPropertyHandler()) {
+                if (o == null) {
+                    o = getNullPropertyHandler().getProperty(member.getName(), ctx, variableFactory);
+                }
+
+                writeOutNullHandler(member, 0);
+            }
 
             return o;
         }
@@ -935,6 +966,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 o = iFaceMeth.invoke(ctx, EMPTYARG);
             }
+
+            if (hasNullPropertyHandler()) {
+                if (o == null) o = getNullPropertyHandler().getProperty(member.getName(), ctx, variableFactory);
+                writeOutNullHandler(member, 0);         
+            }
+
             return o;
 
         }
@@ -1258,7 +1295,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         if (ctx instanceof Map) {
             if (hasPropertyHandler(Map.class)) {
-                return propHandlerByteCode(tk, Map.class);
+                return propHandlerByteCode(tk, ctx, Map.class);
             }
             else {
                 assert debug("CHECKCAST java/util/Map");
@@ -1277,7 +1314,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else if (ctx instanceof List) {
             if (hasPropertyHandler(List.class)) {
-                return propHandlerByteCode(tk, List.class);
+                return propHandlerByteCode(tk, ctx, List.class);
             }
             else {
                 assert debug("CHECKCAST java/util/List");
@@ -1293,7 +1330,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else if (ctx.getClass().isArray()) {
             if (hasPropertyHandler(Array.class)) {
-                return propHandlerByteCode(tk, Array.class);
+                return propHandlerByteCode(tk, ctx, Array.class);
             }
             else {
                 assert debug("CHECKCAST " + getDescriptor(ctx.getClass()));
@@ -1348,7 +1385,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else if (ctx instanceof CharSequence) {
             if (hasPropertyHandler(CharSequence.class)) {
-                return propHandlerByteCode(tk, CharSequence.class);
+                return propHandlerByteCode(tk, ctx, CharSequence.class);
             }
             else {
                 assert debug("CHECKCAST java/lang/CharSequence");
@@ -1789,7 +1826,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 stacksize++;
             }
 
-            return m.invoke(ctx, args);
+            Object o = m.invoke(ctx, args);
+
+            if (hasNullMethodHandler()) {
+                writeOutNullHandler(m, 1);
+                if (o == null) o = getNullMethodHandler().getProperty(m.getName(), ctx, variableFactory);
+            }
+
+            return o;
+
         }
     }
 
@@ -2799,7 +2844,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    private Object propHandlerByteCode(String property, Class handler) {
+    private Object propHandlerByteCode(String property, Object ctx, Class handler) {
         PropertyHandler ph = getPropertyHandler(handler);
         if (ph instanceof ProducesBytecode) {
             ((ProducesBytecode) ph).produceBytecodeGet(mv, property, variableFactory);
@@ -2811,7 +2856,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    private void propHandlerByteCodePut(String property, Class handler, Object value) {
+    private void propHandlerByteCodePut(String property, Object ctx, Class handler, Object value) {
         PropertyHandler ph = getPropertyHandler(handler);
         if (ph instanceof ProducesBytecode) {
             ((ProducesBytecode) ph).produceBytecodePut(mv, property, variableFactory);
@@ -2821,6 +2866,50 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw new RuntimeException("unable to compile: custom accessor does not support producing bytecode: "
                     + ph.getClass().getName());
         }
+    }
+
+    private void writeOutNullHandler(Member member, int type) {
+        this.propNull = true;
+
+        assert debug("DUP");
+        mv.visitInsn(DUP);
+
+        Label j = new Label();
+
+        assert debug("IFNONNULL : jump");
+        mv.visitJumpInsn(IFNONNULL, j);
+
+        assert debug("POP");
+        mv.visitInsn(POP);
+
+        assert debug("ALOAD 0");
+        mv.visitVarInsn(ALOAD, 0);
+
+        if (type == 0) {
+            assert debug("GETFIELD 'nullPropertyHandler'");
+            mv.visitFieldInsn(GETFIELD, className, "nullPropertyHandler", "L" + NAMESPACE + "integration/PropertyHandler;");
+        }
+        else {
+            assert debug("GETFIELD 'nullMethodHandler'");
+            mv.visitFieldInsn(GETFIELD, className, "nullMethodHandler", "L" + NAMESPACE + "integration/PropertyHandler;");
+        }
+
+
+        assert debug("LDC '" + member.getName() + "'");
+        mv.visitLdcInsn(member.getName());
+
+        assert debug("ALOAD 1");
+        mv.visitVarInsn(ALOAD, 1);
+
+        assert debug("ALOAD 3");
+        mv.visitVarInsn(ALOAD, 3);
+
+        assert debug("INVOKEINTERFACE PropertyHandler.getProperty");
+        mv.visitMethodInsn(INVOKEINTERFACE, NAMESPACE + "integration/PropertyHandler", "getProperty", "(Ljava/lang/String;Ljava/lang/Object;L" + NAMESPACE + "integration/VariableResolverFactory;)Ljava/lang/Object;");
+
+        assert debug("LABEL:jump");
+        mv.visitLabel(j);
+
     }
 
     public boolean isLiteralOnly() {

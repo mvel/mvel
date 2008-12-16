@@ -1,5 +1,6 @@
 package org.mvel2.tests;
 
+import java.util.List;
 import java.util.Map;
 
 import org.mvel2.DataConversion;
@@ -13,17 +14,15 @@ import org.mvel2.tests.core.res.Foo;
 
 public class AccessorBMModel implements Accessor {
     private ExecutableStatement p0;
-    private PropertyHandler handler;
+    
+    public PropertyHandler nullPropertyHandler;
+    public PropertyHandler nullMethodHandler;
     
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-        GlobalListenerFactory.notifyGetListeners(ctx, "foobie", variableFactory);
-       
-        Object o = ((Foo)ctx).getName();
-       if (o == null) {
-    	 	return null;
-       }
-        
-    	return o;
+      
+    	if (ctx instanceof List) ((List) ctx).set(0, "set");
+    return null;    
+     
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
@@ -33,5 +32,13 @@ public class AccessorBMModel implements Accessor {
 
     public Class getKnownEgressType() {
         return Object.class;
+    }
+    
+    public void setNullPropertyHandler(PropertyHandler handler) {
+    	this.nullPropertyHandler = handler;
+    }
+    
+    public void setNullMethodHandler(PropertyHandler handler) {
+    	this.nullMethodHandler = handler;
     }
 }

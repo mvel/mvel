@@ -6,37 +6,70 @@ import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.PropertyAccessor;
 import org.mvel2.MVEL;
+import org.mvel2.asm.MethodVisitor;
+import org.mvel2.asm.Label;
+import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.optimizers.impl.asm.ProducesBytecode;
 import junit.framework.TestCase;
 
 import java.util.List;
 import java.util.Map;
 import java.lang.reflect.Array;
+import java.io.Serializable;
+
+import static org.mvel2.asm.Opcodes.*;
+
 
 public class PropertyHandlerTests extends TestCase {
     Base base = new Base();
 
+    public class TestPropertyHandler implements PropertyHandler, ProducesBytecode {
+        public Object getProperty(String name, Object contextObj,
+                                  VariableResolverFactory variableFactory) {
+            assertNotNull(contextObj);
+            assertEquals("0", name);
+            assertTrue(contextObj instanceof List);
+            return "gotcalled";
+        }
+
+        public Object setProperty(String name, Object contextObj,
+                                  VariableResolverFactory variableFactory, Object value) {
+            assertNotNull(contextObj);
+            assertEquals("0", name);
+            assertTrue(contextObj instanceof List);
+            ((List) contextObj).set(0, "set");
+            return null;
+        }
+
+        public void produceBytecodeGet(MethodVisitor mv, String propertyName, VariableResolverFactory factory) {
+//            mv.visitLdcInsn("gotcalled");
+        }
+
+        public void produceBytecodePut(MethodVisitor mv, String propertyName, VariableResolverFactory factory) {
+//            mv.visitVarInsn(ALOAD, 1);
+//            mv.visitTypeInsn(INSTANCEOF, "java/util/List");
+//            Label l1 = new Label();
+//            mv.visitJumpInsn(IFEQ, l1);
+//            mv.visitVarInsn(ALOAD, 1);
+//            mv.visitTypeInsn(CHECKCAST, "java/util/List");
+//            mv.visitInsn(ICONST_0);
+//            mv.visitLdcInsn("set");
+//            mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "set", "(ILjava/lang/Object;)Ljava/lang/Object;");
+//            mv.visitInsn(POP);
+//            mv.visitLabel(l1);
+//            mv.visitInsn(ACONST_NULL);
+        }
+    }
+
+
+    @Override
+    protected void setUp() throws Exception {
+        PropertyHandlerFactory.registerPropertyHandler(List.class, new TestPropertyHandler());
+    }
+
     public void testListPropertyHandler() {
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
 
-        PropertyHandlerFactory.registerPropertyHandler(List.class, new
-                PropertyHandler() {
-                    public Object getProperty(String name, Object contextObj,
-                                              VariableResolverFactory variableFactory) {
-                        assertNotNull(contextObj);
-                        assertEquals("0", name);
-                        assertTrue(contextObj instanceof List);
-                        return "gotcalled";
-                    }
-
-                    public Object setProperty(String name, Object contextObj,
-                                              VariableResolverFactory variableFactory, Object value) {
-                        assertNotNull(contextObj);
-                        assertEquals("0", name);
-                        assertTrue(contextObj instanceof List);
-                        ((List) contextObj).set(0, "set");
-                        return null;
-                    }
-                });
 
         assertEquals("gotcalled", PropertyAccessor.get("list[0]", base));
 
@@ -44,8 +77,34 @@ public class PropertyHandlerTests extends TestCase {
         assertEquals("set", base.list.get(0));
 
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
-
     }
+
+    public void testListPropertyHandler2() {
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+
+        Serializable s = MVEL.compileSetExpression("list[0]");
+
+        Base b;
+        MVEL.executeSetExpression(s, new Base(), "hey you");
+        MVEL.executeSetExpression(s, b = new Base(), "hey you");
+
+        assertEquals("set", b.list.get(0));
+    }
+
+//    public void testListPropertyHandler3() {
+//        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+//
+//        OptimizerFactory.setDefaultOptimizer("ASM");
+//
+//        Serializable s = MVEL.compileSetExpression("list[0]");
+//
+//        Base b;
+//        MVEL.executeSetExpression(s, new Base(), "hey you");
+//        MVEL.executeSetExpression(s, b = new Base(), "hey you");
+//
+//        assertEquals("set", b.list.get(0));
+//    }
+
 
     public void testMapPropertyHandler() {
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
@@ -109,6 +168,6 @@ public class PropertyHandlerTests extends TestCase {
         PropertyAccessor.set(base, "stringArray[0]", "hey you");
         assertEquals("set", base.stringArray[0]);
 
-        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;        
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
     }
 }

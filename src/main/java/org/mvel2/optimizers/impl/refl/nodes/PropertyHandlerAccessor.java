@@ -29,7 +29,12 @@ public class PropertyHandlerAccessor extends BaseAccessor {
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return propertyHandler.setProperty(propertyName, ctx, variableFactory, value);
+        if (nextNode != null) {
+            return nextNode.setValue(propertyHandler.getProperty(propertyName, ctx, variableFactory), ctx, variableFactory, value);
+        }
+        else {
+            return propertyHandler.setProperty(propertyName, ctx, variableFactory, value);
+        }
     }
 
     public Class getKnownEgressType() {

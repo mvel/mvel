@@ -53,7 +53,17 @@ public class FieldAccessor implements AccessorNode {
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        if (nextNode != null) {
+            try {
+                return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value);
+            }
+            catch (Exception e) {
+                throw new CompileException("unable to access field", e);
+            }
+        }
+        
         try {
+
             if (coercionRequired) {
                 field.set(ctx, value = convert(ctx, field.getClass()));
                 return value;

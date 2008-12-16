@@ -187,7 +187,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
                 if (ctx instanceof Map) {
                     if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(Map.class)) {
-                        propHandlerSet(ex, Map.class, value);
+                        propHandlerSet(ex, ctx, Map.class, value);
                     }
                     else {
                         //noinspection unchecked
@@ -200,7 +200,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
                 else if (ctx instanceof List) {
                     if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(List.class)) {
-                        propHandlerSet(ex, List.class, value);
+                        propHandlerSet(ex,ctx,  List.class, value);
                     }
                     else {
                         //noinspection unchecked
@@ -212,12 +212,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     return rootNode;
                 }
                 else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(ctx.getClass())) {
-                    propHandlerSet(ex, ctx.getClass(), value);
+                    propHandlerSet(ex, ctx,ctx.getClass(), value);
                     return rootNode;
                 }
                 else if (ctx.getClass().isArray()) {
                     if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(Array.class)) {
-                        propHandlerSet(ex, Array.class, value);
+                        propHandlerSet(ex, ctx, Array.class, value);
                     }
                     else {
                         //noinspection unchecked
@@ -233,7 +233,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             }
             else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(ctx.getClass())) {
-                propHandlerSet(new String(property), ctx.getClass(), value);
+                propHandlerSet(new String(property), ctx, ctx.getClass(), value);
                 return rootNode;
             }
 
@@ -415,7 +415,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     private Object getBeanPropertyAO(Object ctx, String property)
             throws Exception {
-        if (ctx != null && hasPropertyHandler(ctx.getClass())) return propHandler(property, ctx.getClass());
+        if (ctx != null && hasPropertyHandler(ctx.getClass())) return propHandler(property, ctx, ctx.getClass());
 
         if (GlobalListenerFactory.hasGetListeners()) {
             notifyGetListeners(ctx, property, variableFactory);
@@ -701,7 +701,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         if (ctx instanceof Map) {
             if (hasPropertyHandler(Map.class)) {
-                return propHandler(item, Map.class);
+                return propHandler(item, ctx, Map.class);
             }
             else {
                 if (itemSubExpr) {
@@ -716,7 +716,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
         else if (ctx instanceof List) {
             if (hasPropertyHandler(List.class)) {
-                return propHandler(item, List.class);
+                return propHandler(item, ctx, List.class);
             }
             else {
                 if (itemSubExpr) {
@@ -731,7 +731,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
         else if (ctx.getClass().isArray()) {
             if (hasPropertyHandler(Array.class)) {
-                return propHandler(item, Array.class);
+                return propHandler(item, ctx, Array.class);
             }
             else {
                 if (itemSubExpr) {
@@ -746,7 +746,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
         else if (ctx instanceof CharSequence) {
             if (hasPropertyHandler(CharSequence.class)) {
-                return propHandler(item, CharSequence.class);
+                return propHandler(item, ctx, CharSequence.class);
             }
             else {
                 if (itemSubExpr) {
@@ -1116,13 +1116,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         return literal;
     }
 
-    private Object propHandler(String property, Class handler) {
+    private Object propHandler(String property, Object ctx, Class handler) {
         PropertyHandler ph = getPropertyHandler(handler);
         addAccessorNode(new PropertyHandlerAccessor(property, ph));
         return ph.getProperty(property, ctx, variableFactory);
     }
 
-    public void propHandlerSet(String property, Class handler, Object value) {
+    public void propHandlerSet(String property, Object ctx,  Class handler, Object value) {
         PropertyHandler ph = getPropertyHandler(handler);
         addAccessorNode(new PropertyHandlerAccessor(property, ph));
         ph.setProperty(property, ctx, variableFactory, value);
