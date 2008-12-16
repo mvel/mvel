@@ -74,4 +74,10 @@ public class PropertyHandlerFactory {
     public static void unregisterPropertyHandler(Class clazz) {
         propertyHandlerClass.remove(clazz);
     }
+
+    public static void disposeAll() {
+        nullMethodHandler = null;
+        nullPropertyHandler = null;
+        propertyHandlerClass.clear();
+    }
 }

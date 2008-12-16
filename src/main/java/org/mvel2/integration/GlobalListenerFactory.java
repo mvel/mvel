@@ -41,4 +41,9 @@ public class GlobalListenerFactory {
             }
         }
     }
+
+    public static void disposeAll() {
+        propertyGetListeners = null;
+        propertySetListeners = null;
+    }
 }

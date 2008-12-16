@@ -57,6 +57,13 @@ public class PropertyHandlerTests extends TestCase {
     @Override
     protected void setUp() throws Exception {
         PropertyHandlerFactory.registerPropertyHandler(List.class, new TestPropertyHandler());
+
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        GlobalListenerFactory.disposeAll();
+        PropertyHandlerFactory.disposeAll();
     }
 
     public void testListPropertyHandler() {

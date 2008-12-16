@@ -838,7 +838,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         Member member = cls != null ? getFieldOrAccessor(cls, property) : null;
 
-        if (hasGetListeners()) {
+        if (member != null && hasGetListeners()) {
             mv.visitVarInsn(ALOAD, 1);
             mv.visitLdcInsn(member.getName());
             mv.visitVarInsn(ALOAD, 3);
