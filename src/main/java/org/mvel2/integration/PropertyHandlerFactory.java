@@ -25,6 +25,9 @@ public class PropertyHandlerFactory {
     protected static Map<Class, PropertyHandler> propertyHandlerClass =
             new HashMap<Class, PropertyHandler>();
 
+    protected static PropertyHandler nullPropertyHandler;
+    protected static PropertyHandler nullMethodHandler;
+
     public static PropertyHandler getPropertyHandler(Class clazz) {
         return propertyHandlerClass.get(clazz);
     }
@@ -44,6 +47,29 @@ public class PropertyHandlerFactory {
         while ((clazz = clazz.getSuperclass()) != null && clazz != Object.class);
     }
 
+    public static void setNullPropertyHandler(PropertyHandler handler) {
+        nullPropertyHandler = handler;
+    }
+
+    public static boolean hasNullPropertyHandler() {
+        return nullPropertyHandler != null;
+    }
+
+    public static PropertyHandler getNullPropertyHandler() {
+        return nullPropertyHandler;
+    }
+
+    public static void setNullMethodHandler(PropertyHandler handler) {
+        nullMethodHandler = handler;
+    }
+
+    public static boolean hasNullMethodHandler() {
+        return nullMethodHandler != null;
+    }
+
+    public static PropertyHandler getNullMethodHandler() {
+        return nullMethodHandler;
+    }
 
     public static void unregisterPropertyHandler(Class clazz) {
         propertyHandlerClass.remove(clazz);

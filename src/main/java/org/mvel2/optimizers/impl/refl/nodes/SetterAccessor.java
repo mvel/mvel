@@ -34,7 +34,6 @@ public class SetterAccessor implements AccessorNode {
                 }
             }
 
-
             if (!coercionRequired) {
                 coercionRequired = true;
                 return setValue(ctx, elCtx, variableFactory, value);

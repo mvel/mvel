@@ -132,8 +132,10 @@ public class ASTNode implements Cloneable,  Serializable {
             }
 
 
-            if (accessor == null)
-                throw new OptimizationFailure("failed optimization");
+            if (accessor == null) {
+                return get(name, ctx, factory, thisValue);
+            }
+        //        throw new OptimizationFailure("failed optimization");
 
             if (retVal == null) {
                 retVal = optimizer.getResultOptPass();

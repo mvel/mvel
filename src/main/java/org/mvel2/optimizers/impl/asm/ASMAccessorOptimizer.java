@@ -36,6 +36,10 @@ import org.mvel2.integration.PropertyHandler;
 import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
 import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.PropertyHandlerFactory;
+import org.mvel2.integration.GlobalListenerFactory;
+import static org.mvel2.integration.GlobalListenerFactory.hasGetListeners;
+import static org.mvel2.integration.GlobalListenerFactory.notifyGetListeners;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizationNotSupported;
@@ -212,8 +216,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.ingressType = ingressType;
 
         if (!noinit) _initJIT();
-
-        //     this.pCtx = pCtx;
         return compileAccessor();
     }
 
@@ -397,6 +399,17 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             String tk = new String(property);
             Member member = getFieldOrWriteAccessor(ctx.getClass(), tk, ingressType);
+
+            if (GlobalListenerFactory.hasSetListeners()) {
+                mv.visitVarInsn(ALOAD, 1);
+                mv.visitLdcInsn(tk);
+                mv.visitVarInsn(ALOAD, 3);
+                mv.visitVarInsn(ALOAD, 4);
+                mv.visitMethodInsn(INVOKESTATIC, "org/mvel2/integration/GlobalListenerFactory", "notifySetListeners", "(Ljava/lang/Object;Ljava/lang/String;Lorg/mvel2/integration/VariableResolverFactory;Ljava/lang/Object;)V");
+
+                GlobalListenerFactory.notifySetListeners(ctx, tk, variableFactory, value);
+            }
+
 
             if (member instanceof Field) {
                 assert debug("CHECKCAST " + ctx.getClass().getName());
@@ -621,6 +634,22 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     }
 
                     first = false;
+
+                    if (nullSafe && cursor < length) {
+                        assert debug("DUP");
+                        mv.visitInsn(DUP);
+
+                        Label j = new Label();
+
+                        assert debug("IFNONNULL : jump");
+                        mv.visitJumpInsn(IFNONNULL, j);
+
+                        assert debug("ARETURN");
+                        mv.visitInsn(ARETURN);
+
+                        assert debug("LABEL:jump");
+                        mv.visitLabel(j);
+                    }
                 }
             }
             else {
@@ -787,6 +816,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         Member member = cls != null ? getFieldOrAccessor(cls, property) : null;
 
+        if (hasGetListeners()) {
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitLdcInsn(member.getName());
+            mv.visitVarInsn(ALOAD, 3);
+            mv.visitMethodInsn(INVOKESTATIC, "org/mvel2/integration/GlobalListenerFactory", "notifyGetListeners", "(Ljava/lang/Object;Ljava/lang/String;Lorg/mvel2/integration/VariableResolverFactory;)V");
+
+            notifyGetListeners(ctx, member.getName(), variableFactory);
+        }
+
         if (first) {
             if ("this".equals(property)) {
                 assert debug("ALOAD 2");
@@ -935,9 +973,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             return lit;
         }
-//        else if (ctx == null) {
-//            throw new NullPointerException("parent field of '" + property + "' is null in: " + new String(expr));
-//        }
         else {
             Object ts = tryStaticAccess();
 
@@ -1234,7 +1269,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     wrapPrimitive(c);
                 }
 
-                assert debug("INVOKEINTERFACE: get");
+                assert debug("INVOKEINTERFACE: Map.get");
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
             }
 
@@ -1496,7 +1531,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             //noinspection unchecked
             wrapPrimitive(returnType);
         }
-
 
         int inputsOffset = compiledInputs.size();
 
@@ -2516,7 +2550,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             if (desiredTarget != null && type != desiredTarget) {
-                //      dataConversion(desiredTarget);
                 if (desiredTarget.isPrimitive()) {
                     if (type == null) throw new OptimizationFailure("cannot optimize expression: " + new String(expr) +
                             ": cannot determine ingress type for primitive output");

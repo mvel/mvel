@@ -37,6 +37,7 @@ public class AbstractOptimizer extends AbstractParser {
 
     protected int start = 0;
     protected boolean collection = false;
+    protected boolean nullSafe = false;
 
 
     /**
@@ -136,6 +137,7 @@ public class AbstractOptimizer extends AbstractParser {
 
     protected int nextSubToken() {
         skipWhitespace();
+        nullSafe = false;
 
         switch (expr[start = cursor]) {
             case '[':
@@ -148,6 +150,8 @@ public class AbstractOptimizer extends AbstractParser {
                             if ((cursor = ++start) == length) {
                                 throw new CompileException("unexpected end of statement");
                             }
+                            nullSafe = true;
+
                             fields = -1;
                             break;
                         case '{':

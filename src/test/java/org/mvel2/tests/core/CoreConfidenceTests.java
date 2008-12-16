@@ -2968,7 +2968,6 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testNullSafe() {
         Foo foo = new Foo();
-        foo.setBar(null);
 
         Map map = new HashMap();
         map.put("foo", foo);
@@ -2976,12 +2975,15 @@ public class CoreConfidenceTests extends AbstractTest {
         String expression = "foo.?bar.name == null";
         Serializable compiled = compileExpression(expression);
 
-        OptimizerFactory.setDefaultOptimizer("ASM");
-        assertEquals(true, executeExpression(compiled, map));
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        assertEquals(false, executeExpression(compiled, map));
+        foo.setBar(null);
         assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
 
-        OptimizerFactory.setDefaultOptimizer("reflective");
-        assertEquals(true, executeExpression(compiled, map));
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        foo.setBar(new Bar());
+        assertEquals(false, executeExpression(compiled, map));
+        foo.setBar(null);
         assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
 
         assertEquals(true, eval(expression, map));

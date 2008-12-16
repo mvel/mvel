@@ -25,9 +25,13 @@ import org.mvel2.ast.TypeDescriptor;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-import static org.mvel2.integration.PropertyHandlerFactory.getPropertyHandler;
-import static org.mvel2.integration.PropertyHandlerFactory.hasPropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.PropertyHandlerFactory;
+import org.mvel2.integration.GlobalListenerFactory;
+import static org.mvel2.integration.GlobalListenerFactory.notifySetListeners;
+import static org.mvel2.integration.PropertyHandlerFactory.*;
+import static org.mvel2.integration.PropertyHandlerFactory.hasNullMethodHandler;
+import static org.mvel2.integration.PropertyHandlerFactory.getNullMethodHandler;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.*;
@@ -184,10 +188,14 @@ public class PropertyAccessor {
                 while (cursor < length) {
                     switch (nextToken()) {
                         case NORM:
-                            curr = getBeanPropertyAO(curr, capture());
+                            if ((curr = getBeanPropertyAO(curr, capture())) == null && hasNullPropertyHandler()) {
+                                 curr = getNullPropertyHandler().getProperty(capture(), ctx, variableFactory);
+                            }
                             break;
                         case METH:
-                            curr = getMethod(curr, capture());
+                            if ((curr = getMethod(curr, capture())) == null && hasNullMethodHandler()) {
+                                curr =  getNullMethodHandler().getProperty(capture(), ctx, variableFactory);
+                            }
                             break;
                         case COL:
                             curr = getCollectionPropertyAO(curr, capture());
@@ -284,6 +292,8 @@ public class PropertyAccessor {
                     return;
                 }
                 else {
+                    notifySetListeners(ctx, ex, variableFactory, value);
+
                     if (curr instanceof Map) {
                         //noinspection unchecked
                         if (hasPropertyHandler(Map.class))
@@ -503,6 +513,9 @@ public class PropertyAccessor {
             throws IllegalAccessException, InvocationTargetException {
         if (ctx != null && hasPropertyHandler(ctx.getClass()))
             return getPropertyHandler(ctx.getClass()).getProperty(property, ctx, variableFactory);
+
+        GlobalListenerFactory.notifyGetListeners(ctx, property, variableFactory);
+        
         return getBeanProperty(ctx, property);
     }
 
