@@ -1,9 +1,7 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.tests.core.res.Base;
-import org.mvel2.integration.PropertyHandlerFactory;
-import org.mvel2.integration.PropertyHandler;
-import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.*;
 import org.mvel2.PropertyAccessor;
 import org.mvel2.MVEL;
 import org.mvel2.asm.MethodVisitor;
@@ -98,6 +96,34 @@ public class PropertyHandlerTests extends TestCase {
 
         assertEquals("set", b.list.get(0));
     }
+
+    public void testListPropertyHandler4() {
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        final String[] res = new String[1];
+
+        GlobalListenerFactory.registerGetListener(new Listener() {
+            public void onEvent(Object context, String contextName, VariableResolverFactory variableFactory, Object value) {
+                System.out.println("Listener Fired:" + contextName);
+                res[0] = contextName;
+            }
+        });
+
+
+        Serializable s = MVEL.compileSetExpression("list[0]");
+
+        Base b;
+        MVEL.executeSetExpression(s, new Base(), "hey you");
+        res[0] = null;
+
+        MVEL.executeSetExpression(s, b = new Base(), "hey you");
+
+        assertEquals("set", b.list.get(0));
+        assertEquals("list", res[0]);
+    }
+
 
 
     public void testMapPropertyHandler() {
