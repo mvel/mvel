@@ -39,8 +39,8 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vrf, Object value) {
         if (accessor == null) {
-            AccessorOptimizer ao = getThreadAccessorOptimizer();
-            accessor = ao.optimizeSetAccessor(context, expression, ctx, ctx, vrf, false, value, ingressType);
+            if (ingressType == Object.class && value != null) ingressType = value.getClass();
+            accessor = getThreadAccessorOptimizer().optimizeSetAccessor(context, expression, ctx, ctx, vrf, false, value, ingressType);
         }
         else {
             accessor.setValue(ctx, elCtx, vrf, value);

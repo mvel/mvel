@@ -5,7 +5,6 @@ import org.mvel2.integration.*;
 import org.mvel2.PropertyAccessor;
 import org.mvel2.MVEL;
 import org.mvel2.asm.MethodVisitor;
-import org.mvel2.asm.Label;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.optimizers.impl.asm.ProducesBytecode;
 import junit.framework.TestCase;
@@ -53,11 +52,9 @@ public class PropertyHandlerTests extends TestCase {
         }
     }
 
-
     @Override
     protected void setUp() throws Exception {
         PropertyHandlerFactory.registerPropertyHandler(List.class, new TestPropertyHandler());
-
     }
 
     @Override
@@ -68,7 +65,6 @@ public class PropertyHandlerTests extends TestCase {
 
     public void testListPropertyHandler() {
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
-
 
         assertEquals("gotcalled", PropertyAccessor.get("list[0]", base));
 
@@ -117,7 +113,6 @@ public class PropertyHandlerTests extends TestCase {
                 res[0] = contextName;
             }
         });
-
 
         Serializable s = MVEL.compileSetExpression("list[0]");
 

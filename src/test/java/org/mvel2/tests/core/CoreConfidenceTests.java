@@ -4877,6 +4877,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
     }
 
+    public void testSetExpressions2() {
+        Foo foo = new Foo();
+        Collection col = new ArrayList();
+        final Serializable fooExpr = compileSetExpression("collectionTest");
+        executeSetExpression(fooExpr, foo, col);
+        assertEquals(col, foo.getCollectionTest());
+    }
+
+
 }
 
 
