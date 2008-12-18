@@ -1,6 +1,7 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.tests.core.res.Base;
+import org.mvel2.tests.core.res.Foo;
 import org.mvel2.integration.*;
 import org.mvel2.PropertyAccessor;
 import org.mvel2.MVEL;
@@ -11,6 +12,7 @@ import junit.framework.TestCase;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 import java.lang.reflect.Array;
 import java.io.Serializable;
 
@@ -126,6 +128,30 @@ public class PropertyHandlerTests extends TestCase {
         assertEquals("list", res[0]);
     }
 
+    public void testNullPropertyHandler() {
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+
+        PropertyHandlerFactory.setNullPropertyHandler(new PropertyHandler() {
+            public Object getProperty(String name, Object contextObj, VariableResolverFactory variableFactory) {
+                return "NULL";
+            }
+
+            public Object setProperty(String name, Object contextObj, VariableResolverFactory variableFactory, Object value) {
+                return "NULL";
+            }
+        });
+
+        Foo foo = new Foo();
+        foo.setBar(null);
+
+        Map map = new HashMap();
+        map.put("foo", foo);
+
+        Serializable s = MVEL.compileExpression("foo.bar");
+        
+        assertEquals("NULL", MVEL.executeExpression(s, map));
+        assertEquals("NULL", MVEL.executeExpression(s, map));
+    }
 
 
     public void testMapPropertyHandler() {

@@ -468,8 +468,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 o = ((Method) member).invoke(ctx, EMPTYARG);
 
                 if (hasNullPropertyHandler()) {
-                    addAccessorNode(new GetterAccessorNH((Method) member, getNullMethodHandler()));
-                    if (o == null) o = getNullMethodHandler().getProperty(member.getName(), ctx, variableFactory);
+                    addAccessorNode(new GetterAccessorNH((Method) member, getNullPropertyHandler()));
+                    if (o == null) o = getNullPropertyHandler().getProperty(member.getName(), ctx, variableFactory);
                 }
                 else {
                     addAccessorNode(new GetterAccessor((Method) member));
