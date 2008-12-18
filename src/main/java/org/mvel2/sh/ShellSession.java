@@ -128,8 +128,9 @@ public class ShellSession {
             out.flush();
         }
 
-        if (commands.containsKey((inTokens =
-                inBuffer.append(commandBuffer).toString().split("\\s"))[0])) {
+        inTokens = inBuffer.append(commandBuffer).toString().split("\\s");
+
+        if (inTokens.length != 0 && commands.containsKey(inTokens[0])) {
 
             commandBuffer = null;
 

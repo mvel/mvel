@@ -20,7 +20,6 @@ package org.mvel2.compiler;
 
 import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.optimizers.AccessorOptimizer;
 import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
 import java.io.Serializable;
@@ -40,7 +39,8 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory vrf, Object value) {
         if (accessor == null) {
             if (ingressType == Object.class && value != null) ingressType = value.getClass();
-            accessor = getThreadAccessorOptimizer().optimizeSetAccessor(context, expression, ctx, ctx, vrf, false, value, ingressType);
+            accessor = getThreadAccessorOptimizer()
+                    .optimizeSetAccessor(context, expression, ctx, ctx, vrf, false, value, ingressType);
         }
         else {
             accessor.setValue(ctx, elCtx, vrf, value);
@@ -57,13 +57,15 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
     }
 
     public void setKnownIngressType(Class type) {
+        this.ingressType = type;
     }
 
     public void setKnownEgressType(Class type) {
+
     }
 
     public Class getKnownIngressType() {
-        return null;
+        return ingressType;
     }
 
     public Class getKnownEgressType() {
