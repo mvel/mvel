@@ -125,7 +125,12 @@ public class GetterAccessorNH implements AccessorNode {
             return nextNode.getValue(v, elCtx, vars);
         }
         else {
-            return nextNode.getValue(nullHandler.getProperty(name, ctx, vars), elCtx, vars);
+            if (nextNode != null) {
+                return nextNode.getValue(nullHandler.getProperty(name, ctx, vars), elCtx, vars);
+            }
+            else {
+                return nullHandler.getProperty(name, ctx, vars);
+            }
         }
     }
 }

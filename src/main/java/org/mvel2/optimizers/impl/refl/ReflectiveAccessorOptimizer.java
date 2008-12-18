@@ -33,6 +33,8 @@ import static org.mvel2.integration.PropertyHandlerFactory.*;
 import static org.mvel2.integration.PropertyHandlerFactory.hasNullMethodHandler;
 import static org.mvel2.integration.PropertyHandlerFactory.getNullMethodHandler;
 import static org.mvel2.integration.GlobalListenerFactory.notifyGetListeners;
+import static org.mvel2.integration.GlobalListenerFactory.notifySetListeners;
+import static org.mvel2.integration.GlobalListenerFactory.hasSetListeners;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.impl.refl.collection.ArrayCreator;
@@ -111,10 +113,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return accessor.getValue(ctx, null, null);
         }
         else {
-            accessor = new ReflectiveAccessorOptimizer().optimizeAccessor(getCurrentThreadParserContext(),
-                    expression.toCharArray(), ctx, null, null, false, null);
-
-            REFLECTIVE_ACCESSOR_CACHE.put(hash, accessor);
+            REFLECTIVE_ACCESSOR_CACHE.put(hash, accessor = new ReflectiveAccessorOptimizer().optimizeAccessor(getCurrentThreadParserContext(),
+                    expression.toCharArray(), ctx, null, null, false, null));
             return accessor.getValue(ctx, null, null);
         }
     }
@@ -230,7 +230,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) +
                             ": not a recognized collection type: " + ctx.getClass());
                 }
-
             }
             else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(ctx.getClass())) {
                 propHandlerSet(new String(property), ctx, ctx.getClass(), value);
@@ -239,8 +238,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             String tk = new String(property);
 
-            if (GlobalListenerFactory.hasSetListeners()) {
-                GlobalListenerFactory.notifySetListeners(ctx, tk, variableFactory, value);
+            if (hasSetListeners()) {
+                notifySetListeners(ctx, tk, variableFactory, value);
                 addAccessorNode(new Notify(tk));
             }
 
