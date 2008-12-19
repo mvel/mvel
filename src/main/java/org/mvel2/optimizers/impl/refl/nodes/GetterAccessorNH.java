@@ -122,7 +122,12 @@ public class GetterAccessorNH implements AccessorNode {
 
     private Object nullHandle(String name, Object v, Object ctx, Object elCtx, VariableResolverFactory vars) {
         if (v != null) {
-            return nextNode.getValue(v, elCtx, vars);
+            if (nextNode != null) {
+                return nextNode.getValue(v, elCtx, vars);
+            }
+            else {
+                return v;
+            }
         }
         else {
             if (nextNode != null) {

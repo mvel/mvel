@@ -2,6 +2,7 @@ package org.mvel2.tests.core;
 
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Foo;
+import org.mvel2.tests.core.res.Bar;
 import org.mvel2.integration.*;
 import org.mvel2.PropertyAccessor;
 import org.mvel2.MVEL;
@@ -144,6 +145,7 @@ public class PropertyHandlerTests extends TestCase {
         });
 
         Foo foo = new Foo();
+        Bar bar = foo.getBar();
         foo.setBar(null);
 
         Map map = new HashMap();
@@ -153,6 +155,8 @@ public class PropertyHandlerTests extends TestCase {
         
         assertEquals("NULL", MVEL.executeExpression(s, map));
         assertEquals("NULL", MVEL.executeExpression(s, map));
+        foo.setBar(bar);
+        assertEquals(bar, MVEL.executeExpression(s, map));
     }
 
     public void testNullPropertyHandler2() {
@@ -170,7 +174,8 @@ public class PropertyHandlerTests extends TestCase {
             }
         });
 
-        Foo foo = new Foo();
+         Foo foo = new Foo();
+        Bar bar = foo.getBar();
         foo.setBar(null);
 
         Map map = new HashMap();
@@ -180,6 +185,8 @@ public class PropertyHandlerTests extends TestCase {
 
         assertEquals("NULL", MVEL.executeExpression(s, map));
         assertEquals("NULL", MVEL.executeExpression(s, map));
+        foo.setBar(bar);
+        assertEquals(bar, MVEL.executeExpression(s, map));
     }
 
 
