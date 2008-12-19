@@ -557,7 +557,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         mv.visitEnd();
 
         if (propNull) {
-            cw.visitField(ACC_PUBLIC, "nullPropertyHandler", "L" + NAMESPACE + "/integration/PropertyHandler;", null, null).visitEnd();
+            cw.visitField(ACC_PUBLIC, "nullPropertyHandler", "L" + NAMESPACE + "integration/PropertyHandler;", null, null).visitEnd();
         }
 
         if (methNull) {
@@ -593,10 +593,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     parms[i] = ExecutableStatement.class;
                 }
                 o = cls.getConstructor(parms).newInstance(compiledInputs.toArray(new ExecutableStatement[compiledInputs.size()]));
-
-                if (propNull) cls.getField("nullPropertyHandler").set(o, getNullPropertyHandler());
-                if (methNull) cls.getField("nullMethodHandler").set(o, getNullMethodHandler());
             }
+            
+            if (propNull) cls.getField("nullPropertyHandler").set(o, getNullPropertyHandler());
+            if (methNull) cls.getField("nullMethodHandler").set(o, getNullMethodHandler());
+
         }
         catch (VerifyError e) {
             System.out.println("**** COMPILER BUG! REPORT THIS IMMEDIATELY AT http://jira.codehaus.org/browse/mvel2");
@@ -898,6 +899,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     assert debug("LDC " + valueOf(o));
                     mv.visitLdcInsn(o);
                     wrapPrimitive(o.getClass());
+
+
+                    if (hasNullPropertyHandler()) {
+                        if (o == null) {
+                            o = getNullPropertyHandler().getProperty(member.getName(), ctx, variableFactory);
+                        }
+
+                        writeOutNullHandler(member, 0);
+                    }
+
                     return o;
                 }
                 else {
@@ -969,7 +980,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             if (hasNullPropertyHandler()) {
                 if (o == null) o = getNullPropertyHandler().getProperty(member.getName(), ctx, variableFactory);
-                writeOutNullHandler(member, 0);         
+                writeOutNullHandler(member, 0);
             }
 
             return o;
@@ -2847,7 +2858,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private Object propHandlerByteCode(String property, Object ctx, Class handler) {
         PropertyHandler ph = getPropertyHandler(handler);
         if (ph instanceof ProducesBytecode) {
-            assert debug("<<3rd-Party Code Generation>>");            
+            assert debug("<<3rd-Party Code Generation>>");
             ((ProducesBytecode) ph).produceBytecodeGet(mv, property, variableFactory);
             return ph.getProperty(property, ctx, variableFactory);
         }
@@ -2871,7 +2882,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private void writeOutNullHandler(Member member, int type) {
-        this.propNull = true;
 
         assert debug("DUP");
         mv.visitInsn(DUP);
@@ -2888,10 +2898,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         mv.visitVarInsn(ALOAD, 0);
 
         if (type == 0) {
+            this.propNull = true;
+
             assert debug("GETFIELD 'nullPropertyHandler'");
             mv.visitFieldInsn(GETFIELD, className, "nullPropertyHandler", "L" + NAMESPACE + "integration/PropertyHandler;");
         }
         else {
+            this.methNull = true;
+
             assert debug("GETFIELD 'nullMethodHandler'");
             mv.visitFieldInsn(GETFIELD, className, "nullMethodHandler", "L" + NAMESPACE + "integration/PropertyHandler;");
         }

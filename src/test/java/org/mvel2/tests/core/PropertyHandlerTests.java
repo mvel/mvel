@@ -131,6 +131,8 @@ public class PropertyHandlerTests extends TestCase {
     public void testNullPropertyHandler() {
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
 
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
         PropertyHandlerFactory.setNullPropertyHandler(new PropertyHandler() {
             public Object getProperty(String name, Object contextObj, VariableResolverFactory variableFactory) {
                 return "NULL";
