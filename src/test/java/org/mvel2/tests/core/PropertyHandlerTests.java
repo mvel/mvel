@@ -155,6 +155,34 @@ public class PropertyHandlerTests extends TestCase {
         assertEquals("NULL", MVEL.executeExpression(s, map));
     }
 
+    public void testNullPropertyHandler2() {
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+
+        PropertyHandlerFactory.setNullPropertyHandler(new PropertyHandler() {
+            public Object getProperty(String name, Object contextObj, VariableResolverFactory variableFactory) {
+                return "NULL";
+            }
+
+            public Object setProperty(String name, Object contextObj, VariableResolverFactory variableFactory, Object value) {
+                return "NULL";
+            }
+        });
+
+        Foo foo = new Foo();
+        foo.setBar(null);
+
+        Map map = new HashMap();
+        map.put("foo", foo);
+
+        Serializable s = MVEL.compileExpression("foo.bar");
+
+        assertEquals("NULL", MVEL.executeExpression(s, map));
+        assertEquals("NULL", MVEL.executeExpression(s, map));
+    }
+
+
 
     public void testMapPropertyHandler() {
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
