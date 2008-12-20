@@ -152,7 +152,7 @@ public class PropertyHandlerTests extends TestCase {
         map.put("foo", foo);
 
         Serializable s = MVEL.compileExpression("foo.bar");
-        
+
         assertEquals("NULL", MVEL.executeExpression(s, map));
         assertEquals("NULL", MVEL.executeExpression(s, map));
         foo.setBar(bar);
@@ -174,7 +174,7 @@ public class PropertyHandlerTests extends TestCase {
             }
         });
 
-         Foo foo = new Foo();
+        Foo foo = new Foo();
         Bar bar = foo.getBar();
         foo.setBar(null);
 
@@ -188,7 +188,6 @@ public class PropertyHandlerTests extends TestCase {
         foo.setBar(bar);
         assertEquals(bar, MVEL.executeExpression(s, map));
     }
-
 
 
     public void testMapPropertyHandler() {
@@ -254,5 +253,32 @@ public class PropertyHandlerTests extends TestCase {
         assertEquals("set", base.stringArray[0]);
 
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
+    }
+
+    public void testSetListListener() {
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+
+        class MyListener implements Listener {
+            public int counter;
+
+            public void onEvent(Object context, String contextName,
+                                VariableResolverFactory variableFactory, Object value) {
+                counter++;
+            }
+        }
+
+        class MyBean {
+            private List someList;
+
+            public List getSomeList() {
+                return someList;
+            }
+        }
+
+        MyListener listener = new MyListener();
+        GlobalListenerFactory.registerGetListener(listener);
+        MVEL.getProperty("someList", new MyBean());
+        MVEL.getProperty("someList", new MyBean());
+        assertEquals(2, listener.counter);
     }
 }

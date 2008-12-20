@@ -45,15 +45,11 @@ public class GetterAccessorNH implements AccessorNode {
                     return executeOverrideTarget(o, ctx, elCtx, vars);
                 }
             }
-
-
             /**
              * HACK: Try to access this another way.
              */
 
-
             return nullHandle(method.getName(), getProperty(method.getName() + "()", ctx), ctx, elCtx, vars);
-
         }
         catch (Exception e) {
             throw new CompileException("cannot invoke getter: " + method.getName()
