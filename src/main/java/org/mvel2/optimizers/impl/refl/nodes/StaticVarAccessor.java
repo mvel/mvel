@@ -57,7 +57,12 @@ public class StaticVarAccessor implements AccessorNode {
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         try {
-            field.set(null, value);
+            if (nextNode == null) {
+                field.set(null, value);
+            }
+            else {
+                return nextNode.setValue(field.get(null), elCtx, variableFactory, value);
+            }
         }
         catch (Exception e) {
             throw new CompileException("error accessing static variable", e);

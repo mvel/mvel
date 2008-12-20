@@ -19,12 +19,11 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.CompileException;
-import org.mvel2.PropertyAccessor;
 import static org.mvel2.DataConversion.convert;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
-import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.PropertyHandler;
+import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.getBestCandidate;
 
 import java.lang.reflect.Method;
@@ -158,7 +157,7 @@ public class MethodAccessorNH implements AccessorNode {
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return null;
+        return nextNode.setValue(ctx, elCtx, variableFactory, value);
     }
 
     public Class getKnownEgressType() {

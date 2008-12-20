@@ -46,7 +46,9 @@ public class ThisValueAccessor implements AccessorNode {
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        throw new CompileException("assignment to reserved variable 'this' not permitted");
+        if (nextNode == null) throw new CompileException("assignment to reserved variable 'this' not permitted");
+        return this.nextNode.setValue(elCtx, elCtx, variableFactory, value);
+
     }
 
     public Class getKnownEgressType() {

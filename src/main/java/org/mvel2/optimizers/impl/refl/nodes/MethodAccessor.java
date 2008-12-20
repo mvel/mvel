@@ -146,7 +146,23 @@ public class MethodAccessor implements AccessorNode {
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return null;
+        try {
+            return nextNode.setValue(method.invoke(ctx, executeAll(elCtx, variableFactory)), elCtx, variableFactory, value);
+        }
+        catch (IllegalArgumentException e) {
+            if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
+                Method o = getBestCandidate(parameterTypes, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
+                if (o != null) {
+                    return nextNode.setValue(executeOverrideTarget(o, ctx, elCtx, variableFactory), elCtx, variableFactory, value);
+                }
+            }
+
+            coercionNeeded = true;
+            return setValue(ctx, elCtx, variableFactory, value);
+        }
+        catch (Exception e) {
+            throw new CompileException("cannot invoke method", e);
+        }
     }
 
     public Class getKnownEgressType() {

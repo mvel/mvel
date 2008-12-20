@@ -49,11 +49,9 @@ public class GetterAccessor implements AccessorNode {
                 }
             }
 
-
             /**
              * HACK: Try to access this another way.
              */
-
             if (nextNode != null) {
                 return nextNode.getValue(getProperty(method.getName() + "()", ctx), elCtx, vars);
             }

@@ -57,7 +57,10 @@ public class FieldAccessorNH implements AccessorNode {
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         try {
-            if (coercionRequired) {
+            if (nextNode != null) {
+                return nextNode.setValue(ctx, elCtx, variableFactory, value);
+            }
+            else if (coercionRequired) {
                 field.set(ctx, value = convert(ctx, field.getClass()));
                 return value;
             }

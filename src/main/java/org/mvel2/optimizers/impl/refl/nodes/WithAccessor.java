@@ -54,7 +54,7 @@ public class WithAccessor implements AccessorNode {
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return null;
+        return this.nextNode.setValue(processWith(ctx, elCtx, variableFactory), elCtx, variableFactory, value);
     }
 
     public Object processWith(Object ctx, Object thisValue, VariableResolverFactory factory) {

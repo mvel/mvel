@@ -32,7 +32,25 @@ public class Union implements Accessor {
     private char[] nextExpr;
     private Accessor nextAccessor;
 
+    public Union(Accessor accessor, char[] nextAccessor) {
+        this.accessor = accessor;
+        this.nextExpr = nextAccessor;
+    }
+
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+        if (nextAccessor == null) {
+            return get(ctx, elCtx, variableFactory);
+        }
+        else {
+            return nextAccessor.getValue(get(ctx, elCtx, variableFactory), elCtx, variableFactory);
+        }
+    }
+
+    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
+        return nextAccessor.setValue(get(ctx, elCtx, variableFactory), elCtx, variableFactory, value);
+    }
+
+    private Object get(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         if (nextAccessor == null) {
             Object o = accessor.getValue(ctx, elCtx, variableFactory);
             AccessorOptimizer ao = OptimizerFactory.getDefaultAccessorCompiler();
@@ -43,17 +61,8 @@ public class Union implements Accessor {
             return ao.getResultOptPass();
         }
         else {
-            return nextAccessor.getValue(accessor.getValue(ctx, elCtx, variableFactory), elCtx, variableFactory);
+            return accessor.getValue(ctx, elCtx, variableFactory);
         }
-    }
-
-    public Union(Accessor accessor, char[] nextAccessor) {
-        this.accessor = accessor;
-        this.nextExpr = nextAccessor;
-    }
-
-    public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        return null;
     }
 
     public Class getLeftIngressType() {

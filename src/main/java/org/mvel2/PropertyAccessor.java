@@ -25,13 +25,10 @@ import org.mvel2.ast.TypeDescriptor;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.GlobalListenerFactory;
 import static org.mvel2.integration.GlobalListenerFactory.notifySetListeners;
 import static org.mvel2.integration.PropertyHandlerFactory.*;
-import static org.mvel2.integration.PropertyHandlerFactory.hasNullMethodHandler;
-import static org.mvel2.integration.PropertyHandlerFactory.getNullMethodHandler;
+import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.*;
@@ -371,7 +368,8 @@ public class PropertyAccessor {
                 ((Map) curr).put(eval(tk, this.ctx, this.variableFactory), value);
             }
             else {
-                throw new PropertyAccessException("could not access property (" + tk + ") in: " + ctx.getClass().getName());
+                throw new PropertyAccessException("could not access/write property (" + tk + ") in: "
+                        + (curr==null?"Unknown":curr.getClass().getName()));
             }
         }
         catch (InvocationTargetException e) {

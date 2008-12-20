@@ -508,7 +508,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             addAccessorNode(new MapAccessor(property));
             return ((Map) ctx).get(property);
         }
-        else if ("length".equals(property) && ctx.getClass().isArray()) {
+        else if (ctx != null && "length".equals(property) && ctx.getClass().isArray()) {
             addAccessorNode(new ArrayLength());
             return getLength(ctx);
         }

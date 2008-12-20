@@ -38,7 +38,7 @@ public class DynamicSetterAccessor implements AccessorNode {
         try {
             return method.invoke(ctx, convert(value, targetType));
         }
-        catch (Exception e) {
+        catch (Exception e) {                                             
             throw new CompileException("error binding property", e);
         }
     }
