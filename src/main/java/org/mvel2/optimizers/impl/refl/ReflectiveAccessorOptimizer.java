@@ -349,7 +349,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                             break;
                         case DONE:
                             break;
-                    }
+                    }           
 
                     first = false;
                     if (curr != null) returnType = curr.getClass();
@@ -663,7 +663,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
 
     private Object getCollectionPropertyAO(Object ctx, String prop) throws Exception {
-        if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
+        if (prop.length() > 0) {
+            ctx = getBeanPropertyAO(ctx, prop);
+        }
 
         int start = ++cursor;
 

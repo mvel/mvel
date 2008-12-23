@@ -33,7 +33,21 @@ public class PropertyHandlerFactory {
     }
 
     public static boolean hasPropertyHandler(Class clazz) {
-        return propertyHandlerClass.containsKey(clazz);
+        if (!propertyHandlerClass.containsKey(clazz)) {
+            do {
+                for (Class c : clazz.getInterfaces()) {
+                    if (propertyHandlerClass.containsKey(c)) {
+                        propertyHandlerClass.put(clazz, propertyHandlerClass.get(c));
+                        return true;
+                    }
+                }
+            }
+            while ((clazz = clazz.getSuperclass()) != null && clazz != Object.class);
+            return false;
+        }
+        else {
+            return true;
+        }
     }
 
     public static void registerPropertyHandler(Class clazz, PropertyHandler propertyHandler) {

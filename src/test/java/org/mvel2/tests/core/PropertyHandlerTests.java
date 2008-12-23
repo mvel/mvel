@@ -14,6 +14,7 @@ import junit.framework.TestCase;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.lang.reflect.Array;
 import java.io.Serializable;
 
@@ -281,4 +282,65 @@ public class PropertyHandlerTests extends TestCase {
         MVEL.getProperty("someList", new MyBean());
         assertEquals(2, listener.counter);
     }
+
+
+    public void testListener() {
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+        class MyListener implements Listener {
+            public int count;
+
+            public void onEvent(Object context, String contextName,
+                                VariableResolverFactory variableFactory, Object value) {
+                count++;
+            }
+        }
+
+        MyListener listener = new MyListener();
+        GlobalListenerFactory.registerGetListener(listener);
+
+        PropertyHandlerFactory.setNullPropertyHandler(new PropertyHandler() {
+            public Object getProperty(String name, Object contextObj,
+                                      VariableResolverFactory variableFactory) {
+                List someList = new ArrayList();
+                someList.add(new Foo());
+                return someList;
+            }
+
+            public Object setProperty(String name, Object contextObj,
+                                      VariableResolverFactory variableFactory, Object value) {
+                return null;
+            }
+        });
+
+        PropertyHandlerFactory.registerPropertyHandler(List.class, new
+                PropertyHandler() {
+                    public Object getProperty(String name, Object contextObj,
+                                              VariableResolverFactory variableFactory) {
+                        List list = (List) contextObj;
+                        int index = Integer.valueOf(name);
+                        while (index >= list.size()) {
+                            list.add(new Foo());
+                        }
+
+                        return list.get(index);
+                    }
+
+                    public Object setProperty(String name, Object contextObj,
+                                              VariableResolverFactory variableFactory, Object value) {
+                        return null;
+                    }
+                });
+
+        Foo foo = new Foo();
+
+        final Serializable fooExpr0 =
+                MVEL.compileSetExpression("collectionTest[0].name");
+        final Serializable fooExpr1 =
+                MVEL.compileSetExpression("collectionTest[1].name");
+        MVEL.executeSetExpression(fooExpr0, foo, "John Galt");
+        MVEL.executeSetExpression(fooExpr1, foo, "The Joker");
+        assertEquals(2, listener.count);
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
+    }
+
 }
