@@ -4874,7 +4874,6 @@ public class CoreConfidenceTests extends AbstractTest {
         public void run() {
             System.out.println("cat is running");
         }
-
     }
 
     public void testSetExpressions2() {
@@ -4884,8 +4883,6 @@ public class CoreConfidenceTests extends AbstractTest {
         executeSetExpression(fooExpr, foo, col);
         assertEquals(col, foo.getCollectionTest());
     }
-
-
 }
 
 

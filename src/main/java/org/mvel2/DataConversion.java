@@ -118,6 +118,4 @@ public class DataConversion {
     public static void addConversionHandler(Class type, ConversionHandler handler) {
         CONVERTERS.put(type, handler);
     }
-
-
 }
