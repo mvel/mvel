@@ -21,6 +21,7 @@ package org.mvel2.sh.command.basic;
 import org.mvel2.sh.Command;
 import org.mvel2.sh.CommandException;
 import org.mvel2.sh.ShellSession;
+import org.mvel2.util.StringAppender;
 
 import java.util.Map;
 
@@ -38,7 +39,7 @@ public class Set implements Command {
             throw new CommandException("incorrect number of parameters");
         }
         else {
-            StringBuffer sbuf = new StringBuffer();
+            StringAppender sbuf = new StringAppender();
             for (int i = 1; i < args.length; i++) {
                 sbuf.append(args[i]);
                 if (i < args.length) sbuf.append(" ");
