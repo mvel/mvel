@@ -800,12 +800,14 @@ public class PropertyAccessor {
             first = false;
         }
 
+        if (ctx == null) throw new CompileException("no such method or function: " + name);
+
 
         /**
          * If the target object is an instance of java.lang.Class itself then do not
          * adjust the Class scope target.
          */
-        Class cls = ctx != null ? (ctx instanceof Class ? (Class) ctx : ctx.getClass()) : null;
+        Class cls = (ctx instanceof Class ? (Class) ctx : ctx.getClass());
 
         /**
          * Check to see if we have already cached this method;

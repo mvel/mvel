@@ -32,21 +32,12 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     public FunctionVariableResolverFactory(Function function, VariableResolverFactory nextFactory, String[] indexedVariables, Object[] parameters) {
         this.function = function;
 
-//        if ((this.nextFactory = nextFactory) instanceof FunctionVariableResolverFactory
-//                && function.equals(((FunctionVariableResolverFactory) nextFactory).function)) {
-//
-//            this.variableResolvers = ((FunctionVariableResolverFactory) nextFactory).variableResolvers;
-//            this.indexedVariableResolvers = ((FunctionVariableResolverFactory) nextFactory).indexedVariableResolvers;
-//            this.indexedVariableNames = ((FunctionVariableResolverFactory) nextFactory).indexedVariableNames;
-//        }
-//        else {
         this.variableResolvers = new HashMap<String, VariableResolver>();
         this.nextFactory = nextFactory;
         this.indexedVariableResolvers = new VariableResolver[(this.indexedVariableNames = indexedVariables).length];
         for (int i = 0; i < parameters.length; i++) {
             variableResolvers.put(indexedVariableNames[i], this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]));
         }
-//        }
     }
 
     public boolean isResolveable(String name) {
@@ -124,7 +115,6 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
         }
 
         return super.getVariableResolver(name);
-
     }
 
     public boolean isIndexedFactory() {
@@ -151,14 +141,12 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
         return newLength - 1;
     }
 
-
     public void updateParameters(Object[] parameters) {
         this.indexedVariableResolvers = new VariableResolver[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
             this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]);
         }
     }
-
 
     public VariableResolver[] getIndexedVariableResolvers() {
         return this.indexedVariableResolvers;
