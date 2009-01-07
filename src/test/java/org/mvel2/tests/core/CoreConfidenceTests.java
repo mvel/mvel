@@ -4884,10 +4884,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(col, foo.getCollectionTest());
     }
 
-    public void testRecursion() {
-        MVEL.eval("def foo(x, y) { x > y ? x : foo (foo(x+1, y-1), foo(x+1, y-1)) }; foo(1, 20)", new HashMap());
-    }
-
     public void testRec1() {
         tak(24, 16, 8);
     }
@@ -4899,7 +4895,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testDhanjiBreak() {
         MVEL.eval(
-                " def tak(x, y, z) { System.out.println('x=' + x + '; y=' + y + '; z=' + z); " +
+                " def tak(x, y, z) {  " +
                         "y >= x ? z : tak(tak(x-1, y, z), tak(y-1, z, x), tak(z-1, x, y))\n  " +
                         " }\n\n" +
 
