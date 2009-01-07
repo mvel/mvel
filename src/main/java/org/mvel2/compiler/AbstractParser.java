@@ -25,10 +25,12 @@ import org.mvel2.ast.*;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ArrayTools.findFirst;
+import static org.mvel2.util.ArrayTools.isLiteralOnly;
 import org.mvel2.util.ExecutionStack;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.isEmpty;
 import org.mvel2.util.Soundex;
+import org.mvel2.util.ArrayTools;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -1130,31 +1132,34 @@ public class AbstractParser implements Serializable {
     private ASTNode createPropertyToken(int start, int end) {
         lastWasIdentifier = true;
         String tmp;
-        if (pCtx.hasImports()) {
-            char[] _subset = subset(expr, start, cursor - start);
-            int offset;
 
-            if ((offset = findFirst('.', _subset)) != -1) {
-                String iStr = new String(_subset, 0, offset);
-                if (pCtx.hasImport(iStr)) {
-                    return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1),
-                            fields, pCtx.getImport(iStr));
+        if (isLiteralOnly(expr, start, end)) {
+            if (pCtx.hasImports()) {
+                char[] _subset = subset(expr, start, cursor - start);
+                int offset;
+
+                if ((offset = findFirst('.', _subset)) != -1) {
+                    String iStr = new String(_subset, 0, offset);
+                    if (pCtx.hasImport(iStr)) {
+                        return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1),
+                                fields, pCtx.getImport(iStr));
+                    }
+                }
+                else {
+                    if (pCtx.hasImport(tmp = new String(_subset))) {
+                        return lastNode = new LiteralNode(pCtx.getStaticOrClassImport(tmp));
+                    }
+
+                    lastWasIdentifier = true;
                 }
             }
-            else {
-                if (pCtx.hasImport(tmp = new String(_subset))) {
-                    return lastNode = new LiteralNode(pCtx.getStaticOrClassImport(tmp));
-                }
 
-                lastWasIdentifier = true;
+            if (LITERALS.containsKey(tmp = new String(expr, start, end - start))) {
+                return lastNode = new LiteralNode(LITERALS.get(tmp));
             }
-        }
-
-        if (LITERALS.containsKey(tmp = new String(expr, start, end - start))) {
-            return lastNode = new LiteralNode(LITERALS.get(tmp));
-        }
-        else if (OPERATORS.containsKey(tmp)) {
-            return lastNode = new OperatorNode(OPERATORS.get(tmp));
+            else if (OPERATORS.containsKey(tmp)) {
+                return lastNode = new OperatorNode(OPERATORS.get(tmp));
+            }
         }
 
         return lastNode = new ASTNode(expr, start, end, fields);
@@ -2231,7 +2236,7 @@ public class AbstractParser implements Serializable {
                             xswap();
                         }
 
-                  //      y = 0;
+                        //      y = 0;
                         break;
                     }
 
