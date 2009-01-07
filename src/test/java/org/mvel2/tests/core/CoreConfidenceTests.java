@@ -4884,26 +4884,26 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(col, foo.getCollectionTest());
     }
 
-    public void testRec1() {
-        tak(24, 16, 8);
-    }
-
-    public int tak(int x, int y, int z) {
-        System.out.println("x=" + x + "; y=" + y + "; z=" + z);
-        return y >= x ? z : tak(tak(x-1, y, z), tak(y-1, z, x), tak(z-1, x, y));
-    }
-
-    public void testDhanjiBreak() {
-        MVEL.eval(
-                " def tak(x, y, z) {  " +
-                        "y >= x ? z : tak(tak(x-1, y, z), tak(y-1, z, x), tak(z-1, x, y))\n  " +
-                        " }\n\n" +
-
-                        "i = 1;\n" +
-                        "while(i-- > 0) {\n" +
-                        "  tak(24, 16, 8);\n" +
-                        "}", new HashMap());
-    }
+//    public void testRec1() {
+//        tak(24, 16, 8);
+//    }
+//
+//    public int tak(int x, int y, int z) {
+//        System.out.println("x=" + x + "; y=" + y + "; z=" + z);
+//        return y >= x ? z : tak(tak(x-1, y, z), tak(y-1, z, x), tak(z-1, x, y));
+//    }
+//
+//    public void testDhanjiBreak() {
+//        MVEL.eval(
+//                " def tak(x, y, z) {  System.out.println('x=' + x + '; y=' + y + '; z=' + z);" +
+//                        "y >= x ? z : tak(tak(x-1, y, z), tak(y-1, z, x), tak(z-1, x, y))\n  " +
+//                        " }\n\n" +
+//
+//                        "i = 1;\n" +
+//                        "while(i-- > 0) {\n" +
+//                        "  tak(24, 16, 8);\n" +
+//                        "}", new HashMap());
+//    }
 }
 
 

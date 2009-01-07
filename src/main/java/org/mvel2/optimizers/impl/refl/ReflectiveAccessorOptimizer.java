@@ -200,7 +200,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
                 else if (ctx instanceof List) {
                     if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(List.class)) {
-                        propHandlerSet(ex,ctx,  List.class, value);
+                        propHandlerSet(ex, ctx, List.class, value);
                     }
                     else {
                         //noinspection unchecked
@@ -212,7 +212,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     return rootNode;
                 }
                 else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(ctx.getClass())) {
-                    propHandlerSet(ex, ctx,ctx.getClass(), value);
+                    propHandlerSet(ex, ctx, ctx.getClass(), value);
                     return rootNode;
                 }
                 else if (ctx.getClass().isArray()) {
@@ -349,12 +349,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                             break;
                         case DONE:
                             break;
-                    }           
+                    }
 
                     first = false;
                     if (curr != null) returnType = curr.getClass();
                     if (nullSafe && cursor < length) {
-                        if (curr == null) return null;                        
+                        if (curr == null) return null;
                         addAccessorNode(new NullSafe());
                     }
 
@@ -1115,7 +1115,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         return ph.getProperty(property, ctx, variableFactory);
     }
 
-    public void propHandlerSet(String property, Object ctx,  Class handler, Object value) {
+    public void propHandlerSet(String property, Object ctx, Class handler, Object value) {
         PropertyHandler ph = getPropertyHandler(handler);
         addAccessorNode(new PropertyHandlerAccessor(property, ph));
         ph.setProperty(property, ctx, variableFactory, value);

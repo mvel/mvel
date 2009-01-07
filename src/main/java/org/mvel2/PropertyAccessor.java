@@ -800,11 +800,12 @@ public class PropertyAccessor {
             first = false;
         }
 
+
         /**
          * If the target object is an instance of java.lang.Class itself then do not
          * adjust the Class scope target.
          */
-        Class cls = ctx instanceof Class ? (Class) ctx : ctx.getClass();
+        Class cls = ctx != null ? (ctx instanceof Class ? (Class) ctx : ctx.getClass()) : null;
 
         /**
          * Check to see if we have already cached this method;

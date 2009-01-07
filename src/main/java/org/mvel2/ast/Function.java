@@ -24,6 +24,7 @@ import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.EndWithValue;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.FunctionVariableResolverFactory;
 import static org.mvel2.util.ParseTools.parseParameterDefList;
@@ -112,7 +113,21 @@ public class Function extends ASTNode implements Safe {
     public Object call(Object ctx, Object thisValue, VariableResolverFactory factory, Object[] parms) {
         try {
             if (parms != null && parms.length != 0) {
-                return compiledBlock.getValue(ctx, thisValue, new FunctionVariableResolverFactory(factory, parameters, parms));
+                // detect tail recursion
+                if (factory instanceof FunctionVariableResolverFactory) {
+                    FunctionVariableResolverFactory fvrf = (FunctionVariableResolverFactory) factory;
+                    if (fvrf.getFunction().equals(this))  {
+                        VariableResolver[] swapVR = fvrf.getIndexedVariableResolvers();
+                        fvrf.updateParameters(parms);
+
+                        Object v = compiledBlock.getValue(ctx, thisValue, fvrf);
+
+                        fvrf.setIndexedVariableResolvers(swapVR);
+
+                        return v;
+                    }
+                }
+                return compiledBlock.getValue(ctx, thisValue, new FunctionVariableResolverFactory(this, factory, parameters, parms));
             }
             else {
                 return compiledBlock.getValue(ctx, thisValue, new DefaultLocalVariableResolverFactory(factory));
