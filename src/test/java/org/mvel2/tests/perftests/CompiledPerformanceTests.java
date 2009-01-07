@@ -45,7 +45,7 @@ public class CompiledPerformanceTests {
         }
 
 //        for (int x = 0; x < 4; x++) {
-//            Serializable s = MVEL.compileSetExpression("foo.bar.name");
+//            Serializable s = MVEL.compileSetExpression("tak.bar.name");
 //            long time = System.currentTimeMillis();
 //
 //            for (int i = 0; i < ITERATIONS; i++) {
@@ -56,7 +56,7 @@ public class CompiledPerformanceTests {
 //
 //            time = System.currentTimeMillis();
 //
-//            s = MVEL.compileExpression("foo.bar.name");
+//            s = MVEL.compileExpression("tak.bar.name");
 //
 //            for (int i = 0; i < ITERATIONS; i++) {
 //                MVEL.executeExpression(s, map);

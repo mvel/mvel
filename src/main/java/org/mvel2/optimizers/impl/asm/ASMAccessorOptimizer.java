@@ -1557,16 +1557,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         "call",
                         "(Ljava/lang/Object;Ljava/lang/Object;L" + NAMESPACE + "integration/VariableResolverFactory;[Ljava/lang/Object;)Ljava/lang/Object;");
 
-                Object[] parm = null;
+//                Object[] parm = null;
+//
+//                if (es != null) {
+//                    parm = new Object[es.length];
+//                    for (int i = 0; i < es.length; i++) {
+//                        parm[i] = es[i].getValue(ctx, thisRef, variableFactory);
+//                    }
+//                }
 
-                if (es != null) {
-                    parm = new Object[es.length];
-                    for (int i = 0; i < es.length; i++) {
-                        parm[i] = es[i].getValue(ctx, thisRef, variableFactory);
-                    }
-                }
-
-                return ((Function) ptr).call(ctx, thisRef, variableFactory, parm);
+                return ((Function) ptr).call(ctx, thisRef, variableFactory, args);
             }
             else {
                 throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
