@@ -4906,16 +4906,16 @@ public class CoreConfidenceTests extends AbstractTest {
 //    }      '
 
 
-//    public void testRecursionPerformance() {
-//        HashMap variables = new HashMap();
-//        MVEL.eval("def recurse(ary) { ary <= 0 ? 0 : recurse(ary - 1); }", variables);
-//
-//        for (int i = 0; i < 10000000; i++) {
-//            long start = System.currentTimeMillis();
-//            MVEL.eval("recurse(1000);", variables);
-//            System.out.println(System.currentTimeMillis() - start);
-//        }
-//    }
+    public void testRecursionPerformance() {
+        HashMap variables = new HashMap();
+        MVEL.eval("def recurse(ary) { ary <= 0 ? 0 : recurse(ary - 1); }", variables);
+
+        for (int i = 0; i < 5; i++) {
+            long start = System.currentTimeMillis();
+            MVEL.eval("recurse(1000);", variables);
+            System.out.println(System.currentTimeMillis() - start);
+        }
+    }
 
 }
 
