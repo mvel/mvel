@@ -556,6 +556,17 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                         }
                     }
                 }
+
+                try {
+                    Class subClass = findClass(variableFactory, c.getName() + "$" + property, pCtx);
+                    addAccessorNode(new StaticReferenceAccessor(subClass));
+                    return subClass;
+                }
+                catch (ClassNotFoundException cnfe) {
+                    // fall through.
+                }
+
+
             }
             else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
                 return getMethod(ctx, property);

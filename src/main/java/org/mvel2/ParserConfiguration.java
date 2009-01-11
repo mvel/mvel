@@ -189,4 +189,8 @@ public class ParserConfiguration implements Serializable {
     public void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
+
+    public void setImports(HashMap<String, Object> imports) {
+        this.imports = imports;
+    }
 }

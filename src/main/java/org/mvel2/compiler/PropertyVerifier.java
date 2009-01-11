@@ -127,7 +127,6 @@ public class PropertyVerifier extends AbstractOptimizer {
                     paramTypes = pCtx.getTypeParameters(property);
                     pCtx.setLastTypeParameters(pCtx.getTypeParametersAsArray(property));
                 }
-
                 return pCtx.getVarOrInputType(property);
             }
             else if (pCtx.hasImport(property)) {

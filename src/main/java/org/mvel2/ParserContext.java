@@ -302,6 +302,7 @@ public class ParserContext implements Serializable {
     }
 
     public void addVariable(String name, Class type) {
+     //   assert name != null;
         initializeTables();
         if (variables.containsKey(name)) return;
         if (type == null) type = Object.class;

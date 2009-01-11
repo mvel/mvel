@@ -42,4 +42,8 @@ public class AccessorBMModel implements Accessor {
     public void setNullMethodHandler(PropertyHandler handler) {
     	this.nullMethodHandler = handler;
     }
+    
+    public String toString() {
+    	return "FOFOSLDJALKJ";
+    }
 }

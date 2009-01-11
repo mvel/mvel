@@ -30,7 +30,7 @@ public class ExecutableLiteral implements ExecutableStatement, Safe {
     private boolean intOptimized;
 
     public ExecutableLiteral(Object literal) {
-        this.literal = literal;
+        if ((this.literal = literal) instanceof Integer) this.integer32 = (Integer) literal;
     }
 
     public ExecutableLiteral(int literal) {

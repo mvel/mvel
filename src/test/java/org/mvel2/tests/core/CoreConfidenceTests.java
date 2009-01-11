@@ -3481,6 +3481,22 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testQuickSortScript4() throws IOException {
+        Object[] sorted = (Object[]) test(new String(loadFromFile(new File("samples/scripts/quicksort3.mvel"))));
+        int last = -1;
+        for (Object o : sorted) {
+            if (last == -1) {
+                last = (Integer) o;
+            }
+            else {
+                assertTrue(((Integer) o) > last);
+                last = (Integer) o;
+            }
+        }
+    }
+
+
+
     public void testMultiLineString() throws IOException {
         MVEL.evalFile(new File("samples/scripts/multilinestring.mvel"));
     }
@@ -4031,6 +4047,8 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testAnalysisCompile() {
         CompiledExpression ce = new ExpressionCompiler("foo.aValue = 'bar'").compile();
         assertTrue(ce.getParserContext().getInputs().keySet().contains("foo"));
+        assertEquals(1, ce.getParserContext().getInputs().size());
+        assertEquals(0, ce.getParserContext().getVariables().size());
     }
 
     public void testInlineWith() {
@@ -4906,16 +4924,28 @@ public class CoreConfidenceTests extends AbstractTest {
 //    }      '
 
 
-    public void testRecursionPerformance() {
-        HashMap variables = new HashMap();
-        MVEL.eval("def recurse(ary) { ary <= 0 ? 0 : recurse(ary - 1); }", variables);
+//    public void testRecursionPerformance() {
+//        HashMap variables = new HashMap();
+//        MVEL.eval("def recurse(ary) { ary <= 0 ? 0 : recurse(ary - 1); }", variables);
+//
+//        for (int i = 0; i < 5; i++) {
+//            long start = System.currentTimeMillis();
+//            MVEL.eval("recurse(1000);", variables);
+//            System.out.println(System.currentTimeMillis() - start);
+//        }
+//    }
 
-        for (int i = 0; i < 5; i++) {
-            long start = System.currentTimeMillis();
-            MVEL.eval("recurse(1000);", variables);
-            System.out.println(System.currentTimeMillis() - start);
+
+    public class Fruit {
+        public class Apple {
+
         }
     }
+
+    public void testInnerClassReference() {
+        assertEquals(Fruit.Apple.class, test("import " + CoreConfidenceTests.class.getName() + "; CoreConfidenceTests.Fruit.Apple"));
+    }
+
 
 }
 

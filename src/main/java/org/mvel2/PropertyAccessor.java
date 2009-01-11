@@ -35,6 +35,7 @@ import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import org.mvel2.util.StringAppender;
+import org.mvel2.optimizers.impl.refl.nodes.StaticReferenceAccessor;
 
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Thread.currentThread;
@@ -186,12 +187,12 @@ public class PropertyAccessor {
                     switch (nextToken()) {
                         case NORM:
                             if ((curr = getBeanPropertyAO(curr, capture())) == null && hasNullPropertyHandler()) {
-                                 curr = getNullPropertyHandler().getProperty(capture(), ctx, variableFactory);
+                                curr = getNullPropertyHandler().getProperty(capture(), ctx, variableFactory);
                             }
                             break;
                         case METH:
                             if ((curr = getMethod(curr, capture())) == null && hasNullMethodHandler()) {
-                                curr =  getNullMethodHandler().getProperty(capture(), ctx, variableFactory);
+                                curr = getNullMethodHandler().getProperty(capture(), ctx, variableFactory);
                             }
                             break;
                         case COL:
@@ -369,7 +370,7 @@ public class PropertyAccessor {
             }
             else {
                 throw new PropertyAccessException("could not access/write property (" + tk + ") in: "
-                        + (curr==null?"Unknown":curr.getClass().getName()));
+                        + (curr == null ? "Unknown" : curr.getClass().getName()));
             }
         }
         catch (InvocationTargetException e) {
@@ -513,7 +514,7 @@ public class PropertyAccessor {
             return getPropertyHandler(ctx.getClass()).getProperty(property, ctx, variableFactory);
 
         GlobalListenerFactory.notifyGetListeners(ctx, property, variableFactory);
-        
+
         return getBeanProperty(ctx, property);
     }
 
@@ -574,6 +575,13 @@ public class PropertyAccessor {
                         }
                         return m;
                     }
+                }
+
+                try {
+                    return findClass(variableFactory, c.getName() + "$" + property, null);
+                }
+                catch (ClassNotFoundException cnfe) {
+                    // fall through.
                 }
             }
             else if (hasPropertyHandler(cls)) {
@@ -739,7 +747,7 @@ public class PropertyAccessor {
                 return ((CharSequence) ctx).charAt((Integer) eval(prop, ctx, variableFactory));
         }
         else {
-      //      TypeDescriptor td = new TypeDescriptor(property, 0);
+            //      TypeDescriptor td = new TypeDescriptor(property, 0);
             try {
                 return getClassReference(getCurrentThreadParserContext(), new TypeDescriptor(property, 0));
             }
