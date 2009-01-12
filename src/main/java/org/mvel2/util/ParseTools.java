@@ -1006,7 +1006,9 @@ public class ParseTools {
             }
         }
         else {
+            int lines = 0;
             for (start++; start < chars.length; start++) {
+
                 if (start < chars.length && chars[start] == '/') {
                     if (start + 1 == chars.length) return start;
                     if (chars[start + 1] == '/') {
@@ -1023,6 +1025,7 @@ public class ParseTools {
                                     }
                                 case '\r':
                                 case '\n':
+
                                     break;
                             }
                             start++;
@@ -1073,14 +1076,11 @@ public class ParseTools {
             for (start++; start < chars.length; start++) {
                 if (chars[start] == type) {
                     return start;
-
-//                    return new int[]{start, 0};
                 }
             }
         }
         else {
             int lines = 0;
-
             for (start++; start < chars.length; start++) {
                 if (isWhitespace(chars[start])) {
                     switch (chars[start]) {
@@ -1091,7 +1091,8 @@ public class ParseTools {
                             lines++;
                     }
                 }
-                else if (chars[start] == '/' && start < chars.length) {
+                else if (start < chars.length && chars[start] == '/') {
+                    if (start + 1 == chars.length) return start;
                     if (chars[start + 1] == '/') {
                         start++;
                         while (start < chars.length && chars[start] != '\n') start++;
@@ -1101,21 +1102,21 @@ public class ParseTools {
                         while (start < chars.length) {
                             switch (chars[start]) {
                                 case '*':
-                                    if (start < chars.length && chars[start + 1] == '/') {
+                                    if (start + 1 < chars.length && chars[start + 1] == '/') {
                                         break;
                                     }
                                 case '\r':
-                                    continue;
                                 case '\n':
                                     pCtx.setLineOffset((short) start);
                                     lines++;
+                                    break;
                             }
-
                             start++;
                         }
                     }
                 }
-                else if (chars[start] == '\'' || chars[start] == '"') {
+                if (start == chars.length) return start;
+                if (chars[start] == '\'' || chars[start] == '"') {
                     start = captureStringLiteral(chars[start], chars, start, chars.length);
                 }
                 else if (chars[start] == type) {
@@ -1124,7 +1125,6 @@ public class ParseTools {
                 else if (chars[start] == term && --depth == 0) {
                     pCtx.incrementLineCount(lines);
                     return start;
-                 //   return new int[]{start, lines};
                 }
             }
         }
