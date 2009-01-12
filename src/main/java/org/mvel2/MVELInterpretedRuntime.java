@@ -33,7 +33,7 @@ import java.util.Map;
 
 
 /**
- * The MVEL interpreted runtime, used for fast parse and execution of scripts.  
+ * The MVEL interpreted runtime, used for fast parse and execution of scripts.
  */
 @SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class MVELInterpretedRuntime extends AbstractParser {
@@ -158,14 +158,20 @@ public class MVELInterpretedRuntime extends AbstractParser {
         }
         catch (CompileException e) {
             e.setExpr(expr);
-            e.setLineNumber(line);
-            e.setColumn(cursor - lastLineStart);
+            e.setLineNumber(line + e.getLineNumber());
+            e.setCursor(cursor);
+            //      e.setColumn(lastLineStart + e.getColumn());
             throw e;
         }
         catch (NullPointerException e) {
             if (tk != null && tk.isOperator()) {
-                throw new CompileException("incomplete statement: "
+                CompileException ce = new CompileException("incomplete statement: "
                         + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")", e);
+
+                ce.setExpr(expr);
+                ce.setLineNumber(line);
+                ce.setCursor(cursor);
+                throw ce;
             }
             else {
                 throw e;

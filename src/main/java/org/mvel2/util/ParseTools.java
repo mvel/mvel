@@ -1054,7 +1054,7 @@ public class ParseTools {
         }
     }
 
-    public static int[] balancedCaptureWithLineAccounting(char[] chars, int start, char type) {
+    public static int balancedCaptureWithLineAccounting(char[] chars, int start, char type, ParserContext pCtx) {
         int depth = 1;
         char term = type;
         switch (type) {
@@ -1072,7 +1072,9 @@ public class ParseTools {
         if (type == term) {
             for (start++; start < chars.length; start++) {
                 if (chars[start] == type) {
-                    return new int[]{start, 0};
+                    return start;
+
+//                    return new int[]{start, 0};
                 }
             }
         }
@@ -1085,6 +1087,7 @@ public class ParseTools {
                         case '\r':
                             continue;
                         case '\n':
+                            pCtx.setLineOffset((short) start);
                             lines++;
                     }
                 }
@@ -1104,6 +1107,7 @@ public class ParseTools {
                                 case '\r':
                                     continue;
                                 case '\n':
+                                    pCtx.setLineOffset((short) start);
                                     lines++;
                             }
 
@@ -1118,7 +1122,9 @@ public class ParseTools {
                     depth++;
                 }
                 else if (chars[start] == term && --depth == 0) {
-                    return new int[]{start, lines};
+                    pCtx.incrementLineCount(lines);
+                    return start;
+                 //   return new int[]{start, lines};
                 }
             }
         }
@@ -1684,6 +1690,7 @@ public class ParseTools {
     public static Serializable subCompileExpression(String expression, ParserContext ctx) {
         ExpressionCompiler c = new ExpressionCompiler(expression);
         c.setPCtx(ctx);
+
         return optimizeTree(c._compile());
     }
 

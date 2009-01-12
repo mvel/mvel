@@ -65,8 +65,8 @@ public class AbstractParser implements Serializable {
     protected boolean lastWasComment = false;
     protected int literalOnly = -1;
 
-    protected int lastLineStart = -1;
-    protected int line = 1;
+    protected int lastLineStart = 0;
+    protected int line = 0;
 
     protected ASTNode lastNode;
 
@@ -285,7 +285,7 @@ public class AbstractParser implements Serializable {
                                         }
                                     }
 
-                                    cursor = balancedCapture(expr, cursor, expr[cursor]) + 1;
+                                    cursor = balancedCaptureWithLineAccounting(expr, cursor, expr[cursor], pCtx) + 1;
                                     if (tokenContinues()) {
                                         lastNode = new InlineCollectionNode(expr, start, start = cursor, fields,
                                                 egressType, pCtx);
@@ -394,7 +394,7 @@ public class AbstractParser implements Serializable {
                      * character, we stop and figure out what to do.
                      */
                     if (cursor != length && expr[cursor] == '(') {
-                        cursor = balancedCapture(expr, cursor, '(') + 1;
+                        cursor = balancedCaptureWithLineAccounting(expr, cursor, '(', pCtx) + 1;
                     }
 
                     /**
@@ -588,13 +588,13 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case '[':
-                                cursor = balancedCapture(expr, cursor, '[') + 1;
+                                cursor = balancedCaptureWithLineAccounting(expr, cursor, '[', pCtx) + 1;
                                 continue;
 
 
                             case '{':
                                 if (!union) break;
-                                cursor = balancedCapture(expr, cursor, '{') + 1;
+                                cursor = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx) + 1;
                                 continue;
 
                             case '~':
@@ -728,7 +728,7 @@ public class AbstractParser implements Serializable {
                             expectNextChar_IW('{');
 
                             tmp = subArray(start, cursor - 1);
-                            cursor = balancedCapture(expr, start = cursor, '{') + 1;
+                            cursor = balancedCaptureWithLineAccounting(expr, start = cursor, '{', pCtx) + 1;
 
                             return lastNode = new ThisWithNode(tmp, subArray(start + 1, cursor - 1), fields, pCtx);
                         }
@@ -1043,7 +1043,7 @@ public class AbstractParser implements Serializable {
 
                         case '[':
                         case '{':
-                            cursor = balancedCapture(expr, cursor, expr[cursor]) + 1;
+                            cursor = balancedCaptureWithLineAccounting(expr, cursor, expr[cursor], pCtx) + 1;
                             if (tokenContinues()) {
                                 lastNode = new InlineCollectionNode(expr, start, start = cursor, fields, pCtx);
                                 captureToEOT();
@@ -1085,8 +1085,9 @@ public class AbstractParser implements Serializable {
         }
         catch (CompileException e) {
             e.setExpr(expr);
-            e.setLineNumber(line);
-            e.setColumn(cursor - lastLineStart);
+            e.setLineNumber(pCtx.getLineCount());
+            e.setCursor(cursor);
+            e.setColumn(cursor - pCtx.getLineOffset());
             throw e;
         }
     }
@@ -1278,7 +1279,7 @@ public class AbstractParser implements Serializable {
                  * if this function accepts parameters.
                  */
 
-                endCond = cursor = balancedCapture(expr, startCond = cursor, '(');
+                endCond = cursor = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(', pCtx);
                 startCond++;
                 cursor++;
 
@@ -1288,7 +1289,7 @@ public class AbstractParser implements Serializable {
                     throw new CompileException("incomplete statement", expr, cursor);
                 }
                 else if (expr[cursor] == '{') {
-                    blockEnd = cursor = balancedCapture(expr, blockStart = cursor, '{');
+                    blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{', pCtx);
                 }
                 else {
                     blockStart = cursor - 1;
@@ -1304,7 +1305,7 @@ public class AbstractParser implements Serializable {
                     /**
                      * This function is bracketed.  We capture the entire range in the brackets.
                      */
-                    blockEnd = cursor = balancedCapture(expr, blockStart = cursor, '{');
+                    blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{', pCtx);
                 }
                 else {
                     /**
@@ -1347,14 +1348,11 @@ public class AbstractParser implements Serializable {
             /**
              * This block is an: IF, FOREACH or WHILE node.
              */
-            int[] cap = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(');
 
-            endCond = cursor = cap[0];
+            endCond = cursor = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(', pCtx);
 
             startCond++;
             cursor++;
-
-            pCtx.incrementLineCount(cap[1]);
         }
 
         skipWhitespace();
@@ -1363,9 +1361,7 @@ public class AbstractParser implements Serializable {
             throw new CompileException("unexpected end of statement", expr, cursor);
         }
         else if (expr[cursor] == '{') {
-            int[] cap = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{');
-            blockEnd = cursor = cap[0];
-            pCtx.incrementLineCount(cap[1]);
+            blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{', pCtx);
         }
         else {
             blockStart = cursor - 1;
@@ -1398,17 +1394,13 @@ public class AbstractParser implements Serializable {
             if ("while".equals(name = new String(expr, start, cursor - start))) {
                 skipWhitespaceWithLineAccounting();
                 startCond = cursor + 1;
-                int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '(');
-                endCond = cursor = cap[0];
-                pCtx.incrementLineCount(cap[1]);
+                endCond = cursor = balancedCaptureWithLineAccounting(expr, cursor, '(', pCtx);
                 return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd), type);
             }
             else if ("until".equals(name)) {
                 skipWhitespaceWithLineAccounting();
                 startCond = cursor + 1;
-                int[] cap = balancedCaptureWithLineAccounting(expr, cursor, '(');
-                endCond = cursor = cap[0];
-                pCtx.incrementLineCount(cap[1]);
+                endCond = cursor = balancedCaptureWithLineAccounting(expr, cursor, '(', pCtx);
                 return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd), ASTNode.BLOCK_DO_UNTIL);
             }
             else {
@@ -1585,7 +1577,7 @@ public class AbstractParser implements Serializable {
                 case '(':
                 case '[':
                 case '{':
-                    cursor = balancedCapture(expr, cursor, expr[cursor]);
+                    cursor = balancedCaptureWithLineAccounting(expr, cursor, expr[cursor], pCtx);
                     if (cursor >= length) return;
                     break;
 
@@ -1645,7 +1637,7 @@ public class AbstractParser implements Serializable {
                 case '(':
                 case '[':
                 case '{':
-                    if ((cursor = balancedCapture(expr, cursor, expr[cursor])) == -1) {
+                    if ((cursor = balancedCaptureWithLineAccounting(expr, cursor, expr[cursor], pCtx)) == -1) {
                         throw new CompileException("unbalanced braces", expr, cursor);
                     }
                     break;
@@ -1753,9 +1745,7 @@ public class AbstractParser implements Serializable {
                 case '(':
                     return;
                 case '[':
-                    int[] c = balancedCaptureWithLineAccounting(expr, cursor, '[');
-                    cursor = c[0] + 1;
-                    line += c[1];
+                    cursor = balancedCaptureWithLineAccounting(expr, cursor, '[', pCtx) + 1;
                     continue;
 
                 default:

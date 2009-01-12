@@ -25,6 +25,7 @@ import org.mvel2.ast.TypeDescriptor;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.GlobalListenerFactory;
 import static org.mvel2.integration.GlobalListenerFactory.notifySetListeners;
 import static org.mvel2.integration.PropertyHandlerFactory.*;
@@ -624,8 +625,7 @@ public class PropertyAccessor {
         String root = new String(property, 0, cursor - 1).trim();
 
         int start = cursor + 1;
-        int[] res = balancedCaptureWithLineAccounting(property, cursor, '{');
-        cursor = res[0];
+        cursor = balancedCaptureWithLineAccounting(property, cursor, '{', AbstractParser.getCurrentThreadParserContext());
 
         WithStatementPair[] pvp = parseWithExpressions(root, subset(property, start, cursor++ - start));
 

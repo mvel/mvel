@@ -19,6 +19,8 @@
 package org.mvel2.templates;
 
 import org.mvel2.CompileException;
+import org.mvel2.ParserContext;
+import org.mvel2.compiler.AbstractParser;
 import org.mvel2.templates.res.*;
 import org.mvel2.templates.util.TemplateTools;
 import org.mvel2.util.ExecutionStack;
@@ -288,9 +290,9 @@ public class TemplateCompiler {
 
     public int captureOrbInternal() {
         try {
-            int[] r = balancedCaptureWithLineAccounting(template, start = cursor, '{');
-            cursor = r[0];
-            line += r[1];
+            ParserContext pCtx = new ParserContext();
+            cursor = balancedCaptureWithLineAccounting(template, start = cursor, '{', pCtx);
+            line += pCtx.getLineCount();
             int ret = start + 1;
             start = cursor + 1;
             return ret;

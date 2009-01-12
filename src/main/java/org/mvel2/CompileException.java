@@ -32,11 +32,13 @@ import java.util.List;
 public class CompileException extends RuntimeException {
     private char[] expr;
 
-    private int cursor = -1;
-    private int msgOffset = -1;
+    private int cursor = 0;
+    private int msgOffset = 0;
 
-    private int lineNumber = -1;
-    private int column = -1;
+    private int lineNumber = 1;
+    private int column = 0;
+
+    private int lastLineStart = 0;
 
     private List<ErrorDetail> errors;
 
@@ -119,7 +121,15 @@ public class CompileException extends RuntimeException {
 
         while (start < end && isWhitespace(expr[start])) start++;
 
-        CharSequence cs = copyValueOf(expr, start, end - start);
+        CharSequence cs = null;
+
+        try {
+            cs = copyValueOf(expr, start, end - start);
+        }
+        catch (StringIndexOutOfBoundsException e) {
+            System.out.println("");
+            throw e;
+        }
 
         msgOffset = start;
 
@@ -165,5 +175,13 @@ public class CompileException extends RuntimeException {
 
     public void setCursor(int cursor) {
         this.cursor = cursor;
+    }
+
+    public int getLastLineStart() {
+        return lastLineStart;
+    }
+
+    public void setLastLineStart(int lastLineStart) {
+        this.lastLineStart = lastLineStart;
     }
 }

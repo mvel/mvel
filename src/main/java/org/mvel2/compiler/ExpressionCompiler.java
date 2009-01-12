@@ -258,8 +258,9 @@ public class ExpressionCompiler extends AbstractParser {
         }
         catch (CompileException e) {
             e.setExpr(expr);
-            e.setLineNumber(line);
-            e.setColumn(cursor - lastLineStart);
+            e.setLineNumber(pCtx.getLineCount());
+            e.setCursor(cursor);
+            e.setColumn(cursor - pCtx.getLineOffset());
             throw e;
         }
         catch (Throwable e) {

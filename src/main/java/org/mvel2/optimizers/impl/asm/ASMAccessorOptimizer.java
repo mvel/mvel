@@ -209,6 +209,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.first = true;
         this.val = null;
 
+        this.pCtx = pCtx;
         this.length = property.length;
         this.expr = property;
         this.ctx = staticContext;
@@ -228,6 +229,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         compiledInputs = new ArrayList<ExecutableStatement>();
 
+        this.pCtx = pCtx;
         this.length = (this.expr = property).length;
         this.ctx = ctx;
         this.thisRef = thisRef;
@@ -776,9 +778,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         String root = new String(expr, 0, cursor - 1).trim();
 
         int start = cursor + 1;
-        int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{');
-        cursor = res[0];
-        (pCtx = getParserContext()).incrementLineCount(res[1]);
+    //    int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx);
+        cursor = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx);
+    //    (pCtx = getParserContext()).incrementLineCount(res[1]);
 
         this.returnType = ctx != null ? ctx.getClass() : null;
 

@@ -401,9 +401,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         String root = new String(expr, 0, cursor - 1).trim();
 
         int start = cursor + 1;
-        int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{');
-        cursor = res[0];
-        getParserContext().incrementLineCount(res[1]);
+        cursor = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx);
 
         WithAccessor wa = new WithAccessor(root, subset(expr, start, cursor++ - start), ingressType, false);
 
