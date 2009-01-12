@@ -173,6 +173,10 @@ public class Function extends ASTNode implements Safe {
         }
     }
 
+    public ExecutableStatement getCompiledBlock() {
+        return compiledBlock;
+    }
+
     public String toString() {
         return "FunctionDef:" + (name == null ? "Anonymous" : name);
     }

@@ -21,10 +21,7 @@ package org.mvel2.debug;
 import org.mvel2.Operator;
 import static org.mvel2.Operator.ADD;
 import static org.mvel2.Operator.SUB;
-import org.mvel2.ast.ASTNode;
-import org.mvel2.ast.BinaryOperation;
-import org.mvel2.ast.NestedStatement;
-import org.mvel2.ast.Substatement;
+import org.mvel2.ast.*;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExecutableAccessor;
 import org.mvel2.compiler.ExecutableLiteral;
@@ -84,6 +81,10 @@ public class DebugTools {
                 sbuf.append("NEST [" + tk.getClass().getSimpleName() + "]: { " + tk.getName() + " }\n");
                 sbuf.append(decompile((CompiledExpression) ((Substatement) tk).getStatement(), true, context));
             }
+//            else if (tk instanceof Function) {
+//                sbuf.append("FUNCTION [" + tk.getName() + "]: ")
+//                        .append(decompile((CompiledExpression) ((Function)tk).getCompiledBlock(), true, context));
+//            }
             else if (tk.isDebuggingSymbol()) {
                 //noinspection StringConcatenationInsideStringBufferAppend
                 sbuf.append("DEBUG_SYMBOL :: " + tk.toString());

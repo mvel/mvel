@@ -108,7 +108,7 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
         if (variableResolvers.containsKey(name)) return variableResolvers.get(name);
         else if ((idx = variableIndexOf(name)) != -1) {
             if (indexedVariableResolvers[idx] == null) {
-                indexedVariableResolvers[idx] = super.getVariableResolver(name);
+                indexedVariableResolvers[idx] = new SimpleValueResolver(null);
             }
             variableResolvers.put(indexedVariableNames[idx], indexedVariableResolvers[idx]);
             return indexedVariableResolvers[idx];
@@ -122,7 +122,7 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     }
 
     public boolean isTarget(String name) {
-        return variableResolvers.containsKey(name);
+        return variableResolvers.containsKey(name) || variableIndexOf(name) != -1;
     }
 
     private int increaseRegisterTableSize() {

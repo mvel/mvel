@@ -248,7 +248,11 @@ public class FastList extends AbstractList implements Externalizable {
     }
 
     public Object[] toArray(Object[] objects) {
-        throw new RuntimeException("not implemented");
+        if (objects.length < size) objects = new Object[size]; 
+        for (int i = 0; i < size; i++) {
+            objects[i] = elements[i];
+        }
+        return objects;
     }
 
     public boolean remove(Object o) {

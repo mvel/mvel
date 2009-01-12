@@ -43,7 +43,6 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
                     .optimizeSetAccessor(context, expression, ctx, ctx, vrf, false, value, ingressType);
         }
         else {
-            System.out.println("Exec<<" + accessor.toString() + ">>");
             accessor.setValue(ctx, elCtx, vrf, value);
         }
         return value;

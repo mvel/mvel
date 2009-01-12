@@ -24,6 +24,8 @@ import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.getBestCandidate;
+import org.mvel2.util.PropertyTools;
+import org.mvel2.util.ParseTools;
 
 import java.lang.reflect.Method;
 
@@ -71,8 +73,18 @@ public class MethodAccessor implements AccessorNode {
                     return method.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars));
                 }
             }
+            catch (IllegalArgumentException e) {
+                Object[] vs = executeAndCoerce(parameterTypes, elCtx, vars);
+                Method newMeth;
+                if ((newMeth = ParseTools.getBestCandidate(vs, method.getName(), method.getDeclaringClass(), method.getDeclaringClass().getMethods(), false)) != null) {
+                    return executeOverrideTarget(newMeth, ctx, elCtx, vars);
+                }
+                else {
+                    throw e;
+                }
+            }
             catch (Exception e) {
-                throw new CompileException("cannot invoke method", e);
+                throw new CompileException("cannot invoke method: " + method.getName(), e);
             }
         }
     }

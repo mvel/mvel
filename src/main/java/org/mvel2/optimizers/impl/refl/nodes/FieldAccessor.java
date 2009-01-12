@@ -48,7 +48,7 @@ public class FieldAccessor implements AccessorNode {
             }
         }
         catch (Exception e) {
-            throw new CompileException("unable to access field", e);
+            throw new CompileException("unable to access field: " + field.getName(), e);
         }
     }
 

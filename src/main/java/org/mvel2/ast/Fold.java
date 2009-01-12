@@ -32,6 +32,7 @@ import static org.mvel2.util.ParseTools.*;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Iterator;
 
 public class Fold extends ASTNode {
     private ExecutableStatement subEx;
@@ -76,15 +77,18 @@ public class Fold extends ASTNode {
 
         List list;
 
+
         if (constraintEx != null) {
             Collection col = ((Collection) dataEx.getValue(ctx, thisValue, factory));
             list = new FastList(col.size());
+
             for (Object o : col) {
                 itemR.value = o;
                 if ((Boolean) constraintEx.getValue(ctx, thisValue, itemFactory)) {
                     list.add(subEx.getValue(o, thisValue, itemFactory));
                 }
             }
+
         }
         else {
             Collection col = ((Collection) dataEx.getValue(ctx, thisValue, factory));
@@ -93,7 +97,6 @@ public class Fold extends ASTNode {
                 list.add(subEx.getValue(itemR.value = o, thisValue, itemFactory));
             }
         }
-
         return list;
     }
 

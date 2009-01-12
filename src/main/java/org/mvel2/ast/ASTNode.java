@@ -94,6 +94,9 @@ public class ASTNode implements Cloneable,  Serializable {
             try {
                 return accessor.getValue(ctx, thisValue, factory);
             }
+            catch (NullPointerException e) {
+                throw e;
+            }
             catch (ClassCastException ce) {
                 if ((fields & DEOP) == 0) {
                     accessor = null;

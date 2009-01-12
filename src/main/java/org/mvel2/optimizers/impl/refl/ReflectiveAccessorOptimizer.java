@@ -494,13 +494,30 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return o;
         }
         else if (member != null) {
-            o = ((Field) member).get(ctx);
-            if (hasNullPropertyHandler()) {
-                addAccessorNode(new FieldAccessorNH((Field) member, getNullMethodHandler()));
-                if (o == null) o = getNullMethodHandler().getProperty(member.getName(), ctx, variableFactory);
+            Field f = (Field) member;
+
+            if ((f.getModifiers() & Modifier.STATIC) != 0) {
+                o = f.get(null);
+
+                if (hasNullPropertyHandler()) {
+
+                    addAccessorNode(new StaticVarAccessorNH((Field) member, getNullMethodHandler()));
+                    if (o == null) o = getNullMethodHandler().getProperty(member.getName(), ctx, variableFactory);
+                }
+                else {
+                    addAccessorNode(new StaticVarAccessor((Field) member));
+                }
+
             }
             else {
-                addAccessorNode(new FieldAccessor((Field) member));
+                o = f.get(ctx);
+                if (hasNullPropertyHandler()) {
+                    addAccessorNode(new FieldAccessorNH((Field) member, getNullMethodHandler()));
+                    if (o == null) o = getNullMethodHandler().getProperty(member.getName(), ctx, variableFactory);
+                }
+                else {
+                    addAccessorNode(new FieldAccessor((Field) member));
+                }
             }
             return o;
         }
@@ -585,7 +602,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
      * @throws Exception -
      */
     private Object getCollectionProperty(Object ctx, String prop) throws Exception {
-        if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
+        if (prop.length() > 0) {
+            ctx = getBeanProperty(ctx, prop);
+        }
 
         int start = ++cursor;
 
