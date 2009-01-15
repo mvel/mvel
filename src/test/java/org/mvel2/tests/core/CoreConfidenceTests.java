@@ -1,7 +1,9 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.*;
+
 import static org.mvel2.MVEL.*;
+
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.Function;
 import org.mvel2.ast.WithNode;
@@ -33,6 +35,7 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
 
@@ -1646,6 +1649,30 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("FOOBAR!", executeExpression(compiler.compile(ctx), null, vars));
     }
+    
+    public void testMacroSupportWithStrings() {
+        Map<String, Object> vars = new HashMap<String, Object>();
+        Foo foo = new Foo();
+        vars.put("foo", foo);
+
+        Map<String, Macro> macros = new HashMap<String, Macro>();
+
+        macros.put("modify", new Macro() {
+            public String doMacro() {
+                return "drools.modify";
+            }
+        });
+       
+        assertEquals( "", foo.aValue);
+        
+        ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("\"This is an modify()\"", macros));
+
+        ParserContext ctx = new ParserContext(null, null, null);
+        ctx.setSourceFile("test.mv");
+        ctx.setDebugSymbols(true);
+
+        assertEquals( "\"This is an modify()\"", executeExpression(compiler.compile(ctx), null, vars) );
+    }    
 
 
     public void testMacroSupportWithDebugging() {
@@ -3742,6 +3769,29 @@ public class CoreConfidenceTests extends AbstractTest {
         executeExpression(compileExpression("this.name = 'bar'"), person);
 
         assertEquals("bar", person.getName());
+    }
+    
+    public void testAssignListToBean() {
+        
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        
+        MockClass mock = new MockClass();
+        
+        MVEL.executeExpression( MVEL.compileExpression(  "this.values = [0, 1, 2, 3, 4]" ), mock );
+        assertEquals( 5, mock.getValues().size() ); 
+    }
+    
+    public static class MockClass {
+        List values;
+
+        public List getValues() {
+            return values;
+        }
+
+        public void setValues(List values) {
+            this.values = values;
+        }
+                
     }
 
     public void testParameterizedTypeInStrictMode() {
