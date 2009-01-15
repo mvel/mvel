@@ -20,7 +20,9 @@ package org.mvel2;
 
 import org.mvel2.compiler.AbstractParser;
 import static org.mvel2.util.ParseTools.isWhitespace;
+import static org.mvel2.util.ParseTools.balancedCapture;
 import org.mvel2.util.StringAppender;
+import org.mvel2.util.ParseTools;
 
 import java.util.Map;
 
@@ -46,6 +48,12 @@ public class MacroProcessor extends AbstractParser implements PreProcessor {
         String token;
 
         for (; cursor < length; cursor++) {
+            if ('\'' == expr[cursor] || '"' == expr[cursor]) {
+                start = cursor;
+                cursor = balancedCapture(expr, cursor, expr[cursor]) + 1;
+                appender.append(new String(expr, start, cursor - start));
+            }
+            
             while (cursor < length && (isWhitespace(expr[cursor]) || expr[cursor] == ';')) {
                 appender.append(expr[cursor++]);
             }

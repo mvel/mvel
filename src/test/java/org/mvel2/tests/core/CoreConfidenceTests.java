@@ -1671,7 +1671,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setSourceFile("test.mv");
         ctx.setDebugSymbols(true);
 
-        assertEquals( "\"This is an modify()\"", executeExpression(compiler.compile(ctx), null, vars) );
+        assertEquals( "This is an modify()", executeExpression(compiler.compile(ctx), null, vars) );
     }    
 
 
@@ -4748,7 +4748,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testFieldCoercion1() {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
-        ctx.addInput("bar", Bar.class);
+        ctx.addInput("bar", Bar.class);                                                            
 
         Serializable s = compileSetExpression("bar.assignTest", ctx);
 
@@ -4981,6 +4981,10 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testInnerClassReference() {
         assertEquals(Fruit.Apple.class, test("import " + CoreConfidenceTests.class.getName() + "; CoreConfidenceTests.Fruit.Apple"));
+    }
+
+    public void testEdson() {
+        assertEquals("foo", test("list = new java.util.ArrayList(); list.add(new String('foo')); list[0]"));
     }
 
 
