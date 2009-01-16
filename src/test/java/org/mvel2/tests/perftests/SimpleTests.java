@@ -1,22 +1,17 @@
 package org.mvel2.tests.perftests;
 
 import org.mvel2.MVEL;
-import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
-import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.QuickSort;
-import sun.misc.Unsafe;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import static java.lang.Runtime.getRuntime;
-import java.lang.reflect.Field;
 import java.text.DecimalFormat;
-import java.util.HashMap;
 
 public class SimpleTests {
     private static final double COUNT = 30000;
