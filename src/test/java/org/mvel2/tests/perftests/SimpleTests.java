@@ -1,7 +1,6 @@
 package org.mvel2.tests.perftests;
 
 import org.mvel2.MVEL;
-import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.QuickSort;
@@ -12,6 +11,8 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import static java.lang.Runtime.getRuntime;
 import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SimpleTests {
     private static final double COUNT = 30000;
@@ -19,11 +20,9 @@ public class SimpleTests {
     public static void main(String[] args) throws IOException {
         PrintStream ps = System.out;
 
-        //  System.setOut(new PrintStream(new NullOutputStream()));
         try {
             for (int i = 0; i < 10000; i++) {
                 testQuickSortMVEL(ps);
-                //        testQuickSortNative(ps);
             }
         }
         catch (Throwable t) {
@@ -40,15 +39,16 @@ public class SimpleTests {
 
         time = System.currentTimeMillis();
 
-        char[] sourceFile = ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel2"));
+        char[] sourceFile = ParseTools.loadFromFile(new File("samples/scripts/quicksort.mvel"));
         Serializable c = MVEL.compileExpression(sourceFile);
 
-        DefaultLocalVariableResolverFactory vrf = new DefaultLocalVariableResolverFactory();
-
+        Map vars = new HashMap();
+       
         DecimalFormat dc = new DecimalFormat("#.##");
 
         for (int a = 0; a < 10000; a++) {
-            MVEL.executeExpression(c, vrf);
+            vars.clear();
+            MVEL.executeExpression(c, vars);
         }
 
         ps.println("Result: " + (time = System.currentTimeMillis() - time));
