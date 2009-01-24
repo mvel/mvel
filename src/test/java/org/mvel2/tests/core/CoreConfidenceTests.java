@@ -2343,6 +2343,43 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("foobar", executeExpression(parser.compile(ctx)));
     }
+    
+    public void testMapWithStrictTyping() {
+        ExpressionCompiler compiler = new ExpressionCompiler("map['KEY1'] == $msg");
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement(true);
+        ctx.setStrongTyping( true );
+        ctx.addInput( "$msg", String.class);
+        ctx.addInput( "map", Map.class );
+        Serializable expr = compiler.compile(ctx);
+        
+        Map map = new HashMap();
+        map.put(  "KEY1", "MSGONE" );
+        Map vars = new HashMap();
+        vars.put(  "$msg", "MSGONE" );
+        vars.put(  "map", map );
+
+        Boolean bool = ( Boolean ) MVEL.executeExpression( expr, map, vars );
+        assertEquals( Boolean.TRUE, bool);
+    }
+    
+    public void testMapAsContextWithStrictTyping() {
+        ExpressionCompiler compiler = new ExpressionCompiler("this['KEY1'] == $msg");
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement(true);
+        ctx.setStrongTyping( true );
+        ctx.addInput( "$msg", String.class);
+        ctx.addInput( "this", Map.class );
+        Serializable expr = compiler.compile(ctx);
+        
+        Map map = new HashMap();
+        map.put(  "KEY1", "MSGONE" );
+        Map vars = new HashMap();
+        vars.put(  "$msg", "MSGONE" );
+
+        Boolean bool = ( Boolean ) MVEL.executeExpression( expr, map, vars );
+        assertEquals( Boolean.TRUE, bool);
+    }    
 
     /**
      * Community provided test cases
