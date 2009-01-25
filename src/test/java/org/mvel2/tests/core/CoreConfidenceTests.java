@@ -1649,7 +1649,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("FOOBAR!", executeExpression(compiler.compile(ctx), null, vars));
     }
-    
+
     public void testMacroSupportWithStrings() {
         Map<String, Object> vars = new HashMap<String, Object>();
         Foo foo = new Foo();
@@ -1662,17 +1662,17 @@ public class CoreConfidenceTests extends AbstractTest {
                 return "drools.modify";
             }
         });
-       
-        assertEquals( "", foo.aValue);
-        
+
+        assertEquals("", foo.aValue);
+
         ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("\"This is an modify()\"", macros));
 
         ParserContext ctx = new ParserContext(null, null, null);
         ctx.setSourceFile("test.mv");
         ctx.setDebugSymbols(true);
 
-        assertEquals( "This is an modify()", executeExpression(compiler.compile(ctx), null, vars) );
-    }    
+        assertEquals("This is an modify()", executeExpression(compiler.compile(ctx), null, vars));
+    }
 
 
     public void testMacroSupportWithDebugging() {
@@ -3546,8 +3546,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
-
-
     public void testMultiLineString() throws IOException {
         MVEL.evalFile(new File("samples/scripts/multilinestring.mvel"));
     }
@@ -3807,17 +3805,17 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("bar", person.getName());
     }
-    
+
     public void testAssignListToBean() {
-        
+
         OptimizerFactory.setDefaultOptimizer("reflective");
-        
+
         MockClass mock = new MockClass();
-        
-        MVEL.executeExpression( MVEL.compileExpression(  "this.values = [0, 1, 2, 3, 4]" ), mock );
-        assertEquals( 5, mock.getValues().size() ); 
+
+        MVEL.executeExpression(MVEL.compileExpression("this.values = [0, 1, 2, 3, 4]"), mock);
+        assertEquals(5, mock.getValues().size());
     }
-    
+
     public static class MockClass {
         List values;
 
@@ -3828,7 +3826,7 @@ public class CoreConfidenceTests extends AbstractTest {
         public void setValues(List values) {
             this.values = values;
         }
-                
+
     }
 
     public void testParameterizedTypeInStrictMode() {
@@ -4785,7 +4783,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testFieldCoercion1() {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
-        ctx.addInput("bar", Bar.class);                                                            
+        ctx.addInput("bar", Bar.class);
 
         Serializable s = compileSetExpression("bar.assignTest", ctx);
 
@@ -5022,6 +5020,14 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testEdson() {
         assertEquals("foo", test("list = new java.util.ArrayList(); list.add(new String('foo')); list[0]"));
+    }
+
+    public void testEnumSupport() {
+        MyInterface myInterface = new MyClass();
+        myInterface.setType(MyInterface.MY_ENUM.TWO, true);
+        boolean isType = MVEL.eval("isType(org.mvel2.MyInterface.MY_ENUM.ONE)", myInterface, Boolean.class);
+        System.out.println(isType);
+
     }
 
 
