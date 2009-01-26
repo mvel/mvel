@@ -74,7 +74,6 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testDeepAssignment2() {
         Map map = createTestMap();
 
-
         ExpressionCompiler compiler = new ExpressionCompiler("foo.bar.age = 21");
         ParserContext ctx = new ParserContext();
 

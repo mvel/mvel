@@ -124,7 +124,9 @@ public class PropertyVerifier extends AbstractOptimizer {
         if (first) {
             if (pCtx.hasVarOrInput(property)) {
                 if (pCtx.isStrictTypeEnforcement()) {
-                    paramTypes = pCtx.getTypeParameters(property);
+                    if ((paramTypes = pCtx.getTypeParameters(property)) == null) {
+                        pCtx.addTypeParameters(property, ctx);
+                    }
                     pCtx.setLastTypeParameters(pCtx.getTypeParametersAsArray(property));
                 }
                 return pCtx.getVarOrInputType(property);
@@ -244,7 +246,8 @@ public class PropertyVerifier extends AbstractOptimizer {
                 ctx = Object.class;
             }
         }
-        else if (pCtx.isStrongTyping()) {
+
+        if (pCtx.isStrongTyping()) {
             if (Map.class.isAssignableFrom(ctx = getBeanProperty(ctx, property))) {
                 ctx = (Class) pCtx.getLastTypeParameters()[1];
             }
