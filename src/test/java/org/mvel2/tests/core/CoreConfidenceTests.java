@@ -5024,7 +5024,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testEnumSupport() {
         MyInterface myInterface = new MyClass();
         myInterface.setType(MyInterface.MY_ENUM.TWO, true);
-        boolean isType = MVEL.eval("isType(org.mvel2.MyInterface.MY_ENUM.ONE)", myInterface, Boolean.class);
+        boolean isType = MVEL.eval("isType(org.mvel2.tests.core.res.MyInterface$MY_ENUM.ONE)", myInterface, Boolean.class);
         System.out.println(isType);
 
     }

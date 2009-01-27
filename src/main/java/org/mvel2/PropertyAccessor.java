@@ -928,7 +928,6 @@ public class PropertyAccessor {
                     case '.':
                         if (!meth) {
                             try {
-                                //   return Class.forName(new String(expr, 0, cursor = last));
                                 return currentThread().getContextClassLoader().loadClass(new String(property, 0, cursor = last));
                             }
                             catch (ClassNotFoundException e) {
