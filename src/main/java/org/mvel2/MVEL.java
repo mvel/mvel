@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public class MVEL {
     public static final String NAME = "MVEL (MVFLEX Expression Language)";
-    public static final String VERSION = "2.0.6";
+    public static final String VERSION = "2.0.7";
     public static final String VERSION_SUB = "GA";
     public static final String CODENAME = "enceladus";
 
