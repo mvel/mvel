@@ -253,19 +253,19 @@ public class ParseTools {
                         }
                     }
                     else if (parmTypes[i] == arguments[i]) {
-                        score += 5;
+                        score += 6;
                     }
                     else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
-                        score += 4;
+                        score += 5;
                     }
                     else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
-                        score += 4;
+                        score += 5;
                     }
                     else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
-                        score += 3;
+                        score += 4;
                     }
                     else if (parmTypes[i].isAssignableFrom(arguments[i])) {
-                        score += 2;
+                        score += 3;
                     }
                     else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
                         if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
@@ -388,19 +388,19 @@ public class ParseTools {
                     }
                 }
                 else if (parmTypes[i] == targetParms[i]) {
-                    score += 5;
+                    score += 6;
                 }
                 else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
-                    score += 4;
+                    score += 5;
                 }
                 else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
-                    score += 4;
+                    score += 5;
                 }
                 else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
-                    score += 3;
+                    score += 4;
                 }
                 else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
-                    score += 2;
+                    score += 3;
                 }
                 else if (canConvert(parmTypes[i], targetParms[i])) {
                     score += 1;

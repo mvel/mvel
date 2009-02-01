@@ -9,6 +9,8 @@ import org.mvel2.ast.Function;
 import org.mvel2.ast.WithNode;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.compiler.ExecutableAccessor;
+import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.debug.Debugger;
 import org.mvel2.debug.Frame;
@@ -5028,7 +5030,6 @@ public class CoreConfidenceTests extends AbstractTest {
         System.out.println(isType);
 
     }
-
 
 }
 
