@@ -48,7 +48,6 @@ public abstract class AbstractTest extends TestCase {
     protected void setUp() throws Exception {
 
     }
-
     protected static Map createTestMap() {
         Map map = new HashMap();
         map.put("foo", new Foo());

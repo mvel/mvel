@@ -20,10 +20,9 @@ package org.mvel2.ast;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;
 import static org.mvel2.util.CompilerTools.expectType;
+import org.mvel2.BooleanNode;
 
-public class And extends ASTNode {
-    private ASTNode left;
-    private ASTNode right;
+public class And extends BooleanNode {
 
     public And(ASTNode left, ASTNode right, boolean strongTyping) {
         expectType(this.left = left, Boolean.class, strongTyping);
@@ -39,24 +38,24 @@ public class And extends ASTNode {
         throw new RuntimeException("improper use of AST element");
     }
 
-    public ASTNode getLeft() {
-        return left;
-    }
-
-    public void setLeft(ASTNode left) {
-        this.left = left;
-    }
-
-    public ASTNode getRight() {
-        return right;
-    }
-
-    public void setRight(ASTNode right) {
-        this.right = right;
-    }
-
     public String toString() {
         return "(" + left.toString() + " && " + right.toString() + ")";
+    }
+
+    public void setRightMost(ASTNode right) {
+        And n = this;
+        while (n.right != null && n.right instanceof And) {
+            n = (And) n.right;
+        }
+        n.right = right;
+    }
+
+    public ASTNode getRightMost() {
+        And n = this;
+        while (n.right != null && n.right instanceof And) {
+            n = (And) n.right;
+        }
+        return n.right;
     }
 
     public Class getEgressType() {

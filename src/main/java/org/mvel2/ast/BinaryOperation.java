@@ -18,21 +18,16 @@
 
 package org.mvel2.ast;
 
-import org.mvel2.CompileException;
-import org.mvel2.DataConversion;
-import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
-import org.mvel2.ParserContext;
+import org.mvel2.*;
 import org.mvel2.math.MathProcessor;
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;
 import static org.mvel2.util.CompilerTools.getReturnTypeFromOp;
 
-public class BinaryOperation extends ASTNode {
+public class BinaryOperation extends BooleanNode {
     private final int operation;
-    private ASTNode left;
-    private ASTNode right;
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right) {
         this.operation = operation;
@@ -91,32 +86,8 @@ public class BinaryOperation extends ASTNode {
         return operation;
     }
 
-    public ASTNode getLeft() {
-        return left;
-    }
-
-    public void setLeft(ASTNode left) {
-        this.left = left;
-    }
-
-    public ASTNode getRight() {
-        return right;
-    }
-
-    public ASTNode getRightMost() {
-        BinaryOperation n = this;
-        while (n.right != null && n.right instanceof BinaryOperation) {
-            n = (BinaryOperation) n.right;
-        }
-        return n.right;
-    }
-
     public BinaryOperation getRightBinary() {
         return right != null && right instanceof BinaryOperation ? (BinaryOperation) right : null;
-    }
-
-    public void setRight(ASTNode right) {
-        this.right = right;
     }
 
     public void setRightMost(ASTNode right) {
@@ -125,6 +96,14 @@ public class BinaryOperation extends ASTNode {
             n = (BinaryOperation) n.right;
         }
         n.right = right;
+    }
+
+    public ASTNode getRightMost() {
+        BinaryOperation n = this;
+        while (n.right != null && n.right instanceof BinaryOperation) {
+            n = (BinaryOperation) n.right;
+        }
+        return n.right;
     }
 
     public int getPrecedence() {

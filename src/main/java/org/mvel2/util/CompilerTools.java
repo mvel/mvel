@@ -22,6 +22,7 @@ import org.mvel2.CompileException;
 import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
+import org.mvel2.BooleanNode;
 import org.mvel2.ast.*;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
@@ -145,7 +146,7 @@ public class CompilerTools {
                             && (tkOp.getOperator() == Operator.AND || tkOp.getOperator() == Operator.OR)) {
 
                         tkOp2 = null;
-                        ASTNode bool = null;
+                        BooleanNode bool = null;
 
                         switch (tkOp.getOperator()) {
                             case Operator.AND:
@@ -160,7 +161,7 @@ public class CompilerTools {
 
                             switch ((tkOp = tkOp2).getOperator()) {
                                 case Operator.AND:
-                                    bool = new And(bool, astLinkedList.nextNode(), ctx.isStrongTyping());
+                                    bool.setRightMost(new And(bool.getRightMost(), astLinkedList.nextNode(), ctx.isStrongTyping()));
                                     break;
                                 case Operator.OR:
                                     bool = new Or(bool, astLinkedList.nextNode(), ctx.isStrongTyping());

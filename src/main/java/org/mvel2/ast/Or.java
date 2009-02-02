@@ -20,11 +20,9 @@ package org.mvel2.ast;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.CompilerTools;
 import static org.mvel2.util.CompilerTools.expectType;
+import org.mvel2.BooleanNode;
 
-public class Or extends ASTNode {
-    private ASTNode left;
-    private ASTNode right;
-
+public class Or extends BooleanNode {
     public Or(ASTNode left, ASTNode right, boolean strongTyping) {
         expectType(this.left = left, Boolean.class, strongTyping);
         expectType(this.right = right, Boolean.class, strongTyping);
@@ -39,20 +37,20 @@ public class Or extends ASTNode {
         throw new RuntimeException("improper use of AST element");
     }
 
-    public ASTNode getLeft() {
-        return left;
+    public void setRightMost(ASTNode right) {
+        Or n = this;
+        while (n.right != null && n.right instanceof Or) {
+            n = (Or) n.right;
+        }
+        n.right = right;
     }
 
-    public void setLeft(ASTNode left) {
-        this.left = left;
-    }
-
-    public ASTNode getRight() {
-        return right;
-    }
-
-    public void setRight(ASTNode right) {
-        this.right = right;
+    public ASTNode getRightMost() {
+        Or n = this;
+        while (n.right != null && n.right instanceof Or) {
+            n = (Or) n.right;
+        }
+        return n.right;
     }
 
     public String toString() {
