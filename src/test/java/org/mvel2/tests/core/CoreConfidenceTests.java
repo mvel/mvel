@@ -5067,6 +5067,32 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
+    public void testMVEL135() {
+
+        Map<String, Macro> macros = new HashMap<String, Macro>();
+        macros.put("insert",
+                new Macro() {
+                    public String doMacro() {
+                        return "drools.insert";
+                    }
+                });
+
+        String raw = " l.add( \"rule 2 executed \" + str);";
+
+        try {
+            MacroProcessor macroProcessor = new MacroProcessor();
+            macroProcessor.setMacros(macros);
+            String result = macroProcessor.parse(raw);
+            assertEquals(raw, result);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            fail("there shouldn't be any exception: " + ex.getMessage());
+        }
+
+
+    }
+
 }
 
 

@@ -21,6 +21,7 @@ package org.mvel2;
 import org.mvel2.compiler.AbstractParser;
 import static org.mvel2.util.ParseTools.isWhitespace;
 import static org.mvel2.util.ParseTools.balancedCapture;
+import static org.mvel2.util.ParseTools.isIdentifierPart;
 import org.mvel2.util.StringAppender;
 import org.mvel2.util.ParseTools;
 
@@ -45,39 +46,41 @@ public class MacroProcessor extends AbstractParser implements PreProcessor {
         StringAppender appender = new StringAppender();
 
         int start;
+        boolean macroArmed = true;
         String token;
 
         for (; cursor < length; cursor++) {
-            if ('\'' == expr[cursor] || '"' == expr[cursor]) {
-                start = cursor;
-                cursor = balancedCapture(expr, cursor, expr[cursor]) + 1;
-                appender.append(new String(expr, start, cursor - start));
-            }
-            
-            while (cursor < length && (isWhitespace(expr[cursor]) || expr[cursor] == ';')) {
-                appender.append(expr[cursor++]);
-            }
-
             start = cursor;
-
-            while (cursor < length
-                    && (!isWhitespace(expr[cursor])
-                    && expr[cursor] != '('
-                    && expr[cursor] != ')')) {
-
-                cursor++;
-            }
-
-            if (macros.containsKey(token = new String(expr, start, cursor - start))) {
-                appender.append(macros.get(token).doMacro());
-            }
-            else {
-                appender.append(token);
+            while (cursor < length && isIdentifierPart(expr[cursor])) cursor++;
+            if (cursor > start) {
+                if (macros.containsKey(token = new String(expr, start, cursor - start)) && macroArmed) {
+                    appender.append(macros.get(token).doMacro());
+                }
+                else {
+                    appender.append(token);
+                }
             }
 
             if (cursor < length) {
-                appender.append(expr[cursor]);
+                switch (expr[cursor]) {
+                    case '"':
+                    case '\'':
+                        start = cursor;
+                        cursor = balancedCapture(expr, cursor, expr[cursor])+1;
+                        appender.append(new String(expr, start, cursor - start));
+
+                        if (cursor >= length || isIdentifierPart(expr[cursor])) break;
+
+                    default:
+                        switch (expr[cursor])  {
+                            case '.': macroArmed = false; break;
+                            case ';': macroArmed = true; break;
+                        }
+
+                        appender.append(expr[cursor]);
+                }
             }
+
         }
 
         return appender.toChars();
