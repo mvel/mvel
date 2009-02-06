@@ -79,7 +79,6 @@ public class MacroProcessor extends AbstractParser implements PreProcessor {
 
                         if (cursor >= length || isIdentifierPart(expr[cursor])) break;
 
-
                     default:
                         switch (expr[cursor]) {
                             case '.':
