@@ -18,19 +18,21 @@
 
 package org.mvel2.compiler;
 
-import org.mvel2.*;
-import org.mvel2.math.MathProcessor;
+import org.mvel2.CompileException;
+import org.mvel2.ErrorDetail;
+import org.mvel2.Operator;
 import static org.mvel2.Operator.*;
+import org.mvel2.ParserContext;
 import org.mvel2.ast.*;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.math.MathProcessor;
 import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ArrayTools.isLiteralOnly;
 import org.mvel2.util.ExecutionStack;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.isEmpty;
 import org.mvel2.util.Soundex;
-import org.mvel2.util.ArrayTools;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -1439,7 +1441,7 @@ public class AbstractParser implements Serializable {
              */
             captureToEOL();
 
-            line = pCtx.getLineCount();
+            if (pCtx != null) line = pCtx.getLineCount();
 
             skipWhitespaceWithLineAccounting();
 
@@ -1450,7 +1452,7 @@ public class AbstractParser implements Serializable {
 
             lastWasComment = true;
 
-            pCtx.setLineCount(line);
+            if (pCtx != null) pCtx.setLineCount(line);
 
             if ((start = cursor) >= length) return OP_TERMINATE;
 
@@ -1467,7 +1469,7 @@ public class AbstractParser implements Serializable {
              * source will spawn a new compiler, and we need to sync this with the
              * parser context;
              */
-            line = pCtx.getLineCount();
+            if (pCtx != null) line = pCtx.getLineCount();
 
             while (true) {
                 cursor++;
@@ -1488,11 +1490,13 @@ public class AbstractParser implements Serializable {
                 }
             }
 
-            pCtx.setLineCount(line);
+            if (pCtx != null) {
+                pCtx.setLineCount(line);
 
-            if (lastNode instanceof LineLabel) {
-                pCtx.getLastLineLabel().setLineNumber(line);
-                pCtx.addKnownLine(line);
+                if (lastNode instanceof LineLabel) {
+                    pCtx.getLastLineLabel().setLineNumber(line);
+                    pCtx.addKnownLine(line);
+                }
             }
 
             lastWasComment = true;
