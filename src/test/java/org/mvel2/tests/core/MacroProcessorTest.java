@@ -187,5 +187,15 @@ public class MacroProcessorTest extends TestCase {
         Assert.assertEquals("FOOBAR!", MVEL.executeDebugger(compiled, null, new MapVariableResolverFactory(vars)));
     }
 
-
+    public void testParseStringUnmatchedChars() {
+        String raw = "result.add( \"\\\"\\\' there are } [ unmatched characters in this string (\"  );";
+        try {
+            String result = macroProcessor.parse(raw);
+            assertEquals(raw, result);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            fail("there shouldn't be any exception: " + ex.getMessage());
+        }
+    }
 }
