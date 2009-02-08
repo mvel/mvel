@@ -343,4 +343,52 @@ public class PropertyHandlerTests extends TestCase {
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
     }
 
+    public class WorkObject {
+        Map<String, Object> map = new HashMap<String, Object>();
+
+        public boolean hasFieldName(String name) {
+            return map.containsKey(name);
+        }
+
+        public Object getFieldValue(String name) {
+            return map.get(name);
+        }
+
+        public void setFieldValue(String name, Object value, boolean bool) {
+            map.put(name, value);
+        }
+    }
+
+    public class WebPropertyHandler implements PropertyHandler {
+
+        public Object getProperty(String arg0, Object arg1,
+                                  VariableResolverFactory arg2) {
+            WorkObject wob = (WorkObject) arg1;
+            if (wob.hasFieldName(arg0)) {
+                return wob.getFieldValue(arg0);
+            }
+            else
+                return null;
+        }
+
+        public Object setProperty(String arg0, Object arg1,
+                                  VariableResolverFactory arg2, Object arg3) {
+            WorkObject wob = (WorkObject) arg1;
+            wob.setFieldValue(arg0, arg3, true);
+            return arg3;
+        }
+    }
+
+    public void testPropertyHandlerSetting() {
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+        PropertyHandlerFactory.registerPropertyHandler(WorkObject.class, new WebPropertyHandler());
+
+        Map vars = new HashMap();
+        WorkObject wo = new WorkObject();
+        vars.put("wobj", wo);
+
+        MVEL.setProperty(vars, "wobj.foo", "foobie");
+
+        assertEquals("foobie", wo.getFieldValue("foo"));
+    }
 }

@@ -36,7 +36,6 @@ import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import org.mvel2.util.StringAppender;
-import org.mvel2.optimizers.impl.refl.nodes.StaticReferenceAccessor;
 
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Thread.currentThread;
@@ -324,7 +323,7 @@ public class PropertyAccessor {
                 }
             }
             else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(curr.getClass())) {
-                getPropertyHandler(curr.getClass()).setProperty(capture(), ctx, variableFactory, value);
+                getPropertyHandler(curr.getClass()).setProperty(capture(), curr, variableFactory, value);
                 return;
             }
 
