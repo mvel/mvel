@@ -7,7 +7,7 @@
     <name>mvel</name>
     <url>http://mvel.codehaus.org/</url>
     <scm>
-        <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/2.0.7-SNAPSHOT</developerConnection>
+        <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/2.0.7-SNAPSHOT-02082009-2</developerConnection>
     </scm>
 
     <build>
