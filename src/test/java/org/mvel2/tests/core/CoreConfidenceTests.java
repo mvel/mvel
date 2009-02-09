@@ -1614,7 +1614,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
-
     public void testExecuteCoercionTwice() {
         OptimizerFactory.setDefaultOptimizer("reflective");
 
@@ -4943,8 +4942,6 @@ public class CoreConfidenceTests extends AbstractTest {
             return !successful;
         }
     }
-
-
 
 
 }

@@ -575,11 +575,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         buildInputs();
 
         if (buildLog != null && buildLog.length() != 0 && expr != null) {
-//           mv = cw.visitMethod(ACC_PUBLIC, "toString", "()Ljava/lang/String;", null, null);
-//            mv.visitCode();
-//            mv.visitLdcInsn(buildLog.toString());
-//            mv.visitInsn(ARETURN);
-
             mv = cw.visitMethod(ACC_PUBLIC, "toString", "()Ljava/lang/String;", null, null);
             mv.visitCode();
             Label l0 = new Label();
@@ -778,10 +773,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         String root = new String(expr, 0, cursor - 1).trim();
 
         int start = cursor + 1;
-    //    int[] res = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx);
         cursor = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx);
-    //    (pCtx = getParserContext()).incrementLineCount(res[1]);
-
         this.returnType = ctx != null ? ctx.getClass() : null;
 
         for (WithStatementPair aPvp : parseWithExpressions(root, subset(expr, start, cursor++ - start))) {
@@ -1173,17 +1165,18 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private Object getCollectionProperty(Object ctx, String prop)
             throws IllegalAccessException, InvocationTargetException {
-        if (prop.length() > 0) {
+        if (prop.trim().length() > 0) {
             ctx = getBeanProperty(ctx, prop);
             first = false;
         }
 
-        assert debug("\n  **  ENTER -> {collections: " + prop + "; ctx=" + ctx + "}");
+        assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
 
         if (first) {
             assert debug("ALOAD 1");
             mv.visitVarInsn(ALOAD, 1);
         }
+
 
         int start = ++cursor;
 
