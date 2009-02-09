@@ -579,11 +579,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             mv.visitCode();
             Label l0 = new Label();
             mv.visitLabel(l0);
-            mv.visitLdcInsn(buildLog.toString() + "\n\n## { " + new String(expr) + " }" );
+            mv.visitLdcInsn(buildLog.toString() + "\n\n## { " + new String(expr) + " }");
             mv.visitInsn(ARETURN);
             Label l1 = new Label();
             mv.visitLabel(l1);
-            mv.visitMaxs(1, 1);            
+            mv.visitMaxs(1, 1);
             mv.visitEnd();
         }
 
@@ -1319,9 +1319,13 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     private Object getCollectionPropertyAO(Object ctx, String prop)
             throws IllegalAccessException, InvocationTargetException {
-        if (prop.length() > 0) ctx = getBeanProperty(ctx, prop);
+        if (prop.length() > 0) {
+            ctx = getBeanProperty(ctx, prop);
+            first = false;
+        }
 
-        assert debug("\n  **  ENTER -> {collections: " + prop + "; ctx=" + ctx + "}");
+
+        assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
 
         int start = ++cursor;
 
@@ -1347,6 +1351,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return propHandlerByteCode(tk, ctx, Map.class);
             }
             else {
+                if (first) {
+                    assert debug("ALOAD 1");
+                    mv.visitVarInsn(ALOAD, 1);
+                }
+
                 assert debug("CHECKCAST java/util/Map");
                 mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 
@@ -1366,6 +1375,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return propHandlerByteCode(tk, ctx, List.class);
             }
             else {
+                if (first) {
+                    assert debug("ALOAD 1");
+                    mv.visitVarInsn(ALOAD, 1);
+                }
+
                 assert debug("CHECKCAST java/util/List");
                 mv.visitTypeInsn(CHECKCAST, "java/util/List");
 
@@ -1382,6 +1396,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return propHandlerByteCode(tk, ctx, Array.class);
             }
             else {
+                if (first) {
+                    assert debug("ALOAD 1");
+                    mv.visitVarInsn(ALOAD, 1);
+                }
+
                 assert debug("CHECKCAST " + getDescriptor(ctx.getClass()));
                 mv.visitTypeInsn(CHECKCAST, getDescriptor(ctx.getClass()));
 
@@ -1437,6 +1456,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return propHandlerByteCode(tk, ctx, CharSequence.class);
             }
             else {
+                if (first) {
+                    assert debug("ALOAD 1");
+                    mv.visitVarInsn(ALOAD, 1);
+                }
+
                 assert debug("CHECKCAST java/lang/CharSequence");
                 mv.visitTypeInsn(CHECKCAST, "java/lang/CharSequence");
 
@@ -2040,7 +2064,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKESPECIAL java/lang/Boolan.<init>::(Z)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Boolean", "<init>", "(Z)V");
 
-           //     returnType = Boolean.class;
+                //     returnType = Boolean.class;
             }
             else if (cls == int.class || cls == Integer.class) {
                 debug("NEW java/lang/Integer");
@@ -2055,7 +2079,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKESPECIAL java/lang/Integer.<init>::(I)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Integer", "<init>", "(I)V");
 
-           //     returnType = Integer.class;
+                //     returnType = Integer.class;
             }
             else if (cls == float.class || cls == Float.class) {
                 debug("NEW java/lang/Float");
@@ -2070,7 +2094,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKESPECIAL java/lang/Float.<init>::(F)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Float", "<init>", "(F)V");
 
-        //        returnType = Float.class;
+                //        returnType = Float.class;
             }
             else if (cls == double.class || cls == Double.class) {
                 debug("NEW java/lang/Double");
@@ -2088,7 +2112,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKESPECIAL java/lang/Double.<init>::(D)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Double", "<init>", "(D)V");
 
-        //        returnType = Double.class;
+                //        returnType = Double.class;
             }
             else if (cls == short.class || cls == Short.class) {
                 debug("NEW java/lang/Short");
@@ -2103,7 +2127,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKESPECIAL java/lang/Short.<init>::(S)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Short", "<init>", "(S)V");
 
-         //       returnType = Short.class;
+                //       returnType = Short.class;
             }
             else if (cls == long.class || cls == Long.class) {
                 debug("NEW java/lang/Long");
@@ -2118,7 +2142,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKESPECIAL java/lang/Long.<init>::(L)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Float", "<init>", "(L)V");
 
-         //       returnType = Long.class;
+                //       returnType = Long.class;
             }
             else if (cls == byte.class || cls == Byte.class) {
                 debug("NEW java/lang/Byte");
@@ -2133,7 +2157,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKESPECIAL java/lang/Byte.<init>::(B)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Byte", "<init>", "(B)V");
 
-         //       returnType = Byte.class;
+                //       returnType = Byte.class;
             }
             else if (cls == char.class || cls == Character.class) {
                 debug("NEW java/lang/Character");
@@ -2148,49 +2172,49 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("INVOKESPECIAL java/lang/Character.<init>::(C)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Character", "<init>", "(C)V");
 
-         //       returnType = Character.class;
+                //       returnType = Character.class;
             }
         }
         else {
             if (cls == boolean.class || cls == Boolean.class) {
                 debug("INVOKESTATIC java/lang/Boolean.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;");
-         //       returnType = Boolean.class;
+                //       returnType = Boolean.class;
             }
             else if (cls == int.class || cls == Integer.class) {
                 debug("INVOKESTATIC java/lang/Integer.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;");
-         //       returnType = Integer.class;
+                //       returnType = Integer.class;
             }
             else if (cls == float.class || cls == Float.class) {
                 debug("INVOKESTATIC java/lang/Float.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;");
-          //      returnType = Float.class;
+                //      returnType = Float.class;
             }
             else if (cls == double.class || cls == Double.class) {
                 debug("INVOKESTATIC java/lang/Double.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;");
-           //     returnType = Double.class;
+                //     returnType = Double.class;
             }
             else if (cls == short.class || cls == Short.class) {
                 debug("INVOKESTATIC java/lang/Short.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;");
-           //     returnType = Short.class;
+                //     returnType = Short.class;
             }
             else if (cls == long.class || cls == Long.class) {
                 debug("INVOKESTATIC java/lang/Long.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;");
-           //     returnType = Long.class;
+                //     returnType = Long.class;
             }
             else if (cls == byte.class || cls == Byte.class) {
                 debug("INVOKESTATIC java/lang/Byte.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;");
-           //     returnType = Byte.class;
+                //     returnType = Byte.class;
             }
             else if (cls == char.class || cls == Character.class) {
                 debug("INVOKESTATIC java/lang/Character.valueOf");
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;");
-           //     returnType = Character.class;
+                //     returnType = Character.class;
             }
         }
     }
