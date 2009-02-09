@@ -685,12 +685,12 @@ public class PropertyAccessor {
             return ((CharSequence) ctx).charAt((Integer) eval(prop, ctx, variableFactory));
         }
         else {
-            TypeDescriptor td = new TypeDescriptor(property, 0);
+       //     TypeDescriptor td = new TypeDescriptor(property, 0);
             try {
-                return getClassReference(getCurrentThreadParserContext(), td);
+                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, 0));
             }
             catch (Exception e) {
-                throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+                throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()), e);
             }
         }
     }
@@ -748,7 +748,7 @@ public class PropertyAccessor {
         else {
             //      TypeDescriptor td = new TypeDescriptor(property, 0);
             try {
-                return getClassReference(getCurrentThreadParserContext(), new TypeDescriptor(property, 0));
+                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, 0));
             }
             catch (Exception e) {
                 throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));

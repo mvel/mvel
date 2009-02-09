@@ -923,6 +923,13 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(HashMap.class, test("import java.util.HashMap; HashMap;"));
     }
 
+    public void testImport2() {
+       HashMap[] maps = (HashMap[])  MVEL.eval("import java.util.*; HashMap[] maps = new HashMap[10]; maps", new HashMap());
+
+    //    HashMap[] maps = (HashMap[]) test("import java.util.*; HashMap[] maps = new HashMap[10]; maps");
+        assertEquals(10, maps.length);
+    }
+
     public void testStaticImport() {
         assertEquals(2.0, test("import_static java.lang.Math.sqrt; sqrt(4)"));
     }

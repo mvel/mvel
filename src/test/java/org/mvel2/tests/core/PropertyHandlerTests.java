@@ -194,7 +194,6 @@ public class PropertyHandlerTests extends TestCase {
     public void testMapPropertyHandler() {
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
 
-
         PropertyHandlerFactory.registerPropertyHandler(Map.class, new
                 PropertyHandler() {
                     public Object getProperty(String name, Object contextObj,
@@ -221,7 +220,6 @@ public class PropertyHandlerTests extends TestCase {
         assertEquals("set", base.funMap.get("key"));
 
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
-
     }
 
     public void testArrayPropertyHandler() {
@@ -282,7 +280,6 @@ public class PropertyHandlerTests extends TestCase {
         MVEL.getProperty("someList", new MyBean());
         assertEquals(2, listener.counter);
     }
-
 
     public void testListener() {
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;

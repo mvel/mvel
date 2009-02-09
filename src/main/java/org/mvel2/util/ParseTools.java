@@ -435,7 +435,7 @@ public class ParseTools {
     private static Map<Class, Constructor[]> CLASS_CONSTRUCTOR_CACHE = new WeakHashMap<Class, Constructor[]>(10);
 
 
-    public static Class createClass(String className) throws ClassNotFoundException {
+    public static Class createClass(String className, ParserContext pCtx) throws ClassNotFoundException {
         ClassLoader classLoader = currentThread().getContextClassLoader();
         Map<String, Class> cache = CLASS_RESOLVER_CACHE.get(classLoader);
         if (cache == null) {
@@ -449,7 +449,8 @@ public class ParseTools {
         }
         else {
             try {
-                cls = getCurrentThreadParserContext().getParserConfiguration().getClassLoader().loadClass(className);
+                cls = pCtx == null ? Thread.currentThread().getContextClassLoader().loadClass(className) :
+                        pCtx.getParserConfiguration().getClassLoader().loadClass(className);
             }
             catch (ClassNotFoundException e) {
                 /**
@@ -789,11 +790,8 @@ public class ParseTools {
             else if (factory != null && factory.isResolveable(name)) {
                 return (Class) factory.getVariableResolver(name).getValue();
             }
-            else if (ctx != null && ctx.hasImport(name)) {
-                return getCurrentThreadParserContext().getImport(name);
-            }
             else {
-                return createClass(name);
+                return createClass(name, ctx);
             }
         }
         catch (ClassNotFoundException e) {
