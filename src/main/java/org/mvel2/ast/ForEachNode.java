@@ -64,9 +64,6 @@ public class ForEachNode extends BlockNode {
         Object iterCond = condition.getValue(ctx, thisValue, factory);
 
         if (type == -1) {
-//            if (compiledBlock == null) {
-//                this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
-//            }
             if (iterCond instanceof Iterable) {
                 type = ITERABLE;
             }

@@ -141,7 +141,7 @@ public class CompilerTools {
                             && (tkOp.getOperator() == Operator.AND || tkOp.getOperator() == Operator.OR)) {
 
                         tkOp2 = null;
-                        BooleanNode bool = null;
+                        BooleanNode bool;
 
                         if (tkOp.getOperator() == Operator.AND) {
                             bool = new And(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
@@ -149,14 +149,6 @@ public class CompilerTools {
                         else {
                             bool = new Or(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
                         }
-
-//                        switch (tkOp.getOperator()) {
-//                            case Operator.AND:
-//                                bool = new And(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
-//                                break;
-//                            case Operator.OR:
-//                                bool = new Or(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
-//                        }
 
                         while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
                                 && (tkOp2.isOperator(Operator.AND) || tkOp2.isOperator(Operator.OR))) {
@@ -168,13 +160,6 @@ public class CompilerTools {
                                 bool = new Or(bool, astLinkedList.nextNode(), ctx.isStrongTyping());
                             }
 
-//
-//                            switch ((tkOp = tkOp2).getOperator()) {
-//                                case Operator.AND:
-//                                    break;
-//                                case Operator.OR:
-//                                    bool = new Or(bool, astLinkedList.nextNode(), ctx.isStrongTyping());
-//                            }
                         }
 
                         optimizedAst.addTokenNode(bool);
