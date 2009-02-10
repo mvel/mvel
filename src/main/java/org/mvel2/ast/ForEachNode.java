@@ -27,6 +27,7 @@ import org.mvel2.integration.impl.ItemResolverFactory;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 import static org.mvel2.util.ParseTools.subset;
+import static org.mvel2.util.ParseTools.getBaseComponentType;
 
 import java.lang.reflect.Array;
 
@@ -121,7 +122,7 @@ public class ForEachNode extends BlockNode {
         Object iterCond = MVEL.eval(cond, thisValue, factory);
 
         if (itemType != null && itemType.isArray())
-            enforceTypeSafety(itemType, ParseTools.getBaseComponentType(iterCond.getClass()));
+            enforceTypeSafety(itemType, getBaseComponentType(iterCond.getClass()));
 
         this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
 
@@ -185,7 +186,7 @@ public class ForEachNode extends BlockNode {
             Class egress = (this.condition = (ExecutableStatement) subCompileExpression(this.cond)).getKnownEgressType();
 
             if (itemType != null && egress.isArray()) {
-                enforceTypeSafety(itemType, ParseTools.getBaseComponentType(this.condition.getKnownEgressType()));
+                enforceTypeSafety(itemType, getBaseComponentType(this.condition.getKnownEgressType()));
             }
             else if (pCtx.isStrongTyping()) {
                 if (Iterable.class.isAssignableFrom(egress)) {
@@ -210,7 +211,7 @@ public class ForEachNode extends BlockNode {
     private static void enforceTypeSafety(Class required, Class actual) {
         if (!required.isAssignableFrom(actual)) {
             throw new CompileException("type mismatch in foreach: expected: "
-                    + required.getName() + "; but found: " + ParseTools.getBaseComponentType(actual));
+                    + required.getName() + "; but found: " + getBaseComponentType(actual));
         }
     }
 }
