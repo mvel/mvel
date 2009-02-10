@@ -22,7 +22,7 @@ import org.mvel2.CompileException;
 import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
-import org.mvel2.BooleanNode;
+import org.mvel2.ast.BooleanNode;
 import org.mvel2.ast.*;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
@@ -100,12 +100,7 @@ public class CompilerTools {
 
 
                     if (tkOp2 != null && tkOp2 != tkOp) {
-                      //  astLinkedList.setCurrentNode(tkOp2);
-
                         optimizeOperator(tkOp2.getOperator(), bo, tkOp2, astLinkedList, optimizedAst);
-
-
-                    //       optimizedAst.addTokenNode(tkOp2);
                     }
                     else {
                         optimizedAst.addTokenNode(bo);                        
@@ -148,24 +143,38 @@ public class CompilerTools {
                         tkOp2 = null;
                         BooleanNode bool = null;
 
-                        switch (tkOp.getOperator()) {
-                            case Operator.AND:
-                                bool = new And(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
-                                break;
-                            case Operator.OR:
-                                bool = new Or(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
+                        if (tkOp.getOperator() == Operator.AND) {
+                            bool = new And(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
                         }
+                        else {
+                            bool = new Or(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
+                        }
+
+//                        switch (tkOp.getOperator()) {
+//                            case Operator.AND:
+//                                bool = new And(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
+//                                break;
+//                            case Operator.OR:
+//                                bool = new Or(tk, astLinkedList.nextNode(), ctx.isStrongTyping());
+//                        }
 
                         while (astLinkedList.hasMoreNodes() && (tkOp2 = astLinkedList.nextNode()).isOperator()
                                 && (tkOp2.isOperator(Operator.AND) || tkOp2.isOperator(Operator.OR))) {
 
-                            switch ((tkOp = tkOp2).getOperator()) {
-                                case Operator.AND:
-                                    bool.setRightMost(new And(bool.getRightMost(), astLinkedList.nextNode(), ctx.isStrongTyping()));
-                                    break;
-                                case Operator.OR:
-                                    bool = new Or(bool, astLinkedList.nextNode(), ctx.isStrongTyping());
+                            if ((tkOp = tkOp2).getOperator() == Operator.AND) {
+                                bool.setRightMost(new And(bool.getRightMost(), astLinkedList.nextNode(), ctx.isStrongTyping()));                                
                             }
+                            else {
+                                bool = new Or(bool, astLinkedList.nextNode(), ctx.isStrongTyping());
+                            }
+
+//
+//                            switch ((tkOp = tkOp2).getOperator()) {
+//                                case Operator.AND:
+//                                    break;
+//                                case Operator.OR:
+//                                    bool = new Or(bool, astLinkedList.nextNode(), ctx.isStrongTyping());
+//                            }
                         }
 
                         optimizedAst.addTokenNode(bool);
@@ -210,10 +219,6 @@ public class CompilerTools {
             case Operator.SOUNDEX:
                 optimizedAst.addTokenNode(new Soundslike(tk, astLinkedList.nextNode()));
                 break;
-//            case Operator.TERNARY:
-//                ExecutableAccessor cond = new ExecutableAccessor(tk, tk.getEgressType());
-//                ExecutableAccessor b
-
 
             default:
                 optimizedAst.addTokenNode(tk, tkOp);

@@ -1,6 +1,4 @@
-package org.mvel2;
-
-import org.mvel2.ast.ASTNode;
+package org.mvel2.ast;
 
 public abstract class BooleanNode extends ASTNode {
     protected ASTNode left;

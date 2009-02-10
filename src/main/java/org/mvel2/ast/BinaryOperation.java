@@ -23,7 +23,6 @@ import org.mvel2.*;
 import org.mvel2.math.MathProcessor;
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.util.CompilerTools;
 import static org.mvel2.util.CompilerTools.getReturnTypeFromOp;
 
 public class BinaryOperation extends BooleanNode {
