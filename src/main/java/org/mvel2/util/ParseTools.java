@@ -1004,7 +1004,7 @@ public class ParseTools {
             }
         }
         else {
-            int lines = 0;
+       //     int lines = 0;
             for (start++; start < chars.length; start++) {
 
                 if (start < chars.length && chars[start] == '/') {

@@ -74,7 +74,7 @@ public class ParserContext implements Serializable {
     private boolean executableCodeReached = false;
     private boolean indexAllocation = false;
     private boolean allowBootstrapBypass = true;
-
+                                           
     public ParserContext() {
     }
 
