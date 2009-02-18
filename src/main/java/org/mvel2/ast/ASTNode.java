@@ -418,6 +418,7 @@ public class ASTNode implements Cloneable,  Serializable {
         }
 
         setName(name);
+
     }
 
 

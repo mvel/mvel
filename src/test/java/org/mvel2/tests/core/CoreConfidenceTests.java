@@ -26,6 +26,7 @@ import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.*;
 import org.mvel2.util.CompilerTools;
 import org.mvel2.util.MethodStub;
+import org.mvel2.util.ReflectionUtil;
 import static org.mvel2.util.ParseTools.loadFromFile;
 
 import java.awt.*;
@@ -924,9 +925,9 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testImport2() {
-       HashMap[] maps = (HashMap[])  MVEL.eval("import java.util.*; HashMap[] maps = new HashMap[10]; maps", new HashMap());
+        HashMap[] maps = (HashMap[]) MVEL.eval("import java.util.*; HashMap[] maps = new HashMap[10]; maps", new HashMap());
 
-    //    HashMap[] maps = (HashMap[]) test("import java.util.*; HashMap[] maps = new HashMap[10]; maps");
+        //    HashMap[] maps = (HashMap[]) test("import java.util.*; HashMap[] maps = new HashMap[10]; maps");
         assertEquals(10, maps.length);
     }
 
@@ -4950,6 +4951,13 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+
+    public void testJIRA139() {
+        ParserContext ctx = new ParserContext();
+        ctx.addImport("ReflectionUtil", ReflectionUtil.class);
+        Serializable s = MVEL.compileExpression("ReflectionUtil.getGetter('foo')", ctx);
+        assertEquals(ReflectionUtil.getGetter("foo"), MVEL.executeExpression(s));
+    }
 
 }
 

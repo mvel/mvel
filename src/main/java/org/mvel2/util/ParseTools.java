@@ -1699,7 +1699,8 @@ public class ParseTools {
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
-        if (compiled.getParserContext().isAllowBootstrapBypass() && compiled.getInstructions().size() == 1) {
+        if (!compiled.isImportInjectionRequired() &&
+                compiled.getParserContext().isAllowBootstrapBypass() && compiled.getInstructions().size() == 1) {
             ASTNode tk = compiled.getInstructions().firstNode();
 
             if (tk.isLiteral() && !tk.isThisVal()) {
