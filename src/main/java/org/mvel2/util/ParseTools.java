@@ -449,8 +449,11 @@ public class ParseTools {
         }
         else {
             try {
-                cls = pCtx == null ? Thread.currentThread().getContextClassLoader().loadClass(className) :
-                        pCtx.getParserConfiguration().getClassLoader().loadClass(className);
+                cls = pCtx == null ? Class.forName(className, true, Thread.currentThread().getContextClassLoader()) :
+                        Class.forName(className, true, pCtx.getParserConfiguration().getClassLoader());
+
+//                cls = pCtx == null ? Thread.currentThread().getContextClassLoader().loadClass(className) :
+//                        pCtx.getParserConfiguration().getClassLoader().loadClass(className);
             }
             catch (ClassNotFoundException e) {
                 /**

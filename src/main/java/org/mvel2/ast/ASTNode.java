@@ -247,12 +247,14 @@ public class ASTNode implements Cloneable,  Serializable {
                     case '.':
                         if (depth == 0 && !meth) {
                             try {
+                                Class.forName(new String(name, 0, i), true, currentThread().getContextClassLoader());
+
                                 return get(new String(name, last, name.length - last),
-                                        currentThread().getContextClassLoader().loadClass(new String(name, 0, last)), factory, thisRef);
+                                        Class.forName(new String(name, 0, last), true, currentThread().getContextClassLoader()), factory, thisRef);
                             }
                             catch (ClassNotFoundException e) {
                                 return get(new String(name, i + 1, name.length - i - 1),
-                                        currentThread().getContextClassLoader().loadClass(new String(name, 0, i)), factory, thisRef);
+                                         Class.forName(new String(name, 0, i), true, currentThread().getContextClassLoader()), factory, thisRef);
                             }
                         }
                         meth = false;

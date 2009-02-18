@@ -90,7 +90,7 @@ public class ParserConfiguration implements Serializable {
         Class cls = null;
         for (String pkg : packageImports) {
             try {
-                cls = classLoader.loadClass(pkg + "." + className);
+                cls = Class.forName(pkg + "." + className, true, classLoader);
                 found++;
             }
             catch (ClassNotFoundException e) {

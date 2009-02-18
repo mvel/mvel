@@ -65,11 +65,10 @@ public class AbstractOptimizer extends AbstractParser {
                     case '.':
                         if (!meth) {
                             try {
-                                //   return Class.forName(new String(expr, 0, cursor = last));
-                                return currentThread().getContextClassLoader().loadClass(new String(expr, 0, cursor = last));
+                                 return Class.forName(new String(expr, 0, cursor = last), true, currentThread().getContextClassLoader());
                             }
                             catch (ClassNotFoundException e) {
-                                Class cls = currentThread().getContextClassLoader().loadClass(new String(expr, 0, i));
+                                Class cls = Class.forName(new String(expr, 0, i), true, currentThread().getContextClassLoader());
                                 String name = new String(expr, i + 1, expr.length - i - 1);
                                 try {
                                     return cls.getField(name);

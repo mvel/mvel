@@ -28,7 +28,7 @@ public class ClassImportResolver implements VariableResolver {
     public ClassImportResolver(String fqcn, String name) {
         this.name = name;
         try {
-            this.type = Thread.currentThread().getContextClassLoader().loadClass(fqcn);
+            this.type = Class.forName(fqcn, true, Thread.currentThread().getContextClassLoader());
         }
         catch (Exception e) {
             throw new CompileException("failed import", e);

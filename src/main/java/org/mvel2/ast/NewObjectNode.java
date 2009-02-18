@@ -55,7 +55,8 @@ public class NewObjectNode extends ASTNode {
             }
             else {
                 try {
-                    egressType = currentThread().getContextClassLoader().loadClass(typeDescr.getClassName());
+                    egressType = Class.forName(typeDescr.getClassName(), true, currentThread().getContextClassLoader());
+//                    egressType = currentThread().getContextClassLoader().loadClass(typeDescr.getClassName());
                 }
                 catch (ClassNotFoundException e) {
                     // do nothing.
@@ -206,8 +207,8 @@ public class NewObjectNode extends ASTNode {
                     }
                 }
                 else {
-                    Constructor<?> cns = currentThread().getContextClassLoader()
-                            .loadClass(typeDescr.getClassName()).getConstructor(EMPTYCLS);
+                    Constructor<?> cns = Class.forName(typeDescr.getClassName(), true, currentThread().getContextClassLoader())
+                            .getConstructor(EMPTYCLS);
 
                     if (cnsRes.length > 1) {
                         return PropertyAccessor.get(cnsRes[1], cns.newInstance(), factory, thisValue);
