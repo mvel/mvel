@@ -22,9 +22,8 @@ import org.mvel2.*;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.MVEL.getDebuggingOutputFileName;
 import org.mvel2.ast.ASTNode;
-import org.mvel2.ast.Substatement;
-import org.mvel2.ast.InlineCollectionNode;
-import static org.mvel2.compiler.AbstractParser.*;
+import static org.mvel2.compiler.AbstractParser.LITERALS;
+import static org.mvel2.compiler.AbstractParser.isReservedWord;
 import org.mvel2.compiler.*;
 import static org.mvel2.integration.ResolverTools.insertFactory;
 import org.mvel2.integration.VariableResolverFactory;
@@ -451,9 +450,6 @@ public class ParseTools {
             try {
                 cls = pCtx == null ? Class.forName(className, true, Thread.currentThread().getContextClassLoader()) :
                         Class.forName(className, true, pCtx.getParserConfiguration().getClassLoader());
-
-//                cls = pCtx == null ? Thread.currentThread().getContextClassLoader().loadClass(className) :
-//                        pCtx.getParserConfiguration().getClassLoader().loadClass(className);
             }
             catch (ClassNotFoundException e) {
                 /**
@@ -757,7 +753,6 @@ public class ParseTools {
             case Operator.BW_USHIFT_RIGHT:
                 op = '\u00AC';
                 break;
-
         }
 
         arraycopy(name.toCharArray(), 0, (stmt = new char[name.length() + statement.length + 1]), 0, name.length());
@@ -870,7 +865,6 @@ public class ParseTools {
     }
 
     public static int __resolveType(Class cls) {
-
         if (Integer.class == cls)
             return DataTypes.W_INTEGER;
         if (Double.class == cls)
@@ -918,9 +912,6 @@ public class ParseTools {
         if (BlankLiteral.class == cls)
             return DataTypes.EMPTY;
 
-//        if (Unit.class.isAssignableFrom(cls))
-//            return DataTypes.UNIT;
-
         return DataTypes.OBJECT;
     }
 
@@ -934,7 +925,6 @@ public class ParseTools {
         }
         return false;
     }
-
 
     public static Object narrowType(final BigDecimal result) {
         if (result.scale() > 0) {
@@ -964,7 +954,6 @@ public class ParseTools {
 
         return null;
     }
-
 
     /**
      * This is an important aspect of the core parser tools.  This method is used throughout the core parser
@@ -1007,9 +996,7 @@ public class ParseTools {
             }
         }
         else {
-       //     int lines = 0;
             for (start++; start < chars.length; start++) {
-
                 if (start < chars.length && chars[start] == '/') {
                     if (start + 1 == chars.length) return start;
                     if (chars[start + 1] == '/') {
@@ -1175,7 +1162,6 @@ public class ParseTools {
         return cursor;
     }
 
-
     public static WithStatementPair[] parseWithExpressions(String nestParm, char[] block) {
         List<WithStatementPair> parms = new ArrayList<WithStatementPair>();
 
@@ -1270,7 +1256,6 @@ public class ParseTools {
             if (parm == null) {
                 parms.add(new WithStatementPair(null, new StringAppender(nestParm).append('.')
                         .append(subset(block, start, end - start)).toString()));
-
             }
             else {
                 parms.add(new WithStatementPair(
@@ -1383,8 +1368,6 @@ public class ParseTools {
                     default:
                         return -1;
                 }
-
-
             }
         }
 
@@ -1452,7 +1435,7 @@ public class ParseTools {
         }
         for (; i < len; i++) {
             if (!isDigit(c = val[i])) {
-                if (c == '.' && f) {
+                if (f && c == '.') {
                     f = false;
                 }
                 else if (len != 1 && i == len - 1) {
@@ -1467,7 +1450,7 @@ public class ParseTools {
                         case 'B':
                             return true;
                         case '.':
-                            throw new CompileException("invalid number literal");
+                            throw new CompileException("invalid number literal: " + new String(val));
                     }
                     return false;
                 }
@@ -1475,7 +1458,6 @@ public class ParseTools {
                     for (i++; i < len; i++) {
                         if (!isDigit(c = val[i])) {
                             if ((c < 'A' || c > 'F') && (c < 'a' || c > 'f')) {
-
                                 if (i == len - 1) {
                                     switch (c) {
                                         case 'l':
@@ -1546,7 +1528,6 @@ public class ParseTools {
         return true;
     }
 
-
     public static boolean isIdentifierPart(final int c) {
         return ((c > 96 && c < 123)
                 || (c > 64 && c < 91) || (c > 47 && c < 58) || (c == '_') || (c == '$')
@@ -1582,7 +1563,6 @@ public class ParseTools {
             comp = c2;
             against = c1;
         }
-
 
         while (cur1 < comp.length && cur1 < against.length) {
             if (comp[cur1] == against[cur1]) {
@@ -1748,7 +1728,7 @@ public class ParseTools {
                 buf.rewind();
 
                 for (; read > 0; read--) {
-                    sb.append((byte) buf.get());
+                    sb.append(buf.get());
                 }
             }
 

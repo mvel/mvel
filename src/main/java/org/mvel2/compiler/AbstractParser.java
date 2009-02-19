@@ -274,7 +274,6 @@ public class AbstractParser implements Serializable {
                                                 "conflicting syntax: dimensioned array with initializer block", expr, cursor);
                                     }
 
-
                                     start = cursor;
                                     Class egressType = lastNode.getEgressType();
 
