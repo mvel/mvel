@@ -9,8 +9,6 @@ import org.mvel2.ast.Function;
 import org.mvel2.ast.WithNode;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
-import org.mvel2.compiler.ExecutableAccessor;
-import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.debug.Debugger;
 import org.mvel2.debug.Frame;
@@ -4957,6 +4955,23 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addImport("ReflectionUtil", ReflectionUtil.class);
         Serializable s = MVEL.compileExpression("ReflectionUtil.getGetter('foo')", ctx);
         assertEquals(ReflectionUtil.getGetter("foo"), MVEL.executeExpression(s));
+    }
+
+
+    public void testJIRA140() {
+        ParserContext ctx = new ParserContext();
+        Serializable s = MVEL.compileExpression(
+                "import org.mvel2.tests.core.res.*;"+
+                        "cols = new Column[] { new Column('name', 20), new Column('age', 2) };" +
+                        "grid = new Grid(new Model(cols));"
+        );
+
+        Grid g = (Grid) MVEL.executeExpression(s, new HashMap());
+
+        assertEquals(g.getModel().getColumns()[0].getName(), "name");
+        assertEquals(g.getModel().getColumns()[0].getLength(), 20);
+        assertEquals(g.getModel().getColumns()[1].getName(), "age");
+        assertEquals(g.getModel().getColumns()[1].getLength(), 2);
     }
 
 }

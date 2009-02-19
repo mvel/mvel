@@ -331,12 +331,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         mv.visitVarInsn(ALOAD, 4);
 
                         if (value != null & !value.getClass().isAssignableFrom(returnType)) {
-                            // if (value != null & !returnType.isAssignableFrom(value.getClass())) {
-
-//                            if (returnType == Integer.class) {
-//                                throw new RuntimeException();
-//                            }
-
                             dataConversion(returnType);
                             checkcast(returnType);
                         }
@@ -1619,15 +1613,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         "call",
                         "(Ljava/lang/Object;Ljava/lang/Object;L" + NAMESPACE + "integration/VariableResolverFactory;[Ljava/lang/Object;)Ljava/lang/Object;");
 
-//                Object[] parm = null;
-//
-//                if (es != null) {
-//                    parm = new Object[es.length];
-//                    for (int i = 0; i < es.length; i++) {
-//                        parm[i] = es[i].getValue(ctx, thisRef, variableFactory);
-//                    }
-//                }
-
                 return ((Function) ptr).call(ctx, thisRef, variableFactory, args);
             }
             else {
@@ -2806,8 +2791,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 Constructor cns = getBestConstructorCanadidate(parms, cls);
 
-                if (cns == null)
-                    throw new CompileException("unable to find constructor for: " + cls.getName());
+                if (cns == null) {
+                    StringBuilder error = new StringBuilder();
+                    for (int x = 0; x < parms.length; x++) {
+                        error.append(parms[x].getClass().getName());
+                        if (x+1 < parms.length) error.append(", ");
+                    }
+
+                    throw new CompileException("unable to find constructor: " + cls.getName() + "(" + error.toString() + ")");
+                }
 
                 this.returnType = cns.getDeclaringClass();
 

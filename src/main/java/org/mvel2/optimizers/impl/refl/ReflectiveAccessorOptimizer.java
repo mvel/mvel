@@ -1085,9 +1085,15 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             Constructor cns = getBestConstructorCanadidate(parms, cls);
 
-            if (cns == null)
-                throw new CompileException("unable to find constructor for: " + cls.getName());
+            if (cns == null) {
+                StringBuilder error = new StringBuilder();
+                for (int i = 0; i < parms.length; i++) {
+                    error.append(parms[i].getClass().getName());
+                    if (i+1 < parms.length) error.append(", ");
+                }
 
+                throw new CompileException("unable to find constructor: " + cls.getName() + "(" + error.toString() + ")");
+            }
             for (int i = 0; i < parms.length; i++) {
                 //noinspection unchecked
                 parms[i] = convert(parms[i], cns.getParameterTypes()[i]);
