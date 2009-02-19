@@ -498,9 +498,7 @@ public class AbstractParser implements Serializable {
                                     cursor++;
                                     capture = true;
                                     continue;
-
                                 }
-
                                 break;
 
 
@@ -1187,7 +1185,6 @@ public class AbstractParser implements Serializable {
                     else if (expr[i] == ':')
                         break;
                 }
-
             case ASTNode.BLOCK_FOREACH:
                 return new ForEachNode(subArray(condStart, condEnd), subArray(blockStart, blockEnd), fields, pCtx);
             case ASTNode.BLOCK_WHILE:
@@ -1697,6 +1694,7 @@ public class AbstractParser implements Serializable {
      * @return new position.
      */
     protected int trimLeft(int pos) {
+        if (pos > length) pos = length;
         while (pos > 0 && pos >= start && isWhitespace(expr[pos - 1])) pos--;
         return pos;
     }
@@ -1751,7 +1749,6 @@ public class AbstractParser implements Serializable {
                 case '[':
                     cursor = balancedCaptureWithLineAccounting(expr, cursor, '[', pCtx) + 1;
                     continue;
-
                 default:
                     if (isWhitespace(expr[cursor])) {
                         return;
@@ -2230,7 +2227,6 @@ public class AbstractParser implements Serializable {
                             xswap();
                         }
 
-                        //      y = 0;
                         break;
                     }
 

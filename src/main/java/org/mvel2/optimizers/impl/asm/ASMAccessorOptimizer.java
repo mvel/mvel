@@ -164,7 +164,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         m.visitEnd();
 
         (mv = cw.visitMethod(ACC_PUBLIC, "getValue",
-                "(Ljava/lang/Object;Ljava/lang/Object;L" + NAMESPACE + "integration/VariableResolverFactory;)Ljava/lang/Object;", null, null)).visitCode();
+                "(Ljava/lang/Object;Ljava/lang/Object;L" + NAMESPACE
+                        + "integration/VariableResolverFactory;)Ljava/lang/Object;", null, null)).visitCode();
     }
 
 
@@ -194,7 +195,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         m.visitEnd();
 
         (mv = cw.visitMethod(ACC_PUBLIC, "setValue",
-                "(Ljava/lang/Object;Ljava/lang/Object;L" + NAMESPACE + "integration/VariableResolverFactory;Ljava/lang/Object;)Ljava/lang/Object;", null, null)).visitCode();
+                "(Ljava/lang/Object;Ljava/lang/Object;L" + NAMESPACE
+                        + "integration/VariableResolverFactory;Ljava/lang/Object;)Ljava/lang/Object;", null, null)).visitCode();
 
     }
 
@@ -306,7 +308,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         }
 
                         assert debug("INVOKEINTERFACE Map.put");
-                        mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+                        mv.visitMethodInsn(INVOKEINTERFACE, "java/util/Map", "put",
+                                "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 
                         assert debug("POP");
                         mv.visitInsn(POP);
@@ -322,7 +325,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     }
                     else {
                         //noinspection unchecked
-                        ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), convert(value, returnType = verifier.analyze()));
+                        ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class),
+                                convert(value, returnType = verifier.analyze()));
 
                         writeLiteralOrSubexpression(subCompileExpression(ex.toCharArray()));
                         unwrapPrimitive(int.class);
@@ -382,7 +386,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     }
                 }
                 else {
-                    throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
+                    throw new PropertyAccessException("cannot bind to collection property: " + new String(property)
+                            + ": not a recognized collection type: " + ctx.getClass());
                 }
 
                 deferFinish = false;
@@ -407,7 +412,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitLdcInsn(tk);
                 mv.visitVarInsn(ALOAD, 3);
                 mv.visitVarInsn(ALOAD, 4);
-                mv.visitMethodInsn(INVOKESTATIC, NAMESPACE + "integration/GlobalListenerFactory", "notifySetListeners", "(Ljava/lang/Object;Ljava/lang/String;L" + NAMESPACE + "integration/VariableResolverFactory;Ljava/lang/Object;)V");
+                mv.visitMethodInsn(INVOKESTATIC, NAMESPACE + "integration/GlobalListenerFactory",
+                        "notifySetListeners", "(Ljava/lang/Object;Ljava/lang/String;L" + NAMESPACE
+                                + "integration/VariableResolverFactory;Ljava/lang/Object;)V");
 
                 GlobalListenerFactory.notifySetListeners(ctx, tk, variableFactory, value);
             }
@@ -594,7 +601,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          */
         Class cls = loadClass(className, cw.toByteArray());
 
-        assert debug("[MVEL JIT Completed Optimization <<" + (expr != null ? new String(expr) : "") + ">>]::" + cls + " (time: " + (System.currentTimeMillis() - time) + "ms)");
+        assert debug("[MVEL JIT Completed Optimization <<" + (expr != null ? new String(expr) : "") + ">>]::" + cls
+                + " (time: " + (System.currentTimeMillis() - time) + "ms)");
 
         Object o;
 
@@ -789,7 +797,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitVarInsn(ALOAD, 0);
 
                 assert debug("GETFIELD p" + (compiledInputs.size() - 1));
-                mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "L" + NAMESPACE + "compiler/ExecutableStatement;");
+                mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "L" + NAMESPACE
+                        + "compiler/ExecutableStatement;");
 
                 assert debug("ALOAD 1");
                 mv.visitVarInsn(ALOAD, 1);
@@ -855,7 +864,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             mv.visitVarInsn(ALOAD, 1);
             mv.visitLdcInsn(member.getName());
             mv.visitVarInsn(ALOAD, 3);
-            mv.visitMethodInsn(INVOKESTATIC, NAMESPACE + "integration/GlobalListenerFactory", "notifyGetListeners", "(Ljava/lang/Object;Ljava/lang/String;L" + NAMESPACE + "integration/VariableResolverFactory;)V");
+            mv.visitMethodInsn(INVOKESTATIC, NAMESPACE + "integration/GlobalListenerFactory", "notifyGetListeners",
+                    "(Ljava/lang/Object;Ljava/lang/String;L" + NAMESPACE + "integration/VariableResolverFactory;)V");
 
             notifyGetListeners(ctx, member.getName(), variableFactory);
         }
@@ -936,7 +946,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitTypeInsn(CHECKCAST, getInternalName(cls));
 
                 assert debug("GETFIELD " + property + ":" + getDescriptor(((Field) member).getType()));
-                mv.visitFieldInsn(GETFIELD, getInternalName(cls), property, getDescriptor(returnType = ((Field) member).getType()));
+                mv.visitFieldInsn(GETFIELD, getInternalName(cls), property, getDescriptor(returnType = ((Field) member)
+                        .getType()));
             }
 
             returnType = ((Field) member).getType();
@@ -1079,7 +1090,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                             assert debug("POP");
                             mv.visitInsn(POP);
                             assert debug("INVOKESTATIC " + m.getName());
-                            mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(), getMethodDescriptor(m));
+                            mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(),
+                                    getMethodDescriptor(m));
 
                             returnType = m.getReturnType();
 
@@ -1307,7 +1319,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 }
             }
 
-            throw new CompileException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+            throw new CompileException("illegal use of []: unknown type: "
+                    + (ctx == null ? null : ctx.getClass().getName()));
         }
     }
 
@@ -1527,7 +1540,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             for (int i = 0; i < subtokens.length; i++) {
                 assert debug("subtoken[" + i + "] { " + subtokens[i] + " }");
-                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray())).getValue(this.ctx, this.thisRef, variableFactory);
+                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray()))
+                        .getValue(this.ctx, this.thisRef, variableFactory);
             }
         }
 
@@ -1611,7 +1625,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitMethodInsn(INVOKEVIRTUAL,
                         getInternalName(Function.class),
                         "call",
-                        "(Ljava/lang/Object;Ljava/lang/Object;L" + NAMESPACE + "integration/VariableResolverFactory;[Ljava/lang/Object;)Ljava/lang/Object;");
+                        "(Ljava/lang/Object;Ljava/lang/Object;L" + NAMESPACE
+                                + "integration/VariableResolverFactory;[Ljava/lang/Object;)Ljava/lang/Object;");
 
                 return ((Function) ptr).call(ctx, thisRef, variableFactory, args);
             }
@@ -1689,7 +1704,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return getLength(ctx);
             }
 
-            throw new CompileException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
+            throw new CompileException("unable to resolve method: " + cls.getName() + "."
+                    + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
             m = getWidenedTarget(m);
@@ -1851,7 +1867,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     }
                     else if (parameterTypes[i] == String.class) {
                         assert debug("<<<DYNAMIC TYPE OPTIMIZATION STRING>>");
-                        mv.visitMethodInsn(INVOKESTATIC, "java/lang/String", "valueOf", "(Ljava/lang/Object;)Ljava/lang/String;");
+                        mv.visitMethodInsn(INVOKESTATIC, "java/lang/String", "valueOf",
+                                "(Ljava/lang/Object;)Ljava/lang/String;");
                     }
                     else {
                         assert debug("<<<DYNAMIC TYPING BYPASS>>>");
@@ -1901,7 +1918,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         ldcClassConstant(target);
         assert debug("INVOKESTATIC " + NAMESPACE + "DataConversion.convert");
-        mv.visitMethodInsn(INVOKESTATIC, NAMESPACE + "DataConversion", "convert", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
+        mv.visitMethodInsn(INVOKESTATIC, NAMESPACE + "DataConversion", "convert",
+                "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
     }
 
     private static MVELClassLoader classLoader;
@@ -2814,7 +2832,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     assert debug("ALOAD 3");
                     mv.visitVarInsn(ALOAD, 3);
                     assert debug("INVOKEINTERFACE " + NAMESPACE + "compiler/ExecutableStatement.getValue");
-                    mv.visitMethodInsn(INVOKEINTERFACE, "" + NAMESPACE + "compiler/ExecutableStatement", "getValue", "(Ljava/lang/Object;L" + NAMESPACE + "integration/VariableResolverFactory;)Ljava/lang/Object;");
+                    mv.visitMethodInsn(INVOKEINTERFACE, "" + NAMESPACE
+                            + "compiler/ExecutableStatement", "getValue", "(Ljava/lang/Object;L" + NAMESPACE
+                            + "integration/VariableResolverFactory;)Ljava/lang/Object;");
 
                     tg = cns.getParameterTypes()[i].isPrimitive()
                             ? getWrapperClass(cns.getParameterTypes()[i]) : cns.getParameterTypes()[i];
@@ -2823,7 +2843,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         ldcClassConstant(tg);
 
                         assert debug("INVOKESTATIC " + NAMESPACE + "DataConversion.convert");
-                        mv.visitMethodInsn(INVOKESTATIC, "" + NAMESPACE + "DataConversion", "convert", "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
+                        mv.visitMethodInsn(INVOKESTATIC, "" + NAMESPACE + "DataConversion", "convert",
+                                "(Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;");
 
                         if (cns.getParameterTypes()[i].isPrimitive()) {
                             unwrapPrimitive(cns.getParameterTypes()[i]);
@@ -2893,7 +2914,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private void dumpAdvancedDebugging() {
         if (buildLog == null) return;
 
-        System.out.println("JIT Compiler Dump for: <<" + (expr == null ? null : new String(expr)) + ">>\n-------------------------------\n");
+        System.out.println("JIT Compiler Dump for: <<" + (expr == null ? null : new String(expr))
+                + ">>\n-------------------------------\n");
         System.out.println(buildLog.toString());
         System.out.println("\n<END OF DUMP>\n");
         if (MVEL.isFileDebugging()) {
@@ -2975,7 +2997,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         mv.visitVarInsn(ALOAD, 3);
 
         assert debug("INVOKEINTERFACE PropertyHandler.getProperty");
-        mv.visitMethodInsn(INVOKEINTERFACE, NAMESPACE + "integration/PropertyHandler", "getProperty", "(Ljava/lang/String;Ljava/lang/Object;L" + NAMESPACE + "integration/VariableResolverFactory;)Ljava/lang/Object;");
+        mv.visitMethodInsn(INVOKEINTERFACE, NAMESPACE + "integration/PropertyHandler", "getProperty",
+                "(Ljava/lang/String;Ljava/lang/Object;L" + NAMESPACE + "integration/VariableResolverFactory;)Ljava/lang/Object;");
 
         assert debug("LABEL:jump");
         mv.visitLabel(j);

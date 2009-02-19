@@ -88,7 +88,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     public void init() {
     }
 
-    private ReflectiveAccessorOptimizer(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory variableFactory) {
+    private ReflectiveAccessorOptimizer(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
+                                        VariableResolverFactory variableFactory) {
         this.pCtx = pCtx;
         this.expr = property;
         this.length = property != null ? property.length : 0;
@@ -113,7 +114,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return accessor.getValue(ctx, null, null);
         }
         else {
-            REFLECTIVE_ACCESSOR_CACHE.put(hash, accessor = new ReflectiveAccessorOptimizer().optimizeAccessor(getCurrentThreadParserContext(),
+            REFLECTIVE_ACCESSOR_CACHE.put(hash, accessor = new ReflectiveAccessorOptimizer()
+                    .optimizeAccessor(getCurrentThreadParserContext(),
                     expression.toCharArray(), ctx, null, null, false, null));
             return accessor.getValue(ctx, null, null);
         }
@@ -357,7 +359,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                         if (curr == null) return null;
                         addAccessorNode(new NullSafe());
                     }
-
                 }
             }
 
@@ -547,7 +548,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     addAccessorNode(new StaticReferenceAccessor(tryStaticMethodRef));
                     return tryStaticMethodRef;
                 }
-
             }
             else if (ctx instanceof Class) {
                 Class c = (Class) ctx;
@@ -580,8 +580,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 catch (ClassNotFoundException cnfe) {
                     // fall through.
                 }
-
-
             }
             else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
                 return getMethod(ctx, property);
@@ -685,7 +683,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 return cls;
             }
 
-            throw new CompileException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+            throw new CompileException("illegal use of []: unknown type: "
+                    + (ctx == null ? null : ctx.getClass().getName()));
         }
     }
 
@@ -796,7 +795,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 return cls;
             }
 
-            throw new CompileException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+            throw new CompileException("illegal use of []: unknown type: "
+                    + (ctx == null ? null : ctx.getClass().getName()));
         }
     }
 
@@ -890,17 +890,18 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         if (m == null) {
             StringAppender errorBuild = new StringAppender();
-            for (int i = 0; i < args.length; i++) {
-                errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
-                if (i < args.length - 1) errorBuild.append(", ");
-            }
-
             if ("size".equals(name) && args.length == 0 && cls.isArray()) {
                 addAccessorNode(new ArrayLength());
                 return getLength(ctx);
             }
 
-            throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
+            for (int i = 0; i < args.length; i++) {
+                errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
+                if (i < args.length - 1) errorBuild.append(", ");
+            }
+
+            throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "."
+                    + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }
         else {
             if (es != null) {
@@ -1089,7 +1090,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 StringBuilder error = new StringBuilder();
                 for (int i = 0; i < parms.length; i++) {
                     error.append(parms[i].getClass().getName());
-                    if (i+1 < parms.length) error.append(", ");
+                    if (i + 1 < parms.length) error.append(", ");
                 }
 
                 throw new CompileException("unable to find constructor: " + cls.getName() + "(" + error.toString() + ")");
@@ -1120,13 +1121,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             Constructor<?> cns = Class.forName(new String(expression), true, Thread.currentThread().getContextClassLoader())
                     .getConstructor(EMPTYCLS);
 
-         //   Constructor<?> cns = Thread.currentThread().getContextClassLoader().loadClass(new String(expression)).getConstructor(EMPTYCLS);
             AccessorNode ca = new ConstructorAccessor(cns, null);
 
             if (cnsRes.length > 1) {
                 //noinspection NullArgumentToVariableArgMethod
                 ReflectiveAccessorOptimizer compiledOptimizer
-                        = new ReflectiveAccessorOptimizer(getCurrentThreadParserContext(), cnsRes[1].toCharArray(), cns.newInstance(null), ctx, vars);
+                        = new ReflectiveAccessorOptimizer(getCurrentThreadParserContext(),
+                        cnsRes[1].toCharArray(), cns.newInstance(null), ctx, vars);
                 compiledOptimizer.setRootNode(ca);
                 compiledOptimizer.compileGetChain();
                 ca = compiledOptimizer.getRootNode();
