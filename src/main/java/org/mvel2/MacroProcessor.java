@@ -20,7 +20,6 @@ package org.mvel2;
 
 import org.mvel2.compiler.AbstractParser;
 import static org.mvel2.util.ParseTools.isWhitespace;
-import static org.mvel2.util.ParseTools.balancedCapture;
 import static org.mvel2.util.ParseTools.isIdentifierPart;
 import org.mvel2.util.StringAppender;
 import org.mvel2.util.ParseTools;
@@ -95,7 +94,6 @@ public class MacroProcessor extends AbstractParser implements PreProcessor {
                         appender.append(expr[cursor]);
                 }
             }
-
         }
 
         return appender.toChars();
