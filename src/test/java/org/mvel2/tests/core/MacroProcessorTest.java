@@ -1,24 +1,30 @@
 package org.mvel2.tests.core;
 
+import static org.mvel2.MVEL.executeExpression;
+import static org.mvel2.MVEL.parseMacros;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import junit.framework.TestCase;
 import junit.framework.Assert;
-import org.mvel2.tests.core.res.Foo;
+import junit.framework.TestCase;
+
+import org.mvel2.MVEL;
+import org.mvel2.MVELRuntime;
+import org.mvel2.Macro;
+import org.mvel2.MacroProcessor;
+import org.mvel2.ParserContext;
+import org.mvel2.ast.ASTNode;
+import org.mvel2.ast.WithNode;
+import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.debug.DebugTools;
+import org.mvel2.debug.Debugger;
+import org.mvel2.debug.Frame;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
-import org.mvel2.ast.ASTNode;
-import org.mvel2.ast.WithNode;
-import org.mvel2.compiler.ExpressionCompiler;
-import org.mvel2.compiler.CompiledExpression;
-import static org.mvel2.MVEL.parseMacros;
-import static org.mvel2.MVEL.executeExpression;
-import org.mvel2.debug.Debugger;
-import org.mvel2.debug.Frame;
-import org.mvel2.debug.DebugTools;
-import org.mvel2.*;
+import org.mvel2.tests.core.res.Foo;
 
 public class MacroProcessorTest extends TestCase {
 
@@ -61,7 +67,29 @@ public class MacroProcessorTest extends TestCase {
             fail("there shouldn't be any exception: " + ex.getMessage());
         }
     }
+    
+    public void testInfiniteLoop() {
+        String str = "";
+        str += "int insuranceAmt = caseRate + (charges * pctDiscount / 100); \n";
+        str += "update (estimate); \n";
 
+        Map<String, Macro> macros = new HashMap<String, Macro>();
+        macros.put( "update",
+                    new Macro() {
+                        public String doMacro() {
+                            return "drools.update";
+                        }
+                    } );
+        
+        String result = parseMacros( str, macros);   
+        
+        str = "";
+        str += "int insuranceAmt = caseRate + (charges * pctDiscount / 100); \n";
+        str += "drools.update (estimate); \n";   
+
+        assertEquals( str, result );
+    }
+    
     public void testMacroSupport() {
         Map<String, Object> vars = new HashMap<String, Object>();
         vars.put("foo", new Foo());
