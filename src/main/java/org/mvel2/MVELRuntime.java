@@ -119,7 +119,7 @@ public class MVELRuntime {
                         continue;
                 }
 
-                stk.push(node.nextNode().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
+                stk.push(node.nextNode().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);                                                           
 
                 try {
                     while (stk.isReduceable()) {
