@@ -371,10 +371,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return rootNode;
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException(new String(expr), e);
+            throw new PropertyAccessException(new String(expr) + ": " + e.getMessage(), e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException(new String(expr), e);
+            throw new PropertyAccessException(new String(expr) + ": " + e.getMessage(), e);
         }
         catch (IndexOutOfBoundsException e) {
             throw new PropertyAccessException(new String(expr) + ": array index out of bounds.", e);
@@ -925,8 +925,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     args[i] = convert(args[i], parameterTypes[i]);
             }
 
-
-            Object o = m.invoke(ctx, args);
+            Object o = getWidenedTarget(m).invoke(ctx, args);
 
             if (hasNullMethodHandler()) {
                 addAccessorNode(new MethodAccessorNH(getWidenedTarget(m), (ExecutableStatement[]) es, getNullMethodHandler()));

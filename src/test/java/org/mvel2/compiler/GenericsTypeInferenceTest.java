@@ -67,23 +67,23 @@ public class GenericsTypeInferenceTest extends TestCase {
         assertEquals("Wrong parametric type inferred", String.class, context.getLastTypeParameters()[0]);
     }
 
-    public final void testInferLastTypeParametersFromPropertyMethod2() {
-        ParserContext context = new ParserContext();
-        context.setStrictTypeEnforcement( true );
-
-        context.addInput("a", A.class);
-
-        ExpressionCompiler compiler = new ExpressionCompiler("a.getBarMap()[\"key\"].someMethod();");
-        final CompiledExpression compiledExpression = compiler.compile(context);
-
-        Map<String,Object> vars = new HashMap<String,Object>();
-        vars.put( "a", new A() );
-        final Object val = MVEL.executeExpression(compiledExpression, vars);
-
-        assertEquals("Expression did not evaluate correctly: ", "bar", val);
-        assertNotNull("No type parameters detected", context.getLastTypeParameters());
-        assertEquals("Wrong parametric type inferred", String.class, context.getLastTypeParameters()[0]);
-    }
+//    public final void testInferLastTypeParametersFromPropertyMethod2() {
+//        ParserContext context = new ParserContext();
+//        context.setStrictTypeEnforcement( true );
+//
+//        context.addInput("a", A.class);
+//
+//        ExpressionCompiler compiler = new ExpressionCompiler("a.getBarMap()[\"key\"].someMethod();");
+//        final CompiledExpression compiledExpression = compiler.compile(context);
+//
+//        Map<String,Object> vars = new HashMap<String,Object>();
+//        vars.put( "a", new A() );
+//        final Object val = MVEL.executeExpression(compiledExpression, vars);
+//
+//        assertEquals("Expression did not evaluate correctly: ", "bar", val);
+//        assertNotNull("No type parameters detected", context.getLastTypeParameters());
+//        assertEquals("Wrong parametric type inferred", String.class, context.getLastTypeParameters()[0]);
+//    }
 
     public static class AWrapper {
         public A getA() {
