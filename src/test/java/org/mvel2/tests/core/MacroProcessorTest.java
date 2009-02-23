@@ -70,7 +70,7 @@ public class MacroProcessorTest extends TestCase {
     
     public void testInfiniteLoop() {
         String str = "";
-        str += "int insuranceAmt = caseRate + (charges * pctDiscount / 100); \n";
+        str += "int insuranceAmt = caseRate + (charges * pctDiscount / 100);\n";
         str += "update (estimate); \n";
 
         Map<String, Macro> macros = new HashMap<String, Macro>();
@@ -84,8 +84,8 @@ public class MacroProcessorTest extends TestCase {
         String result = parseMacros( str, macros);   
         
         str = "";
-        str += "int insuranceAmt = caseRate + (charges * pctDiscount / 100); \n";
-        str += "drools.update (estimate); \n";   
+        str += "int insuranceAmt = caseRate + (charges * pctDiscount / 100);\n";
+        str += "drools.update (estimate);";   
 
         assertEquals( str, result );
     }
