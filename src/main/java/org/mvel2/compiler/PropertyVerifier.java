@@ -247,8 +247,8 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
         }
 
-        if (pCtx.isStrongTyping()) {
-            if (Map.class.isAssignableFrom(first ? ctx = getBeanProperty(ctx, property) : ctx)) {
+        if (pCtx.isStrictTypeEnforcement()) {
+            if (Map.class.isAssignableFrom(property.length() != 0 ? ctx = getBeanProperty(ctx, property) : ctx)) {
                 ctx = (Class) pCtx.getLastTypeParameters()[1];
             }
             else if (Collection.class.isAssignableFrom(ctx)) {
@@ -257,8 +257,8 @@ public class PropertyVerifier extends AbstractOptimizer {
             else if (ctx.isArray()) {
                 ctx = getBaseComponentType(ctx);
             }
-            else {
-                throw new CompileException("unknown collection type");
+            else if (pCtx.isStrongTyping()) {
+                throw new CompileException("unknown collection type: " + ctx);
             }
         }
         else {
