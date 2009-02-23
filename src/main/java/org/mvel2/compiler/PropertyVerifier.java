@@ -261,6 +261,9 @@ public class PropertyVerifier extends AbstractOptimizer {
                 throw new CompileException("unknown collection type");
             }
         }
+        else {
+            ctx = Object.class;
+        }
 
         ++cursor;
 

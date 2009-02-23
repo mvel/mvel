@@ -4976,7 +4976,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testVerifierWithIndexedProperties() {
         ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
+        ctx.setStrictTypeEnforcement(true);
         ctx.addInput("base", Base.class);
 
         Serializable s = MVEL.compileExpression("base.getFooMap()['foo'].setName('coffee')", ctx);
