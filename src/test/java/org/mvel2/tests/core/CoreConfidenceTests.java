@@ -4963,7 +4963,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Serializable s = MVEL.compileExpression(
                 "import org.mvel2.tests.core.res.*;"+
                         "cols = new Column[] { new Column('name', 20), new Column('age', 2) };" +
-                        "grid = new Grid(new Model(cols));"
+                        "grid = new Grid(new Model(cols));", ctx
         );
 
         Grid g = (Grid) MVEL.executeExpression(s, new HashMap());
@@ -4972,6 +4972,22 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(g.getModel().getColumns()[0].getLength(), 20);
         assertEquals(g.getModel().getColumns()[1].getName(), "age");
         assertEquals(g.getModel().getColumns()[1].getLength(), 2);
+    }
+
+    public void testVerifierWithIndexedProperties() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("base", Base.class);
+
+        Serializable s = MVEL.compileExpression("base.getFooMap()['foo'].setName('coffee')", ctx);
+
+        Map vars = new HashMap();
+        vars.put("base", new Base());
+
+        MVEL.executeExpression(s, vars);
+
+        assertEquals("coffee", ((Base)vars.get("base")).fooMap.get("foo").getName());
+
     }
 
 }

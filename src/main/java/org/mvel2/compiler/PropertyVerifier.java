@@ -248,7 +248,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
 
         if (pCtx.isStrongTyping()) {
-            if (Map.class.isAssignableFrom(ctx = getBeanProperty(ctx, property))) {
+            if (Map.class.isAssignableFrom(first ? ctx = getBeanProperty(ctx, property) : ctx)) {
                 ctx = (Class) pCtx.getLastTypeParameters()[1];
             }
             else if (Collection.class.isAssignableFrom(ctx)) {
