@@ -101,4 +101,8 @@ public class Base {
     public Map<String, Foo> getFooMap() {
         return fooMap;
     }
+    
+    public int getIntValue() {
+        return 10;
+    }
 }

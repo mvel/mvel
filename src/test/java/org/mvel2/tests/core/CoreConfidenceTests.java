@@ -4988,6 +4988,22 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("coffee", ((Base)vars.get("base")).fooMap.get("foo").getName());
     }
+    
+    public void testPrimitiveTypes() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping( true );
+        ctx.addInput("base", Base.class);
+
+        Serializable s = MVEL.compileExpression("int x = 5; x = x + base.intValue; x", ctx);
+
+        Map vars = new HashMap();
+        vars.put("base", new Base());
+
+        Number x = (Number) MVEL.executeExpression(s, vars);
+
+        assertEquals(15, x.intValue());
+
+    }
 }
 
 
