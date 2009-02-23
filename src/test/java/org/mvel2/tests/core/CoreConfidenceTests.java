@@ -4979,7 +4979,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrictTypeEnforcement(true);
         ctx.addInput("base", Base.class);
 
-        Serializable s = MVEL.compileExpression("base.getFooMap()['foo'].setName('coffee')", ctx);
+        Serializable s = MVEL.compileExpression("base.fooMap['foo'].setName('coffee')", ctx);
 
         Map vars = new HashMap();
         vars.put("base", new Base());
@@ -4987,9 +4987,7 @@ public class CoreConfidenceTests extends AbstractTest {
         MVEL.executeExpression(s, vars);
 
         assertEquals("coffee", ((Base)vars.get("base")).fooMap.get("foo").getName());
-
     }
-
 }
 
 
