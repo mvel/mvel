@@ -5053,6 +5053,21 @@ public class CoreConfidenceTests extends AbstractTest {
 
     }
     
+    public void testEmpty() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping( true );
+
+        Serializable s = MVEL.compileExpression("list = new java.util.ArrayList(); list == empty", ctx);
+
+        Map vars = new HashMap();
+
+        Boolean x = (Boolean) MVEL.executeExpression(s, vars);
+
+        assertNotNull( x );
+        assertTrue(x.booleanValue());
+
+    }
+    
     
 }
 
