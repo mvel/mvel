@@ -1527,7 +1527,7 @@ public class ParseTools {
                     if (val[++i] == '-' || val[i] == '+') i++;
                 }
                 else {
-                    if (i != 0) throw new CompileException("invalid number literal");
+                    if (i != 0) throw new CompileException("invalid number literal: " + new String(val));
                     return false;
                 }
             }

@@ -5068,12 +5068,14 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testMapsAndLists() {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping( true );
+        ctx.addImport(HashMap.class);
+        ctx.addImport(ArrayList.class);
 
         String expression = "m = new HashMap();\n" +
                             "l = new ArrayList();\n" +
                             "l.add(\"first\");\n" +
                             "m.put(\"content\", l);\n" +
-                            "m[\"content\"][0]";
+                            "((ArrayList)m[\"content\"])[0]";
 
         Serializable s = MVEL.compileExpression(expression, ctx);
 

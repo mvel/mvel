@@ -22,6 +22,7 @@ import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessor;
+import org.mvel2.ErrorDetail;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.ExecutableStatement;
@@ -56,9 +57,11 @@ public class NewObjectNode extends ASTNode {
             else {
                 try {
                     egressType = Class.forName(typeDescr.getClassName(), true, currentThread().getContextClassLoader());
-//                    egressType = currentThread().getContextClassLoader().loadClass(typeDescr.getClassName());
                 }
                 catch (ClassNotFoundException e) {
+                    if (pCtx != null && pCtx.isStrongTyping()) 
+                        pCtx.addError(new ErrorDetail("could not resolve class: " + typeDescr.getClassName(), true));
+
                     // do nothing.
                 }
             }

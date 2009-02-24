@@ -936,7 +936,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             /**
-             * Invoke the target method and return the response.
+             * return the response.
              */
             return o;
         }

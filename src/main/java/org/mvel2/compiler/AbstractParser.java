@@ -1103,11 +1103,20 @@ public class AbstractParser implements Serializable {
     protected ASTNode handleUnion(ASTNode node) {
         if (cursor != length) {
             skipWhitespace();
-            if (expr[cursor] == '.') {
-                int union = cursor + 1;
+            int union = -1;
+            switch (expr[cursor]) {
+                case '.':
+                    union = cursor + 1;
+                    break;
+                case '[':
+                    union = cursor;
+            }
+
+            if (union != -1) {
                 captureToEOT();
                 return lastNode = new Union(expr, union, cursor, fields, node);
             }
+
         }
         return lastNode = node;
     }
