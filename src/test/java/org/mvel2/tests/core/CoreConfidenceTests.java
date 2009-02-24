@@ -5036,6 +5036,24 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(1, list.size());
 
     }
+    
+    public void testTypeCoercion() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping( true );
+        ctx.addInput("base", Base.class);
+
+        Serializable s = MVEL.compileExpression("java.math.BigInteger x = new java.math.BigInteger( \"5\" ); x + base.intValue;", ctx);
+
+        Map vars = new HashMap();
+        vars.put("base", new Base());
+
+        Number x = (Number) MVEL.executeExpression(s, vars);
+
+        assertEquals(15, x.intValue());
+
+    }
+    
+    
 }
 
 
