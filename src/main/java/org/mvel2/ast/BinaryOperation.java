@@ -20,10 +20,14 @@ package org.mvel2.ast;
 
 import static org.mvel2.Operator.PTABLE;
 import org.mvel2.*;
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataConversion.convert;
 import org.mvel2.math.MathProcessor;
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.CompilerTools.getReturnTypeFromOp;
+import org.mvel2.util.ParseTools;
+import static org.mvel2.util.ParseTools.boxPrimitive;
 
 public class BinaryOperation extends BooleanNode {
     private final int operation;
@@ -58,10 +62,11 @@ public class BinaryOperation extends BooleanNode {
 
                 default:
                     if (!left.getEgressType().isAssignableFrom(right.getEgressType())) {
-                        if (right.isLiteral() && DataConversion.canConvert(right.getEgressType(), left.getEgressType())) {
-                            this.right = new LiteralNode(DataConversion.convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()));
+                        if (right.isLiteral() && canConvert(right.getEgressType(), left.getEgressType())) {
+                            this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()));
                         }
-                        else {
+                        else if ((!right.getEgressType().isPrimitive() && !left.getEgressType().isPrimitive())
+                                || (!boxPrimitive(left.getEgressType()).isAssignableFrom(boxPrimitive(right.getEgressType())))) {
                             throw new CompileException("incompatible types in statement: " + right.getEgressType() + " (compared from: " + left.getEgressType() + ")");
                         }
                     }

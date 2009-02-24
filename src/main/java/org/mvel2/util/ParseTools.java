@@ -542,7 +542,7 @@ public class ParseTools {
             return Byte[].class;
         }
 
-        return null;
+        return cls;
     }
 
     public static Class unboxPrimitive(Class cls) {
