@@ -5034,7 +5034,6 @@ public class CoreConfidenceTests extends AbstractTest {
         List list = (List) MVEL.executeExpression(s, vars);
 
         assertEquals(1, list.size());
-
     }
     
     public void testTypeCoercion() {
@@ -5050,7 +5049,6 @@ public class CoreConfidenceTests extends AbstractTest {
         Number x = (Number) MVEL.executeExpression(s, vars);
 
         assertEquals(15, x.intValue());
-
     }
     
     public void testEmpty() {
@@ -5065,10 +5063,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertNotNull( x );
         assertTrue(x.booleanValue());
-
     }
-    
-    
 }
 
 
