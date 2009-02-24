@@ -5004,6 +5004,38 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(15, x.intValue());
 
     }
+    
+    public void testAutoBoxing() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping( true );
+        //ctx.addInput("base", Base.class);
+
+        Serializable s = MVEL.compileExpression("(new java.util.ArrayList()).add( 5 )", ctx);
+
+        Map vars = new HashMap();
+        //vars.put("base", new Base());
+
+        List list = (List) MVEL.executeExpression(s, vars);
+
+        assertEquals(1, list.size());
+
+    }
+    
+    public void testAutoBoxing2() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping( true );
+        ctx.addInput("base", Base.class);
+
+        Serializable s = MVEL.compileExpression("java.util.List list = new java.util.ArrayList(); list.add( base.intValue ); list", ctx);
+
+        Map vars = new HashMap();
+        vars.put("base", new Base());
+
+        List list = (List) MVEL.executeExpression(s, vars);
+
+        assertEquals(1, list.size());
+
+    }
 }
 
 
