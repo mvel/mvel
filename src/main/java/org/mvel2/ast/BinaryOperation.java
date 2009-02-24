@@ -66,7 +66,7 @@ public class BinaryOperation extends BooleanNode {
                             this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()));
                         }
                         else if ((!right.getEgressType().isPrimitive() && !left.getEgressType().isPrimitive())
-                                || (!boxPrimitive(left.getEgressType()).isAssignableFrom(boxPrimitive(right.getEgressType())))) {
+                                || (!canConvert(boxPrimitive(left.getEgressType()), boxPrimitive(right.getEgressType())))) {
                             throw new CompileException("incompatible types in statement: " + right.getEgressType() + " (compared from: " + left.getEgressType() + ")");
                         }
                     }
