@@ -5070,21 +5070,26 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrongTyping( true );
         ctx.addImport(HashMap.class);
         ctx.addImport(ArrayList.class);
+        ctx.addInput( "list", List.class );
 
         String expression = "m = new HashMap();\n" +
                             "l = new ArrayList();\n" +
                             "l.add(\"first\");\n" +
                             "m.put(\"content\", l);\n" +
-                            "((ArrayList)m[\"content\"])[0]";
+                            "list.add(((ArrayList)m[\"content\"])[0]);";
 
         Serializable s = MVEL.compileExpression(expression, ctx);
 
         Map vars = new HashMap();
+        List list = new ArrayList();
+        vars.put( "list", list );
 
-        String first = (String) MVEL.executeExpression(s, vars);
+        Boolean result = (Boolean) MVEL.executeExpression(s, vars);
 
-        assertNotNull( first );
-        assertEquals("first", first);
+        assertNotNull( result );
+        assertTrue( result );
+        assertEquals( 1, list.size() );
+        assertEquals( "first", list.get( 0 ) );
     }
     
     
