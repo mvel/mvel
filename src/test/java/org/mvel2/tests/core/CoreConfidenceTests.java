@@ -5064,6 +5064,29 @@ public class CoreConfidenceTests extends AbstractTest {
         assertNotNull( x );
         assertTrue(x.booleanValue());
     }
+    
+    public void testMapsAndLists() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping( true );
+
+        String expression = "m = new HashMap();\n" +
+                            "l = new ArrayList();\n" +
+                            "l.add(\"first\");\n" +
+                            "m.put(\"content\", l);\n" +
+                            "m[\"content\"][0]";
+
+        Serializable s = MVEL.compileExpression(expression, ctx);
+
+        Map vars = new HashMap();
+
+        String first = (String) MVEL.executeExpression(s, vars);
+
+        assertNotNull( first );
+        assertEquals("first", first);
+    }
+    
+    
+    
 }
 
 
