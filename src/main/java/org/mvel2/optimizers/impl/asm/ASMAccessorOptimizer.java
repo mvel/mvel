@@ -2807,7 +2807,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     parms[i++] = es.getValue(ctx, factory);
                 }
 
-                Constructor cns = getBestConstructorCanadidate(parms, cls);
+                Constructor cns = getBestConstructorCanadidate(parms, cls,  pCtx.isStrongTyping());
 
                 if (cns == null) {
                     StringBuilder error = new StringBuilder();

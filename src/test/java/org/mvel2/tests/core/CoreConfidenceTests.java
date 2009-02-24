@@ -5010,7 +5010,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrongTyping( true );
         //ctx.addInput("base", Base.class);
 
-        Serializable s = MVEL.compileExpression("(new java.util.ArrayList()).add( 5 )", ctx);
+        Serializable s = MVEL.compileExpression("(list = new java.util.ArrayList()).add( 5 ); list", ctx);
 
         Map vars = new HashMap();
         //vars.put("base", new Base());

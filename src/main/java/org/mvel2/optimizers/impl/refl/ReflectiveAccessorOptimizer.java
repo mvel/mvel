@@ -1083,7 +1083,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 parms[i] = cStmts[i].getValue(ctx, vars);
             }
 
-            Constructor cns = getBestConstructorCanadidate(parms, cls);
+            Constructor cns = getBestConstructorCanadidate(parms, cls, pCtx.isStrongTyping());
 
             if (cns == null) {
                 StringBuilder error = new StringBuilder();

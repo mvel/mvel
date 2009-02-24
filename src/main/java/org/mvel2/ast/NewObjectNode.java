@@ -189,7 +189,7 @@ public class NewObjectNode extends ASTNode {
                         parms[i] = eval(constructorParms[i], ctx, factory);
                     }
 
-                    Constructor cns = getBestConstructorCanadidate(parms, cls);
+                    Constructor cns = getBestConstructorCanadidate(parms, cls, false);
 
                     if (cns == null)
                         throw new CompileException("unable to find constructor for: " + cls.getName());

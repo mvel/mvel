@@ -256,14 +256,13 @@ public class ParseTools {
                     }
                     else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
                         score += 5;
-                    }
                     else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
                         score += 5;
                     }
                     else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
                         score += 4;
                     }
-                    else if (parmTypes[i].isAssignableFrom(arguments[i])) {
+                    else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i]))) {
                         score += 3;
                     }
                     else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
@@ -350,20 +349,20 @@ public class ParseTools {
         }
     }
 
-    public static Constructor getBestConstructorCanadidate(Object[] arguments, Class cls) {
+    public static Constructor getBestConstructorCanadidate(Object[] args, Class cls, boolean requireExact) {
         Class[] parmTypes;
         Constructor bestCandidate = null;
         int bestScore = 0;
         int score = 0;
 
-        Class[] targetParms = new Class[arguments.length];
+        Class[] arguments = new Class[args.length];
 
-        for (int i = 0; i < arguments.length; i++) {
-            if (arguments[i] != null) {
-                targetParms[i] = arguments[i].getClass();
+        for (int i = 0; i < args.length; i++) {
+            if (args[i] != null) {
+                arguments[i] = args[i].getClass();
             }
         }
-        Integer hash = createClassSignatureHash(cls, targetParms);
+        Integer hash = createClassSignatureHash(cls, arguments);
 
         Map<Integer, Constructor> cache = RESOLVED_CONST_CACHE.get(cls);
         if (cache != null) {
@@ -371,37 +370,47 @@ public class ParseTools {
         }
 
         for (Constructor construct : getConstructors(cls)) {
-            if ((parmTypes = getConstructors(construct)).length != arguments.length) {
+            if ((parmTypes = getConstructors(construct)).length != args.length) {
                 continue;
             }
-            else if (arguments.length == 0 && parmTypes.length == 0) {
+            else if (args.length == 0 && parmTypes.length == 0) {
                 return construct;
             }
 
-            for (int i = 0; i < arguments.length; i++) {
-                if (targetParms[i] == null) {
-                    if (!parmTypes[i].isPrimitive()) score += 5;
+            for (int i = 0; i < args.length; i++) {
+
+
+                if (arguments[i] == null) {
+                    if (!parmTypes[i].isPrimitive()) {
+                        score += 5;
+                    }
                     else {
                         score = 0;
                         break;
                     }
                 }
-                else if (parmTypes[i] == targetParms[i]) {
+                else if (parmTypes[i] == arguments[i]) {
                     score += 6;
                 }
-                else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == targetParms[i]) {
+                else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
                     score += 5;
                 }
-                else if (targetParms[i].isPrimitive() && unboxPrimitive(targetParms[i]) == parmTypes[i]) {
+                else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
                     score += 5;
                 }
-                else if (isNumericallyCoercible(targetParms[i], parmTypes[i])) {
+                else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
                     score += 4;
                 }
-                else if (parmTypes[i].isAssignableFrom(targetParms[i])) {
+                else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i]))) {
                     score += 3;
                 }
-                else if (canConvert(parmTypes[i], targetParms[i])) {
+                else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
+                    if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
+                    else if (parmTypes[i] == char.class && arguments[i] == String.class) score += 1;
+
+                    score += 1;
+                }
+                else if (arguments[i] == Object.class) {
                     score += 1;
                 }
                 else {
@@ -416,7 +425,45 @@ public class ParseTools {
             }
             score = 0;
 
+
+//
+//                if (arguments[i] == null) {
+//                    if (!parmTypes[i].isPrimitive()) score += 5;
+//                    else {
+//                        score = 0;
+//                        break;
+//                    }
+//                }
+//                else if (parmTypes[i] == arguments[i]) {
+//                    score += 6;
+//                }
+//                else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
+//                    score += 5;
+//                }
+//                else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
+//                    score += 5;
+//                }
+//                else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
+//                    score += 4;
+//                }
+//                else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i]))) {
+//                    score += 3;
+//                }
+//                else if (canConvert(parmTypes[i], arguments[i])) {
+//                    score += 1;
+//                }
+//                else {
+//                    score = 0;
+//                    break;
+//                }
         }
+
+//            if (score != 0 && score > bestScore) {
+//                bestCandidate = construct;
+//                bestScore = score;
+//            }
+//            score = 0;
+
 
         if (bestCandidate != null) {
             if (cache == null) {

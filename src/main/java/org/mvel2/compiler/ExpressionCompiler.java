@@ -26,11 +26,8 @@ import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
 import org.mvel2.debug.DebugTools;
-import org.mvel2.ast.ASTNode;
 import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
-import org.mvel2.ast.Assignment;
-import org.mvel2.ast.LiteralNode;
-import org.mvel2.ast.Substatement;
+import org.mvel2.ast.*;
 import org.mvel2.util.ASTLinkedList;
 import static org.mvel2.util.CompilerTools.optimizeAST;
 import org.mvel2.util.ExecutionStack;
@@ -298,6 +295,11 @@ public class ExpressionCompiler extends AbstractParser {
         if (verifying) {
             if (tk.isIdentifier()) {
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), pCtx);
+
+                if (tk instanceof Union) {
+                    propVerifier.setCtx(((Union)tk).getLeftEgressType());
+                }
+
                 tk.setEgressType(returnType = propVerifier.analyze());
 
                 if (propVerifier.isResolvedExternally()) {
