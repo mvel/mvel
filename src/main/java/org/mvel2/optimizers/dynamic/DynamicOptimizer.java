@@ -58,6 +58,7 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
     public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
                                      VariableResolverFactory factory, boolean rootThisRef, Class ingressType) {
+
         return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, 0,
                 firstStage.optimizeAccessor(pCtx, property, ctx, thisRef, factory, rootThisRef, ingressType)));
     }
@@ -66,20 +67,24 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
     public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
                                         VariableResolverFactory factory, boolean rootThisRef, Object value, Class valueType) {
+
         return classLoader.registerDynamicAccessor(new DynamicSetAccessor(pCtx, property,
                 firstStage.optimizeSetAccessor(pCtx, property, ctx, thisRef, factory, rootThisRef, value, valueType)));
     }
 
     public static final int COLLECTION = 2;
 
-    public Accessor optimizeCollection(Object rootObject, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+    public Accessor optimizeCollection(ParserContext pCtx, Object rootObject, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+
+
         return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, type, property, 2,
-                firstStage.optimizeCollection(rootObject, type, property, ctx, thisRef, factory)));
+                firstStage.optimizeCollection(pCtx, rootObject, type, property, ctx, thisRef, factory)));
     }
 
     public static final int OBJ_CREATION = 3;
 
     public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+
         return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, 3,
                 firstStage.optimizeObjectCreation(pCtx, property, ctx, thisRef, factory)));
     }

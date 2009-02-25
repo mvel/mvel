@@ -134,6 +134,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.ingressType = ingressType;
 
         this.pCtx = pCtx;
+
+ //       pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+
         return compileGetChain();
     }
 
@@ -152,6 +155,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         char[] root = null;
 
         int split = findLastUnion();
+
+  //      pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
         PropertyVerifier verifier = new PropertyVerifier(property, this.pCtx = pCtx);
 
@@ -827,8 +832,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
             es = new ExecutableStatement[subtokens.length];
             args = new Object[subtokens.length];
+
+
+            
             for (int i = 0; i < subtokens.length; i++) {
-                args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray()))
+                args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray(), pCtx))
                         .getValue(this.ctx, thisRef, variableFactory);
             }
         }
@@ -1016,10 +1024,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
 
-    public Accessor optimizeCollection(Object o, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+    public Accessor optimizeCollection(ParserContext pCtx, Object o, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         this.returnType = type;
         this.ctx = ctx;
         this.variableFactory = factory;
+
+      //  pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
         Accessor root = _getAccessor(o, returnType);
 
@@ -1036,6 +1046,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.length = (this.expr = property).length;
         this.cursor = 0;
         this.pCtx = pCtx;
+
+  //      pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+
         try {
             return compileConstructor(property, ctx, factory);
         }

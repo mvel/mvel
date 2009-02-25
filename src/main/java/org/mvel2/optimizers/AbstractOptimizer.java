@@ -18,6 +18,8 @@
 package org.mvel2.optimizers;
 
 import org.mvel2.CompileException;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.isWhitespace;
@@ -25,6 +27,8 @@ import static org.mvel2.util.ParseTools.isIdentifierPart;
 
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Christopher Brock
@@ -245,4 +249,6 @@ public class AbstractOptimizer extends AbstractParser {
 
         return split;
     }
+
+
 }

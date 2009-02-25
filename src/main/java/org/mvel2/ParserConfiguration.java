@@ -32,7 +32,7 @@ import java.util.*;
  * The resusable parser configuration object.
  */
 public class ParserConfiguration implements Serializable {
-    protected HashMap<String, Object> imports;
+    protected Map<String, Object> imports;
     protected HashSet<String> packageImports;
     protected Map<String, Interceptor> interceptors;
     protected transient ClassLoader classLoader = currentThread().getContextClassLoader();
@@ -41,20 +41,7 @@ public class ParserConfiguration implements Serializable {
     }
 
     public ParserConfiguration(Map<String, Object> imports, Map<String, Interceptor> interceptors) {
-        if (imports != null) {
-            this.imports = new HashMap<String, Object>();
-            Object o;
-
-            for (Map.Entry<String, Object> entry : imports.entrySet()) {
-                if ((o = entry.getValue()) instanceof Method) {
-                    this.imports.put(entry.getKey(), new MethodStub((Method) o));
-                }
-                else {
-                    this.imports.put(entry.getKey(), o);
-                }
-            }
-        }
-
+        addAllImports(imports);
         this.interceptors = interceptors;
     }
 
@@ -81,6 +68,26 @@ public class ParserConfiguration implements Serializable {
     public void addPackageImport(String packageName) {
         if (packageImports == null) packageImports = new HashSet<String>();
         packageImports.add(packageName);
+    }
+
+    public void addAllImports(Map<String, Object> imports) {
+        if (imports == null) return;
+
+        if (this.imports == null) this.imports = new HashMap<String, Object>();
+        Object o;
+
+        for (Map.Entry<String, Object> entry : imports.entrySet()) {
+            if ((o = entry.getValue()) instanceof Method) {
+                this.imports.put(entry.getKey(), new MethodStub((Method) o));
+            }
+            else {
+                this.imports.put(entry.getKey(), o);
+            }
+        }
+    }
+
+    public void setAllImports(Map<String, Object> imports) {
+        this.imports = imports;
     }
 
     private boolean checkForDynamicImport(String className) {

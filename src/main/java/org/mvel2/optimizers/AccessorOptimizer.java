@@ -31,7 +31,7 @@ public interface AccessorOptimizer {
     public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
                                         VariableResolverFactory factory, boolean rootThisRef, Object value, Class ingressType);
 
-    public Accessor optimizeCollection(Object collectionGraph, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
+    public Accessor optimizeCollection(ParserContext pCtx, Object collectionGraph, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
 
     public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory);
 

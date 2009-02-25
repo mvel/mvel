@@ -5092,8 +5092,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals( "first", list.get( 0 ) );
     }
     
-    
-    
 }
 
 

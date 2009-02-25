@@ -19,8 +19,10 @@
 package org.mvel2.optimizers.dynamic;
 
 import org.mvel2.compiler.Accessor;
+import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.ParserContext;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -53,7 +55,7 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
                 if ((currentTimeMillis() - stamp) < DynamicOptimizer.timeSpan) {
                     opt = true;
 
-                    return optimize(ctx, elCtx, variableFactory);
+                    return optimize(AbstractParser.getCurrentThreadParserContext(), ctx, elCtx, variableFactory);
                 }
                 else {
                     runcount = 0;
@@ -70,13 +72,13 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
         return _accessor.setValue(ctx, elCtx, variableFactory, value);
     }
 
-    private Object optimize(Object ctx, Object elCtx, VariableResolverFactory variableResolverFactory) {
+    private Object optimize(ParserContext pCtx, Object ctx, Object elCtx, VariableResolverFactory variableResolverFactory) {
 
         if (DynamicOptimizer.classLoader.isOverloaded()) {
             DynamicOptimizer.enforceTenureLimit();
         }
 
-        _accessor = OptimizerFactory.getAccessorCompiler("ASM").optimizeCollection(rootObject, colType, property, ctx, elCtx, variableResolverFactory);
+        _accessor = OptimizerFactory.getAccessorCompiler("ASM").optimizeCollection(pCtx, rootObject, colType, property, ctx, elCtx, variableResolverFactory);
         return _accessor.getValue(ctx, elCtx, variableResolverFactory);
     }
 

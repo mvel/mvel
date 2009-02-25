@@ -21,6 +21,7 @@ package org.mvel2.ast;
 import org.mvel2.CompileException;
 import static org.mvel2.Operator.NOOP;
 import org.mvel2.OptimizationFailure;
+import org.mvel2.ParserContext;
 import static org.mvel2.PropertyAccessor.get;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
@@ -31,12 +32,13 @@ import org.mvel2.optimizers.OptimizationNotSupported;
 import static org.mvel2.optimizers.OptimizerFactory.*;
 import static org.mvel2.util.ParseTools.handleNumericConversion;
 import static org.mvel2.util.ParseTools.isNumber;
+import org.mvel2.util.CompilerTools;
 
 import java.io.Serializable;
 import static java.lang.Thread.currentThread;
 
 @SuppressWarnings({"ManualArrayCopy", "CaughtExceptionImmediatelyRethrown"})
-public class ASTNode implements Cloneable,  Serializable {
+public class ASTNode implements Cloneable, Serializable {
     public static final int LITERAL = 1;
     public static final int DEEP_PROPERTY = 1 << 1;
     public static final int OPERATOR = 1 << 2;
@@ -126,19 +128,21 @@ public class ASTNode implements Cloneable,  Serializable {
                 optimizer = getDefaultAccessorCompiler();
             }
 
+            ParserContext pCtx = new ParserContext();
+            pCtx.getParserConfiguration().addAllImports(CompilerTools.getInjectedImports(factory));
             try {
-                setAccessor(optimizer.optimizeAccessor(getCurrentThreadParserContext(), name, ctx, thisValue, factory, true, egressType));
+                setAccessor(optimizer.optimizeAccessor(pCtx, name, ctx, thisValue, factory, true, egressType));
             }
             catch (OptimizationNotSupported ne) {
                 setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
-                        .optimizeAccessor(getCurrentThreadParserContext(), name, ctx, thisValue, factory, true, null));
+                        .optimizeAccessor(pCtx, name, ctx, thisValue, factory, true, null));
             }
 
 
             if (accessor == null) {
                 return get(name, ctx, factory, thisValue);
             }
-        //        throw new OptimizationFailure("failed optimization");
+            //        throw new OptimizationFailure("failed optimization");
 
             if (retVal == null) {
                 retVal = optimizer.getResultOptPass();
@@ -201,10 +205,10 @@ public class ASTNode implements Cloneable,  Serializable {
 
     public String getAbsoluteName() {
         if (firstUnion > 0) {
-          return new String(name, 0, getAbsoluteFirstPart());
+            return new String(name, 0, getAbsoluteFirstPart());
         }
         else {
-           return getName();
+            return getName();
         }
     }
 
@@ -254,7 +258,7 @@ public class ASTNode implements Cloneable,  Serializable {
                             }
                             catch (ClassNotFoundException e) {
                                 return get(new String(name, i + 1, name.length - i - 1),
-                                         Class.forName(new String(name, 0, i), true, currentThread().getContextClassLoader()), factory, thisRef);
+                                        Class.forName(new String(name, 0, i), true, currentThread().getContextClassLoader()), factory, thisRef);
                             }
                         }
                         meth = false;
@@ -316,7 +320,6 @@ public class ASTNode implements Cloneable,  Serializable {
         if ((fields & INLINE_COLLECTION) != 0) {
             return;
         }
-
 
         if (firstUnion > 0) {
             fields |= DEEP_PROPERTY | IDENTIFIER;

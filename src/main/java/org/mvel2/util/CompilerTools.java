@@ -22,6 +22,8 @@ import org.mvel2.CompileException;
 import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
+import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.ast.BooleanNode;
 import org.mvel2.ast.*;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
@@ -302,6 +304,19 @@ public class CompilerTools {
     public static Accessor extractAccessor(ASTNode n) {
         if (n instanceof LiteralNode) return new ExecutableLiteral(n.getLiteralValue());
         else return new ExecutableAccessor(n, n.getEgressType());
+    }
+
+
+    public static Map<String, Object> getInjectedImports(VariableResolverFactory factory) {
+        if (factory == null) return null;
+        do {
+            if (factory instanceof ClassImportResolverFactory) {
+                return ((ClassImportResolverFactory) factory).getImportedClasses();
+            }
+        }
+        while ((factory = factory.getNextFactory()) != null);
+
+        return null;
     }
 
 }

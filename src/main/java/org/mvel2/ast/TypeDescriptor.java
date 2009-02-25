@@ -113,6 +113,10 @@ public class TypeDescriptor implements Serializable {
         this.className = className;
     }
 
+    public boolean isClass() {
+        return className != null && className.length() != 0;
+    }
+
     public int getEndRange() {
         return endRange;
     }

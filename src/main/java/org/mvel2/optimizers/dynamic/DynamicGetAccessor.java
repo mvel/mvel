@@ -20,6 +20,7 @@ package org.mvel2.optimizers.dynamic;
 
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.Accessor;
+import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
@@ -85,7 +86,7 @@ public class DynamicGetAccessor implements DynamicAccessor {
                 _accessor = ao.optimizeObjectCreation(context, property, ctx, elCtx, variableResolverFactory);
                 return _accessor.getValue(ctx, elCtx, variableResolverFactory);
             case DynamicOptimizer.COLLECTION:
-                _accessor = ao.optimizeCollection(context, null, property, ctx, elCtx, variableResolverFactory);
+                _accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), ctx, null, property, ctx, elCtx, variableResolverFactory);
                 return _accessor.getValue(ctx, elCtx, variableResolverFactory);
         }
         return null;

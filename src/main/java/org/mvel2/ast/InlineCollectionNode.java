@@ -26,6 +26,7 @@ import static org.mvel2.optimizers.OptimizerFactory.getAccessorCompiler;
 import org.mvel2.util.CollectionParser;
 import static org.mvel2.util.ParseTools.subset;
 import org.mvel2.ParserContext;
+import org.mvel2.compiler.AbstractParser;
 
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class InlineCollectionNode extends ASTNode {
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             parseGraph(true, null, pctx.isStrongTyping());
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-            accessor = ao.optimizeCollection(collectionGraph, egressType, trailing, null, null, null);                        
+            accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph, egressType, trailing, null, null, null);
         }
     }
 
@@ -54,7 +55,7 @@ public class InlineCollectionNode extends ASTNode {
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             parseGraph(true, type, pctx.isStrongTyping());
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-            accessor = ao.optimizeCollection(collectionGraph, egressType, trailing, null, null, null);            
+            accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(),collectionGraph, egressType, trailing, null, null, null);
         }
     }
 
@@ -66,7 +67,7 @@ public class InlineCollectionNode extends ASTNode {
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
             if (collectionGraph == null) parseGraph(true, null, false);
 
-            accessor = ao.optimizeCollection(collectionGraph, egressType, trailing, ctx, thisValue, factory);
+            accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph, egressType, trailing, ctx, thisValue, factory);
             egressType = ao.getEgressType();
 
             return accessor.getValue(ctx, thisValue, factory);
@@ -78,7 +79,7 @@ public class InlineCollectionNode extends ASTNode {
         parseGraph(false, egressType, false);
 
         return getAccessorCompiler(SAFE_REFLECTIVE)
-                .optimizeCollection(collectionGraph, egressType, trailing, ctx, thisValue, factory).getValue(ctx, thisValue, factory);
+                .optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph, egressType, trailing, ctx, thisValue, factory).getValue(ctx, thisValue, factory);
     }
 
     private void parseGraph(boolean compile, Class type, boolean strongType) {

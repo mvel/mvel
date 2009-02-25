@@ -219,6 +219,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.variableFactory = factory;
         this.ingressType = ingressType;
 
+   //     pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+
         if (!noinit) _initJIT();
         return compileAccessor();
     }
@@ -248,7 +250,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             property = subset(property, split, property.length - split);
         }
 
+     //   pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+
+
         AccessorNode rootAccessor = null;
+        
 
         _initJIT2();
 
@@ -2691,7 +2697,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    public Accessor optimizeCollection(Object o, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+    public Accessor optimizeCollection(ParserContext pCtx, Object o, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
         this.cursor = 0;
         this.returnType = type;
         if (property != null) this.length = (this.expr = property).length;
@@ -2700,6 +2706,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.ctx = ctx;
         this.thisRef = thisRef;
         this.variableFactory = factory;
+
+       // pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
         _initJIT();
 
@@ -2775,6 +2783,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+ //       pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+
         _initJIT();
 
         compiledInputs = new ArrayList<ExecutableStatement>();
