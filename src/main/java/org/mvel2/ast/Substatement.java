@@ -41,7 +41,7 @@ public class Substatement extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return (MVEL.eval(this.name, ctx, factory));
+        return MVEL.eval(this.name, ctx, factory);
     }
 
 

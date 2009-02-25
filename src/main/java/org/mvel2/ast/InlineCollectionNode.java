@@ -44,7 +44,7 @@ public class InlineCollectionNode extends ASTNode {
             parseGraph(true, null, pctx.isStrongTyping());
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
             accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph, egressType, trailing, null, null, null);
-   //         egressType = ao.getEgressType();
+            egressType = ao.getEgressType();
         }
     }
 
@@ -57,7 +57,7 @@ public class InlineCollectionNode extends ASTNode {
             parseGraph(true, type, pctx.isStrongTyping());
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
             accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(),collectionGraph, egressType, trailing, null, null, null);
-   //         egressType = ao.getEgressType();
+            egressType = ao.getEgressType();
         }
     }
 
@@ -70,7 +70,7 @@ public class InlineCollectionNode extends ASTNode {
             if (collectionGraph == null) parseGraph(true, null, false);
 
             accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph, egressType, trailing, ctx, thisValue, factory);
-          //  egressType = ao.getEgressType();
+            egressType = ao.getEgressType();
 
             return accessor.getValue(ctx, thisValue, factory);
         }
