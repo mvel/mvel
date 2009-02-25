@@ -635,7 +635,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         ExecutableStatement itemStmt = null;
         if (itemSubExpr) {
-            idx = (itemStmt = (ExecutableStatement) subCompileExpression(item.toCharArray())).getValue(ctx, thisRef, variableFactory);
+            idx = (itemStmt = (ExecutableStatement) subCompileExpression(item.toCharArray(), pCtx)).getValue(ctx, thisRef, variableFactory);
         }
 
         ++cursor;
@@ -727,7 +727,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         ExecutableStatement itemStmt = null;
         if (itemSubExpr) {
-            idx = (itemStmt = (ExecutableStatement) subCompileExpression(item.toCharArray())).getValue(ctx, thisRef, variableFactory);
+            idx = (itemStmt = (ExecutableStatement) subCompileExpression(item.toCharArray(), pCtx)).getValue(ctx, thisRef, variableFactory);
         }
 
         ++cursor;
@@ -1088,7 +1088,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
 
             for (int i = 0; i < constructorParms.length; i++) {
-                cStmts[i] = (ExecutableStatement) subCompileExpression(constructorParms[i].toCharArray());
+                cStmts[i] = (ExecutableStatement) subCompileExpression(constructorParms[i].toCharArray(), pCtx);
             }
 
             Object[] parms = new Object[constructorParms.length];

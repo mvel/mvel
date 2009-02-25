@@ -1712,7 +1712,7 @@ public class ParseTools {
 
     public static Serializable subCompileExpression(char[] expression, ParserContext ctx) {
         ExpressionCompiler c = new ExpressionCompiler(expression);
-        c.setPCtx(ctx);
+        if (ctx != null) c.setPCtx(ctx);
         return optimizeTree(c._compile());
     }
 

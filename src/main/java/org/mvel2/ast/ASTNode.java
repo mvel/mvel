@@ -22,6 +22,7 @@ import org.mvel2.CompileException;
 import static org.mvel2.Operator.NOOP;
 import org.mvel2.OptimizationFailure;
 import org.mvel2.ParserContext;
+import org.mvel2.ParserConfiguration;
 import static org.mvel2.PropertyAccessor.get;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
@@ -33,6 +34,7 @@ import static org.mvel2.optimizers.OptimizerFactory.*;
 import static org.mvel2.util.ParseTools.handleNumericConversion;
 import static org.mvel2.util.ParseTools.isNumber;
 import org.mvel2.util.CompilerTools;
+import static org.mvel2.util.CompilerTools.getInjectedImports;
 
 import java.io.Serializable;
 import static java.lang.Thread.currentThread;
@@ -128,8 +130,9 @@ public class ASTNode implements Cloneable, Serializable {
                 optimizer = getDefaultAccessorCompiler();
             }
 
-            ParserContext pCtx = new ParserContext();
-            pCtx.getParserConfiguration().addAllImports(CompilerTools.getInjectedImports(factory));
+            ParserContext pCtx = new ParserContext(new ParserConfiguration(getInjectedImports(factory), null));
+         //   pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+
             try {
                 setAccessor(optimizer.optimizeAccessor(pCtx, name, ctx, thisValue, factory, true, egressType));
             }

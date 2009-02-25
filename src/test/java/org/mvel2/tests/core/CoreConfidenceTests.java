@@ -4961,7 +4961,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testJIRA140() {
         ParserContext ctx = new ParserContext();
         Serializable s = MVEL.compileExpression(
-                "import org.mvel2.tests.core.res.*;"+
+                "import org.mvel2.tests.core.res.*;" +
                         "cols = new Column[] { new Column('name', 20), new Column('age', 2) };" +
                         "grid = new Grid(new Model(cols));", ctx
         );
@@ -4986,12 +4986,12 @@ public class CoreConfidenceTests extends AbstractTest {
 
         MVEL.executeExpression(s, vars);
 
-        assertEquals("coffee", ((Base)vars.get("base")).fooMap.get("foo").getName());
+        assertEquals("coffee", ((Base) vars.get("base")).fooMap.get("foo").getName());
     }
-    
+
     public void testPrimitiveTypes() {
         ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping( true );
+        ctx.setStrongTyping(true);
         ctx.addInput("base", Base.class);
 
         Serializable s = MVEL.compileExpression("int x = 5; x = x + base.intValue; x", ctx);
@@ -5004,10 +5004,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(15, x.intValue());
 
     }
-    
+
     public void testAutoBoxing() {
         ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping( true );
+        ctx.setStrongTyping(true);
         //ctx.addInput("base", Base.class);
 
         Serializable s = MVEL.compileExpression("(list = new java.util.ArrayList()).add( 5 ); list", ctx);
@@ -5020,10 +5020,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(1, list.size());
 
     }
-    
+
     public void testAutoBoxing2() {
         ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping( true );
+        ctx.setStrongTyping(true);
         ctx.addInput("base", Base.class);
 
         Serializable s = MVEL.compileExpression("java.util.List list = new java.util.ArrayList(); list.add( base.intValue ); list", ctx);
@@ -5035,10 +5035,10 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(1, list.size());
     }
-    
+
     public void testTypeCoercion() {
         ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping( true );
+        ctx.setStrongTyping(true);
         ctx.addInput("base", Base.class);
 
         Serializable s = MVEL.compileExpression("java.math.BigInteger x = new java.math.BigInteger( \"5\" ); x + base.intValue;", ctx);
@@ -5050,10 +5050,10 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(15, x.intValue());
     }
-    
+
     public void testEmpty() {
         ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping( true );
+        ctx.setStrongTyping(true);
 
         Serializable s = MVEL.compileExpression("list = new java.util.ArrayList(); list == empty", ctx);
 
@@ -5061,37 +5061,68 @@ public class CoreConfidenceTests extends AbstractTest {
 
         Boolean x = (Boolean) MVEL.executeExpression(s, vars);
 
-        assertNotNull( x );
+        assertNotNull(x);
         assertTrue(x.booleanValue());
     }
-    
+
     public void testMapsAndLists() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
         ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping( true );
+        ctx.setStrongTyping(true);
         ctx.addImport(HashMap.class);
         ctx.addImport(ArrayList.class);
-        ctx.addInput( "list", List.class );
+        ctx.addInput("list", List.class);
 
         String expression = "m = new HashMap();\n" +
-                            "l = new ArrayList();\n" +
-                            "l.add(\"first\");\n" +
-                            "m.put(\"content\", l);\n" +
-                            "list.add(((ArrayList)m[\"content\"])[0]);";
+                "l = new ArrayList();\n" +
+                "l.add(\"first\");\n" +
+                "m.put(\"content\", l);\n" +
+                "list.add(((ArrayList)m[\"content\"])[0]);";
 
         Serializable s = MVEL.compileExpression(expression, ctx);
 
         Map vars = new HashMap();
         List list = new ArrayList();
-        vars.put( "list", list );
+        vars.put("list", list);
 
         Boolean result = (Boolean) MVEL.executeExpression(s, vars);
 
-        assertNotNull( result );
-        assertTrue( result );
-        assertEquals( 1, list.size() );
-        assertEquals( "first", list.get( 0 ) );
+        assertNotNull(result);
+        assertTrue(result);
+        assertEquals(1, list.size());
+        assertEquals("first", list.get(0));
     }
-    
+
+    public void testMapsAndLists2() {
+        OptimizerFactory.setDefaultOptimizer("reflective");
+
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addImport(HashMap.class);
+        ctx.addImport(ArrayList.class);
+        ctx.addInput("list", List.class);
+
+        String expression = "m = new HashMap();\n" +
+                "l = new ArrayList();\n" +
+                "l.add(\"first\");\n" +
+                "m.put(\"content\", l);\n" +
+                "list.add(((ArrayList)m[\"content\"])[0]);";
+
+        Serializable s = MVEL.compileExpression(expression, ctx);
+
+        Map vars = new HashMap();
+        List list = new ArrayList();
+        vars.put("list", list);
+
+        Boolean result = (Boolean) MVEL.executeExpression(s, vars);
+
+        assertNotNull(result);
+        assertTrue(result);
+        assertEquals(1, list.size());
+        assertEquals("first", list.get(0));
+    }
+
 }
 
 
