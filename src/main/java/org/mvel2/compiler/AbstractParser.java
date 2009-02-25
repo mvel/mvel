@@ -913,11 +913,9 @@ public class AbstractParser implements Serializable {
                                         start = cursor;
                                         captureToEOS();
 
-                                        return lastNode = new TypeCast(subset(expr, start, cursor - start), cls, fields);
+                                        return lastNode = new TypeCast(subset(expr, start, cursor - start), cls, fields, pCtx);
                                     }
-                                     catch (Exception e) {
-                                         System.out.println("");
-
+                                     catch (ClassNotFoundException e) {
                                         // fallthrough
                                     }
                                 }
