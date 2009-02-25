@@ -30,6 +30,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import org.mvel2.util.ArrayTools;
+import org.mvel2.util.CompilerTools;
 import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ParseTools.*;
 
@@ -149,7 +150,11 @@ public class NewObjectNode extends ASTNode {
             }
 
             AccessorOptimizer optimizer = getThreadAccessorOptimizer();
-            newObjectOptimizer = optimizer.optimizeObjectCreation(getCurrentThreadParserContext(), name, ctx, thisValue, factory);
+
+            ParserContext pCtx = new ParserContext();
+            pCtx.getParserConfiguration().setAllImports(CompilerTools.getInjectedImports(factory));
+
+            newObjectOptimizer = optimizer.optimizeObjectCreation(pCtx, name, ctx, thisValue, factory);
 
             /**
              * Check to see if the optimizer actually produced the object during optimization.  If so,
