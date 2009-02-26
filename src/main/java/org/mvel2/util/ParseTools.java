@@ -1227,13 +1227,13 @@ public class ParseTools {
                     continue;
 
                 case '*':
-                    if (i < block.length && block[i + 1] == '=') {
+                    if (i+1 < block.length && block[i + 1] == '=') {
                         oper = Operator.MULT;
                     }
                     continue;
 
                 case '/':
-                    if (i < block.length && block[i + 1] == '/') {
+                    if (i+1 < block.length && block[i + 1] == '/') {
                         end = i;
                         while (i < block.length && block[i] != '\n') i++;
                         if (parm == null) start = i;
@@ -1258,13 +1258,13 @@ public class ParseTools {
                     continue;
 
                 case '-':
-                    if (i < block.length && block[i + 1] == '=') {
+                    if (i+1 < block.length && block[i + 1] == '=') {
                         oper = Operator.SUB;
                     }
                     continue;
 
                 case '+':
-                    if (i < block.length && block[i + 1] == '=') {
+                    if (i+1 < block.length && block[i + 1] == '=') {
                         oper = Operator.ADD;
                     }
                     continue;
