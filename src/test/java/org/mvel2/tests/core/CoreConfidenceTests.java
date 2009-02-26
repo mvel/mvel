@@ -5123,6 +5123,16 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("first", list.get(0));
     }
 
+
+    public void testReturnBoolean() {
+        String ex = "list = new java.util.ArrayList(); return list != null";
+
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        Serializable s = MVEL.compileExpression(ex, ctx);
+
+        assertEquals(true, MVEL.executeExpression(s, new HashMap()));
+    }
 }
 
 
