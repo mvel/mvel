@@ -746,7 +746,6 @@ public class PropertyAccessor {
                 return ((CharSequence) ctx).charAt((Integer) eval(prop, ctx, variableFactory));
         }
         else {
-            //      TypeDescriptor td = new TypeDescriptor(property, 0);
             try {
                 return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, 0));
             }

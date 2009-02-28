@@ -2204,7 +2204,7 @@ public class AbstractParser implements Serializable {
                                 reduce();
                             }
 
-                            y = 0;
+                       //     y = 0;
                         }
                     }
                     else {
