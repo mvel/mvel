@@ -2769,8 +2769,8 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath25() {
-        String expression = "51 * (4 - 100 * 5) + 10 + 5 * 2 / 1 + 0 + 0 - 80";
-        int val = 51 * (4 - 100 * 5) + 10 + 5 * 2 / 1 + 0 + 0 - 80;
+        String expression = "51 * (40 - 1000 * 50) + 100 + 50 * 20 / 10 + 11 + 12 - 80";
+        int val = 51 * (40 - 1000 * 50) + 100 + 50 * 20 / 10 + 11 + 12 - 80;
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
         assertEquals(val, test(expression));
@@ -2912,6 +2912,25 @@ public class CoreConfidenceTests extends AbstractTest {
         Serializable s = compileExpression(expression);
 
         assertNumEquals(2d + 10d * 10d * 30d / 2d * 20d * 60d + 2d / 2d - 20d, executeExpression(s, map));
+    }
+
+//    public void testMath38() {
+////        String expression = "272+76-116+194-188+35/288-169+333%244*434";
+////        assertEquals(272d + 76d - 116d + 194d - 188d + 35d / 288d - 169d + 333d % 244d * 434d, MVEL.eval(expression));
+//        String expression = "272 + 76 - 116 + 194 - 188 + 35 / 288 - 169 + 333 * 434";
+//        assertEquals(272d + 76d - 116d + 194d - 188d + 35d / 288d - 169d + 333d * 434d, MVEL.eval(expression));
+//
+//    }
+
+    public void testMath38() {
+        String expression = "100 + 200 - 300 + 400 - 500 + 105 / 205 - 405 + 305 * 206";
+        double res = 100d + 200d - 300d + 400d - 500d + 105d / 205d - 405d + 305d * 206d;
+
+
+        System.out.println("Expression: " + expression);
+        System.out.println("CorrectResult:" + res);
+        assertEquals(res,
+                MVEL.eval(expression));
     }
 
     public void testNullSafe() {

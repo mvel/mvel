@@ -915,7 +915,7 @@ public class AbstractParser implements Serializable {
 
                                         return lastNode = new TypeCast(subset(expr, start, cursor - start), cls, fields, pCtx);
                                     }
-                                     catch (ClassNotFoundException e) {
+                                    catch (ClassNotFoundException e) {
                                         // fallthrough
                                     }
                                 }
@@ -2143,6 +2143,10 @@ public class AbstractParser implements Serializable {
                         // if we have back to back operations on the stack, we don't xswap
                         if (x) {
                             xswap();
+
+                            if (y != 0) {
+                                reduce();
+                            }
                         }
                         /**
                          * This operator is of higher precedence, or the same level precedence.  push to the RHS.
@@ -2156,13 +2160,26 @@ public class AbstractParser implements Serializable {
                             // if we have back to back operations on the stack, we don't xswap             
                             if (x) {
                                 xswap();
+
+                                if (y != 0) {
+                                    reduce();
+                                }
                             }
 
                             /**
                              * Reduce any operations waiting now.
                              */
-                            while (!dStack.isEmpty()) {
-                                dreduce();
+                            if (!dStack.isEmpty()) {
+                                do {
+                                    if (y == 1) {
+                                        dreduce2();
+                                        y = 0;
+                                    }
+                                    else {
+                                        dreduce();
+                                    }
+                                }
+                                while (dStack.size() > 1);
                             }
 
                             /**
@@ -2204,7 +2221,7 @@ public class AbstractParser implements Serializable {
                                 reduce();
                             }
 
-                       //     y = 0;
+                            //     y = 0;
                         }
                     }
                     else {
@@ -2231,7 +2248,7 @@ public class AbstractParser implements Serializable {
                         if (!dStack.isEmpty()) {
                             stk.push(dStack.pop());
                         }
-                        else if (x) {
+                        else if (x && stk.isReduceable()) {
                             xswap();
                         }
 
@@ -2273,7 +2290,7 @@ public class AbstractParser implements Serializable {
             }
         }
 
-        // while any values remain on the stack
+        // while any values remain on the stack                     
         // keep XSWAPing and reducing, until there is nothing left.
         while (stk.isReduceable()) {
             reduce();
@@ -2296,7 +2313,9 @@ public class AbstractParser implements Serializable {
         o1 = dStack.pop();
         o2 = dStack.pop();
 
+
         if (!dStack.isEmpty()) stk.push(dStack.pop());
+
 
         stk.push(o1);
         stk.push(o2);
@@ -2334,7 +2353,10 @@ public class AbstractParser implements Serializable {
                 case GETHAN:
                 case LETHAN:
                 case POWER:
+
                     stk.push(MathProcessor.doOperations(stk.peek2(), operator, stk.pop2()));
+
+                    System.out.println(" = " + stk.peek());
                     break;
 
                 case AND:
