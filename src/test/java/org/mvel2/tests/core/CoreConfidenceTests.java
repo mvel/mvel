@@ -2811,9 +2811,10 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMath30() {
-        String expression = "40 / 20 + 10 + 6 / 2";
-        float val = 40f / 20f + 10f + 6f / 2f;
-        assertEquals((int) val, MVEL.eval(expression));
+        String expression = "40 / 20 + 10 + 60 / 21";
+        System.out.println("Expression: " + expression);
+        double val = 40d / 20d + 10d + 60d / 21d;
+        assertEquals(val, MVEL.eval(expression));
     }
 
     public void testMath31() {
@@ -2931,6 +2932,58 @@ public class CoreConfidenceTests extends AbstractTest {
         System.out.println("CorrectResult:" + res);
         assertEquals(res,
                 MVEL.eval(expression));
+    }
+
+    public void testMath39() {
+        String expression = "147 + 60 / 167 % 448 + 36 * 23 / 166";
+        double res = 147d + 60d / 167d % 448d + 36d * 23d / 166d;
+
+        System.out.println("Expression: " + expression);
+        System.out.println("CorrectRes: " + res);
+
+        assertEquals(res, MVEL.eval(expression));
+    }
+
+    public void testMath40() {
+        String expression = "228 - 338 % 375 - 103 + 260 + 412 * 177 + 121";
+        double res = 228d - 338d % 375d - 103d + 260d + 412d * 177d + 121d;
+
+        System.out.println("Expression: " + expression);
+        System.out.println("CorrectRes: " + res);
+
+        assertEquals(res, MVEL.eval(expression, Double.class));
+    }
+
+    public void testMath41() {
+        String expression = "304d - 246d / 242d % 235d / 425d - 326d + 355d * 264d % 308d";
+        double res = 304d - 246d / 242d % 235d / 425d - 326d + 355d * 264d % 308d;
+
+        System.out.println("Expression: " + expression);
+        System.out.println("CorrectRes: " + res);
+
+        assertEquals(res, MVEL.eval(expression));
+    }
+
+    public void testMath42() {
+        String expression = "11d - 7d / 3d * 18d % 14d * 8d * 11d - 2d - 11d / 13d + 14d";
+        double res = 11d - 7d / 3d * 18d % 14d * 8d * 11d - 2d - 11d / 13d + 14d;
+
+        System.out.println("Expression: " + expression);
+        System.out.println("CorrectRes: " + res);
+
+        assertEquals(res, MVEL.eval(expression));
+    }
+
+    public void testMath43() {
+        // 4/3*6%8*5*8+7+9*1
+
+        String expression = "4d/3d*6d%8d*5d*8d+7d+9d*1d";
+        double res = 4d/3d*6d%8d*5d*8d+7d+9d*1d;
+
+        System.out.println("Expression: " + expression);
+        System.out.println("CorrectRes: " + res);
+
+        assertEquals(res, MVEL.eval(expression));
     }
 
     public void testNullSafe() {

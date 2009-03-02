@@ -19,6 +19,8 @@
 package org.mvel2.util;
 
 import org.mvel2.CompileException;
+import org.mvel2.math.MathProcessor;
+import static org.mvel2.math.MathProcessor.doOperations;
 
 import static java.lang.String.valueOf;
 
@@ -76,6 +78,20 @@ public class ExecutionStack {
         throw new CompileException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
     }
 
+    public void copy2(ExecutionStack es) {
+        element = new StackElement(new StackElement(element, es.element.value), es.element.next.value);
+        size += 2;
+        es.element = es.element.next.next;
+        es.size -= 2;
+    }
+
+    public void copyx2(ExecutionStack es) {
+        element = new StackElement(new StackElement(element, es.element.next.value), es.element.value);
+        size += 2;
+        es.element = es.element.next.next;
+        es.size -= 2;
+    }
+
     public Object peek2() {
         return element.next.value;
     }
@@ -123,14 +139,37 @@ public class ExecutionStack {
     }
 
     public boolean isReduceable() {
-        return size>1;
+        return size > 1;
     }
 
     public void clear() {
         size = 0;
         element = null;
     }
-    
+
+    public void xswap_op() {
+        xswap();
+        op();
+    }
+
+    public void op() {
+        element = new StackElement(element.next.next.next, doOperations(element.next.next.value, (Integer) element.value, element.next.value));
+        size -= 2;
+    }
+
+    public void op(int operator) {
+        element = new StackElement(element.next.next, doOperations(element.next.value, operator, element.value));
+        size--;
+    }
+
+    public void xswap() {
+        StackElement e = element.next;
+        StackElement relink = e.next;
+        e.next = element;
+        element = e;
+        e.next.next = relink;
+    }
+
     public String toString() {
         StackElement el = element;
 
