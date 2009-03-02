@@ -80,15 +80,15 @@ public class ExecutionStack {
 
     public void copy2(ExecutionStack es) {
         element = new StackElement(new StackElement(element, es.element.value), es.element.next.value);
-        size += 2;
         es.element = es.element.next.next;
+        size += 2;
         es.size -= 2;
     }
 
     public void copyx2(ExecutionStack es) {
         element = new StackElement(new StackElement(element, es.element.next.value), es.element.value);
-        size += 2;
         es.element = es.element.next.next;
+        size += 2;
         es.size -= 2;
     }
 
@@ -166,8 +166,7 @@ public class ExecutionStack {
         StackElement e = element.next;
         StackElement relink = e.next;
         e.next = element;
-        element = e;
-        e.next.next = relink;
+        (element = e).next.next = relink;
     }
 
     public String toString() {
