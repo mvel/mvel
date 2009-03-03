@@ -75,7 +75,9 @@ public class BinaryOperation extends BooleanNode {
                     }
             }
 
-            if (left.egressType == right.egressType) lType = rType = ParseTools.__resolveType(egressType);
+            if (left.egressType == right.egressType) {
+                lType = rType = ParseTools.__resolveType(left.egressType);
+            }
             else {
                 lType = ParseTools.__resolveType(left.egressType);
                 rType = ParseTools.__resolveType(right.egressType);

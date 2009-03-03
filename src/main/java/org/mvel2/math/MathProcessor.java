@@ -565,6 +565,6 @@ public strictfp class MathProcessor {
 
         }
 
-        throw new ConversionException("cannot convert <" + in + "> to a numeric type");
+        throw new ConversionException("cannot convert <" + in + "> to a numeric type: " + in.getClass() + " [" + type + "]");
     }
 }
