@@ -19,6 +19,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.Operator;
+import org.mvel2.DataTypes;
 import org.mvel2.math.MathProcessor;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
@@ -35,7 +36,7 @@ public class IndexedPostFixIncNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver vResolver = factory.getIndexedVariableResolver(register);
-        vResolver.setValue(MathProcessor.doOperations(ctx = vResolver.getValue(), Operator.ADD, 1));
+        vResolver.setValue(MathProcessor.doOperations(ctx = vResolver.getValue(), Operator.ADD, DataTypes.INTEGER, 1));
         return ctx;
     }
 

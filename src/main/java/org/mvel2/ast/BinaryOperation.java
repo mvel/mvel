@@ -23,6 +23,7 @@ import org.mvel2.*;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import org.mvel2.math.MathProcessor;
+import static org.mvel2.math.MathProcessor.doOperations;
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.CompilerTools.getReturnTypeFromOp;
@@ -31,6 +32,8 @@ import static org.mvel2.util.ParseTools.boxPrimitive;
 
 public class BinaryOperation extends BooleanNode {
     private final int operation;
+    private int lType = -1;
+    private int rType = -1;
 
     public BinaryOperation(int operation, ASTNode left, ASTNode right) {
         this.operation = operation;
@@ -71,14 +74,21 @@ public class BinaryOperation extends BooleanNode {
                         }
                     }
             }
+
+            if (left.egressType == right.egressType) lType = rType = ParseTools.__resolveType(egressType);
+            else {
+                lType = ParseTools.__resolveType(left.egressType);
+                rType = ParseTools.__resolveType(right.egressType);
+            }
         }
 
         egressType = getReturnTypeFromOp(operation, left.egressType, right.egressType);
+
     }
 
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return MathProcessor.doOperations(left.getReducedValueAccelerated(ctx, thisValue, factory), operation, right.getReducedValueAccelerated(ctx, thisValue, factory));
+        return doOperations(lType, left.getReducedValueAccelerated(ctx, thisValue, factory), operation, rType, right.getReducedValueAccelerated(ctx, thisValue, factory));
     }
 
 

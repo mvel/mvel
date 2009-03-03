@@ -23,6 +23,7 @@ import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 
 import static org.mvel2.util.ParseTools.subCompileExpression;
+import org.mvel2.util.ParseTools;
 import org.mvel2.math.MathProcessor;
 import org.mvel2.ParserContext;
 
@@ -30,6 +31,7 @@ public class OperativeAssign extends ASTNode {
     private String varName;
     private ExecutableStatement statement;
     private final int operation;
+    private int knownInType = -1;
 
     public OperativeAssign(String variableName, char[] expr, int operation, int fields, ParserContext pCtx) {
         this.varName = variableName;
@@ -37,13 +39,17 @@ public class OperativeAssign extends ASTNode {
         this.name = expr;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            statement = (ExecutableStatement) subCompileExpression(expr, pCtx);
+            egressType = (statement = (ExecutableStatement) subCompileExpression(expr, pCtx)).getKnownEgressType();
+
+            if (pCtx.isStrongTyping()) {
+                knownInType = ParseTools.__resolveType(egressType);
+            }
         }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver resolver = factory.getVariableResolver(varName);
-        resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, statement.getValue(ctx, thisValue, factory)));
+        resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, knownInType, statement.getValue(ctx, thisValue, factory)));
         return ctx;
     }
 

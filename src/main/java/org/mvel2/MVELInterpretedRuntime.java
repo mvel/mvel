@@ -51,7 +51,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
             if (parserContext != null) contextControl(REMOVE, null, null);
 
-            return stk.pop();
+            return stk.peek();
         }
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();

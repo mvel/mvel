@@ -42,12 +42,25 @@ public strictfp class MathProcessor {
     private static final MathContext MATH_CONTEXT = MathContext.DECIMAL128;
 
     public static Object doOperations(Object val1, int operation, Object val2) {
-        int type1 = val1 == null ? DataTypes.NULL : __resolveType(val1.getClass());
-        int type2 = val2 == null ? DataTypes.NULL : __resolveType(val2.getClass());
+        return doOperations(val1 == null ? DataTypes.OBJECT : __resolveType(val1.getClass()),
+                val1, operation,
+                val2 == null ? DataTypes.NULL : __resolveType(val2.getClass()), val2);
+    }
 
-  //    System.out.println("{ " + val1 + " " + DebugTools.getOperatorSymbol(operation) + " " + val2 + "}");
+    public static Object doOperations(Object val1, int operation, int type2, Object val2) {
+        return doOperations(val1 == null ? DataTypes.OBJECT : __resolveType(val1.getClass()), val1, operation, type2, val2);
+    }
+
+    public static Object doOperations(int type1, Object val1, int operation, int type2, Object val2) {
+        if (type1 == -1)
+            type1 = val1 == null ? DataTypes.OBJECT : __resolveType(val1.getClass());
+
+        if (type2 == -1)
+            type2 = val2 == null ? DataTypes.OBJECT : __resolveType(val2.getClass());
+
 
         switch (type1) {
+
             case BIG_DECIMAL:
                 switch (type2) {
                     case BIG_DECIMAL:
@@ -65,6 +78,7 @@ public strictfp class MathProcessor {
 
         }
     }
+
 
     private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2, boolean iNumber) {
         switch (operation) {
@@ -521,25 +535,34 @@ public strictfp class MathProcessor {
                 return new InternalNumber(((BigDecimal) in).doubleValue());
             case DataTypes.BIG_INTEGER:
                 return new InternalNumber((BigInteger) in, MathContext.DECIMAL128);
+            case DataTypes.INTEGER:
             case DataTypes.W_INTEGER:
                 return new InternalNumber((Integer) in, MathContext.DECIMAL32);
+            case DataTypes.LONG:
             case DataTypes.W_LONG:
                 return new InternalNumber((Long) in, MathContext.DECIMAL64);
             case DataTypes.STRING:
                 return new InternalNumber((String) in, MathContext.DECIMAL64);
+            case DataTypes.FLOAT:
             case DataTypes.W_FLOAT:
                 return new InternalNumber((Float) in, MathContext.DECIMAL64);
+            case DataTypes.DOUBLE:
             case DataTypes.W_DOUBLE:
                 return new InternalNumber((Double) in, MathContext.DECIMAL64);
+            case DataTypes.SHORT:
             case DataTypes.W_SHORT:
                 return new InternalNumber((Short) in, MathContext.DECIMAL32);
+            case DataTypes.CHAR:
             case DataTypes.W_CHAR:
                 return new InternalNumber((Character) in, MathContext.DECIMAL32);
+            case DataTypes.BOOLEAN:
             case DataTypes.W_BOOLEAN:
                 return new InternalNumber(((Boolean) in) ? 1 : 0);
-                //return InternalNumber.valueOf(((Boolean) in) ? 1 : 0);
+            //return InternalNumber.valueOf(((Boolean) in) ? 1 : 0);
             case DataTypes.UNIT:
                 return new InternalNumber(((Unit) in).getValue(), MathContext.DECIMAL64);
+
+
         }
 
         throw new ConversionException("cannot convert <" + in + "> to a numeric type");

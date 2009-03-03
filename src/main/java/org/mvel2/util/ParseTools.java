@@ -904,6 +904,11 @@ public class ParseTools {
         t.put(BlankLiteral.class, DataTypes.EMPTY);
     }
 
+    public static int resolveType(Object o) {
+        if (o == null) return DataTypes.OBJECT;
+        else return __resolveType(o.getClass());
+    }
+
     public static int resolveType(Class cls) {
         Integer i = typeResolveMap.get(cls);
         if (i == null) return DataTypes.OBJECT;
