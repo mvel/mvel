@@ -58,9 +58,7 @@ public strictfp class MathProcessor {
         if (type2 == -1)
             type2 = val2 == null ? DataTypes.OBJECT : __resolveType(val2.getClass());
 
-
         switch (type1) {
-
             case BIG_DECIMAL:
                 switch (type2) {
                     case BIG_DECIMAL:
@@ -78,7 +76,6 @@ public strictfp class MathProcessor {
 
         }
     }
-
 
     private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2, boolean iNumber) {
         switch (operation) {
@@ -239,7 +236,6 @@ public strictfp class MathProcessor {
                 + (val1 != null ? val1.getClass().getName() : "null") + "; right-type="
                 + (val2 != null ? val2.getClass().getName() : "null")
                 + " [vals (" + valueOf(val1) + ", " + valueOf(val2) + ") operation=" + DebugTools.getOperatorName(operation) + " (opcode:" + operation + ") ]");
-
     }
 
     private static Boolean safeEquals(final Object val1, final Object val2) {
@@ -266,7 +262,7 @@ public strictfp class MathProcessor {
                     case SUB:
                         return ((Integer) val1) - ((Integer) val2);
                     case DIV:
-                        return narrowType(new BigDecimal((Integer) val1, MATH_CONTEXT).divide(new BigDecimal((Integer) val2), MATH_CONTEXT));
+                        return ((Integer) val1).doubleValue() / ((Integer) val2).doubleValue();
                     case MULT:
                         return ((Integer) val1) * ((Integer) val2);
                     case POWER:
@@ -275,7 +271,6 @@ public strictfp class MathProcessor {
                         else return (int) d;
                     case MOD:
                         return ((Integer) val1) % ((Integer) val2);
-
                     case GTHAN:
                         return ((Integer) val1) > ((Integer) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case GETHAN:
@@ -288,7 +283,6 @@ public strictfp class MathProcessor {
                         return ((Integer) val1).intValue() == ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
                     case NEQUAL:
                         return ((Integer) val1).intValue() != ((Integer) val2).intValue() ? Boolean.TRUE : Boolean.FALSE;
-
                     case BW_AND:
                         return (Integer) val1 & (Integer) val2;
                     case BW_OR:
@@ -311,7 +305,7 @@ public strictfp class MathProcessor {
                     case SUB:
                         return ((Short) val1) - ((Short) val2);
                     case DIV:
-                        return narrowType(new InternalNumber((Short) val1, MATH_CONTEXT).divide(new InternalNumber((Short) val2), MATH_CONTEXT));
+                        return ((Short) val1).doubleValue() / ((Short) val2).doubleValue();
                     case MULT:
                         return ((Short) val1) * ((Short) val2);
                     case POWER:
@@ -320,7 +314,6 @@ public strictfp class MathProcessor {
                         else return (short) d;
                     case MOD:
                         return ((Short) val1) % ((Short) val2);
-
                     case GTHAN:
                         return ((Short) val1) > ((Short) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case GETHAN:
@@ -333,7 +326,6 @@ public strictfp class MathProcessor {
                         return ((Short) val1).shortValue() == ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
                     case NEQUAL:
                         return ((Short) val1).shortValue() != ((Short) val2).shortValue() ? Boolean.TRUE : Boolean.FALSE;
-
                     case BW_AND:
                         return (Short) val1 & (Short) val2;
                     case BW_OR:
@@ -356,7 +348,7 @@ public strictfp class MathProcessor {
                     case SUB:
                         return ((Long) val1) - ((Long) val2);
                     case DIV:
-                        return narrowType(new InternalNumber((Long) val1, MATH_CONTEXT).divide(new InternalNumber((Long) val2), MATH_CONTEXT));
+                        return ((Long) val1).doubleValue() / ((Long) val2).doubleValue();
                     case MULT:
                         return ((Long) val1) * ((Long) val2);
                     case POWER:
@@ -365,7 +357,6 @@ public strictfp class MathProcessor {
                         else return (long) d;
                     case MOD:
                         return ((Long) val1) % ((Long) val2);
-
                     case GTHAN:
                         return ((Long) val1) > ((Long) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case GETHAN:
@@ -378,7 +369,6 @@ public strictfp class MathProcessor {
                         return ((Long) val1).longValue() == ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
                     case NEQUAL:
                         return ((Long) val1).longValue() != ((Long) val2).longValue() ? Boolean.TRUE : Boolean.FALSE;
-
                     case BW_AND:
                         return (Long) val1 & (Long) val2;
                     case BW_OR:
@@ -387,7 +377,6 @@ public strictfp class MathProcessor {
                         return (Long) val1 << (Long) val2;
                     case BW_USHIFT_LEFT:
                         throw new UnsupportedOperationException("unsigned left-shift not supported");
-
                     case BW_SHIFT_RIGHT:
                         return (Long) val1 >> (Long) val2;
                     case BW_USHIFT_RIGHT:
@@ -408,14 +397,13 @@ public strictfp class MathProcessor {
                     case SUB:
                         return ((Double) val1) - ((Double) val2);
                     case DIV:
-                        return narrowType(new InternalNumber((Double) val1, MATH_CONTEXT).divide(new InternalNumber((Double) val2), MATH_CONTEXT));
+                        return ((Double) val1) / ((Double) val2);
                     case MULT:
                         return ((Double) val1) * ((Double) val2);
                     case POWER:
                         return Math.pow((Double) val1, (Double) val2);
                     case MOD:
                         return ((Double) val1) % ((Double) val2);
-
                     case GTHAN:
                         return ((Double) val1) > ((Double) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case GETHAN:
@@ -428,7 +416,6 @@ public strictfp class MathProcessor {
                         return ((Double) val1).doubleValue() == ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
                     case NEQUAL:
                         return ((Double) val1).doubleValue() != ((Double) val2).doubleValue() ? Boolean.TRUE : Boolean.FALSE;
-
                     case BW_AND:
                     case BW_OR:
                     case BW_SHIFT_LEFT:
@@ -446,14 +433,13 @@ public strictfp class MathProcessor {
                     case SUB:
                         return ((Float) val1) - ((Float) val2);
                     case DIV:
-                        return narrowType(new InternalNumber((Float) val1, MATH_CONTEXT).divide(new InternalNumber((Float) val2), MATH_CONTEXT));
+                        return ((Float) val1).doubleValue() / ((Float) val2).doubleValue();
                     case MULT:
                         return ((Float) val1) * ((Float) val2);
                     case POWER:
                         return narrowType(new InternalNumber((Float) val1, MATH_CONTEXT).pow(new InternalNumber((Float) val2).intValue(), MATH_CONTEXT));
                     case MOD:
                         return ((Float) val1) % ((Float) val2);
-
                     case GTHAN:
                         return ((Float) val1) > ((Float) val2) ? Boolean.TRUE : Boolean.FALSE;
                     case GETHAN:
@@ -466,7 +452,6 @@ public strictfp class MathProcessor {
                         return ((Float) val1).floatValue() == ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
                     case NEQUAL:
                         return ((Float) val1).floatValue() != ((Float) val2).floatValue() ? Boolean.TRUE : Boolean.FALSE;
-
                     case BW_AND:
                     case BW_OR:
                     case BW_SHIFT_LEFT:
@@ -490,7 +475,6 @@ public strictfp class MathProcessor {
                         return ((BigInteger) val1).pow(((BigInteger) val2).intValue());
                     case MOD:
                         return ((BigInteger) val1).remainder(((BigInteger) val2));
-
                     case GTHAN:
                         return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 1 ? Boolean.TRUE : Boolean.FALSE;
                     case GETHAN:
@@ -503,7 +487,6 @@ public strictfp class MathProcessor {
                         return ((BigInteger) val1).compareTo(((BigInteger) val2)) == 0 ? Boolean.TRUE : Boolean.FALSE;
                     case NEQUAL:
                         return ((BigInteger) val1).compareTo(((BigInteger) val2)) != 0 ? Boolean.TRUE : Boolean.FALSE;
-
                     case BW_AND:
                     case BW_OR:
                     case BW_SHIFT_LEFT:
@@ -558,7 +541,6 @@ public strictfp class MathProcessor {
             case DataTypes.BOOLEAN:
             case DataTypes.W_BOOLEAN:
                 return new InternalNumber(((Boolean) in) ? 1 : 0);
-            //return InternalNumber.valueOf(((Boolean) in) ? 1 : 0);
             case DataTypes.UNIT:
                 return new InternalNumber(((Unit) in).getValue(), MathContext.DECIMAL64);
 

@@ -2632,7 +2632,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testAssignDiv() {
-        assertEquals(2, test("xx0 = 20; xx0 /= 10; xx0"));
+        assertEquals(2.0, test("xx0 = 20; xx0 /= 10; xx0"));
     }
 
     public void testAssignMult() {
@@ -2978,13 +2978,46 @@ public class CoreConfidenceTests extends AbstractTest {
         // 4/3*6%8*5*8+7+9*1
 
         String expression = "4d/3d*6d%8d*5d*8d+7d+9d*1d";
-        double res = 4d/3d*6d%8d*5d*8d+7d+9d*1d;
+        double res = 4d / 3d * 6d % 8d * 5d * 8d + 7d + 9d * 1d;
 
         System.out.println("Expression: " + expression);
         System.out.println("CorrectRes: " + res);
 
         assertEquals(res, MVEL.eval(expression));
     }
+
+    public void testMath44() {
+        String expression = "6d+8d/9d*1d*9d*10d%4d*4d-4d*6d*3d";
+        double res = 6d + 8d / 9d * 1d * 9d * 10d % 4d * 4d - 4d * 6d * 3d;
+
+        System.out.println("Expression: " + expression);
+        System.out.println("CorrectRes: " + res);
+
+        assertEquals(res, MVEL.eval(expression));
+    }
+
+    public void testMath44b() {
+        String expression = "a+b/c*d*e*f%g*h-i*j*k";
+        double res = 6d + 8d / 9d * 1d * 9d * 10d % 4d * 4d - 4d * 6d * 3d;
+
+        Serializable s = MVEL.compileExpression(expression);
+
+        Map vars = new HashMap();
+        vars.put("a", 6d);
+        vars.put("b", 8d);
+        vars.put("c", 9d);
+        vars.put("d", 1d);
+        vars.put("e", 9d);
+        vars.put("f", 10d);
+        vars.put("g", 4d);
+        vars.put("h", 4d);
+        vars.put("i", 4d);
+        vars.put("j", 6d);
+        vars.put("k", 3d);
+
+        assertEquals(res, MVEL.executeExpression(s, vars));
+    }
+
 
     public void testNullSafe() {
         Foo foo = new Foo();
