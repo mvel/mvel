@@ -1,9 +1,7 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.*;
-
 import static org.mvel2.MVEL.*;
-
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.Function;
 import org.mvel2.ast.WithNode;
@@ -24,8 +22,8 @@ import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.*;
 import org.mvel2.util.CompilerTools;
 import org.mvel2.util.MethodStub;
-import org.mvel2.util.ReflectionUtil;
 import static org.mvel2.util.ParseTools.loadFromFile;
+import org.mvel2.util.ReflectionUtil;
 
 import java.awt.*;
 import java.io.BufferedReader;
@@ -36,7 +34,6 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
 
@@ -4106,10 +4103,15 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testAnalysisCompile() {
-        CompiledExpression ce = new ExpressionCompiler("foo.aValue = 'bar'").compile();
-        assertTrue(ce.getParserContext().getInputs().keySet().contains("foo"));
-        assertEquals(1, ce.getParserContext().getInputs().size());
-        assertEquals(0, ce.getParserContext().getVariables().size());
+        ParserContext pCtx = new ParserContext();
+        ExpressionCompiler e = new ExpressionCompiler("foo.aValue = 'bar'");
+        e.setVerifyOnly(true);
+
+        e.compile(pCtx);
+
+        assertTrue(pCtx.getInputs().keySet().contains("foo"));
+        assertEquals(1, pCtx.getInputs().size());
+        assertEquals(0, pCtx.getVariables().size());
     }
 
     public void testInlineWith() {
@@ -5256,7 +5258,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(true, MVEL.executeExpression(s, new HashMap()));
     }
-    
+
 //    public void testTypeInference() {
 //        ParserContext ctx = new ParserContext();
 //
@@ -5278,7 +5280,7 @@ public class CoreConfidenceTests extends AbstractTest {
 //        assertEquals( int.class, compiler.getParserContextState().getVariables().get( "total" ) );
 //
 //    }
-    
+
 }
 
 

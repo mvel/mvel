@@ -41,6 +41,7 @@ import org.mvel2.util.StringAppender;
 public class ExpressionCompiler extends AbstractParser {
     private Class returnType;
 
+    private boolean verifyOnly = false;
     private boolean verifying = true;
     private boolean secondPassOptimization = false;
 
@@ -238,7 +239,7 @@ public class ExpressionCompiler extends AbstractParser {
 
             astBuild.finish();
 
-            if (verifying) {
+            if (verifying && !verifyOnly) {
                 pCtx.processTables();
             }            
 
@@ -247,7 +248,12 @@ public class ExpressionCompiler extends AbstractParser {
             }
 
 
-            return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly==1);
+            if (!verifyOnly) {
+                return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly==1);
+            }
+            else {
+                return null;
+            }
 
         }
         catch (NullPointerException e) {
@@ -386,6 +392,14 @@ public class ExpressionCompiler extends AbstractParser {
 
     public void setVerifying(boolean verifying) {
         this.verifying = verifying;
+    }
+
+    public boolean isVerifyOnly() {
+        return verifyOnly;
+    }
+
+    public void setVerifyOnly(boolean verifyOnly) {
+        this.verifyOnly = verifyOnly;
     }
 
     public Class getReturnType() {
