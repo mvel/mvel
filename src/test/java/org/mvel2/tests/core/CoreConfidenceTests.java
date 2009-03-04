@@ -1480,11 +1480,14 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testVarInputs() {
-        ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble); String bleh = foo; twa = bleh;");
 
-        compiler.compile();
+        ParserContext pCtx = new ParserContext();
+        ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble) && 1 + 2 / 3 == 1; String bleh = foo; twa = bleh;");
+        compiler.setVerifyOnly(true);
 
-        ParserContext pCtx = compiler.getParserContextState();
+        compiler.compile(pCtx);
+
+    //    ParserContext pCtx = compiler.getParserContextState();
 
         assertEquals(4, pCtx.getInputs().size());
 

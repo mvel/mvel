@@ -129,7 +129,7 @@ public class ExpressionCompiler extends AbstractParser {
                  * This kludge of code is to handle compile-time literal reduction.  We need to avoid
                  * reducing for certain literals like, 'this', ternary and ternary else.
                  */
-                if (tk.isLiteral()) {
+                if (!verifyOnly && tk.isLiteral()) {
                     if (literalOnly == -1) literalOnly = 1;
 
                     if ((tkOp = nextTokenSkipSymbols()) != null && tkOp.isOperator()
@@ -167,6 +167,7 @@ public class ExpressionCompiler extends AbstractParser {
                                 }
                                 else if ((tkLA2 = nextTokenSkipSymbols()) != null && tkLA2.isLiteral()) {
                                     stk.push(tkLA2.getLiteralValue(), op = tkOp2.getOperator());
+
 
                                     if (isArithmeticOperator(op)) {
                                         arithmeticFunctionReduction(op);
