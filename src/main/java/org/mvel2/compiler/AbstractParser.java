@@ -905,8 +905,9 @@ public class AbstractParser implements Serializable {
                                 TypeDescriptor tDescr = new TypeDescriptor(tmp = subset(expr, st = trimRight(start + 1), trimLeft(cursor - 1) - st), fields);
 
                                 Class cls;
-                                if (tDescr.isClass()) {
-                                    try {
+                                try {
+
+                                    if (tDescr.isClass()) {
                                         cls = getClassReference(pCtx, tDescr);
 
                                         start = cursor;
@@ -914,10 +915,11 @@ public class AbstractParser implements Serializable {
 
                                         return lastNode = new TypeCast(subset(expr, start, cursor - start), cls, fields, pCtx);
                                     }
-                                    catch (ClassNotFoundException e) {
-                                        // fallthrough
-                                    }
                                 }
+                                catch (ClassNotFoundException e) {
+                                    // fallthrough
+                                }
+
                             }
 
                             if (tmp != null) {
@@ -2246,9 +2248,8 @@ public class AbstractParser implements Serializable {
     private void dreduce() {
         stk.copy2(dStack);
         stk.op();
-       // reduce();
+        // reduce();
     }
-
 
 
     /**
