@@ -5259,6 +5259,20 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, MVEL.executeExpression(s, new HashMap()));
     }
 
+    public void testInlineListSensitivenessToSpaces() {
+        String ex = "return([\"a\",\"b\", \"c\"])";
+
+        ParserContext ctx = new ParserContext();
+        Serializable s = MVEL.compileExpression(ex, ctx);
+
+        List result = (List) MVEL.executeExpression(s, new HashMap());
+        assertNotNull( result );
+        assertEquals( "a", result.get( 0 ) );
+        assertEquals( "b", result.get( 1 ) );
+        assertEquals( "c", result.get( 2 ) );
+    }
+    
+    
 //    public void testTypeInference() {
 //        ParserContext ctx = new ParserContext();
 //
