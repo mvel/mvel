@@ -77,7 +77,6 @@ public class Fold extends ASTNode {
 
         List list;
 
-
         if (constraintEx != null) {
             Collection col = ((Collection) dataEx.getValue(ctx, thisValue, factory));
             list = new FastList(col.size());

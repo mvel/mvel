@@ -4688,7 +4688,6 @@ public class CoreConfidenceTests extends AbstractTest {
         executeSetExpression(s, foo, new Integer(12));
 
         assertEquals(12, foo.getSampleBean().getMap2().get("bleh").intValue());
-
     }
 
 
@@ -4921,9 +4920,7 @@ public class CoreConfidenceTests extends AbstractTest {
         }
 
         return val;
-
     }
-
 
     public void testMethodCaching() {
         MVEL.eval("for (pet: getPets()) pet.run();", new PetStore());
@@ -4964,40 +4961,6 @@ public class CoreConfidenceTests extends AbstractTest {
         executeSetExpression(fooExpr, foo, col);
         assertEquals(col, foo.getCollectionTest());
     }
-
-//    public void testRec1() {
-//        tak(24, 16, 8);
-//    }
-//
-//    public int tak(int x, int y, int z) {
-//        System.out.println("x=" + x + "; y=" + y + "; z=" + z);
-//        return y >= x ? z : tak(tak(x-1, y, z), tak(y-1, z, x), tak(z-1, x, y));
-//    }
-//
-//    public void testDhanjiBreak() {
-//        MVEL.eval(
-//                " def tak(x, y, z) {  System.out.println('x=' + x + '; y=' + y + '; z=' + z);" +
-//                        "y >= x ? z : tak(tak(x-1, y, z), tak(y-1, z, x), tak(z-1, x, y))\n  " +
-//                        " }\n\n" +
-//
-//                        "i = 1;\n" +
-//                        "while(i-- > 0) {\n" +
-//                        "  tak(24, 16, 8);\n" +
-//                        "}", new HashMap());
-//    }      '
-
-
-//    public void testRecursionPerformance() {
-//        HashMap variables = new HashMap();
-//        MVEL.eval("def recurse(ary) { ary <= 0 ? 0 : recurse(ary - 1); }", variables);
-//
-//        for (int i = 0; i < 5; i++) {
-//            long start = System.currentTimeMillis();
-//            MVEL.eval("recurse(1000);", variables);
-//            System.out.println(System.currentTimeMillis() - start);
-//        }
-//    }
-
 
     public class Fruit {
         public class Apple {
@@ -5189,7 +5152,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertTrue(x.booleanValue());
     }
 
-
     public void testMapsAndLists() {
         OptimizerFactory.setDefaultOptimizer("ASM");
 
@@ -5248,7 +5210,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("first", list.get(0));
     }
 
-
     public void testReturnBoolean() {
         String ex = "list = new java.util.ArrayList(); return list != null";
 
@@ -5271,30 +5232,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals( "b", result.get( 1 ) );
         assertEquals( "c", result.get( 2 ) );
     }
-    
-    
-//    public void testTypeInference() {
-//        ParserContext ctx = new ParserContext();
-//
-//        // uncommenting the following makes the test work. While it may be argued
-//        // that total can only be derived after knowing the type of "x", that is not
-//        // how previous version of MVEL worked. So, this needs to be double checked
-//        // and agreed upon.
-//
-//        //ctx.addInput("x", int.class);
-//
-//        ctx.setStrictTypeEnforcement( false );
-//
-//        ExpressionCompiler compiler = new ExpressionCompiler( "total = x * 20" );
-//
-//        compiler.compile( ctx );
-//
-//        // previous versions of MVEL would infer total as an int.class, while 2.0.7 is
-//        // infering total as an Object.class
-//        assertEquals( int.class, compiler.getParserContextState().getVariables().get( "total" ) );
-//
-//    }
-
 }
 
 

@@ -62,9 +62,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            //   ParserContext pCtx = getCurrentThreadParserContext();
             acc = (CompiledAccExpression) compileSetExpression(property.toCharArray(), pCtx);
-//            pCtx.addVariable(property.substring(0, property.indexOf('.')), egressType);
         }
     }
 

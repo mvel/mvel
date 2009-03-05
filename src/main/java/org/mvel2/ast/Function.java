@@ -55,7 +55,6 @@ public class Function extends ASTNode implements Safe {
         ctx.getParserConfiguration().setImports(pCtx.getParserConfiguration().getImports());
         ctx.getParserConfiguration().setPackageImports(pCtx.getParserConfiguration().getPackageImports());
 
-
         ctx.setIndexAllocation(true);
 
         /**
@@ -66,7 +65,6 @@ public class Function extends ASTNode implements Safe {
             ctx.addVariable(s, Object.class);
             ctx.addIndexedVariable(s);
         }
-
 
         /**
          * Compile the expression so we can determine the input-output delta.
@@ -85,7 +83,6 @@ public class Function extends ASTNode implements Safe {
         }
 
         ctx.addIndexedVariables(ctx.getVariables().keySet());
-
         ctx.getVariables().clear();
 
         this.compiledBlock = (ExecutableStatement) subCompileExpression(block, ctx);

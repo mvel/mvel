@@ -24,25 +24,32 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.subCompileExpression;
+import org.mvel2.util.ParseTools;
 
 /**
  * @author Christopher Brock
  */
 public class AssertNode extends ASTNode {
     public ExecutableStatement assertion;
+    public ExecutableStatement fail;
 
     public AssertNode(char[] expr, int fields, ParserContext pCtx) {
         this.name = expr;
+
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             assertion = (ExecutableStatement) subCompileExpression(expr, pCtx);
         }
+
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
-            Boolean bool = (Boolean) assertion.getValue(ctx, thisValue, factory);
-            if (!bool) throw new AssertionError("assertion failed in expression: " + new String(this.name));
-            return bool;
+            if (!((Boolean) assertion.getValue(ctx, thisValue, factory))) {
+                throw new AssertionError("assertion failed in expression: " + new String(this.name));
+            }
+            else {
+                return true;
+            }
         }
         catch (ClassCastException e) {
             throw new CompileException("assertion does not contain a boolean statement");
@@ -51,9 +58,12 @@ public class AssertNode extends ASTNode {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
-            Boolean bool = (Boolean) MVEL.eval(this.name, ctx, factory);
-            if (!bool) throw new AssertionError("assertion failed in expression: " + new String(this.name));
-            return bool;
+            if (!((Boolean) MVEL.eval(this.name, ctx, factory))) {
+               throw new AssertionError("assertion failed in expression: " + new String(this.name));
+            }
+            else {
+                return true;
+            }
         }
         catch (ClassCastException e) {
             throw new CompileException("assertion does not contain a boolean statement");

@@ -37,8 +37,9 @@ public class IndexedPostFixDecNode extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver vResolver = factory.getIndexedVariableResolver(register);
-        ctx = vResolver.getValue();
-        vResolver.setValue(MathProcessor.doOperations(ParseTools.resolveType(ctx), ctx, Operator.SUB, DataTypes.INTEGER, 1));
+      //  ctx = vResolver.getValue();
+        vResolver.setValue(MathProcessor.doOperations(ParseTools.resolveType(ctx = vResolver.getValue()),
+                ctx, Operator.SUB, DataTypes.INTEGER, 1));
         return ctx;
     }
 

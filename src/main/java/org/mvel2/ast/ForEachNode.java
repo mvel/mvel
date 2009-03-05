@@ -25,9 +25,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.ItemResolverFactory;
 import org.mvel2.util.ParseTools;
-import static org.mvel2.util.ParseTools.subCompileExpression;
-import static org.mvel2.util.ParseTools.subset;
-import static org.mvel2.util.ParseTools.getBaseComponentType;
+import static org.mvel2.util.ParseTools.*;
 
 import java.lang.reflect.Array;
 import java.util.Iterator;
@@ -168,10 +166,8 @@ public class ForEachNode extends BlockNode {
         if (cursor == condition.length || condition[cursor] != ':')
             throw new CompileException("expected : in foreach");
 
-        item = ParseTools.createStringTrimmed(condition, 0, cursor);
-
         int x;
-        if ((x = item.indexOf(' ')) != -1) {
+        if ((x = (item = createStringTrimmed(condition, 0, cursor)).indexOf(' ')) != -1) {
             String tk = new String(condition, 0, x).trim();
             try {
                 itemType = ParseTools.findClass(null, tk, pCtx);

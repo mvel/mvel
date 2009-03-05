@@ -23,40 +23,22 @@ import org.mvel2.ast.LineLabel;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class Frame {
-    private String sourceName;
-    private int lineNumber;
-
+    private LineLabel label;
     private VariableResolverFactory factory;
     private ParserContext parserContext;
 
     public Frame(LineLabel label, VariableResolverFactory factory, ParserContext pCtx) {
-        this.sourceName = label.getSourceFile();
-        this.lineNumber = label.getLineNumber();
-        this.factory = factory;
-        this.parserContext = pCtx;
-    }
-
-    public Frame(String sourceName, int lineNumber, VariableResolverFactory factory, ParserContext pCtx) {
-        this.sourceName = sourceName;
-        this.lineNumber = lineNumber;
+        this.label = label;
         this.factory = factory;
         this.parserContext = pCtx;
     }
 
     public String getSourceName() {
-        return sourceName;
-    }
-
-    public void setSourceName(String sourceName) {
-        this.sourceName = sourceName;
+        return label.getSourceFile();
     }
 
     public int getLineNumber() {
-        return lineNumber;
-    }
-
-    public void setLineNumber(int lineNumber) {
-        this.lineNumber = lineNumber;
+        return label.getLineNumber();
     }
 
     public VariableResolverFactory getFactory() {
