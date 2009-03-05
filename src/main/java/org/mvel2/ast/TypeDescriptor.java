@@ -25,6 +25,7 @@ import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ParseTools.*;
+import org.mvel2.util.ParseTools;
 
 import java.io.Serializable;
 import static java.lang.Character.isDigit;
@@ -45,7 +46,7 @@ public class TypeDescriptor implements Serializable {
     }
 
     public void updateClassName(char[] name, int fields) {
-        if (name.length == 0 || isDigit(name[0])) return;
+        if (name.length == 0 || !ParseTools.isIdentifierPart(name[0]) || isDigit(name[0])) return;
 
         if ((endRange = findFirst('(', name)) == -1) {
             if ((endRange = findFirst('[', name)) != -1) {

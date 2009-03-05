@@ -30,6 +30,7 @@ import static org.mvel2.util.ParseTools.subset;
 import static org.mvel2.util.ParseTools.getBaseComponentType;
 
 import java.lang.reflect.Array;
+import java.util.Iterator;
 
 /**
  * @author Christopher Brock
@@ -109,6 +110,7 @@ public class ForEachNode extends BlockNode {
                     itemR.setValue(o);
                     compiledBlock.getValue(ctx, thisValue, itemFactory);
                 }
+                
                 break;
         }
 

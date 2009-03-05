@@ -5260,7 +5260,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testInlineListSensitivenessToSpaces() {
-        String ex = "return([\"a\",\"b\", \"c\"])";
+        String ex = "([\"a\",\"b\", \"c\"])";
 
         ParserContext ctx = new ParserContext();
         Serializable s = MVEL.compileExpression(ex, ctx);
