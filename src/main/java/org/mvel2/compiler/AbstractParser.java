@@ -2276,8 +2276,6 @@ public class AbstractParser implements Serializable {
                 case LETHAN:
                 case POWER:
                     stk.op(operator);
-
-       //             System.out.println(" = " + stk.peek());
                     break;
 
                 case AND:

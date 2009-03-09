@@ -125,7 +125,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(false, test("foo.bar.woof==false"));
     }
 
-
     public void testTextComparison() {
         assertEquals(true, test("foo.bar.name == 'dog'"));
     }
@@ -5240,6 +5239,8 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals( "b", result.get( 1 ) );
         assertEquals( "c", result.get( 2 ) );
     }
+
+
 }
 
 
