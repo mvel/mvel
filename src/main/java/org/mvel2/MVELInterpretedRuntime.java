@@ -146,9 +146,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 }
 
                 if (procBooleanOperator(operator) == -1) return;
-
-                // Don't remove the "stk.push(operator); ruduce();" code duplication.
-                // It results in 3 GOTO instructions in the bytecode vs. one.
             }
 
             if (holdOverRegister != null) {
@@ -160,7 +157,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
             e.setExpr(expr);
             e.setLineNumber(line + e.getLineNumber());
             e.setCursor(cursor);
-            //      e.setColumn(lastLineStart + e.getColumn());
             throw e;
         }
         catch (NullPointerException e) {
