@@ -44,13 +44,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
         try {
             stk = new ExecutionStack();
             dStack = new ExecutionStack();
-
             cursor = 0;
-
             parseAndExecuteInterpreted();
-
-            if (parserContext != null) contextControl(REMOVE, null, null);
-
             return stk.peek();
         }
         catch (ArrayIndexOutOfBoundsException e) {
@@ -68,6 +63,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
         }
         catch (EndWithValue end) {
             return end.getValue();
+        }
+        finally {
+            if (parserContext != null) contextControl(REMOVE, null, null);
         }
     }
 
