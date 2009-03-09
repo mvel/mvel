@@ -58,6 +58,8 @@ public strictfp class MathProcessor {
         if (type2 == -1)
             type2 = val2 == null ? DataTypes.OBJECT : __resolveType(val2.getClass());
 
+  //      System.out.println("{" + val1 + " " + DebugTools.getOperatorSymbol(operation) + " " + val2 + "}");
+
         switch (type1) {
             case BIG_DECIMAL:
                 switch (type2) {

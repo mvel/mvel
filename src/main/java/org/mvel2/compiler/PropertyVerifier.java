@@ -52,7 +52,6 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     private Class ctx = null;
 
-
     public PropertyVerifier(char[] property, ParserContext parserContext) {
         this.length = (this.expr = property).length;
         this.pCtx = parserContext;
@@ -313,9 +312,9 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
             else if (pCtx.hasFunction(name)) {
                 resolvedExternally = false;
-                String tk = ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
                 Function f = pCtx.getFunction(name);
-                f.checkArgumentCount(parseParameterList(tk.toCharArray(), 0, -1).length);
+                f.checkArgumentCount(parseParameterList((((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ?
+                        new String(expr, st + 1, cursor - st - 1) : "").toCharArray(), 0, -1).length);
                 return f.getEgressType();
             }
         }

@@ -3014,6 +3014,14 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(res, MVEL.executeExpression(s, vars));
     }
+//
+//    public void testMath45() {
+//        String expression = "5 * 1 / 9 * 9 % 3 * 6 * 9 + 6 + 2";
+//        System.out.println("Expression: " + expression);
+//        double res = 5d * 1d / 9d * 9d % 3d * 6d * 9d + 6d + 2d;
+//
+//        assertEquals(res, MVEL.eval(expression));
+//    }
 
 
     public void testNullSafe() {

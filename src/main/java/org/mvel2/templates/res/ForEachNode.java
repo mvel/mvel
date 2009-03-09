@@ -69,8 +69,8 @@ public class ForEachNode extends Node {
 
         Object o;
         for (int i = 0; i < iters.length; i++) {
-            if ((o = MVEL.eval(expression[i], ctx, factory)) instanceof Collection) {
-                iters[i] = ((Collection) o).iterator();
+            if ((o = MVEL.eval(expression[i], ctx, factory)) instanceof Iterable) {
+                iters[i] = ((Iterable) o).iterator();
             }
             else if (o instanceof Object[]) {
                 iters[i] = new ArrayIterator((Object[]) o);
