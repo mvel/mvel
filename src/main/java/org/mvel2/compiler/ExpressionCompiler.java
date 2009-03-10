@@ -105,6 +105,9 @@ public class ExpressionCompiler extends AbstractParser {
             fields |= COMPILE_IMMEDIATE;
 
             while ((tk = nextToken()) != null) {
+
+
+
                 /**
                  * If this is a debug symbol, just add it and continue.
                  */
@@ -320,7 +323,7 @@ public class ExpressionCompiler extends AbstractParser {
                     PropertyVerifier propVerifier = new PropertyVerifier(a.getAssignmentVar(), pCtx);
                     tk.setEgressType(returnType = propVerifier.analyze());
 
-                    if (propVerifier.isResolvedExternally()) {
+                    if (!a.isNewDeclaration() && propVerifier.isResolvedExternally()) {
                         pCtx.addInput(tk.getAbsoluteName(), returnType);
                     }
 

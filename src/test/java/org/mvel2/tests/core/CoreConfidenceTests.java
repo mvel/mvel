@@ -870,6 +870,10 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("if (false) { return false; } else if(100 < 50) { return false; } else if (10 > 5) return true;"));
     }
 
+    public void testIfAndElseif2() {
+        assertEquals(true, MVEL.eval("if (false) { return false; } else if(100 < 50) { return false; } else if (10 > 5) return true;"));
+    }
+
     public void testIfAndElseIfCondensedGrammar() {
         assertEquals("Foo", test("if (false) return 'Bar'; else return 'Foo';"));
     }
@@ -5234,11 +5238,60 @@ public class CoreConfidenceTests extends AbstractTest {
         Serializable s = MVEL.compileExpression(ex, ctx);
 
         List result = (List) MVEL.executeExpression(s, new HashMap());
-        assertNotNull( result );
-        assertEquals( "a", result.get( 0 ) );
-        assertEquals( "b", result.get( 1 ) );
-        assertEquals( "c", result.get( 2 ) );
+        assertNotNull(result);
+        assertEquals("a", result.get(0));
+        assertEquals("b", result.get(1));
+        assertEquals("c", result.get(2));
     }
+
+    public void testMultiVarDeclr() {
+        String ex = "var a, b, c";
+
+        ParserContext ctx = new ParserContext();
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        compiler.setVerifyOnly(true);
+        compiler.compile(ctx);
+
+        assertEquals(3, ctx.getVariables().size());
+    }
+
+    public void testVarDeclr() {
+        String ex = "var a";
+
+        ParserContext ctx = new ParserContext();
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        compiler.setVerifyOnly(true);
+        compiler.compile(ctx);
+
+        assertEquals(1, ctx.getVariables().size());
+    }
+
+    public void testMultiTypeVarDeclr() {
+        String ex = "String a, b, c";
+        ParserContext ctx = new ParserContext();
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        compiler.compile(ctx);
+
+        assertNotNull(ctx.getVariables());
+        assertEquals(3, ctx.getVariables().entrySet().size());
+        for (Map.Entry<String,Class> entry : ctx.getVariables().entrySet()) {
+            assertEquals(String.class, entry.getValue());
+        }
+    }
+
+    public void testTypeVarDeclr() {
+        String ex = "String a;";
+        ParserContext ctx = new ParserContext();
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        compiler.compile(ctx);
+
+        assertNotNull(ctx.getVariables());
+        assertEquals(1, ctx.getVariables().entrySet().size());
+        for (Map.Entry<String, Class> entry : ctx.getVariables().entrySet()) {
+            assertEquals(String.class, entry.getValue());
+        }
+    }
+
 
 
 }

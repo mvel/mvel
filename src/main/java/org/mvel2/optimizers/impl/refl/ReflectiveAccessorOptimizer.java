@@ -1002,7 +1002,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                         : type;
 
                 for (Object item : (Object[]) o) {
-                    expectType(a[i++] = _getAccessor(item, cls), base, true);
+                   expectType(a[i++] = _getAccessor(item, cls), base, true);
                 }
 
                 return new ArrayCreator(a, getSubComponentType(type));
@@ -1014,10 +1014,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         else {
             if (returnType == null) returnType = Object.class;
             if (type.isArray()) {
-                return new ExprValueAccessor((String) o, type, pCtx != null && pCtx.isStrongTyping(), ctx, variableFactory);
+                return new ExprValueAccessor((String) o, type, pCtx != null && pCtx.isStrongTyping(), ctx, variableFactory, pCtx);
             }
             else {
-                return new ExprValueAccessor((String) o);
+                return new ExprValueAccessor((String) o, Object.class, false, ctx, variableFactory, pCtx);
             }
 
         }

@@ -54,7 +54,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                 subCompileExpression((nestParm = createStringTrimmed(expr)).toCharArray(), pCtx);
         egressType = nestedStatement.getKnownEgressType();
 
-        compileWithExpressions(pCtx);
+        compileWithExpressions(pCtx==null?new ParserContext():pCtx);
 
         if (pCtx != null) {
             pCtx.setBlockSymbols(false);

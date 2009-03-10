@@ -506,7 +506,7 @@ public class ParseTools {
                 /**
                  * Now try the system classloader.
                  */
-                cls = forName(className);
+                cls = forName(className, true, Thread.currentThread().getContextClassLoader());
             }
 
             cache.put(className, cls);
@@ -1131,7 +1131,7 @@ public class ParseTools {
                         case '\r':
                             continue;
                         case '\n':
-                            pCtx.setLineOffset((short) start);
+                            if (pCtx != null) pCtx.setLineOffset((short) start);
                             lines++;
                     }
                 }
@@ -1167,7 +1167,7 @@ public class ParseTools {
                     depth++;
                 }
                 else if (chars[start] == term && --depth == 0) {
-                    pCtx.incrementLineCount(lines);
+                    if (pCtx != null) pCtx.incrementLineCount(lines);
                     return start;
                 }
             }
@@ -1235,13 +1235,13 @@ public class ParseTools {
                     continue;
 
                 case '*':
-                    if (i+1 < block.length && block[i + 1] == '=') {
+                    if (i + 1 < block.length && block[i + 1] == '=') {
                         oper = Operator.MULT;
                     }
                     continue;
 
                 case '/':
-                    if (i+1 < block.length && block[i + 1] == '/') {
+                    if (i + 1 < block.length && block[i + 1] == '/') {
                         end = i;
                         while (i < block.length && block[i] != '\n') i++;
                         if (parm == null) start = i;
@@ -1266,13 +1266,13 @@ public class ParseTools {
                     continue;
 
                 case '-':
-                    if (i+1 < block.length && block[i + 1] == '=') {
+                    if (i + 1 < block.length && block[i + 1] == '=') {
                         oper = Operator.SUB;
                     }
                     continue;
 
                 case '+':
-                    if (i+1 < block.length && block[i + 1] == '=') {
+                    if (i + 1 < block.length && block[i + 1] == '=') {
                         oper = Operator.ADD;
                     }
                     continue;
@@ -1715,20 +1715,20 @@ public class ParseTools {
     }
 
     public static Serializable subCompileExpression(char[] expression) {
-        return optimizeTree(new ExpressionCompiler(expression)._compile());
+        return _optimizeTree(new ExpressionCompiler(expression)._compile());
     }
 
     public static Serializable subCompileExpression(char[] expression, ParserContext ctx) {
         ExpressionCompiler c = new ExpressionCompiler(expression);
         if (ctx != null) c.setPCtx(ctx);
-        return optimizeTree(c._compile());
+        return _optimizeTree(c._compile());
     }
 
     public static Serializable subCompileExpression(String expression, ParserContext ctx) {
         ExpressionCompiler c = new ExpressionCompiler(expression);
         c.setPCtx(ctx);
 
-        return optimizeTree(c._compile());
+        return _optimizeTree(c._compile());
     }
 
     public static Serializable optimizeTree(final CompiledExpression compiled) {
@@ -1737,6 +1737,18 @@ public class ParseTools {
          */
         if (!compiled.isImportInjectionRequired() &&
                 compiled.getParserContext().isAllowBootstrapBypass() && compiled.getInstructions().size() == 1) {
+
+            return _optimizeTree(compiled);
+        }
+
+        return compiled;
+    }
+
+    private static Serializable _optimizeTree(final CompiledExpression compiled) {
+        /**
+         * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
+         */
+        if (compiled.getInstructions().size() == 1) {
             ASTNode tk = compiled.getInstructions().firstNode();
 
             if (tk.isLiteral() && !tk.isThisVal()) {
