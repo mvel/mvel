@@ -773,8 +773,8 @@ public class AbstractParser implements Serializable {
                             start++;
                             captureToEOT();
 
-                            if (pCtx.getInterceptors() == null || !pCtx.getInterceptors().
-                                    containsKey(name = new String(expr, start, cursor - start))) {
+                            if (pCtx == null || (pCtx.getInterceptors() == null || !pCtx.getInterceptors().
+                                    containsKey(name = new String(expr, start, cursor - start)))) {
                                 throw new CompileException("reference to undefined interceptor: " + new String(expr, start, cursor - start), expr, cursor);
                             }
 
@@ -1210,7 +1210,6 @@ public class AbstractParser implements Serializable {
             }
             else if (OPERATORS.containsKey(tmp)) {
                 lastWasIdentifier = false;
-                System.out.println("**RETURN**");
                 return lastNode = new OperatorNode(OPERATORS.get(tmp));
             }
             else if (lastWasIdentifier) {

@@ -1151,7 +1151,7 @@ public class ParseTools {
                                     }
                                 case '\r':
                                 case '\n':
-                                    pCtx.setLineOffset((short) start);
+                                    if (pCtx != null) pCtx.setLineOffset((short) start);
                                     lines++;
                                     break;
                             }
