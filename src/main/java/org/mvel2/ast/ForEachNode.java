@@ -64,21 +64,7 @@ public class ForEachNode extends BlockNode {
         Object iterCond = condition.getValue(ctx, thisValue, factory);
 
         if (type == -1) {
-            if (iterCond instanceof Iterable) {
-                type = ITERABLE;
-            }
-            else if (iterCond.getClass().isArray()) {
-                type = ARRAY;
-            }
-            else if (iterCond instanceof CharSequence) {
-                type = CHARSEQUENCE;
-            }
-            else if (iterCond instanceof Integer) {
-                type = INTEGER;
-            }
-            else {
-                throw new CompileException("non-iterable type: " + iterCond.getClass().getName());
-            }
+            determineIterType(iterCond.getClass());
         }
 
         switch (type) {
@@ -108,7 +94,7 @@ public class ForEachNode extends BlockNode {
                     itemR.setValue(o);
                     compiledBlock.getValue(ctx, thisValue, itemFactory);
                 }
-                
+
                 break;
         }
 
@@ -187,22 +173,26 @@ public class ForEachNode extends BlockNode {
                 enforceTypeSafety(itemType, getBaseComponentType(this.condition.getKnownEgressType()));
             }
             else if (pCtx.isStrongTyping()) {
-                if (Iterable.class.isAssignableFrom(egress)) {
-                    type = ITERABLE;
-                }
-                else if (egress.isArray()) {
-                    type = ARRAY;
-                }
-                else if (CharSequence.class.isAssignableFrom(egress)) {
-                    type = CHARSEQUENCE;
-                }
-                else if (Integer.class.isAssignableFrom(egress)) {
-                    type = INTEGER;
-                }
-                else {
-                    throw new CompileException("not a valid interable type: " + egress.getName());
-                }
+                determineIterType(egress);
             }
+        }
+    }
+
+    private void determineIterType(Class t) {
+        if (Iterable.class.isAssignableFrom(t)) {
+            type = ITERABLE;
+        }
+        else if (t.isArray()) {
+            type = ARRAY;
+        }
+        else if (CharSequence.class.isAssignableFrom(t)) {
+            type = CHARSEQUENCE;
+        }
+        else if (Integer.class.isAssignableFrom(t)) {
+            type = INTEGER;
+        }
+        else {
+            throw new CompileException("non-iterable type: " + t.getName());
         }
     }
 

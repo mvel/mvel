@@ -278,7 +278,7 @@ public class AbstractParser implements Serializable {
 
                                     if (egressType == null) {
                                         try {
-                                            egressType = TypeDescriptor.getClassReference(pCtx, ((NewObjectNode) lastNode).getTypeDescr());
+                                            egressType = getClassReference(pCtx, ((NewObjectNode) lastNode).getTypeDescr());
                                         }
                                         catch (ClassNotFoundException e) {
                                             throw new CompileException("could not instantiate class", e);

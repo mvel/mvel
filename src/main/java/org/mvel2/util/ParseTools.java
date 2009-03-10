@@ -19,6 +19,9 @@
 package org.mvel2.util;
 
 import org.mvel2.*;
+import static org.mvel2.DataTypes.DOUBLE;
+import static org.mvel2.DataTypes.LONG;
+import static org.mvel2.DataTypes.INTEGER;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.MVEL.getDebuggingOutputFileName;
 import org.mvel2.ast.ASTNode;
@@ -877,7 +880,7 @@ public class ParseTools {
         t.put(BigInteger.class, DataTypes.BIG_INTEGER);
         t.put(String.class, DataTypes.STRING);
 
-        t.put(int.class, DataTypes.INTEGER);
+        t.put(int.class, INTEGER);
         t.put(Integer.class, DataTypes.W_INTEGER);
 
         t.put(short.class, DataTypes.SHORT);
@@ -886,10 +889,10 @@ public class ParseTools {
         t.put(float.class, DataTypes.FLOAT);
         t.put(Float.class, DataTypes.W_FLOAT);
 
-        t.put(double.class, DataTypes.DOUBLE);
+        t.put(double.class, DOUBLE);
         t.put(Double.class, DataTypes.W_DOUBLE);
 
-        t.put(long.class, DataTypes.LONG);
+        t.put(long.class, LONG);
         t.put(Long.class, DataTypes.W_LONG);
 
         t.put(boolean.class, DataTypes.BOOLEAN);
@@ -946,15 +949,15 @@ public class ParseTools {
             return DataTypes.BIG_INTEGER;
 
         if (int.class == cls)
-            return DataTypes.INTEGER;
+            return INTEGER;
         if (short.class == cls)
             return DataTypes.SHORT;
         if (float.class == cls)
             return DataTypes.FLOAT;
         if (double.class == cls)
-            return DataTypes.DOUBLE;
+            return DOUBLE;
         if (long.class == cls)
-            return DataTypes.LONG;
+            return LONG;
         if (boolean.class == cls)
             return DataTypes.BOOLEAN;
         if (byte.class == cls)
@@ -1362,11 +1365,11 @@ public class ParseTools {
             switch (numericTest(val)) {
                 case DataTypes.FLOAT:
                     return java.lang.Float.parseFloat(new String(val));
-                case DataTypes.INTEGER:
+                case INTEGER:
                     return java.lang.Integer.parseInt(new String(val));
-                case DataTypes.LONG:
+                case LONG:
                     return java.lang.Long.parseLong(new String(val));
-                case DataTypes.DOUBLE:
+                case DOUBLE:
                     return parseDouble(new String(val));
                 case DataTypes.BIG_DECIMAL:
                     return new BigDecimal(val, MathContext.DECIMAL128);
@@ -1426,13 +1429,13 @@ public class ParseTools {
 
         if (len > 0) {
             if (fp) {
-                return DataTypes.DOUBLE;
+                return DOUBLE;
             }
             else if (len > 9) {
-                return DataTypes.LONG;
+                return LONG;
             }
             else {
-                return DataTypes.INTEGER;
+                return INTEGER;
             }
         }
         return -1;
