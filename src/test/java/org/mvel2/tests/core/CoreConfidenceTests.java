@@ -3542,6 +3542,20 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testQuickSortScript4() throws IOException {
+        Object[] sorted = (Object[]) MVEL.eval(new String(loadFromFile(new File("samples/scripts/quicksort3.mvel"))), new HashMap());
+        int last = -1;
+        for (Object o : sorted) {
+            if (last == -1) {
+                last = (Integer) o;
+            }
+            else {
+                assertTrue(((Integer) o) > last);
+                last = (Integer) o;
+            }
+        }
+    }
+
 
     public void testMultiLineString() throws IOException {
         MVEL.evalFile(new File("samples/scripts/multilinestring.mvel"));
@@ -5274,9 +5288,43 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertNotNull(ctx.getVariables());
         assertEquals(3, ctx.getVariables().entrySet().size());
-        for (Map.Entry<String,Class> entry : ctx.getVariables().entrySet()) {
+        for (Map.Entry<String, Class> entry : ctx.getVariables().entrySet()) {
             assertEquals(String.class, entry.getValue());
         }
+    }
+
+    public void testMultiTypeVarDeclr2() {
+        String ex = "String a = 'foo', b = 'baz', c = 'bar'";
+        ParserContext ctx = new ParserContext();
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        compiler.compile(ctx);
+
+        assertNotNull(ctx.getVariables());
+        assertEquals(3, ctx.getVariables().entrySet().size());
+        for (Map.Entry<String, Class> entry : ctx.getVariables().entrySet()) {
+            assertEquals(String.class, entry.getValue());
+        }
+    }
+
+    public void testMultiTypeVarDeclr3() {
+        String ex = "int a = 52 * 3, b = 8, c = 16;";
+        ParserContext ctx = new ParserContext();
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        Serializable s = compiler.compile(ctx);
+
+        assertNotNull(ctx.getVariables());
+        assertEquals(3, ctx.getVariables().entrySet().size());
+        for (Map.Entry<String, Class> entry : ctx.getVariables().entrySet()) {
+            assertEquals(Integer.class, entry.getValue());
+        }
+
+        Map vars = new HashMap();
+        MVEL.executeExpression(s, vars);
+
+        assertEquals(52*3, vars.get("a"));
+        assertEquals(8,  vars.get("b"));
+        assertEquals(16, vars.get("c"));
+
     }
 
     public void testTypeVarDeclr() {
@@ -5291,7 +5339,6 @@ public class CoreConfidenceTests extends AbstractTest {
             assertEquals(String.class, entry.getValue());
         }
     }
-
 
 
 }

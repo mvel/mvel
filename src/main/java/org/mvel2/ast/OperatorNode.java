@@ -26,6 +26,7 @@ public class OperatorNode extends ASTNode {
     private Integer operator;
 
     public OperatorNode(Integer operator) {
+        assert operator != null;
         this.literal = this.operator = operator;
     }
 

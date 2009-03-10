@@ -250,7 +250,7 @@ public class AbstractParser implements Serializable {
                     capture = true;
                     cursor++;
 
-                    while (cursor != length && isIdentifierPart(expr[cursor])) cursor++;                    
+                    while (cursor != length && isIdentifierPart(expr[cursor])) cursor++;
                 }
 
                 /**
@@ -648,6 +648,7 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case '=':
+                                
                                 if (lookAhead() == '+') {
                                     name = new String(expr, start, trimLeft(cursor) - start);
 
@@ -686,50 +687,19 @@ public class AbstractParser implements Serializable {
                                 }
 
                                 if (greedy && lookAhead() != '=') {
-                                    //     if (greedy) {
-
                                     cursor++;
 
-                                    captureToEOS();
-
                                     if (union) {
+                                        captureToEOS();
+
                                         return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields | ASTNode.ASSIGN, pCtx);
                                     }
                                     else if (lastWasIdentifier) {
-                                        /**
-                                         * Check for typing information.
-                                         */
-                                        if (lastNode.getLiteralValue() instanceof String) {
-                                            TypeDescriptor tDescr = new TypeDescriptor(((String) lastNode.getLiteralValue()).toCharArray(), 0);
-
-                                            try {
-                                                lastNode.setLiteralValue(getClassReference(pCtx, tDescr));
-                                                lastNode.discard();
-                                            }
-                                            catch (Exception e) {
-                                                // fall through;
-                                            }
-                                        }
-
-                                        if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
-                                            lastNode.discard();
-                                            captureToEOS();
-                                            return new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
-                                                    lastNode.getLiteralValue(), pCtx);
-                                        }
-                                        // needed to work with MVELSH properly.
-                                        else if ((fields & ASTNode.COMPILE_IMMEDIATE) == 0) {
-                                            if (stk.peek() instanceof Class) {
-                                                captureToEOS();
-                                                return new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
-                                                        stk.pop(), pCtx);
-                                            }
-                                        }
-
-                                        throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
+                                         return procTypedNode(false);
                                     }
                                     else if (pCtx != null && ((idx = pCtx.variableIndexOf(t)) != -1
                                             || (pCtx.isIndexAllocation()))) {
+                                        captureToEOS();
 
                                         IndexedAssignmentNode ian = new IndexedAssignmentNode(subArray(start, cursor), ASTNode.ASSIGN, idx, pCtx);
 
@@ -740,6 +710,8 @@ public class AbstractParser implements Serializable {
                                         return lastNode = ian;
                                     }
                                     else {
+                                        captureToEOS();
+                                        
                                         return lastNode = new AssignmentNode(subArray(start, cursor), fields | ASTNode.ASSIGN, pCtx);
                                     }
                                 }
@@ -1127,7 +1099,7 @@ public class AbstractParser implements Serializable {
             e.setExpr(expr);
             e.setLineNumber(pCtx == null ? 1 : pCtx.getLineCount());
             e.setCursor(cursor);
-            e.setColumn(cursor - (pCtx == null? 0 : pCtx.getLineOffset()));
+            e.setColumn(cursor - (pCtx == null ? 0 : pCtx.getLineOffset()));
             throw e;
         }
     }
@@ -1213,70 +1185,75 @@ public class AbstractParser implements Serializable {
                 return lastNode = new OperatorNode(OPERATORS.get(tmp));
             }
             else if (lastWasIdentifier) {
-                boolean decl;
-
-                while (true) {
-                    decl = lookAhead() != '=';
-                    if (lastNode.getLiteralValue() instanceof String) {
-                        TypeDescriptor tDescr = new TypeDescriptor(((String) lastNode.getLiteralValue()).toCharArray(), 0);
-
-                        try {
-                            lastNode.setLiteralValue(getClassReference(pCtx, tDescr));
-                            lastNode.discard();
-                        }
-                        catch (Exception e) {
-                            // fall through;
-                        }
-                    }
-
-                    if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
-                        lastNode.discard();
-                        captureToEOS();
-
-                        if (decl) {
-                            splitAccumulator.push(new DeclTypedVarNode(new String(expr, start, cursor - start),
-                                    (Class) lastNode.getLiteralValue(), fields | ASTNode.ASSIGN, pCtx));
-                        }
-                        else {
-                            captureToEOS();
-                            splitAccumulator.push(new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
-                                    lastNode.getLiteralValue(), pCtx));
-                        }
-                    }
-                    // needed to work with MVELSH properly.
-                    else if ((fields & ASTNode.COMPILE_IMMEDIATE) == 0) {
-                        if (stk.peek() instanceof Class) {
-                            captureToEOS();
-                            if (decl) {
-                                splitAccumulator.push(new DeclTypedVarNode(new String(expr, start, cursor - start),
-                                        (Class) stk.pop(), fields | ASTNode.ASSIGN, pCtx));
-                            }
-                            else {
-                                splitAccumulator.push(new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
-                                        stk.pop(), pCtx));
-                            }
-                        }
-                        throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);                        
-                    }
-                    else {
-                        throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
-                    }
-
-                    skipWhitespaceWithLineAccounting();
-                    if (cursor < length && expr[cursor] == ',') {
-                        start = ++cursor;
-                    }
-                    else {
-                        return (ASTNode) splitAccumulator.pop();
-                    }
-                }
-
+                return procTypedNode(true);
             }
 
         }
 
         lastWasIdentifier = true;
         return lastNode = new ASTNode(expr, start, end, fields);
+
+    }
+
+    private ASTNode procTypedNode(boolean decl) {
+
+        while (true) {
+            if (lastNode.getLiteralValue() instanceof String) {
+                TypeDescriptor tDescr = new TypeDescriptor(((String) lastNode.getLiteralValue()).toCharArray(), 0);
+
+                try {
+                    lastNode.setLiteralValue(getClassReference(pCtx, tDescr));
+                    lastNode.discard();
+                }
+                catch (Exception e) {
+                    // fall through;
+                }
+            }
+
+            if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
+                lastNode.discard();
+                captureToEOS();
+
+                if (decl) {
+                    splitAccumulator.add(new DeclTypedVarNode(new String(expr, start, cursor - start),
+                            (Class) lastNode.getLiteralValue(), fields | ASTNode.ASSIGN, pCtx));
+                }
+                else {
+                    captureToEOS();
+                    splitAccumulator.add(new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
+                            lastNode.getLiteralValue(), pCtx));
+                }
+                splitAccumulator.add(new EndOfStatement());
+                
+            }
+            // needed to work with MVELSH properly.
+            else if ((fields & ASTNode.COMPILE_IMMEDIATE) == 0) {
+                if (stk.peek() instanceof Class) {
+                    captureToEOS();
+                    if (decl) {
+                        splitAccumulator.add(new DeclTypedVarNode(new String(expr, start, cursor - start),
+                                (Class) stk.pop(), fields | ASTNode.ASSIGN, pCtx));
+                    }
+                    else {
+                        splitAccumulator.add(new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
+                                stk.pop(), pCtx));
+                    }
+                    splitAccumulator.add(new EndOfStatement());
+                }
+                throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
+            }
+            else {
+                throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
+            }
+
+            skipWhitespaceWithLineAccounting();
+            if (cursor < length && expr[cursor] == ',') {
+                start = ++cursor;
+            }
+            else {
+                return (ASTNode) splitAccumulator.pop();
+            }
+        }
 
     }
 

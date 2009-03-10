@@ -6,13 +6,6 @@
 
 array = null;
 
-def quicksort(array) {
-    var less, greater;
-}
-
-
-
-
 
 def swap(i, j) {
     temp = array[i];
@@ -21,10 +14,7 @@ def swap(i, j) {
 }
 
 def partition(low, high) {
-    pivotPoint = array[low];
-
-    i = low - 1;
-    j = high + 1;
+    int pivotPoint = array[low], i = low - 1, j = high + 1;
 
     while (i < j) {
         i += 1; while (array[i] < pivotPoint) i += 1;
