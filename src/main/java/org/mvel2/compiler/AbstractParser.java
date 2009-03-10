@@ -1223,8 +1223,7 @@ public class AbstractParser implements Serializable {
                     splitAccumulator.add(new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
                             lastNode.getLiteralValue(), pCtx));
                 }
-                splitAccumulator.add(new EndOfStatement());
-                
+
             }
             // needed to work with MVELSH properly.
             else if ((fields & ASTNode.COMPILE_IMMEDIATE) == 0) {
@@ -1238,7 +1237,6 @@ public class AbstractParser implements Serializable {
                         splitAccumulator.add(new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
                                 stk.pop(), pCtx));
                     }
-                    splitAccumulator.add(new EndOfStatement());
                 }
                 throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
             }
@@ -1249,6 +1247,7 @@ public class AbstractParser implements Serializable {
             skipWhitespaceWithLineAccounting();
             if (cursor < length && expr[cursor] == ',') {
                 start = ++cursor;
+                splitAccumulator.add(new EndOfStatement());                
             }
             else {
                 return (ASTNode) splitAccumulator.pop();
