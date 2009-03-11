@@ -31,6 +31,7 @@ import org.mvel2.optimizers.AccessorOptimizer;
 import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 import org.mvel2.util.ArrayTools;
 import org.mvel2.util.CompilerTools;
+import static org.mvel2.util.CompilerTools.getInjectedImports;
 import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ParseTools.*;
 
@@ -152,7 +153,7 @@ public class NewObjectNode extends ASTNode {
             AccessorOptimizer optimizer = getThreadAccessorOptimizer();
 
             ParserContext pCtx = new ParserContext();
-            pCtx.getParserConfiguration().setAllImports(CompilerTools.getInjectedImports(factory));
+            pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
             newObjectOptimizer = optimizer.optimizeObjectCreation(pCtx, name, ctx, thisValue, factory);
 

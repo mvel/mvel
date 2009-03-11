@@ -62,11 +62,7 @@ public class StaticImportNode extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (method == null) {
-            method = resolveMethod();
-        }
-
-        factory.createVariable(methodName, method);
+        factory.createVariable(methodName, method == null ? method = resolveMethod() : method);
         return null;
     }
 

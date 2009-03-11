@@ -37,7 +37,6 @@ public class RegExMatch extends ASTNode {
     private Pattern p;
 
     public RegExMatch(char[] expr, int fields, char[] pattern, ParserContext pCtx) {
-        //super(expr, fields);
         this.name = expr;
         this.pattern = pattern;
 
