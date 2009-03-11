@@ -46,30 +46,6 @@ public class UtilsTests extends TestCase {
         }
     }
 
-//    public void testMainPerf() {
-//        for (int i = 0; i < 1000000; i++) {
-//            testMain();
-//        }
-//    }
-//
-//    public void testStringBuilderPerf() {
-//        for (int i = 0; i < 1000000; i++) {
-//            testStringBuilder();
-//        }
-//    }
-//
-//    public void testMainPerf2() {
-//        for (int i = 0; i < 1000000; i++) {
-//            testMain();
-//        }
-//    }
-//
-//    public void testStringBuilderPerf2() {
-//        for (int i = 0; i < 1000000; i++) {
-//            testStringBuilder();
-//        }
-//    }
-
 
     public static void main(String[] args) throws Exception {
         Class.forName("[Ljava.lang.String;");

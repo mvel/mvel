@@ -99,19 +99,14 @@ public class MVELInterpretedRuntime extends AbstractParser {
                      * If this is a substatement, we need to move the result into the d-stack to preserve
                      * proper execution order.
                      */
-                    if (tk instanceof Substatement) {
-                        if ((tk = nextToken()) != null) {
-                            if (isArithmeticOperator(operator = tk.getOperator())) {
-                                stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
+                    if (tk instanceof Substatement && (tk = nextToken()) != null) {
+                        if (isArithmeticOperator(operator = tk.getOperator())) {
+                            stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 
-                                if (procBooleanOperator(arithmeticFunctionReduction(operator)) == -1)
-                                    return;
-                                else
-                                    continue;
-                            }
-                        }
-                        else {
-                            continue;
+                            if (procBooleanOperator(arithmeticFunctionReduction(operator)) == -1)
+                                return;
+                            else
+                                continue;
                         }
                     }
                     else {
