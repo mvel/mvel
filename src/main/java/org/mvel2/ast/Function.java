@@ -23,6 +23,7 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.EndWithValue;
 import org.mvel2.compiler.ExecutableStatement;
+import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
@@ -50,11 +51,7 @@ public class Function extends ASTNode implements Safe {
 
         pCtx.declareFunction(this);
 
-        ParserContext ctx = new ParserContext();
-
-        ctx.getParserConfiguration().setImports(pCtx.getParserConfiguration().getImports());
-        ctx.getParserConfiguration().setPackageImports(pCtx.getParserConfiguration().getPackageImports());
-
+        ParserContext ctx = new ParserContext(pCtx.getParserConfiguration());
         ctx.setIndexAllocation(true);
 
         /**
@@ -69,7 +66,10 @@ public class Function extends ASTNode implements Safe {
         /**
          * Compile the expression so we can determine the input-output delta.
          */
-        subCompileExpression(block, ctx);
+
+        ExpressionCompiler compiler = new ExpressionCompiler(block);
+        compiler.setVerifyOnly(true);
+        compiler.compile(ctx);
 
         /**
          * Add globals as inputs
@@ -166,7 +166,7 @@ public class Function extends ASTNode implements Safe {
     public void checkArgumentCount(int passing) {
         if (passing != parmNum) {
             throw new CompileException("bad number of arguments in function call: "
-                    + passing + " (expected: " + parmNum + ")");
+                    + passing + " (expected: " + (parmNum==0?"none":parmNum) + ")");
         }
     }
 

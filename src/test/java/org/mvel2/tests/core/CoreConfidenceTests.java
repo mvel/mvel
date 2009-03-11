@@ -1484,24 +1484,23 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testVarInputs() {
         ParserContext pCtx = new ParserContext();
-        ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble) && 1 + 2 / 3 == 1; String bleh = foo; twa = bleh;");
-        compiler.setVerifyOnly(true);
+            ExpressionCompiler compiler = new ExpressionCompiler("test != foo && bo.addSomething(trouble) && 1 + 2 / 3 == 1; String bleh = foo; twa = bleh;");
+            compiler.setVerifyOnly(true);
+            compiler.compile(pCtx);
+    
+            assertEquals(4, pCtx.getInputs().size());
 
-        compiler.compile(pCtx);
+            assertTrue(pCtx.getInputs().containsKey("test"));
+            assertTrue(pCtx.getInputs().containsKey("foo"));
+            assertTrue(pCtx.getInputs().containsKey("bo"));
+            assertTrue(pCtx.getInputs().containsKey("trouble"));
 
-        assertEquals(4, pCtx.getInputs().size());
+            assertEquals(2, pCtx.getVariables().size());
 
-        assertTrue(pCtx.getInputs().containsKey("test"));
-        assertTrue(pCtx.getInputs().containsKey("foo"));
-        assertTrue(pCtx.getInputs().containsKey("bo"));
-        assertTrue(pCtx.getInputs().containsKey("trouble"));
+            assertTrue(pCtx.getVariables().containsKey("bleh"));
+            assertTrue(pCtx.getVariables().containsKey("twa"));
 
-        assertEquals(2, pCtx.getVariables().size());
-
-        assertTrue(pCtx.getVariables().containsKey("bleh"));
-        assertTrue(pCtx.getVariables().containsKey("twa"));
-
-        assertEquals(String.class, pCtx.getVarOrInputType("bleh"));
+            assertEquals(String.class, pCtx.getVarOrInputType("bleh"));
     }
 
     public void testVarInputs2() {
@@ -5321,8 +5320,8 @@ public class CoreConfidenceTests extends AbstractTest {
         Map vars = new HashMap();
         MVEL.executeExpression(s, vars);
 
-        assertEquals(52*3, vars.get("a"));
-        assertEquals(8,  vars.get("b"));
+        assertEquals(52 * 3, vars.get("a"));
+        assertEquals(8, vars.get("b"));
         assertEquals(16, vars.get("c"));
 
     }

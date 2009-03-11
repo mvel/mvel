@@ -38,14 +38,12 @@ public class DebuggerTests extends TestCase {
 
         String src = "a1=7;\na2=8;\na3=9;\na4=10;\na5=11;\na6=12;\na7=13;\na8=14;";
         ExpressionCompiler c = new ExpressionCompiler(src);
-      //  c.setDebugSymbols(true);
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("mysource");
         ctx.setDebugSymbols(true);
         CompiledExpression compexpr = c.compile(ctx);
 
         System.out.println(decompile(compexpr));
-
 
         MVELRuntime.registerBreakpoint(ctx.getSourceFile(), 1);
         MVELRuntime.registerBreakpoint(ctx.getSourceFile(), 3);
@@ -65,7 +63,6 @@ public class DebuggerTests extends TestCase {
     public void testDebuggerInvoke2() {
         count = 0;
 
-
         MVELRuntime.resetDebugger();
         MVELRuntime.setThreadDebugger(new Debugger() {
             public int onBreak(Frame frame) {
@@ -74,11 +71,9 @@ public class DebuggerTests extends TestCase {
             }
         });
 
-
         String src = "a1=7;\na2=8;\nSystem.out.println(\"h\");\nac=23;\nde=23;\nge=23;\ngef=34;";
 
         ExpressionCompiler c = new ExpressionCompiler(src);
-      //  c.setDebugSymbols(true);
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("mysource");
         ctx.setDebugSymbols(true);
@@ -86,13 +81,11 @@ public class DebuggerTests extends TestCase {
 
         System.out.println(decompile(compexpr));
 
-
         MVELRuntime.registerBreakpoint(ctx.getSourceFile(), 1);
         MVELRuntime.registerBreakpoint(ctx.getSourceFile(), 2);
         MVELRuntime.registerBreakpoint(ctx.getSourceFile(), 3);
         MVELRuntime.registerBreakpoint(ctx.getSourceFile(), 4);
         MVELRuntime.registerBreakpoint(ctx.getSourceFile(), 5);
-
 
         VariableResolverFactory factory = new DefaultLocalVariableResolverFactory();
         MVEL.executeDebugger(compexpr, null, factory);

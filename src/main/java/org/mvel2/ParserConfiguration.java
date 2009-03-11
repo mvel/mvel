@@ -45,6 +45,12 @@ public class ParserConfiguration implements Serializable {
         this.interceptors = interceptors;
     }
 
+    public ParserConfiguration(Map<String, Object> imports, HashSet<String> packageImports, Map<String, Interceptor> interceptors) {
+        addAllImports(imports);
+        this.packageImports = packageImports;
+        this.interceptors = interceptors;
+    }
+
     public HashSet<String> getPackageImports() {
         return packageImports;
     }

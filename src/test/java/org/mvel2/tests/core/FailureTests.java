@@ -45,6 +45,7 @@ public class FailureTests extends AbstractTest {
             MVEL.compileExpression("def foo() { 'bar' }; foo(123);");
         }
         catch (Exception e) {
+            e.printStackTrace();
             return;
         }
         assertTrue(false);
@@ -89,7 +90,7 @@ public class FailureTests extends AbstractTest {
             MVEL.compileExpression("String x = 'foo'; int y = 2; new int[] { x, y }", pctx);
         }
         catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             return;
         }
         assertTrue(false);
@@ -103,7 +104,7 @@ public class FailureTests extends AbstractTest {
             MVEL.compileExpression("for (String s : new java.util.HashMap()) { }", pCtx);
         }
         catch (Exception e) {
-            e.printStackTrace();
+    //        e.printStackTrace();
             return;
         }
 
