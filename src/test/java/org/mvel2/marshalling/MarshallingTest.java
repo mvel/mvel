@@ -5,6 +5,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,18 +14,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
 
 import junit.framework.TestCase;
 
 import org.mvel2.MVEL;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
-import org.mvel2.templates.CompiledTemplate;
-import org.mvel2.templates.TemplateCompiler;
-import org.mvel2.templates.TemplateError;
-import org.mvel2.templates.TemplateRegistry;
-import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.util.StringAppender;
 
 import com.thoughtworks.xstream.XStream;
@@ -44,83 +39,54 @@ import com.thoughtworks.xstream.XStream;
  */
 public class MarshallingTest extends TestCase {
 
-    public static class DynamicClassGeneratorTemplateRegistry
-        implements
-        TemplateRegistry {
-        private Map<String, CompiledTemplate> NAMED_TEMPLATES = new HashMap<String, CompiledTemplate>();
+    public static enum Type {
+        PRIMITIVE, STRING, DATE, ARRAY, MAP, COLLECTION, OBJECT;
+    }
 
-        public void addNamedTemplate(String name,
-                                     CompiledTemplate template) {
-            NAMED_TEMPLATES.put( name,
-                                 template );
+    public static class ObjectConverter {
+        private Class                  type;
+        private ObjectConverterEntry[] fields;
+
+        public ObjectConverter(Class type,
+                               ObjectConverterEntry[] fields) {
+            this.type = type;
+            this.fields = fields;
         }
 
-        public CompiledTemplate getNamedTemplate(String name) {
-            CompiledTemplate template = NAMED_TEMPLATES.get( name );
-            if ( template == null ) {
-                try {
-                    Class cls = Class.forName( name );
-
-                    String text = generateTemplate( cls );
-                    template = TemplateCompiler.compileTemplate( text );
-                    addNamedTemplate( name,
-                                      template );
-
-                } catch ( ClassNotFoundException e ) {
-                    throw new TemplateError( "no named template exists '" + name + "'" );
-                }
-            }
-            return template;
+        public Class getType() {
+            return this.type;
         }
 
-        public Iterator iterator() {
-            return NAMED_TEMPLATES.keySet().iterator();
+        public ObjectConverterEntry[] getFields() {
+            return fields;
+        }
+    }
+
+    public static class ObjectConverterEntry {
+        private String name;
+        private Type   type;
+        private Method method;
+
+        public ObjectConverterEntry(String name,
+                                    Method method,
+                                    Type type) {
+            this.name = name;
+            this.type = type;
+            this.method = method;
         }
 
-        public Set<String> getNames() {
-            return NAMED_TEMPLATES.keySet();
+        public String getName() {
+            return name;
         }
 
-        public boolean contains(String name) {
-            return NAMED_TEMPLATES.containsKey( name );
+        public Type getType() {
+            return type;
         }
 
-        private String generateTemplate(Class cls) {
-            BeanInfo beanInfo = null;
-
-            try {
-                beanInfo = Introspector.getBeanInfo( cls );
-            } catch ( IntrospectionException e ) {
-                throw new RuntimeException( e );
-            }
-
-            PropertyDescriptor[] props = beanInfo.getPropertyDescriptors();
-            StringBuilder sBuilder = new StringBuilder();
-            sBuilder.append( "new " + cls.getName() + "().{" );
-            for ( int i = 0, length = props.length; i < length; i++ ) {
-                PropertyDescriptor prop = props[i];
-                if ( "class".equals( prop.getName() ) ) {
-                    continue;
-                }
-                if ( i != 0 ) {
-                    sBuilder.append( ',' );
-                }
-                sBuilder.append( prop.getName() + " = " );
-
-                Class type = prop.getPropertyType();
-                if ( type.isPrimitive() || Number.class.isAssignableFrom( type ) ) {
-                    sBuilder.append( "@{" + prop.getName() + "}" );
-                } else if ( String.class.isAssignableFrom( type ) ) {
-                    sBuilder.append( "'@{" + prop.getName() + "}'" );
-                } else {
-                    sBuilder.append( "@code{marshaller.marshall(" + prop.getName() + ")}" );
-                }
-            }
-
-            sBuilder.append( "}" );
-
-            return sBuilder.toString();
+        public Method getMethod() {
+            return this.method;
         }
+
     }
 
     public static class MarshallerContext {
@@ -130,7 +96,7 @@ public class MarshallingTest extends TestCase {
 
         public MarshallerContext(Marshaller marshaller) {
             this.marshaller = marshaller;
-            appender = new StringAppender();
+            this.appender = new StringAppender();
             this.factory = new MapVariableResolverFactory( new HashMap() );
             this.factory.createVariable( "marshaller",
                                          this );
@@ -152,57 +118,164 @@ public class MarshallingTest extends TestCase {
     }
 
     public static class Marshaller {
-        private DynamicClassGeneratorTemplateRegistry registry;
+        private Map<Class, ObjectConverter> converters;
 
         public Marshaller() {
-            this.registry = new DynamicClassGeneratorTemplateRegistry();
-        }
-
-        public Marshaller(DynamicClassGeneratorTemplateRegistry registry) {
-            this.registry = registry;
+            this.converters = new HashMap<Class, ObjectConverter>();
         }
 
         public void marshall(Object object,
+                             MarshallerContext ctx) {
+            marshall( object,
+                      getType( object.getClass() ),
+                      ctx );
+        }
+
+        public void marshall(Object object,
+                             Type type,
                              MarshallerContext ctx) {
             if ( object == null ) {
                 ctx.getAppender().append( "null" );
                 return;
             }
 
-            Class cls = object.getClass();
-            if ( object instanceof Number ) {
-                ctx.getAppender().append( object.toString() );
-            } else if ( object instanceof String ) {
-                ctx.getAppender().append( "'" + object.toString() + "'" );
-            } else if ( object instanceof Map ) {
-                marshallMap( (Map) object,
-                             ctx );
-            } else if ( object instanceof Collection ) {
-                marshallCollection( (Collection) object,
-                                    ctx );
-            } else if ( cls.isArray() ) {
-                marshallArray( object,
+            if ( type != Type.OBJECT ) {
+                marshallValue( object,
+                               type,
                                ctx );
-            } else if ( object instanceof Date ) {
-                ctx.getAppender().append( "new java.util.Date(" + ((Date) object).getTime() + ")" );
             } else {
-                CompiledTemplate compiled = registry.getNamedTemplate( cls.getName() );
-                TemplateRuntime.execute( compiled.getRoot(),
-                                         compiled.getTemplate(),
-                                         ctx.getAppender(),
-                                         object,
-                                         ctx.getFactory(),
-                                         null );
+                Class cls = object.getClass();
+                ObjectConverter converter = this.converters.get( cls );
+                if ( converter == null ) {
+                    converter = generateConverter( cls );
+                    this.converters.put( cls,
+                                         converter );
+                }
+
+                try {
+                    int i = 0;
+                    ctx.getAppender().append( "new " + cls.getName() + "().{ " );
+                    for ( ObjectConverterEntry entry : converter.getFields() ) {
+                        if ( i++ != 0 ) {
+                            ctx.getAppender().append( ", " );
+                        }
+                        ctx.getAppender().append( entry.getName() );
+                        ctx.getAppender().append( " = " );
+
+                        marshallValue( entry.getMethod().invoke( object,
+                                                                 null ),
+                                       entry.getType(),
+                                       ctx );
+                    }
+                } catch ( Exception e ) {
+                    throw new IllegalStateException( "Unable to marshall object " + object,
+                                                     e );
+                }
+                ctx.getAppender().append( " }" );
             }
+        }
+
+        private void marshallValue(Object object,
+                                   Type type,
+                                   MarshallerContext ctx) {
+            if ( object == null ) {
+                ctx.getAppender().append( "null" );
+                return;
+            }
+
+            switch ( type ) {
+                case PRIMITIVE : {
+                    ctx.getAppender().append( object );
+                    break;
+                }
+                case STRING : {
+                    ctx.getAppender().append( "'" );
+                    ctx.getAppender().append( object );
+                    ctx.getAppender().append( "'" );
+                    break;
+                }
+                case DATE : {
+                    ctx.getAppender().append( "new java.util.Date(" + ((Date) object).getTime() + ")" );
+                    break;
+                }
+                case ARRAY : {
+                    marshallArray( object,
+                                   ctx );
+                    break;
+                }
+                case MAP : {
+                    marshallMap( (Map) object,
+                                 ctx );
+                    break;
+                }
+                case COLLECTION : {
+                    marshallCollection( (Collection) object,
+                                        ctx );
+                    break;
+                }
+                case OBJECT : {
+                    marshall( object,
+                              type,
+                              ctx );
+                    break;
+                }
+            }
+        }
+
+        private ObjectConverter generateConverter(Class cls) {
+            BeanInfo beanInfo = null;
+
+            try {
+                beanInfo = Introspector.getBeanInfo( cls );
+            } catch ( IntrospectionException e ) {
+                throw new RuntimeException( e );
+            }
+
+            PropertyDescriptor[] props = beanInfo.getPropertyDescriptors();
+            List<ObjectConverterEntry> list = new ArrayList<ObjectConverterEntry>();
+
+            for ( int i = 0, length = props.length; i < length; i++ ) {
+                PropertyDescriptor prop = props[i];
+                if ( "class".equals( prop.getName() ) ) {
+                    continue;
+                }
+
+                list.add( new ObjectConverterEntry( prop.getName(),
+                                                    prop.getReadMethod(),
+                                                    getType( prop.getPropertyType() ) ) );
+            }
+
+            return new ObjectConverter( cls,
+                                        list.toArray( new ObjectConverterEntry[list.size()] ) );
+        }
+
+        private Type getType(Class cls) {
+            Type type = null;
+            if ( cls.isPrimitive() || Number.class.isAssignableFrom( cls ) ) {
+                type = Type.PRIMITIVE;
+            } else if ( String.class.isAssignableFrom( cls ) ) {
+                type = Type.STRING;
+            } else if ( Date.class.isAssignableFrom( cls ) ) {
+                type = Type.DATE;
+            } else if ( cls.isArray() ) {
+                type = Type.ARRAY;
+            } else if ( Map.class.isAssignableFrom( cls ) ) {
+                type = Type.MAP;
+            } else if ( Collection.class.isAssignableFrom( cls ) ) {
+                type = Type.COLLECTION;
+            } else {
+                type = Type.OBJECT;
+            }
+            return type;
         }
 
         private void marshallMap(Map map,
                                  MarshallerContext ctx) {
-            ctx.getAppender().append( '[' );
+            ctx.getAppender().append( " [ " );
             int i = 0;
             for ( Iterator<Entry> it = map.entrySet().iterator(); it.hasNext(); i++ ) {
                 if ( i != 0 ) {
-                    ctx.getAppender().append( "," );
+                    ctx.getAppender().append( ", " );
                 }
                 Entry entry = it.next();
                 marshall( entry.getKey(),
@@ -212,36 +285,36 @@ public class MarshallingTest extends TestCase {
                           ctx );
 
             }
-            ctx.getAppender().append( ']' );
+            ctx.getAppender().append( " ] " );
         }
 
         private void marshallCollection(Collection collection,
                                         MarshallerContext ctx) {
-            ctx.getAppender().append( '[' );
+            ctx.getAppender().append( " [ " );
             int i = 0;
             for ( Iterator it = collection.iterator(); it.hasNext(); i++ ) {
                 if ( i != 0 ) {
-                    ctx.getAppender().append( "," );
+                    ctx.getAppender().append( ", " );
                 }
                 marshall( it.next(),
                           ctx );
             }
-            ctx.getAppender().append( ']' );
+            ctx.getAppender().append( " ] " );
         }
 
         private void marshallArray(Object array,
                                    MarshallerContext ctx) {
-            ctx.getAppender().append( '{' );
+            ctx.getAppender().append( " { " );
 
             for ( int i = 0, length = Array.getLength( array ); i < length; i++ ) {
                 if ( i != 0 ) {
-                    ctx.getAppender().append( "," );
+                    ctx.getAppender().append( ", " );
                 }
                 marshall( Array.get( array,
                                      i ),
                           ctx );
             }
-            ctx.getAppender().append( '}' );
+            ctx.getAppender().append( " } " );
         }
 
         public String marshallToString(Object object) {
@@ -292,35 +365,6 @@ public class MarshallingTest extends TestCase {
 
     private static final int COUNT = 10000;
 
-    public void testMVEL() throws Exception {
-        DynamicClassGeneratorTemplateRegistry registry = new DynamicClassGeneratorTemplateRegistry();
-        Marshaller marshaller = new Marshaller( registry );
-
-        // run once to generate templates
-        Object data1 = getData();
-        String str = marshaller.marshallToString( data1 );
-        System.out.println( str );
-        Object data2 = MVEL.eval( str );
-        assertNotSame( data1,
-                       data2 );
-        assertEquals( data1,
-                      data2 );
-
-        long start = System.currentTimeMillis();
-        for ( int i = 0; i < COUNT; i++ ) {
-            data1 = getData();
-            str = marshaller.marshallToString( data1 );
-            data2 = MVEL.eval( str );
-            assertNotSame( data1,
-                           data2 );
-            assertEquals( data1,
-                          data2 );
-        }
-        long end = System.currentTimeMillis();
-
-        System.out.println( "mvel : " + (end - start) );
-    }
-
     public void testXStream() {
         XStream xstream = new XStream();
 
@@ -347,6 +391,34 @@ public class MarshallingTest extends TestCase {
         long end = System.currentTimeMillis();
 
         System.out.println( "xstream : " + (end - start) );
+    }
+
+    public void testMVEL() throws Exception {
+        Marshaller marshaller = new Marshaller();
+
+        // run once to generate templates
+        Object data1 = getData();
+        String str = marshaller.marshallToString( data1 );
+        System.out.println( str );
+        Object data2 = MVEL.eval( str );
+        assertNotSame( data1,
+                       data2 );
+        assertEquals( data1,
+                      data2 );
+
+        long start = System.currentTimeMillis();
+        for ( int i = 0; i < COUNT; i++ ) {
+            data1 = getData();
+            str = marshaller.marshallToString( data1 );
+            data2 = MVEL.eval( str );
+            assertNotSame( data1,
+                           data2 );
+            assertEquals( data1,
+                          data2 );
+        }
+        long end = System.currentTimeMillis();
+
+        System.out.println( "mvel : " + (end - start) );
     }
 
     public static class Person {
