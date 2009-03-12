@@ -6,8 +6,12 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,10 +33,8 @@ import com.thoughtworks.xstream.XStream;
  * TODO
  * -Currently uses BeanInfo, needs to handle all MVEL getter/setter types
  * -Use objenesis or equivalent to always be able to handle no-arg constructor
- * -replace @code(....) with built in orb, for slightly better performance
- * -handle special immutable classes like BigInteger, BigDecimal
+ * -handle special immutable classes like BigInteger, BigDecimal(which are already done, but are there others?)
  * -As well as allowing users to register custom templates, maybe also custom built in marshallers (i.e. how map, collection, array currently works)
- * -Allow custom format for dates
  * -Support optional generated imports, to reduce verbosity
  * -some issue related to values allowed in a Map
  *
@@ -40,7 +42,7 @@ import com.thoughtworks.xstream.XStream;
 public class MarshallingTest extends TestCase {
 
     public static enum Type {
-        PRIMITIVE, STRING, DATE, ARRAY, MAP, COLLECTION, OBJECT;
+        PRIMITIVE, CHAR, STRING, DATE, CALENDAR, BIG_INTEGER, BIG_DECIMAL, ARRAY, MAP, COLLECTION, OBJECT;
     }
 
     public static class ObjectConverter {
@@ -116,12 +118,31 @@ public class MarshallingTest extends TestCase {
         }
 
     }
+    
+    public static interface DateMarshaller {
+        public void marshall(Date date, MarshallerContext ctx);
+    }
+    
+    public static class EpocDataMarshaller implements DateMarshaller {
+
+        public void marshall(Date date,
+                             MarshallerContext ctx) {
+            ctx.getAppender().append( "new java.util.Date(" + date.getTime() + ")" );
+        }
+        
+    }
 
     public static class Marshaller {
         private Map<Class, ObjectConverter> converters;
+        private DateMarshaller dateMarshaller;
 
         public Marshaller() {
+            this( new EpocDataMarshaller() );
+        }
+        
+        public Marshaller(DateMarshaller dateMarshaller) {
             this.converters = new HashMap<Class, ObjectConverter>();
+            this.dateMarshaller = dateMarshaller;
         }
 
         public void marshall(Object object,
@@ -188,16 +209,30 @@ public class MarshallingTest extends TestCase {
                     ctx.getAppender().append( object );
                     break;
                 }
+                case CHAR : {
+                    ctx.getAppender().append( "'" );
+                    ctx.getAppender().append( object );
+                    ctx.getAppender().append( "'" );
+                    break;
+                }                
                 case STRING : {
                     ctx.getAppender().append( "'" );
                     ctx.getAppender().append( object );
                     ctx.getAppender().append( "'" );
                     break;
-                }
+                }            
                 case DATE : {
-                    ctx.getAppender().append( "new java.util.Date(" + ((Date) object).getTime() + ")" );
+                    dateMarshaller.marshall( (Date) object, ctx );
                     break;
                 }
+                case BIG_INTEGER : {
+                    ctx.getAppender().append( object );
+                    break;                    
+                }
+                case BIG_DECIMAL : {
+                    ctx.getAppender().append( object );
+                    break;
+                }                
                 case ARRAY : {
                     marshallArray( object,
                                    ctx );
@@ -253,10 +288,18 @@ public class MarshallingTest extends TestCase {
             Type type = null;
             if ( cls.isPrimitive() || Number.class.isAssignableFrom( cls ) ) {
                 type = Type.PRIMITIVE;
+            } else if ( Character.class.isAssignableFrom( cls ) ) {
+                type = Type.CHAR;
             } else if ( String.class.isAssignableFrom( cls ) ) {
                 type = Type.STRING;
             } else if ( Date.class.isAssignableFrom( cls ) ) {
                 type = Type.DATE;
+            } else if ( Calendar.class.isAssignableFrom( cls ) ) {
+                type = Type.CALENDAR;
+            } else if ( BigInteger.class.isAssignableFrom( cls ) ) {
+                type = Type.BIG_INTEGER;
+            } else if ( BigDecimal.class.isAssignableFrom( cls ) ) {
+                type = Type.BIG_DECIMAL;                
             } else if ( cls.isArray() ) {
                 type = Type.ARRAY;
             } else if ( Map.class.isAssignableFrom( cls ) ) {
@@ -333,7 +376,9 @@ public class MarshallingTest extends TestCase {
         List list = new ArrayList();
         list.add( "a" );
         list.add( 12 );
+        list.add( new SomeNumers( 10.02f, 22.02, 5, 100l, new BigDecimal( 23.0234d, MathContext.DECIMAL128 ), new BigInteger("1001")));
         list.add( new Date() );
+        //list.add( 'b' ); // generates ok but breaks round trip equals
         list.add( new Cheese( "cheddar",
                               6 ) );
 
@@ -363,7 +408,7 @@ public class MarshallingTest extends TestCase {
         return person;
     }
 
-    private static final int COUNT = 10000;
+    private static final int COUNT = 0;
 
     public void testXStream() {
         XStream xstream = new XStream();
@@ -397,7 +442,7 @@ public class MarshallingTest extends TestCase {
         Marshaller marshaller = new Marshaller();
 
         // run once to generate templates
-        Object data1 = getData();
+        Object data1 =  getData();
         String str = marshaller.marshallToString( data1 );
         System.out.println( str );
         Object data2 = MVEL.eval( str );
@@ -419,6 +464,109 @@ public class MarshallingTest extends TestCase {
         long end = System.currentTimeMillis();
 
         System.out.println( "mvel : " + (end - start) );
+    }
+    
+    public static class SomeNumers {
+        private float aFloat;
+        private double aDouble;
+        private int aInt;
+        private long aLong;
+        private BigDecimal aBigDecimal;
+        private BigInteger aBigInteger;
+        
+        public SomeNumers() {
+            
+        }
+        
+        public SomeNumers(float float1,
+                          double double1,
+                          int int1,
+                          long long1,
+                          BigDecimal bigDecimal,
+                          BigInteger bigInteger) {
+            super();
+            aFloat = float1;
+            aDouble = double1;
+            aInt = int1;
+            aLong = long1;
+            aBigDecimal = bigDecimal;
+            aBigInteger = bigInteger;
+        }
+        
+        
+        public float getAFloat() {
+            return aFloat;
+        }
+        public void setAFloat(float float1) {
+            aFloat = float1;
+        }
+        public double getADouble() {
+            return aDouble;
+        }
+        public void setADouble(double double1) {
+            aDouble = double1;
+        }
+        public int getAInt() {
+            return aInt;
+        }
+        public void setAInt(int int1) {
+            aInt = int1;
+        }
+        public long getALong() {
+            return aLong;
+        }
+        public void setALong(long long1) {
+            aLong = long1;
+        }
+        public BigDecimal getABigDecimal() {
+            return aBigDecimal;
+        }
+        public void setABigDecimal(BigDecimal bigDecimal) {
+            aBigDecimal = bigDecimal;
+        }
+        public BigInteger getABigInteger() {
+            return aBigInteger;
+        }
+        public void setABigInteger(BigInteger bigInteger) {
+            aBigInteger = bigInteger;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((aBigDecimal == null) ? 0 : aBigDecimal.hashCode());
+            result = prime * result + ((aBigInteger == null) ? 0 : aBigInteger.hashCode());
+            long temp;
+            temp = Double.doubleToLongBits( aDouble );
+            result = prime * result + (int) (temp ^ (temp >>> 32));
+            result = prime * result + Float.floatToIntBits( aFloat );
+            result = prime * result + aInt;
+            result = prime * result + (int) (aLong ^ (aLong >>> 32));
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if ( this == obj ) return true;
+            if ( obj == null ) return false;
+            if ( getClass() != obj.getClass() ) return false;
+            SomeNumers other = (SomeNumers) obj;
+            if ( aBigDecimal == null ) {
+                if ( other.aBigDecimal != null ) return false;
+            } else if ( !aBigDecimal.equals( other.aBigDecimal ) ) return false;
+            if ( aBigInteger == null ) {
+                if ( other.aBigInteger != null ) return false;
+            } else if ( !aBigInteger.equals( other.aBigInteger ) ) return false;
+            if ( Double.doubleToLongBits( aDouble ) != Double.doubleToLongBits( other.aDouble ) ) return false;
+            if ( Float.floatToIntBits( aFloat ) != Float.floatToIntBits( other.aFloat ) ) return false;
+            if ( aInt != other.aInt ) return false;
+            if ( aLong != other.aLong ) return false;
+            return true;
+        }
+        
+        
+       
     }
 
     public static class Person {
