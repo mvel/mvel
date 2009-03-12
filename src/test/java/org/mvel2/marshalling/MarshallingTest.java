@@ -92,8 +92,8 @@ public class MarshallingTest extends TestCase {
     }
 
     public static class MarshallerContext {
-        private Marshaller                 marshaller;
-        private StringAppender             appender = new StringAppender();
+        private Marshaller     marshaller;
+        private StringAppender appender = new StringAppender();
 
         public MarshallerContext(Marshaller marshaller) {
             this.marshaller = marshaller;
@@ -109,31 +109,65 @@ public class MarshallingTest extends TestCase {
             return appender;
         }
     }
-    
-    public static interface DateMarshaller {
-        public void marshall(Date date, MarshallerContext ctx);
-    }
-    
-    public static class EpocDataMarshaller implements DateMarshaller {
 
-        public void marshall(Date date,
+    public static interface CustomMarshaller {
+        public void marshall(Object object,
+                             MarshallerContext ctx);
+    }
+
+    public static class EpocDateMarshaller
+        implements
+        CustomMarshaller {
+
+        public void marshall(Object object,
                              MarshallerContext ctx) {
-            ctx.getAppender().append( "new java.util.Date(" + date.getTime() + ")" );
+            ctx.getAppender().append( "new java.util.Date(" + ((Date) object).getTime() + ")" );
         }
-        
+    }
+
+    public static class EpocDefaultCalendarMarshaller
+        implements
+        CustomMarshaller {
+        private CustomMarshaller dateMarshaller;
+
+        public EpocDefaultCalendarMarshaller() {
+            this( new EpocDateMarshaller() );
+        }
+
+        public EpocDefaultCalendarMarshaller(CustomMarshaller dateMarshaller) {
+            this.dateMarshaller = dateMarshaller;
+        }
+
+        public void marshall(Object object,
+                             MarshallerContext ctx) {
+
+            ctx.getAppender().append( "with ( java.util.Calendar.getInstance() ) { time = " );
+            this.dateMarshaller.marshall( ((Calendar) object).getTime(),
+                                          ctx );
+            ctx.getAppender().append( "} " );
+        }
     }
 
     public static class Marshaller {
         private Map<Class, ObjectConverter> converters;
-        private DateMarshaller dateMarshaller;
+        private CustomMarshaller            dateMarshaller;
+        private CustomMarshaller            calendarMarshaller;
 
         public Marshaller() {
-            this( new EpocDataMarshaller() );
+            this( new HashMap<Type, CustomMarshaller>() );
         }
-        
-        public Marshaller(DateMarshaller dateMarshaller) {
+
+        public Marshaller(Map<Type, CustomMarshaller> custom) {
             this.converters = new HashMap<Class, ObjectConverter>();
-            this.dateMarshaller = dateMarshaller;
+            this.dateMarshaller = custom.get( Type.DATE );
+            if ( this.dateMarshaller == null ) {
+                this.dateMarshaller = new EpocDateMarshaller();
+            }
+
+            this.calendarMarshaller = custom.get( Type.CALENDAR );
+            if ( this.calendarMarshaller == null ) {
+                this.calendarMarshaller = new EpocDefaultCalendarMarshaller();
+            }
         }
 
         public void marshall(Object object,
@@ -205,25 +239,31 @@ public class MarshallingTest extends TestCase {
                     ctx.getAppender().append( object );
                     ctx.getAppender().append( "'" );
                     break;
-                }                
+                }
                 case STRING : {
                     ctx.getAppender().append( "'" );
                     ctx.getAppender().append( object );
                     ctx.getAppender().append( "'" );
                     break;
-                }            
+                }
                 case DATE : {
-                    dateMarshaller.marshall( (Date) object, ctx );
+                    dateMarshaller.marshall( object,
+                                             ctx );
+                    break;
+                }
+                case CALENDAR : {
+                    calendarMarshaller.marshall( object,
+                                                 ctx );
                     break;
                 }
                 case BIG_INTEGER : {
                     ctx.getAppender().append( object );
-                    break;                    
+                    break;
                 }
                 case BIG_DECIMAL : {
                     ctx.getAppender().append( object );
                     break;
-                }                
+                }
                 case ARRAY : {
                     marshallArray( object,
                                    ctx );
@@ -290,7 +330,7 @@ public class MarshallingTest extends TestCase {
             } else if ( BigInteger.class.isAssignableFrom( cls ) ) {
                 type = Type.BIG_INTEGER;
             } else if ( BigDecimal.class.isAssignableFrom( cls ) ) {
-                type = Type.BIG_DECIMAL;                
+                type = Type.BIG_DECIMAL;
             } else if ( cls.isArray() ) {
                 type = Type.ARRAY;
             } else if ( Map.class.isAssignableFrom( cls ) ) {
@@ -367,7 +407,13 @@ public class MarshallingTest extends TestCase {
         List list = new ArrayList();
         list.add( "a" );
         list.add( 12 );
-        list.add( new SomeNumers( 10.02f, 22.02, 5, 100l, new BigDecimal( 23.0234d, MathContext.DECIMAL128 ), new BigInteger("1001")));
+        list.add( new SomeNumers( 10.02f,
+                                  22.02,
+                                  5,
+                                  100l,
+                                  new BigDecimal( 23.0234d,
+                                                  MathContext.DECIMAL128 ),
+                                  new BigInteger( "1001" ) ) );
         list.add( new Date() );
         //list.add( 'b' ); // generates ok but breaks round trip equals
         list.add( new Cheese( "cheddar",
@@ -387,6 +433,10 @@ public class MarshallingTest extends TestCase {
         map.put( "key4",
                  new Cheese( "stilton",
                              11 ) );
+        Calendar cal = Calendar.getInstance();
+//        cal.setTime( new Date() );
+//        map.put( "key5",
+//                 cal ); // TODO why doesn't this work.
         //map.put( "key4", new String[] { "a", "b" } ); // TODO why doesn't this work
 
         Person person = new Person();
@@ -395,6 +445,9 @@ public class MarshallingTest extends TestCase {
         person.setPet( pet );
         person.setSomeDate( new Date() );
         person.setMap( map );
+        cal = Calendar.getInstance();
+        cal.setTime( new Date() );
+        person.setCal( cal );
 
         return person;
     }
@@ -433,7 +486,7 @@ public class MarshallingTest extends TestCase {
         Marshaller marshaller = new Marshaller();
 
         // run once to generate templates
-        Object data1 =  getData();
+        Object data1 = getData();
         String str = marshaller.marshallToString( data1 );
         System.out.println( str );
         Object data2 = MVEL.eval( str );
@@ -456,19 +509,19 @@ public class MarshallingTest extends TestCase {
 
         System.out.println( "mvel : " + (end - start) );
     }
-    
+
     public static class SomeNumers {
-        private float aFloat;
-        private double aDouble;
-        private int aInt;
-        private long aLong;
+        private float      aFloat;
+        private double     aDouble;
+        private int        aInt;
+        private long       aLong;
         private BigDecimal aBigDecimal;
         private BigInteger aBigInteger;
-        
+
         public SomeNumers() {
-            
+
         }
-        
+
         public SomeNumers(float float1,
                           double double1,
                           int int1,
@@ -483,41 +536,51 @@ public class MarshallingTest extends TestCase {
             aBigDecimal = bigDecimal;
             aBigInteger = bigInteger;
         }
-        
-        
+
         public float getAFloat() {
             return aFloat;
         }
+
         public void setAFloat(float float1) {
             aFloat = float1;
         }
+
         public double getADouble() {
             return aDouble;
         }
+
         public void setADouble(double double1) {
             aDouble = double1;
         }
+
         public int getAInt() {
             return aInt;
         }
+
         public void setAInt(int int1) {
             aInt = int1;
         }
+
         public long getALong() {
             return aLong;
         }
+
         public void setALong(long long1) {
             aLong = long1;
         }
+
         public BigDecimal getABigDecimal() {
             return aBigDecimal;
         }
+
         public void setABigDecimal(BigDecimal bigDecimal) {
             aBigDecimal = bigDecimal;
         }
+
         public BigInteger getABigInteger() {
             return aBigInteger;
         }
+
         public void setABigInteger(BigInteger bigInteger) {
             aBigInteger = bigInteger;
         }
@@ -555,9 +618,7 @@ public class MarshallingTest extends TestCase {
             if ( aLong != other.aLong ) return false;
             return true;
         }
-        
-        
-       
+
     }
 
     public static class Person {
@@ -570,6 +631,8 @@ public class MarshallingTest extends TestCase {
         private Object nullTest;
 
         private Map    map;
+        
+        private Calendar cal;
 
         public String getName() {
             return name;
@@ -618,12 +681,23 @@ public class MarshallingTest extends TestCase {
         public void setMap(Map map) {
             this.map = map;
         }
+        
+        
+
+        public Calendar getCal() {
+            return cal;
+        }
+
+        public void setCal(Calendar cal) {
+            this.cal = cal;
+        }
 
         @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
             result = prime * result + age;
+            result = prime * result + ((cal == null) ? 0 : cal.hashCode());
             result = prime * result + ((map == null) ? 0 : map.hashCode());
             result = prime * result + ((name == null) ? 0 : name.hashCode());
             result = prime * result + ((nullTest == null) ? 0 : nullTest.hashCode());
@@ -639,6 +713,9 @@ public class MarshallingTest extends TestCase {
             if ( getClass() != obj.getClass() ) return false;
             Person other = (Person) obj;
             if ( age != other.age ) return false;
+            if ( cal == null ) {
+                if ( other.cal != null ) return false;
+            } else if ( !cal.equals( other.cal ) ) return false;
             if ( map == null ) {
                 if ( other.map != null ) return false;
             } else if ( !map.equals( other.map ) ) return false;
