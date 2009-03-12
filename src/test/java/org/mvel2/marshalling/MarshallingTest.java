@@ -94,14 +94,10 @@ public class MarshallingTest extends TestCase {
     public static class MarshallerContext {
         private Marshaller                 marshaller;
         private StringAppender             appender = new StringAppender();
-        private MapVariableResolverFactory factory;
 
         public MarshallerContext(Marshaller marshaller) {
             this.marshaller = marshaller;
             this.appender = new StringAppender();
-            this.factory = new MapVariableResolverFactory( new HashMap() );
-            this.factory.createVariable( "marshaller",
-                                         this );
         }
 
         public void marshall(Object object) {
@@ -112,11 +108,6 @@ public class MarshallingTest extends TestCase {
         public StringAppender getAppender() {
             return appender;
         }
-
-        public MapVariableResolverFactory getFactory() {
-            return factory;
-        }
-
     }
     
     public static interface DateMarshaller {
