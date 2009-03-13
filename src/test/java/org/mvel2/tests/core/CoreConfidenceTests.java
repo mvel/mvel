@@ -5256,6 +5256,21 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("b", result.get(1));
         assertEquals("c", result.get(2));
     }
+    
+    public void testComaProblemStrikesBack() {
+        String ex = "a.explanation = \"There is a coma, in here\"";
+
+        ParserContext ctx = new ParserContext();
+        ExpressionCompiler compiler = new ExpressionCompiler( ex );
+        Serializable s = compiler.compile( ctx );
+
+        Base a = new Base();
+        Map<String,Object> variables = new HashMap<String, Object>();
+        variables.put( "a", a );
+        
+        MVEL.executeExpression(s, variables);
+        assertEquals( "There is a coma, in here", a.data );
+    }
 
     public void testMultiVarDeclr() {
         String ex = "var a, b, c";
@@ -5338,7 +5353,6 @@ public class CoreConfidenceTests extends AbstractTest {
             assertEquals(String.class, entry.getValue());
         }
     }
-
 
 }
 
