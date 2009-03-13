@@ -245,7 +245,6 @@ public class AbstractParser implements Serializable {
 
             Mainloop:
             while (cursor != length) {
-
                 if (isIdentifierPart(expr[cursor])) {
                     capture = true;
                     cursor++;
@@ -648,7 +647,6 @@ public class AbstractParser implements Serializable {
                                 break;
 
                             case '=':
-                                
                                 if (lookAhead() == '+') {
                                     name = new String(expr, start, trimLeft(cursor) - start);
 
@@ -685,7 +683,6 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new OperativeAssign(name, subArray(start, cursor), SUB, fields, pCtx);
                                     }
                                 }
-
                                 if (greedy && lookAhead() != '=') {
                                     cursor++;
 
@@ -735,10 +732,10 @@ public class AbstractParser implements Serializable {
                             }
                             expectNextChar_IW('{');
 
-                            tmp = subArray(start, cursor - 1);
-                            cursor = balancedCaptureWithLineAccounting(expr, start = cursor, '{', pCtx) + 1;
-
-                            return lastNode = new ThisWithNode(tmp, subArray(start + 1, cursor - 1), fields, pCtx);
+                            return lastNode = new ThisWithNode(subArray(start, cursor - 1),
+                                    subArray(cursor + 1,
+                                            (cursor = balancedCaptureWithLineAccounting(expr,
+                                                    start = cursor, '{', pCtx) + 1) - 1), fields, pCtx);
                         }
 
                         case '@': {
@@ -1673,6 +1670,11 @@ public class AbstractParser implements Serializable {
                     if (cursor >= length) return;
                     break;
 
+                case '"':
+                case '\'':
+                    cursor = captureStringLiteral(expr[cursor], expr, cursor, length);
+                    break;
+
                 case ',':
                 case ';':
                 case '}':
@@ -2000,7 +2002,7 @@ public class AbstractParser implements Serializable {
      * <p/>
      * Determines whether or not the logical statement is manually terminated with a statement separator (';').
      *
-     * @return
+     * @return -
      */
     protected boolean isStatementNotManuallyTerminated() {
         if (cursor >= length) return false;
@@ -2010,7 +2012,6 @@ public class AbstractParser implements Serializable {
     }
 
     protected ParserContext getParserContext() {
-//        return new ParserContext();
         if (parserContext == null || parserContext.get() == null) {
             newContext();
         }
@@ -2035,7 +2036,7 @@ public class AbstractParser implements Serializable {
     /**
      * Create a new ParserContext in the current thread, using the one specified.
      *
-     * @param pCtx
+     * @param pCtx -
      */
     public void newContext(ParserContext pCtx) {
         contextControl(SET, pCtx, this);
@@ -2337,7 +2338,6 @@ public class AbstractParser implements Serializable {
     private void dreduce() {
         stk.copy2(dStack);
         stk.op();
-        // reduce();
     }
 
 

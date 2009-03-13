@@ -4160,12 +4160,24 @@ public class CoreConfidenceTests extends AbstractTest {
 
         Foo f = (Foo) executeExpression(expr, createTestMap());
 
+        assertEquals("poopy", f.getName());
+        assertEquals("bar", f.aValue);
+        assertEquals("foobie", f.getBar().getName());
+        assertEquals("doopy", f.register);
+    }
+
+    public void testInlineWith3a() {
+        CompiledExpression expr = new ExpressionCompiler("foo.{name='poopy',aValue='bar',bar.{name='foobie'},toUC('doopy')}").compile();
+
+        Foo f = (Foo) executeExpression(expr, createTestMap());
+
 
         assertEquals("poopy", f.getName());
         assertEquals("bar", f.aValue);
         assertEquals("foobie", f.getBar().getName());
         assertEquals("doopy", f.register);
     }
+
 
     public void testInlineWith4() {
         OptimizerFactory.setDefaultOptimizer("ASM");
