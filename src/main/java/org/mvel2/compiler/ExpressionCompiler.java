@@ -105,9 +105,6 @@ public class ExpressionCompiler extends AbstractParser {
             fields |= COMPILE_IMMEDIATE;
 
             while ((tk = nextToken()) != null) {
-
-
-
                 /**
                  * If this is a debug symbol, just add it and continue.
                  */
@@ -170,7 +167,6 @@ public class ExpressionCompiler extends AbstractParser {
                                 }
                                 else if ((tkLA2 = nextTokenSkipSymbols()) != null && tkLA2.isLiteral()) {
                                     stk.push(tkLA2.getLiteralValue(), op = tkOp2.getOperator());
-
 
                                     if (isArithmeticOperator(op)) {
                                         arithmeticFunctionReduction(op);
@@ -429,8 +425,4 @@ public class ExpressionCompiler extends AbstractParser {
     public boolean isLiteralOnly() {
         return literalOnly == 1;
     }
-
-
-
-
 }

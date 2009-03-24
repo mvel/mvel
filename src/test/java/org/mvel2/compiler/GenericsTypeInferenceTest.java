@@ -67,6 +67,18 @@ public class GenericsTypeInferenceTest extends TestCase {
         assertEquals("Wrong parametric type inferred", String.class, context.getLastTypeParameters()[0]);
     }
 
+    public final void testTypeByMethod() {
+        ParserContext context = new ParserContext();
+        context.setStrongTyping(true);
+
+        context.addInput("a", A.class);
+
+         CompiledExpression compiledExpression = new ExpressionCompiler("!a.show").compile(context);
+
+        assertEquals(Boolean.class, compiledExpression.getKnownEgressType());
+    }
+
+
 //    public final void testInferLastTypeParametersFromPropertyMethod2() {
 //        ParserContext context = new ParserContext();
 //        context.setStrictTypeEnforcement( true );
@@ -92,6 +104,15 @@ public class GenericsTypeInferenceTest extends TestCase {
     }
 
     public static class A {
+        private boolean show;
+
+        public boolean isShow() {
+            return show;
+        }
+
+        public void setShow(boolean show) {
+            this.show = show;
+        }
 
         public List<String> getStrings() {
             return STRINGS;

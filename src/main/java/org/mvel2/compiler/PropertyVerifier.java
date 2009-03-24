@@ -25,8 +25,10 @@ import org.mvel2.ast.Function;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
 import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.ParseTools.boxPrimitive;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import org.mvel2.util.StringAppender;
+import org.mvel2.util.ParseTools;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -178,9 +180,10 @@ public class PropertyVerifier extends AbstractOptimizer {
                 if (parametricReturnType instanceof ParameterizedType) {
                     pCtx.setLastTypeParameters(((ParameterizedType) parametricReturnType).getActualTypeArguments());
                 }
-
             }
-            return method.getReturnType();
+
+            Class rt = method.getReturnType();
+            return rt.isPrimitive() ? boxPrimitive(rt) : rt;
         }
         else if (pCtx != null && pCtx.hasImport(property)) {
             return pCtx.getImport(property);

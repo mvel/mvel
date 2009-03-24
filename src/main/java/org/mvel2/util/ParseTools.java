@@ -428,46 +428,7 @@ public class ParseTools {
                 bestScore = score;
             }
             score = 0;
-
-
-//
-//                if (arguments[i] == null) {
-//                    if (!parmTypes[i].isPrimitive()) score += 5;
-//                    else {
-//                        score = 0;
-//                        break;
-//                    }
-//                }
-//                else if (parmTypes[i] == arguments[i]) {
-//                    score += 6;
-//                }
-//                else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
-//                    score += 5;
-//                }
-//                else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
-//                    score += 5;
-//                }
-//                else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
-//                    score += 4;
-//                }
-//                else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i]))) {
-//                    score += 3;
-//                }
-//                else if (canConvert(parmTypes[i], arguments[i])) {
-//                    score += 1;
-//                }
-//                else {
-//                    score = 0;
-//                    break;
-//                }
         }
-
-//            if (score != 0 && score > bestScore) {
-//                bestCandidate = construct;
-//                bestScore = score;
-//            }
-//            score = 0;
-
 
         if (bestCandidate != null) {
             if (cache == null) {
@@ -542,6 +503,7 @@ public class ParseTools {
         }
         return new String[]{new String(cs)};
     }
+
 
     public static Class boxPrimitive(Class cls) {
         if (cls == int.class || cls == Integer.class) {

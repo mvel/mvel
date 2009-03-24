@@ -5365,7 +5365,6 @@ public class CoreConfidenceTests extends AbstractTest {
             assertEquals(String.class, entry.getValue());
         }
     }
-
 }
 
 

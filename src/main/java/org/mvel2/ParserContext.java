@@ -139,7 +139,7 @@ public class ParserContext implements Serializable {
      * @return int of lines
      */
     public int setLineCount(int lineCount) {
-        return this.lineCount = (short) lineCount;
+        return this.lineCount = lineCount;
     }
 
     /**
