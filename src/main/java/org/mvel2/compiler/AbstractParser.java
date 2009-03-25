@@ -1904,7 +1904,6 @@ public class AbstractParser implements Serializable {
                     length = this.expr.length;
                 }
             }
-
         }
     }
 
