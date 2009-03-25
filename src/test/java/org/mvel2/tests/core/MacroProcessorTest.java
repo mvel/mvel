@@ -226,4 +226,42 @@ public class MacroProcessorTest extends TestCase {
             fail("there shouldn't be any exception: " + ex.getMessage());
         }
     }
+    
+    public void testParseConsequenceWithFlowControlBlocks() {
+        String raw = "    // str is null, we are just testing we don't get a null pointer \n " +
+                "     if (l.x < 1)  {\n" +
+                "        insert( new RuleLink(\"FIRST.INLET\" , comp, comp) );\n" +
+                "     } else {\n" +
+                "        insert( new RuleLink(\"FIRST.INLET.NOT\" , comp, comp) );\n" +
+                "     }\n"+
+                "    if( 1 < 2 ) { \n" +
+                "        insert( p ); \n" +
+                "    } else { \n" +
+                "        while( true ) {insert(x);}\n" +
+                "    }";
+        String expected = "    // str is null, we are just testing we don't get a null pointer \n " +
+                "     if (l.x < 1)  {\n" +
+                "        drools.insert( new RuleLink(\"FIRST.INLET\" , comp, comp) );\n" +
+                "     } else {\n" +
+                "        drools.insert( new RuleLink(\"FIRST.INLET.NOT\" , comp, comp) );\n" +
+                "     }\n"+
+                "    if( 1 < 2 ) { \n" +
+                "        drools.insert( p ); \n" +
+                "    } else { \n" +
+                "        while( true ) {drools.insert(x);}\n" +
+                "    }";
+          
+        try {
+            String result = macroProcessor.parse(raw);
+//            System.out.println(expected);
+//            System.out.println(result);
+            assertEquals(expected, result);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            fail("there shouldn't be any exception: " + ex.getMessage());
+        }
+    }
+    
+    
 }
