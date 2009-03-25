@@ -19,9 +19,11 @@
 package org.mvel2.compiler;
 
 import org.mvel2.util.ParseTools;
+import static org.mvel2.util.ParseTools.isNumeric;
 
 import java.io.Serializable;
 import static java.lang.String.valueOf;
+import java.lang.reflect.Array;
 import java.util.Collection;
 
 public class BlankLiteral implements Serializable {
@@ -34,14 +36,14 @@ public class BlankLiteral implements Serializable {
         if (obj == null || "".equals(valueOf(obj))) {
             return true;
         }
-        else if (ParseTools.isNumeric(obj)) {
+        else if (isNumeric(obj)) {
             return "0".equals(valueOf(obj));
         }
         else if (obj instanceof Collection) {
             return ((Collection) obj).size() == 0;
         }
         else if (obj.getClass().isArray()) {
-            return ((Object[]) obj).length == 0;
+            return Array.getLength(obj) == 0;
         }
         return false;
     }

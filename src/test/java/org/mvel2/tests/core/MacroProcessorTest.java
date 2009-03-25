@@ -117,13 +117,10 @@ public class MacroProcessorTest extends TestCase {
         });
 
         ExpressionCompiler compiler = new ExpressionCompiler(parseMacros("modify (foo) { aValue = 'poo' }; mod", macros));
-        //   compiler.setDebugSymbols(true);
 
         ParserContext ctx = new ParserContext(null, interceptors, null);
         ctx.setSourceFile("test.mv");
         ctx.setDebugSymbols(true);
-
-        //   CompiledExpression compiled = compiler.compile(ctx);
 
         assertEquals("FOOBAR!", executeExpression(compiler.compile(ctx), null, vars));
     }
@@ -253,8 +250,6 @@ public class MacroProcessorTest extends TestCase {
           
         try {
             String result = macroProcessor.parse(raw);
-//            System.out.println(expected);
-//            System.out.println(result);
             assertEquals(expected, result);
         }
         catch (Exception ex) {
@@ -262,6 +257,4 @@ public class MacroProcessorTest extends TestCase {
             fail("there shouldn't be any exception: " + ex.getMessage());
         }
     }
-    
-    
 }

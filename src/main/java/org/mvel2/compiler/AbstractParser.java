@@ -488,7 +488,6 @@ public class AbstractParser implements Serializable {
                                     cursor++;
                                     capture = true;
                                     continue;
-
                                 }
                                 break;
 
