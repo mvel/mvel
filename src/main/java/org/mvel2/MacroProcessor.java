@@ -90,6 +90,8 @@ public class MacroProcessor extends AbstractParser implements PreProcessor {
                                 macroArmed = false;
                                 break;
                             case ';':
+                            case '{':
+                            case '(':
                                 macroArmed = true;
                                 break;
                         }
