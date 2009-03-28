@@ -242,9 +242,8 @@ public class FastList extends AbstractList implements Externalizable {
         return indexOf(o) != -1;
     }
 
-    public Object[] toArray() {
-        if (!updated) copyArray();
-        return elements;
+    public Object[] toArray() {        
+        return toArray(new Object[size]);
     }
 
     public Object[] toArray(Object[] objects) {

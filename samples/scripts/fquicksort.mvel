@@ -1,0 +1,46 @@
+/**
+ *
+ */
+
+import java.util.*;
+
+def quicksort(list) {
+    if (list.size() <= 1) return list;
+
+    pivot = list[0];
+
+  //  System.out.println("p:" + pivot);
+
+    less = ($ in list if $ < pivot);
+
+ //   System.out.println("l:" + less);
+
+    greater = ($ in list if $ > pivot);
+
+ //   System.out.println("g:" + greater);
+
+    concat(quicksort(less), pivot, quicksort(greater));
+}
+
+def concat(list1, pivot, list2) {
+
+ /*    System.out.println("list1:" + list1);
+    System.out.println("pivot:" + pivot);
+    System.out.println("list2:" + list2); */
+
+    concatList = new ArrayList(list1);
+ //   System.out.println("A:"+concatList);
+    concatList.add(pivot);
+ //       System.out.println("B:"+concatList + "+" + list2 + "[" + list2.size() + "]");
+    concatList.addAll(list2);
+ //       System.out.println("C:"+concatList);
+
+
+    concatList;
+}
+
+list = [5,2,4,1];
+
+for (item : quicksort(list)) {
+    System.out.println(">" + item);
+}

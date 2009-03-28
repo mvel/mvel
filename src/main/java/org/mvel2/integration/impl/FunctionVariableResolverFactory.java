@@ -36,7 +36,9 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
         this.nextFactory = nextFactory;
         this.indexedVariableResolvers = new VariableResolver[(this.indexedVariableNames = indexedVariables).length];
         for (int i = 0; i < parameters.length; i++) {
-            variableResolvers.put(indexedVariableNames[i], this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]));
+            variableResolvers.put(indexedVariableNames[i], null);
+            this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]);
+       //     variableResolvers.put(indexedVariableNames[i], this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]));
         }
     }
 
@@ -49,8 +51,10 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
         if (resolver == null) {
             int idx = increaseRegisterTableSize();
             this.indexedVariableNames[idx] = name;
+            this.indexedVariableResolvers[idx] = new SimpleValueResolver(value);
+            variableResolvers.put(name,null);
 
-            variableResolvers.put(name, this.indexedVariableResolvers[idx] = new SimpleValueResolver(value));
+       //     variableResolvers.put(name, this.indexedVariableResolvers[idx] = new SimpleValueResolver(value));
             return this.indexedVariableResolvers[idx];
         }
         else {
@@ -70,6 +74,7 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     }
 
     public VariableResolver createIndexedVariable(int index, String name, Object value) {
+
         if (indexedVariableResolvers[index] != null) {
             indexedVariableResolvers[index].setValue(value);
         }
@@ -77,7 +82,7 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
             indexedVariableResolvers[index] = new SimpleValueResolver(value);
         }
 
-        variableResolvers.put(name, indexedVariableResolvers[index]);
+        variableResolvers.put(name, null);
 
         return indexedVariableResolvers[index];
     }
@@ -105,12 +110,12 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
 
     public VariableResolver getVariableResolver(String name) {
         int idx;
-        if (variableResolvers.containsKey(name)) return variableResolvers.get(name);
-        else if ((idx = variableIndexOf(name)) != -1) {
+     //   if (variableResolvers.containsKey(name)) return variableResolvers.get(name);
+         if ((idx = variableIndexOf(name)) != -1) {
             if (indexedVariableResolvers[idx] == null) {
                 indexedVariableResolvers[idx] = new SimpleValueResolver(null);
             }
-            variableResolvers.put(indexedVariableNames[idx], indexedVariableResolvers[idx]);
+            variableResolvers.put(indexedVariableNames[idx], null);
             return indexedVariableResolvers[idx];
         }
 
@@ -142,10 +147,13 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     }
 
     public void updateParameters(Object[] parameters) {
-        this.indexedVariableResolvers = new VariableResolver[parameters.length];
+    //    this.indexedVariableResolvers = new VariableResolver[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
             this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]);
         }
+//        for (int i = parameters.length; i < indexedVariableResolvers.length; i++) {
+//            this.indexedVariableResolvers[i] = null;
+//        }
     }
 
     public VariableResolver[] getIndexedVariableResolvers() {

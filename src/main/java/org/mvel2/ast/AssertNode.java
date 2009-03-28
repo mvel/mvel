@@ -24,7 +24,6 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.subCompileExpression;
-import org.mvel2.util.ParseTools;
 
 /**
  * @author Christopher Brock
@@ -39,7 +38,6 @@ public class AssertNode extends ASTNode {
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             assertion = (ExecutableStatement) subCompileExpression(expr, pCtx);
         }
-
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

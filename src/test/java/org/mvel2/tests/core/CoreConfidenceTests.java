@@ -2462,7 +2462,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testDeepProperty() {
-
         before();
 
         Object obj = executeExpression(compileExpression("map.bean.var"), context);
@@ -2682,6 +2681,7 @@ public class CoreConfidenceTests extends AbstractTest {
         double val = 51d * 52d * 33d / 24d / 15d + 45d * 66d * 47d * 28d + 19d;
         System.out.println("Expression: " + expression);
         System.out.println("Expected Result: " + val);
+
         assertEquals(val, test(expression));
     }
 
@@ -2796,7 +2796,6 @@ public class CoreConfidenceTests extends AbstractTest {
         map.put("y", 50);
         map.put("z", 60);
 
-
         assertNumEquals(20d / 40d / 20d / 20d * 50d + 10d, MVEL.eval(expression, map));
     }
 
@@ -2835,7 +2834,6 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testMath38() {
         String expression = "100 + 200 - 300 + 400 - 500 + 105 / 205 - 405 + 305 * 206";
         double res = 100d + 200d - 300d + 400d - 500d + 105d / 205d - 405d + 305d * 206d;
-
 
         System.out.println("Expression: " + expression);
         System.out.println("CorrectResult:" + res);
@@ -2939,7 +2937,6 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertTrue(false);
     }
-
 
     public void testNullSafe() {
         Foo foo = new Foo();
@@ -3333,6 +3330,10 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testQuickSortScript1() throws IOException {
         MVEL.evalFile(new File("samples/scripts/quicksort.mvel"));
+    }
+
+    public void testQuickSortScriptFunctional() throws IOException {
+        MVEL.evalFile(new File("samples/scripts/fquicksort.mvel"));
     }
 
 
@@ -4227,8 +4228,8 @@ public class CoreConfidenceTests extends AbstractTest {
             assertEquals(expected, actual);
             return;
         }
-        final String cleanExpected = expected.replaceAll("\\s+","");
-        final String cleanActual = actual.replaceAll("\\s+","");
+        final String cleanExpected = expected.replaceAll("\\s+", "");
+        final String cleanActual = actual.replaceAll("\\s+", "");
 
         assertEquals(cleanExpected, cleanActual);
     }

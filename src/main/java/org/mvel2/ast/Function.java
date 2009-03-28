@@ -119,17 +119,18 @@ public class Function extends ASTNode implements Safe {
         try {
             if (parms != null && parms.length != 0) {
                 // detect tail recursion
-                if (factory instanceof FunctionVariableResolverFactory) {
+                if (factory instanceof FunctionVariableResolverFactory
+                        && ((FunctionVariableResolverFactory) factory).getIndexedVariableResolvers().length == parms.length) {
                     FunctionVariableResolverFactory fvrf = (FunctionVariableResolverFactory) factory;
-                    if (fvrf.getFunction().equals(this))  {
+                    if (fvrf.getFunction().equals(this)) {
                         VariableResolver[] swapVR = fvrf.getIndexedVariableResolvers();
                         fvrf.updateParameters(parms);
-
-                        Object v = compiledBlock.getValue(ctx, thisValue, fvrf);
-
-                        fvrf.setIndexedVariableResolvers(swapVR);
-
-                        return v;
+                        try {
+                            return compiledBlock.getValue(ctx, thisValue, fvrf);
+                        }
+                        finally {
+                            fvrf.setIndexedVariableResolvers(swapVR);
+                        }
                     }
                 }
                 return compiledBlock.getValue(ctx, thisValue, new FunctionVariableResolverFactory(this, factory, parameters, parms));
@@ -166,7 +167,7 @@ public class Function extends ASTNode implements Safe {
     public void checkArgumentCount(int passing) {
         if (passing != parmNum) {
             throw new CompileException("bad number of arguments in function call: "
-                    + passing + " (expected: " + (parmNum==0?"none":parmNum) + ")");
+                    + passing + " (expected: " + (parmNum == 0 ? "none" : parmNum) + ")");
         }
     }
 

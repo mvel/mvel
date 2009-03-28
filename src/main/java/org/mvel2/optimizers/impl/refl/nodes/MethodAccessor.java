@@ -60,7 +60,7 @@ public class MethodAccessor implements AccessorNode {
                 return getValue(ctx, elCtx, vars);
             }
             catch (Exception e) {
-                throw new CompileException("cannot invoke method", e);
+                throw new CompileException("cannot invoke method: " + method.getName(), e);
             }
 
         }

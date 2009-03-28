@@ -1105,11 +1105,11 @@ public class ParseTools {
                     }
                     else if (chars[start + 1] == '*') {
                         start += 2;
-                        while (start < chars.length) {
+                        Skiploop: while (start < chars.length) {
                             switch (chars[start]) {
                                 case '*':
                                     if (start + 1 < chars.length && chars[start + 1] == '/') {
-                                        break;
+                                        break Skiploop;
                                     }
                                 case '\r':
                                 case '\n':
