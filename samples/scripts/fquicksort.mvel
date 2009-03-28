@@ -1,4 +1,4 @@
-//**
+/**
  * Sample MVEL 2.0 Script
  * "Functional QuickSort"
  * by: Christopher Michael Brock
@@ -7,15 +7,10 @@ import java.util.*;
 
 def quicksort(list) {
     if (list.size() <= 1) return list;
-
     pivot = list[0];
-
-    less = ($ in list if $ < pivot);
-    greater = ($ in list if $ > pivot);
-    concat(quicksort(less), pivot, quicksort(greater));
+    concat(quicksort(($ in list if $ < pivot)), pivot, quicksort(($ in list if $ > pivot)));
 }
 
-def concat(list1, pivot, list2) {
     concatList = new ArrayList(list1);
     concatList.add(pivot);
     concatList.addAll(list2);
