@@ -11,13 +11,14 @@ def quicksort(list) {
     concat(quicksort(($ in list if $ < pivot)), pivot, quicksort(($ in list if $ > pivot)));
 }
 
+def concat(list1, pivot, list2) {
     concatList = new ArrayList(list1);
     concatList.add(pivot);
     concatList.addAll(list2);
     concatList;
 }
 
-list = [5,2,4,1];
+list = [5,2,4,1,18,10,15,1,0];
 
 for (item : quicksort(list)) {
     System.out.println(">" + item);
