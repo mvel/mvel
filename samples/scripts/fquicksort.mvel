@@ -3,12 +3,17 @@
  * "Functional QuickSort"
  * by: Christopher Michael Brock
  */
+
 import java.util.*;
 
 def quicksort(list) {
-    if (list.size() <= 1) return list;
-    pivot = list[0];
-    concat(quicksort(($ in list if $ < pivot)), pivot, quicksort(($ in list if $ > pivot)));
+    if (list.size() <= 1) {
+         list;
+    }
+    else {
+         pivot = list[0];
+         concat(quicksort(($ in list if $ < pivot)), pivot, quicksort(($ in list if $ > pivot)));
+    }
 }
 
 def concat(list1, pivot, list2) {
@@ -20,6 +25,4 @@ def concat(list1, pivot, list2) {
 
 list = [5,2,4,1,18,10,15,1,0];
 
-for (item : quicksort(list)) {
-    System.out.println(">" + item);
-}
+quicksort(list);

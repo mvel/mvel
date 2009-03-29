@@ -128,4 +128,9 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
             return new HashSet<String>(0);
         }
     }
+
+    public void clear() {
+        variableResolvers.clear();
+        variables.clear();
+    }
 }

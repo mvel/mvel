@@ -2,6 +2,8 @@ package org.mvel2.tests.core;
 
 import org.mvel2.*;
 import static org.mvel2.MVEL.*;
+import static org.mvel2.MVEL.executeExpression;
+import static org.mvel2.MVEL.compileExpression;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.Function;
 import org.mvel2.ast.WithNode;
@@ -2170,7 +2172,7 @@ public class CoreConfidenceTests extends AbstractTest {
         vars.put("$msg", "MSGONE");
         vars.put("map", map);
 
-        Boolean bool = (Boolean) MVEL.executeExpression(expr, map, vars);
+        Boolean bool = (Boolean) executeExpression(expr, map, vars);
         assertEquals(Boolean.TRUE, bool);
     }
 
@@ -2188,7 +2190,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Map vars = new HashMap();
         vars.put("$msg", "MSGONE");
 
-        Boolean bool = (Boolean) MVEL.executeExpression(expr, map, vars);
+        Boolean bool = (Boolean) executeExpression(expr, map, vars);
         assertEquals(Boolean.TRUE, bool);
     }
 
@@ -2905,7 +2907,7 @@ public class CoreConfidenceTests extends AbstractTest {
         String expression = "a+b/c*d*e*f%g*h-i*j*k";
         double res = 6d + 8d / 9d * 1d * 9d * 10d % 4d * 4d - 4d * 6d * 3d;
 
-        Serializable s = MVEL.compileExpression(expression);
+        Serializable s = compileExpression(expression);
 
         Map vars = new HashMap();
         vars.put("a", 6d);
@@ -2920,7 +2922,7 @@ public class CoreConfidenceTests extends AbstractTest {
         vars.put("j", 6d);
         vars.put("k", 3d);
 
-        assertEquals(res, MVEL.executeExpression(s, vars));
+        assertEquals(res, executeExpression(s, vars));
     }
 
     public void testAssertKeyword() {
@@ -2929,7 +2931,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
         try {
-            MVEL.executeExpression(s);
+            executeExpression(s);
         }
         catch (AssertionError e) {
             return;
@@ -3379,6 +3381,20 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testQuickSortScript5() throws IOException {
+        List sorted = (List) executeExpression(compileExpression(loadFromFile(new File("samples/scripts/fquicksort.mvel"))), new HashMap());
+        int last = -1;
+        for (Object o : sorted) {
+            if (last == -1) {
+                last = (Integer) o;
+            }
+            else {
+                assertTrue(((Integer) o) > last);
+                last = (Integer) o;
+            }
+        }
+    }
+
     public void testMultiLineString() throws IOException {
         MVEL.evalFile(new File("samples/scripts/multilinestring.mvel"));
     }
@@ -3640,7 +3656,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         MockClass mock = new MockClass();
 
-        MVEL.executeExpression(MVEL.compileExpression("this.values = [0, 1, 2, 3, 4]"), mock);
+        executeExpression(compileExpression("this.values = [0, 1, 2, 3, 4]"), mock);
         assertEquals(5, mock.getValues().size());
     }
 
@@ -4419,10 +4435,10 @@ public class CoreConfidenceTests extends AbstractTest {
         OptimizerFactory.setDefaultOptimizer("ASM");
 
         Serializable ce =
-                MVEL.compileExpression("new String[][] {{\"2008-04-01\", \"2008-05-10\"}, {\"2007-03-01\", \"2007-02-12\"}}");
+                compileExpression("new String[][] {{\"2008-04-01\", \"2008-05-10\"}, {\"2007-03-01\", \"2007-02-12\"}}");
 
         String[][] s = (String[][])
-                MVEL.executeExpression(ce);
+                executeExpression(ce);
 
         assertEquals("2007-03-01", s[1][0]);
     }
@@ -4438,22 +4454,22 @@ public class CoreConfidenceTests extends AbstractTest {
 
         OptimizerFactory.setDefaultOptimizer("ASM");
 
-        Serializable c = MVEL.compileExpression("tm = System.currentTimeMillis");
-        assertTrue(((Long) MVEL.executeExpression(c, new HashMap())) > 0);
+        Serializable c = compileExpression("tm = System.currentTimeMillis");
+        assertTrue(((Long) executeExpression(c, new HashMap())) > 0);
 
         OptimizerFactory.setDefaultOptimizer("reflective");
 
-        assertTrue(((Long) MVEL.executeExpression(c, new HashMap())) > 0);
+        assertTrue(((Long) executeExpression(c, new HashMap())) > 0);
 
         Map map = new HashMap();
         map.put("foo", new Foo());
-        c = MVEL.compileExpression("foo.happy");
-        assertEquals("happyBar", MVEL.executeExpression(c, map));
+        c = compileExpression("foo.happy");
+        assertEquals("happyBar", executeExpression(c, map));
 
         OptimizerFactory.setDefaultOptimizer("ASM");
-        c = MVEL.compileExpression("foo.happy");
+        c = compileExpression("foo.happy");
 
-        assertEquals("happyBar", MVEL.executeExpression(c, map));
+        assertEquals("happyBar", executeExpression(c, map));
 
         MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
     }
@@ -4677,15 +4693,15 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testJIRA122() {
-        Serializable s = MVEL.compileExpression("java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
+        Serializable s = compileExpression("java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
 
         OptimizerFactory.setDefaultOptimizer("ASM");
 
         Map map = new HashMap();
         map.put("name", "Adam");
 
-        assertEquals(true, MVEL.executeExpression(s, map));
-        assertEquals(true, MVEL.executeExpression(s, map));
+        assertEquals(true, executeExpression(s, map));
+        assertEquals(true, executeExpression(s, map));
     }
 
     public void testJIRA103() {
@@ -4697,9 +4713,9 @@ public class CoreConfidenceTests extends AbstractTest {
         MvelContext mvelContext = new MvelContext();
         Map map = new HashMap();
         map.put("ctx", mvelContext);
-        Serializable c = MVEL.compileExpression("ctx.regkeys = 'foo'");
-        MVEL.executeExpression(c, map);
-        MVEL.executeExpression(c, map);
+        Serializable c = compileExpression("ctx.regkeys = 'foo'");
+        executeExpression(c, map);
+        executeExpression(c, map);
     }
 
     public void testNewUsingWith() {
@@ -4708,10 +4724,10 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addImport(Foo.class);
         ctx.addImport(Bar.class);
 
-        Serializable s = MVEL.compileExpression("[ 'foo' : (with ( new Foo() ) { bar = with ( new Bar() ) { name = 'ziggy' } }) ]", ctx);
+        Serializable s = compileExpression("[ 'foo' : (with ( new Foo() ) { bar = with ( new Bar() ) { name = 'ziggy' } }) ]", ctx);
 
         OptimizerFactory.setDefaultOptimizer("reflective");
-        assertEquals("ziggy", (((Foo) ((Map) MVEL.executeExpression(s)).get("foo")).getBar().getName()));
+        assertEquals("ziggy", (((Foo) ((Map) executeExpression(s)).get("foo")).getBar().getName()));
     }
 
     private static Map<String, Boolean> JIRA124_CTX = Collections.singletonMap("testValue", true);
@@ -4738,7 +4754,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Object val;
         Object val2;
         try {
-            val = MVEL.executeExpression(MVEL.compileExpression(expression), JIRA124_CTX);
+            val = executeExpression(compileExpression(expression), JIRA124_CTX);
         }
         catch (Exception e) {
             System.out.println("FailedCompiled[" + i + "]:" + expression);
@@ -4823,7 +4839,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testOperatorPrecedenceOrder() {
-        Serializable compiled = MVEL.compileExpression("bean1.successful && bean2.failed || bean1.failed && bean2.successful");
+        Serializable compiled = compileExpression("bean1.successful && bean2.failed || bean1.failed && bean2.successful");
         Map context = new HashMap();
 
         BeanB bean1 = new BeanB(true);
@@ -4837,7 +4853,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
         assertEquals(bean1.isSuccessful() && bean2.isFailed() || bean1.isFailed() && bean2.isSuccessful(),
-                (boolean) MVEL.executeExpression(compiled, context, Boolean.class));
+                (boolean) executeExpression(compiled, context, Boolean.class));
     }
 
 
@@ -4861,20 +4877,20 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testJIRA139() {
         ParserContext ctx = new ParserContext();
         ctx.addImport("ReflectionUtil", ReflectionUtil.class);
-        Serializable s = MVEL.compileExpression("ReflectionUtil.getGetter('foo')", ctx);
-        assertEquals(ReflectionUtil.getGetter("foo"), MVEL.executeExpression(s));
+        Serializable s = compileExpression("ReflectionUtil.getGetter('foo')", ctx);
+        assertEquals(ReflectionUtil.getGetter("foo"), executeExpression(s));
     }
 
 
     public void testJIRA140() {
         ParserContext ctx = new ParserContext();
-        Serializable s = MVEL.compileExpression(
+        Serializable s = compileExpression(
                 "import org.mvel2.tests.core.res.*;" +
                         "cols = new Column[] { new Column('name', 20), new Column('age', 2) };" +
                         "grid = new Grid(new Model(cols));", ctx
         );
 
-        Grid g = (Grid) MVEL.executeExpression(s, new HashMap());
+        Grid g = (Grid) executeExpression(s, new HashMap());
 
         assertEquals(g.getModel().getColumns()[0].getName(), "name");
         assertEquals(g.getModel().getColumns()[0].getLength(), 20);
@@ -4887,12 +4903,12 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrictTypeEnforcement(true);
         ctx.addInput("base", Base.class);
 
-        Serializable s = MVEL.compileExpression("base.fooMap['foo'].setName('coffee')", ctx);
+        Serializable s = compileExpression("base.fooMap['foo'].setName('coffee')", ctx);
 
         Map vars = new HashMap();
         vars.put("base", new Base());
 
-        MVEL.executeExpression(s, vars);
+        executeExpression(s, vars);
 
         assertEquals("coffee", ((Base) vars.get("base")).fooMap.get("foo").getName());
     }
@@ -4902,12 +4918,12 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrongTyping(true);
         ctx.addInput("base", Base.class);
 
-        Serializable s = MVEL.compileExpression("int x = 5; x = x + base.intValue; x", ctx);
+        Serializable s = compileExpression("int x = 5; x = x + base.intValue; x", ctx);
 
         Map vars = new HashMap();
         vars.put("base", new Base());
 
-        Number x = (Number) MVEL.executeExpression(s, vars);
+        Number x = (Number) executeExpression(s, vars);
 
         assertEquals(15, x.intValue());
 
@@ -4918,12 +4934,12 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrongTyping(true);
         //ctx.addInput("base", Base.class);
 
-        Serializable s = MVEL.compileExpression("(list = new java.util.ArrayList()).add( 5 ); list", ctx);
+        Serializable s = compileExpression("(list = new java.util.ArrayList()).add( 5 ); list", ctx);
 
         Map vars = new HashMap();
         //vars.put("base", new Base());
 
-        List list = (List) MVEL.executeExpression(s, vars);
+        List list = (List) executeExpression(s, vars);
 
         assertEquals(1, list.size());
 
@@ -4934,12 +4950,12 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrongTyping(true);
         ctx.addInput("base", Base.class);
 
-        Serializable s = MVEL.compileExpression("java.util.List list = new java.util.ArrayList(); list.add( base.intValue ); list", ctx);
+        Serializable s = compileExpression("java.util.List list = new java.util.ArrayList(); list.add( base.intValue ); list", ctx);
 
         Map vars = new HashMap();
         vars.put("base", new Base());
 
-        List list = (List) MVEL.executeExpression(s, vars);
+        List list = (List) executeExpression(s, vars);
 
         assertEquals(1, list.size());
     }
@@ -4950,12 +4966,12 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrongTyping(true);
         ctx.addInput("base", Base.class);
 
-        Serializable s = MVEL.compileExpression("java.math.BigInteger x = new java.math.BigInteger( \"5\" ); x + base.intValue;", ctx);
+        Serializable s = compileExpression("java.math.BigInteger x = new java.math.BigInteger( \"5\" ); x + base.intValue;", ctx);
 
         Map vars = new HashMap();
         vars.put("base", new Base());
 
-        Number x = (Number) MVEL.executeExpression(s, vars);
+        Number x = (Number) executeExpression(s, vars);
 
         assertEquals(15, x.intValue());
     }
@@ -4966,12 +4982,12 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrongTyping(true);
         ctx.addInput("base", Base.class);
 
-        Serializable s = MVEL.compileExpression("java.math.BigInteger x = new java.math.BigInteger( \"5\" ); x + base.intValue;", ctx);
+        Serializable s = compileExpression("java.math.BigInteger x = new java.math.BigInteger( \"5\" ); x + base.intValue;", ctx);
 
         Map vars = new HashMap();
         vars.put("base", new Base());
 
-        Number x = (Number) MVEL.executeExpression(s, vars);
+        Number x = (Number) executeExpression(s, vars);
 
         assertEquals(15, x.intValue());
     }
@@ -4980,11 +4996,11 @@ public class CoreConfidenceTests extends AbstractTest {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
 
-        Serializable s = MVEL.compileExpression("list = new java.util.ArrayList(); list == empty", ctx);
+        Serializable s = compileExpression("list = new java.util.ArrayList(); list == empty", ctx);
 
         Map vars = new HashMap();
 
-        Boolean x = (Boolean) MVEL.executeExpression(s, vars);
+        Boolean x = (Boolean) executeExpression(s, vars);
 
         assertNotNull(x);
         assertTrue(x.booleanValue());
@@ -5005,13 +5021,13 @@ public class CoreConfidenceTests extends AbstractTest {
                 "m.put(\"content\", l);\n" +
                 "list.add(((ArrayList)m[\"content\"])[0]);";
 
-        Serializable s = MVEL.compileExpression(expression, ctx);
+        Serializable s = compileExpression(expression, ctx);
 
         Map vars = new HashMap();
         List list = new ArrayList();
         vars.put("list", list);
 
-        Boolean result = (Boolean) MVEL.executeExpression(s, vars);
+        Boolean result = (Boolean) executeExpression(s, vars);
 
         assertNotNull(result);
         assertTrue(result);
@@ -5034,13 +5050,13 @@ public class CoreConfidenceTests extends AbstractTest {
                 "m.put(\"content\", l);\n" +
                 "list.add(((ArrayList)m[\"content\"])[0]);";
 
-        Serializable s = MVEL.compileExpression(expression, ctx);
+        Serializable s = compileExpression(expression, ctx);
 
         Map vars = new HashMap();
         List list = new ArrayList();
         vars.put("list", list);
 
-        Boolean result = (Boolean) MVEL.executeExpression(s, vars);
+        Boolean result = (Boolean) executeExpression(s, vars);
 
         assertNotNull(result);
         assertTrue(result);
@@ -5053,18 +5069,18 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
-        Serializable s = MVEL.compileExpression(ex, ctx);
+        Serializable s = compileExpression(ex, ctx);
 
-        assertEquals(true, MVEL.executeExpression(s, new HashMap()));
+        assertEquals(true, executeExpression(s, new HashMap()));
     }
 
     public void testInlineListSensitivenessToSpaces() {
         String ex = "([\"a\",\"b\", \"c\"])";
 
         ParserContext ctx = new ParserContext();
-        Serializable s = MVEL.compileExpression(ex, ctx);
+        Serializable s = compileExpression(ex, ctx);
 
-        List result = (List) MVEL.executeExpression(s, new HashMap());
+        List result = (List) executeExpression(s, new HashMap());
         assertNotNull(result);
         assertEquals("a", result.get(0));
         assertEquals("b", result.get(1));
@@ -5082,7 +5098,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Map<String, Object> variables = new HashMap<String, Object>();
         variables.put("a", a);
 
-        MVEL.executeExpression(s, variables);
+        executeExpression(s, variables);
         assertEquals("There is a coma, in here", a.data);
     }
 
@@ -5147,7 +5163,7 @@ public class CoreConfidenceTests extends AbstractTest {
         }
 
         Map vars = new HashMap();
-        MVEL.executeExpression(s, vars);
+        executeExpression(s, vars);
 
         assertEquals(52 * 3, vars.get("a"));
         assertEquals(8, vars.get("b"));
