@@ -3,8 +3,8 @@ package org.mvel2.integration.impl;
 import org.mvel2.integration.VariableResolver;
 
 import java.util.HashMap;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 
 
 public class SimpleVariableResolverFactory extends BaseVariableResolverFactory {
@@ -15,7 +15,7 @@ public class SimpleVariableResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver createVariable(String name, Object value) {
-        if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
+        if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>(5, 0.6f);
         SimpleValueResolver svr = new SimpleValueResolver(value);
         variableResolvers.put(name, svr);
         return svr;
@@ -26,7 +26,7 @@ public class SimpleVariableResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
-        if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
+        if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>(5, 0.6f);
         SimpleSTValueResolver svr = new SimpleSTValueResolver(value, type);
         variableResolvers.put(name, svr);
         return svr;    }

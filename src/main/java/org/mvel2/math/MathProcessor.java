@@ -58,7 +58,7 @@ public strictfp class MathProcessor {
         if (type2 == -1)
             type2 = val2 == null ? DataTypes.OBJECT : __resolveType(val2.getClass());
 
-  //      System.out.println("{" + val1 + " " + DebugTools.getOperatorSymbol(operation) + " " + val2 + "}");
+        //      System.out.println("{" + val1 + " " + DebugTools.getOperatorSymbol(operation) + " " + val2 + "}");
 
         switch (type1) {
             case BIG_DECIMAL:
@@ -190,7 +190,12 @@ public strictfp class MathProcessor {
             case MOD:
             case GTHAN:
                 if (val1 instanceof Comparable) {
-                    return val2 != null && (((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE);
+                    try {
+                        return val2 != null && (((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE);
+                    }
+                    catch (ClassCastException e) {
+                        throw new CompileException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
+                    }
                 }
                 else {
                     return Boolean.FALSE;
@@ -200,7 +205,13 @@ public strictfp class MathProcessor {
             case GETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return val2 != null && ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
+                    try {
+                        return val2 != null && ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
+                    }
+                    catch (ClassCastException e) {
+                        throw new CompileException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
+                    }
+
                 }
                 else {
                     return Boolean.FALSE;
@@ -210,7 +221,13 @@ public strictfp class MathProcessor {
             case LTHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return val2 != null && ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
+                    try {
+                        return val2 != null && ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
+                    }
+                    catch (ClassCastException e) {
+                        throw new CompileException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
+                    }
+
                 }
                 else {
                     return Boolean.FALSE;
@@ -220,7 +237,13 @@ public strictfp class MathProcessor {
             case LETHAN:
                 if (val1 instanceof Comparable) {
                     //noinspection unchecked
-                    return val2 != null && ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
+                    try {
+                        return val2 != null && ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
+                    }
+                    catch (ClassCastException e) {
+                        throw new CompileException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
+                    }
+
                 }
                 else {
                     return Boolean.FALSE;

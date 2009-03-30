@@ -400,7 +400,8 @@ public class AbstractParser implements Serializable {
                                         continue Mainloop;
                                     }
                                     else {
-                                        if ((idx = pCtx.variableIndexOf(name = new String(subArray(start, end)))) != -1) {
+                                        name = new String(subArray(start, end));
+                                        if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
                                             splitAccumulator.add(lastNode = new IndexedDeclTypedVarNode(idx, Object.class));
                                         }
                                         else {
