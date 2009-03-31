@@ -346,7 +346,7 @@ public class MVEL {
      *
      * @param expression A string containing the expressino to be evaluated.
      * @param ctx        The context object to evaluate against.
-     * @param vars       The variables to be injected
+     * @param vars       The variables to be injected                         
      * @return The resultant value
      * @see #eval(String,Map)
      */

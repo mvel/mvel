@@ -26,7 +26,7 @@ import org.mvel2.MVEL;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.util.StringAppender;
 
-import com.thoughtworks.xstream.XStream;
+// import com.thoughtworks.xstream.XStream;
 
 /**
  * Generates templates to marshaller classes.
@@ -454,33 +454,33 @@ public class MarshallingTest extends TestCase {
 
     private static final int COUNT = 0;
 
-    public void testXStream() {
-        XStream xstream = new XStream();
-
-        // run once to allow for caching
-        Object data1 = getData();
-        String str = xstream.toXML( data1 );
-        System.out.println( str );
-        Object data2 = xstream.fromXML( str );
-        assertNotSame( data1,
-                       data2 );
-        assertEquals( data1,
-                      data2 );
-
-        long start = System.currentTimeMillis();
-        for ( int i = 0; i < COUNT; i++ ) {
-            data1 = getData();
-            str = xstream.toXML( data1 );
-            data2 = xstream.fromXML( str );
-            assertNotSame( data1,
-                           data2 );
-            assertEquals( data1,
-                          data2 );
-        }
-        long end = System.currentTimeMillis();
-
-        System.out.println( "xstream : " + (end - start) );
-    }
+//    public void testXStream() {
+//        XStream xstream = new XStream();
+//
+//        // run once to allow for caching
+//        Object data1 = getData();
+//        String str = xstream.toXML( data1 );
+//        System.out.println( str );
+//        Object data2 = xstream.fromXML( str );
+//        assertNotSame( data1,
+//                       data2 );
+//        assertEquals( data1,
+//                      data2 );
+//
+//        long start = System.currentTimeMillis();
+//        for ( int i = 0; i < COUNT; i++ ) {
+//            data1 = getData();
+//            str = xstream.toXML( data1 );
+//            data2 = xstream.fromXML( str );
+//            assertNotSame( data1,
+//                           data2 );
+//            assertEquals( data1,
+//                          data2 );
+//        }
+//        long end = System.currentTimeMillis();
+//
+//        System.out.println( "xstream : " + (end - start) );
+//    }
 
     public void testMVEL() throws Exception {
         Marshaller marshaller = new Marshaller();
