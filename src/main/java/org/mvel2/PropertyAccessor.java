@@ -947,6 +947,24 @@ public class PropertyAccessor {
                         last = i;
                         break;
 
+                    case '}':
+                        i--;
+                        for (int d = 1; i > 0 && d != 0; i--) {
+                              switch (property[i])  {
+                                  case '}':
+                                      d++;
+                                      break;
+                                  case '{':
+                                      d--;
+                                      break;
+                                  case '"':
+                                  case '\'':
+                                      char s = property[i];
+                                      while (i > 0 && (property[i] != s && property[i - 1] != '\\')) i--;
+                              }
+                        }
+                        break;
+
                     case ')':
                         i--;
 
