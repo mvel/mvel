@@ -21,10 +21,14 @@ package org.mvel2.templates.res;
 import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
+import org.mvel2.templates.util.TemplateOutputStream;
 import static org.mvel2.util.ParseTools.subset;
 import org.mvel2.util.StringAppender;
 
 import static java.lang.String.valueOf;
+import java.io.PrintStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 
 public class ExpressionNode extends Node {
 
@@ -44,7 +48,7 @@ public class ExpressionNode extends Node {
         this.next = next;
     }
 
-    public Object eval(TemplateRuntime runtime, StringAppender appender, Object ctx, VariableResolverFactory factory) {
+    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
         appender.append(valueOf(MVEL.eval(contents, ctx, factory)));
         return next != null ? next.eval(runtime, appender, ctx, factory) : null;
     }

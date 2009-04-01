@@ -23,8 +23,13 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.CompiledTemplate;
 import org.mvel2.templates.SimpleTemplateRegistry;
 import org.mvel2.templates.TemplateRuntime;
+import org.mvel2.templates.util.TemplateOutputStream;
 import static org.mvel2.util.ParseTools.subset;
 import org.mvel2.util.StringAppender;
+
+import java.io.PrintStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 
 public class DeclareNode extends Node {
     private Node nestedNode;
@@ -35,7 +40,7 @@ public class DeclareNode extends Node {
         this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
     }
 
-    public Object eval(TemplateRuntime runtime, StringAppender appender, Object ctx, VariableResolverFactory factory) {
+    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
         if (runtime.getNamedTemplateRegistry() == null) {
             runtime.setNamedTemplateRegistry(new SimpleTemplateRegistry());
         }

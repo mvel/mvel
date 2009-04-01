@@ -23,10 +23,13 @@ import org.mvel2.integration.impl.MapVariableResolverFactory;
 import static org.mvel2.templates.TemplateCompiler.compileTemplate;
 import org.mvel2.templates.res.Node;
 import org.mvel2.templates.util.TemplateTools;
+import org.mvel2.templates.util.TemplateOutputStream;
+import org.mvel2.templates.util.io.StringAppenderStream;
+import org.mvel2.templates.util.io.StandardOutputStream;
 import org.mvel2.util.StringAppender;
+import org.mvel2.util.StreamStringAppender;
 
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Map;
 
 /**
@@ -51,61 +54,116 @@ public class TemplateRuntime {
         return execute(compileTemplate(TemplateTools.readStream(instream)), ctx, vars, registry);
     }
 
+    public static void eval(InputStream instream, Object ctx, VariableResolverFactory vars, TemplateRegistry register, OutputStream stream) {
+        execute(compileTemplate(TemplateTools.readStream(instream)), ctx, vars, register, stream);
+    }
+
     public static Object eval(String template, Map vars) {
         return execute(compileTemplate(template), null, new MapVariableResolverFactory(vars));
+    }
+
+    public static void eval(String template, Map vars, OutputStream stream) {
+        execute(compileTemplate(template), null, new MapVariableResolverFactory(vars), null, stream);
     }
 
     public static Object eval(String template, Object ctx) {
         return execute(compileTemplate(template), ctx);
     }
-
+    
     public static Object eval(String template, Object ctx, Map vars) {
         return execute(compileTemplate(template), ctx, new MapVariableResolverFactory(vars));
+    }
+
+    public static void eval(String template, Object ctx, Map vars, OutputStream stream) {
+        execute(compileTemplate(template), ctx, new MapVariableResolverFactory(vars), null, stream);
     }
 
     public static Object eval(String template, Object ctx, VariableResolverFactory vars) {
         return execute(compileTemplate(template), ctx, vars);
     }
 
+    public static void eval(String template, Object ctx, VariableResolverFactory vars, OutputStream stream) {
+        execute(compileTemplate(template), ctx, vars, null, stream);
+    }
+
     public static Object eval(String template, Map vars, TemplateRegistry registry) {
         return execute(compileTemplate(template), null, new MapVariableResolverFactory(vars), registry);
+    }
+
+    public static void eval(String template, Map vars, TemplateRegistry registry, OutputStream stream) {
+        execute(compileTemplate(template), null, new MapVariableResolverFactory(vars), registry, stream);
     }
 
     public static Object eval(String template, Object ctx, Map vars, TemplateRegistry registry) {
         return execute(compileTemplate(template), ctx, new MapVariableResolverFactory(vars), registry);
     }
 
+    public static void eval(String template, Object ctx, Map vars, TemplateRegistry registry, OutputStream stream) {
+        execute(compileTemplate(template), ctx, new MapVariableResolverFactory(vars), registry, stream);
+    }
+
     public static Object eval(String template, Object ctx, VariableResolverFactory vars, TemplateRegistry registry) {
         return execute(compileTemplate(template), ctx, vars, registry);
     }
 
+    public static void eval(String template, Object ctx, VariableResolverFactory vars, TemplateRegistry registry, OutputStream stream) {
+        execute(compileTemplate(template), ctx, vars, registry, stream);
+    }
 
     public static Object execute(CompiledTemplate compiled) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), null, null, null);
+    }
+
+    public static void execute(CompiledTemplate compiled, OutputStream stream) {
+        execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), null, null, null);
     }
 
     public static Object execute(CompiledTemplate compiled, Object context) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, null, null);
     }
 
+    public static void execute(CompiledTemplate compiled, Object context, OutputStream stream) {
+        execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, null, null);
+    }
+
     public static Object execute(CompiledTemplate compiled, Map vars) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), null, new MapVariableResolverFactory(vars), null);
+    }
+
+    public static void execute(CompiledTemplate compiled, Map vars, OutputStream stream) {
+        execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), null, new MapVariableResolverFactory(vars), null);
     }
 
     public static Object execute(CompiledTemplate compiled, Object context, Map vars) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, new MapVariableResolverFactory(vars), null);
     }
 
+    public static void execute(CompiledTemplate compiled, Object context, Map vars, OutputStream stream) {
+        execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, new MapVariableResolverFactory(vars), null);
+    }
+
     public static Object execute(CompiledTemplate compiled, Object context, TemplateRegistry registry) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, null, registry);
+    }
+
+    public static void execute(CompiledTemplate compiled, Object context, TemplateRegistry registry, OutputStream stream) {
+         execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, null, registry);
     }
 
     public static Object execute(CompiledTemplate compiled, Object context, Map vars, TemplateRegistry registry) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, new MapVariableResolverFactory(vars), registry);
     }
 
+    public static void execute(CompiledTemplate compiled, Object context, Map vars, TemplateRegistry registry, OutputStream stream) {
+         execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, new MapVariableResolverFactory(vars), registry);
+    }
+
     public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), context, factory, null);
+    }
+
+    public static void execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, OutputStream stream) {
+         execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, factory, null);
     }
 
     public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, TemplateRegistry registry) {
@@ -113,14 +171,29 @@ public class TemplateRuntime {
     }
 
 
+    public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, TemplateRegistry registry, OutputStream stream) {
+        return execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, factory, registry);
+    }
+
     public static Object execute(Node root, char[] template,
                                  StringAppender appender, Object context,
                                  VariableResolverFactory factory, TemplateRegistry registry) {
         return new TemplateRuntime(template, registry, root).execute(appender, context, factory);
     }
 
+    public static Object execute(Node root, char[] template,
+                                 TemplateOutputStream appender, Object context,
+                                 VariableResolverFactory factory, TemplateRegistry registry) {
+        return new TemplateRuntime(template, registry, root).execute(appender, context, factory);
+    }
+
     public Object execute(StringAppender appender, Object context, VariableResolverFactory factory) {
-        return rootNode.eval(this, appender, context, factory);
+        return execute(new StringAppenderStream(appender), context, factory);
+    }
+
+
+    public Object execute(TemplateOutputStream stream, Object context, VariableResolverFactory factory) {
+        return rootNode.eval(this, stream, context, factory);
     }
 
     public Node getRootNode() {

@@ -21,7 +21,11 @@ package org.mvel2.templates.res;
 import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
+import org.mvel2.templates.util.TemplateOutputStream;
 import org.mvel2.util.StringAppender;
+
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 public class IfNode extends Node {
     private Node trueNode;
@@ -53,7 +57,7 @@ public class IfNode extends Node {
         return true;
     }
 
-    public Object eval(TemplateRuntime runtime, StringAppender appender, Object ctx, VariableResolverFactory factory) {
+    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
         if (contents.length == 0 || MVEL.eval(contents, ctx, factory, Boolean.class)) {
             return trueNode.eval(runtime, appender, ctx, factory);
         }

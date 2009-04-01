@@ -20,10 +20,14 @@ package org.mvel2.templates.res;
 
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
+import org.mvel2.templates.util.TemplateOutputStream;
 import static org.mvel2.util.ParseTools.subset;
 import org.mvel2.util.StringAppender;
 
 import java.io.Serializable;
+import java.io.PrintStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 
 public abstract class Node implements Serializable {
     protected String name;
@@ -51,7 +55,7 @@ public abstract class Node implements Serializable {
         this.next = next;
     }
 
-    public abstract Object eval(TemplateRuntime runtime, StringAppender appender, Object ctx, VariableResolverFactory factory);
+    public abstract Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory);
 
     public String getName() {
         return name;

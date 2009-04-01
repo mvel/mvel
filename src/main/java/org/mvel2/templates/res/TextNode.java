@@ -20,7 +20,11 @@ package org.mvel2.templates.res;
 
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
+import org.mvel2.templates.util.TemplateOutputStream;
 import org.mvel2.util.StringAppender;
+
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 public class TextNode extends Node {
     public TextNode(int begin, int end) {
@@ -34,10 +38,10 @@ public class TextNode extends Node {
         this.next = next;
     }
 
-    public Object eval(TemplateRuntime runtime, StringAppender appender, Object ctx, VariableResolverFactory factory) {
+    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
         int len = end - begin;
         if (len != 0) {
-            appender.append(runtime.getTemplate(), begin, len);
+            appender.append(new String(runtime.getTemplate(), begin, len));
         }
         return next != null ? next.eval(runtime, appender, ctx, factory) : null;
     }

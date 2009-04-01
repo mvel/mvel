@@ -25,10 +25,13 @@ import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.TemplateRuntimeError;
 import org.mvel2.templates.util.ArrayIterator;
+import org.mvel2.templates.util.TemplateOutputStream;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.StringAppender;
 
 import java.util.*;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 public class ForEachNode extends Node {
     public Node nestedNode;
@@ -64,7 +67,7 @@ public class ForEachNode extends Node {
         return false;
     }
 
-    public Object eval(TemplateRuntime runtime, StringAppender appender, Object ctx, VariableResolverFactory factory) {
+    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
         Iterator[] iters = new Iterator[item.length];
 
         Object o;
@@ -101,7 +104,7 @@ public class ForEachNode extends Node {
                 if (sepExpr != null) {
                     for (Iterator it : iters) {
                         if (it.hasNext()) {
-                            appender.append(MVEL.eval(sepExpr, ctx, factory));
+                            appender.append(String.valueOf(MVEL.eval(sepExpr, ctx, factory)));
                             break;
                         }
                     }

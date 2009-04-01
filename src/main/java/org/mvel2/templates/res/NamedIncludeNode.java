@@ -22,8 +22,12 @@ import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import static org.mvel2.templates.util.TemplateTools.captureToEOS;
+import org.mvel2.templates.util.TemplateOutputStream;
 import static org.mvel2.util.ParseTools.subset;
 import org.mvel2.util.StringAppender;
+
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 public class NamedIncludeNode extends Node {
     private char[] includeExpression;
@@ -39,16 +43,17 @@ public class NamedIncludeNode extends Node {
         if (mark != contents.length) this.preExpression = subset(contents, ++mark, contents.length - mark);
     }
 
-    public Object eval(TemplateRuntime runtime, StringAppender appender, Object ctx, VariableResolverFactory factory) {
+    public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
         if (preExpression != null) {
             MVEL.eval(preExpression, ctx, factory);
         }
 
         if (next != null) {
-            return next.eval(runtime, appender.append(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.eval(includeExpression, ctx, factory, String.class)), ctx, factory)), ctx, factory);
+            return next.eval(runtime,
+                    appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.eval(includeExpression, ctx, factory, String.class)), ctx, factory))), ctx, factory);
         }
         else {
-            return appender.append(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.eval(includeExpression, ctx, factory, String.class)), ctx, factory));
+            return appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.eval(includeExpression, ctx, factory, String.class)), ctx, factory)));
         }
     }
 
