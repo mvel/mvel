@@ -692,7 +692,7 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields | ASTNode.ASSIGN, pCtx);
                                     }
                                     else if (lastWasIdentifier) {
-                                         return procTypedNode(false);
+                                        return procTypedNode(false);
                                     }
                                     else if (pCtx != null && ((idx = pCtx.variableIndexOf(t)) != -1
                                             || (pCtx.isIndexAllocation()))) {
@@ -708,7 +708,7 @@ public class AbstractParser implements Serializable {
                                     }
                                     else {
                                         captureToEOS();
-                                        
+
                                         return lastNode = new AssignmentNode(subArray(start, cursor), fields | ASTNode.ASSIGN, pCtx);
                                     }
                                 }
@@ -768,6 +768,10 @@ public class AbstractParser implements Serializable {
                                     return lastNode = new PreFixDecNode(name);
                                 }
                             }
+                            else if ((cursor == 0 || lastNode instanceof EndOfStatement) && !isDigit(lookAhead())) {
+                                captureToEOT();
+                                return new Sign(expr, start, cursor, fields);
+                            }
                             else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
                                 return createOperator(expr, start, cursor++ + 1);
                             }
@@ -775,6 +779,7 @@ public class AbstractParser implements Serializable {
                                 cursor++;
                                 break;
                             }
+
 
                         case '+':
                             if (lookAhead() == '+') {
@@ -1244,7 +1249,7 @@ public class AbstractParser implements Serializable {
             skipWhitespaceWithLineAccounting();
             if (cursor < length && expr[cursor] == ',') {
                 start = ++cursor;
-                splitAccumulator.add(new EndOfStatement());                
+                splitAccumulator.add(new EndOfStatement());
             }
             else {
                 return (ASTNode) splitAccumulator.pop();

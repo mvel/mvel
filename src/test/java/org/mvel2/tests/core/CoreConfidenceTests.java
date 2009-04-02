@@ -211,6 +211,12 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(25, test("5 ** 2"));
     }
 
+    public void testSignOperator() {
+
+
+        assertEquals(-15, test("int x = 15; -x"));
+    }
+
     public void testWhileUsingImports() {
         Map<String, Object> imports = new HashMap<String, Object>();
         imports.put("ArrayList", java.util.ArrayList.class);
