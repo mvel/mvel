@@ -1765,7 +1765,7 @@ public class AbstractParser implements Serializable {
 
                                 line++;
                                 lastLineStart = cursor;
-                                //           skipWhitespaceWithLineAccounting();
+
                                 continue;
 
                             case '*':

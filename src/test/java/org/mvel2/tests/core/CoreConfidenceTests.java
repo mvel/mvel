@@ -2998,6 +2998,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, executeExpression(compiled, map)); // execute a second time (to search for optimizer problems)
 
         OptimizerFactory.setDefaultOptimizer("ASM");
+        compiled = compileExpression(expression);
         foo.setBar(new Bar());
         assertEquals(false, executeExpression(compiled, map));
         foo.setBar(null);
@@ -3959,9 +3960,12 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testCustomPropertyHandler() {
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
         PropertyHandlerFactory.registerPropertyHandler(SampleBean.class, new SampleBeanAccessor());
         assertEquals("dog", test("foo.sampleBean.bar.name"));
         PropertyHandlerFactory.unregisterPropertyHandler(SampleBean.class);
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
+
     }
 
     public void testSetAccessorOverloadedEqualsStrictMode() {
