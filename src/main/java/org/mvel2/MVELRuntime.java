@@ -52,20 +52,15 @@ public class MVELRuntime {
     public static Object execute(boolean debugger, final CompiledExpression expression, final Object ctx,
                                  VariableResolverFactory variableFactory) {
 
-        ASTLinkedList node = new ASTLinkedList(expression.getFirstNode());
-
-//        if (expression.isImportInjectionRequired()) {
-//            variableFactory = new ClassImportResolverFactory(expression.getParserContext().getParserConfiguration(), variableFactory);
-//        }
-
         ExecutionStack stk = new ExecutionStack();
         Object v1, v2;
 
-        ASTNode tk = null;
+        ASTNode tk = expression.getFirstNode();
         Integer operator;
 
+        if (tk == null) return null;
         try {
-            while ((tk = node.nextNode()) != null) {
+            do {
                 if (tk.fields == -1) {
                     /**
                      * This may seem silly and redundant, however, when an MVEL script recurses into a block
@@ -98,7 +93,7 @@ public class MVELRuntime {
                     case TERNARY:
                         if (!stk.popBoolean()) {
                             //noinspection StatementWithEmptyBody
-                            while (node.hasMoreNodes() && !node.nextNode().isOperator(TERNARY_ELSE)) ;
+                            while (tk.nextASTNode != null && !(tk = tk.nextASTNode).isOperator(TERNARY_ELSE)) ;
                         }
                         stk.clear();
                         continue;
@@ -112,14 +107,14 @@ public class MVELRuntime {
                          * Althought it may seem like intuitive stack optimizations could be leveraged by
                          * leaving hanging values on the stack,  trust me it's not a good idea.
                          */
-                        if (node.hasMoreNodes()) {
+                        if (tk.nextASTNode != null) {
                             stk.clear();
                         }
 
                         continue;
                 }
 
-                stk.push(node.nextNode().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
+                stk.push(tk.nextASTNode.getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
 
                 try {
                     while (stk.isReduceable()) {
@@ -144,11 +139,12 @@ public class MVELRuntime {
                     throw new CompileException("failed to compile sub expression", e);
                 }
             }
+            while ((tk = tk.nextASTNode) != null);
 
             return stk.pop();
         }
         catch (NullPointerException e) {
-            if (tk != null && tk.isOperator() && !node.hasMoreNodes()) {
+            if (tk != null && tk.isOperator() && tk.nextASTNode != null) {
                 throw new CompileException("incomplete statement: "
                         + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")");
             }
