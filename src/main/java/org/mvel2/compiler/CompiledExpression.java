@@ -20,7 +20,9 @@ package org.mvel2.compiler;
 
 import static org.mvel2.MVELRuntime.execute;
 import org.mvel2.ParserContext;
+import org.mvel2.ast.ASTNode;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import static org.mvel2.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
 import org.mvel2.util.ASTIterator;
@@ -29,7 +31,7 @@ import org.mvel2.util.ASTLinkedList;
 import java.io.Serializable;
 
 public class CompiledExpression implements Serializable, ExecutableStatement {
-    private ASTIterator tokens;
+    private ASTNode firstNode;
 
     private Class knownEgressType;
     private Class knownIngressType;
@@ -46,19 +48,19 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     private ParserContext parserContext;
 
     public CompiledExpression(ASTLinkedList astMap, String sourceName, Class egressType, ParserContext ctx, boolean literalOnly) {
-        this.tokens = astMap;
+        this.firstNode = astMap.firstNode();
         this.sourceName = sourceName;
         this.knownEgressType = astMap.isSingleNode() ? astMap.firstNonSymbol().getEgressType() : egressType;
         this.literalOnly = literalOnly;
         setParserContext(ctx);
     }
 
-    public ASTIterator getInstructions() {
-        return new ASTLinkedList(tokens.firstNode(), tokens.size());
+    public ASTNode getFirstNode() {
+        return firstNode;
     }
 
-    public void setInstructions(ASTIterator tokens) {
-        this.tokens = tokens;
+    public boolean isSingleNode() {
+        return firstNode != null && firstNode.nextASTNode == null;
     }
 
     public Class getKnownEgressType() {
@@ -98,20 +100,26 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         if (!optimized) setupOptimizers();
-        return execute(false, this, staticContext, factory);
+        if (importInjectionRequired) {
+            return execute(false, this, staticContext, new ClassImportResolverFactory(parserContext.getParserConfiguration(), factory));
+        }
+        else {
+            return execute(false, this, staticContext, factory);
+        }
     }
 
     public Object getDirectValue(Object staticContext, VariableResolverFactory factory) {
-        return execute(false, this, staticContext, factory);
+        if (importInjectionRequired) {
+            return execute(false, this, staticContext, new ClassImportResolverFactory(parserContext.getParserConfiguration(), factory));
+        }
+        else {
+            return execute(false, this, staticContext, factory);
+        }
     }
 
     private void setupOptimizers() {
         if (accessorOptimizer != null) setThreadAccessorOptimizer(accessorOptimizer);
         optimized = true;
-    }
-
-    public ASTIterator getTokenIterator() {
-        return tokens;
     }
 
     public boolean isOptimized() {

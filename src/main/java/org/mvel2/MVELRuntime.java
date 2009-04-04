@@ -25,7 +25,6 @@ import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.debug.Debugger;
 import org.mvel2.debug.DebuggerContext;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.util.ASTLinkedList;
 import org.mvel2.util.ExecutionStack;
@@ -38,6 +37,7 @@ import static org.mvel2.util.PropertyTools.isEmpty;
 public class MVELRuntime {
     public static final ImmutableDefaultFactory IMMUTABLE_DEFAULT_FACTORY = new ImmutableDefaultFactory();
     private static ThreadLocal<DebuggerContext> debuggerContext;
+
 
     /**
      * Main interpreter.
@@ -52,11 +52,11 @@ public class MVELRuntime {
     public static Object execute(boolean debugger, final CompiledExpression expression, final Object ctx,
                                  VariableResolverFactory variableFactory) {
 
-        ASTLinkedList node = new ASTLinkedList(expression.getInstructions().firstNode());
+        ASTLinkedList node = new ASTLinkedList(expression.getFirstNode());
 
-        if (expression.isImportInjectionRequired()) {
-            variableFactory = new ClassImportResolverFactory(expression.getParserContext().getParserConfiguration(), variableFactory);
-        }
+//        if (expression.isImportInjectionRequired()) {
+//            variableFactory = new ClassImportResolverFactory(expression.getParserContext().getParserConfiguration(), variableFactory);
+//        }
 
         ExecutionStack stk = new ExecutionStack();
         Object v1, v2;
@@ -119,7 +119,7 @@ public class MVELRuntime {
                         continue;
                 }
 
-                stk.push(node.nextNode().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);                                                           
+                stk.push(node.nextNode().getReducedValueAccelerated(ctx, ctx, variableFactory), operator);
 
                 try {
                     while (stk.isReduceable()) {

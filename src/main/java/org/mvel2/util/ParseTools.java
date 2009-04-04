@@ -1719,7 +1719,7 @@ public class ParseTools {
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
         if (!compiled.isImportInjectionRequired() &&
-                compiled.getParserContext().isAllowBootstrapBypass() && compiled.getInstructions().size() == 1) {
+                compiled.getParserContext().isAllowBootstrapBypass() && compiled.isSingleNode()) {
 
             return _optimizeTree(compiled);
         }
@@ -1731,8 +1731,8 @@ public class ParseTools {
         /**
          * If there is only one token, and it's an identifier, we can optimize this as an accessor expression.
          */
-        if (compiled.getInstructions().size() == 1) {
-            ASTNode tk = compiled.getInstructions().firstNode();
+        if (compiled.isSingleNode()) {
+            ASTNode tk = compiled.getFirstNode();
 
             if (tk.isLiteral() && !tk.isThisVal()) {
                 return new ExecutableLiteral(tk.getLiteralValue());
