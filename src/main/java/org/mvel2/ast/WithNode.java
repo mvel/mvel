@@ -23,12 +23,11 @@ import org.mvel2.MVEL;
 import static org.mvel2.MVEL.executeSetExpression;
 import org.mvel2.Operator;
 import org.mvel2.ParserContext;
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.*;
-import org.mvel2.util.StringAppender;
 import static org.mvel2.util.PropertyTools.getReturnType;
+import org.mvel2.util.StringAppender;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -54,7 +53,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                 subCompileExpression((nestParm = createStringTrimmed(expr)).toCharArray(), pCtx);
         egressType = nestedStatement.getKnownEgressType();
 
-        compileWithExpressions(pCtx==null?new ParserContext():pCtx);
+        withExpressions = compileWithExpressions(block, nestParm, egressType, pCtx == null ? new ParserContext() : pCtx);
 
         if (pCtx != null) {
             pCtx.setBlockSymbols(false);
@@ -82,7 +81,13 @@ public class WithNode extends BlockNode implements NestedStatement {
         return getReducedValueAccelerated(ctx, thisValue, factory);
     }
 
-    private void compileWithExpressions(ParserContext pCtx) {
+    public static ParmValuePair[] compileWithExpressions(char[] block, String nestParm, Class egressType, ParserContext pCtx) {
+        /**
+         *
+         * MAINTENANCE NOTE: AN INTERPRETED MODE VERSION OF THIS CODE IS DUPLICATED IN: ParseTools
+         *
+         */
+
         List<ParmValuePair> parms = new ArrayList<ParmValuePair>();
         String parm = "";
 
@@ -96,12 +101,6 @@ public class WithNode extends BlockNode implements NestedStatement {
                 case '[':
                 case '(':
                     i = balancedCapture(block, i, block[i]);
-                    continue;
-
-                case '*':
-                    if (i < block.length && block[i + 1] == '=') {
-                        oper = Operator.MULT;
-                    }
                     continue;
 
                 case '/':
@@ -129,17 +128,15 @@ public class WithNode extends BlockNode implements NestedStatement {
                     }
                     continue;
 
+                case '%':
+                case '*':
                 case '-':
-                    if (i < block.length && block[i + 1] == '=') {
-                        oper = Operator.SUB;
+                case '+':
+                    if (i + 1 < block.length && block[i + 1] == '=') {
+                        oper = opLookup(block[i]);
                     }
                     continue;
 
-                case '+':
-                    if (i < block.length && block[i + 1] == '=') {
-                        oper = Operator.ADD;
-                    }
-                    continue;
 
                 case '=':
                     parm = createStringTrimmed(block, start, i - start - (oper != -1 ? 1 : 0));
@@ -167,7 +164,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                                         createShortFormOperativeAssignment(nestParm + "." + parm,
                                                 subset(block, start, end - start), oper), pCtx
                                 )
-                        , egressType, pCtx));
+                                , egressType, pCtx));
 
                         parm = null;
                         oper = -1;
@@ -197,11 +194,13 @@ public class WithNode extends BlockNode implements NestedStatement {
                                 pCtx
 
                         )
-                , egressType, pCtx));
+                        , egressType, pCtx));
             }
         }
 
+        ParmValuePair[] withExpressions;
         parms.toArray(withExpressions = new ParmValuePair[parms.size()]);
+        return withExpressions;
     }
 
 
@@ -220,9 +219,9 @@ public class WithNode extends BlockNode implements NestedStatement {
         public ParmValuePair() {
         }
 
-        public ParmValuePair(String parameter, ExecutableStatement statement, Class ingressType, ParserContext pCtx ) {
+        public ParmValuePair(String parameter, ExecutableStatement statement, Class ingressType, ParserContext pCtx) {
             if (parameter != null && parameter.length() != 0) {
-             this.setExpression = MVEL.compileSetExpression(parameter,
+                this.setExpression = MVEL.compileSetExpression(parameter,
                         ingressType != null ? getReturnType(ingressType, parameter, pCtx) : Object.class
                         , pCtx);
             }

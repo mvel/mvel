@@ -1180,7 +1180,13 @@ public class ParseTools {
         return cursor;
     }
 
+
     public static WithStatementPair[] parseWithExpressions(String nestParm, char[] block) {
+        /**
+         *
+         * MAINTENANCE NOTE: A COMPILING VERSION OF THIS CODE IS DUPLICATED IN: WithNode
+         *
+         */
         List<WithStatementPair> parms = new ArrayList<WithStatementPair>();
 
         int start = 0;
