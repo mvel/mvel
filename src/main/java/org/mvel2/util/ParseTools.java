@@ -1105,7 +1105,8 @@ public class ParseTools {
                     }
                     else if (chars[start + 1] == '*') {
                         start += 2;
-                        Skiploop: while (start < chars.length) {
+                        Skiploop:
+                        while (start < chars.length) {
                             switch (chars[start]) {
                                 case '*':
                                     if (start + 1 < chars.length && chars[start + 1] == '/') {
@@ -1204,22 +1205,17 @@ public class ParseTools {
 
 
                 case '/':
-                    if (i + 1 < block.length && block[i + 1] == '/') {
-                        end = i;
-                        while (i < block.length && block[i] != '\n') i++;
+                    if (i < block.length && block[i + 1] == '/') {
+                        while (i < block.length && block[i] != '\n') block[i++] = ' ';
                         if (parm == null) start = i;
                     }
                     else if (i < block.length && block[i + 1] == '*') {
-                        end = i;
-
-                        while (i < block.length) {
-                            switch (block[i++]) {
-                                case '*':
-                                    if (i < block.length) {
-                                        if (block[i] == '/') break;
-                                    }
-                            }
+                        int len = block.length - 1;
+                        while (i < len && !(block[i] == '*' && block[i + 1] == '/')) {
+                            block[i++] = ' ';
                         }
+                        block[i++] = ' ';
+                        block[i++] = ' ';
 
                         if (parm == null) start = i;
                     }
@@ -1236,7 +1232,6 @@ public class ParseTools {
                         oper = opLookup(block[i]);
                     }
                     continue;
-
 
 
                 case '=':

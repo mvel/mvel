@@ -924,6 +924,17 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(10, test("with (foo) {countTest += 5 }; with (foo) { countTest *= 2 }; foo.countTest"));
     }
 
+    public void testWith5() {
+       Foo foo = (Foo) test("with (foo) { countTest += 5, \n" +
+                "// foobar!\n" +
+                "aValue = 'Hello',\n" +
+                "/** Comment! **/\n" +
+                "bValue = 'Goodbye'\n }; with (foo) { countTest *= 2 }; foo");
+
+        assertEquals(10, foo.getCountTest() );
+        assertEquals("Hello", foo.aValue);
+        assertEquals("Goodbye", foo.bValue);
+    }
 
     public void testMagicArraySize() {
         assertEquals(5, test("stringArray.size()"));

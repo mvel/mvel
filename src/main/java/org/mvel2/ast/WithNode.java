@@ -49,9 +49,8 @@ public class WithNode extends BlockNode implements NestedStatement {
             pCtx.setBlockSymbols(true);
         }
 
-        nestedStatement = (ExecutableStatement)
-                subCompileExpression((nestParm = createStringTrimmed(expr)).toCharArray(), pCtx);
-        egressType = nestedStatement.getKnownEgressType();
+        egressType = (nestedStatement = (ExecutableStatement)
+                subCompileExpression((nestParm = createStringTrimmed(expr)).toCharArray(), pCtx)).getKnownEgressType();
 
         withExpressions = compileWithExpressions(block, nestParm, egressType, pCtx == null ? new ParserContext() : pCtx);
 
@@ -105,21 +104,16 @@ public class WithNode extends BlockNode implements NestedStatement {
 
                 case '/':
                     if (i < block.length && block[i + 1] == '/') {
-                        end = i;
-                        while (i < block.length && block[i] != '\n') i++;
+                        while (i < block.length && block[i] != '\n') block[i++] = ' ';
                         if (parm == null) start = i;
                     }
                     else if (i < block.length && block[i + 1] == '*') {
-                        end = i;
-
-                        while (i < block.length) {
-                            switch (block[i++]) {
-                                case '*':
-                                    if (i < block.length) {
-                                        if (block[i] == '/') break;
-                                    }
-                            }
+                        int len = block.length-1;
+                        while (i < len && !(block[i] == '*' && block[i+1] == '/')){
+                            block[i++] = ' ';
                         }
+                        block[i++] = ' ';
+                        block[i++] = ' ';
 
                         if (parm == null) start = i;
                     }
