@@ -1,0 +1,33 @@
+/**
+ * Sample MVEL 2.0 Script
+ * "Functional QuickSort"
+ * by: Christopher Michael Brock, Inspired by: Dhanji Prasanna
+ */
+
+import java.util.*;
+
+// the main quicksort algorithm
+def quicksort(list) {
+    if (list.size() <= 1) {
+         list;
+    }
+    else {
+         pivot = list[0];
+         concat(quicksort(($ in list if $ < pivot)), pivot, quicksort(($ in list if $ > pivot)));
+    }
+}
+
+// define method to concatenate lists.
+def concat(list1, pivot, list2) {
+    concatList = new ArrayList(list1);
+    concatList.add(pivot);
+    concatList.addAll(list2);
+    concatList;
+}
+
+
+// create a list to sort
+list = [5,2,4,1,18,10,15,1,0];
+
+// sort it!
+quicksort(list);
