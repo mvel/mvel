@@ -233,15 +233,16 @@ public class AbstractParser implements Serializable {
             /**
              * Skip any whitespace currently under the starting point.
              */
-            while (start != length && isWhitespace(expr[start])) start++;
+      //      while (start != length && isWhitespace(expr[start])) start++;
+            skipWhitespaceWithLineAccounting();
 
             /**
              * From here to the end of the method is the core MVEL parsing code.  Fiddling around here is asking for
              * trouble unless you really know what you're doing.
              */
 
-
-            cursor = start;
+              start = cursor;
+     //       cursor = start;
 
             Mainloop:
             while (cursor != length) {
@@ -391,7 +392,7 @@ public class AbstractParser implements Serializable {
                                 while (true) {
                                     captureToEOT();
                                     end = cursor;
-                                    skipWhitespace();
+                                    skipWhitespaceWithLineAccounting();
 
                                     if (cursor != length && expr[cursor] == '=') {
                                         if (end == (cursor = start))
@@ -412,7 +413,7 @@ public class AbstractParser implements Serializable {
                                     if (cursor == length || expr[cursor] != ',') break;
                                     else {
                                         cursor++;
-                                        skipWhitespace();
+                                        skipWhitespaceWithLineAccounting();
                                         start = cursor;
                                     }
                                 }
@@ -421,7 +422,7 @@ public class AbstractParser implements Serializable {
                         }
                     }
 
-                    skipWhitespace();
+                    skipWhitespaceWithLineAccounting();
 
                     /**
                      * If we *were* capturing a token, and we just hit a non-identifier
@@ -479,9 +480,9 @@ public class AbstractParser implements Serializable {
                                             return lastNode = new IndexedAssignmentNode(subArray(start, cursor), fields, ADD, name, idx, pCtx);
                                         }
                                         else {
-                                              return lastNode = new OperativeAssign(name, subArray(start, cursor), ADD, fields, pCtx);
+                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), ADD, fields, pCtx);
 
-                                       //     return lastNode = new AssignmentNode(subArray(start, cursor), fields, ADD, name, pCtx);
+                                            //     return lastNode = new AssignmentNode(subArray(start, cursor), fields, ADD, name, pCtx);
                                         }
                                 }
 
@@ -812,14 +813,15 @@ public class AbstractParser implements Serializable {
                             return lastNode = new EndOfStatement();
 
                         case '#':
-                        case '/':
-                            switch (skipCommentBlock()) {
-                                case OP_TERMINATE:
-                                    return null;
-                                case OP_RESET_FRAME:
-                                    continue;
-                            }
+//                        case '/':
+//                            switch (skipCommentBlock()) {
+//                                case OP_TERMINATE:
+//                                    return null;
+//                                case OP_RESET_FRAME:
+//                                    continue;
+//                            }
 
+                        case '/':    
                         case '?':
                         case ':':
                         case '^':
@@ -1518,7 +1520,7 @@ public class AbstractParser implements Serializable {
         if ((cursor + 4) < length) {
             if (expr[cursor] != ';') cursor--;
             skipWhitespaceWithLineAccounting();
-            skipCommentBlock();
+     //       skipCommentBlock();
 
             return expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
                     && (isWhitespace(expr[cursor + 4]) || expr[cursor + 4] == '{');
@@ -1526,78 +1528,78 @@ public class AbstractParser implements Serializable {
         return false;
     }
 
-    protected int skipCommentBlock() {
-        if (lookAhead() == expr[cursor]) {
-            /**
-             * Handle single line comments.
-             */
-            captureToEOL();
-
-            if (pCtx != null) line = pCtx.getLineCount();
-
-            skipWhitespaceWithLineAccounting();
-
-            if (lastNode instanceof LineLabel) {
-                pCtx.getLastLineLabel().setLineNumber(line);
-                pCtx.addKnownLine(line);
-            }
-
-            lastWasComment = true;
-
-            if (pCtx != null) pCtx.setLineCount(line);
-
-            if ((start = cursor) >= length) return OP_TERMINATE;
-
-            return OP_RESET_FRAME;
-        }
-        else if (expr[cursor] == '/' && lookAhead() == '*') {
-            /**
-             * Handle multi-line comments.
-             */
-            int len = length - 1;
-
-            /**
-             * This probably seems highly redundant, but sub-compilations within the same
-             * source will spawn a new compiler, and we need to sync this with the
-             * parser context;
-             */
-            if (pCtx != null) line = pCtx.getLineCount();
-
-            while (true) {
-                cursor++;
-                /**
-                 * Since multi-line comments may cross lines, we must keep track of any line-break
-                 * we encounter.
-                 */
-                skipWhitespaceWithLineAccounting();
-
-                if (cursor == len) {
-                    throw new CompileException("unterminated block comment", expr, cursor);
-                }
-                if (expr[cursor] == '*' && lookAhead() == '/') {
-                    if ((cursor += 2) >= length) return OP_RESET_FRAME;
-                    skipWhitespaceWithLineAccounting();
-                    start = cursor;
-                    break;
-                }
-            }
-
-            if (pCtx != null) {
-                pCtx.setLineCount(line);
-
-                if (lastNode instanceof LineLabel) {
-                    pCtx.getLastLineLabel().setLineNumber(line);
-                    pCtx.addKnownLine(line);
-                }
-            }
-
-            lastWasComment = true;
-
-            return OP_RESET_FRAME;
-        }
-
-        return OP_CONTINUE;
-    }
+//    protected int skipCommentBlock() {
+//        if (lookAhead() == expr[cursor]) {
+//            /**
+//             * Handle single line comments.
+//             */
+//            captureToEOL();
+//
+//            if (pCtx != null) line = pCtx.getLineCount();
+//
+//            skipWhitespaceWithLineAccounting();
+//
+//            if (lastNode instanceof LineLabel) {
+//                pCtx.getLastLineLabel().setLineNumber(line);
+//                pCtx.addKnownLine(line);
+//            }
+//
+//            lastWasComment = true;
+//
+//            if (pCtx != null) pCtx.setLineCount(line);
+//
+//            if ((start = cursor) >= length) return OP_TERMINATE;
+//
+//            return OP_RESET_FRAME;
+//        }
+//        else if (expr[cursor] == '/' && lookAhead() == '*') {
+//            /**
+//             * Handle multi-line comments.
+//             */
+//            int len = length - 1;
+//
+//            /**
+//             * This probably seems highly redundant, but sub-compilations within the same
+//             * source will spawn a new compiler, and we need to sync this with the
+//             * parser context;
+//             */
+//            if (pCtx != null) line = pCtx.getLineCount();
+//
+//            while (true) {
+//                cursor++;
+//                /**
+//                 * Since multi-line comments may cross lines, we must keep track of any line-break
+//                 * we encounter.
+//                 */
+//                skipWhitespaceWithLineAccounting();
+//
+//                if (cursor == len) {
+//                    throw new CompileException("unterminated block comment", expr, cursor);
+//                }
+//                if (expr[cursor] == '*' && lookAhead() == '/') {
+//                    if ((cursor += 2) >= length) return OP_RESET_FRAME;
+//                    skipWhitespaceWithLineAccounting();
+//                    start = cursor;
+//                    break;
+//                }
+//            }
+//
+//            if (pCtx != null) {
+//                pCtx.setLineCount(line);
+//
+//                if (lastNode instanceof LineLabel) {
+//                    pCtx.getLastLineLabel().setLineNumber(line);
+//                    pCtx.addKnownLine(line);
+//                }
+//            }
+//
+//            lastWasComment = true;
+//
+//            return OP_RESET_FRAME;
+//        }
+//
+//        return OP_CONTINUE;
+//    }
 
     /**
      * Checking from the current cursor position, check to see if we're inside a contiguous identifier.
@@ -1834,8 +1836,40 @@ public class AbstractParser implements Serializable {
                 case '\r':
                     cursor++;
                     continue;
+
             }
             cursor++;
+        }
+
+        if (cursor != length && expr[cursor] == '/') {
+            if (cursor+1 != length) {
+                switch (expr[cursor+1]) {
+                    case '/':
+                        expr[cursor++] = ' ';
+                        while (cursor != length && expr[cursor] != '\n') expr[cursor++] = ' ';
+                        if (cursor != length) expr[cursor++] = ' ';
+
+                        line++;
+                        lastLineStart = cursor;
+                        skipWhitespaceWithLineAccounting();
+                        break;
+                    case '*':
+                        int len = length - 1;
+                        expr[cursor++] = ' ';
+                        while (cursor != len && !(expr[cursor] == '*' && expr[cursor+1] == '/')) {
+                            if (expr[cursor] == '\n') {
+                                line++;
+                                lastLineStart = cursor;
+                            }
+
+                            expr[cursor++] = ' ';
+                        }
+                        if (cursor != len) expr[cursor++] = expr[cursor++] = ' ';
+                        skipWhitespaceWithLineAccounting();
+                }
+            }
+
+
         }
     }
 

@@ -139,7 +139,7 @@ public class AbstractOptimizer extends AbstractParser {
     }
 
     protected int nextSubToken() {
-        skipWhitespace();
+        skipWhitespaceWithLineAccounting();
         nullSafe = false;
 
         switch (expr[start = cursor]) {
@@ -149,7 +149,7 @@ public class AbstractOptimizer extends AbstractParser {
                 if ((start + 1) != length) {
                     switch (expr[cursor = ++start]) {
                         case '?':
-                            skipWhitespace();
+                            skipWhitespaceWithLineAccounting();
                             if ((cursor = ++start) == length) {
                                 throw new CompileException("unexpected end of statement");
                             }
@@ -161,7 +161,7 @@ public class AbstractOptimizer extends AbstractParser {
                             return WITH;
                         default:
                             if (isWhitespace(expr[start])) {
-                                skipWhitespace();
+                                skipWhitespaceWithLineAccounting();
                                 start = cursor;
                             }
                     }

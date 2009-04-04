@@ -1670,6 +1670,10 @@ public class CoreConfidenceTests extends AbstractTest {
                 "// last comment\n"));
     }
 
+    public void testComments5() {
+        assertEquals("dog", test("foo./*Hey!*/name"));
+    }
+
     public void testSubtractNoSpace1() {
         assertEquals(59, test("hour-1"));
     }

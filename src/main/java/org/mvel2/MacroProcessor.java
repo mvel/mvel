@@ -67,12 +67,29 @@ public class MacroProcessor extends AbstractParser implements PreProcessor {
                         break;
                     case '/':
                         start = cursor;
-                        if (skipCommentBlock() == OP_CONTINUE) {
-                            if (cursor < length) cursor++;
+
+                        if (cursor + 1 != length) {
+                            switch (expr[cursor + 1]) {
+                                  case '/':
+                                      while (cursor != length && expr[cursor] != '\n') cursor++;
+                                      break;
+                                  case '*':
+                                      int len = length-1;
+                                      while (cursor != len && !(expr[cursor] == '*' && expr[cursor+1] == '/')) cursor++;
+                                      cursor += 2;
+                                      break;
+                            }
+
                         }
+
+                        //    skipWhitespaceWithLineAccounting();
+
+//                        if (skipCommentBlock() == OP_CONTINUE) {
+//                            if (cursor < length) cursor++;
+//                        }
                         appender.append(new String(expr, start, cursor - start));
 
-                        if (cursor < length) cursor--;                     
+                        if (cursor < length) cursor--;
                         break;
 
                     case '"':
