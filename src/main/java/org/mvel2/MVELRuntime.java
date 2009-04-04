@@ -26,7 +26,6 @@ import org.mvel2.debug.Debugger;
 import org.mvel2.debug.DebuggerContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
-import org.mvel2.util.ASTLinkedList;
 import org.mvel2.util.ExecutionStack;
 import static org.mvel2.util.PropertyTools.isEmpty;
 
@@ -52,8 +51,8 @@ public class MVELRuntime {
     public static Object execute(boolean debugger, final CompiledExpression expression, final Object ctx,
                                  VariableResolverFactory variableFactory) {
 
-        ExecutionStack stk = new ExecutionStack();
         Object v1, v2;
+        ExecutionStack stk = new ExecutionStack();
 
         ASTNode tk = expression.getFirstNode();
         Integer operator;
@@ -141,7 +140,7 @@ public class MVELRuntime {
             }
             while ((tk = tk.nextASTNode) != null);
 
-            return stk.pop();
+            return stk.peek();
         }
         catch (NullPointerException e) {
             if (tk != null && tk.isOperator() && tk.nextASTNode != null) {
