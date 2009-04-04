@@ -20,7 +20,6 @@ package org.mvel2.ast;
 
 import org.mvel2.MVEL;
 import static org.mvel2.MVEL.compileSetExpression;
-import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessor;
 import org.mvel2.compiler.CompiledAccExpression;
@@ -43,24 +42,12 @@ public class AssignmentNode extends ASTNode implements Assignment {
     private ExecutableStatement statement;
     private boolean col = false;
 
-    public AssignmentNode(char[] expr, int fields, int operation, String name, ParserContext pCtx) {
-        //super(expr, fields);
+
+    public AssignmentNode(char[] expr, int fields, ParserContext pCtx) {
         this.name = expr;
         int assignStart;
 
-        if (operation != -1) {
-            checkNameSafety(this.varName = name);
-
-            if ((fields & COMPILE_IMMEDIATE) != 0 && operation == Operator.ADD) {
-                if (pCtx.getVariables().get(name) == String.class)
-                    operation = Operator.STR_APPEND;
-            }
-
-            this.egressType = (statement = (ExecutableStatement)
-                    subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation),pCtx))
-                    .getKnownEgressType();
-        }
-        else if ((assignStart = find(expr, '=')) != -1) {
+        if ((assignStart = find(expr, '=')) != -1) {
             this.varName = createStringTrimmed(expr, 0, assignStart);
             stmt = subset(expr, assignStart + 1);
 
@@ -88,10 +75,6 @@ public class AssignmentNode extends ASTNode implements Assignment {
         }
 
         this.name = this.varName.toCharArray();
-    }
-
-    public AssignmentNode(char[] expr, int fields, ParserContext pCtx) {
-        this(expr, fields, -1, null, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

@@ -479,7 +479,9 @@ public class AbstractParser implements Serializable {
                                             return lastNode = new IndexedAssignmentNode(subArray(start, cursor), fields, ADD, name, idx, pCtx);
                                         }
                                         else {
-                                            return lastNode = new AssignmentNode(subArray(start, cursor), fields, ADD, name, pCtx);
+                                              return lastNode = new OperativeAssign(name, subArray(start, cursor), ADD, fields, pCtx);
+
+                                       //     return lastNode = new AssignmentNode(subArray(start, cursor), fields, ADD, name, pCtx);
                                         }
                                 }
 
@@ -552,13 +554,13 @@ public class AbstractParser implements Serializable {
                                     captureToEOS();
 
                                     if (union) {
-                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, _bwOpLookup(op), t, pCtx);
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, opLookup(op), t, pCtx);
                                     }
                                     else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), _bwOpLookup(op), idx, fields, pCtx);
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), opLookup(op), idx, fields, pCtx);
                                     }
                                     else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), _bwOpLookup(op), fields, pCtx);
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), opLookup(op), fields, pCtx);
                                     }
                                 }
 
@@ -2220,7 +2222,6 @@ public class AbstractParser implements Serializable {
          * precdence.
          */
         if ((tk = nextToken()) != null) {
-
             if (isArithmeticOperator(operator2 = tk.getOperator()) && PTABLE[operator2] > PTABLE[operator]) {
                 stk.xswap();
                 /**
@@ -2267,11 +2268,8 @@ public class AbstractParser implements Serializable {
                             /**
                              * The operator doesn't have higher precedence. Therfore reduce the LHS.
                              */
-                            if (!dStack.isEmpty()) {
-                                do {
-                                    dreduce();
-                                }
-                                while (dStack.size() > 1);
+                            while (dStack.size() > 1) {
+                                dreduce();
                             }
 
                             operator = tk.getOperator();
@@ -2456,32 +2454,6 @@ public class AbstractParser implements Serializable {
         catch (Exception e) {
             throw new CompileException("failed to subEval expression", e);
         }
-    }
-
-    private static int _bwOpLookup(char c) {
-        switch (c) {
-            case '|':
-                return Operator.BW_OR;
-            case '&':
-                return Operator.BW_AND;
-            case '^':
-                return Operator.BW_XOR;
-            case '*':
-                return Operator.MULT;
-            case '/':
-                return Operator.DIV;
-            case '+':
-                return Operator.ADD;
-            case '%':
-                return Operator.MOD;
-            case '\u00AB':
-                return Operator.BW_SHIFT_LEFT;
-            case '\u00BB':
-                return Operator.BW_SHIFT_RIGHT;
-            case '\u00AC':
-                return Operator.BW_USHIFT_RIGHT;
-        }
-        return -1;
     }
 
     private static int asInt(final Object o) {

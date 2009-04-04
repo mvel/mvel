@@ -1196,11 +1196,6 @@ public class ParseTools {
                     i = balancedCapture(block, i, block[i]);
                     continue;
 
-                case '*':
-                    if (i + 1 < block.length && block[i + 1] == '=') {
-                        oper = Operator.MULT;
-                    }
-                    continue;
 
                 case '/':
                     if (i + 1 < block.length && block[i + 1] == '/') {
@@ -1227,17 +1222,16 @@ public class ParseTools {
                     }
                     continue;
 
+                case '%':
+                case '*':
                 case '-':
+                case '+':
                     if (i + 1 < block.length && block[i + 1] == '=') {
-                        oper = Operator.SUB;
+                        oper = opLookup(block[i]);
                     }
                     continue;
 
-                case '+':
-                    if (i + 1 < block.length && block[i + 1] == '=') {
-                        oper = Operator.ADD;
-                    }
-                    continue;
+
 
                 case '=':
                     parm = createStringTrimmed(block, start, i - start - (oper != -1 ? 1 : 0));
@@ -1630,6 +1624,32 @@ public class ParseTools {
             default:
                 return isWhitespace(c);
         }
+    }
+
+    public static int opLookup(char c) {
+        switch (c) {
+            case '|':
+                return Operator.BW_OR;
+            case '&':
+                return Operator.BW_AND;
+            case '^':
+                return Operator.BW_XOR;
+            case '*':
+                return Operator.MULT;
+            case '/':
+                return Operator.DIV;
+            case '+':
+                return Operator.ADD;
+            case '%':
+                return Operator.MOD;
+            case '\u00AB':
+                return Operator.BW_SHIFT_LEFT;
+            case '\u00BB':
+                return Operator.BW_SHIFT_RIGHT;
+            case '\u00AC':
+                return Operator.BW_USHIFT_RIGHT;
+        }
+        return -1;
     }
 
     public static final class WithStatementPair implements java.io.Serializable {

@@ -526,6 +526,18 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(-5 >>> 1, test("(five - 10) >>> 1"));
     }
 
+    public void testShiftRightAssign() {
+        assertEquals(5 >> 2, test("_zZz = 5; _zZz >>= 2"));
+    }
+
+    public void testShiftLeftAssign() {
+        assertEquals(10 << 2, test("_yYy = 10; _yYy <<= 2"));
+    }
+
+    public void testUnsignedShiftRightAssign() {
+        assertEquals(-5 >>> 2, test("_xXx = -5; _xXx >>>= 2"));
+    }
+
     public void testXOR() {
         assertEquals(3, test("1 ^ 2"));
     }
@@ -902,6 +914,16 @@ public class CoreConfidenceTests extends AbstractTest {
                         "}; \n" +
                         "foo.aValue + foo.bValue;"));
     }
+
+    public void testWith3() {
+        assertEquals("OneOneTwoTwo", test("with (foo) {aValue = 'One',bValue='Two'}; with (foo) {aValue += 'One', bValue += 'Two'}; foo.aValue + foo.bValue;"));
+    }
+
+
+    public void testWith4() {
+        assertEquals(10, test("with (foo) {countTest += 5 }; with (foo) { countTest *= 2 }; foo.countTest"));
+    }
+
 
     public void testMagicArraySize() {
         assertEquals(5, test("stringArray.size()"));
@@ -5189,6 +5211,17 @@ public class CoreConfidenceTests extends AbstractTest {
             assertEquals(String.class, entry.getValue());
         }
     }
+
+
+//    public void testLargeRepeatingProjection() {
+//        Set<Foo> foo = new HashSet<Foo>();
+//
+//        for (int i = 0; i < 6000; i++ ) {
+//            foo.add(new Foo());
+//        }
+//
+//        Collection s = (Collection) MVEL.eval("(countTest in this)", foo);
+//    }
 }
 
 
