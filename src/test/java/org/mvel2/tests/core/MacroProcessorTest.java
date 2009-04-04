@@ -257,4 +257,18 @@ public class MacroProcessorTest extends TestCase {
             fail("there shouldn't be any exception: " + ex.getMessage());
         }
     }
+
+    public void testCommentParsingWithMacro() {
+        String raw =        "/** This is a block comment **/ insert /** This is a second \n\nblock comment insert **/";
+        String expected =   "/** This is a block comment **/ drools.insert /** This is a second \n\nblock comment insert **/";
+
+        try {
+            String result = macroProcessor.parse(raw);
+            assertEquals(expected, result);
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+            fail("there shouldn't be any exception: " + ex.getMessage());
+        }
+    }
 }

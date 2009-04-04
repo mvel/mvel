@@ -79,8 +79,11 @@ public class MacroProcessor extends AbstractParser implements PreProcessor {
                                       cursor += 2;
                                       break;
                             }
-
                         }
+
+                        if (cursor < length) cursor++;
+
+
 
                         //    skipWhitespaceWithLineAccounting();
 
