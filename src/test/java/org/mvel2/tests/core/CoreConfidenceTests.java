@@ -925,13 +925,13 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testWith5() {
-       Foo foo = (Foo) test("with (foo) { countTest += 5, \n" +
+        Foo foo = (Foo) test("with (foo) { countTest += 5, \n" +
                 "// foobar!\n" +
                 "aValue = 'Hello',\n" +
                 "/** Comment! **/\n" +
                 "bValue = 'Goodbye'\n }; with (foo) { countTest *= 2 }; foo");
 
-        assertEquals(10, foo.getCountTest() );
+        assertEquals(10, foo.getCountTest());
         assertEquals("Hello", foo.aValue);
         assertEquals("Goodbye", foo.bValue);
     }
@@ -5228,6 +5228,33 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(1, ctx.getVariables().entrySet().size());
         for (Map.Entry<String, Class> entry : ctx.getVariables().entrySet()) {
             assertEquals(String.class, entry.getValue());
+        }
+    }
+
+    public static void testProjectionUsingThis() {
+        Set records = new HashSet();
+        for (int i = 0; i < 53; i++) {
+            Bean2 record = new Bean2(i);
+            records.add(record);
+        }
+
+        Object result = MVEL.eval("(_prop in this)", records);
+        System.out.println("result: " + result);
+    }
+
+    public static final class Bean2 {
+        public final int _prop;
+
+        public Bean2(int prop_) {
+            _prop = prop_;
+        }
+
+        public int getProp() {
+            return _prop;
+        }
+
+        public String toString() {
+            return Integer.toString(_prop);
         }
     }
 

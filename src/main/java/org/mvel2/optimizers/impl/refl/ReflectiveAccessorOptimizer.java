@@ -135,8 +135,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         this.pCtx = pCtx;
 
- //       pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
-
         return compileGetChain();
     }
 
@@ -156,14 +154,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         int split = findLastUnion();
 
-  //      pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
-
         PropertyVerifier verifier = new PropertyVerifier(property, this.pCtx = pCtx);
 
         if (split != -1) {
             root = subset(property, 0, split++);
             //todo: must use the property verifier.
-
             property = subset(property, split, property.length - split);
         }
 

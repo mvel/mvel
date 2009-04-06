@@ -915,14 +915,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             Object o = ((Field) member).get(ctx);
 
 
-            if (first) {
-                assert debug("ALOAD 1 (A)");
-                mv.visitVarInsn(ALOAD, 1);
-            }
+//            if (first) {
+//                assert debug("ALOAD 1 (A)");
+//                mv.visitVarInsn(ALOAD, 1);
+//            }
 
-            if (((member.getModifiers() & (STATIC | FINAL)) != 0)) {
+            if (((member.getModifiers() & STATIC) != 0)) {
                 // Check if the static field reference is a constant and a primitive.
-                if ((member.getModifiers() & FINAL) != 0 && (o instanceof String || o.getClass().isPrimitive())) {
+                if ((member.getModifiers() & FINAL) != 0 && (o instanceof String || ((Field)member).getType().isPrimitive())) {
                     o = ((Field) member).get(null);
                     assert debug("LDC " + valueOf(o));
                     mv.visitLdcInsn(o);
