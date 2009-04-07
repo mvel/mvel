@@ -43,9 +43,8 @@ public class WithNode extends BlockNode implements NestedStatement {
     protected ParmValuePair[] withExpressions;
 
     public WithNode(char[] expr, char[] block, int fields, ParserContext pCtx) {
-        this.name = expr;
+        nestParm = createStringTrimmed(this.name = expr);
         this.block = block;
-        nestParm = createStringTrimmed(expr);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             pCtx.setBlockSymbols(true);
@@ -53,11 +52,11 @@ public class WithNode extends BlockNode implements NestedStatement {
             egressType = (nestedStatement = (ExecutableStatement)
                     subCompileExpression(nestParm.toCharArray(), pCtx)).getKnownEgressType();
 
-            withExpressions = compileWithExpressions(block, nestParm, egressType, pCtx == null ? new ParserContext() : pCtx);
+            withExpressions = compileWithExpressions(block, nestParm, egressType, pCtx);
 
-            if (pCtx != null) {
-                pCtx.setBlockSymbols(false);
-            }
+            //     if (pCtx != null) {
+            pCtx.setBlockSymbols(false);
+            //     }
         }
     }
 
