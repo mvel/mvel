@@ -621,24 +621,11 @@ public class PropertyAccessor {
     }
 
     private Object getWithProperty(Object ctx) {
-        String root = new String(property, 0, cursor - 1).trim();
-
-        int start = cursor + 1;
-        cursor = balancedCaptureWithLineAccounting(property, cursor, '{', AbstractParser.getCurrentThreadParserContext());
-
-        WithStatementPair[] pvp = parseWithExpressions(root, subset(property, start, cursor++ - start));
-
-        for (WithStatementPair aPvp : pvp) {
-            if (aPvp.getParm() == null) {
-                // Execute this interpretively now.
-                MVEL.eval(aPvp.getValue(), ctx, variableFactory);
-            }
-            else {
-                // Execute interpretively.
-                MVEL.setProperty(ctx, aPvp.getParm(), MVEL.eval(aPvp.getValue(), ctx, variableFactory));
-            }
+        for (WithStatementPair aPvp : parseWithExpressions(new String(property, 0, cursor - 1).trim(), property, cursor + 1,
+                cursor = balancedCaptureWithLineAccounting(property, cursor, '{', getCurrentThreadParserContext()))) {
+            aPvp.eval(ctx, variableFactory);
         }
-
+        cursor++;
         return ctx;
     }
 

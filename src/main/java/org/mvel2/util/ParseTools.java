@@ -1183,6 +1183,10 @@ public class ParseTools {
 
 
     public static WithStatementPair[] parseWithExpressions(String nestParm, char[] block) {
+        return parseWithExpressions(nestParm, block, 0, block.length);
+    }
+
+    public static WithStatementPair[] parseWithExpressions(String nestParm, char[] block, int begin, int ending) {
         /**
          *
          * MAINTENANCE NOTE: A COMPILING VERSION OF THIS CODE IS DUPLICATED IN: WithNode
@@ -1190,12 +1194,12 @@ public class ParseTools {
          */
         List<WithStatementPair> parms = new ArrayList<WithStatementPair>();
 
-        int start = 0;
+        int start = begin;
         String parm = "";
         int end = -1;
         int oper = -1;
 
-        for (int i = 0; i < block.length; i++) {
+        for (int i = begin; i < ending; i++) {
             switch (block[i]) {
                 case '{':
                 case '[':
@@ -1205,12 +1209,12 @@ public class ParseTools {
 
 
                 case '/':
-                    if (i < block.length && block[i + 1] == '/') {
-                        while (i < block.length && block[i] != '\n') block[i++] = ' ';
+                    if (i < ending && block[i + 1] == '/') {
+                        while (i < ending && block[i] != '\n') block[i++] = ' ';
                         if (parm == null) start = i;
                     }
-                    else if (i < block.length && block[i + 1] == '*') {
-                        int len = block.length - 1;
+                    else if (i < ending && block[i + 1] == '*') {
+                        int len = ending - 1;
                         while (i < len && !(block[i] == '*' && block[i + 1] == '/')) {
                             block[i++] = ' ';
                         }
@@ -1219,7 +1223,7 @@ public class ParseTools {
 
                         if (parm == null) start = i;
                     }
-                    else if (i < block.length && block[i + 1] == '=') {
+                    else if (i < ending && block[i + 1] == '=') {
                         oper = Operator.DIV;
                     }
                     continue;
@@ -1228,7 +1232,7 @@ public class ParseTools {
                 case '*':
                 case '-':
                 case '+':
-                    if (i + 1 < block.length && block[i + 1] == '=') {
+                    if (i + 1 < ending && block[i + 1] == '=') {
                         oper = opLookup(block[i]);
                     }
                     continue;
@@ -1265,10 +1269,10 @@ public class ParseTools {
             }
         }
 
-        if (start != (end = block.length)) {
+        if (start != (end = ending)) {
             if (parm == null) {
                 parms.add(new WithStatementPair(null, new StringAppender(nestParm).append('.')
-                        .append(subset(block, start, end - start)).toString()));
+                        .append(new String(block, start, end - start)).toString()));
             }
             else {
                 parms.add(new WithStatementPair(
@@ -1676,6 +1680,15 @@ public class ParseTools {
 
         public void setValue(String value) {
             this.value = value;
+        }
+
+        public void eval(Object ctx, VariableResolverFactory vrf) {
+            if (parm == null) {
+                MVEL.eval(value, ctx, vrf);
+            }
+            else {
+                MVEL.setProperty(ctx, parm, MVEL.eval(value, ctx, vrf));
+            }
         }
     }
 
