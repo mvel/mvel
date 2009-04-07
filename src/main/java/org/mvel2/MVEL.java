@@ -346,7 +346,7 @@ public class MVEL {
      *
      * @param expression A string containing the expressino to be evaluated.
      * @param ctx        The context object to evaluate against.
-     * @param vars       The variables to be injected                         
+     * @param vars       The variables to be injected
      * @return The resultant value
      * @see #eval(String,Map)
      */
@@ -408,6 +408,15 @@ public class MVEL {
         }
         catch (EndWithValue end) {
             return end.getValue();
+        }
+    }
+
+    public static <T> T eval(char[] expression, Class<T> type) {
+        try {
+            return convert(new MVELInterpretedRuntime(expression).parse(), type);
+        }
+        catch (EndWithValue end) {
+            return (T) end.getValue();
         }
     }
 

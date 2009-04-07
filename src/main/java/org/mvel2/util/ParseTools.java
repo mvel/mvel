@@ -1796,4 +1796,26 @@ public class ParseTools {
 
         return null;
     }
+
+    public static char[] readIn(InputStream inStream, String encoding) throws IOException {
+        try {
+            byte[] buf = new byte[10];
+
+            StringAppender sb = new StringAppender(10, encoding);
+            inStream.reset();
+
+            int bytesRead;
+            while ((bytesRead = inStream.read(buf)) > 0) {
+                for (int i = 0; i < bytesRead; i++) {
+                    sb.append(buf[i]);
+                }
+            }
+
+            //noinspection unchecked
+            return sb.toChars();
+        }
+        finally {
+            if (inStream != null) inStream.close();
+        }
+    }
 }
