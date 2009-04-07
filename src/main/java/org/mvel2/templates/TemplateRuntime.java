@@ -27,7 +27,6 @@ import org.mvel2.templates.util.TemplateOutputStream;
 import org.mvel2.templates.util.io.StringAppenderStream;
 import org.mvel2.templates.util.io.StandardOutputStream;
 import org.mvel2.util.StringAppender;
-import org.mvel2.util.StreamStringAppender;
 
 import java.io.*;
 import java.util.Map;

@@ -54,7 +54,7 @@ final class Frame {
      * being stored in the stack map table). This allows very fast type
      * comparisons.
      * 
-     * Output stack map frames are computed relatively to the input frame of the
+     * OutputAppender stack map frames are computed relatively to the input frame of the
      * basic ast, which is not yet known when output frames are computed. It
      * is therefore necessary to be able to represent abstract types such as
      * "the type at position x in the input frame locals" or "the type at
@@ -73,7 +73,7 @@ final class Frame {
      * one of the constants defined in FrameVisitor, or for OBJECT and
      * UNINITIALIZED types, a tag and an index in the type table.
      * 
-     * Output frames can contain types of any kind and with a positive or
+     * OutputAppender frames can contain types of any kind and with a positive or
      * negative dimension (and even unassigned types, represented by 0 - which
      * does not correspond to any valid type value). Input frames can only
      * contain BASE types of positive or null dimension. In all cases the type
