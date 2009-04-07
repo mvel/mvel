@@ -44,6 +44,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         this.name = expr;
         int mark;
 
+
         if (operation != -1) {
             this.egressType = ((statement =
                     (ExecutableStatement) subCompileExpression(stmt =

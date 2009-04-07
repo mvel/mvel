@@ -5259,6 +5259,14 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
+    public void testUnaryOpNegation1() {
+        assertEquals(false, test("!new Boolean(true)"));
+    }
+
+    public void testUnaryOpNegation2() {
+        assertEquals(true, test("!isdef _foozy_"));
+    }
+
 //    public void testLargeRepeatingProjection() {
 //        Set<Foo> foo = new HashSet<Foo>();
 //

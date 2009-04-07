@@ -205,7 +205,7 @@ public class AbstractParser implements Serializable {
 
             boolean capture = false, union = false;
 
-            if (pCtx == null && (fields & ASTNode.COMPILE_IMMEDIATE) != 0) {
+            if ((fields & ASTNode.COMPILE_IMMEDIATE) != 0 && pCtx == null) {
                 debugSymbols = (pCtx = getParserContext()).isDebugSymbols();
             }
 
@@ -233,7 +233,6 @@ public class AbstractParser implements Serializable {
             /**
              * Skip any whitespace currently under the starting point.
              */
-            //      while (start != length && isWhitespace(expr[start])) start++;
             skipWhitespaceWithLineAccounting();
 
             /**
@@ -242,7 +241,6 @@ public class AbstractParser implements Serializable {
              */
 
             start = cursor;
-            //       cursor = start;
 
             Mainloop:
             while (cursor != length) {
@@ -436,20 +434,24 @@ public class AbstractParser implements Serializable {
                      * If we encounter any of the following cases, we are still dealing with
                      * a contiguous token.
                      */
-                    if (cursor != length) {
+                    CaptureLoop:
+                    while (cursor != length) {
                         switch (expr[cursor]) {
                             case '.':
                                 union = true;
                                 cursor++;
                                 skipWhitespaceWithLineAccounting();
+
                                 continue;
 
                             case '?':
                                 if (lookToLast() == '.') {
-                                    capture = true;
+                                    union = true;
                                     cursor++;
                                     continue;
                                 }
+
+
                             case '+':
                                 switch (lookAhead()) {
                                     case '+':
@@ -474,15 +476,13 @@ public class AbstractParser implements Serializable {
                                         captureToEOS();
 
                                         if (union) {
-                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, ADD, t, pCtx);
+                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, ADD, name, pCtx);
                                         }
                                         else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
                                             return lastNode = new IndexedAssignmentNode(subArray(start, cursor), fields, ADD, name, idx, pCtx);
                                         }
                                         else {
                                             return lastNode = new OperativeAssign(name, subArray(start, cursor), ADD, fields, pCtx);
-
-                                            //     return lastNode = new AssignmentNode(subArray(start, cursor), fields, ADD, name, pCtx);
                                         }
                                 }
 
@@ -490,10 +490,10 @@ public class AbstractParser implements Serializable {
                                         cursor > 1 && (expr[cursor - 1] == 'E' || expr[cursor - 1] == 'e')
                                         && isDigit(expr[cursor - 2])) {
                                     cursor++;
-                                    capture = true;
-                                    continue;
+                                    //     capture = true;
+                                    continue Mainloop;
                                 }
-                                break;
+                                break CaptureLoop;
 
                             case '-':
                                 switch (lookAhead()) {
@@ -533,10 +533,19 @@ public class AbstractParser implements Serializable {
                                         && isDigit(expr[cursor - 2])) {
                                     cursor++;
                                     capture = true;
-                                    continue;
+                                    continue Mainloop;
                                 }
-                                break;
+                                break CaptureLoop;
 
+                            /**
+                             * Exit immediately for any of these cases.
+                             */
+                            case '!':
+                            case ',':
+                            case '"':
+                            case '\'':
+                            case ';':
+                                break CaptureLoop;
 
                             case '\u00AB': // special compact code for recursive parses
                             case '\u00BB':
@@ -564,6 +573,7 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new OperativeAssign(name, subArray(start, cursor), opLookup(op), fields, pCtx);
                                     }
                                 }
+                                break CaptureLoop;
 
 
                             case '<':
@@ -583,7 +593,7 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_SHIFT_LEFT, fields, pCtx);
                                     }
                                 }
-                                break;
+                                break CaptureLoop;
 
 
                             case '>':
@@ -621,7 +631,11 @@ public class AbstractParser implements Serializable {
                                         }
                                     }
                                 }
-                                break;
+                                break CaptureLoop;
+
+                            case '(':
+                                cursor = balancedCaptureWithLineAccounting(expr, cursor, '(', pCtx) + 1;
+                                continue;
 
                             case '[':
                                 cursor = balancedCaptureWithLineAccounting(expr, cursor, '[', pCtx) + 1;
@@ -648,6 +662,7 @@ public class AbstractParser implements Serializable {
                                     return lastNode = new RegExMatch(tmp, fields, subArray(start, cursor), pCtx);
                                 }
                                 break;
+
 
                             case '=':
                                 if (lookAhead() == '+') {
@@ -715,6 +730,26 @@ public class AbstractParser implements Serializable {
                                         return lastNode = new AssignmentNode(subArray(start, cursor), fields | ASTNode.ASSIGN, pCtx);
                                     }
                                 }
+                                break CaptureLoop;
+
+                            default:
+                                if (cursor != length) {
+                                    if (isIdentifierPart(expr[cursor])) {
+                                        if (!union) {
+                                            break CaptureLoop;
+                                        }
+                                        cursor++;
+                                        while (cursor != length && isIdentifierPart(expr[cursor])) cursor++;
+
+                                    }
+                                    else if (++cursor != length && isIdentifierPart(expr[cursor])) {
+                                        break CaptureLoop;
+                                    }
+                                }
+                                else {
+                                    break CaptureLoop;
+                                }
+
                         }
                     }
 
@@ -1782,7 +1817,8 @@ public class AbstractParser implements Serializable {
                                 if (cursor != len) expr[cursor++] = expr[cursor++] = ' ';
                                 continue;
 
-                             default: break Skip;
+                            default:
+                                break Skip;
 
                         }
                     }
