@@ -1181,16 +1181,12 @@ public class ParseTools {
 
 
     public static void parseWithExpressions(String nestParm, char[] block, int begin, int ending,
-                                                            Object ctx, VariableResolverFactory factory) {
+                                            Object ctx, VariableResolverFactory factory) {
         /**
          *
          * MAINTENANCE NOTE: A COMPILING VERSION OF THIS CODE IS DUPLICATED IN: WithNode
          *
          */
-//        List<WithStatementPair> parms = null;
-//        if (!exec) {
-//            parms = new FastList<WithStatementPair>();
-//        }
 
         int start = begin;
         String parm = "";
@@ -1245,27 +1241,15 @@ public class ParseTools {
                     if (end == -1) end = i;
 
                     if (parm == null) {
-//                        if (exec) {
-                            MVEL.eval(new StringAppender(nestParm).append('.')
-                                    .append(block, start, end - start).toString(), ctx, factory);
-//                        }
-//                        else {
-//                            parms.add(new WithStatementPair(null, new StringAppender(nestParm).append('.')
-//                                    .append(block, start, end - start).toString()));
-//                        }
+                        MVEL.eval(new StringAppender(nestParm).append('.')
+                                .append(block, start, end - start).toString(), ctx, factory);
 
                         oper = -1;
                         start = ++i;
                     }
                     else {
-//                        if (exec) {
-                            MVEL.setProperty(ctx, parm, MVEL.eval(new String(createShortFormOperativeAssignment(nestParm + "." + parm,
-                                    subset(block, start, end - start), oper)), ctx, factory));
-//                        }
-//                        else {
-//                            parms.add(new WithStatementPair(parm, new String(createShortFormOperativeAssignment(nestParm + "." + parm,
-//                                    subset(block, start, end - start), oper))));
-//                        }
+                        MVEL.setProperty(ctx, parm, MVEL.eval(new String(createShortFormOperativeAssignment(nestParm + "." + parm,
+                                subset(block, start, end - start), oper)), ctx, factory));
 
                         parm = null;
                         oper = -1;
@@ -1279,43 +1263,17 @@ public class ParseTools {
 
         if (start != (end = ending)) {
             if (parm == null) {
-//                if (exec) {
-                    MVEL.eval(new StringAppender(nestParm).append('.')
-                            .append(block, start, end - start).toString(), ctx, factory);
-//                }
-//                else {
-//                    parms.add(new WithStatementPair(null, new StringAppender(nestParm).append('.')
-//                            .append(block, start, end - start).toString()));
-//                }
+                MVEL.eval(new StringAppender(nestParm).append('.')
+                        .append(block, start, end - start).toString(), ctx, factory);
             }
             else {
-//                if (exec) {
-                    MVEL.setProperty(ctx, parm, MVEL.eval(
-                            new String(createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper)), ctx, factory));
-                }
-//                else {
-//                    parms.add(new WithStatementPair(
-//                            parm,
-//                            new String(createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper))
-//                    ));
-//                }
+                MVEL.setProperty(ctx, parm, MVEL.eval(
+                        new String(createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper)), ctx, factory));
             }
-        }
 
-//        if (exec) {
-//            return null;
-//        }
-//        else {
-//            WithStatementPair[] ret = new WithStatementPair[parms.size()];
-//            int i = 0;
-//            while (i < ret.length) {
-//                ret[i] = parms.get(i);
-//                i++;
-//            }
-//
-//            return ret;
-//        }
-//    }
+        }
+    }
+
 
     public static Object handleNumericConversion(final char[] val) {
         if (val.length != 1 && val[0] == '0' && val[1] != '.') {
