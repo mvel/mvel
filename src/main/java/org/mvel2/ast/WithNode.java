@@ -28,6 +28,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getReturnType;
 import org.mvel2.util.StringAppender;
+import org.mvel2.util.ParseTools;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -44,18 +45,19 @@ public class WithNode extends BlockNode implements NestedStatement {
     public WithNode(char[] expr, char[] block, int fields, ParserContext pCtx) {
         this.name = expr;
         this.block = block;
+        nestParm = createStringTrimmed(expr);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             pCtx.setBlockSymbols(true);
-        }
 
-        egressType = (nestedStatement = (ExecutableStatement)
-                subCompileExpression((nestParm = createStringTrimmed(expr)).toCharArray(), pCtx)).getKnownEgressType();
+            egressType = (nestedStatement = (ExecutableStatement)
+                    subCompileExpression(nestParm.toCharArray(), pCtx)).getKnownEgressType();
 
-        withExpressions = compileWithExpressions(block, nestParm, egressType, pCtx == null ? new ParserContext() : pCtx);
+            withExpressions = compileWithExpressions(block, nestParm, egressType, pCtx == null ? new ParserContext() : pCtx);
 
-        if (pCtx != null) {
-            pCtx.setBlockSymbols(false);
+            if (pCtx != null) {
+                pCtx.setBlockSymbols(false);
+            }
         }
     }
 
@@ -77,7 +79,8 @@ public class WithNode extends BlockNode implements NestedStatement {
 
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return getReducedValueAccelerated(ctx, thisValue, factory);
+        ParseTools.parseWithExpressions(nestParm, block, 0, block.length, ctx = MVEL.eval(name, ctx, factory), factory);
+        return ctx;
     }
 
     public static ParmValuePair[] compileWithExpressions(char[] block, String nestParm, Class egressType, ParserContext pCtx) {
@@ -108,8 +111,8 @@ public class WithNode extends BlockNode implements NestedStatement {
                         if (parm == null) start = i;
                     }
                     else if (i < block.length && block[i + 1] == '*') {
-                        int len = block.length-1;
-                        while (i < len && !(block[i] == '*' && block[i+1] == '/')){
+                        int len = block.length - 1;
+                        while (i < len && !(block[i] == '*' && block[i + 1] == '/')) {
                             block[i++] = ' ';
                         }
                         block[i++] = ' ';
@@ -221,6 +224,7 @@ public class WithNode extends BlockNode implements NestedStatement {
             }
             this.statement = statement;
         }
+
         public Serializable getSetExpression() {
             return setExpression;
         }
