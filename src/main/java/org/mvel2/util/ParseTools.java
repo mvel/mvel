@@ -1802,7 +1802,6 @@ public class ParseTools {
             byte[] buf = new byte[10];
 
             StringAppender sb = new StringAppender(10, encoding);
-            inStream.reset();
 
             int bytesRead;
             while ((bytesRead = inStream.read(buf)) > 0) {
