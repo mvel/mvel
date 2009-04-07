@@ -26,20 +26,21 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.*;
 
-public class FastList extends AbstractList implements Externalizable {
-    private Object[] elements;
+public class FastList<E> extends AbstractList<E> implements Externalizable {
+    private E[] elements;
     private int size = 0;
     private boolean updated = false;
 
     public FastList(int size) {
-        elements = new Object[size];
+        elements = (E[]) new Object[size];
     }
 
-    public FastList(Object[] elements) {
+    public FastList(E[] elements) {
         this.size = (this.elements = elements).length;
     }
 
     public FastList() {
+        this(10);
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -51,21 +52,21 @@ public class FastList extends AbstractList implements Externalizable {
 
     public void readExternal(ObjectInput in) throws IOException,
             ClassNotFoundException {
-        elements = new Object[size = in.readInt()];
+        elements = (E[]) new Object[size = in.readInt()];
         for (int i = 0; i < size; i++) {
-            elements[i] = in.readObject();
+            elements[i] = (E) in.readObject();
         }
     }
 
-    public Object get(int index) {
-        return elements[index];
+    public E get(int index) {
+        return (E) elements[index];
     }
 
     public int size() {
         return size;
     }
 
-    public boolean add(Object o) {
+    public boolean add(E o) {
         if (size == elements.length) {
             increaseSize(elements.length * 2);
         }
@@ -74,14 +75,14 @@ public class FastList extends AbstractList implements Externalizable {
         return true;
     }
 
-    public Object set(int i, Object o) {
+    public E set(int i, E o) {
         if (!updated) copyArray();
-        Object old = elements[i];
+        E old = elements[i];
         elements[i] = o;
         return old;
     }
 
-    public void add(int i, Object o) {
+    public void add(int i, E o) {
         if (size == elements.length) {
             increaseSize(elements.length * 2);
         }
@@ -93,8 +94,8 @@ public class FastList extends AbstractList implements Externalizable {
         size++;
     }
 
-    public Object remove(int i) {
-        Object old = elements[i];
+    public E remove(int i) {
+        E old = elements[i];
         for (int c = i + 1; c < size; c++) {
             elements[c - 1] = elements[c];
             elements[c] = null;
@@ -120,10 +121,10 @@ public class FastList extends AbstractList implements Externalizable {
     }
 
     public void clear() {
-        elements = new Object[0];
+        elements = (E[]) new Object[0];
     }
 
-    public boolean addAll(int i, Collection collection) {
+    public boolean addAll(int i, Collection<? extends E> collection) {
         int offset = collection.size();
         ensureCapacity(offset);
 
@@ -132,7 +133,7 @@ public class FastList extends AbstractList implements Externalizable {
         }
 
         int c = 0;
-        for (Object o : collection) {
+        for (E o : collection) {
             elements[offset + c] = o;
         }
 
@@ -159,15 +160,15 @@ public class FastList extends AbstractList implements Externalizable {
 
     }
 
-    public ListIterator listIterator() {
-        return new ListIterator() {
+    public ListIterator<E> listIterator() {
+        return new ListIterator<E>() {
             private int i = 0;
 
             public boolean hasNext() {
                 return i < size;
             }
 
-            public Object next() {
+            public E next() {
                 return elements[i++];
             }
 
@@ -175,7 +176,7 @@ public class FastList extends AbstractList implements Externalizable {
                 return i > 0;
             }
 
-            public Object previous() {
+            public E previous() {
                 return elements[i--];
             }
 
@@ -191,8 +192,8 @@ public class FastList extends AbstractList implements Externalizable {
                 throw new java.lang.UnsupportedOperationException();
             }
 
-            public void set(Object o) {
-                elements[i] = 0;
+            public void set(E o) {
+                elements[i] = o;
             }
 
             public void add(Object o) {
@@ -283,7 +284,7 @@ public class FastList extends AbstractList implements Externalizable {
     }
 
     private void increaseSize(int newSize) {
-        Object[] newElements = new Object[newSize];
+        E[] newElements = (E[]) new Object[newSize];
         for (int i = 0; i < elements.length; i++)
             newElements[i] = elements[i];
 

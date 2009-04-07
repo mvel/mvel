@@ -18,17 +18,20 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
+import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
-import static org.mvel2.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
-import static org.mvel2.optimizers.OptimizerFactory.getAccessorCompiler;
 import org.mvel2.util.CollectionParser;
-import static org.mvel2.util.ParseTools.subset;
-import org.mvel2.ParserContext;
-import org.mvel2.compiler.AbstractParser;
+import static org.mvel2.util.ParseTools.*;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Christopher Brock
@@ -79,9 +82,7 @@ public class InlineCollectionNode extends ASTNode {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         parseGraph(false, egressType, false);
-
-        return getAccessorCompiler(SAFE_REFLECTIVE)
-                .optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph, egressType, trailing, ctx, thisValue, factory).getValue(ctx, thisValue, factory);
+        return  execGraph(collectionGraph, egressType, ctx, factory);
     }
 
     private void parseGraph(boolean compile, Class type, boolean strongType) {
@@ -98,5 +99,67 @@ public class InlineCollectionNode extends ASTNode {
             trailing = subset(name, parser.getCursor() + 2);
 
         if (this.egressType == null) this.egressType = collectionGraph.getClass();
+    }
+
+      private Object execGraph(Object o, Class type, Object ctx, VariableResolverFactory factory) {
+        if (o instanceof List) {
+            ArrayList list = new ArrayList(((List)o).size());
+
+            for (Object item : (List) o) {
+               list.add(execGraph(item, type, ctx, factory));
+            }
+
+            return list;
+        }
+        else if (o instanceof Map) {
+            HashMap map = new HashMap();
+
+            for (Object item : ((Map) o).keySet()) {
+                map.put(execGraph(item, type, ctx, factory), execGraph(((Map)o).get(item), type, ctx, factory));
+            }
+
+            return map;
+        }
+        else if (o instanceof Object[]) {
+            int dim = 0;
+
+            if (type != null) {
+                String nm = type.getName();
+                while (nm.charAt(dim) == '[') dim++;
+            }
+            else {
+                type = Object[].class;
+                dim = 1;
+            }
+
+            Object newArray = Array.newInstance(getSubComponentType(type), ((Object[])o).length);
+
+            try {
+                Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + getBaseComponentType(type).getName() + ";", AbstractParser.getCurrentThreadParserContext())
+                        : type;
+
+                int c = 0;
+                for (Object item : (Object[]) o) {
+                   Array.set(newArray, c++, execGraph(item, cls, ctx, factory));
+                }
+
+                return newArray;
+            }
+            catch (ClassNotFoundException e) {
+                throw new RuntimeException("this error should never throw:" + getBaseComponentType(type).getName(), e);
+            }
+            catch (Exception e) {
+                throw new RuntimeException();
+            }
+        }
+        else {
+            if (type.isArray()) {
+                return MVEL.eval((String) o, ctx, factory, getBaseComponentType(type));
+
+            }
+            else {
+                 return MVEL.eval((String) o, ctx, factory);
+            }
+        }
     }
 }

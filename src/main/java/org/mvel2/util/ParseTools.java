@@ -19,10 +19,8 @@
 package org.mvel2.util;
 
 import org.mvel2.*;
-import static org.mvel2.DataTypes.DOUBLE;
-import static org.mvel2.DataTypes.LONG;
-import static org.mvel2.DataTypes.INTEGER;
 import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataTypes.*;
 import static org.mvel2.MVEL.getDebuggingOutputFileName;
 import org.mvel2.ast.ASTNode;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
@@ -1183,16 +1181,20 @@ public class ParseTools {
 
 
     public static WithStatementPair[] parseWithExpressions(String nestParm, char[] block) {
-        return parseWithExpressions(nestParm, block, 0, block.length);
+        return parseWithExpressions(nestParm, block, 0, block.length, false, null, null);
     }
 
-    public static WithStatementPair[] parseWithExpressions(String nestParm, char[] block, int begin, int ending) {
+    public static WithStatementPair[] parseWithExpressions(String nestParm, char[] block, int begin, int ending,
+                                                           boolean exec, Object ctx, VariableResolverFactory factory) {
         /**
          *
          * MAINTENANCE NOTE: A COMPILING VERSION OF THIS CODE IS DUPLICATED IN: WithNode
          *
          */
-        List<WithStatementPair> parms = new ArrayList<WithStatementPair>();
+        List<WithStatementPair> parms = null;
+        if (!exec) {
+            parms = new FastList<WithStatementPair>();
+        }
 
         int start = begin;
         String parm = "";
@@ -1239,7 +1241,7 @@ public class ParseTools {
 
 
                 case '=':
-                    parm = createStringTrimmed(block, start, i - start - (oper != -1 ? 1 : 0));
+                    parm = new String(block, start, i - start - (oper != -1 ? 1 : 0)).trim();
                     start = ++i;
                     continue;
 
@@ -1247,17 +1249,27 @@ public class ParseTools {
                     if (end == -1) end = i;
 
                     if (parm == null) {
-                        parms.add(
-                                new WithStatementPair(null, new StringAppender(nestParm).append('.')
-                                        .append(subset(block, start, end - start)).toString())
-                        );
+                        if (exec) {
+                            MVEL.eval(new StringAppender(nestParm).append('.')
+                                    .append(new String(block, start, end - start)).toString(), ctx, factory);
+                        }
+                        else {
+                            parms.add(new WithStatementPair(null, new StringAppender(nestParm).append('.')
+                                    .append(new String(block, start, end - start)).toString()));
+                        }
 
                         oper = -1;
                         start = ++i;
                     }
                     else {
-                        parms.add(new WithStatementPair(parm, new String(createShortFormOperativeAssignment(nestParm + "." + parm,
-                                subset(block, start, end - start), oper))));
+                        if (exec) {
+                            MVEL.setProperty(ctx, parm, MVEL.eval(new String(createShortFormOperativeAssignment(nestParm + "." + parm,
+                                    subset(block, start, end - start), oper)), ctx, factory));
+                        }
+                        else {
+                            parms.add(new WithStatementPair(parm, new String(createShortFormOperativeAssignment(nestParm + "." + parm,
+                                    subset(block, start, end - start), oper))));
+                        }
 
                         parm = null;
                         oper = -1;
@@ -1271,20 +1283,42 @@ public class ParseTools {
 
         if (start != (end = ending)) {
             if (parm == null) {
-                parms.add(new WithStatementPair(null, new StringAppender(nestParm).append('.')
-                        .append(new String(block, start, end - start)).toString()));
+                if (exec) {
+                    MVEL.eval(new StringAppender(nestParm).append('.')
+                            .append(new String(block, start, end - start)).toString(), ctx, factory);
+                }
+                else {
+                    parms.add(new WithStatementPair(null, new StringAppender(nestParm).append('.')
+                            .append(new String(block, start, end - start)).toString()));
+                }
             }
             else {
-                parms.add(new WithStatementPair(
-                        parm,
-                        new String(createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper))
-                ));
+                if (exec) {
+                    MVEL.setProperty(ctx, parm, MVEL.eval(
+                            new String(createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper)), ctx, factory));
+                }
+                else {
+                    parms.add(new WithStatementPair(
+                            parm,
+                            new String(createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper))
+                    ));
+                }
             }
         }
 
-        WithStatementPair[] ret;
-        parms.toArray(ret = new WithStatementPair[parms.size()]);
-        return ret;
+        if (exec) {
+            return null;
+        }
+        else {
+            WithStatementPair[] ret = new WithStatementPair[parms.size()];
+            int i = 0;
+            while (i < ret.length) {
+                ret[i] = parms.get(i);
+                i++;
+            }
+
+            return ret;
+        }
     }
 
     public static Object handleNumericConversion(final char[] val) {
