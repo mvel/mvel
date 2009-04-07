@@ -1251,11 +1251,11 @@ public class ParseTools {
                     if (parm == null) {
                         if (exec) {
                             MVEL.eval(new StringAppender(nestParm).append('.')
-                                    .append(new String(block, start, end - start)).toString(), ctx, factory);
+                                    .append(block, start, end - start).toString(), ctx, factory);
                         }
                         else {
                             parms.add(new WithStatementPair(null, new StringAppender(nestParm).append('.')
-                                    .append(new String(block, start, end - start)).toString()));
+                                    .append(block, start, end - start).toString()));
                         }
 
                         oper = -1;
@@ -1285,11 +1285,11 @@ public class ParseTools {
             if (parm == null) {
                 if (exec) {
                     MVEL.eval(new StringAppender(nestParm).append('.')
-                            .append(new String(block, start, end - start)).toString(), ctx, factory);
+                            .append(block, start, end - start).toString(), ctx, factory);
                 }
                 else {
                     parms.add(new WithStatementPair(null, new StringAppender(nestParm).append('.')
-                            .append(new String(block, start, end - start)).toString()));
+                            .append(block, start, end - start).toString()));
                 }
             }
             else {
