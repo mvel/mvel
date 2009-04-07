@@ -54,9 +54,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
             withExpressions = compileWithExpressions(block, nestParm, egressType, pCtx);
 
-            //     if (pCtx != null) {
             pCtx.setBlockSymbols(false);
-            //     }
         }
     }
 
@@ -65,12 +63,7 @@ public class WithNode extends BlockNode implements NestedStatement {
         if (ctxObject == null) throw new CompileException("with-block against null pointer");
 
         for (ParmValuePair pvp : withExpressions) {
-            if (pvp.getSetExpression() != null) {
-                executeSetExpression(pvp.getSetExpression(), ctxObject, factory, pvp.getStatement().getValue(ctx, thisValue, factory));
-            }
-            else {
-                pvp.getStatement().getValue(ctxObject, ctxObject, factory);
-            }
+            pvp.eval(ctxObject, factory);
         }
 
         return ctxObject;
