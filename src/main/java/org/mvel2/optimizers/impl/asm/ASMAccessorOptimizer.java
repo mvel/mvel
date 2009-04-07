@@ -30,6 +30,7 @@ import static org.mvel2.asm.Opcodes.*;
 import static org.mvel2.asm.Type.*;
 import org.mvel2.ast.Function;
 import org.mvel2.ast.TypeDescriptor;
+import org.mvel2.ast.WithNode;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import org.mvel2.compiler.*;
 import org.mvel2.integration.GlobalListenerFactory;
@@ -784,20 +785,19 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         cursor = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx);
         this.returnType = ctx != null ? ctx.getClass() : null;
 
-        for (WithStatementPair aPvp : parseWithExpressions(root, subset(expr, start, cursor++ - start))) {
+
+
+        for (WithNode.ParmValuePair aPvp : WithNode.compileWithExpressions(subset(expr, start, cursor++ - start), root, ingressType, pCtx)) {
             assert debug("DUP");
             mv.visitInsn(DUP);
-            if (aPvp.getParm() == null) {
-                // Execute this interpretively now.
-                MVEL.eval(aPvp.getValue(), ctx, variableFactory);
 
-                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue().toCharArray(), pCtx));
+            aPvp.eval(ctx, variableFactory);
+
+            if (aPvp.getSetExpression() == null) {
+                addSubstatement(aPvp.getStatement());
             }
             else {
-                // Execute interpretively.
-                MVEL.setProperty(ctx, aPvp.getParm(), MVEL.eval(aPvp.getValue(), ctx, variableFactory));
-                compiledInputs.add(((ExecutableStatement) MVEL.compileSetExpression(aPvp.getParm(),
-                        getReturnType(ingressType, aPvp.getParm(), pCtx), pCtx)));
+                compiledInputs.add((ExecutableStatement) aPvp.getSetExpression());
 
                 assert debug("ALOAD 0");
                 mv.visitVarInsn(ALOAD, 0);
@@ -815,7 +815,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 assert debug("ALOAD 3");
                 mv.visitVarInsn(ALOAD, 3);
 
-                addSubstatement((ExecutableStatement) subCompileExpression(aPvp.getValue().toCharArray(), pCtx));
+                addSubstatement(aPvp.getStatement());
 
                 assert debug("INVOKEINTERFACE Accessor.setValue");
                 mv.visitMethodInsn(INVOKEINTERFACE, NAMESPACE + "compiler/ExecutableStatement",

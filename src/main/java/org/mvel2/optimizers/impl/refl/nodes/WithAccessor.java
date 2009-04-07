@@ -3,6 +3,7 @@ package org.mvel2.optimizers.impl.refl.nodes;
 import org.mvel2.MVEL;
 import static org.mvel2.MVEL.executeSetExpression;
 import org.mvel2.ParserContext;
+import org.mvel2.ast.WithNode;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
@@ -19,19 +20,19 @@ public class WithAccessor implements AccessorNode {
 
     protected String nestParm;
     protected ExecutableStatement nestedStatement;
-    protected ExecutablePairs[] withExpressions;
+    protected WithNode.ParmValuePair[] withExpressions;
 
     public WithAccessor(String property, char[] block, Class ingressType, boolean strict) {
         ParserContext pCtx = getCurrentThreadParserContext();
         pCtx.setBlockSymbols(true);
 
-        ParseTools.WithStatementPair[] pvp = ParseTools.parseWithExpressions(property, block);
-        withExpressions = new ExecutablePairs[pvp.length];
-
-        for (int i = 0; i < pvp.length; i++) {
-            withExpressions[i] = new ExecutablePairs(pvp[i].getParm(),
-                    (ExecutableStatement) subCompileExpression(pvp[i].getValue().toCharArray()), ingressType, pCtx);
-        }
+        withExpressions = WithNode.compileWithExpressions(block, property, ingressType, pCtx);
+    //    withExpressions = new ExecutablePairs[pvp.length];
+//
+//        for (int i = 0; i < pvp.length; i++) {
+//            withExpressions[i] = new ExecutablePairs(pvp[i].getParm(),
+//                    (ExecutableStatement) subCompileExpression(pvp[i].getValue().toCharArray()), ingressType, pCtx);
+//        }
 
         pCtx.setBlockSymbols(false);
     }
@@ -58,7 +59,7 @@ public class WithAccessor implements AccessorNode {
     }
 
     public Object processWith(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        for (ExecutablePairs pvp : withExpressions) {
+        for (WithNode.ParmValuePair pvp : withExpressions) {
             if (pvp.getSetExpression() != null) {
                 executeSetExpression(pvp.getSetExpression(), ctx, factory, pvp.getStatement().getValue(ctx, thisValue, factory));
             }

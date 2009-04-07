@@ -622,7 +622,7 @@ public class PropertyAccessor {
 
     private Object getWithProperty(Object ctx) {
          parseWithExpressions(new String(property, 0, cursor - 1).trim(), property, cursor + 1,
-                cursor = balancedCaptureWithLineAccounting(property, cursor, '{', getCurrentThreadParserContext()), true, ctx, variableFactory);
+                cursor = balancedCaptureWithLineAccounting(property, cursor, '{', getCurrentThreadParserContext()), ctx, variableFactory);
 
 //        for (WithStatementPair aPvp : parseWithExpressions(new String(property, 0, cursor - 1).trim(), property, cursor + 1,
 //                cursor = balancedCaptureWithLineAccounting(property, cursor, '{', getCurrentThreadParserContext()))) {

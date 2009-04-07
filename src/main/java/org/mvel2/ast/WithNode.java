@@ -221,8 +221,6 @@ public class WithNode extends BlockNode implements NestedStatement {
             }
             this.statement = statement;
         }
-
-
         public Serializable getSetExpression() {
             return setExpression;
         }
@@ -237,6 +235,15 @@ public class WithNode extends BlockNode implements NestedStatement {
 
         public void setStatement(ExecutableStatement statement) {
             this.statement = statement;
+        }
+
+        public void eval(Object ctx, VariableResolverFactory factory) {
+            if (setExpression == null) {
+                this.statement.getValue(ctx, factory);
+            }
+            else {
+                MVEL.executeSetExpression(setExpression, ctx, factory, this.statement.getValue(ctx, factory));
+            }
         }
     }
 }
