@@ -31,6 +31,7 @@ import static org.mvel2.asm.Type.*;
 import org.mvel2.ast.Function;
 import org.mvel2.ast.TypeDescriptor;
 import org.mvel2.ast.WithNode;
+import org.mvel2.ast.InlineCollectionNode;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import org.mvel2.compiler.*;
 import org.mvel2.integration.GlobalListenerFactory;
@@ -127,6 +128,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     private Class ingressType;
     private Class returnType;
 
+    private int compileDepth = 0;
+
     @SuppressWarnings({"StringBufferField"})
     private StringAppender buildLog;
 
@@ -134,6 +137,19 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         //do this to confirm we're running the correct version
         //otherwise should create a verification error in VM
         new ClassWriter(ClassWriter.COMPUTE_MAXS);
+    }
+
+    private ASMAccessorOptimizer(ClassWriter cw, MethodVisitor mv,
+                                 ArrayList<ExecutableStatement> compiledInputs, String className, StringAppender buildLog, int compileDepth) {
+        this.cw = cw;
+        this.mv = mv;
+        this.compiledInputs = compiledInputs;
+        this.className = className;
+        this.buildLog = buildLog;
+        this.compileDepth = compileDepth + 1;
+
+        noinit = true;
+        deferFinish = true;
     }
 
     /**
@@ -205,7 +221,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                                      Object thisRef, VariableResolverFactory factory, boolean root, Class ingressType) {
         time = System.currentTimeMillis();
 
-        compiledInputs = new ArrayList<ExecutableStatement>();
+        if (compiledInputs == null) compiledInputs = new ArrayList<ExecutableStatement>();
 
         start = cursor = 0;
 
@@ -790,8 +806,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             assert debug("DUP");
             mv.visitInsn(DUP);
 
-            assert debug("ASTORE 5 (withctx)");
-            mv.visitVarInsn(ASTORE, 5);
+            assert debug("ASTORE " + (5+compileDepth) + " (withctx)");
+            mv.visitVarInsn(ASTORE, 5 + compileDepth);
 
             aPvp.eval(ctx, variableFactory);
 
@@ -812,8 +828,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         + "compiler/ExecutableStatement;");
 
                 // ctx
-                assert debug("ALOAD 5 (withctx)");
-                mv.visitVarInsn(ALOAD, 5);
+                assert debug("ALOAD " + (5+compileDepth) + "(withctx)");
+                mv.visitVarInsn(ALOAD, (5+compileDepth));
 
                 // elCtx
                 assert debug("ALOAD 2");
@@ -2369,6 +2385,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
 
     private void addSubstatement(ExecutableStatement stmt) {
+        if (stmt instanceof ExecutableAccessor) {
+            ExecutableAccessor ea = (ExecutableAccessor) stmt;
+            if (ea.getNode().isIdentifier() && !ea.getNode().isDeepProperty()) {
+                loadVariableByName(ea.getNode().getName());
+                return;
+            }
+        }
+
         compiledInputs.add(stmt);
 
         assert debug("ALOAD 0");
