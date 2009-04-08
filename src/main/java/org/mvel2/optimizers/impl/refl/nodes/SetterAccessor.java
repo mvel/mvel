@@ -41,7 +41,8 @@ public class SetterAccessor implements AccessorNode {
             throw new CompileException("unable to bind property", e);
         }
         catch (Exception e) {
-            throw new CompileException("error binding property", e);
+            System.out.println("ctx=" + ctx);
+            throw new CompileException("error calling method: " + method.getDeclaringClass().getName() + "." + method.getName(), e);
         }
     }
 
@@ -51,6 +52,7 @@ public class SetterAccessor implements AccessorNode {
 
     public SetterAccessor(Method method) {
         this.method = method;
+        assert method != null;
         this.targetType = method.getParameterTypes()[0];
     }
 
