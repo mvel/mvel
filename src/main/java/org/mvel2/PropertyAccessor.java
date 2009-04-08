@@ -75,11 +75,13 @@ public class PropertyAccessor {
     private static final WeakHashMap<Class, WeakHashMap<Integer, Member>> READ_PROPERTY_RESOLVER_CACHE;
     private static final WeakHashMap<Class, WeakHashMap<Integer, Member>> WRITE_PROPERTY_RESOLVER_CACHE;
     private static final WeakHashMap<Class, WeakHashMap<Integer, Object[]>> METHOD_RESOLVER_CACHE;
+    private static final WeakHashMap<Member, Class[]> METHOD_PARMTYPES_CACHE;
 
     static {
         READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, Member>>(10));
         WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, Member>>(10));
         METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, Object[]>>(10));
+        METHOD_PARMTYPES_CACHE = new WeakHashMap<Member, Class[]>(10);
     }
 
 
@@ -338,12 +340,14 @@ public class PropertyAccessor {
             if (member instanceof Method) {
                 Method meth = (Method) member;
 
-                if (value != null && !meth.getParameterTypes()[0].isAssignableFrom(value.getClass())) {
-                    if (!canConvert(meth.getParameterTypes()[0], value.getClass())) {
+                Class[] paramaterTypes = checkParmTypesCache(meth);
+
+                if (value != null && !paramaterTypes[0].isAssignableFrom(value.getClass())) {
+                    if (!canConvert(paramaterTypes[0], value.getClass())) {
                         throw new ConversionException("cannot convert type: "
                                 + value.getClass() + ": to " + meth.getParameterTypes()[0]);
                     }
-                    meth.invoke(curr, convert(value, meth.getParameterTypes()[0]));
+                    meth.invoke(curr, convert(value, paramaterTypes[0]));
                 }
                 else {
                     meth.invoke(curr, value);
@@ -489,6 +493,15 @@ public class PropertyAccessor {
         }
         return null;
     }
+
+    public static Class[] checkParmTypesCache(Method member) {
+         Class[] pt = METHOD_PARMTYPES_CACHE.get(member);
+         if (pt == null) {
+             METHOD_PARMTYPES_CACHE.put(member, pt = member.getParameterTypes());
+         }
+        return pt;
+    }
+
 
     private static void addMethodCache(Class cls, Integer property, Method member) {
         synchronized (METHOD_RESOLVER_CACHE) {

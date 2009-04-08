@@ -451,7 +451,6 @@ public class AbstractParser implements Serializable {
                                     continue;
                                 }
 
-
                             case '+':
                                 switch (lookAhead()) {
                                     case '+':
