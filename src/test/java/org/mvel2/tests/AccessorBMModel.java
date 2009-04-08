@@ -10,6 +10,7 @@ import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.GlobalListenerFactory;
 import org.mvel2.tests.core.res.Foo;
+import org.mvel2.util.StringAppender;
 
 
 public class AccessorBMModel implements Accessor {
@@ -19,11 +20,8 @@ public class AccessorBMModel implements Accessor {
     public PropertyHandler nullMethodHandler;
     
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-      
-     ((List) ctx).set(0, "set");
-    	
-    return null;    
-     
+    	StringAppender append = new StringAppender().append("foo").append(((String)ctx).toString().trim());
+    	return append;
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {

@@ -41,9 +41,10 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
             if (ingressType == Object.class && value != null) ingressType = value.getClass();
             accessor = getThreadAccessorOptimizer()
                     .optimizeSetAccessor(context, expression, ctx, ctx, vrf, false, value, ingressType);
+
         }
         else {
-            accessor.setValue(ctx, elCtx, vrf, value);
+             accessor.setValue(ctx, elCtx, vrf, value);
         }
         return value;
     }

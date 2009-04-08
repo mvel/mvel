@@ -220,7 +220,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.variableFactory = factory;
         this.ingressType = ingressType;
 
-   //     pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+        //     pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
         if (!noinit) _initJIT();
         return compileAccessor();
@@ -251,11 +251,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             property = subset(property, split, property.length - split);
         }
 
-     //   pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+        //   pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
 
         AccessorNode rootAccessor = null;
-        
+
 
         _initJIT2();
 
@@ -786,10 +786,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.returnType = ctx != null ? ctx.getClass() : null;
 
 
-
         for (WithNode.ParmValuePair aPvp : WithNode.compileWithExpressions(subset(expr, start, cursor++ - start), root, ingressType, pCtx)) {
             assert debug("DUP");
             mv.visitInsn(DUP);
+
+            assert debug("ASTORE 5 (withctx)");
+            mv.visitVarInsn(ASTORE, 5);
 
             aPvp.eval(ctx, variableFactory);
 
@@ -798,7 +800,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
             else {
                 compiledInputs.add((ExecutableStatement) aPvp.getSetExpression());
+//                assert debug("ASTORE 5 (withctx)");
+//                mv.visitVarInsn(ASTORE, 5);
 
+                // load set expression
                 assert debug("ALOAD 0");
                 mv.visitVarInsn(ALOAD, 0);
 
@@ -806,15 +811,19 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitFieldInsn(GETFIELD, className, "p" + (compiledInputs.size() - 1), "L" + NAMESPACE
                         + "compiler/ExecutableStatement;");
 
-                assert debug("ALOAD 1");
-                mv.visitVarInsn(ALOAD, 1);
+                // ctx
+                assert debug("ALOAD 5 (withctx)");
+                mv.visitVarInsn(ALOAD, 5);
 
+                // elCtx
                 assert debug("ALOAD 2");
                 mv.visitVarInsn(ALOAD, 2);
 
+                // variable factory
                 assert debug("ALOAD 3");
                 mv.visitVarInsn(ALOAD, 3);
 
+                // the value to set.
                 addSubstatement(aPvp.getStatement());
 
                 assert debug("INVOKEINTERFACE Accessor.setValue");
@@ -922,7 +931,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             if (((member.getModifiers() & STATIC) != 0)) {
                 // Check if the static field reference is a constant and a primitive.
-                if ((member.getModifiers() & FINAL) != 0 && (o instanceof String || ((Field)member).getType().isPrimitive())) {
+                if ((member.getModifiers() & FINAL) != 0 && (o instanceof String || ((Field) member).getType().isPrimitive())) {
                     o = ((Field) member).get(null);
                     assert debug("LDC " + valueOf(o));
                     mv.visitLdcInsn(o);
@@ -2707,7 +2716,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.thisRef = thisRef;
         this.variableFactory = factory;
 
-       // pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+        // pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
         _initJIT();
 
@@ -2783,7 +2792,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
- //       pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+        //       pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
         _initJIT();
 
@@ -2817,13 +2826,13 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     parms[i++] = es.getValue(ctx, factory);
                 }
 
-                Constructor cns = getBestConstructorCanadidate(parms, cls,  pCtx.isStrongTyping());
+                Constructor cns = getBestConstructorCanadidate(parms, cls, pCtx.isStrongTyping());
 
                 if (cns == null) {
                     StringBuilder error = new StringBuilder();
                     for (int x = 0; x < parms.length; x++) {
                         error.append(parms[x].getClass().getName());
-                        if (x+1 < parms.length) error.append(", ");
+                        if (x + 1 < parms.length) error.append(", ");
                     }
 
                     throw new CompileException("unable to find constructor: " + cls.getName() + "(" + error.toString() + ")");
