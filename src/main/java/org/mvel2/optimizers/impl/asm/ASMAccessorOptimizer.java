@@ -428,7 +428,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             String tk = new String(property);
-            Member member = getFieldOrWriteAccessor(ctx.getClass(), tk, ingressType);
+            Member member = getFieldOrWriteAccessor(ctx.getClass(), tk, value == null ? null : ingressType);
 
             if (GlobalListenerFactory.hasSetListeners()) {
                 mv.visitVarInsn(ALOAD, 1);

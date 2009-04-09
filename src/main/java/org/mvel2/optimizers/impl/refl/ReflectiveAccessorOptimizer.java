@@ -245,7 +245,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 addAccessorNode(new Notify(tk));
             }
 
-            Member member = getFieldOrWriteAccessor(ctx.getClass(), tk, ingressType);
+            Member member = getFieldOrWriteAccessor(ctx.getClass(), tk, value == null ? null : ingressType);
 
             if (member instanceof Field) {
                 Field fld = (Field) member;

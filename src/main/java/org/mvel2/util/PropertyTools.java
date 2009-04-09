@@ -67,7 +67,7 @@ public class PropertyTools {
 
         for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 1 &&
-                    property.equals(meth.getName()) && canConvert(meth.getParameterTypes()[0], type)) {
+                    property.equals(meth.getName()) && (type == null || canConvert(meth.getParameterTypes()[0], type))) {
                 return meth;
             }
         }
@@ -133,7 +133,7 @@ public class PropertyTools {
 
     public static Member getFieldOrWriteAccessor(Class clazz, String property, Class type) {
         for (Field f : clazz.getFields()) {
-            if (property.equals(f.getName()) && canConvert(f.getType(), type)) {
+            if (property.equals(f.getName()) && (type == null || canConvert(f.getType(), type))) {
                 return f;
             }
         }
