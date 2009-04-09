@@ -2384,12 +2384,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    private void addSubstatement(ExecutableStatement stmt) {
+    private Object addSubstatement(ExecutableStatement stmt) {
         if (stmt instanceof ExecutableAccessor) {
             ExecutableAccessor ea = (ExecutableAccessor) stmt;
             if (ea.getNode().isIdentifier() && !ea.getNode().isDeepProperty()) {
                 loadVariableByName(ea.getNode().getName());
-                return;
+                return null;
             }
         }
 
@@ -2410,6 +2410,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         assert debug("INVOKEINTERFACE ExecutableStatement.getValue");
         mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(ExecutableStatement.class), "getValue",
                 "(Ljava/lang/Object;L" + NAMESPACE + "integration/VariableResolverFactory;)Ljava/lang/Object;");
+
+        return null;
     }
 
 
