@@ -1234,7 +1234,7 @@ public class ParseTools {
 
                 case '=':
                     parm = new String(block, start, i - start - (oper != -1 ? 1 : 0)).trim();
-                    start = ++i;
+                    start = i + 1;
                     continue;
 
                 case ',':

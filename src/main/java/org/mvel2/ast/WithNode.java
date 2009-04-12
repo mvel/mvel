@@ -129,7 +129,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
                 case '=':
                     parm = createStringTrimmed(block, start, i - start - (oper != -1 ? 1 : 0));
-                    start = ++i;
+                    start = i + 1;
                     continue;
 
                 case ',':
