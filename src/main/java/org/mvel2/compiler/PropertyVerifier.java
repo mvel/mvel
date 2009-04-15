@@ -25,15 +25,11 @@ import org.mvel2.ast.Function;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
 import static org.mvel2.util.ParseTools.*;
-import static org.mvel2.util.ParseTools.boxPrimitive;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import org.mvel2.util.StringAppender;
-import org.mvel2.util.ParseTools;
 
 import java.lang.reflect.*;
 import java.util.*;
-
-import com.sun.tools.javac.resources.compiler;
 
 /**
  * This verifier is used by the compiler to enforce rules such as type strictness.  It is, as side-effect, also
