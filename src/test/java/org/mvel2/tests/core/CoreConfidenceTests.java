@@ -5231,6 +5231,33 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public static interface Services {
+        public void log( String text );
+    }
+    public void testStringConcatenation() {
+        // debugging MVEL code, it seems that MVEL 'thinks' that the result of the expression:
+        // "Drop +5%: "+$sb+" avg: $"+$av+" price: $"+$pr
+        // is a double, and as so, he looks for a method:
+        // Services.log( double );
+        // but finds only:
+        // Services.log( String );
+        // raising the error.
+        String ex = "services.log( \"Drop +5%: \"+$sb+\" avg: $\"+$av+\" price: $\"+$pr );";
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping( true );
+        ctx.addInput( "$sb", String.class );
+        ctx.addInput( "$av", double.class );
+        ctx.addInput( "$pr", double.class );
+        ctx.addInput( "services", Services.class );
+        try { 
+            ExpressionCompiler compiler = new ExpressionCompiler(ex);
+            compiler.compile(ctx);
+        } catch( Throwable e ) {
+            e.printStackTrace();
+            fail( "Should not raise exception: " + e.getMessage() );
+        }
+    }
+
     public static void testProjectionUsingThis() {
         Set records = new HashSet();
         for (int i = 0; i < 53; i++) {
