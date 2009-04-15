@@ -350,8 +350,8 @@ public class PropertyVerifier extends AbstractOptimizer {
           //  ExpressionCompiler compiler;
             CompiledExpression ce;
             for (int i = 0; i < subtokens.length; i++) {
-                ce = new ExpressionCompiler(subtokens[i], true)._compile();
-                args[i] = ce.getKnownEgressType() != null ? ce.getKnownEgressType() : Object.class;
+                args[i] = (ce = new ExpressionCompiler(subtokens[i], true)._compile()).getKnownEgressType() != null
+                        ? ce.getKnownEgressType() : Object.class;
             }
         }
 
