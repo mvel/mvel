@@ -33,6 +33,8 @@ import org.mvel2.util.ParseTools;
 import java.lang.reflect.*;
 import java.util.*;
 
+import com.sun.tools.javac.resources.compiler;
+
 /**
  * This verifier is used by the compiler to enforce rules such as type strictness.  It is, as side-effect, also
  * responsible for extracting type information.
@@ -345,10 +347,11 @@ public class PropertyVerifier extends AbstractOptimizer {
             /**
              *  Subcompile all the arguments to determine their known types.
              */
-            ExpressionCompiler compiler;
+          //  ExpressionCompiler compiler;
+            CompiledExpression ce;
             for (int i = 0; i < subtokens.length; i++) {
-                (compiler = new ExpressionCompiler(subtokens[i], true))._compile();
-                args[i] = compiler.getReturnType() != null ? compiler.getReturnType() : Object.class;
+                ce = new ExpressionCompiler(subtokens[i], true)._compile();
+                args[i] = ce.getKnownEgressType() != null ? ce.getKnownEgressType() : Object.class;
             }
         }
 
@@ -367,16 +370,17 @@ public class PropertyVerifier extends AbstractOptimizer {
             if ((m = getBestCandidate(args, name, ctx, ctx.getDeclaredMethods(), pCtx.isStrongTyping())) == null) {
                 StringAppender errorBuild = new StringAppender();
                 for (int i = 0; i < args.length; i++) {
-                    errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
+                    errorBuild.append(args[i] != null ? args[i].getName() : null);
                     if (i < args.length - 1) errorBuild.append(", ");
                 }
 
                 if ("size".equals(name) && args.length == 0 && ctx.isArray()) {
                     return Integer.class;
                 }
-
+                
                 if (pCtx.isStrictTypeEnforcement()) {
-                    addFatalError("unable to resolve method using strict-mode: " + ctx.getName() + "." + name + "(...)");
+                    addFatalError("unable to resolve method using strict-mode: "
+                            + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")");
                 }
                 return Object.class;
             }
