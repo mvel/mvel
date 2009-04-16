@@ -34,6 +34,8 @@ import static java.lang.String.valueOf;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.Collection;
+import java.util.ArrayList;
 
 /**
  * @author Christopher Brock

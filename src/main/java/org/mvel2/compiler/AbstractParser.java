@@ -2119,7 +2119,7 @@ public class AbstractParser implements Serializable {
                 operatorsTable.put("switch", SWITCH);
                 operatorsTable.put("function", FUNCTION);
                 operatorsTable.put("def", FUNCTION);
-                operatorsTable.put("isdef", ISDEF);
+
 
             case 4: // assignment
                 operatorsTable.put("=", ASSIGN);
@@ -2164,6 +2164,7 @@ public class AbstractParser implements Serializable {
                 operatorsTable.put("soundslike", SOUNDEX);
                 operatorsTable.put("strsim", SIMILARITY);
                 operatorsTable.put("convertable_to", CONVERTABLE_TO);
+                operatorsTable.put("isdef", ISDEF);
 
                 operatorsTable.put("#", STR_APPEND);
 
