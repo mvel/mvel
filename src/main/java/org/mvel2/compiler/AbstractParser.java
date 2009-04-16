@@ -1627,8 +1627,7 @@ public class AbstractParser implements Serializable {
                 case '(':
                 case '[':
                 case '{':
-                    cursor = balancedCaptureWithLineAccounting(expr, cursor, expr[cursor], pCtx);
-                    if (cursor >= length) return;
+                    if ((cursor = balancedCaptureWithLineAccounting(expr, cursor, expr[cursor], pCtx)) >= length) return;
                     break;
 
                 case '"':
