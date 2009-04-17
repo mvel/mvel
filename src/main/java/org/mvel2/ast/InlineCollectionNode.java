@@ -20,6 +20,7 @@ package org.mvel2.ast;
 
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
+import org.mvel2.CompileException;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
@@ -145,11 +146,11 @@ public class InlineCollectionNode extends ASTNode {
 
                 return newArray;
             }
+            catch (IllegalArgumentException e) {
+                throw new CompileException("type mismatch in array", e);
+            }
             catch (ClassNotFoundException e) {
                 throw new RuntimeException("this error should never throw:" + getBaseComponentType(type).getName(), e);
-            }
-            catch (Exception e) {
-                throw new RuntimeException();
             }
         }
         else {

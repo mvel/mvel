@@ -660,7 +660,7 @@ public class AbstractParser implements Serializable {
 
                                     return lastNode = new RegExMatch(tmp, fields, subArray(start, cursor), pCtx);
                                 }
-                                break;
+                                break CaptureLoop;
 
 
                             case '=':

@@ -63,6 +63,9 @@ public class Fuzzer {
             catch (CompileException e) {
                 //ignore
             }
+            catch (ArithmeticException e) {
+                //ignore
+            }
             catch (Exception e) {
                 System.out.println("untrapped error!\n---\n" + append.toString() + "\n---\n");
                 System.out.flush();

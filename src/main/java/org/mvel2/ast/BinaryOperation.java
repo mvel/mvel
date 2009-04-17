@@ -110,7 +110,7 @@ public class BinaryOperation extends BooleanNode {
     public int getOperation() {
         return operation;
     }
-
+                                                                        
     public BinaryOperation getRightBinary() {
         return right != null && right instanceof BinaryOperation ? (BinaryOperation) right : null;
     }
