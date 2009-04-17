@@ -2,11 +2,10 @@ package org.mvel2.tests.core;
 
 import org.mvel2.*;
 import static org.mvel2.MVEL.*;
-import static org.mvel2.MVEL.executeExpression;
-import static org.mvel2.MVEL.compileExpression;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.Function;
 import org.mvel2.ast.WithNode;
+import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.debug.DebugTools;
@@ -5256,6 +5255,21 @@ public class CoreConfidenceTests extends AbstractTest {
             e.printStackTrace();
             fail( "Should not raise exception: " + e.getMessage() );
         }
+    }
+
+    public void testImperativeCode() {
+        String ex = "if (cheese.price == 10) { cheese.price = 5; }";
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping( true );
+        ctx.addInput( "cheese", Cheese.class );
+        // following line is causing an infinite loop when compiling the code
+        // NOTE: drools expects the code to compile, even in the presence of the
+        // "if" statement, but in case the application tries to execute the code,
+        // drools expects mvel to raise the exception, since control flow statements
+        // are disabled
+        AbstractParser.setLanguageLevel( AbstractParser.LEVEL_4_ASSIGNMENT );
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        compiler.compile(ctx);
     }
 
     public static void testProjectionUsingThis() {
