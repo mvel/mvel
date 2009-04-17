@@ -5259,6 +5259,22 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testStringConcatenation2() {
+        String ex = "services.log( $cheese + \" some string \" );";
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("$cheese", Cheese.class);
+        ctx.addInput("services", Services.class);
+        try {
+            ExpressionCompiler compiler = new ExpressionCompiler(ex);
+            compiler.compile(ctx);
+        }
+        catch (Throwable e) {
+            e.printStackTrace();
+            fail("Should not raise exception: " + e.getMessage());
+        }
+    }
+    
     public void testImperativeCode() {
         String ex = "if (cheese.price == 10) { cheese.price = 5; }";
         ParserContext ctx = new ParserContext();
