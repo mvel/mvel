@@ -59,8 +59,15 @@ public class BinaryOperation extends BooleanNode {
         if (ctx.isStrongTyping()) {
             switch (operation) {
                 case Operator.ADD:
+                    /**
+                     * In the special case of Strings, the return type may leftward propogate.
+                     */
                     if (left.getEgressType() == String.class || right.getEgressType() == String.class) {
-                        break;
+                        egressType = String.class;
+                        lType = ParseTools.__resolveType(left.egressType);
+                        rType = ParseTools.__resolveType(right.egressType);
+
+                        return;
                     }
 
                 default:
