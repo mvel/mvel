@@ -5231,8 +5231,9 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public static interface Services {
-        public void log( String text );
+        public void log(String text);
     }
+
     public void testStringConcatenation() {
         // debugging MVEL code, it seems that MVEL 'thinks' that the result of the expression:
         // "Drop +5%: "+$sb+" avg: $"+$av+" price: $"+$pr
@@ -5243,33 +5244,44 @@ public class CoreConfidenceTests extends AbstractTest {
         // raising the error.
         String ex = "services.log( \"Drop +5%: \"+$sb+\" avg: $\"+$av+\" price: $\"+$pr );";
         ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping( true );
-        ctx.addInput( "$sb", String.class );
-        ctx.addInput( "$av", double.class );
-        ctx.addInput( "$pr", double.class );
-        ctx.addInput( "services", Services.class );
-        try { 
+        ctx.setStrongTyping(true);
+        ctx.addInput("$sb", String.class);
+        ctx.addInput("$av", double.class);
+        ctx.addInput("$pr", double.class);
+        ctx.addInput("services", Services.class);
+        try {
             ExpressionCompiler compiler = new ExpressionCompiler(ex);
             compiler.compile(ctx);
-        } catch( Throwable e ) {
+        }
+        catch (Throwable e) {
             e.printStackTrace();
-            fail( "Should not raise exception: " + e.getMessage() );
+            fail("Should not raise exception: " + e.getMessage());
         }
     }
 
     public void testImperativeCode() {
         String ex = "if (cheese.price == 10) { cheese.price = 5; }";
         ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping( true );
-        ctx.addInput( "cheese", Cheese.class );
+        ctx.setStrongTyping(true);
+        ctx.addInput("cheese", Cheese.class);
         // following line is causing an infinite loop when compiling the code
         // NOTE: drools expects the code to compile, even in the presence of the
         // "if" statement, but in case the application tries to execute the code,
         // drools expects mvel to raise the exception, since control flow statements
         // are disabled
-        AbstractParser.setLanguageLevel( AbstractParser.LEVEL_4_ASSIGNMENT );
-        ExpressionCompiler compiler = new ExpressionCompiler(ex);
-        compiler.compile(ctx);
+        AbstractParser.setLanguageLevel(AbstractParser.LEVEL_4_ASSIGNMENT);
+        try {
+            ExpressionCompiler compiler = new ExpressionCompiler(ex);
+            compiler.compile(ctx);
+        }
+        catch (Exception e) {
+            return;
+        }
+        finally {
+            AbstractParser.setLanguageLevel(AbstractParser.LEVEL_5_CONTROL_FLOW);
+        }
+
+        fail("Should have thrown exception");
     }
 
     public static void testProjectionUsingThis() {

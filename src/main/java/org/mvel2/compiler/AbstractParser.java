@@ -642,7 +642,7 @@ public class AbstractParser implements Serializable {
 
 
                             case '{':
-                                if (!union) break;
+                                if (!union) break CaptureLoop;
                                 cursor = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx) + 1;
                                 continue;
 
