@@ -1,19 +1,10 @@
 package org.mvel2.tests.core;
 
-import static org.mvel2.MVEL.executeExpression;
-import static org.mvel2.MVEL.parseMacros;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import junit.framework.Assert;
 import junit.framework.TestCase;
-
-import org.mvel2.MVEL;
-import org.mvel2.MVELRuntime;
-import org.mvel2.Macro;
-import org.mvel2.MacroProcessor;
-import org.mvel2.ParserContext;
+import org.mvel2.*;
+import static org.mvel2.MVEL.executeExpression;
+import static org.mvel2.MVEL.parseMacros;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.WithNode;
 import org.mvel2.compiler.CompiledExpression;
@@ -25,6 +16,9 @@ import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.tests.core.res.Foo;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MacroProcessorTest extends TestCase {
 
@@ -67,29 +61,29 @@ public class MacroProcessorTest extends TestCase {
             fail("there shouldn't be any exception: " + ex.getMessage());
         }
     }
-    
+
     public void testInfiniteLoop() {
         String str = "";
         str += "int insuranceAmt = caseRate + (charges * pctDiscount / 100);\n";
         str += "update (estimate); \n";
 
         Map<String, Macro> macros = new HashMap<String, Macro>();
-        macros.put( "update",
-                    new Macro() {
-                        public String doMacro() {
-                            return "drools.update";
-                        }
-                    } );
-        
-        String result = parseMacros( str, macros);   
-        
+        macros.put("update",
+                new Macro() {
+                    public String doMacro() {
+                        return "drools.update";
+                    }
+                });
+
+        String result = parseMacros(str, macros);
+
         str = "";
         str += "int insuranceAmt = caseRate + (charges * pctDiscount / 100);\n";
-        str += "drools.update (estimate);";   
+        str += "drools.update (estimate);";
 
-        assertEquals( str, result );
+        assertEquals(str, result);
     }
-    
+
     public void testMacroSupport() {
         Map<String, Object> vars = new HashMap<String, Object>();
         vars.put("foo", new Foo());
@@ -223,14 +217,14 @@ public class MacroProcessorTest extends TestCase {
             fail("there shouldn't be any exception: " + ex.getMessage());
         }
     }
-    
+
     public void testParseConsequenceWithFlowControlBlocks() {
         String raw = "    // str is null, we are just testing we don't get a null pointer \n " +
                 "     if (l.x < 1)  {\n" +
                 "        insert( new RuleLink(\"FIRST.INLET\" , comp, comp) );\n" +
                 "     } else {\n" +
                 "        insert( new RuleLink(\"FIRST.INLET.NOT\" , comp, comp) );\n" +
-                "     }\n"+
+                "     }\n" +
                 "    if( 1 < 2 ) { \n" +
                 "        insert( p ); \n" +
                 "    } else { \n" +
@@ -241,13 +235,13 @@ public class MacroProcessorTest extends TestCase {
                 "        drools.insert( new RuleLink(\"FIRST.INLET\" , comp, comp) );\n" +
                 "     } else {\n" +
                 "        drools.insert( new RuleLink(\"FIRST.INLET.NOT\" , comp, comp) );\n" +
-                "     }\n"+
+                "     }\n" +
                 "    if( 1 < 2 ) { \n" +
                 "        drools.insert( p ); \n" +
                 "    } else { \n" +
                 "        while( true ) {drools.insert(x);}\n" +
                 "    }";
-          
+
         try {
             String result = macroProcessor.parse(raw);
             assertEquals(expected, result);
@@ -259,8 +253,8 @@ public class MacroProcessorTest extends TestCase {
     }
 
     public void testCommentParsingWithMacro() {
-        String raw =        "/** This is a block comment **/ insert /** This is a second \n\nblock comment insert **/";
-        String expected =   "/** This is a block comment **/ drools.insert /** This is a second \n\nblock comment insert **/";
+        String raw = "/** This is a block comment **/ insert /** This is a second \n\nblock comment insert **/";
+        String expected = "/** This is a block comment **/ drools.insert /** This is a second \n\nblock comment insert **/";
 
         try {
             String result = macroProcessor.parse(raw);

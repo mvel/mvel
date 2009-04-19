@@ -101,15 +101,15 @@ public class Base {
     public Map<String, Foo> getFooMap() {
         return fooMap;
     }
-    
+
     public int getIntValue() {
         return 10;
     }
-    
-    public void setExplanation( String data ) {
+
+    public void setExplanation(String data) {
         this.data = data;
     }
-    
+
     public String getExplanation() {
         return this.data;
     }

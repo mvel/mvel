@@ -1,24 +1,23 @@
 package org.mvel2.tests.core;
 
-import org.mvel2.tests.core.res.Base;
-import org.mvel2.tests.core.res.Foo;
-import org.mvel2.tests.core.res.Bar;
-import org.mvel2.integration.*;
-import org.mvel2.PropertyAccessor;
+import junit.framework.TestCase;
 import org.mvel2.MVEL;
+import org.mvel2.PropertyAccessor;
 import org.mvel2.asm.MethodVisitor;
+import static org.mvel2.asm.Opcodes.*;
+import org.mvel2.integration.*;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.optimizers.impl.asm.ProducesBytecode;
-import junit.framework.TestCase;
+import org.mvel2.tests.core.res.Bar;
+import org.mvel2.tests.core.res.Base;
+import org.mvel2.tests.core.res.Foo;
 
+import java.io.Serializable;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.lang.reflect.Array;
-import java.io.Serializable;
-
-import static org.mvel2.asm.Opcodes.*;
 
 
 public class PropertyHandlerTests extends TestCase {
