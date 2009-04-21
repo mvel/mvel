@@ -807,7 +807,7 @@ public class AbstractParser implements Serializable {
                             }
                             else if ((cursor == 0 || lastNode instanceof EndOfStatement) && !isDigit(lookAhead())) {
                                 captureToEOT();
-                                return new Sign(expr, start, cursor, fields);
+                                return new Sign(expr, start, cursor, fields, pCtx);
                             }
                             else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
                                 return createOperator(expr, start, cursor++ + 1);

@@ -1,6 +1,10 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
+import org.mvel2.util.ParseTools;
+import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 
 import java.math.BigDecimal;
@@ -9,10 +13,15 @@ import java.io.Serializable;
 
 public class Sign extends ASTNode {
     private Signer signer;
+    private ExecutableStatement stmt;
 
-    public Sign(char[] expr, int start, int end, int fields) {
+    public Sign(char[] expr, int start, int end, int fields, ParserContext pCtx) {
         super(expr, start + 1, end, fields);
         if ((fields & COMPILE_IMMEDIATE) != 0) {
+            stmt = (ExecutableStatement) ParseTools.subCompileExpression(name, pCtx);
+
+            egressType = stmt.getKnownEgressType();
+
             if (egressType != null && egressType != Object.class) {
                 initSigner(egressType);
             }
@@ -22,12 +31,12 @@ public class Sign extends ASTNode {
 
     @Override
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return sign(super.getReducedValueAccelerated(ctx, thisValue, factory));
+        return sign(stmt.getValue(ctx, thisValue, factory));
     }
 
     @Override
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return sign(super.getReducedValue(ctx, thisValue, factory));
+        return sign(MVEL.eval(name, thisValue, factory));
     }
 
     private Object sign(Object o) {

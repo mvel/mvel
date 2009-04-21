@@ -577,4 +577,8 @@ public class ArithmeticTests extends AbstractTest {
         assertEquals("catbar", test("c + 'bar'"));
     }
 
+    public void testNegation() {
+        assertEquals(1, test("-(-1)"));
+    }
+
 }
