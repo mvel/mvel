@@ -3224,6 +3224,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public static interface Services {
+        public final static String A_CONST = "Hello World";
         public void log(String text);
     }
 
@@ -3261,6 +3262,25 @@ public class CoreConfidenceTests extends AbstractTest {
         try {
             ExpressionCompiler compiler = new ExpressionCompiler(ex);
             compiler.compile(ctx);
+        }
+        catch (Throwable e) {
+            e.printStackTrace();
+            fail("Should not raise exception: " + e.getMessage());
+        }
+    }
+
+    public void testDebugMode() {
+        String ex = "System.out.println( Cheese.STILTON );";
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addImport( Cheese.class );
+        try {
+            ExpressionCompiler compiler = new ExpressionCompiler(ex);
+            CompiledExpression expr = compiler.compile(ctx);
+            
+            // executing the following line with a MVEL.executeExpression() works fine
+            // but executeDebugger() fails
+            MVEL.executeDebugger( expr, null, (VariableResolverFactory)null );
         }
         catch (Throwable e) {
             e.printStackTrace();
