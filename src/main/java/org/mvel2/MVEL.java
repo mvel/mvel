@@ -22,6 +22,7 @@ import static org.mvel2.MVELRuntime.execute;
 import org.mvel2.compiler.*;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.impl.refl.nodes.GetterAccessor;
 import static org.mvel2.util.ParseTools.loadFromFile;
@@ -1126,7 +1127,13 @@ public class MVEL {
 
     public static Object executeDebugger(CompiledExpression expression, Object ctx, VariableResolverFactory vars) {
         try {
-            return execute(true, expression, ctx, vars);
+            if (expression.isImportInjectionRequired()) {
+                return execute(true, expression, ctx, new ClassImportResolverFactory(expression
+                        .getParserContext().getParserConfiguration(), vars));
+            }
+            else {
+                return execute(true, expression, ctx, vars);
+            }
         }
         catch (EndWithValue e) {
             return e.getValue();

@@ -128,8 +128,7 @@ public class ASTNode implements Cloneable, Serializable {
             }
 
             ParserContext pCtx = new ParserContext(new ParserConfiguration(getInjectedImports(factory), null));
-         //   pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
-
+            
             try {
                 setAccessor(optimizer.optimizeAccessor(pCtx, name, ctx, thisValue, factory, true, egressType));
             }
@@ -142,7 +141,6 @@ public class ASTNode implements Cloneable, Serializable {
             if (accessor == null) {
                 return get(name, ctx, factory, thisValue);
             }
-            //        throw new OptimizationFailure("failed optimization");
 
             if (retVal == null) {
                 retVal = optimizer.getResultOptPass();
