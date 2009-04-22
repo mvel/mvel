@@ -32,7 +32,7 @@ public class FastList<E> extends AbstractList<E> implements Externalizable {
     private boolean updated = false;
 
     public FastList(int size) {
-        elements = (E[]) new Object[size];
+        elements = (E[]) new Object[size == 0 ? 1 : size];
     }
 
     public FastList(E[] elements) {
@@ -126,16 +126,17 @@ public class FastList<E> extends AbstractList<E> implements Externalizable {
 
     public boolean addAll(int i, Collection<? extends E> collection) {
         int offset = collection.size();
-        ensureCapacity(offset);
+        ensureCapacity(offset+size);
 
         for (int c = i; c != (i + offset); c++) {
             elements[c + offset + 1] = elements[c];
+            size++;
         }
 
-        int c = 0;
-        for (E o : collection) {
-            elements[offset + c] = o;
-        }
+//        int c = 0;
+//        for (E o : collection) {
+//            elements[offset + c] = o;
+//        }
 
         return true;
     }
@@ -243,12 +244,12 @@ public class FastList<E> extends AbstractList<E> implements Externalizable {
         return indexOf(o) != -1;
     }
 
-    public Object[] toArray() {        
+    public Object[] toArray() {
         return toArray(new Object[size]);
     }
 
     public Object[] toArray(Object[] objects) {
-        if (objects.length < size) objects = new Object[size]; 
+        if (objects.length < size) objects = new Object[size];
         for (int i = 0; i < size; i++) {
             objects[i] = elements[i];
         }

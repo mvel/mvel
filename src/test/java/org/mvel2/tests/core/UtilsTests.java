@@ -1,8 +1,13 @@
 package org.mvel2.tests.core;
 
 import junit.framework.TestCase;
+import org.mvel2.MVEL;
 import org.mvel2.util.FastList;
 import org.mvel2.util.StringAppender;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
 
 public class UtilsTests extends TestCase {
 
@@ -44,6 +49,41 @@ public class UtilsTests extends TestCase {
         for (Object o : list) {
             if (!zz2[i++].equals(o)) throw new AssertionError("problem with list!");
         }
+    }
+
+    public void testAddToFastList() throws Exception {
+        FastList fl = new FastList(0);
+        assertEquals(0, fl.size());
+
+        // this throws an ArrayIndexOutOfBoundsException:0
+        fl.add("value");
+        assertEquals(1, fl.size());
+    }
+
+    public void testAddAllFastList() throws Exception {
+        FastList fl1 = new FastList(1);
+        fl1.add("value1");
+        fl1.add("value2");
+        assertEquals(2, fl1.size());
+
+        FastList fl2 = new FastList(1);
+        fl2.add("value3");
+        fl2.add("value4");
+
+        // the addAll results in a list of 2 instead of 4 that was expected
+        fl1.addAll(fl2);
+
+        assertEquals(4, fl1.size());
+    }
+
+    public void testFastListEval() throws Exception {
+        Map<String, Object> map = new HashMap<String, Object>();
+
+        // The following throws a PropertyAccessException:
+        // unable to resolve property: could not access property
+        MVEL.eval("list = []; list.add('value')", map);
+
+        assertEquals(1, ((List) map.get("list")).size());
     }
 
 
