@@ -483,5 +483,25 @@ public class DebuggerTests extends AbstractTest {
 
     }
 
+    public void testDebugSymbolsSingleStatement() {
+        String ex = "System.out.println( Cheese.STILTON );";
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addImport( Cheese.class );
+        try {
+            ExpressionCompiler compiler = new ExpressionCompiler(ex);
+            CompiledExpression expr = compiler.compile(ctx);
+
+            // executing the following line with a MVEL.executeExpression() works fine
+            // but executeDebugger() fails
+            MVEL.executeDebugger( expr, null, (VariableResolverFactory)null );
+        }
+        catch (Throwable e) {
+            e.printStackTrace();
+            fail("Should not raise exception: " + e.getMessage());
+        }
+    }
+
+
 
 }
