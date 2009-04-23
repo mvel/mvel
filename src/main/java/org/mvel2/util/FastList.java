@@ -126,18 +126,22 @@ public class FastList<E> extends AbstractList<E> implements Externalizable {
 
     public boolean addAll(int i, Collection<? extends E> collection) {
         int offset = collection.size();
-        ensureCapacity(offset+size);
+        ensureCapacity(offset + size);
 
-        for (int c = i; c != (i + offset); c++) {
-            elements[c + offset + 1] = elements[c];
-            size++;
+        if (i != 0) {
+            // copy forward all elements that the insertion is occuring before
+            for (int c = i; c != (i + offset); c++) {
+                elements[c + offset + 1] = elements[c];
+            }
         }
 
-//        int c = 0;
-//        for (E o : collection) {
-//            elements[offset + c] = o;
-//        }
+        int c = size == 0 ? -1 : 0;
+        for (E o : collection) {
+            elements[offset + c++] = o;
+        }
 
+        size += offset;
+        
         return true;
     }
 

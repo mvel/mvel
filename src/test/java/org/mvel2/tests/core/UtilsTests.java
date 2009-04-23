@@ -6,8 +6,8 @@ import org.mvel2.util.FastList;
 import org.mvel2.util.StringAppender;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 public class UtilsTests extends TestCase {
 
@@ -76,6 +76,32 @@ public class UtilsTests extends TestCase {
         assertEquals(4, fl1.size());
     }
 
+    public void testAddAllFastList2() throws Exception {
+        FastList<String> fl1 = new FastList<String>();
+        fl1.add("value1");
+        fl1.add("value2");
+
+        FastList<String> fl2 = new FastList<String>();
+        fl2.add("value3");
+        fl2.add("value4");
+
+        fl1.addAll(fl2);
+
+        assertEquals("value1", fl1.get(0));
+        assertEquals("value2", fl1.get(1));
+        assertEquals("value3", fl1.get(2)); // this results in null
+        assertEquals("value4", fl1.get(3)); // this results in null
+    }
+
+    public void testAddAll2() {
+        FastList<String> flSource = new FastList<String>();
+        flSource.add("value");
+
+        FastList<String> flDest = new FastList<String>(flSource.size());
+        flDest.addAll(flSource); // throws ArrayIndexOutOfBoundsException: 2
+        assertEquals("value", flDest.get(0));
+    }
+
     public void testFastListEval() throws Exception {
         Map<String, Object> map = new HashMap<String, Object>();
 
@@ -86,8 +112,4 @@ public class UtilsTests extends TestCase {
         assertEquals(1, ((List) map.get("list")).size());
     }
 
-
-    public static void main(String[] args) throws Exception {
-        Class.forName("[Ljava.lang.String;");
-    }
 }
