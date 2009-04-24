@@ -121,7 +121,8 @@ public class FastList<E> extends AbstractList<E> implements Externalizable {
     }
 
     public void clear() {
-        elements = (E[]) new Object[0];
+        elements = (E[]) new Object[1];
+        size = 0; 
     }
 
     public boolean addAll(int i, Collection<? extends E> collection) {
