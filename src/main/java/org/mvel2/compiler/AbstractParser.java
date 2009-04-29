@@ -781,7 +781,8 @@ public class AbstractParser implements Serializable {
 
                             if (pCtx == null || (pCtx.getInterceptors() == null || !pCtx.getInterceptors().
                                     containsKey(name = new String(expr, start, cursor - start)))) {
-                                throw new CompileException("reference to undefined interceptor: " + new String(expr, start, cursor - start), expr, cursor);
+                                throw new CompileException("reference to undefined interceptor: "
+                                        + new String(expr, start, cursor - start), expr, cursor);
                             }
 
                             return lastNode = new InterceptorWrapper(pCtx.getInterceptors().get(name), nextToken());
@@ -1196,7 +1197,8 @@ public class AbstractParser implements Serializable {
                     String iStr = new String(_subset, 0, offset);
                     if (pCtx.hasImport(iStr)) {
                         lastWasIdentifier = true;
-                        return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length - offset - 1),
+                        return lastNode = new LiteralDeepPropertyNode(subset(_subset, offset + 1, _subset.length
+                                - offset - 1),
                                 fields, pCtx.getImport(iStr));
                     }
                 }
@@ -1523,7 +1525,8 @@ public class AbstractParser implements Serializable {
                 skipWhitespaceWithLineAccounting();
                 startCond = cursor + 1;
                 endCond = cursor = balancedCaptureWithLineAccounting(expr, cursor, '(', pCtx);
-                return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd), ASTNode.BLOCK_DO_UNTIL);
+                return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd),
+                        ASTNode.BLOCK_DO_UNTIL);
             }
             else {
                 throw new CompileException("expected 'while' or 'until' but encountered: " + name, expr, cursor);
@@ -1671,7 +1674,8 @@ public class AbstractParser implements Serializable {
                 default: {
                     if (!isIdentifierPart(expr[cursor])) {
                         if (captured) return;
-                        throw new CompileException("unexpected symbol (was expecting an identifier): " + expr[cursor], expr, cursor);
+                        throw new CompileException("unexpected symbol (was expecting an identifier): " + expr[cursor],
+                                expr, cursor);
                     }
                     else {
                         captured = true;
@@ -2085,7 +2089,8 @@ public class AbstractParser implements Serializable {
     }
 
     protected void addFatalError(String message) {
-        getParserContext().addError(new ErrorDetail(getParserContext().getLineCount(), cursor - getParserContext().getLineOffset(), true, message));
+        getParserContext().addError(new ErrorDetail(getParserContext().getLineCount(),
+                cursor - getParserContext().getLineOffset(), true, message));
     }
 
     protected void addFatalError(String message, int row, int cols) {
@@ -2381,7 +2386,8 @@ public class AbstractParser implements Serializable {
                     break;
 
                 case REGEX:
-                    stk.push(java.util.regex.Pattern.compile(java.lang.String.valueOf(stk.pop())).matcher(java.lang.String.valueOf(stk.pop())).matches());
+                    stk.push(java.util.regex.Pattern.compile(java.lang.String.valueOf(stk.pop()))
+                            .matcher(java.lang.String.valueOf(stk.pop())).matches());
                     break;
 
                 case INSTANCEOF:

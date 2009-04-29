@@ -975,7 +975,7 @@ public class MVEL {
 
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
         try {
-            return ((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory);
+            return ((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory);                            
         }
         catch (EndWithValue end) {
             return end.getValue();

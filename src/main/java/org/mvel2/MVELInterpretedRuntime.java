@@ -290,22 +290,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
         return this;
     }
 
-//    public int getRoundingMode() {
-//        return roundingMode;
-//    }
-//
-//    public void setRoundingMode(int roundingMode) {
-//        this.roundingMode = roundingMode;
-//    }
-
-//    public boolean isReturnBigDecimal() {
-//        return returnBigDecimal;
-//    }
-//
-//    public void setReturnBigDecimal(boolean returnBigDecimal) {
-//        this.returnBigDecimal = returnBigDecimal;
-//    }
-
     MVELInterpretedRuntime(char[] expression, Object ctx, Map<String, Object> variables) {
         this.expr = expression;
         this.length = expr.length;
