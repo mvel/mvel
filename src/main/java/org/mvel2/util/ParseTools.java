@@ -1262,7 +1262,7 @@ public class ParseTools {
         }
 
         if (start != (end = ending)) {
-            if (parm == null) {
+            if (parm == null || "".equals(parm)) {
                 MVEL.eval(new StringAppender(nestParm).append('.')
                         .append(block, start, end - start).toString(), ctx, factory);
             }

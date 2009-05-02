@@ -2,11 +2,15 @@ package org.mvel2.tests.core;
 
 import static org.mvel2.MVEL.executeExpression;
 import org.mvel2.ParserContext;
+import org.mvel2.MVEL;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Foo;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class WithTests extends AbstractTest {
     public void testWith() {
@@ -121,5 +125,16 @@ public class WithTests extends AbstractTest {
         executeExpression(compiled, b);
 
         assertEquals(b.data, "foo");
+    }
+
+    public void testSingleMethodCall() {
+        Base b = new Base();
+
+        Map map = new HashMap();
+        map.put("base", b);
+
+        MVEL.eval("base.{ populate() }", map);
+
+        assertEquals("sarah", b.barfoo);
     }
 }

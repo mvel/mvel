@@ -168,7 +168,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
 
         if (start != (end = block.length)) {
-            if (parm == null) {
+            if (parm == null || "".equals(parm)) {
                 parms.add(
                         new ParmValuePair(null, (ExecutableStatement)
                                 subCompileExpression(new StringAppender(nestParm).append('.')
