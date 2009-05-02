@@ -91,7 +91,11 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
             return new HashSet<String>(0);
         }
         else {
-            if (variableResolvers != null) return new HashSet<String>(variableResolvers.keySet());
+            if (variableResolvers != null)  {
+                HashSet<String> vars = new HashSet<String>(variableResolvers.keySet());
+                vars.addAll(nextFactory.getKnownVariables());
+                return vars;
+            }
             return new HashSet<String>(0);
         }
     }

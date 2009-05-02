@@ -26,6 +26,7 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.ParseTools.parseWithExpressions;
 import static org.mvel2.util.PropertyTools.getReturnType;
 import org.mvel2.util.StringAppender;
 import org.mvel2.util.ParseTools;
@@ -71,7 +72,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        ParseTools.parseWithExpressions(nestParm, block, 0, block.length, ctx = MVEL.eval(name, ctx, factory), factory);
+        parseWithExpressions(nestParm, block, 0, block.length, ctx = MVEL.eval(name, ctx, factory), factory);
         return ctx;
     }
 
