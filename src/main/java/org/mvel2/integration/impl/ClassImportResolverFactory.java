@@ -122,4 +122,9 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
         if (packageImports == null) packageImports = new HashSet<String>();
         packageImports.add(packageName);
     }
+
+    @Override
+    public Set<String> getKnownVariables() {
+        return nextFactory == null ? new HashSet(0) : nextFactory.getKnownVariables();
+    }
 }
