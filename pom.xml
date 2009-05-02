@@ -12,16 +12,21 @@
         <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/2.0.9-SNAPSHOT-050109</developerConnection>
     </scm>
 
-    <!--<pluginRepositories>-->
-        <!--<pluginRepository>-->
-            <!--<id>apache-snapshots</id>-->
-            <!--<name>Apache Snapshot Repository</name>-->
-            <!--<url>http://repository.apache.org/snapshots/</url>-->
-            <!--<snapshots>-->
-                <!--<enabled>true</enabled>-->
-            <!--</snapshots>-->
-        <!--</pluginRepository>-->
-    <!--</pluginRepositories>-->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>apache-snapshots</id>
+            <name>Apache Snapshot Repository</name>
+            <url>http://repository.apache.org/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>apache</id>
+            <name>Apache Repository</name>
+            <url>http://repository.apache.org/</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <build>
         <extensions>
