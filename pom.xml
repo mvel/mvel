@@ -12,6 +12,17 @@
         <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/2.0.9-SNAPSHOT-050109</developerConnection>
     </scm>
 
+    <!--<pluginRepositories>-->
+        <!--<pluginRepository>-->
+            <!--<id>apache-snapshots</id>-->
+            <!--<name>Apache Snapshot Repository</name>-->
+            <!--<url>http://repository.apache.org/snapshots/</url>-->
+            <!--<snapshots>-->
+                <!--<enabled>true</enabled>-->
+            <!--</snapshots>-->
+        <!--</pluginRepository>-->
+    <!--</pluginRepositories>-->
+
     <build>
         <extensions>
             <extension>
@@ -20,6 +31,7 @@
                 <version>1.0-beta-2</version>
             </extension>
         </extensions>
+
 
         <plugins>
 
@@ -48,7 +60,7 @@
                 </configuration>
             </plugin>
 
-            <plugin>                    
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
