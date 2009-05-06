@@ -97,7 +97,7 @@
                 <configuration>
                     <tagBase>https://svn.codehaus.org/mvel/tags/</tagBase>
                     <!-- See http://jira.codehaus.org/browse/SCM-406 -->
-                    <remoteTagging>true</remoteTagging>
+                    <remoteTagging>false</remoteTagging>
                     <!-- Further non-mandatory but useful settings... -->
                     <preparationGoals>clean install</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
