@@ -1,0 +1,131 @@
+package org.mvel.util;
+
+
+public class StringAppender implements CharSequence {
+    private static final int DEFAULT_SIZE = 15;
+
+    private char[] str;
+    private int capacity;
+    private int size = 0;
+
+
+    public StringAppender() {
+        str = new char[capacity = DEFAULT_SIZE];
+    }
+
+    public StringAppender(int capacity) {
+        str = new char[this.capacity = capacity];
+    }
+
+    public StringAppender(char c) {
+        (str = new char[this.capacity = DEFAULT_SIZE])[0] = c;
+    }
+
+    public StringAppender(char[] s) {
+        capacity = size = (str = s).length;
+    }
+
+    public StringAppender(CharSequence s) {
+        str = new char[this.capacity = size = s.length()];
+        for (int i = 0; i < str.length; i++)
+            str[i] = s.charAt(i);
+    }
+
+    public StringAppender(String s) {
+        capacity = size = (str = s.toCharArray()).length;
+    }
+
+    public StringAppender append(char[] chars) {
+        if (chars.length > (capacity - size)) grow(chars.length);
+        for (int i = 0; i < chars.length; size++) {
+            str[size] = chars[i++];
+        }
+        size += chars.length;
+        return this;
+    }
+
+    public StringAppender append(Object o) {
+        return append(String.valueOf(o));
+    }
+
+    public StringAppender append(CharSequence s) {
+        if (s.length() > (capacity - size)) grow(s.length());
+        for (int i = 0; size < capacity; size++) {
+            str[size] = s.charAt(i++);
+        }
+        size += s.length();
+        return this;
+    }
+
+    public StringAppender append(String s) {
+        if (s == null) return this;
+
+        int len = s.length();
+        if (len > (capacity - size)) {
+            grow(len);
+        }
+
+        s.getChars(0, len, str, size);
+        size += len;
+
+        return this;
+    }
+
+    public StringAppender append(char c) {
+        if (size >= capacity) grow(1);
+        str[size++] = c;
+        return this;
+    }
+
+    public int length() {
+        return size;
+    }
+
+    private void grow(int s) {
+        if (capacity == 0) capacity = DEFAULT_SIZE;
+        final char[] newArray = new char[capacity += s * 2];
+        System.arraycopy(str, 0, newArray, 0, size);
+        str = newArray;
+    }
+
+    public char[] getChars(int start, int count) {
+        char[] chars = new char[count];
+        System.arraycopy(str, start, chars, 0, count);
+        return chars;
+    }
+
+    public char[] toChars() {
+        char[] chars = new char[size];
+        System.arraycopy(str, 0, chars, 0, size);
+        return chars;
+    }
+
+
+    public String toString() {
+        if (size == capacity) return new String(str);
+        else return new String(str, 0, size);
+    }
+
+
+    public void getChars(int start, int count, char[] target, int offset) {
+        int delta = offset;
+        for (int i = start; i < count; i++) {
+            target[delta++] = str[i];
+        }
+    }
+
+    public void reset() {
+        size = 0;
+    }
+
+    public char charAt(int index) {
+        return str[index];
+    }
+
+    public CharSequence subSequence(int start, int end) {
+        return new String(str, start, (end - start));
+    }
+
+
+}
+
