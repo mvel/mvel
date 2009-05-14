@@ -25,9 +25,8 @@ import org.mvel2.ErrorDetail;
 import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
-import org.mvel2.debug.DebugTools;
-import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel2.ast.*;
+import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel2.util.ASTLinkedList;
 import static org.mvel2.util.CompilerTools.optimizeAST;
 import org.mvel2.util.ExecutionStack;
@@ -241,7 +240,7 @@ public class ExpressionCompiler extends AbstractParser {
 
             if (verifying && !verifyOnly) {
                 pCtx.processTables();
-            }            
+            }
 
             if (!stk.isEmpty()) {
                 throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
@@ -249,7 +248,7 @@ public class ExpressionCompiler extends AbstractParser {
 
 
             if (!verifyOnly) {
-                return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly==1);
+                return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly == 1);
             }
             else {
                 return null;
@@ -303,13 +302,16 @@ public class ExpressionCompiler extends AbstractParser {
                 PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), pCtx);
 
                 if (tk instanceof Union) {
-                    propVerifier.setCtx(((Union)tk).getLeftEgressType());
+                    propVerifier.setCtx(((Union) tk).getLeftEgressType());
+                    tk.setEgressType(returnType = propVerifier.analyze());
+
                 }
+                else {
+                    tk.setEgressType(returnType = propVerifier.analyze());
 
-                tk.setEgressType(returnType = propVerifier.analyze());
-
-                if (propVerifier.isResolvedExternally()) {
-                    pCtx.addInput(tk.getAbsoluteName(), returnType);
+                    if (propVerifier.isResolvedExternally()) {
+                        pCtx.addInput(tk.getAbsoluteName(), returnType);
+                    }
                 }
             }
             else if (tk.isAssignment()) {

@@ -519,6 +519,27 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("10", test("(String) 10"));
     }
 
+    public void testTypeCast2() {
+        assertEquals(0, test("map = new java.util.HashMap(); map.put('doggie', new java.util.ArrayList()); ((java.util.ArrayList) map['doggie']).size()"));
+    }
+
+    public void testTypeCast3() {
+        Map map = new HashMap();
+        map.put("foo", new Foo());
+
+        ParserContext pCtx = new ParserContext();
+        pCtx.setStrongTyping(true);
+        pCtx.addInput("foo", Foo.class);
+
+        Serializable s = MVEL.compileExpression("((org.mvel2.tests.core.res.Bar) foo.getBar()).name != null", pCtx);
+
+        assertEquals(true, MVEL.executeExpression(s, map));
+
+        assertEquals(1, pCtx.getInputs().size());
+        assertEquals(true, pCtx.getInputs().containsKey("foo"));
+    }
+
+
     public void testMapAccessSemantics() {
         Map<String, Object> outermap = new HashMap<String, Object>();
         Map<String, Object> innermap = new HashMap<String, Object>();
