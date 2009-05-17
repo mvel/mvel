@@ -396,8 +396,8 @@ public class ParserContext implements Serializable {
     }
 
     /**
-     * Enables strict type enforcement
-     * @param strictTypeEnforcement
+     * Enables strict type enforcement -
+     * @param strictTypeEnforcement -
      */
     public void setStrictTypeEnforcement(boolean strictTypeEnforcement) {
         this.strictTypeEnforcement = strictTypeEnforcement;
