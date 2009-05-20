@@ -84,16 +84,16 @@ public class BinaryOperation extends BooleanNode {
                     }
             }
 
-            if (left.egressType == right.egressType) {
+            if (this.left.egressType == this.right.egressType) {
                 lType = rType = ParseTools.__resolveType(left.egressType);
             }
             else {
-                lType = ParseTools.__resolveType(left.egressType);
-                rType = ParseTools.__resolveType(right.egressType);
+                lType = ParseTools.__resolveType(this.left.egressType);
+                rType = ParseTools.__resolveType(this.right.egressType);
             }
         }
 
-        egressType = getReturnTypeFromOp(operation, left.egressType, right.egressType);
+        egressType = getReturnTypeFromOp(operation, this.left.egressType, this.right.egressType);
 
     }
 

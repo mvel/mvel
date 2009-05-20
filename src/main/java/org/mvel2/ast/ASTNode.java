@@ -419,7 +419,7 @@ public class ASTNode implements Cloneable, Serializable {
         }
 
         setName(name);
-    }
+     }
 
     public String toString() {
         return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" : String.valueOf(literal);

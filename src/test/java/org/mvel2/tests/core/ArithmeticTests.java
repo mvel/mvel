@@ -1,9 +1,11 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
 import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.compiler.CompiledExpression;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -579,6 +581,17 @@ public class ArithmeticTests extends AbstractTest {
 
     public void testNegation() {
         assertEquals(1, test("-(-1)"));
+    }
+
+    public void testStrongTypingModeComparison() {
+        ParserContext parserContext = new ParserContext();
+        parserContext.setStrongTyping(true);
+        parserContext.addInput("a", Long.class);
+
+        CompiledExpression compiledExpression = new ExpressionCompiler("a==0").compile(parserContext);
+        HashMap<String, Object> variables = new HashMap<String, Object>();
+        variables.put("a", new Long(0));
+        MVEL.executeExpression(compiledExpression, variables);
     }
 
 }
