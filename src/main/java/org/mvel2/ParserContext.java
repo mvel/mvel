@@ -36,7 +36,7 @@ import java.util.*;
  * <pre><code>
  * ParserContext parserContext = new ParserContext();
  * parserContext.setStrongTyping(true); // turn on strong typing.
- *
+ * <p/>
  * Serializable comp = MVEL.compileExpression("foo.bar", parserContext);
  * </code</pre>
  */
@@ -74,7 +74,7 @@ public class ParserContext implements Serializable {
     private boolean executableCodeReached = false;
     private boolean indexAllocation = false;
     private boolean allowBootstrapBypass = true;
-                                           
+
     public ParserContext() {
     }
 
@@ -94,6 +94,40 @@ public class ParserContext implements Serializable {
         this.sourceFile = sourceFile;
         this.parserConfiguration = new ParserConfiguration(imports, interceptors);
     }
+
+    public ParserContext createSubcontext() {
+        ParserContext ctx = new ParserContext(parserConfiguration);
+        ctx.sourceFile = sourceFile;
+
+        ctx.addInputs(inputs);
+        ctx.addVariables(variables);
+        ctx.addIndexedVariables(indexedVariables);
+        ctx.addTypeParameters(typeParameters);
+
+        ctx.sourceMap = sourceMap;
+        ctx.lastLineLabel = lastLineLabel;
+
+        ctx.globalFunctions = globalFunctions;
+        ctx.lastTypeParameters = lastTypeParameters;
+        ctx.errorList = errorList;
+        ctx.rootParser = rootParser;
+        ctx.lineCount = lineCount;
+        ctx.lineOffset = lineOffset;
+
+        ctx.compiled = compiled;
+        ctx.strictTypeEnforcement = strictTypeEnforcement;
+        ctx.strongTyping = strongTyping;
+
+        ctx.fatalError = fatalError;
+        ctx.retainParserState = retainParserState;
+        ctx.debugSymbols = debugSymbols;
+        ctx.blockSymbols = blockSymbols;
+        ctx.executableCodeReached = executableCodeReached;
+        ctx.indexAllocation = indexAllocation;
+
+        return ctx;
+    }
+
 
     /**
      * Tests whether or not a variable or input exists in the current parser context.
@@ -250,7 +284,7 @@ public class ParserContext implements Serializable {
      * </code></pre>
      *
      * @param name The alias to use
-     * @param cls The instance of the <tt>Class</tt> which represents the imported class.
+     * @param cls  The instance of the <tt>Class</tt> which represents the imported class.
      */
     public void addImport(String name, Class cls) {
         parserConfiguration.addImport(name, cls);
@@ -264,7 +298,7 @@ public class ParserContext implements Serializable {
      * ... doing this allows the <tt>System.currentTimeMillis()</tt> method to be executed in a script simply by writing
      * <tt>time()</tt>.
      *
-     * @param name The alias to use
+     * @param name   The alias to use
      * @param method The instance of <tt>Method</tt> which represents the static import.
      */
     public void addImport(String name, Method method) {
@@ -274,7 +308,7 @@ public class ParserContext implements Serializable {
     /**
      * Adds a static import for the specified {@link MethodStub} with an alias.
      *
-     * @param name The alias to use
+     * @param name   The alias to use
      * @param method The instance of <tt>Method</tt> which represents the static import.
      * @see #addImport(String, org.mvel2.util.MethodStub)
      */
@@ -397,6 +431,7 @@ public class ParserContext implements Serializable {
 
     /**
      * Enables strict type enforcement -
+     *
      * @param strictTypeEnforcement -
      */
     public void setStrictTypeEnforcement(boolean strictTypeEnforcement) {
@@ -409,6 +444,7 @@ public class ParserContext implements Serializable {
 
     /**
      * Enables strong type enforcement.
+     *
      * @param strongTyping
      */
     public void setStrongTyping(boolean strongTyping) {
@@ -559,6 +595,21 @@ public class ParserContext implements Serializable {
         typeParameters.put(name, newPkg);
     }
 
+    public void addTypeParameters(Map<String, Map<String, Class>> typeParameters) {
+        if (typeParameters == null) return;
+        if (this.typeParameters == null) typeParameters = new HashMap<String, Map<String, Class>>();
+
+        Map iMap;
+        for (Map.Entry<String, Map<String, Class>> e : typeParameters.entrySet()) {
+            iMap = new HashMap<String, Class>();
+            for (Map.Entry<String, Class> ie : e.getValue().entrySet()) {
+                iMap.put(ie.getKey(), ie.getValue());
+            }
+            typeParameters.put(e.getKey(), iMap);
+        }
+
+    }
+
     public Map<String, Class> getTypeParameters(String name) {
         if (typeParameters == null) return null;
         return typeParameters.get(name);
@@ -622,6 +673,7 @@ public class ParserContext implements Serializable {
     }
 
     public void addIndexedVariables(Collection<String> variables) {
+        if (variables == null) return;
         initIndexedVariables();
         for (String s : variables) {
             if (!indexedVariables.contains(s))

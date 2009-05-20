@@ -799,6 +799,9 @@ public class ParseTools {
             else if (factory != null && factory.isResolveable(name)) {
                 return (Class) factory.getVariableResolver(name).getValue();
             }
+            else if (ctx != null && ctx.hasImport(name)) {
+                return ctx.getImport(name);
+            }
             else {
                 return createClass(name, ctx);
             }

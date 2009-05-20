@@ -1,9 +1,15 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.tests.core.res.Base;
+import org.mvel2.tests.core.res.Foo;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.io.Serializable;
 
 
 public class ControlFlowTests extends AbstractTest {
@@ -142,6 +148,27 @@ public class ControlFlowTests extends AbstractTest {
 
     public void testUntilLoop() {
         assertEquals("012345", test("String str = ''; int i = 0; until (i == 6) { str += i++; }; str"));
+    }
+
+    public void testQualifiedForLoop() {
+        ParserContext pCtx = new ParserContext();
+        pCtx.setStrongTyping(true);
+        pCtx.addImport(Foo.class);
+        pCtx.addInput("l", ArrayList.class, new Class[] { Foo.class });
+
+        List l = new ArrayList();
+        l.add(new Foo());
+        l.add(new Foo());
+        l.add(new Foo());
+
+        Map vars = new HashMap();
+        vars.put("l", l);
+
+        Serializable s = MVEL.compileExpression("String s = ''; for (Foo f : l) { s += f.name }; s", pCtx);
+
+        String r  = (String) MVEL.executeExpression(s, vars);
+
+        assertEquals("dogdogdog", r);
     }
 
 

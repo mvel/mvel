@@ -53,6 +53,11 @@ public class ForEachNode extends BlockNode {
         this.block = block;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
+            if (pCtx.isStrictTypeEnforcement() && itemType != null) {
+                pCtx = pCtx.createSubcontext();
+                pCtx.addInput(item, itemType);
+            }
+
             this.compiledBlock = (ExecutableStatement) subCompileExpression(block, pCtx);
         }
     }
@@ -158,6 +163,7 @@ public class ForEachNode extends BlockNode {
             try {
                 itemType = ParseTools.findClass(null, tk, pCtx);
                 item = new String(condition, x, cursor - x).trim();
+
             }
             catch (ClassNotFoundException e) {
                 throw new CompileException("cannot resolve identifier: " + tk);
@@ -167,7 +173,7 @@ public class ForEachNode extends BlockNode {
         this.cond = subset(condition, ++cursor);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            Class egress = (this.condition = (ExecutableStatement) subCompileExpression(this.cond)).getKnownEgressType();
+            Class egress = (this.condition = (ExecutableStatement) subCompileExpression(this.cond, pCtx)).getKnownEgressType();
 
             if (itemType != null && egress.isArray()) {
                 enforceTypeSafety(itemType, getBaseComponentType(this.condition.getKnownEgressType()));
