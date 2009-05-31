@@ -19,6 +19,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.integration.VariableResolverFactory;
+import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 
 public class IsDef extends ASTNode {
     public IsDef(char[] expr) {
@@ -26,11 +27,12 @@ public class IsDef extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return factory.isResolveable(nameCache);
+        return factory.isResolveable(nameCache) || (thisValue != null && getFieldOrAccessor(thisValue.getClass(), nameCache) != null);
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return factory.isResolveable(nameCache);
+        return factory.isResolveable(nameCache) || (thisValue != null && getFieldOrAccessor(thisValue.getClass(), nameCache) != null);
+
     }
 
     public Class getEgressType() {

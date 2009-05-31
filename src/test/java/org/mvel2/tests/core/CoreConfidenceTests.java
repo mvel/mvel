@@ -1847,7 +1847,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
-
     public void testParameterizedTypeInStrictMode() {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
@@ -3246,6 +3245,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public static interface Services {
         public final static String A_CONST = "Hello World";
+
         public void log(String text);
     }
 

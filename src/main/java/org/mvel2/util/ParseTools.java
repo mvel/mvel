@@ -39,6 +39,7 @@ import static java.lang.System.arraycopy;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.ref.WeakReference;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;

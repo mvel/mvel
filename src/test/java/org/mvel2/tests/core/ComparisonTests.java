@@ -1,5 +1,8 @@
 package org.mvel2.tests.core;
 
+import org.mvel2.tests.core.res.Foo;
+import org.mvel2.MVEL;
+
 import java.util.HashMap;
 
 public class ComparisonTests extends AbstractTest {
@@ -232,6 +235,12 @@ public class ComparisonTests extends AbstractTest {
 
     public void testIsDefOperator5() {
         assertEquals(true, test("!isdef _v1"));
+    }
+
+    public void testIsDefOperator6() {
+        Foo foo = new Foo();
+        assertEquals(true, MVEL.eval("isdef name", foo));
+        assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("isdef name"), foo));
     }
 
 
