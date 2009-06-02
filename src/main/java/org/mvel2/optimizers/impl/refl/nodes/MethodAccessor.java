@@ -23,9 +23,8 @@ import static org.mvel2.DataConversion.convert;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
-import static org.mvel2.util.ParseTools.getBestCandidate;
-import org.mvel2.util.PropertyTools;
 import org.mvel2.util.ParseTools;
+import static org.mvel2.util.ParseTools.getBestCandidate;
 
 import java.lang.reflect.Method;
 
@@ -90,16 +89,39 @@ public class MethodAccessor implements AccessorNode {
     }
 
     private Object executeOverrideTarget(Method o, Object ctx, Object elCtx, VariableResolverFactory vars) {
-        try {
-            if (nextNode != null) {
-                return nextNode.getValue(o.invoke(ctx, executeAll(elCtx, vars)), elCtx, vars);
+        if (!coercionNeeded) {
+            try {
+                try {
+                    if (nextNode != null) {
+                        return nextNode.getValue(o.invoke(ctx, executeAll(elCtx, vars)), elCtx, vars);
+                    }
+                    else {
+                        return o.invoke(ctx, executeAll(elCtx, vars));
+                    }
+                }
+                catch (IllegalArgumentException e) {
+                    if (coercionNeeded) throw e;
+
+                    coercionNeeded = true;
+                    return executeOverrideTarget(o, ctx, elCtx, vars);
+                }
             }
-            else {
-                return o.invoke(ctx, executeAll(elCtx, vars));
+            catch (Exception e2) {
+                throw new CompileException("unable to invoke method", e2);
             }
         }
-        catch (Exception e2) {
-            throw new CompileException("unable to invoke method", e2);
+        else {
+            try {
+                if (nextNode != null) {
+                    return nextNode.getValue(o.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars)), elCtx, vars);
+                }
+                else {
+                    return o.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars));
+                }
+            }
+            catch (Exception e2) {
+                throw new CompileException("unable to invoke method", e2);
+            }
         }
     }
 

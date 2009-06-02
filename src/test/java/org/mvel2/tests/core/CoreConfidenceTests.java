@@ -3351,15 +3351,33 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, test("!isdef _foozy_"));
     }
 
-//    public void testLargeRepeatingProjection() {
-//        Set<Foo> foo = new HashSet<Foo>();
+    public class Az {
+        public void foo(String s) {
+        }
+    }
+
+    public class Bz extends Az {
+    }
+
+
+    public void testJIRA151() {
+        OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+        Bz b = new Bz();
 //
-//        for (int i = 0; i < 6000; i++ ) {
-//            foo.add(new Foo());
-//        }
+        ParserContext context = new ParserContext();
+        Object expression = MVEL.compileExpression("a.foo(value)", context);
 //
-//        Collection s = (Collection) MVEL.eval("(countTest in this)", foo);
-//    }
+        Map<String, Object> variables = new HashMap<String, Object>();
+        ;
+        variables.put("a", b);
+        variables.put("value", 123);
+        for (int i = 0; i < 100; i++) {
+            System.out.println("i: " + i);
+            System.out.flush();
+            MVEL.executeExpression(expression, variables);
+        }
+    }
+
 }
 
 
