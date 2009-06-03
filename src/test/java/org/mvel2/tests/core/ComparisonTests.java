@@ -243,5 +243,9 @@ public class ComparisonTests extends AbstractTest {
         assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("isdef name"), foo));
     }
 
+    public void testJIRA152() {
+        assertEquals(true, MVEL.eval("1== -(-1)"));
+        assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("1==-(-1)")));
+    }
 
 }

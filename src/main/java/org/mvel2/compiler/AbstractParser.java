@@ -806,7 +806,8 @@ public class AbstractParser implements Serializable {
                                     return lastNode = new PreFixDecNode(name);
                                 }
                             }
-                            else if ((cursor == 0 || lastNode instanceof EndOfStatement) && !isDigit(lookAhead())) {
+                            else if ((cursor == 0 || (lastNode != null &&
+                                    (lastNode instanceof BooleanNode || lastNode.isOperator()))) && !isDigit(lookAhead())) {
                                 captureToEOT();
                                 return new Sign(expr, start, cursor, fields, pCtx);
                             }
