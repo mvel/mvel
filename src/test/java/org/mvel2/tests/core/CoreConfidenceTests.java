@@ -1,7 +1,6 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.*;
-
 import static org.mvel2.MVEL.*;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.AbstractParser;
@@ -27,7 +26,6 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
 
@@ -3296,14 +3294,14 @@ public class CoreConfidenceTests extends AbstractTest {
         String ex = "aMap[aKey] == 'aValue'";
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(false);
-        
+
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
-        compiler.setVerifyOnly( true );
+        compiler.setVerifyOnly(true);
         compiler.compile(ctx);
-        
+
         Set<String> requiredInputs = compiler.getParserContextState().getInputs().keySet();
-        assertTrue( requiredInputs.contains( "aMap" ) );
-        assertTrue( requiredInputs.contains( "aKey" ) );
+        assertTrue(requiredInputs.contains("aMap"));
+        assertTrue(requiredInputs.contains("aKey"));
 
     }
 
@@ -3380,10 +3378,8 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testJIRA151() {
         OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
         Bz b = new Bz();
-//
         ParserContext context = new ParserContext();
         Object expression = MVEL.compileExpression("a.foo(value)", context);
-//
         Map<String, Object> variables = new HashMap<String, Object>();
         ;
         variables.put("a", b);
@@ -3394,6 +3390,24 @@ public class CoreConfidenceTests extends AbstractTest {
             MVEL.executeExpression(expression, variables);
         }
     }
+
+    public void testJIRA153() {
+        assertEquals(false, MVEL.eval("!(true)"));
+        assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("!(true)")));
+    }
+
+
+    public void testJIRA154() {        
+        Map m = createTestMap();
+        m.put("returnTrue", MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]));
+
+        assertEquals(false, MVEL.eval("!returnTrue()", m));
+    }
+
+    public static boolean returnTrue() {
+        return true;
+    }
+
 
 }
 

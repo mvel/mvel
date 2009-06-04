@@ -21,12 +21,12 @@ package org.mvel2.ast;
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
 import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
-import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.AbstractParser;
+import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ArrayTools.findFirst;
-import static org.mvel2.util.ParseTools.*;
 import org.mvel2.util.ParseTools;
+import static org.mvel2.util.ParseTools.*;
 
 import java.io.Serializable;
 import static java.lang.Character.isDigit;
@@ -176,7 +176,7 @@ public class TypeDescriptor implements Serializable {
     }
 
     public static boolean hasContextFreeImport(String name) {
-        return AbstractParser.LITERALS.containsKey(name);
+        return AbstractParser.LITERALS.containsKey(name) && AbstractParser.LITERALS.get(name) instanceof Class;
     }
 
     public static Class getContextFreeImport(String name) {
