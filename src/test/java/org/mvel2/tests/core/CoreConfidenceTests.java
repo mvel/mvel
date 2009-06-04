@@ -1,6 +1,7 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.*;
+
 import static org.mvel2.MVEL.*;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.AbstractParser;
@@ -26,6 +27,7 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
 
@@ -3288,6 +3290,21 @@ public class CoreConfidenceTests extends AbstractTest {
             e.printStackTrace();
             fail("Should not raise exception: " + e.getMessage());
         }
+    }
+
+    public void testMapsWithVariableAsKey() {
+        String ex = "aMap[aKey] == 'aValue'";
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(false);
+        
+        ExpressionCompiler compiler = new ExpressionCompiler(ex);
+        compiler.setVerifyOnly( true );
+        compiler.compile(ctx);
+        
+        Set<String> requiredInputs = compiler.getParserContextState().getInputs().keySet();
+        assertTrue( requiredInputs.contains( "aMap" ) );
+        assertTrue( requiredInputs.contains( "aKey" ) );
+
     }
 
     public void testImperativeCode() {
