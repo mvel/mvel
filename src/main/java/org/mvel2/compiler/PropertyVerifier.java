@@ -21,12 +21,14 @@ package org.mvel2.compiler;
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessException;
+import org.mvel2.MVEL;
 import org.mvel2.ast.Function;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import org.mvel2.util.StringAppender;
+import org.mvel2.util.ParseTools;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -269,12 +271,18 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         whiteSpaceSkip();
 
+        int start = cursor;
+
         if (cursor == length)
             throw new PropertyAccessException("unterminated '['");
 
         if (scanTo(']')) {
             addFatalError("unterminated [ in token");
         }
+
+        ExpressionCompiler compiler = new ExpressionCompiler(new String(expr, start, cursor - start));
+        compiler.setVerifyOnly(true);
+        compiler.compile(pCtx);
 
         ++cursor;
 
