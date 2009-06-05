@@ -26,7 +26,10 @@ import org.mvel2.util.PropertyTools;
 import java.io.Serializable;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The resusable parser configuration object.
@@ -60,7 +63,10 @@ public class ParserConfiguration implements Serializable {
     }
 
     public Class getImport(String name) {
-        return (imports != null && imports.containsKey(name) ? (Class) imports.get(name) : (Class) AbstractParser.LITERALS.get(name));
+        if (imports != null && imports.containsKey(name) && imports.get(name) instanceof Class) {
+            return (Class) imports.get(name);
+        }
+        return (Class) (AbstractParser.LITERALS.get(name) instanceof Class ? AbstractParser.LITERALS.get(name) : null);
     }
 
     public MethodStub getStaticImport(String name) {

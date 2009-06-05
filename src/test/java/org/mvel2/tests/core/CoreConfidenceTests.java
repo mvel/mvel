@@ -3405,10 +3405,10 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testJIRA154b() {
-        Map m = createTestMap();
-        m.put("returnTrue", MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]));
+        ParserContext pctx = new ParserContext();
+        pctx.addImport("returnTrue",  MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]) );
 
-        assertEquals(false, MVEL.eval("!(returnTrue())", m));
+        MVEL.executeExpression(MVEL.compileExpression("!(returnTrue())", pctx));
     }
 
     public static boolean returnTrue() {

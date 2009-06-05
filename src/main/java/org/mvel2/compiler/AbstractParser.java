@@ -953,8 +953,7 @@ public class AbstractParser implements Serializable {
                                 Class cls;
                                 try {
 
-                                    if (tDescr.isClass()) {
-                                        cls = getClassReference(pCtx, tDescr);
+                                    if (tDescr.isClass() && (cls = getClassReference(pCtx, tDescr)) != null) {
 
                                         start = cursor;
                                         captureToEOS();

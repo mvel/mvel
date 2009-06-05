@@ -23,6 +23,7 @@ import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
 public class Negation extends ASTNode {
@@ -32,8 +33,8 @@ public class Negation extends ASTNode {
         this.name = name;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            if ((this.stmt = (ExecutableStatement) subCompileExpression(name, pCtx)).getKnownEgressType() != null
-                    && (!stmt.getKnownEgressType().isAssignableFrom(Boolean.class))) {
+            if (((this.stmt = (ExecutableStatement) subCompileExpression(name, pCtx)).getKnownEgressType() != null)
+                    && (!ParseTools.boxPrimitive(stmt.getKnownEgressType()).isAssignableFrom(Boolean.class))) {
                 throw new CompileException("negation operator cannot be applied to non-boolean type");
             }
         }
