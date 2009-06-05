@@ -3397,11 +3397,18 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
-    public void testJIRA154() {        
+    public void testJIRA154() {
         Map m = createTestMap();
         m.put("returnTrue", MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]));
 
         assertEquals(false, MVEL.eval("!returnTrue()", m));
+    }
+
+    public void testJIRA154b() {
+        Map m = createTestMap();
+        m.put("returnTrue", MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]));
+
+        assertEquals(false, MVEL.eval("!(returnTrue())", m));
     }
 
     public static boolean returnTrue() {

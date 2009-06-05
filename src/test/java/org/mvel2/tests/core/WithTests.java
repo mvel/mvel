@@ -1,8 +1,8 @@
 package org.mvel2.tests.core;
 
+import org.mvel2.MVEL;
 import static org.mvel2.MVEL.executeExpression;
 import org.mvel2.ParserContext;
-import org.mvel2.MVEL;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.optimizers.OptimizerFactory;
@@ -18,12 +18,12 @@ public class WithTests extends AbstractTest {
     }
 
     public void testWith2() {
-        assertEquals("OneTwo", test(
-                "with (foo) { \n" +
-                        "aValue = 'One', // this is a comment \n" +
+        assertEquals("OneTwoOne", test(
+                "var y; with (foo) { \n" +
+                        "aValue = (y = 'One'), // this is a comment \n" +
                         "bValue='Two'  // this is also a comment \n" +
                         "}; \n" +
-                        "foo.aValue + foo.bValue;"));
+                        "foo.aValue + foo.bValue + y;"));
     }
 
     public void testWith3() {
