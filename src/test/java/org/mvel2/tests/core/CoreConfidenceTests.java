@@ -3411,6 +3411,13 @@ public class CoreConfidenceTests extends AbstractTest {
         MVEL.executeExpression(MVEL.compileExpression("!(returnTrue())", pctx));
     }
 
+    public void testJIRA155() {
+        ParserContext pctx = new ParserContext();
+        pctx.addImport("returnTrue",  MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]) );
+
+        MVEL.executeExpression(MVEL.compileExpression("!true || returnTrue()", pctx));
+    }
+
     public static boolean returnTrue() {
         return true;
     }
