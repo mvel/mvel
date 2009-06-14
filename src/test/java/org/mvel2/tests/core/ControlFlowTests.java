@@ -118,7 +118,6 @@ public class ControlFlowTests extends AbstractTest {
         assertEquals("Foo", test("if (false) return 'Bar'; else return 'Foo';"));
     }
 
-
     public void testTernary4() {
         assertEquals("<test>", test("true ? '<test>' : '<poo>'"));
     }
