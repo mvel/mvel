@@ -3357,7 +3357,6 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
-
     public void testUnaryOpNegation1() {
         assertEquals(false, test("!new Boolean(true)"));
     }
@@ -3374,14 +3373,13 @@ public class CoreConfidenceTests extends AbstractTest {
     public class Bz extends Az {
     }
 
-
     public void testJIRA151() {
         OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
         Bz b = new Bz();
         ParserContext context = new ParserContext();
         Object expression = MVEL.compileExpression("a.foo(value)", context);
         Map<String, Object> variables = new HashMap<String, Object>();
-        ;
+
         variables.put("a", b);
         variables.put("value", 123);
         for (int i = 0; i < 100; i++) {
@@ -3396,7 +3394,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("!(true)")));
     }
 
-
     public void testJIRA154() {
         Map m = createTestMap();
         m.put("returnTrue", MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]));
@@ -3406,23 +3403,28 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testJIRA154b() {
         ParserContext pctx = new ParserContext();
-        pctx.addImport("returnTrue",  MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]) );
+        pctx.addImport("returnTrue", MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]));
 
-        MVEL.executeExpression(MVEL.compileExpression("!(returnTrue())", pctx));
+        assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("!(returnTrue())", pctx)));
     }
 
     public void testJIRA155() {
         ParserContext pctx = new ParserContext();
-        pctx.addImport("returnTrue",  MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]) );
+        pctx.addImport("returnTrue", MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]));
 
-        MVEL.executeExpression(MVEL.compileExpression("!true || returnTrue()", pctx));
+        assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("!true || returnTrue()", pctx)));
+    }
+
+    public void testJIRA155b() {
+        ParserContext pctx = new ParserContext();
+        pctx.addImport("returnTrue", MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]));
+
+        assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("!(!true || !returnTrue())", pctx)));
     }
 
     public static boolean returnTrue() {
         return true;
     }
-
-
 }
 
 
