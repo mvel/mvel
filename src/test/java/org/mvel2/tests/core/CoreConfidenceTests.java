@@ -3389,6 +3389,23 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testJIRA151b() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        Bz b = new Bz();
+        ParserContext context = new ParserContext();
+        Object expression = MVEL.compileExpression("a.foo(value)", context);
+        Map<String, Object> variables = new HashMap<String, Object>();
+
+        variables.put("a", b);
+        variables.put("value", 123);
+        for (int i = 0; i < 100; i++) {
+            System.out.println("i: " + i);
+            System.out.flush();
+            MVEL.executeExpression(expression, variables);
+        }
+    }
+
+
     public void testJIRA153() {
         assertEquals(false, MVEL.eval("!(true)"));
         assertEquals(false, MVEL.executeExpression(MVEL.compileExpression("!(true)")));
