@@ -31,8 +31,6 @@ import java.util.List;
 
 @SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
-
-
     public void testWhileUsingImports() {
         Map<String, Object> imports = new HashMap<String, Object>();
         imports.put("ArrayList", java.util.ArrayList.class);
@@ -50,7 +48,6 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testBooleanModeOnly4() {
         assertEquals(true, test("hour == (hour + 0)"));
     }
-
 
     // interpreted
     public void testThisReferenceMapVirtualObjects() {
@@ -3302,7 +3299,6 @@ public class CoreConfidenceTests extends AbstractTest {
         Set<String> requiredInputs = compiler.getParserContextState().getInputs().keySet();
         assertTrue(requiredInputs.contains("aMap"));
         assertTrue(requiredInputs.contains("aKey"));
-
     }
 
     public void testImperativeCode() {
