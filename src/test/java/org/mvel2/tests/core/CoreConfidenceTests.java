@@ -16,6 +16,8 @@ import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.*;
+import org.mvel2.tests.core.res.res2.ClassProvider;
+import org.mvel2.tests.core.res.res2.PublicClass;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ReflectionUtil;
 
@@ -3433,6 +3435,19 @@ public class CoreConfidenceTests extends AbstractTest {
         pctx.addImport("returnTrue", MVEL.getStaticMethod(CoreConfidenceTests.class, "returnTrue", new Class[0]));
 
         assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("!(!true || !returnTrue())", pctx)));
+    }
+
+    public void testJIRA156() throws Throwable {
+        ClassProvider provider = new ClassProvider();
+        provider.get().foo();
+
+        PublicClass.class.getMethod("foo").invoke(provider.get());
+
+        // use Java provider.get().foo(); // use Method of PublicClass PublicClass.class.getMethod("foo").invoke(provider.get()); // use MVEL (it uses Method of PrivateClass in bad case, so fails) String script = "provider.get().foo()";
+
+        String script = "provider.get().foo()";
+        HashMap<String, Object> vars = new HashMap<String, Object>(); vars.put("provider", provider);
+        MVEL.eval(script, vars);
     }
 
 
