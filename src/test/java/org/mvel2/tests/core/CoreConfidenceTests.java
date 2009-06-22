@@ -3435,6 +3435,8 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("!(!true || !returnTrue())", pctx)));
     }
 
+
+
     public static boolean returnTrue() {
         return true;
     }

@@ -24,18 +24,16 @@ import org.mvel2.DataTypes;
 import static org.mvel2.DataTypes.BIG_DECIMAL;
 import static org.mvel2.DataTypes.EMPTY;
 import static org.mvel2.Operator.*;
-import static org.mvel2.util.Soundex.soundex;
 import org.mvel2.Unit;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.util.InternalNumber;
 import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.Soundex.soundex;
 
 import static java.lang.String.valueOf;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
-import java.util.Collection;
-import java.util.ArrayList;
 
 /**
  * @author Christopher Brock
@@ -570,6 +568,9 @@ public strictfp class MathProcessor {
                 return new InternalNumber(((Boolean) in) ? 1 : 0);
             case DataTypes.UNIT:
                 return new InternalNumber(((Unit) in).getValue(), MathContext.DECIMAL64);
+            case DataTypes.W_BYTE:
+            case DataTypes.BYTE:
+                return new InternalNumber(((Byte)in).intValue());
 
 
         }

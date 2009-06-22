@@ -68,6 +68,14 @@ public class ByteCH implements ConversionHandler {
                 }
         );
 
+        CNV.put(Integer.class,
+                new Converter() {
+                    public Object convert(Object o) {
+                        return (byte) ((Integer)o).intValue();
+                    }
+                }
+        );
+
 
     }
 }

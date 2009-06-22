@@ -1,7 +1,7 @@
 package org.mvel2.tests.core;
 
-import org.mvel2.tests.core.res.Foo;
 import org.mvel2.MVEL;
+import org.mvel2.tests.core.res.Foo;
 
 import java.util.HashMap;
 
@@ -246,6 +246,10 @@ public class ComparisonTests extends AbstractTest {
     public void testJIRA152() {
         assertEquals(true, MVEL.eval("1== -(-1)"));
         assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("1==-(-1)")));
+    }
+
+    public void testJIRA157() {
+        assertEquals(true, MVEL.eval("1 == ((byte) 1)"));
     }
 
 }
