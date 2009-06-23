@@ -2052,9 +2052,22 @@ public class CoreConfidenceTests extends AbstractTest {
     public static final List<String> STRINGS = Arrays.asList("hi", "there");
 
     public static class A {
+        public void foo(String s) {
+        }
+
         public List<String> getStrings() {
             return STRINGS;
         }
+    }
+
+    public static class B extends A {
+        @Override
+        public void foo(String s) {
+            super.foo(s);
+        }
+    }
+
+    public static class C extends A {
     }
 
     public final void testDetermineEgressParametricType() {
@@ -3403,6 +3416,62 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testJIRA151c() {
+        OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+        A b = new B();
+        A c = new C();
+
+        ParserContext context = new ParserContext();
+        Object expression = MVEL.compileExpression("a.foo(value)", context);
+
+        for (int i = 0; i < 100; i++) {
+            System.out.println("i: " + i);
+            System.out.flush();
+
+            {
+                Map<String, Object> variables = new HashMap<String, Object>();
+                variables.put("a", b);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
+            }
+            {
+                Map<String, Object> variables = new HashMap<String, Object>();
+                variables.put("a", c);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
+            }
+
+        }
+    }
+
+    public void testJIRA151d() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        A b = new B();
+        A c = new C();
+
+        ParserContext context = new ParserContext();
+        Object expression = MVEL.compileExpression("a.foo(value)", context);
+
+        for (int i = 0; i < 100; i++) {
+            System.out.println("i: " + i);
+            System.out.flush();
+
+            {
+                Map<String, Object> variables = new HashMap<String, Object>();
+                variables.put("a", b);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
+            }
+            {
+                Map<String, Object> variables = new HashMap<String, Object>();
+                variables.put("a", c);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
+            }
+
+        }
+    }
+
 
     public void testJIRA153() {
         assertEquals(false, MVEL.eval("!(true)"));
@@ -3446,10 +3515,10 @@ public class CoreConfidenceTests extends AbstractTest {
         // use Java provider.get().foo(); // use Method of PublicClass PublicClass.class.getMethod("foo").invoke(provider.get()); // use MVEL (it uses Method of PrivateClass in bad case, so fails) String script = "provider.get().foo()";
 
         String script = "provider.get().foo()";
-        HashMap<String, Object> vars = new HashMap<String, Object>(); vars.put("provider", provider);
+        HashMap<String, Object> vars = new HashMap<String, Object>();
+        vars.put("provider", provider);
         MVEL.eval(script, vars);
     }
-
 
 
     public static boolean returnTrue() {
