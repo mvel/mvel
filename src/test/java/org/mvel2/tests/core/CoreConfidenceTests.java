@@ -3508,13 +3508,13 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testJIRA156() throws Throwable {
         ClassProvider provider = new ClassProvider();
-        provider.get().foo();
+        provider.getPrivate().foo();
 
-        PublicClass.class.getMethod("foo").invoke(provider.get());
+        PublicClass.class.getMethod("foo").invoke(provider.getPrivate());
 
         // use Java provider.get().foo(); // use Method of PublicClass PublicClass.class.getMethod("foo").invoke(provider.get()); // use MVEL (it uses Method of PrivateClass in bad case, so fails) String script = "provider.get().foo()";
 
-        String script = "provider.get().foo()";
+        String script = "provider.getPrivate().foo()";
         HashMap<String, Object> vars = new HashMap<String, Object>();
         vars.put("provider", provider);
         MVEL.eval(script, vars);
@@ -3522,13 +3522,13 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testJIRA156b() throws Throwable {
         ClassProvider provider = new ClassProvider();
-        provider.get().foo();
+        provider.getPrivate().foo();
 
-        PublicClass.class.getMethod("foo").invoke(provider.get());
+        PublicClass.class.getMethod("foo").invoke(provider.getPrivate());
 
         // use Java provider.get().foo(); // use Method of PublicClass PublicClass.class.getMethod("foo").invoke(provider.get()); // use MVEL (it uses Method of PrivateClass in bad case, so fails) String script = "provider.get().foo()";
 
-        String script = "provider.get().foo()";
+        String script = "provider.getPrivate().foo()";
 
         Serializable s = MVEL.compileExpression(script);
 
@@ -3540,6 +3540,27 @@ public class CoreConfidenceTests extends AbstractTest {
         OptimizerFactory.setDefaultOptimizer("ASM");
         MVEL.executeExpression(s, vars);
     }
+
+    public void testJIRA156c() throws Throwable {
+        ClassProvider provider = new ClassProvider();
+        provider.getPublic().foo();
+
+        PublicClass.class.getMethod("foo").invoke(provider.getPublic());
+
+        String script = "provider.getPublic().foo()";
+
+        Serializable s = MVEL.compileExpression(script);
+
+        HashMap<String, Object> vars = new HashMap<String, Object>();
+        vars.put("provider", provider);
+
+        MVEL.eval(script, vars);
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        MVEL.executeExpression(s, vars);
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        MVEL.executeExpression(s, vars);
+    }
+
 
     public static boolean returnTrue() {
         return true;

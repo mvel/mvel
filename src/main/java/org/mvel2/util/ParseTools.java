@@ -333,7 +333,7 @@ public class ParseTools {
                     }
                 }
             }
-            else if (cls != method.getDeclaringClass()) {
+            if (cls != method.getDeclaringClass()) {
                 if ((m = getExactMatch(name, args, rt, cls)) != null) {
                     if ((best = m).getDeclaringClass().getSuperclass() != null) {
                         cls = m.getDeclaringClass();
