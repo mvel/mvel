@@ -797,7 +797,7 @@ public class AbstractParser implements Serializable {
                         case '-':
                             if (lookAhead() == '-') {
                                 cursor += 2;
-                                skipWhitespace();
+                                skipWhitespaceWithLineAccounting();
                                 start = cursor;
                                 captureIdentifier();
 
@@ -826,7 +826,7 @@ public class AbstractParser implements Serializable {
                         case '+':
                             if (lookAhead() == '+') {
                                 cursor += 2;
-                                skipWhitespace();
+                                skipWhitespaceWithLineAccounting();
                                 start = cursor;
                                 captureIdentifier();
 
@@ -866,7 +866,7 @@ public class AbstractParser implements Serializable {
                             boolean singleToken = true;
                             boolean lastWS = false;
 
-                            skipWhitespace();
+                            skipWhitespaceWithLineAccounting();
                             for (brace = 1; cursor != length && brace != 0; cursor++) {
                                 switch (expr[cursor]) {
                                     case '(':
@@ -937,7 +937,7 @@ public class AbstractParser implements Serializable {
                                         }
                                         else if (isWhitespace(expr[cursor])) {
                                             lastWS = true;
-                                            skipWhitespace();
+                                            skipWhitespaceWithLineAccounting();
                                             cursor--;
                                         }
                                 }

@@ -173,11 +173,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             this.length = (this.expr = property).length;
             this.cursor = this.start = 0;
 
-            whiteSpaceSkip();
+            skipWhitespaceWithLineAccounting();
 
             if (collection) {
                 int start = cursor;
-                whiteSpaceSkip();
+             //   skipWhitespaceWithLineAccounting();
 
                 if (cursor == length)
                     throw new PropertyAccessException("unterminated '['");
@@ -604,7 +604,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         int start = ++cursor;
 
-        whiteSpaceSkip();
+         skipWhitespaceWithLineAccounting();
 
         if (cursor == length)
             throw new CompileException("unterminated '['");
@@ -696,7 +696,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         int start = ++cursor;
 
-        whiteSpaceSkip();
+        skipWhitespaceWithLineAccounting();
 
         if (cursor == length)
             throw new CompileException("unterminated '['");

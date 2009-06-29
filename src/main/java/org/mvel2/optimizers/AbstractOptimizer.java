@@ -189,7 +189,7 @@ public class AbstractOptimizer extends AbstractParser {
         while (++cursor < length && isIdentifierPart(expr[cursor])) ;
 
         if (cursor < length) {
-            skipWhitespace();
+            skipWhitespaceWithLineAccounting();
             switch (expr[cursor]) {
                 case '[':
                     return COL;
@@ -207,7 +207,6 @@ public class AbstractOptimizer extends AbstractParser {
         /**
          * Trim off any whitespace.
          */
-
         return new String(expr, start = trimRight(start), trimLeft(cursor) - start);
     }
 

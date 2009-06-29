@@ -269,8 +269,8 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         ++cursor;
 
-        whiteSpaceSkip();
-
+        skipWhitespaceWithLineAccounting();
+        
         int start = cursor;
 
         if (cursor == length)
