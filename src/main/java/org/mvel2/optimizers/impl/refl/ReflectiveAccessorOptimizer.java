@@ -177,7 +177,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             if (collection) {
                 int start = cursor;
-             //   skipWhitespaceWithLineAccounting();
 
                 if (cursor == length)
                     throw new PropertyAccessException("unterminated '['");
@@ -684,7 +683,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             throw new CompileException("illegal use of []: unknown type: "
-                    + (ctx == null ? null : ctx.getClass().getName()));
+                    + ctx.getClass().getName());
         }
     }
 
@@ -796,7 +795,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             throw new CompileException("illegal use of []: unknown type: "
-                    + (ctx == null ? null : ctx.getClass().getName()));
+                    +  ctx.getClass().getName());
         }
     }
 
