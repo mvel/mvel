@@ -3614,8 +3614,6 @@ public class CoreConfidenceTests extends AbstractTest {
         expr = compiler.compile(ctx);
         MVEL.executeExpression(expr);
     }
-
-
 }
 
 
