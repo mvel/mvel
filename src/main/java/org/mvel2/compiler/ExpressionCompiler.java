@@ -164,15 +164,26 @@ public class ExpressionCompiler extends AbstractParser {
                                     astBuild.addTokenNode(new LiteralNode(stk.pop()), verify(pCtx, tkOp2));
                                     break;
                                 }
-                                else if ((tkLA2 = nextTokenSkipSymbols()) != null && tkLA2.isLiteral()) {
-                                    stk.push(tkLA2.getLiteralValue(), op = tkOp2.getOperator());
+                                else if ((tkLA2 = nextTokenSkipSymbols()) != null) {
 
-                                    if (isArithmeticOperator(op)) {
-                                        arithmeticFunctionReduction(op);
+                                    if (tkLA2.isLiteral()) {
+                                        stk.push(tkLA2.getLiteralValue(), op = tkOp2.getOperator());
+
+                                        if (isArithmeticOperator(op)) {
+                                            arithmeticFunctionReduction(op);
+                                        }
+
+                                        else {
+                                            reduce();
+                                        }
                                     }
-
                                     else {
-                                        reduce();
+                                        /**
+                                         * A reducable line of literals has ended.  We must now terminate here and
+                                         * leave the rest to be determined at runtime.
+                                         */
+                                        astBuild.addTokenNode(new LiteralNode(stk.pop()));
+                                        astBuild.addTokenNode(new OperatorNode(tkOp2.getOperator()), verify(pCtx, tkLA2));
                                     }
 
                                     firstLA = false;
@@ -193,8 +204,10 @@ public class ExpressionCompiler extends AbstractParser {
                                          */
                                         astBuild.addTokenNode(new LiteralNode(stk.pop()), tkOp2);
 
-                                        if (tkLA2 != null) astBuild.addTokenNode(tkLA2);
+                                        if (tkLA2 != null) astBuild.addTokenNode(verify(pCtx, tkLA2));
                                     }
+
+
                                     break;
                                 }
                             }

@@ -716,4 +716,41 @@ public class ParserContext implements Serializable {
     public void setAllowBootstrapBypass(boolean allowBootstrapBypass) {
         this.allowBootstrapBypass = allowBootstrapBypass;
     }
+
+
+    // Introduce some new Fluent API stuff here.
+
+    public static ParserContext create() {
+        return new ParserContext();
+    }
+
+    public ParserContext stronglyTyped() {
+        setStrongTyping(true);
+        return this;
+    }
+
+    public ParserContext withInput(String name, Class type) {
+        addInput(name, type);
+        return this;
+    }
+
+    public ParserContext withInputs(Map<String, Class> inputs) {
+        setInputs(inputs);
+        return this;
+    }
+
+    public ParserContext withTypeParameter(String name, Class type) {
+        addTypeParameters(name, type);
+        return this;
+    }
+
+    public ParserContext withTypeParameters(Map<String, Map<String, Class>> typeParameters) {
+        addTypeParameters(typeParameters);
+        return this;
+    }
+
+    public ParserContext withImport(Class clazz) {
+        addImport(clazz);
+        return this;
+    }
 }

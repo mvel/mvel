@@ -590,8 +590,18 @@ public class ArithmeticTests extends AbstractTest {
 
         CompiledExpression compiledExpression = new ExpressionCompiler("a==0").compile(parserContext);
         HashMap<String, Object> variables = new HashMap<String, Object>();
-        variables.put("a", new Long(0));
+        variables.put("a", 0l);
         MVEL.executeExpression(compiledExpression, variables);
+    }
+
+    public void testJIRA158() {
+        Serializable s = MVEL.compileExpression("4/2 + Math.sin(1)");
+
+        assertEquals(4/2 + Math.sin(1), MVEL.executeExpression(s));
+
+        s = MVEL.compileExpression("(float) (4/2 + Math.sin(1))", ParserContext.create().stronglyTyped());
+
+        assertEquals((float) (4/2 + Math.sin(1)), MVEL.executeExpression(s));
     }
 
 }
