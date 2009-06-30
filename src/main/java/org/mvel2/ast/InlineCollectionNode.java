@@ -45,7 +45,7 @@ public class InlineCollectionNode extends ASTNode {
         super(expr, start, end, fields | INLINE_COLLECTION);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            parseGraph(true, null, pctx.isStrongTyping());
+            parseGraph(true, null, pctx);
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
             accessor = ao.optimizeCollection(pctx, collectionGraph, egressType, trailing, null, null, null);
             egressType = ao.getEgressType();
@@ -58,7 +58,7 @@ public class InlineCollectionNode extends ASTNode {
         this.egressType = type;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            parseGraph(true, type, pctx.isStrongTyping());
+            parseGraph(true, type, pctx);
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
             accessor = ao.optimizeCollection(pctx,collectionGraph, egressType, trailing, null, null, null);
             egressType = ao.getEgressType();
@@ -71,7 +71,7 @@ public class InlineCollectionNode extends ASTNode {
         }
         else {
             AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-            if (collectionGraph == null) parseGraph(true, null, false);
+            if (collectionGraph == null) parseGraph(true, null, null);
 
             accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph, egressType, trailing, ctx, thisValue, factory);
             egressType = ao.getEgressType();
@@ -82,18 +82,18 @@ public class InlineCollectionNode extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        parseGraph(false, egressType, false);
+        parseGraph(false, egressType, null);
         return  execGraph(collectionGraph, egressType, ctx, factory);
     }
 
-    private void parseGraph(boolean compile, Class type, boolean strongType) {
+    private void parseGraph(boolean compile, Class type, ParserContext pCtx) {
         CollectionParser parser = new CollectionParser();
 
         if (type == null) {
-            collectionGraph = ((List) parser.parseCollection(name, compile, strongType)).get(0);
+            collectionGraph = ((List) parser.parseCollection(name, compile, pCtx)).get(0);
         }
         else {
-            collectionGraph = ((List) parser.parseCollection(name, compile, type, strongType)).get(0);
+            collectionGraph = ((List) parser.parseCollection(name, compile, type, pCtx)).get(0);
         }
 
         if (parser.getCursor() + 2 < name.length)

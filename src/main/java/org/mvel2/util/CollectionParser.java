@@ -20,6 +20,7 @@ package org.mvel2.util;
 
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import static org.mvel2.util.ParseTools.*;
 
@@ -49,20 +50,23 @@ public class CollectionParser {
     public static final int MAP = 2;
 
     private Class colType;
-    private boolean strongType;
+  //  private boolean strongType;
+    private ParserContext pCtx;
 
     private static final Object[] EMPTY_ARRAY = new Object[0];
 
     public CollectionParser() {
     }
 
+
+
     public CollectionParser(int type) {
         this.type = type;
     }
 
-    public Object parseCollection(char[] property, boolean subcompile, boolean strongType) {
+    public Object parseCollection(char[] property, boolean subcompile, ParserContext pCtx) {
         this.cursor = 0;
-        this.strongType = strongType;
+        this.pCtx = pCtx;
         if ((this.length = (this.property = property).length) > 0)
             while (length > 0 && isWhitespace(property[length - 1]))
                 length--;
@@ -70,10 +74,10 @@ public class CollectionParser {
         return parseCollection(subcompile);
     }
 
-    public Object parseCollection(char[] property, boolean subcompile, Class colType, boolean strongType) {
+    public Object parseCollection(char[] property, boolean subcompile, Class colType, ParserContext pCtx) {
         if (colType != null) this.colType = getBaseComponentType(colType);
         this.cursor = 0;
-        this.strongType = strongType;
+        this.pCtx = pCtx;
         if ((this.length = (this.property = property).length) > 0)
             while (length > 0 && isWhitespace(property[length - 1]))
                 length--;
@@ -124,7 +128,7 @@ public class CollectionParser {
                      * Sub-parse nested collections.
                      */
                     Object o = new CollectionParser(newType).parseCollection(subset(property, (start = cursor) + 1,
-                            cursor = balancedCapture(property, start, property[start])), subcompile, colType, strongType);
+                            cursor = balancedCapture(property, start, property[start])), subcompile, colType, pCtx);
 
                     if (type == MAP) {
                         map.put(curr, o);
@@ -217,14 +221,18 @@ public class CollectionParser {
 
     private void subCompile(String ex) {
         if (colType == null) {
-            subCompileExpression(ex.toCharArray());
+            subCompileExpression(ex.toCharArray(), pCtx);
         }
         else {
-            Class r = ((ExecutableStatement) subCompileExpression(ex.toCharArray())).getKnownEgressType();
-            if (!colType.isAssignableFrom(r) && (strongType || !DataConversion.canConvert(r, colType))) {
+            Class r = ((ExecutableStatement) subCompileExpression(ex.toCharArray(), pCtx)).getKnownEgressType();
+            if (!colType.isAssignableFrom(r) && (isStrongType() || !DataConversion.canConvert(r, colType))) {
                  throw new CompileException("expected type: " + colType.getName() + "; but found: " + r.getName());
             }
         }
+    }
+
+    private boolean isStrongType() {
+        return pCtx != null && pCtx.isStrongTyping();
     }
 
     private static char[] subset(char[] property, int start, int end) {

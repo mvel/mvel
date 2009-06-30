@@ -1008,12 +1008,11 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         else {
             if (returnType == null) returnType = Object.class;
             if (type.isArray()) {
-                return new ExprValueAccessor((String) o, type, pCtx != null && pCtx.isStrongTyping(), ctx, variableFactory, pCtx);
+                return new ExprValueAccessor((String) o, type, ctx, variableFactory, pCtx);
             }
             else {
-                return new ExprValueAccessor((String) o, Object.class, false, ctx, variableFactory, pCtx);
+                return new ExprValueAccessor((String) o, Object.class, ctx, variableFactory, pCtx);
             }
-
         }
     }
 
@@ -1022,6 +1021,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.returnType = type;
         this.ctx = ctx;
         this.variableFactory = factory;
+        this.pCtx = pCtx;
 
       //  pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 

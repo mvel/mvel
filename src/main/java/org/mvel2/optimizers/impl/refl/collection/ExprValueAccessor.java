@@ -35,7 +35,7 @@ import static org.mvel2.util.ParseTools.getSubComponentType;
 public class ExprValueAccessor implements Accessor {
     public ExecutableStatement stmt;
 
-    public ExprValueAccessor(String ex, Class expectedType, boolean strongType, Object ctx, VariableResolverFactory factory, ParserContext pCtx) {
+    public ExprValueAccessor(String ex, Class expectedType, Object ctx, VariableResolverFactory factory, ParserContext pCtx) {
         stmt = (ExecutableStatement) ParseTools.subCompileExpression(ex.toCharArray(), pCtx);
 
         //if (expectedType.isArray()) {
@@ -51,7 +51,8 @@ public class ExprValueAccessor implements Accessor {
                     // fall through;
                 }
             }
-           if (strongType) throw new CompileException("was expecting type: " + tt + "; but found type: " + (et == null ? "null" : et.getName()));
+           if (pCtx != null && pCtx.isStrongTyping())
+               throw new CompileException("was expecting type: " + tt + "; but found type: " + (et == null ? "null" : et.getName()));
         }
     }
 

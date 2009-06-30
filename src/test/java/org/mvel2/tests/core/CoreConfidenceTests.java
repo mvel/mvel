@@ -3565,45 +3565,57 @@ public class CoreConfidenceTests extends AbstractTest {
     public static boolean returnTrue() {
         return true;
     }
-    
+
     public static class TestHelper {
-        public static void method( int id, Object[] arr ) {
-            System.out.println(id+" -> "+arr.length);
+        public static void method(int id, Object[] arr) {
+            System.out.println(id + " -> " + arr.length);
         }
     }
-    
-    public static class Foo {
-        public Foo( String id ) {
+
+    public static class Fooz {
+        public Fooz(String id) {
         }
     }
-    
+
     public void testArray() {
-        String ex = " TestHelper.method(1, new String[]{\"a\", \"b\"});\n" + 
-                    " TestHelper.method(2, new String[]{new String(\"a\"), new String(\"b\")});\n"+
-                    " TestHelper.method(3, new Foo[]{new Foo(\"a\"), new Foo(\"b\")});";
+        String ex = " TestHelper.method(1, new String[]{\"a\", \"b\"});\n" +
+                " TestHelper.method(2, new String[]{new String(\"a\"), new String(\"b\")});\n" +
+                " TestHelper.method(3, new Fooz[]{new Fooz(\"a\"), new Fooz(\"b\")});";
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
-        ctx.addImport( TestHelper.class );
-        ctx.addImport( Foo.class );
+        ctx.addImport(TestHelper.class);
+        ctx.addImport(Fooz.class);
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
         CompiledExpression expr = compiler.compile(ctx);
-        MVEL.executeExpression( expr );
+        MVEL.executeExpression(expr);
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        expr = compiler.compile(ctx);
+        MVEL.executeExpression(expr);
     }
 
     public void testArray2() {
-        String ex = " TestHelper.method(1, {\"a\", \"b\"});\n" + 
-                    " TestHelper.method(2, {new String(\"a\"), new String(\"b\")});\n"+
-                    " TestHelper.method(3, {new Foo(\"a\"), new Foo(\"b\")});";
+        String ex = " TestHelper.method(1, {\"a\", \"b\"});\n" +
+                " TestHelper.method(2, {new String(\"a\"), new String(\"b\")});\n" +
+                " TestHelper.method(3, {new Fooz(\"a\"), new Fooz(\"b\")});";
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
-        ctx.addImport( TestHelper.class );
-        ctx.addImport( Foo.class );
+        ctx.addImport(TestHelper.class);
+        ctx.addImport(Fooz.class);
         ExpressionCompiler compiler = new ExpressionCompiler(ex);
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
         CompiledExpression expr = compiler.compile(ctx);
-        MVEL.executeExpression( expr );
+        MVEL.executeExpression(expr);
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        expr = compiler.compile(ctx);
+        MVEL.executeExpression(expr);
     }
 
-    
+
 }
 
 
