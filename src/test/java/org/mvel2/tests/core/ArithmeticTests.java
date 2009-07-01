@@ -612,4 +612,17 @@ public class ArithmeticTests extends AbstractTest {
 
         assertEquals((1 - 2 + (3 * 1d) * 1), MVEL.executeExpression(s, vars));
     }
+
+    public void testJIRA161() {
+        Serializable s = MVEL.compileExpression("1==(-1)", ParserContext.create().stronglyTyped());
+        assertEquals(false, MVEL.executeExpression(s));
+    }
+
+    public void testJIRA163() {
+        Serializable s = MVEL.compileExpression("1d - 2d + (3d * 4d) * var1", ParserContext.create().withInput("var1", double.class));
+        Map vars = new HashMap();
+        vars.put("var1", 1d);
+
+        assertEquals((1 - 2 + (3 * 4) * 1d), MVEL.executeExpression(s, vars));
+    }
 }

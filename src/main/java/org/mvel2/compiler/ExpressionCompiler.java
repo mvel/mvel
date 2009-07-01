@@ -91,6 +91,7 @@ public class ExpressionCompiler extends AbstractParser {
         ASTLinkedList astBuild = new ASTLinkedList();
         stk = new ExecutionStack();
         dStack = new ExecutionStack();
+        compileMode = true;
 
         boolean firstLA;
 
@@ -172,7 +173,6 @@ public class ExpressionCompiler extends AbstractParser {
                                         if (isArithmeticOperator(op)) {
                                             arithmeticFunctionReduction(op);
                                         }
-
                                         else {
                                             reduce();
                                         }
