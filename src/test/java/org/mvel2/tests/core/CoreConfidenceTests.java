@@ -3561,7 +3561,6 @@ public class CoreConfidenceTests extends AbstractTest {
         MVEL.executeExpression(s, vars);
     }
 
-
     public static boolean returnTrue() {
         return true;
     }

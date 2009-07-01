@@ -1,11 +1,11 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
-import org.mvel2.ParserContext;
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
-import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.ExpressionCompiler;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -597,11 +597,19 @@ public class ArithmeticTests extends AbstractTest {
     public void testJIRA158() {
         Serializable s = MVEL.compileExpression("4/2 + Math.sin(1)");
 
-        assertEquals(4/2 + Math.sin(1), MVEL.executeExpression(s));
+        assertEquals(4 / 2 + Math.sin(1), MVEL.executeExpression(s));
 
         s = MVEL.compileExpression("(float) (4/2 + Math.sin(1))", ParserContext.create().stronglyTyped());
 
-        assertEquals((float) (4/2 + Math.sin(1)), MVEL.executeExpression(s));
+        assertEquals((float) (4 / 2 + Math.sin(1)), MVEL.executeExpression(s));
     }
 
+
+    public void testJIRA162() {
+        Serializable s = MVEL.compileExpression("1d - 2d + (3d * var1) * var1", ParserContext.create().withInput("var1", double.class));
+        Map vars = new HashMap();
+        vars.put("var1", 1d);
+
+        assertEquals((1 - 2 + (3 * 1d) * 1), MVEL.executeExpression(s, vars));
+    }
 }

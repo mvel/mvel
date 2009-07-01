@@ -97,7 +97,9 @@ public class ExecutionStack {
     }
 
     public Object pop() {
-        if (size-- == 0) return null;
+        if (size-- == 0) {
+            return null;
+        }
         try {
             return element.value;
         }
@@ -107,7 +109,9 @@ public class ExecutionStack {
     }
 
     public Boolean popBoolean() {
-        if (size-- == 0) return null;
+        if (size-- == 0) {
+            return null;
+        }
         try {
             if (element.value instanceof Boolean) return (Boolean) element.value;
             throw new CompileException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
@@ -155,6 +159,7 @@ public class ExecutionStack {
     public void op() {
         element = new StackElement(element.next.next.next, doOperations(element.next.next.value, (Integer) element.value, element.next.value));
         size -= 2;
+
     }
 
     public void op(int operator) {

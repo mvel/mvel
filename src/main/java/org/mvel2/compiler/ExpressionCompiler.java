@@ -182,7 +182,8 @@ public class ExpressionCompiler extends AbstractParser {
                                          * A reducable line of literals has ended.  We must now terminate here and
                                          * leave the rest to be determined at runtime.
                                          */
-                                        astBuild.addTokenNode(new LiteralNode(stk.pop()));
+                                        if (!stk.isEmpty()) astBuild.addTokenNode(new LiteralNode(stk.pop()));
+
                                         astBuild.addTokenNode(new OperatorNode(tkOp2.getOperator()), verify(pCtx, tkLA2));
                                     }
 
