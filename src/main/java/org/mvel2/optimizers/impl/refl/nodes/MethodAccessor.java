@@ -119,9 +119,9 @@ public class MethodAccessor implements AccessorNode {
                     return o.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars));
                 }
             }
-            catch (IllegalAccessException e) {
+            catch (IllegalAccessException e) {   
                 throw new CompileException("unable to invoke method (expected target: " + method.getDeclaringClass().getName() + "::" + method.getName() + "; " +
-                        "actual target: " + ctx.getClass().getName() + "::" + method.getName());
+                        "actual target: " + ctx.getClass().getName() + "::" + method.getName() + "; coercionNeeded=" + (coercionNeeded ? "yes" : "no") + ")");
             }
             catch (Exception e2) {
                 throw new CompileException("unable to invoke method", e2);
