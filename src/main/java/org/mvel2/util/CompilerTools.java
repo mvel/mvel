@@ -22,6 +22,7 @@ import org.mvel2.CompileException;
 import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
+import static org.mvel2.util.ParseTools.boxPrimitive;
 import org.mvel2.ast.*;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
@@ -234,29 +235,29 @@ public class CompilerTools {
     public static void expectType(Accessor expression, Class type, boolean compileMode) {
         Class retType = expression.getKnownEgressType();
         if (compileMode) {
-            if ((retType == null || !type.isAssignableFrom(retType)) && (!Object.class.equals(retType)
+            if ((retType == null || !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) && (!Object.class.equals(retType)
                     || getCurrentThreadParserContext().isStrictTypeEnforcement())) {
                 throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
                         + (retType != null ? retType.getName() : "null"));
             }
         }
-        else if (retType == null || !Object.class.equals(retType) && !type.isAssignableFrom(retType)) {
+        else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) {
             throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
                     + (retType != null ? retType.getName() : "null"));
         }
     }
 
     public static void expectType(ASTNode node, Class type, boolean compileMode) {
-        Class retType = ParseTools.boxPrimitive(node.getEgressType());
+        Class retType = boxPrimitive(node.getEgressType());
         if (compileMode) {
-            if ((retType == null || !ParseTools.boxPrimitive(type).isAssignableFrom(retType)) && (!Object.class.equals(retType) &&
+            if ((retType == null || !boxPrimitive(type).isAssignableFrom(retType)) && (!Object.class.equals(retType) &&
                     (getCurrentThreadParserContext().isStrictTypeEnforcement()
                             || getCurrentThreadParserContext().isStrictTypeEnforcement()))) {
                 throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
                         + (retType != null ? retType.getName() : "null"));
             }
         }
-        else if (retType == null || !Object.class.equals(retType) && !ParseTools.boxPrimitive(type).isAssignableFrom(retType)) {
+        else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(retType)) {
             throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
                     + (retType != null ? retType.getName() : "null"));
         }

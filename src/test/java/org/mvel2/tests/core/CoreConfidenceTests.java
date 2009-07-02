@@ -3613,6 +3613,13 @@ public class CoreConfidenceTests extends AbstractTest {
         expr = compiler.compile(ctx);
         MVEL.executeExpression(expr);
     }
+
+    public void testJIRA166() {
+        Object v = MVEL.eval("import java.util.regex.Matcher; import java.util.regex.Pattern;" +
+                " if (Pattern.compile(\"hoge\").matcher(\"hogehogehoge\").find()) { 'foo' } else { 'bar' }",
+                new HashMap());
+        assertEquals("foo", v);
+    }
 }
 
 
