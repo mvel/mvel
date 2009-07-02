@@ -2229,7 +2229,20 @@ public class AbstractParser implements Serializable {
                  * The current arith. operator is of higher precedence the last.
                  */
 
-                dStack.push(operator = operator2, nextToken().getReducedValue(ctx, ctx, variableFactory));
+                tk = nextToken();
+
+                /**
+                 * Check to see if we're compiling or executing interpretively.  If we're compiling, we really
+                 * need to stop if this is not a literal.
+                 */
+                if (compileMode && !tk.isLiteral()) {
+                    // BAIL OUT!
+                    splitAccumulator.push(tk);
+                    splitAccumulator.push(new OperatorNode(operator2));
+                    return OP_TERMINATE;
+                }
+
+                dStack.push(operator = operator2, tk.getReducedValue(ctx, ctx, variableFactory));
 
                 while (true) {
                     // look ahead again

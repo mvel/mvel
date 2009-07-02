@@ -18,13 +18,10 @@
 
 package org.mvel2.compiler;
 
-import org.mvel2.CompileException;
+import org.mvel2.*;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
-import org.mvel2.ErrorDetail;
-import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
-import org.mvel2.ParserContext;
 import org.mvel2.ast.*;
 import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel2.util.ASTLinkedList;
@@ -171,7 +168,21 @@ public class ExpressionCompiler extends AbstractParser {
                                         stk.push(tkLA2.getLiteralValue(), op = tkOp2.getOperator());
 
                                         if (isArithmeticOperator(op)) {
-                                            arithmeticFunctionReduction(op);
+                                            if (arithmeticFunctionReduction(op) == OP_TERMINATE) {
+                                                /**
+                                                 * The reduction failed because we encountered a non-literal,
+                                                 * so we must now back out and cleanup.
+                                                 */
+
+                                                stk.xswap_op();
+
+                                                astBuild.addTokenNode(new LiteralNode(stk.pop()));
+                                                astBuild.addTokenNode(
+                                                    (OperatorNode) splitAccumulator.pop(),
+                                                    verify(pCtx, (ASTNode) splitAccumulator.pop())
+                                                );
+                                            }
+                                            
                                         }
                                         else {
                                             reduce();
