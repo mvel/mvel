@@ -182,7 +182,6 @@ public class ExpressionCompiler extends AbstractParser {
                                                     verify(pCtx, (ASTNode) splitAccumulator.pop())
                                                 );
                                             }
-                                            
                                         }
                                         else {
                                             reduce();
