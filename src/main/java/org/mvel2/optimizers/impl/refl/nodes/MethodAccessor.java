@@ -25,6 +25,7 @@ import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.getBestCandidate;
+import static org.mvel2.util.ParseTools.getWidenedTarget;
 
 import java.lang.reflect.Method;
 
@@ -51,7 +52,7 @@ public class MethodAccessor implements AccessorNode {
                 if (ctx != null && method.getDeclaringClass() != ctx.getClass()) {
                     Method o = getBestCandidate(parameterTypes, method.getName(), ctx.getClass(), ctx.getClass().getMethods(), true);
                     if (o != null) {
-                        return executeOverrideTarget(o, ctx, elCtx, vars);
+                        return executeOverrideTarget(getWidenedTarget(o), ctx, elCtx, vars);
                     }
                 }
 
@@ -75,7 +76,8 @@ public class MethodAccessor implements AccessorNode {
             catch (IllegalArgumentException e) {
                 Object[] vs = executeAndCoerce(parameterTypes, elCtx, vars);
                 Method newMeth;
-                if ((newMeth = ParseTools.getBestCandidate(vs, method.getName(), method.getDeclaringClass(), method.getDeclaringClass().getMethods(), false)) != null) {
+                if ((newMeth = getWidenedTarget(getBestCandidate(vs, method.getName(), method.getDeclaringClass(),
+                        method.getDeclaringClass().getMethods(), false))) != null) {
                     return executeOverrideTarget(newMeth, ctx, elCtx, vars);
                 }
                 else {
