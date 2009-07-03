@@ -633,4 +633,14 @@ public class ArithmeticTests extends AbstractTest {
 
         assertEquals((1 / (1d + 1d) * 1d), MVEL.executeExpression(s, vars));
     }
+
+    public void testJIRA164b() {
+        Serializable s = MVEL.compileExpression("1 + 1 / (var1 + var1) * var1", ParserContext.create().withInput("var1", double.class));
+        Map vars = new HashMap();
+
+        double var1 = 1d;
+        vars.put("var1", var1);
+
+        assertEquals((1 + 1 / (var1 + var1) * var1), MVEL.executeExpression(s, vars));
+    }
 }

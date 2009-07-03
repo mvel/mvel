@@ -2236,10 +2236,11 @@ public class AbstractParser implements Serializable {
                  * need to stop if this is not a literal.
                  */
                 if (compileMode && !tk.isLiteral()) {
+
                     // BAIL OUT!
                     splitAccumulator.push(tk);
                     splitAccumulator.push(new OperatorNode(operator2));
-                    return OP_TERMINATE;
+                    return tk instanceof Substatement ? -2 : OP_TERMINATE;
                 }
 
                 dStack.push(operator = operator2, tk.getReducedValue(ctx, ctx, variableFactory));

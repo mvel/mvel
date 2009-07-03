@@ -117,7 +117,8 @@ public class MVELRuntime {
 
                 try {
                     while (stk.isReduceable()) {
-                        if ((Integer) stk.pop() == CHOR) {
+                        if ((Integer) stk.peek() == CHOR) {
+                            stk.pop();
                             v1 = stk.pop();
                             v2 = stk.pop();
                             if (!isEmpty(v2) || !isEmpty(v1)) {
@@ -125,6 +126,9 @@ public class MVELRuntime {
                                 stk.push(!isEmpty(v2) ? v2 : v1);
                             }
                             else stk.push(null);
+                        }
+                        else {
+                            stk.op();
                         }
                     }
                 }

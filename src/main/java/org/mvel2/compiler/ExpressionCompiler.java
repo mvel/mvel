@@ -18,10 +18,13 @@
 
 package org.mvel2.compiler;
 
-import org.mvel2.*;
+import org.mvel2.CompileException;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
+import org.mvel2.ErrorDetail;
+import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
+import org.mvel2.ParserContext;
 import org.mvel2.ast.*;
 import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel2.util.ASTLinkedList;
@@ -146,7 +149,7 @@ public class ExpressionCompiler extends AbstractParser {
                              * Reduce the token now.
                              */
                             if (isArithmeticOperator(op)) {
-                                arithmeticFunctionReduction(op);
+                                if (!compileReduce(op, astBuild)) continue;
                             }
                             else {
                                 reduce();
@@ -168,20 +171,22 @@ public class ExpressionCompiler extends AbstractParser {
                                         stk.push(tkLA2.getLiteralValue(), op = tkOp2.getOperator());
 
                                         if (isArithmeticOperator(op)) {
-                                            if (arithmeticFunctionReduction(op) == OP_TERMINATE) {
-                                                /**
-                                                 * The reduction failed because we encountered a non-literal,
-                                                 * so we must now back out and cleanup.
-                                                 */
+                                            compileReduce(op, astBuild);
 
-                                                stk.xswap_op();
-
-                                                astBuild.addTokenNode(new LiteralNode(stk.pop()));
-                                                astBuild.addTokenNode(
-                                                    (OperatorNode) splitAccumulator.pop(),
-                                                    verify(pCtx, (ASTNode) splitAccumulator.pop())
-                                                );
-                                            }
+//                                            if (arithmeticFunctionReduction(op) == OP_TERMINATE) {
+//                                                /**
+//                                                 * The reduction failed because we encountered a non-literal,
+//                                                 * so we must now back out and cleanup.
+//                                                 */
+//
+//                                                stk.xswap_op();
+//
+//                                                astBuild.addTokenNode(new LiteralNode(stk.pop()));
+//                                                astBuild.addTokenNode(
+//                                                        (OperatorNode) splitAccumulator.pop(),
+//                                                        verify(pCtx, (ASTNode) splitAccumulator.pop())
+//                                                );
+//                                            }
                                         }
                                         else {
                                             reduce();
@@ -296,6 +301,34 @@ public class ExpressionCompiler extends AbstractParser {
                 throw new CompileException(e.getMessage(), e);
             }
         }
+    }
+
+    private boolean compileReduce(int opCode, ASTLinkedList astBuild) {
+        switch (arithmeticFunctionReduction(opCode)) {
+            case -1:
+                /**
+                 * The reduction failed because we encountered a non-literal,
+                 * so we must now back out and cleanup.
+                 */
+
+                stk.xswap_op();
+
+                astBuild.addTokenNode(new LiteralNode(stk.pop()));
+                astBuild.addTokenNode(
+                        (OperatorNode) splitAccumulator.pop(),
+                        verify(pCtx, (ASTNode) splitAccumulator.pop())
+                );
+                return false;
+            case -2:
+                /**
+                 * Back out completely, pull everything back off the stack and add the instructions
+                 * to the output payload as they are.
+                 */
+                astBuild.addTokenNode(new LiteralNode(stk.pop()), new OperatorNode((Integer) stk.pop()));
+                astBuild.addTokenNode(new LiteralNode(stk.pop()), (OperatorNode) splitAccumulator.pop());
+                astBuild.addTokenNode(verify(pCtx, (ASTNode) splitAccumulator.pop()));
+        }
+        return true;
     }
 
     private static boolean isBooleanOperator(int operator) {
