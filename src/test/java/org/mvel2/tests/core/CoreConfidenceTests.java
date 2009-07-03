@@ -3649,6 +3649,34 @@ public class CoreConfidenceTests extends AbstractTest {
 
     }
 
+
+    public void testJIRA165b() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        A b = new B();
+        A a = new A();
+        ParserContext context = new ParserContext();
+        Object expression = MVEL.compileExpression("a.bar(value)", context);
+
+        for (int i = 0; i < 100; i++) {
+            System.out.println("i: " + i);
+            System.out.flush();
+
+            {
+                Map<String, Object> variables = new HashMap<String, Object>();
+                variables.put("a", b);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
+            }
+            {
+                Map<String, Object> variables = new HashMap<String, Object>();
+                variables.put("a", a);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
+            }
+        }
+
+    }
+
     public void testJIRA166() {
         Object v = MVEL.eval("import java.util.regex.Matcher; import java.util.regex.Pattern;" +
                 " if (Pattern.compile(\"hoge\").matcher(\"hogehogehoge\").find()) { 'foo' } else { 'bar' }",
