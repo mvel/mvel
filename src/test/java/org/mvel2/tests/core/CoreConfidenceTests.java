@@ -2055,6 +2055,9 @@ public class CoreConfidenceTests extends AbstractTest {
         public void foo(String s) {
         }
 
+        public void bar(String s) {
+        }
+
         public List<String> getStrings() {
             return STRINGS;
         }
@@ -2065,6 +2068,11 @@ public class CoreConfidenceTests extends AbstractTest {
         public void foo(String s) {
             super.foo(s);
         }
+
+        public void bar(int s) {
+        }
+
+
     }
 
     public static class C extends A {
@@ -3612,6 +3620,33 @@ public class CoreConfidenceTests extends AbstractTest {
         OptimizerFactory.setDefaultOptimizer("reflective");
         expr = compiler.compile(ctx);
         MVEL.executeExpression(expr);
+    }
+
+    public void testJIRA165() {
+        OptimizerFactory.setDefaultOptimizer(OptimizerFactory.SAFE_REFLECTIVE);
+        A b = new B();
+        A a = new A();
+        ParserContext context = new ParserContext();
+        Object expression = MVEL.compileExpression("a.bar(value)", context);
+
+        for (int i = 0; i < 100; i++) {
+            System.out.println("i: " + i);
+            System.out.flush();
+
+            {
+                Map<String, Object> variables = new HashMap<String, Object>();
+                variables.put("a", b);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
+            }
+            {
+                Map<String, Object> variables = new HashMap<String, Object>();
+                variables.put("a", a);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
+            }
+        }
+
     }
 
     public void testJIRA166() {

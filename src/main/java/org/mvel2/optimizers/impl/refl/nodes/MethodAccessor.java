@@ -76,8 +76,8 @@ public class MethodAccessor implements AccessorNode {
             catch (IllegalArgumentException e) {
                 Object[] vs = executeAndCoerce(parameterTypes, elCtx, vars);
                 Method newMeth;
-                if ((newMeth = getWidenedTarget(getBestCandidate(vs, method.getName(), method.getDeclaringClass(),
-                        method.getDeclaringClass().getMethods(), false))) != null) {
+                if ((newMeth = getWidenedTarget(getBestCandidate(vs, method.getName(), ctx.getClass(),
+                       ctx.getClass().getMethods(), false))) != null) {
                     return executeOverrideTarget(newMeth, ctx, elCtx, vars);
                 }
                 else {
@@ -115,10 +115,10 @@ public class MethodAccessor implements AccessorNode {
         else {
             try {
                 if (nextNode != null) {
-                    return nextNode.getValue(o.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars)), elCtx, vars);
+                    return nextNode.getValue(o.invoke(ctx, executeAndCoerce(o.getParameterTypes(), elCtx, vars)), elCtx, vars);
                 }
                 else {
-                    return o.invoke(ctx, executeAndCoerce(parameterTypes, elCtx, vars));
+                    return o.invoke(ctx, executeAndCoerce(o.getParameterTypes(), elCtx, vars));
                 }
             }
             catch (IllegalAccessException e) {   
