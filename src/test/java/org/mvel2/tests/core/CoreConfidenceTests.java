@@ -3646,9 +3646,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 MVEL.executeExpression(expression, variables);
             }
         }
-
     }
-
 
     public void testJIRA165b() {
         OptimizerFactory.setDefaultOptimizer("ASM");
