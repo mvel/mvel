@@ -110,6 +110,10 @@ public class Sign extends ASTNode {
     }
 
 
+    @Override
+    public boolean isIdentifier() {
+        return false;
+    }
 }
 
 

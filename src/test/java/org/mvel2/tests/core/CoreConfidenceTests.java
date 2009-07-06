@@ -3681,6 +3681,27 @@ public class CoreConfidenceTests extends AbstractTest {
                 new HashMap());
         assertEquals("foo", v);
     }
+
+
+    public static class Beano {
+        public String getProperty1() {
+            return null;
+        }
+
+        public boolean isProperty2() {
+            return true;
+        }
+
+        public boolean isProperty3() {
+            return false;
+        }
+    }
+
+    public void testJIRA167() {
+        Map context = new HashMap();
+        context.put("bean", new Beano());
+        MVEL.eval("bean.property1==null?bean.isProperty2():bean.isProperty3()", context);
+    }
 }
 
 

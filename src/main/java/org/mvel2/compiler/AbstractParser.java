@@ -744,10 +744,12 @@ public class AbstractParser implements Serializable {
                                         }
                                         cursor++;
                                         while (cursor != length && isIdentifierPart(expr[cursor])) cursor++;
-
                                     }
-                                    else if (++cursor != length && isIdentifierPart(expr[cursor])) {
+                                    else if ((cursor + 1) != length && isIdentifierPart(expr[cursor + 1])) {
                                         break CaptureLoop;
+                                    }
+                                    else {
+                                        cursor++;
                                     }
                                 }
                                 else {
