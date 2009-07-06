@@ -18,14 +18,15 @@
 
 package org.mvel2.ast;
 
-import static org.mvel2.Operator.PTABLE;
-import org.mvel2.*;
+import org.mvel2.CompileException;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
-import org.mvel2.math.MathProcessor;
-import static org.mvel2.math.MathProcessor.doOperations;
+import org.mvel2.Operator;
+import static org.mvel2.Operator.PTABLE;
+import org.mvel2.ParserContext;
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
 import org.mvel2.integration.VariableResolverFactory;
+import static org.mvel2.math.MathProcessor.doOperations;
 import static org.mvel2.util.CompilerTools.getReturnTypeFromOp;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.boxPrimitive;
@@ -84,13 +85,17 @@ public class BinaryOperation extends BooleanNode {
                     }
             }
 
-            if (this.left.egressType == this.right.egressType) {
-                lType = rType = ParseTools.__resolveType(left.egressType);
+            if (this.left.isLiteral() && this.right.isLiteral()) {
+                if (this.left.egressType == this.right.egressType) {
+                    lType = rType = ParseTools.__resolveType(left.egressType);
+                }
+                else {
+                    lType = ParseTools.__resolveType(this.left.egressType);
+                    rType = ParseTools.__resolveType(this.right.egressType);
+                }
             }
-            else {
-                lType = ParseTools.__resolveType(this.left.egressType);
-                rType = ParseTools.__resolveType(this.right.egressType);
-            }
+
+
         }
 
         egressType = getReturnTypeFromOp(operation, this.left.egressType, this.right.egressType);
@@ -110,7 +115,7 @@ public class BinaryOperation extends BooleanNode {
     public int getOperation() {
         return operation;
     }
-                                                                        
+
     public BinaryOperation getRightBinary() {
         return right != null && right instanceof BinaryOperation ? (BinaryOperation) right : null;
     }
@@ -121,6 +126,10 @@ public class BinaryOperation extends BooleanNode {
             n = (BinaryOperation) n.right;
         }
         n.right = right;
+
+        if (n == this) {
+            if ((rType = ParseTools.__resolveType(n.right.getEgressType())) == 0) rType = -1;
+        }
     }
 
     public ASTNode getRightMost() {
@@ -137,6 +146,11 @@ public class BinaryOperation extends BooleanNode {
 
     public boolean isGreaterPrecedence(BinaryOperation o) {
         return o.getPrecedence() > PTABLE[operation];
+    }
+
+    @Override
+    public boolean isLiteral() {
+        return false;
     }
 
     public String toString() {

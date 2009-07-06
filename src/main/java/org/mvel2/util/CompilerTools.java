@@ -280,10 +280,13 @@ public class CompilerTools {
             case Operator.ADD:
             case Operator.SUB:
             case Operator.MULT:
-            case Operator.DIV:
             case Operator.POWER:
             case Operator.MOD:
                 return left;
+
+            case Operator.DIV:
+                return Double.class;
+
 
             case Operator.BW_AND:
             case Operator.BW_OR:
