@@ -185,6 +185,7 @@ public class ExpressionCompiler extends AbstractParser {
                                         if (!stk.isEmpty()) astBuild.addTokenNode(new LiteralNode(stk.pop()));
 
                                         astBuild.addTokenNode(new OperatorNode(tkOp2.getOperator()), verify(pCtx, tkLA2));
+                                        break;
                                     }
 
                                     firstLA = false;
