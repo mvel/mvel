@@ -94,8 +94,6 @@ public class BinaryOperation extends BooleanNode {
                     rType = ParseTools.__resolveType(this.right.egressType);
                 }
             }
-
-
         }
 
         egressType = getReturnTypeFromOp(operation, this.left.egressType, this.right.egressType);

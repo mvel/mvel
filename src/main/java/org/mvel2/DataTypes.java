@@ -40,8 +40,9 @@ public interface DataTypes {
     public static final int W_SHORT = 105;
     public static final int W_INTEGER = 106;
     public static final int W_LONG = 107;
-    public static final int W_DOUBLE = 108;
-    public static final int W_FLOAT = 109;
+    public static final int W_FLOAT = 108;
+    public static final int W_DOUBLE = 109;
+
     public static final int W_CHAR = 112;
     public static final int W_BYTE = 113;
 

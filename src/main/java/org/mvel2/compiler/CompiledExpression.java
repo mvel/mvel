@@ -25,8 +25,8 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import static org.mvel2.optimizers.OptimizerFactory.setThreadAccessorOptimizer;
-import org.mvel2.util.ASTIterator;
 import org.mvel2.util.ASTLinkedList;
+import org.mvel2.util.StringAppender;
 
 import java.io.Serializable;
 
@@ -175,5 +175,15 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public boolean isLiteralOnly() {
         return literalOnly;
+    }
+
+    public String toString() {
+        StringAppender appender = new StringAppender();
+        ASTNode node = firstNode;
+        while (node != null) {
+            appender.append(node.toString()).append(";\n");
+            node = node.nextASTNode;
+        }
+        return appender.toString();
     }
 }

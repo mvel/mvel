@@ -141,7 +141,7 @@ public class ExpressionCompiler extends AbstractParser {
                          */
                         if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()
                                 && tkOp.getOperator() < 34 && ((lastOp == -1
-                                || (lastOp < PTABLE.length && PTABLE[lastOp] < PTABLE[tkOp.getOperator()])))) {
+                                || (lastOp < PTABLE.length && PTABLE[lastOp] <= PTABLE[tkOp.getOperator()])))) {
 
                             stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), op = tkOp.getOperator());
 
@@ -172,21 +172,6 @@ public class ExpressionCompiler extends AbstractParser {
 
                                         if (isArithmeticOperator(op)) {
                                             compileReduce(op, astBuild);
-
-//                                            if (arithmeticFunctionReduction(op) == OP_TERMINATE) {
-//                                                /**
-//                                                 * The reduction failed because we encountered a non-literal,
-//                                                 * so we must now back out and cleanup.
-//                                                 */
-//
-//                                                stk.xswap_op();
-//
-//                                                astBuild.addTokenNode(new LiteralNode(stk.pop()));
-//                                                astBuild.addTokenNode(
-//                                                        (OperatorNode) splitAccumulator.pop(),
-//                                                        verify(pCtx, (ASTNode) splitAccumulator.pop())
-//                                                );
-//                                            }
                                         }
                                         else {
                                             reduce();
@@ -239,6 +224,7 @@ public class ExpressionCompiler extends AbstractParser {
                             continue;
                         }
                         else {
+
                             astBuild.addTokenNode(verify(pCtx, tk), verify(pCtx, tkOp));
                             if (tkLA != null) astBuild.addTokenNode(verify(pCtx, tkLA));
                             continue;
@@ -324,9 +310,17 @@ public class ExpressionCompiler extends AbstractParser {
                  * Back out completely, pull everything back off the stack and add the instructions
                  * to the output payload as they are.
                  */
-                astBuild.addTokenNode(new LiteralNode(stk.pop()), new OperatorNode((Integer) stk.pop()));
-                astBuild.addTokenNode(new LiteralNode(stk.pop()), (OperatorNode) splitAccumulator.pop());
+
+                LiteralNode rightValue = new LiteralNode(stk.pop());
+                OperatorNode operator = new OperatorNode((Integer) stk.pop());
+
+                astBuild.addTokenNode(new LiteralNode(stk.pop()), operator);
+                astBuild.addTokenNode(rightValue, (OperatorNode) splitAccumulator.pop());
                 astBuild.addTokenNode(verify(pCtx, (ASTNode) splitAccumulator.pop()));
+//                return true;
+
+//            default:
+//                astBuild.addTokenNode(new LiteralNode(stk.pop()));
         }
         return true;
     }

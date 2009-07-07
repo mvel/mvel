@@ -50,7 +50,7 @@ public class Substatement extends ASTNode {
     }
 
     public String toString() {
-        return "(" + new String(name) + ")";
+        return statement == null ? "(" + new String(name) + ")" : statement.toString();
     }
 
 }

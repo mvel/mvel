@@ -22,7 +22,6 @@ import org.mvel2.CompileException;
 import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
-import static org.mvel2.util.ParseTools.boxPrimitive;
 import org.mvel2.ast.*;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
@@ -31,6 +30,8 @@ import org.mvel2.compiler.ExecutableAccessor;
 import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
+import static org.mvel2.util.ParseTools.__resolveType;
+import static org.mvel2.util.ParseTools.boxPrimitive;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -105,14 +106,14 @@ public class CompilerTools {
                         optimizeOperator(tkOp2.getOperator(), bo, tkOp2, astLinkedList, optimizedAst);
                     }
                     else {
-                        optimizedAst.addTokenNode(bo);                        
+                        optimizedAst.addTokenNode(bo);
                     }
                 }
                 else if (!tkOp.isOperator() && tk.getLiteralValue() instanceof Class) {
                     optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), (Class) tk.getLiteralValue(), 0, ctx));
                 }
                 else if (tkOp.isOperator()) {
-                     optimizeOperator(tkOp.getOperator(), tk, tkOp, astLinkedList, optimizedAst);
+                    optimizeOperator(tkOp.getOperator(), tk, tkOp, astLinkedList, optimizedAst);
                 }
                 else {
                     optimizedAst.addTokenNode(tk, tkOp);
@@ -156,7 +157,7 @@ public class CompilerTools {
                                 && (tkOp2.isOperator(Operator.AND) || tkOp2.isOperator(Operator.OR))) {
 
                             if ((tkOp = tkOp2).getOperator() == Operator.AND) {
-                                bool.setRightMost(new And(bool.getRightMost(), astLinkedList.nextNode(), ctx.isStrongTyping()));                                
+                                bool.setRightMost(new And(bool.getRightMost(), astLinkedList.nextNode(), ctx.isStrongTyping()));
                             }
                             else {
                                 bool = new Or(bool, astLinkedList.nextNode(), ctx.isStrongTyping());
@@ -282,11 +283,11 @@ public class CompilerTools {
             case Operator.MULT:
             case Operator.POWER:
             case Operator.MOD:
-                return left;
-
             case Operator.DIV:
-                return Double.class;
-
+                if (left == Object.class || right == Object.class)
+                    return Object.class;
+                else
+                    return __resolveType(boxPrimitive(left)) < __resolveType(boxPrimitive(right)) ? right : left;
 
             case Operator.BW_AND:
             case Operator.BW_OR:

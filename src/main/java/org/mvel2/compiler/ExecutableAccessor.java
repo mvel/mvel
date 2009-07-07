@@ -83,6 +83,11 @@ public class ExecutableAccessor implements ExecutableStatement {
     public boolean isLiteralOnly() {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return node.toString();
+    }
 }
 
 
