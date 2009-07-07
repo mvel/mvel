@@ -25,7 +25,6 @@ import org.mvel2.ast.TypeDescriptor;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.GlobalListenerFactory;
 import static org.mvel2.integration.GlobalListenerFactory.notifySetListeners;
 import static org.mvel2.integration.PropertyHandlerFactory.*;
@@ -495,10 +494,10 @@ public class PropertyAccessor {
     }
 
     public static Class[] checkParmTypesCache(Method member) {
-         Class[] pt = METHOD_PARMTYPES_CACHE.get(member);
-         if (pt == null) {
-             METHOD_PARMTYPES_CACHE.put(member, pt = member.getParameterTypes());
-         }
+        Class[] pt = METHOD_PARMTYPES_CACHE.get(member);
+        if (pt == null) {
+            METHOD_PARMTYPES_CACHE.put(member, pt = member.getParameterTypes());
+        }
         return pt;
     }
 
@@ -610,6 +609,9 @@ public class PropertyAccessor {
                 return ((Field) tryStatic).get(null);
             }
         }
+        else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+            return getMethod(ctx, property);
+        }
 
         throw new PropertyAccessException("could not access property: " + property);
     }
@@ -634,7 +636,7 @@ public class PropertyAccessor {
     }
 
     private Object getWithProperty(Object ctx) {
-         parseWithExpressions(new String(property, 0, cursor - 1).trim(), property, cursor + 1,
+        parseWithExpressions(new String(property, 0, cursor - 1).trim(), property, cursor + 1,
                 cursor = balancedCaptureWithLineAccounting(property, cursor, '{', getCurrentThreadParserContext()), ctx, variableFactory);
         cursor++;
         return ctx;
@@ -683,7 +685,7 @@ public class PropertyAccessor {
             return ((CharSequence) ctx).charAt((Integer) eval(prop, ctx, variableFactory));
         }
         else {
-       //     TypeDescriptor td = new TypeDescriptor(property, 0);
+            //     TypeDescriptor td = new TypeDescriptor(property, 0);
             try {
                 return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, 0));
             }
@@ -763,9 +765,11 @@ public class PropertyAccessor {
      * @throws Exception -
      */
     @SuppressWarnings({"unchecked"})
-    private Object getMethod(Object ctx, String name) throws Exception {
+    private Object getMethod(Object ctx, String name) {
         int st = cursor;
-        String tk = ((cursor = balancedCapture(property, cursor, '(')) - st) > 1 ?
+
+        String tk = cursor != length
+                && property[cursor] == '(' && ((cursor = balancedCapture(property, cursor, '(')) - st) > 1 ?
                 new String(property, st + 1, cursor - st - 1) : "";
 
         cursor++;
@@ -884,8 +888,11 @@ public class PropertyAccessor {
                     return m.invoke(ctx, args);
                 }
                 catch (Exception e2) {
-                    throw e;
+                    throw new PropertyAccessException("unable to invoke method: " + name, e2);
                 }
+            }
+            catch (Exception e) {
+                throw new PropertyAccessException("unable to invoke method: " + name, e);
             }
         }
     }
@@ -948,18 +955,18 @@ public class PropertyAccessor {
                     case '}':
                         i--;
                         for (int d = 1; i > 0 && d != 0; i--) {
-                              switch (property[i])  {
-                                  case '}':
-                                      d++;
-                                      break;
-                                  case '{':
-                                      d--;
-                                      break;
-                                  case '"':
-                                  case '\'':
-                                      char s = property[i];
-                                      while (i > 0 && (property[i] != s && property[i - 1] != '\\')) i--;
-                              }
+                            switch (property[i]) {
+                                case '}':
+                                    d++;
+                                    break;
+                                case '{':
+                                    d--;
+                                    break;
+                                case '"':
+                                case '\'':
+                                    char s = property[i];
+                                    while (i > 0 && (property[i] != s && property[i - 1] != '\\')) i--;
+                            }
                         }
                         break;
 

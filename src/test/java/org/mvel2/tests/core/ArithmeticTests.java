@@ -618,10 +618,10 @@ public class ArithmeticTests extends AbstractTest {
         Serializable s = MVEL.compileExpression("1==-(-1)", ParserContext.create().stronglyTyped());
         assertEquals(1==-(-1), MVEL.executeExpression(s));
 
-//        ParserContext ctx = new ParserContext();
-//        ctx.setStrongTyping(true);
-//        CompiledExpression compiledExpression = new ExpressionCompiler("1==-(-1)").compile(ctx);
-//        assertEquals(false, MVEL.executeExpression(compiledExpression));
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        CompiledExpression compiledExpression = new ExpressionCompiler("1==-(-1)").compile(ctx);
+        assertEquals(1==-(-1), MVEL.executeExpression(compiledExpression));
     }
 
     public void testJIRA163() {
