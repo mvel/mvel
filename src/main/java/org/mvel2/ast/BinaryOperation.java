@@ -85,14 +85,16 @@ public class BinaryOperation extends BooleanNode {
                     }
             }
 
-            if (this.left.isLiteral() && this.right.isLiteral()) {
-                if (this.left.egressType == this.right.egressType) {
-                    lType = rType = ParseTools.__resolveType(left.egressType);
-                }
-                else {
-                    lType = ParseTools.__resolveType(this.left.egressType);
-                    rType = ParseTools.__resolveType(this.right.egressType);
-                }
+
+        }
+
+        if (this.left.isLiteral() && this.right.isLiteral()) {
+            if (this.left.egressType == this.right.egressType) {
+                lType = rType = ParseTools.__resolveType(left.egressType);
+            }
+            else {
+                lType = ParseTools.__resolveType(this.left.egressType);
+                rType = ParseTools.__resolveType(this.right.egressType);
             }
         }
 

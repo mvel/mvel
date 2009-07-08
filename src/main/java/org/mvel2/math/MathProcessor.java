@@ -62,12 +62,14 @@ public strictfp class MathProcessor {
 
         switch (type1) {
             case BIG_DECIMAL:
+
                 switch (type2) {
                     case BIG_DECIMAL:
-                        return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false);
+
+                        return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false, -1);
                     default:
                         if (type2 > 99) {
-                            return doBigDecimalArithmetic((BigDecimal) val1, operation, getInternalNumberFromType(val2, type2), false);
+                            return doBigDecimalArithmetic((BigDecimal) val1, operation, getInternalNumberFromType(val2, type2), false, -1);
                         }
                         else {
                             return _doOperations(type1, val1, operation, type2, val2);
@@ -79,18 +81,18 @@ public strictfp class MathProcessor {
         }
     }
 
-    private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2, boolean iNumber) {
+    private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2, boolean iNumber, int returnTarget) {
         switch (operation) {
             case ADD:
                 if (iNumber) {
-                    return narrowType(val1.add(val2, MATH_CONTEXT));
+                    return narrowType(val1.add(val2, MATH_CONTEXT), returnTarget);
                 }
                 else {
                     return val1.add(val2, MATH_CONTEXT);
                 }
             case DIV:
                 if (iNumber) {
-                    return narrowType(val1.divide(val2, MATH_CONTEXT));
+                    return narrowType(val1.divide(val2, MATH_CONTEXT), returnTarget);
                 }
                 else {
                     return val1.divide(val2, MATH_CONTEXT);
@@ -98,14 +100,14 @@ public strictfp class MathProcessor {
 
             case SUB:
                 if (iNumber) {
-                    return narrowType(val1.subtract(val2, MATH_CONTEXT));
+                    return narrowType(val1.subtract(val2, MATH_CONTEXT), returnTarget);
                 }
                 else {
                     return val1.subtract(val2, MATH_CONTEXT);
                 }
             case MULT:
                 if (iNumber) {
-                    return narrowType(val1.multiply(val2, MATH_CONTEXT));
+                    return narrowType(val1.multiply(val2, MATH_CONTEXT), returnTarget);
                 }
                 else {
                     return val1.multiply(val2, MATH_CONTEXT);
@@ -113,7 +115,7 @@ public strictfp class MathProcessor {
 
             case POWER:
                 if (iNumber) {
-                    return narrowType(val1.pow(val2.intValue(), MATH_CONTEXT));
+                    return narrowType(val1.pow(val2.intValue(), MATH_CONTEXT), returnTarget);
                 }
                 else {
                     return val1.pow(val2.intValue(), MATH_CONTEXT);
@@ -121,7 +123,7 @@ public strictfp class MathProcessor {
 
             case MOD:
                 if (iNumber) {
-                    return narrowType(val1.remainder(val2));
+                    return narrowType(val1.remainder(val2), returnTarget);
                 }
                 else {
                     return val1.remainder(val2);
@@ -152,7 +154,7 @@ public strictfp class MathProcessor {
                     || (operation != 0 && isNumber(val1) && isNumber(val2))) {
                 return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1),
                         operation,
-                        getInternalNumberFromType(val2, type2), true);
+                        getInternalNumberFromType(val2, type2), true, box(type2) > box(type1) ? type2 : type1);
             }
             else if (operation != ADD &&
                     (type1 == 15 || type2 == 15) &&
@@ -287,7 +289,12 @@ public strictfp class MathProcessor {
                     case SUB:
                         return ((Integer) val1) - ((Integer) val2);
                     case DIV:
-                        return ((Integer) val1).doubleValue() / ((Integer) val2).doubleValue();
+//                        if ((((Integer) val1) % ((Integer) val2)) == 0) {
+//                            return ((Integer) val1) / ((Integer) val2);
+//                        }
+//                        else {
+                            return ((Integer) val1).doubleValue() / ((Integer) val2).doubleValue();
+//                        }
                     case MULT:
                         return ((Integer) val1) * ((Integer) val2);
                     case POWER:
@@ -462,7 +469,7 @@ public strictfp class MathProcessor {
                     case MULT:
                         return ((Float) val1) * ((Float) val2);
                     case POWER:
-                        return narrowType(new InternalNumber((Float) val1, MATH_CONTEXT).pow(new InternalNumber((Float) val2).intValue(), MATH_CONTEXT));
+                        return narrowType(new InternalNumber((Float) val1, MATH_CONTEXT).pow(new InternalNumber((Float) val2).intValue(), MATH_CONTEXT), -1);
                     case MOD:
                         return ((Float) val1) % ((Float) val2);
                     case GTHAN:
@@ -535,6 +542,28 @@ public strictfp class MathProcessor {
         return null;
     }
 
+    private static int box(int type) {
+        switch (type) {
+            case DataTypes.INTEGER:
+                return DataTypes.W_INTEGER;
+            case DataTypes.DOUBLE:
+                return DataTypes.W_DOUBLE;
+            case DataTypes.LONG:
+                return DataTypes.W_LONG;
+            case DataTypes.SHORT:
+                return DataTypes.W_SHORT;
+            case DataTypes.BYTE:
+                return DataTypes.W_BYTE;
+            case DataTypes.FLOAT:
+                return DataTypes.W_FLOAT;
+            case DataTypes.CHAR:
+                return DataTypes.W_CHAR;
+            case DataTypes.BOOLEAN:
+                return DataTypes.W_BOOLEAN;
+        }
+        return type;
+    }
+
     private static InternalNumber getInternalNumberFromType(Object in, int type) {
         if (in == null)
             return new InternalNumber(0, MATH_CONTEXT);
@@ -570,7 +599,7 @@ public strictfp class MathProcessor {
                 return new InternalNumber(((Unit) in).getValue(), MathContext.DECIMAL64);
             case DataTypes.W_BYTE:
             case DataTypes.BYTE:
-                return new InternalNumber(((Byte)in).intValue());
+                return new InternalNumber(((Byte) in).intValue());
 
 
         }

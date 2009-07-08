@@ -954,11 +954,11 @@ public class ParseTools {
         return false;
     }
 
-    public static Object narrowType(final BigDecimal result) {
-        if (result.scale() > 0) {
+    public static Object narrowType(final BigDecimal result, int returnTarget) {
+        if (returnTarget == DataTypes.W_DOUBLE || returnTarget == DataTypes.DOUBLE || result.scale() > 0) {
             return result.doubleValue();
         }
-        else if (result.longValue() > Integer.MAX_VALUE) {
+        else if (returnTarget == DataTypes.W_LONG || returnTarget == DataTypes.LONG || result.longValue() > Integer.MAX_VALUE) {
             return result.longValue();
         }
         else {
