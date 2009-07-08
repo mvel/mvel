@@ -717,7 +717,6 @@ public class ParserContext implements Serializable {
         this.allowBootstrapBypass = allowBootstrapBypass;
     }
 
-
     // Introduce some new Fluent API stuff here.
 
     public static ParserContext create() {
@@ -753,4 +752,5 @@ public class ParserContext implements Serializable {
         addImport(clazz);
         return this;
     }
+
 }

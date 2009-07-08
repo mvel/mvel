@@ -48,6 +48,11 @@ public class ExpressionCompiler extends AbstractParser {
         return compile(contextControl(GET_OR_CREATE, null, this));
     }
 
+    /**
+     * @deprecated use {@link org.mvel2.MVEL#compileExpression(String, org.mvel2.ParserContext)} instead.
+     * @param ctx
+     * @return compile payload.
+     */
     public CompiledExpression compile(ParserContext ctx) {
         try {
             this.debugSymbols = (this.pCtx = ctx).isDebugSymbols();

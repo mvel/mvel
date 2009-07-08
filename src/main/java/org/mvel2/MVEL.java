@@ -732,6 +732,24 @@ public class MVEL {
 
 
     /**
+     * Performs an analysis compile, which will populate the ParserContext with type, input and variable information,
+     * but will not produce a payload.
+     * @param expression - the expression to analyze
+     * @param ctx - the parser context
+     */
+    public static void analysisCompile(char[] expression, ParserContext ctx) {
+        ExpressionCompiler compiler = new ExpressionCompiler(expression);
+        compiler.setVerifyOnly(true);
+        compiler.compile(ctx);
+    }
+
+    public static void analysisCompile(String expression, ParserContext ctx) {
+        analysisCompile(expression.toCharArray(), ctx);
+    }
+
+
+
+    /**
      * Compiles an expression and returns a Serializable object containing the compiled expression.  The returned value
      * can be reused for higher-performance evaluation of the expression.  It is used in a straight forward way:
      * <pre><code>

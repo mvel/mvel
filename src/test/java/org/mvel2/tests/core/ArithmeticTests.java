@@ -516,11 +516,15 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testDeepAssignmentIncrement() {
-        assertEquals(true, test("foo.countTest += 5; if (foo.countTest == 5) { foo.countTest = 0; return true; } else { foo.countTest = 0; return false; }"));
+        assertEquals(true,
+                test("foo.countTest += 5; if (foo.countTest == 5) { foo.countTest = 0; return true; }" +
+                        " else { foo.countTest = 0; return false; }"));
     }
 
     public void testDeepAssignmentWithBlock() {
-        assertEquals(true, test("with (foo) { countTest += 5 }; if (foo.countTest == 5) { foo.countTest = 0; return true; } else { foo.countTest = 0; return false; }"));
+        assertEquals(true,
+                test("with (foo) { countTest += 5 }; if (foo.countTest == 5) { foo.countTest = 0; return true; }" +
+                        " else { foo.countTest = 0; return false; }"));
     }
 
     public void testOperativeAssignMod() {
@@ -607,7 +611,8 @@ public class ArithmeticTests extends AbstractTest {
 
 
     public void testJIRA162() {
-        Serializable s = MVEL.compileExpression("1d - 2d + (3d * var1) * var1", ParserContext.create().withInput("var1", double.class));
+        Serializable s = MVEL.compileExpression("1d - 2d + (3d * var1) * var1",
+                ParserContext.create().withInput("var1", double.class));
         Map vars = new HashMap();
         vars.put("var1", 1d);
 
@@ -625,7 +630,8 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testJIRA163() {
-        Serializable s = MVEL.compileExpression("1d - 2d + (3d * 4d) * var1", ParserContext.create().withInput("var1", double.class));
+        Serializable s = MVEL.compileExpression("1d - 2d + (3d * 4d) * var1",
+                ParserContext.create().withInput("var1", double.class));
         Map vars = new HashMap();
         vars.put("var1", 1d);
 
@@ -633,7 +639,8 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testJIRA164() {
-        Serializable s = MVEL.compileExpression("1 / (var1 + var1) * var1", ParserContext.create().stronglyTyped().withInput("var1", double.class));
+        Serializable s = MVEL.compileExpression("1 / (var1 + var1) * var1",
+                ParserContext.create().stronglyTyped().withInput("var1", double.class));
         Map vars = new HashMap();
         double var1 = 1d;
 
@@ -649,7 +656,8 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testJIRA164b() {
-        Serializable s = MVEL.compileExpression("1 + 1 / (var1 + var1) * var1", ParserContext.create().stronglyTyped().withInput("var1", double.class));
+        Serializable s = MVEL.compileExpression("1 + 1 / (var1 + var1) * var1",
+                ParserContext.create().stronglyTyped().withInput("var1", double.class));
         Map vars = new HashMap();
 
         double var1 = 1d;
@@ -658,13 +666,15 @@ public class ArithmeticTests extends AbstractTest {
         OptimizerFactory.setDefaultOptimizer("reflective");
         assertEquals((1 + 1 / (var1 + var1) * var1), MVEL.executeExpression(s, vars));
 
-        s = MVEL.compileExpression("1 + 1 / (var1 + var1) * var1", ParserContext.create().withInput("var1", double.class));
+        s = MVEL.compileExpression("1 + 1 / (var1 + var1) * var1",
+                ParserContext.create().withInput("var1", double.class));
         OptimizerFactory.setDefaultOptimizer("ASM");
         assertEquals((1 + 1 / (var1 + var1) * var1), MVEL.executeExpression(s, vars));
     }
 
     public void testJIRA164c() {
-        Serializable s = MVEL.compileExpression("1 + 1 / (var1 + var1 + 2 + 3) * var1", ParserContext.create().stronglyTyped().withInput("var1", double.class));
+        Serializable s = MVEL.compileExpression("1 + 1 / (var1 + var1 + 2 + 3) * var1",
+                ParserContext.create().stronglyTyped().withInput("var1", double.class));
         Map vars = new HashMap();
 
         double var1 = 1d;
@@ -673,13 +683,15 @@ public class ArithmeticTests extends AbstractTest {
         OptimizerFactory.setDefaultOptimizer("reflective");
         assertEquals((1 + 1 / (var1 + var1 + 2 + 3) * var1), MVEL.executeExpression(s, vars));
 
-        s = MVEL.compileExpression("1 + 1 / (var1 + var1 + 2 + 3) * var1", ParserContext.create().withInput("var1", double.class));
+        s = MVEL.compileExpression("1 + 1 / (var1 + var1 + 2 + 3) * var1",
+                ParserContext.create().withInput("var1", double.class));
         OptimizerFactory.setDefaultOptimizer("ASM");
         assertEquals((1 + 1 / (var1 + var1 + 2 + 3) * var1), MVEL.executeExpression(s, vars));
     }
 
     public void testJIRA164d() {
-        Serializable s = MVEL.compileExpression("1 + 1 + 1 / (var1 + var1) * var1", ParserContext.create().stronglyTyped().withInput("var1", double.class));
+        Serializable s = MVEL.compileExpression("1 + 1 + 1 / (var1 + var1) * var1",
+                ParserContext.create().stronglyTyped().withInput("var1", double.class));
         Map vars = new HashMap();
 
         double var1 = 1d;
@@ -688,43 +700,53 @@ public class ArithmeticTests extends AbstractTest {
         OptimizerFactory.setDefaultOptimizer("reflective");
         assertEquals((1 + 1 + 1 / (var1 + var1) * var1), MVEL.executeExpression(s, vars));
 
-        s = MVEL.compileExpression("1 + 1 + 1 / (var1 + var1) * var1", ParserContext.create().withInput("var1", double.class));
+        s = MVEL.compileExpression("1 + 1 + 1 / (var1 + var1) * var1",
+                ParserContext.create().withInput("var1", double.class));
         OptimizerFactory.setDefaultOptimizer("ASM");
         assertEquals((1 + 1 + 1 / (var1 + var1) * var1), MVEL.executeExpression(s, vars));
     }
 
     public void testJIRA164e() {
-        Serializable s = MVEL.compileExpression("10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14", ParserContext.create().stronglyTyped().withInput("var1", double.class));
+        Serializable s = MVEL.compileExpression("10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14",
+                ParserContext.create().stronglyTyped().withInput("var1", double.class));
         Map vars = new HashMap();
 
         double var1 = 1d;
         vars.put("var1", var1);
 
         OptimizerFactory.setDefaultOptimizer("reflective");
-        assertEquals((float) (10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14), ((Double) MVEL.executeExpression(s, vars)).floatValue());
+        assertEquals((float) (10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14),
+                ((Double) MVEL.executeExpression(s, vars)).floatValue());
 
-        s = MVEL.compileExpression("10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14", ParserContext.create().withInput("var1", double.class));
+        s = MVEL.compileExpression("10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14",
+                ParserContext.create().withInput("var1", double.class));
         OptimizerFactory.setDefaultOptimizer("ASM");
-        assertEquals((float) (10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14), ((Double) MVEL.executeExpression(s, vars)).floatValue());
+        assertEquals((float) (10 + 11 + 12 / (var1 + var1 + 51 + 71) * var1 + 13 + 14),
+                ((Double) MVEL.executeExpression(s, vars)).floatValue());
     }
 
     public void testJIRA164f() {
-        Serializable s = MVEL.compileExpression("10 + 11 + 12 / (var1 + 1 + var1 + 51 + 71) * var1 + 13 + 14", ParserContext.create().stronglyTyped().withInput("var1", double.class));
+        Serializable s = MVEL.compileExpression("10 + 11 + 12 / (var1 + 1 + var1 + 51 + 71) * var1 + 13 + 14",
+                ParserContext.create().stronglyTyped().withInput("var1", double.class));
         Map vars = new HashMap();
 
         double var1 = 1d;
         vars.put("var1", var1);
 
         OptimizerFactory.setDefaultOptimizer("reflective");
-        assertEquals((float) (10 + 11 + 12 / (var1 + 1 + var1 + 51 + 71) * var1 + 13 + 14), ((Double) MVEL.executeExpression(s, vars)).floatValue());
+        assertEquals((float) (10 + 11 + 12 / (var1 + 1 + var1 + 51 + 71) * var1 + 13 + 14),
+                ((Double) MVEL.executeExpression(s, vars)).floatValue());
 
-        s = MVEL.compileExpression("10 + 11 + 12 / (var1 + 1 + var1 + 51 + 71) * var1 + 13 + 14", ParserContext.create().withInput("var1", double.class));
+        s = MVEL.compileExpression("10 + 11 + 12 / (var1 + 1 + var1 + 51 + 71) * var1 + 13 + 14",
+                ParserContext.create().withInput("var1", double.class));
         OptimizerFactory.setDefaultOptimizer("ASM");
-        assertEquals((float) (10 + 11 + 12 / (var1 + 1 + var1 + 51 + 71) * var1 + 13 + 14), ((Double) MVEL.executeExpression(s, vars)).floatValue());
+        assertEquals((float) (10 + 11 + 12 / (var1 + 1 + var1 + 51 + 71) * var1 + 13 + 14),
+                ((Double) MVEL.executeExpression(s, vars)).floatValue());
     }
 
     public void testJIRA164g() {
-        Serializable s = MVEL.compileExpression("1 - 2 + (3 * var1) * var1", ParserContext.create().stronglyTyped().withInput("var1", double.class));
+        Serializable s = MVEL.compileExpression("1 - 2 + (3 * var1) * var1",
+                ParserContext.create().stronglyTyped().withInput("var1", double.class));
         Map vars = new HashMap();
 
         double var1 = 1d;
@@ -736,5 +758,25 @@ public class ArithmeticTests extends AbstractTest {
         s = MVEL.compileExpression("1 - 2 + (3 * var1) * var1", ParserContext.create().withInput("var1", double.class));
         OptimizerFactory.setDefaultOptimizer("ASM");
         assertEquals((float) (1 - 2 + (3 * var1) * var1), ((Double) MVEL.executeExpression(s, vars)).floatValue());
+    }
+
+    public void testJIRA164h() {
+        Serializable s = MVEL.compileExpression("1 - var1 * (var1 * var1 * (var1 * var1) * var1) * var1",
+                ParserContext.create().stronglyTyped().withInput("var1", double.class));
+        Map vars = new HashMap();
+
+        double var1 = 2d;
+        vars.put("var1", var1);
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        assertEquals((float) (1 - var1 * (var1 * var1 * (var1 * var1) * var1) * var1),
+                ((Double) MVEL.executeExpression(s, vars)).floatValue());
+
+        s = MVEL.compileExpression("1 - var1 * (var1 * var1 * (var1 * var1) * var1) * var1",
+                ParserContext.create().withInput("var1", double.class));
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        assertEquals((float) (1 - var1 * (var1 * var1 * (var1 * var1) * var1) * var1),
+                ((Double) MVEL.executeExpression(s, vars)).floatValue());
     }
 }
