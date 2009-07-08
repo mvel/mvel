@@ -154,7 +154,7 @@ public strictfp class MathProcessor {
                     || (operation != 0 && isNumber(val1) && isNumber(val2))) {
                 return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1),
                         operation,
-                        getInternalNumberFromType(val2, type2), true, box(type2) > box(type1) ? type2 : type1);
+                        getInternalNumberFromType(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
             }
             else if (operation != ADD &&
                     (type1 == 15 || type2 == 15) &&
@@ -289,12 +289,7 @@ public strictfp class MathProcessor {
                     case SUB:
                         return ((Integer) val1) - ((Integer) val2);
                     case DIV:
-//                        if ((((Integer) val1) % ((Integer) val2)) == 0) {
-//                            return ((Integer) val1) / ((Integer) val2);
-//                        }
-//                        else {
-                            return ((Integer) val1).doubleValue() / ((Integer) val2).doubleValue();
-//                        }
+                        return ((Integer) val1).doubleValue() / ((Integer) val2).doubleValue();
                     case MULT:
                         return ((Integer) val1) * ((Integer) val2);
                     case POWER:
