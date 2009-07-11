@@ -873,8 +873,7 @@ public class MVEL {
      * @return A cacheable compiled payload.
      */
     public static Serializable compileExpression(String expression, ParserContext ctx) {
-        return optimizeTree(new ExpressionCompiler(expression)
-                .compile(ctx));
+        return optimizeTree(new ExpressionCompiler(expression).compile(ctx));
     }
 
     public static Serializable compileExpression(String expression, Map<String, Object> imports,

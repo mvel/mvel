@@ -251,8 +251,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ClassImportResolverFactory classes = new ClassImportResolverFactory();
         classes.addClass(HashMap.class);
 
-        ResolverTools.appendFactory(mvf,
-                classes);
+        ResolverTools.appendFactory(mvf, classes);
 
         assertTrue(executeExpression(compileExpression("HashMap map = new HashMap()",
                 classes.getImportedClasses()),
@@ -342,12 +341,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
         CompiledExpression compiled = compiler.compile(ctx);
 
-        executeExpression(compiled,
-                null,
-                vars);
-        executeExpression(compiled,
-                null,
-                vars);
+        executeExpression(compiled, null, vars);
+        executeExpression(compiled, null, vars);
     }
 
     public void testExecuteCoercionTwice2() {
@@ -4027,21 +4022,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",
-                        b);
-                variables.put("value",
-                        123);
-                MVEL.executeExpression(expression,
-                        variables);
+                variables.put("a",b);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression,variables);
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",
-                        c);
-                variables.put("value",
-                        123);
-                MVEL.executeExpression(expression,
-                        variables);
+                variables.put("a",c);
+                variables.put("value",123);
+                MVEL.executeExpression(expression,variables);
             }
 
         }
@@ -4062,21 +4051,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",
-                        b);
-                variables.put("value",
-                        123);
-                MVEL.executeExpression(expression,
-                        variables);
+                variables.put("a",b);
+                variables.put("value",123);
+                MVEL.executeExpression(expression,variables);
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",
-                        c);
-                variables.put("value",
-                        123);
-                MVEL.executeExpression(expression,
-                        variables);
+                variables.put("a",c);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression,variables);
             }
 
         }
@@ -4272,21 +4255,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",
-                        b);
-                variables.put("value",
-                        123);
-                MVEL.executeExpression(expression,
-                        variables);
+                variables.put("a", b);
+                variables.put("value",123);
+                MVEL.executeExpression(expression,variables);
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",
-                        a);
-                variables.put("value",
-                        123);
-                MVEL.executeExpression(expression,
-                        variables);
+                variables.put("a",a);
+                variables.put("value",123);
+                MVEL.executeExpression(expression, variables);
             }
         }
     }
@@ -4305,21 +4282,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",
-                        b);
-                variables.put("value",
-                        123);
-                MVEL.executeExpression(expression,
-                        variables);
+                variables.put("a", b);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",
-                        a);
-                variables.put("value",
-                        123);
-                MVEL.executeExpression(expression,
-                        variables);
+                variables.put("a",a);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
             }
         }
 
@@ -4358,10 +4329,8 @@ public class CoreConfidenceTests extends AbstractTest {
         boolean before = MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL;
         try {
             Map<String, Object> st = new HashMap<String, Object>();
-            st.put("__fact__",
-                    new ArrayList());
-            st.put("__expected__",
-                    0);
+            st.put("__fact__", new ArrayList());
+            st.put("__expected__", 0);
 
             String expressionNaked = "__fact__.size == __expected__";
             String expressionNonNaked = "__fact__.size() == __expected__";
@@ -4380,13 +4349,11 @@ public class CoreConfidenceTests extends AbstractTest {
             assertTrue(result);
 
             // the following works fine        
-            result = (Boolean) MVEL.eval(expressionNonNaked,
-                    st);
+            result = (Boolean) MVEL.eval(expressionNonNaked, st);
             assertTrue(result);
 
             // the following fails
-            result = (Boolean) MVEL.eval(expressionNaked,
-                    st);
+            result = (Boolean) MVEL.eval(expressionNaked, st);
             assertTrue(result);
         }
         finally {

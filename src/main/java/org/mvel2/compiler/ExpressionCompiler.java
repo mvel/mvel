@@ -48,6 +48,7 @@ public class ExpressionCompiler extends AbstractParser {
         return compile(contextControl(GET_OR_CREATE, null, this));
     }
 
+    @Deprecated
     /**
      * @deprecated use {@link org.mvel2.MVEL#compileExpression(String, org.mvel2.ParserContext)} instead.
      * @param ctx
@@ -323,10 +324,6 @@ public class ExpressionCompiler extends AbstractParser {
                 astBuild.addTokenNode(new LiteralNode(stk.pop()), operator);
                 astBuild.addTokenNode(rightValue, (OperatorNode) splitAccumulator.pop());
                 astBuild.addTokenNode(verify(pCtx, (ASTNode) splitAccumulator.pop()));
-//                return true;
-
-//            default:
-//                astBuild.addTokenNode(new LiteralNode(stk.pop()));
         }
         return true;
     }
