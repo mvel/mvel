@@ -31,8 +31,6 @@ import java.util.*;
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
 
-import com.sun.tools.javac.resources.compiler;
-
 @SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
     public void testWhileUsingImports() {
@@ -42,23 +40,18 @@ public class CoreConfidenceTests extends AbstractTest {
         imports.put("List",
                 java.util.List.class);
 
-        ParserContext context = new ParserContext(imports,
-                null,
-                "testfile");
+        ParserContext context = new ParserContext(imports, null, "testfile");
         ExpressionCompiler compiler = new ExpressionCompiler("List list = new ArrayList(); return (list == empty)");
         assertTrue((Boolean) executeExpression(compiler.compile(context),
                 new DefaultLocalVariableResolverFactory()));
     }
 
     public void testBooleanModeOnly2() {
-        assertEquals(false,
-                (Object) DataConversion.convert(test("BWAH"),
-                        Boolean.class));
+        assertEquals(false, (Object) DataConversion.convert(test("BWAH"), Boolean.class));
     }
 
     public void testBooleanModeOnly4() {
-        assertEquals(true,
-                test("hour == (hour + 0)"));
+        assertEquals(true, test("hour == (hour + 0)"));
     }
 
     // interpreted
@@ -68,25 +61,20 @@ public class CoreConfidenceTests extends AbstractTest {
                 "bar");
 
         VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
-        factory.createVariable("this",
-                map);
+        factory.createVariable("this", map);
 
         assertEquals(true,
-                eval("this.foo == 'bar'",
-                        map,
-                        factory));
+                eval("this.foo == 'bar'", map, factory));
     }
 
     // compiled - reflective
     public void testThisReferenceMapVirtualObjects1() {
         // Create our root Map object
         Map<String, String> map = new HashMap<String, String>();
-        map.put("foo",
-                "bar");
+        map.put("foo","bar");
 
         VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
-        factory.createVariable("this",
-                map);
+        factory.createVariable("this", map);
 
         OptimizerFactory.setDefaultOptimizer("reflective");
 
