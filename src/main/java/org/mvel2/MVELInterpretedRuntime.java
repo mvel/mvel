@@ -42,7 +42,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
             dStack = new ExecutionStack();
             cursor = 0;
             return parseAndExecuteInterpreted();
-            //return stk.peek();
         }
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
@@ -54,8 +53,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
             if (cursor >= length) {
                 throw new ParseException("unexpected end of statement", expr, length);
             }
-            else
+            else {
                 throw e;
+            }
         }
         catch (EndWithValue end) {
             return end.getValue();
@@ -69,11 +69,12 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
     /**
      * Main interpreter loop.
+     *
+     * @return value
      */
     private Object parseAndExecuteInterpreted() {
         ASTNode tk = null;
         int operator;
-
         lastWasIdentifier = false;
 
         try {
@@ -138,10 +139,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
             }
 
             if (holdOverRegister != null) {
-               // stk.push(holdOverRegister);
                 return holdOverRegister;
             }
-
         }
         catch (CompileException e) {
             e.setExpr(expr);
@@ -326,7 +325,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
         this.length = (this.expr = expr).length;
         this.ctx = ctx;
         this.variableFactory = resolverFactory;
-   //    this.returnBigDecimal = returnBigDecimal;
     }
 
     MVELInterpretedRuntime(Object ctx, Map<String, Object> variables) {
@@ -344,7 +342,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
         setExpression(expression);
         this.ctx = ctx;
         this.variableFactory = resolverFactory;
-    //    this.returnBigDecimal = returnBigDecimal;
     }
 
     MVELInterpretedRuntime(String expression, VariableResolverFactory resolverFactory) {
@@ -371,7 +368,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
     protected Class getImport(String name) {
         if (pCtx == null) pCtx = getParserContext();
-
         if (pCtx.hasImport(name)) return pCtx.getImport(name);
 
         return (Class) findClassImportResolverFactory(variableFactory).getVariableResolver(name).getValue();
