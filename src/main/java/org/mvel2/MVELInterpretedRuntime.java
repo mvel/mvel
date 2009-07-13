@@ -41,8 +41,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
             stk = new ExecutionStack();
             dStack = new ExecutionStack();
             cursor = 0;
-            parseAndExecuteInterpreted();
-            return stk.peek();
+            return parseAndExecuteInterpreted();
+            //return stk.peek();
         }
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
@@ -70,7 +70,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
     /**
      * Main interpreter loop.
      */
-    private void parseAndExecuteInterpreted() {
+    private Object parseAndExecuteInterpreted() {
         ASTNode tk = null;
         int operator;
 
@@ -100,7 +100,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                             stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
 
                             if (procBooleanOperator(arithmeticFunctionReduction(operator)) == -1)
-                                return;
+                                return stk.peek();
                             else
                                 continue;
                         }
@@ -112,7 +112,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
                 switch (procBooleanOperator(operator = tk.getOperator())) {
                     case OP_TERMINATE:
-                        return;
+                        return stk.peek();
                     case OP_RESET_FRAME:
                         continue;
                     case OP_OVERFLOW:
@@ -129,16 +129,17 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
                 switch ((operator = arithmeticFunctionReduction(operator))) {
                     case OP_TERMINATE:
-                        return;
+                        return stk.peek();
                     case OP_RESET_FRAME:
                         continue;
                 }
 
-                if (procBooleanOperator(operator) == -1) return;
+                if (procBooleanOperator(operator) == -1) return stk.peek();
             }
 
             if (holdOverRegister != null) {
-                stk.push(holdOverRegister);
+               // stk.push(holdOverRegister);
+                return holdOverRegister;
             }
 
         }
@@ -162,6 +163,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 throw e;
             }
         }
+        return stk.peek();
     }
 
     private int procBooleanOperator(int operator) {

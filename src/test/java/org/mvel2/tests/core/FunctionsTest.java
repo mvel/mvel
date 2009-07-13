@@ -7,6 +7,7 @@ import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.CompilerTools;
+import static org.mvel2.util.CompilerTools.extractAllDeclaredFunctions;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -43,7 +44,7 @@ public class FunctionsTest extends AbstractTest {
 
         Serializable s = compiler.compile();
 
-        Map<String, Function> m = CompilerTools.extractAllDeclaredFunctions((CompiledExpression) s);
+        Map<String, Function> m = extractAllDeclaredFunctions((CompiledExpression) s);
 
         assertTrue(m.containsKey("heyFoo"));
 
