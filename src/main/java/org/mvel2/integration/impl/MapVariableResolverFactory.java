@@ -83,8 +83,10 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver getVariableResolver(String name) {
-        if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
-
+        if (variableResolvers == null) {
+            variableResolvers = new HashMap<String, VariableResolver>();
+        }
+        
         VariableResolver vr = variableResolvers.get(name);
         if (vr != null) {
             return vr;

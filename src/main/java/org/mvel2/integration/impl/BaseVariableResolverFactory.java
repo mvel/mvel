@@ -154,9 +154,11 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
     public VariableResolver setIndexedVariableResolver(int index, VariableResolver resolver) {
         if (indexedVariableResolvers == null) {
-            indexedVariableResolvers = new VariableResolver[indexedVariableNames.length];
+            return (indexedVariableResolvers = new VariableResolver[indexedVariableNames.length])[index] = resolver;
         }
-        return indexedVariableResolvers[index] = resolver;
+        else {
+            return indexedVariableResolvers[index] = resolver;
+        }
     }
 
     public boolean isIndexedFactory() {
