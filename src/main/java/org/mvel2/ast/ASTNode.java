@@ -20,21 +20,18 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import static org.mvel2.Operator.NOOP;
-import org.mvel2.OptimizationFailure;
-import org.mvel2.ParserContext;
 import org.mvel2.ParserConfiguration;
+import org.mvel2.ParserContext;
 import static org.mvel2.PropertyAccessor.get;
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizationNotSupported;
 import static org.mvel2.optimizers.OptimizerFactory.*;
+import static org.mvel2.util.CompilerTools.getInjectedImports;
 import static org.mvel2.util.ParseTools.handleNumericConversion;
 import static org.mvel2.util.ParseTools.isNumber;
-import org.mvel2.util.CompilerTools;
-import static org.mvel2.util.CompilerTools.getInjectedImports;
 
 import java.io.Serializable;
 import static java.lang.Thread.currentThread;
@@ -67,9 +64,14 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int BLOCK_DO_UNTIL = 1 << 22;
     public static final int BLOCK_FOR = 1 << 23;
 
+    public static final int STRONG_TYPING = 1 << 24;
 
     public static final int NOJIT = 1 << 25;
     public static final int DEOP = 1 << 26;
+
+    public static final int DISCARD = 1 << 27;
+
+    // *** //
 
     protected int firstUnion;
     protected int endOfName;
@@ -87,11 +89,6 @@ public class ASTNode implements Cloneable, Serializable {
 
     protected int cursorPosition;
     public ASTNode nextASTNode;
-
-    // this field is marked true by the compiler to tell the optimizer
-    // that it's safe to remove this node.
-    protected boolean discard;
-
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (accessor != null) {
@@ -127,7 +124,14 @@ public class ASTNode implements Cloneable, Serializable {
                 optimizer = getDefaultAccessorCompiler();
             }
 
-            ParserContext pCtx = new ParserContext(new ParserConfiguration(getInjectedImports(factory), null));
+            ParserContext pCtx;
+
+            if ((fields & STRONG_TYPING) != 0) {
+                pCtx = (ParserContext) literal;
+            }
+            else {
+                pCtx = new ParserContext(new ParserConfiguration(getInjectedImports(factory), null));
+            }
             
             try {
                 setAccessor(optimizer.optimizeAccessor(pCtx, name, ctx, thisValue, factory, true, egressType));
@@ -222,6 +226,11 @@ public class ASTNode implements Cloneable, Serializable {
 
     public Object getLiteralValue() {
         return literal;
+    }
+
+    public void storeInLiteralRegister(Object o) {
+        this.literal = o;
+
     }
 
     public void setLiteralValue(Object literal) {
@@ -380,16 +389,37 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public boolean isDiscard() {
-        return discard;
+//        boolean val = (fields & DISCARD) != 0;
+//
+//        assert val == discard : "?? val=" + val + "; discard=" + discard + "; fields=" + fields;
+//        return val;
+        return fields != -1 && (fields & DISCARD) != 0;
     }
 
-    public void setDiscard(boolean discard) {
-        this.discard = discard;
-    }
+//    public void setDiscard(boolean discard) {
+//        this.fields |= DISCARD;
+//    }
 
     public void discard() {
-        this.discard = true;
+        this.fields |= DISCARD;
     }
+
+    public void strongTyping() {
+        this.fields |= STRONG_TYPING;
+    }
+
+
+//    public boolean isDiscard() {
+//        return discard;
+//    }
+//
+//    public void setDiscard(boolean discard) {
+//        this.discard = discard;
+//    }
+//
+//    public void discard() {
+//        this.discard = true;
+//    }
 
     public boolean isDebuggingSymbol() {
         return this.fields == -1;
@@ -419,7 +449,7 @@ public class ASTNode implements Cloneable, Serializable {
         }
 
         setName(name);
-     }
+    }
 
     public String toString() {
         return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" : String.valueOf(literal);

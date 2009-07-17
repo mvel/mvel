@@ -37,7 +37,7 @@ public class AbstractOptimizer extends AbstractParser {
     protected int start = 0;
     protected boolean collection = false;
     protected boolean nullSafe = false;
-
+   
 
     /**
      * Try static access of the property, and return an instance of the Field, Method of Class if successful.
@@ -152,6 +152,7 @@ public class AbstractOptimizer extends AbstractParser {
     }
 
     protected int nextSubToken() {
+        
         skipWhitespaceWithLineAccounting();
         nullSafe = false;
 

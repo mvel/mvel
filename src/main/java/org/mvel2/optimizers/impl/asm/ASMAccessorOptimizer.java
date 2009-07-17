@@ -30,9 +30,8 @@ import static org.mvel2.asm.Opcodes.*;
 import static org.mvel2.asm.Type.*;
 import org.mvel2.ast.Function;
 import org.mvel2.ast.TypeDescriptor;
-import org.mvel2.ast.WithNode;
-import org.mvel2.ast.InlineCollectionNode;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
+import org.mvel2.ast.WithNode;
 import org.mvel2.compiler.*;
 import org.mvel2.integration.GlobalListenerFactory;
 import static org.mvel2.integration.GlobalListenerFactory.hasGetListeners;
@@ -47,8 +46,8 @@ import org.mvel2.optimizers.impl.refl.nodes.Union;
 import static org.mvel2.util.ArrayTools.findFirst;
 import org.mvel2.util.*;
 import static org.mvel2.util.ParseTools.*;
-import static org.mvel2.util.PropertyTools.*;
-import static org.mvel2.util.PropertyTools.getReturnType;
+import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
+import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -806,7 +805,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             assert debug("DUP");
             mv.visitInsn(DUP);
 
-            assert debug("ASTORE " + (5+compileDepth) + " (withctx)");
+            assert debug("ASTORE " + (5 + compileDepth) + " (withctx)");
             mv.visitVarInsn(ASTORE, 5 + compileDepth);
 
             aPvp.eval(ctx, variableFactory);
@@ -828,8 +827,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         + "compiler/ExecutableStatement;");
 
                 // ctx
-                assert debug("ALOAD " + (5+compileDepth) + "(withctx)");
-                mv.visitVarInsn(ALOAD, (5+compileDepth));
+                assert debug("ALOAD " + (5 + compileDepth) + "(withctx)");
+                mv.visitVarInsn(ALOAD, (5 + compileDepth));
 
                 // elCtx
                 assert debug("ALOAD 2");
@@ -1217,7 +1216,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         int start = ++cursor;
 
-         skipWhitespaceWithLineAccounting();
+        skipWhitespaceWithLineAccounting();
 
         if (cursor == length)
             throw new CompileException("unterminated '['");
@@ -1556,10 +1555,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         Object[] preConvArgs;
         Object[] args;
+        Class[] argTypes;
         ExecutableStatement[] es;
 
         if (tk.length() == 0) {
-            args = preConvArgs = EMPTYARG;
+            args = preConvArgs = ParseTools.EMPTY_OBJ_ARR;
+            argTypes = ParseTools.EMPTY_CLS_ARR;
             es = null;
         }
         else {
@@ -1567,12 +1568,24 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             es = new ExecutableStatement[subtokens.length];
             args = new Object[subtokens.length];
+            argTypes = new Class[subtokens.length];
             preConvArgs = new Object[es.length];
 
             for (int i = 0; i < subtokens.length; i++) {
                 assert debug("subtoken[" + i + "] { " + subtokens[i] + " }");
                 preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray(), pCtx))
                         .getValue(this.ctx, this.thisRef, variableFactory);
+            }
+
+            if (pCtx.isStrongTyping()) {
+                for (int i = 0; i < args.length; i++) {
+                    argTypes[i] = es[i].getKnownEgressType();
+                }
+            }
+            else {
+                for (int i = 0; i < args.length; i++) {
+                    argTypes[i] = args[i] == null ? null : args[i].getClass();
+                }
             }
         }
 
@@ -1702,7 +1715,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         /**
          * Try to find an instance method from the class target.
          */
-        if ((m = getBestCandidate(args, name, cls, cls.getMethods(), false)) != null) {
+        if ((m = getBestCandidate(argTypes, name, cls, cls.getMethods(), false)) != null) {
             parameterTypes = m.getParameterTypes();
         }
 
@@ -1710,7 +1723,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             /**
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
-            if ((m = getBestCandidate(args, name, cls, cls.getClass().getDeclaredMethods(), false)) != null) {
+            if ((m = getBestCandidate(argTypes, name, cls, cls.getClass().getDeclaredMethods(), false)) != null) {
                 parameterTypes = m.getParameterTypes();
             }
         }

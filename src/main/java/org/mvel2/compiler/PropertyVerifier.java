@@ -49,6 +49,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     private List<String> inputs = new LinkedList<String>();
     private boolean first = false;
+    private boolean classLiteral = false;
     private boolean resolvedExternally;
     private Map<String, Class> paramTypes;
 
@@ -91,6 +92,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
 
         while (cursor < length) {
+            classLiteral = false;
             switch (nextSubToken()) {
                 case NORM:
                     ctx = getBeanProperty(ctx, capture());
@@ -193,6 +195,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
             if (tryStaticMethodRef != null) {
                 if (tryStaticMethodRef instanceof Class) {
+                     classLiteral = true;
                     return (Class) tryStaticMethodRef;
                 }
                 else if (tryStaticMethodRef instanceof Field) {
@@ -260,7 +263,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 ctx = getBaseComponentType(ctx);
             }
             else if (pCtx.isStrongTyping()) {
-                throw new CompileException("unknown collection type: " + ctx);
+                throw new CompileException("unknown collection type: " + ctx + "; property=" + property);
             }
         }
         else {
@@ -462,6 +465,10 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     public boolean isResolvedExternally() {
         return resolvedExternally;
+    }
+
+    public boolean isClassLiteral() {
+        return classLiteral;
     }
 
     public Class getCtx() {

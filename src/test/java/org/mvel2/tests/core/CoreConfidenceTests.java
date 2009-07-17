@@ -71,7 +71,7 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testThisReferenceMapVirtualObjects1() {
         // Create our root Map object
         Map<String, String> map = new HashMap<String, String>();
-        map.put("foo","bar");
+        map.put("foo", "bar");
 
         VariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
         factory.createVariable("this", map);
@@ -273,7 +273,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 executeExpression(
                         compileExpression("p = new Person('tom'); p.age = 20; " +
                                 "with( p ) { age = p.age + 1 }; return p.age;",
-                        classes.getImportedClasses()),
+                                classes.getImportedClasses()),
                         mvf));
     }
 
@@ -2180,6 +2180,14 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(new BigDecimal(20),
                 test("java.math.BigDecimal axx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal bxx = " +
                         "new java.math.BigDecimal( 10.0 ); java.math.BigDecimal cxx = axx + bxx; return cxx; "));
+    }
+
+    public void testJIRA100b() {
+        Serializable s = MVEL.compileExpression("java.math.BigDecimal axx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal bxx = " +
+                "new java.math.BigDecimal( 10.0 ); java.math.BigDecimal cxx = axx + bxx; return cxx; ");
+
+        assertEquals(new BigDecimal(20), MVEL.executeExpression(s, new HashMap()));
+
     }
 
     public void testAssignToBean() {
@@ -4094,15 +4102,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",b);
+                variables.put("a", b);
                 variables.put("value", 123);
-                MVEL.executeExpression(expression,variables);
+                MVEL.executeExpression(expression, variables);
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",c);
-                variables.put("value",123);
-                MVEL.executeExpression(expression,variables);
+                variables.put("a", c);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
             }
 
         }
@@ -4123,15 +4131,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",b);
-                variables.put("value",123);
-                MVEL.executeExpression(expression,variables);
+                variables.put("a", b);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",c);
+                variables.put("a", c);
                 variables.put("value", 123);
-                MVEL.executeExpression(expression,variables);
+                MVEL.executeExpression(expression, variables);
             }
 
         }
@@ -4328,13 +4336,13 @@ public class CoreConfidenceTests extends AbstractTest {
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("a", b);
-                variables.put("value",123);
-                MVEL.executeExpression(expression,variables);
+                variables.put("value", 123);
+                MVEL.executeExpression(expression, variables);
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",a);
-                variables.put("value",123);
+                variables.put("a", a);
+                variables.put("value", 123);
                 MVEL.executeExpression(expression, variables);
             }
         }
@@ -4360,7 +4368,7 @@ public class CoreConfidenceTests extends AbstractTest {
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
-                variables.put("a",a);
+                variables.put("a", a);
                 variables.put("value", 123);
                 MVEL.executeExpression(expression, variables);
             }
@@ -4432,5 +4440,54 @@ public class CoreConfidenceTests extends AbstractTest {
         finally {
             MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = before;
         }
+    }
+
+    public void testJIRA170() {
+        OptimizerFactory.setDefaultOptimizer("reflective");
+
+        List<Integer> staticDispatch = Arrays.asList(2, 1, 0);
+        List<Integer> multimethodDispatch = Arrays.asList(3, 2, 1);
+
+  //      invokeJIRA170("Dynamic", ctxJIRA170(false, false), varsJIRA170(), multimethodDispatch);
+        //      invokeJIRA170("Strict", ctxJIRA170(true, false), varsJIRA170(), multimethodDispatch);
+        invokeJIRA170("Strong", ctxJIRA170(false, true), varsJIRA170(), staticDispatch);
+    }
+
+    public void testJIRA170b() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        List<Integer> staticDispatch = Arrays.asList(2, 1, 0);
+        List<Integer> multimethodDispatch = Arrays.asList(3, 2, 1);
+
+ //       invokeJIRA170("Dynamic", ctxJIRA170(false, false), varsJIRA170(), multimethodDispatch);
+        //     invokeJIRA170("Strict", ctxJIRA170(true, false), varsJIRA170(), multimethodDispatch);
+        invokeJIRA170("Strong", ctxJIRA170(false, true), varsJIRA170(), staticDispatch);
+    }
+
+    public void invokeJIRA170(String name, ParserContext pctx, Map<String, ?> vars, Collection<Integer> expected) {
+        Serializable expression = MVEL.compileExpression("x.remove((Object) y); x ", pctx);
+        Object result = MVEL.executeExpression(expression, vars);
+
+        assertTrue(String.format("%s Expected %s, Got %s", name, expected, result), expected.equals(result));
+        result = MVEL.executeExpression(expression, vars);
+
+        assertTrue(String.format("%s Expected %s, Got %s", name, expected, result), expected.equals(result));
+    }
+
+
+    private Map<String, ?> varsJIRA170() {
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put("x", new ArrayList<Integer>(Arrays.asList(3, 2, 1, 0)));
+        vars.put("y", 3);
+        return vars;
+    }
+
+    private ParserContext ctxJIRA170(boolean strictTypeEnforcement, boolean strongTyping) {
+        ParserContext ctx = new ParserContext();
+        //    ctx.setStrictTypeEnforcement(strictTypeEnforcement);
+        ctx.setStrongTyping(strongTyping);
+        ctx.addInput("x", Collection.class, new Class[]{Integer.class});
+        ctx.addInput("y", Integer.class);
+        return ctx;
     }
 }

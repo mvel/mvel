@@ -109,15 +109,23 @@ public class CompilerTools {
                         optimizedAst.addTokenNode(bo);
                     }
                 }
-                else if (!tkOp.isOperator() && tk.getLiteralValue() instanceof Class) {
-                    optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), (Class) tk.getLiteralValue(), 0, ctx));
-                }
                 else if (tkOp.isOperator()) {
                     optimizeOperator(tkOp.getOperator(), tk, tkOp, astLinkedList, optimizedAst);
                 }
+                else if (!tkOp.isAssignment() && !tkOp.isOperator() && tk.getLiteralValue() instanceof Class) {
+                    optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), (Class) tk.getLiteralValue(), 0, ctx));
+                }
+                else if (tkOp.isAssignment() && tk.getLiteralValue() instanceof Class) {
+                    tk.discard();
+                    optimizedAst.addTokenNode(tkOp);
+                }
+                else if (astLinkedList.hasMoreNodes() && tkOp.getLiteralValue() instanceof Class
+                        && astLinkedList.peekNode().isAssignment()) {
+                    tkOp.discard();
+                    optimizedAst.addTokenNode(tk, astLinkedList.nextNode());
+                }
                 else {
                     optimizedAst.addTokenNode(tk, tkOp);
-
                 }
             }
             else {

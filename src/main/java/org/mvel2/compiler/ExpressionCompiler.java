@@ -358,7 +358,6 @@ public class ExpressionCompiler extends AbstractParser {
                 if (tk instanceof Union) {
                     propVerifier.setCtx(((Union) tk).getLeftEgressType());
                     tk.setEgressType(returnType = propVerifier.analyze());
-
                 }
                 else {
                     tk.setEgressType(returnType = propVerifier.analyze());
@@ -366,9 +365,17 @@ public class ExpressionCompiler extends AbstractParser {
                     if (propVerifier.isResolvedExternally()) {
                         pCtx.addInput(tk.getAbsoluteName(), returnType);
                     }
+
+                    if (propVerifier.isClassLiteral()) {
+
+//                    if (propVerifier.isClassLiteral()) {
+////                        tk.setAsLiteral();
+//
+//                        System.out.println("It's a class literal! (" + tk.getName() + ")");
+
+                        return new LiteralNode(returnType);
+                    }
                 }
-
-
             }
             else if (tk.isAssignment()) {
                 Assignment a = (Assignment) tk;
@@ -418,6 +425,12 @@ public class ExpressionCompiler extends AbstractParser {
             }
             returnType = tk.getEgressType();
         }
+
+        if (pCtx.isStrongTyping() && !tk.isLiteral() && tk.getClass() == ASTNode.class) {
+            tk.strongTyping();
+            tk.storeInLiteralRegister(pCtx);
+        }
+
         return tk;
     }
 

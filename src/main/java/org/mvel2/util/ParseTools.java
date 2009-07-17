@@ -51,6 +51,7 @@ import java.util.*;
 @SuppressWarnings({"ManualArrayCopy"})
 public class ParseTools {
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
+    public static final Class[] EMPTY_CLS_ARR = new Class[0];
 
     static {
         try {

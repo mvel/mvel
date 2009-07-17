@@ -1232,8 +1232,8 @@ public class AbstractParser implements Serializable {
         }
 
         lastWasIdentifier = true;
-        return lastNode = new ASTNode(expr, start, end, fields);
 
+        return lastNode = new ASTNode(expr, start, end, fields);
     }
 
     private ASTNode procTypedNode(boolean decl) {
@@ -1253,6 +1253,7 @@ public class AbstractParser implements Serializable {
 
             if (lastNode.isLiteral() && lastNode.getLiteralValue() instanceof Class) {
                 lastNode.discard();
+
                 captureToEOS();
 
                 if (decl) {
@@ -1637,7 +1638,8 @@ public class AbstractParser implements Serializable {
                 case '(':
                 case '[':
                 case '{':
-                    if ((cursor = balancedCaptureWithLineAccounting(expr, cursor, expr[cursor], pCtx)) >= length) return;
+                    if ((cursor = balancedCaptureWithLineAccounting(expr, cursor, expr[cursor], pCtx)) >= length)
+                        return;
                     break;
 
                 case '"':
