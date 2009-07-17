@@ -938,12 +938,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (member instanceof Field) {
             Object o = ((Field) member).get(ctx);
 
-
-//            if (first) {
-//                assert debug("ALOAD 1 (A)");
-//                mv.visitVarInsn(ALOAD, 1);
-//            }
-
             if (((member.getModifiers() & STATIC) != 0)) {
                 // Check if the static field reference is a constant and a primitive.
                 if ((member.getModifiers() & FINAL) != 0 && (o instanceof String || ((Field) member).getType().isPrimitive())) {

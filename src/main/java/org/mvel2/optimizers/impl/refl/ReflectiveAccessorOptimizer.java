@@ -1036,8 +1036,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.variableFactory = factory;
         this.pCtx = pCtx;
 
-        //  pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
-
         Accessor root = _getAccessor(o, returnType);
 
         if (property != null && property.length > 0) {
@@ -1053,8 +1051,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.length = (this.expr = property).length;
         this.cursor = 0;
         this.pCtx = pCtx;
-
-        //      pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
         try {
             return compileConstructor(property, ctx, factory);

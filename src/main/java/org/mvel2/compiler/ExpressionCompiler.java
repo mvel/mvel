@@ -367,12 +367,6 @@ public class ExpressionCompiler extends AbstractParser {
                     }
 
                     if (propVerifier.isClassLiteral()) {
-
-//                    if (propVerifier.isClassLiteral()) {
-////                        tk.setAsLiteral();
-//
-//                        System.out.println("It's a class literal! (" + tk.getName() + ")");
-
                         return new LiteralNode(returnType);
                     }
                 }
