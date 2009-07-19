@@ -422,6 +422,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     private Object getBeanProperty(Object ctx, String property) throws Exception {
+        currType = pCtx == null ? null : (pCtx.isStrongTyping() ? pCtx.getVarOrInputTypeOrNull(property) : null);
 
         if (first) {
             if ("this".equals(property)) {
@@ -429,6 +430,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 return this.thisRef;
             }
             else if (variableFactory != null && variableFactory.isResolveable(property)) {
+
+
                 if (variableFactory.isIndexedFactory() && variableFactory.isTarget(property)) {
                     int idx;
                     addAccessorNode(new IndexedVariableAccessor(idx = variableFactory.variableIndexOf(property)));
@@ -442,6 +445,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
                 else {
                     addAccessorNode(new VariableAccessor(property));
+
                     return variableFactory.getVariableResolver(property).getValue();
                 }
             }
@@ -877,7 +881,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
          * If the target object is an instance of java.lang.Class itself then do not
          * adjust the Class scope target.
          */
-        Class<?> cls = ctx instanceof Class ? (Class<?>) ctx : ctx.getClass();
+        Class<?> cls = currType != null ? currType : (ctx instanceof Class ? (Class<?>) ctx : ctx.getClass());
 
 
         Method m;

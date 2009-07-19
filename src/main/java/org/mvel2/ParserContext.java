@@ -157,6 +157,16 @@ public class ParserContext implements Serializable {
         return Object.class;
     }
 
+    public Class getVarOrInputTypeOrNull(String name) {
+        if (variables != null && variables.containsKey(name)) {
+            return variables.get(name);
+        }
+        else if (inputs != null && inputs.containsKey(name)) {
+            return inputs.get(name);
+        }
+        return null;
+    }
+
     /**
      * Get total number of lines declared in the current context.
      *

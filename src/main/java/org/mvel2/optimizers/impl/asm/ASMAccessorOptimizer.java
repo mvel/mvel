@@ -869,6 +869,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         assert debug("\n  **  ENTER -> {bean: " + property + "; ctx=" + ctx + "}");
 
+        currType = pCtx == null ? null : (pCtx.isStrongTyping() ? pCtx.getVarOrInputTypeOrNull(property) : null);
+
         if (returnType != null && returnType.isPrimitive()) {
             //noinspection unchecked
             wrapPrimitive(returnType);
@@ -1701,7 +1703,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          * If the target object is an instance of java.lang.Class itself then do not
          * adjust the Class scope target.
          */
-        Class cls = ctx instanceof Class ? (Class) ctx : ctx.getClass();
+        Class<?> cls = currType != null ? currType : (ctx instanceof Class ? (Class<?>) ctx : ctx.getClass());
 
         Method m;
         Class[] parameterTypes = null;
@@ -1922,7 +1924,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     mv.visitMethodInsn(INVOKESTATIC, getInternalName(m.getDeclaringClass()), m.getName(), getMethodDescriptor(m));
                 }
                 else {
-                    if (m.getDeclaringClass() != cls && m.getDeclaringClass().isInterface()) {
+                    if (m.getDeclaringClass().isInterface() && (m.getDeclaringClass() != cls
+                            || (ctx != null && ctx.getClass() != m.getDeclaringClass()))) {
                         assert debug("INVOKEINTERFACE: " + getInternalName(m.getDeclaringClass()) + "." + m.getName());
                         mv.visitMethodInsn(INVOKEINTERFACE, getInternalName(m.getDeclaringClass()), m.getName(),
                                 getMethodDescriptor(m));
