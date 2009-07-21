@@ -4448,7 +4448,7 @@ public class CoreConfidenceTests extends AbstractTest {
         List<Integer> staticDispatch = Arrays.asList(2, 1, 0);
         List<Integer> multimethodDispatch = Arrays.asList(3, 2, 1);
 
-  //      invokeJIRA170("Dynamic", ctxJIRA170(false, false), varsJIRA170(), multimethodDispatch);
+        //      invokeJIRA170("Dynamic", ctxJIRA170(false, false), varsJIRA170(), multimethodDispatch);
         //      invokeJIRA170("Strict", ctxJIRA170(true, false), varsJIRA170(), multimethodDispatch);
         invokeJIRA170("Strong", ctxJIRA170(false, true), varsJIRA170(), staticDispatch);
     }
@@ -4459,8 +4459,8 @@ public class CoreConfidenceTests extends AbstractTest {
         List<Integer> staticDispatch = Arrays.asList(2, 1, 0);
         List<Integer> multimethodDispatch = Arrays.asList(3, 2, 1);
 
- //       invokeJIRA170("Dynamic", ctxJIRA170(false, false), varsJIRA170(), multimethodDispatch);
-        //     invokeJIRA170("Strict", ctxJIRA170(true, false), varsJIRA170(), multimethodDispatch);
+        //       invokeJIRA170("Dynamic", ctxJIRA170(false, false), varsJIRA170(), multimethodDispatch);
+        //       invokeJIRA170("Strict", ctxJIRA170(true, false), varsJIRA170(), multimethodDispatch);
         invokeJIRA170("Strong", ctxJIRA170(false, true), varsJIRA170(), staticDispatch);
     }
 
