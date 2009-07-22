@@ -43,6 +43,8 @@ import static java.lang.Thread.currentThread;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 
+import com.sun.org.apache.xalan.internal.xsltc.runtime.Operators;
+
 /**
  * This is the core parser that the subparsers extend.
  *
@@ -455,6 +457,9 @@ public class AbstractParser implements Serializable {
                                     cursor++;
                                     continue;
                                 }
+                                else {
+                                   break CaptureLoop;
+                                }
 
                             case '+':
                                 switch (lookAhead()) {
@@ -549,6 +554,7 @@ public class AbstractParser implements Serializable {
                             case '"':
                             case '\'':
                             case ';':
+                            case ':':
                                 break CaptureLoop;
 
                             case '\u00AB': // special compact code for recursive parses

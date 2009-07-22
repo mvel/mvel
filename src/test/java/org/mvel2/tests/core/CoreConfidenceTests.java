@@ -4490,4 +4490,28 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addInput("y", Integer.class);
         return ctx;
     }
+
+
+    public static class JIRA167Step {
+        public String getParent() {
+            return null;
+        }
+    }
+
+    public static class JIRA167Node {
+        public boolean isServer() {
+            return true;
+        }
+    }
+
+    public void testJIRA167b() {
+        Map context = new HashMap();
+        context.put("current", new JIRA167Step());
+        context.put("node", new JIRA167Node());
+        MVEL.eval("current.parent==null?node.isServer():(node==current.parent.node)", context);
+    }
+
+    public void testJIRA167c() {
+        MVEL.eval("true?true:(false)");
+    }
 }
