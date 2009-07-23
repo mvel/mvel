@@ -362,7 +362,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             val = curr;
 
-            if (pCtx.isStrongTyping()) {
+            if (pCtx.isStrictTypeEnforcement()) {
                 this.returnType = new PropertyVerifier(this.expr, pCtx).analyze();
             }
 
@@ -422,7 +422,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     private Object getBeanProperty(Object ctx, String property) throws Exception {
-        currType = pCtx == null ? null : (pCtx.isStrongTyping() ? pCtx.getVarOrInputTypeOrNull(property) : null);
+        currType = pCtx == null ? null :  pCtx.getVarOrInputTypeOrNull(property);
 
         if (first) {
             if ("this".equals(property)) {
@@ -838,7 +838,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                         .getValue(this.ctx, thisRef, variableFactory);
             }
 
-            if (pCtx.isStrongTyping()) {
+            if (pCtx.isStrictTypeEnforcement()) {
                 for (int i = 0; i < args.length; i++) {
                     argTypes[i] = es[i].getKnownEgressType();
                 }
