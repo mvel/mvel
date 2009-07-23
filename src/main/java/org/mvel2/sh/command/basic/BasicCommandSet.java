@@ -23,11 +23,12 @@ import org.mvel2.sh.CommandSet;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 public class BasicCommandSet implements CommandSet {
 
     public Map<String, Command> load() {
-        Map<String, Command> cmds = new LinkedHashMap<String, Command>();
+        Map<String, Command> cmds = new HashMap<String, Command>();
 
         cmds.put("set", new Set());
         cmds.put("push", new PushContext());

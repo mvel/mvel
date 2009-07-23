@@ -550,7 +550,7 @@ public class ParserContext implements Serializable {
     }
 
     public void addKnownLine(String sourceName, int lineNumber) {
-        if (sourceMap == null) sourceMap = new LinkedHashMap<String, Set<Integer>>();
+        if (sourceMap == null) sourceMap = new HashMap<String, Set<Integer>>();
         if (!sourceMap.containsKey(sourceName)) sourceMap.put(sourceName, new HashSet<Integer>());
         sourceMap.get(sourceName).add(lineNumber);
     }

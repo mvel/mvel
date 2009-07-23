@@ -397,7 +397,7 @@ public class PropertyVerifier extends AbstractOptimizer {
          * If we're in strict mode, we look for generic type information.
          */
         if (pCtx.isStrictTypeEnforcement() && m.getGenericReturnType() != null) {
-            Map<String, Class> typeArgs = new LinkedHashMap<String, Class>();
+            Map<String, Class> typeArgs = new HashMap<String, Class>();
 
             Type[] gpt = m.getGenericParameterTypes();
             Class z;

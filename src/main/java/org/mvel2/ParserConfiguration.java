@@ -151,7 +151,7 @@ public class ParserConfiguration implements Serializable {
     }
 
     public void addImport(String name, Class cls) {
-        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
+        if (this.imports == null) this.imports = new HashMap<String, Object>();
         this.imports.put(name, cls);
     }
 
@@ -160,7 +160,7 @@ public class ParserConfiguration implements Serializable {
     }
 
     public void addImport(String name, MethodStub method) {
-        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
+        if (this.imports == null) this.imports = new HashMap<String, Object>();
         this.imports.put(name, method);
     }
 
