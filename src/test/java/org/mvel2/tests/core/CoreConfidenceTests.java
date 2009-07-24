@@ -3292,7 +3292,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testJIRA122() {
-        Serializable s = compileExpression("java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
+        Serializable s = compileExpression("System.out.println('>'+java.lang.Character.toLowerCase(name.charAt(0))); java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
 
         OptimizerFactory.setDefaultOptimizer("ASM");
 
@@ -3307,6 +3307,24 @@ public class CoreConfidenceTests extends AbstractTest {
                 executeExpression(s,
                         map));
     }
+
+    public void testJIRA122b() {
+        Serializable s = compileExpression("System.out.println('>'+java.lang.Character.toLowerCase(name.charAt(0))); java.lang.Character.toLowerCase(name.charAt(0)) == 'a'");
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+
+        Map map = new HashMap();
+        map.put("name",
+                "Adam");
+
+        assertEquals(true,
+                executeExpression(s,
+                        map));
+        assertEquals(true,
+                executeExpression(s,
+                        map));
+    }
+
 
     public void testJIRA103() {
         MvelContext mvelContext = new MvelContext();

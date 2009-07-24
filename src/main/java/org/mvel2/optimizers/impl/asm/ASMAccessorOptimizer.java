@@ -1058,7 +1058,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     return ts;
                 }
                 else {
-                   Field f = (Field) ts;
+                    Field f = (Field) ts;
 
                     if ((f.getModifiers() & FINAL) != 0) {
                         Object finalVal = f.get(null);
@@ -1553,7 +1553,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
             else {
                 for (int i = 0; i < args.length; i++) {
-                    argTypes[i] = args[i] == null ? null : args[i].getClass();
+                    if (es[i].getKnownEgressType() == Object.class) {
+                        argTypes[i] = args[i] == null ? null : args[i].getClass();
+                    }
+                    else {
+                        argTypes[i] = es[i].getKnownEgressType();
+                    }
                 }
             }
         }

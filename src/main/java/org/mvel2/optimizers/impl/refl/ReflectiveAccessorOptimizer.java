@@ -191,7 +191,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     }
                     else {
                         //noinspection unchecked
-                            ((Map) ctx).put(eval(ex, ctx, variableFactory), convert(value, returnType = verifier.analyze()));
+                        ((Map) ctx).put(eval(ex, ctx, variableFactory), convert(value, returnType = verifier.analyze()));
 
                         addAccessorNode(new MapAccessorNest(ex, returnType));
                     }
@@ -204,7 +204,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     }
                     else {
                         //noinspection unchecked
-                            ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), convert(value, returnType = verifier.analyze()));
+                        ((List) ctx).set(eval(ex, ctx, variableFactory, Integer.class), convert(value, returnType = verifier.analyze()));
 
                         addAccessorNode(new ListAccessorNest(ex, returnType));
                     }
@@ -422,7 +422,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     private Object getBeanProperty(Object ctx, String property) throws Exception {
-        currType = pCtx == null ? null :  pCtx.getVarOrInputTypeOrNull(property);
+        currType = pCtx == null ? null : pCtx.getVarOrInputTypeOrNull(property);
 
         if (first) {
             if ("this".equals(property)) {
@@ -675,7 +675,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 addAccessorNode(new IndexedCharSeqAccessor(parseInt(item)));
             }
 
-            return((CharSequence) ctx).charAt((Integer) idx);
+            return ((CharSequence) ctx).charAt((Integer) idx);
         }
         else {
             TypeDescriptor tDescr = new TypeDescriptor(expr, 0);
@@ -845,7 +845,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
             else {
                 for (int i = 0; i < args.length; i++) {
-                    argTypes[i] = args[i] == null ? null : args[i].getClass();
+                    if (es[i].getKnownEgressType() == Object.class) {
+                        argTypes[i] = args[i] == null ? null : args[i].getClass();
+                    }
+                    else {
+                        argTypes[i] = es[i].getKnownEgressType();
+                    }
                 }
             }
         }
@@ -948,7 +953,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             if (hasNullMethodHandler()) {
                 addAccessorNode(new MethodAccessorNH(getWidenedTarget(m), (ExecutableStatement[]) es, getNullMethodHandler()));
-                if ( o == null) o = getNullMethodHandler().getProperty(m.getName(), ctx, variableFactory);
+                if (o == null) o = getNullMethodHandler().getProperty(m.getName(), ctx, variableFactory);
             }
             else {
                 addAccessorNode(new MethodAccessor(getWidenedTarget(m), (ExecutableStatement[]) es));
@@ -1169,7 +1174,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     private Object propHandler(String property, Object ctx, Class handler) {
         PropertyHandler ph = getPropertyHandler(handler);
         addAccessorNode(new PropertyHandlerAccessor(property, ph));
-         return ph.getProperty(property, ctx, variableFactory);
+        return ph.getProperty(property, ctx, variableFactory);
     }
 
     public void propHandlerSet(String property, Object ctx, Class handler, Object value) {

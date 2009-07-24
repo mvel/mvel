@@ -287,6 +287,7 @@ public class CompilerTools {
                 return Boolean.class;
 
             case Operator.ADD:
+                if (left == String.class) return String.class;
             case Operator.SUB:
             case Operator.MULT:
             case Operator.POWER:
