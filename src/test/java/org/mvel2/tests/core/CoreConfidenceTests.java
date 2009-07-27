@@ -4534,10 +4534,18 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testJIRA174() {
-        Serializable s = MVEL.compileExpression("def test(a1) { java.util.Collection a = a1; a.clear(); a.add(1); a.add(2); a.add(3); System.out.print(a); System.out.print(\" -> \"); a.remove(2); System.out.println(a); }\n" +
-                "test(new java.util.ArrayList());\n" +
-                "test(new java.util.HashSet());");
+        Serializable s = MVEL.compileExpression("def test(a1) { java.util.Collection a = a1; a.clear(); a.add(1); a.add(2); a.add(3); a.remove(2); a; }\n" +
+                "a = test(new java.util.ArrayList());\n" +
+                "b = test(new java.util.HashSet());");
 
-        MVEL.executeExpression(s, new HashMap());
+        Map vars = new HashMap();
+        MVEL.executeExpression(s, vars);
+
+        assertEquals(false, ((Collection) vars.get("a")).contains(2));
+        assertEquals(2, ((Collection) vars.get("a")).size());
+
+        assertEquals(false, ((Collection) vars.get("b")).contains(2));
+        assertEquals(2, ((Collection) vars.get("b")).size());
+
     }
 }
