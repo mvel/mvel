@@ -19,8 +19,7 @@ package org.mvel2.optimizers;
 
 import org.mvel2.CompileException;
 import org.mvel2.compiler.AbstractParser;
-import static org.mvel2.util.ParseTools.isIdentifierPart;
-import static org.mvel2.util.ParseTools.isWhitespace;
+import static org.mvel2.util.ParseTools.*;
 
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
@@ -38,7 +37,7 @@ public class AbstractOptimizer extends AbstractParser {
     protected boolean collection = false;
     protected boolean nullSafe = false;
     protected Class currType = null;
-   
+
 
     /**
      * Try static access of the property, and return an instance of the Field, Method of Class if successful.
@@ -153,7 +152,7 @@ public class AbstractOptimizer extends AbstractParser {
     }
 
     protected int nextSubToken() {
-        
+
         skipWhitespaceWithLineAccounting();
         nullSafe = false;
 
@@ -222,17 +221,25 @@ public class AbstractOptimizer extends AbstractParser {
     }
 
     /**
-     * @param c - character to scan for.
-     * @return true if end of char[] is reached, false is the character is encountered.
+     * @param c - character to scan to.
+     * @return - returns true is end of statement is hit, false if the scan scar is countered.
      */
     protected boolean scanTo(char c) {
         for (; cursor < length; cursor++) {
-            if (expr[cursor] == c) {
-                return false;
+            switch (expr[cursor]) {
+                case '\'':
+                case '"':
+                    cursor = captureStringLiteral(expr[cursor], expr, cursor, expr.length);
+                default:
+                    if (expr[cursor] == c) {
+                        return false;
+                    }
             }
+
         }
         return true;
     }
+
 
     protected int findLastUnion() {
         int split = -1;

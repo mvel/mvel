@@ -4546,6 +4546,33 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(false, ((Collection) vars.get("b")).contains(2));
         assertEquals(2, ((Collection) vars.get("b")).size());
+    }
 
+    public void testJIRA176() {
+        Map innerMap = new HashMap();
+        innerMap.put("testKey[MyValue=newValue]", "test");
+
+        Map vars = new HashMap();
+        vars.put("mappo", innerMap);
+
+        assertEquals("test", MVEL.eval("mappo['testKey[MyValue=newValue]']", vars));
+    }
+
+    public void testJIRA176b() {
+        Map innerMap = new HashMap();
+        innerMap.put("testKey[MyValue=newValue]", "test");
+
+        Map vars = new HashMap();
+        vars.put("mappo", innerMap);
+
+        Serializable s = MVEL.compileExpression("mappo['testKey[MyValue=newValue]']");
+        OptimizerFactory.setDefaultOptimizer("reflective");
+
+        assertEquals("test", MVEL.executeExpression(s, vars));
+
+        s = MVEL.compileExpression("mappo['testKey[MyValue=newValue]']");
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        assertEquals("test", MVEL.executeExpression(s, vars));
     }
 }

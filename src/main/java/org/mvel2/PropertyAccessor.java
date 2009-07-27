@@ -32,6 +32,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.ParseTools.captureStringLiteral;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import org.mvel2.util.StringAppender;
@@ -628,9 +629,16 @@ public class PropertyAccessor {
      */
     private boolean scanTo(char c) {
         for (; cursor < length; cursor++) {
-            if (property[cursor] == c) {
-                return false;
+            switch (property[cursor]) {
+                case '\'':
+                case '"':
+                    cursor = captureStringLiteral(property[cursor], property, cursor, property.length);
+                default:
+                    if (property[cursor] == c) {
+                        return false;
+                    }
             }
+
         }
         return true;
     }
