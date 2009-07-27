@@ -65,11 +65,13 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int BLOCK_FOR = 1 << 23;
 
     public static final int STRONG_TYPING = 1 << 24;
+    public static final int PCTX_STORED = 1 << 25;
+    public static final int ARRAY_TYPE_LITERAL = 1 << 26;
 
-    public static final int NOJIT = 1 << 25;
-    public static final int DEOP = 1 << 26;
+    public static final int NOJIT = 1 << 27;
+    public static final int DEOP = 1 << 28;
 
-    public static final int DISCARD = 1 << 27;
+    public static final int DISCARD = 1 << 29;
 
     // *** //
 
@@ -126,7 +128,7 @@ public class ASTNode implements Cloneable, Serializable {
 
             ParserContext pCtx;
 
-            if ((fields & STRONG_TYPING) != 0) {
+            if ((fields & PCTX_STORED) != 0) {
                 pCtx = (ParserContext) literal;
             }
             else {
@@ -319,6 +321,7 @@ public class ASTNode implements Cloneable, Serializable {
                     }
                     if (endOfName == 0) {
                         endOfName = i;
+                        if (i < name.length && name[i+1] == ']') fields |= ARRAY_TYPE_LITERAL;
                         break Scan;
                     }
             }
@@ -389,10 +392,6 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public boolean isDiscard() {
-//        boolean val = (fields & DISCARD) != 0;
-//
-//        assert val == discard : "?? val=" + val + "; discard=" + discard + "; fields=" + fields;
-//        return val;
         return fields != -1 && (fields & DISCARD) != 0;
     }
 
@@ -406,6 +405,10 @@ public class ASTNode implements Cloneable, Serializable {
 
     public void strongTyping() {
         this.fields |= STRONG_TYPING;
+    }
+
+    public void storePctx() {
+        this.fields |= PCTX_STORED;
     }
 
 

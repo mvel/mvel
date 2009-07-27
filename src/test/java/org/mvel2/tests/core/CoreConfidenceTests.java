@@ -4532,4 +4532,12 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testJIRA167c() {
         MVEL.eval("true?true:(false)");
     }
+
+    public void testJIRA174() {
+        Serializable s = MVEL.compileExpression("def test(a1) { java.util.Collection a = a1; a.clear(); a.add(1); a.add(2); a.add(3); System.out.print(a); System.out.print(\" -> \"); a.remove(2); System.out.println(a); }\n" +
+                "test(new java.util.ArrayList());\n" +
+                "test(new java.util.HashSet());");
+
+        MVEL.executeExpression(s, new HashMap());
+    }
 }

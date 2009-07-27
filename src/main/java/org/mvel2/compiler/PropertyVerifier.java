@@ -51,6 +51,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     private boolean first = false;
     private boolean classLiteral = false;
     private boolean resolvedExternally;
+    private boolean deepProperty = false;
     private Map<String, Class> paramTypes;
 
     private Class ctx = null;
@@ -110,6 +111,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 case DONE:
                     break;
             }
+            if (!first) deepProperty = true;
 
             first = false;
         }
@@ -195,7 +197,8 @@ public class PropertyVerifier extends AbstractOptimizer {
 
             if (tryStaticMethodRef != null) {
                 if (tryStaticMethodRef instanceof Class) {
-                     classLiteral = true;
+                    classLiteral = true;
+                    resolvedExternally = false;
                     return (Class) tryStaticMethodRef;
                 }
                 else if (tryStaticMethodRef instanceof Field) {
@@ -469,6 +472,10 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     public boolean isClassLiteral() {
         return classLiteral;
+    }
+
+    public boolean isDeepProperty() {
+        return deepProperty;
     }
 
     public Class getCtx() {

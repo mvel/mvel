@@ -362,12 +362,11 @@ public class ExpressionCompiler extends AbstractParser {
                 else {
                     tk.setEgressType(returnType = propVerifier.analyze());
 
-                    if (propVerifier.isResolvedExternally()) {
-                        pCtx.addInput(tk.getAbsoluteName(), returnType);
-                    }
-
                     if (propVerifier.isClassLiteral()) {
                         return new LiteralNode(returnType);
+                    }
+                    if (propVerifier.isResolvedExternally()) {
+                        pCtx.addInput(tk.getAbsoluteName(), propVerifier.isDeepProperty() ? Object.class : returnType);
                     }
                 }
             }
@@ -420,8 +419,9 @@ public class ExpressionCompiler extends AbstractParser {
             returnType = tk.getEgressType();
         }
 
-        if (pCtx.isStrongTyping() && !tk.isLiteral() && tk.getClass() == ASTNode.class) {
-            tk.strongTyping();
+        if (!tk.isLiteral() && tk.getClass() == ASTNode.class && (tk.getFields() & ASTNode.ARRAY_TYPE_LITERAL) == 0) {
+            if (pCtx.isStrongTyping()) tk.strongTyping();
+            tk.storePctx();
             tk.storeInLiteralRegister(pCtx);
         }
 
