@@ -113,6 +113,6 @@ public class InlineCollectionsTests extends AbstractTest {
     }
 
     public void testMVEL179() {
-        MVEL.eval("(($ in [2,4,8,16,32] if $ < 10) != empty)");
+        assertTrue((Boolean) MVEL.eval("(($ in [2,4,8,16,32] if $ < 10) != empty)"));
     }
 }
