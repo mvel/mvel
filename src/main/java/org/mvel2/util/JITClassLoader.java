@@ -34,7 +34,7 @@ public class JITClassLoader extends ClassLoader implements MVELClassLoader {
             sunJVM = true;
         }
         catch (Throwable t) {
-            t.printStackTrace();
+      //      t.printStackTrace();
             sunJVM = false;
         }
     }
