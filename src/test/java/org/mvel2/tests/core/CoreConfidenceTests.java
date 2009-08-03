@@ -4575,4 +4575,26 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals("test", MVEL.executeExpression(s, vars));
     }
+
+    public void testRandomSomething() {
+
+        Foo foo = new Foo();
+        foo.setName("foo1");
+
+        Foo foo2 = new Foo();
+        foo2.setName("foo2");
+
+        MVEL.setProperty(foo, "name", 5);
+
+        Serializable s = MVEL.compileExpression("name.toUpperCase()", ParserContext.create().stronglyTyped().withInput("name", String.class));
+
+        Object _return = MVEL.executeExpression(s, foo);
+
+        System.out.println("returned value: " + String.valueOf(_return));
+
+        _return = MVEL.executeExpression(s, foo2);
+
+        System.out.println("returned value: " + String.valueOf(_return));
+
+    }
 }

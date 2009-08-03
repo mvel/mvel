@@ -252,4 +252,8 @@ public class ComparisonTests extends AbstractTest {
         assertEquals(true, MVEL.eval("1 == ((byte) 1)"));
     }
 
+    public void testJIRA181() {
+        assertEquals(false, MVEL.eval("0<-1"));
+    }
+
 }

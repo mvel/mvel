@@ -43,8 +43,6 @@ import static java.lang.Thread.currentThread;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 
-import com.sun.org.apache.xalan.internal.xsltc.runtime.Operators;
-
 /**
  * This is the core parser that the subparsers extend.
  *
@@ -458,7 +456,7 @@ public class AbstractParser implements Serializable {
                                     continue;
                                 }
                                 else {
-                                   break CaptureLoop;
+                                    break CaptureLoop;
                                 }
 
                             case '+':
@@ -820,17 +818,25 @@ public class AbstractParser implements Serializable {
                                 }
                             }
                             else if ((cursor == 0 || (lastNode != null &&
-                                    (lastNode instanceof BooleanNode || lastNode.isOperator()))) && !isDigit(lookAhead())) {
+                                    (lastNode instanceof BooleanNode || lastNode.isOperator())))
+                                    && !isDigit(lookAhead())) {
+
                                 captureToEOT();
                                 return new Sign(expr, start, cursor, fields, pCtx);
                             }
-                            else if ((cursor != 0 && !isWhitespace(lookBehind())) || !isDigit(lookAhead())) {
-                                return createOperator(expr, start, cursor++ + 1);
-                            }
-                            else if ((cursor - 1) != 0 || (!isDigit(lookBehind())) && isDigit(lookAhead())) {
-                                cursor++;
-                                break;
-                            }
+                            else if ((cursor != 0 && !isWhitespace(expr[cursor-1]) && (
+                                    !(lastNode instanceof BooleanNode || lastNode.isOperator())))
+                                    || !isDigit(lookAhead())){
+
+                            return createOperator(expr, start, cursor++ + 1);
+                        }
+                        else if ((cursor - 1) != 0 || (!isDigit(expr[cursor-1])) && isDigit(lookAhead())) {
+                            cursor++;
+                            break;
+                        }
+                        else {
+                            throw new CompileException("not a statement", expr, cursor);
+                        }
 
 
                         case '+':
