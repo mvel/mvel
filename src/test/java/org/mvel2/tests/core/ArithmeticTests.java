@@ -779,4 +779,9 @@ public class ArithmeticTests extends AbstractTest {
         assertEquals((float) (1 - var1 * (var1 * var1 * (var1 * var1) * var1) * var1),
                 ((Double) MVEL.executeExpression(s, vars)).floatValue());
     }
+
+    public void testJIRA180() {
+        Serializable s = MVEL.compileExpression("-Math.sin(0)");
+        MVEL.executeExpression(s);
+    }
 }

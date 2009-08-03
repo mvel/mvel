@@ -4,6 +4,7 @@ import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.util.ParseTools;
+import static org.mvel2.util.ParseTools.boxPrimitive;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 
@@ -49,7 +50,7 @@ public class Sign extends ASTNode {
     }
 
     private void initSigner(Class type) {
-        if (Integer.class.isAssignableFrom(type)) signer = new IntegerSigner();
+        if (Integer.class.isAssignableFrom(type = boxPrimitive(type))) signer = new IntegerSigner();
         else if (Double.class.isAssignableFrom(type)) signer = new DoubleSigner();
         else if (Long.class.isAssignableFrom(type)) signer = new LongSigner();
         else if (Float.class.isAssignableFrom(type)) signer = new FloatSigner();
