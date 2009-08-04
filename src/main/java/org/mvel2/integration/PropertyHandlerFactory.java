@@ -35,15 +35,20 @@ public class PropertyHandlerFactory {
     public static boolean hasPropertyHandler(Class clazz) {
         if (clazz == null) return false;
         if (!propertyHandlerClass.containsKey(clazz)) {
+            Class clazzWalk = clazz;
             do {
-                for (Class c : clazz.getInterfaces()) {
+                if (clazz != clazzWalk && propertyHandlerClass.containsKey(clazzWalk)) {
+                    propertyHandlerClass.put(clazz, propertyHandlerClass.get(clazzWalk));
+                    return true;
+                }
+                for (Class c : clazzWalk.getInterfaces()) {
                     if (propertyHandlerClass.containsKey(c)) {
                         propertyHandlerClass.put(clazz, propertyHandlerClass.get(c));
                         return true;
                     }
                 }
             }
-            while ((clazz = clazz.getSuperclass()) != null && clazz != Object.class);
+            while ((clazzWalk = clazzWalk.getSuperclass()) != null && clazzWalk != Object.class);
             return false;
         }
         else {
