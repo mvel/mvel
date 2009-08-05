@@ -222,7 +222,7 @@ public class AbstractParser implements Serializable {
 
                     line = pCtx.getLineCount();
 
-                    skipWhitespaceWithLineAccounting();
+                    skipWhitespace();
 
                     if (!pCtx.isKnownLine(pCtx.getSourceFile(), pCtx.setLineCount(line)) && !pCtx.isBlockSymbols()) {
                         lastWasLineLabel = true;
@@ -238,7 +238,7 @@ public class AbstractParser implements Serializable {
             /**
              * Skip any whitespace currently under the starting point.
              */
-            skipWhitespaceWithLineAccounting();
+            skipWhitespace();
 
             /**
              * From here to the end of the method is the core MVEL parsing code.  Fiddling around here is asking for
@@ -276,7 +276,7 @@ public class AbstractParser implements Serializable {
                                  */
                                 do {
                                     captureToNextTokenJunction();
-                                    skipWhitespaceWithLineAccounting();
+                                    skipWhitespace();
                                 }
                                 while (cursor < length && expr[cursor] == '[');
 
@@ -287,7 +287,7 @@ public class AbstractParser implements Serializable {
 
                                 lastNode = new NewObjectNode(subArray(start, cursor), fields, pCtx);
 
-                                skipWhitespaceWithLineAccounting();
+                                skipWhitespace();
                                 if (cursor != length && expr[cursor] == '{') {
                                     if (!((NewObjectNode) lastNode).getTypeDescr().isUndimensionedArray()) {
                                         throw new CompileException(
@@ -395,7 +395,7 @@ public class AbstractParser implements Serializable {
                                 while (true) {
                                     captureToEOT();
                                     end = cursor;
-                                    skipWhitespaceWithLineAccounting();
+                                    skipWhitespace();
 
                                     if (cursor != length && expr[cursor] == '=') {
                                         if (end == (cursor = start))
@@ -416,7 +416,7 @@ public class AbstractParser implements Serializable {
                                     if (cursor == length || expr[cursor] != ',') break;
                                     else {
                                         cursor++;
-                                        skipWhitespaceWithLineAccounting();
+                                        skipWhitespace();
                                         start = cursor;
                                     }
                                 }
@@ -425,7 +425,7 @@ public class AbstractParser implements Serializable {
                         }
                     }
 
-                    skipWhitespaceWithLineAccounting();
+                    skipWhitespace();
 
                     /**
                      * If we *were* capturing a token, and we just hit a non-identifier
@@ -445,7 +445,7 @@ public class AbstractParser implements Serializable {
                             case '.':
                                 union = true;
                                 cursor++;
-                                skipWhitespaceWithLineAccounting();
+                                skipWhitespace();
 
                                 continue;
 
@@ -805,7 +805,7 @@ public class AbstractParser implements Serializable {
                         case '-':
                             if (lookAhead() == '-') {
                                 cursor += 2;
-                                skipWhitespaceWithLineAccounting();
+                                skipWhitespace();
                                 start = cursor;
                                 captureIdentifier();
 
@@ -842,7 +842,7 @@ public class AbstractParser implements Serializable {
                         case '+':
                             if (lookAhead() == '+') {
                                 cursor += 2;
-                                skipWhitespaceWithLineAccounting();
+                                skipWhitespace();
                                 start = cursor;
                                 captureIdentifier();
 
@@ -882,7 +882,7 @@ public class AbstractParser implements Serializable {
                             boolean singleToken = true;
                             boolean lastWS = false;
 
-                            skipWhitespaceWithLineAccounting();
+                            skipWhitespace();
                             for (brace = 1; cursor != length && brace != 0; cursor++) {
                                 switch (expr[cursor]) {
                                     case '(':
@@ -953,7 +953,7 @@ public class AbstractParser implements Serializable {
                                         }
                                         else if (isWhitespace(expr[cursor])) {
                                             lastWS = true;
-                                            skipWhitespaceWithLineAccounting();
+                                            skipWhitespace();
                                             cursor--;
                                         }
                                 }
@@ -1167,7 +1167,7 @@ public class AbstractParser implements Serializable {
 
     protected ASTNode handleUnion(ASTNode node) {
         if (cursor != length) {
-            skipWhitespaceWithLineAccounting();
+            skipWhitespace();
             int union = -1;
             switch (expr[cursor]) {
                 case '.':
@@ -1298,7 +1298,7 @@ public class AbstractParser implements Serializable {
                 throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
             }
 
-            skipWhitespaceWithLineAccounting();
+            skipWhitespace();
             if (cursor < length && expr[cursor] == ',') {
                 start = ++cursor;
                 splitAccumulator.add(new EndOfStatement());
@@ -1355,7 +1355,7 @@ public class AbstractParser implements Serializable {
                 do {
                     if (tk != null) {
                         captureToNextTokenJunction();
-                        skipWhitespaceWithLineAccounting();
+                        skipWhitespace();
                         cond = expr[cursor] != '{' && expr[cursor] == 'i' && expr[++cursor] == 'f'
                                 && expr[cursor = incNextNonBlank()] == '(';
                     }
@@ -1377,18 +1377,18 @@ public class AbstractParser implements Serializable {
             }
 
             case ASTNode.BLOCK_DO:
-                skipWhitespaceWithLineAccounting();
+                skipWhitespace();
                 return _captureBlock(null, expr, false, type);
 
             default: // either BLOCK_WITH or BLOCK_FOREACH
                 captureToNextTokenJunction();
-                skipWhitespaceWithLineAccounting();
+                skipWhitespace();
                 return _captureBlock(null, expr, true, type);
         }
     }
 
     private ASTNode _captureBlock(ASTNode node, final char[] expr, boolean cond, int type) {
-        skipWhitespaceWithLineAccounting();
+        skipWhitespace();
         int startCond = 0;
         int endCond = 0;
 
@@ -1426,7 +1426,7 @@ public class AbstractParser implements Serializable {
                 startCond++;
                 cursor++;
 
-                skipWhitespaceWithLineAccounting();
+                skipWhitespace();
 
                 if (cursor >= length) {
                     throw new CompileException("incomplete statement", expr, cursor);
@@ -1499,7 +1499,7 @@ public class AbstractParser implements Serializable {
             cursor++;
         }
 
-        skipWhitespaceWithLineAccounting();
+        skipWhitespace();
 
         if (cursor >= length) {
             throw new CompileException("unexpected end of statement", expr, cursor);
@@ -1531,18 +1531,18 @@ public class AbstractParser implements Serializable {
         }
         else if (type == ASTNode.BLOCK_DO) {
             cursor++;
-            skipWhitespaceWithLineAccounting();
+            skipWhitespace();
             start = cursor;
             captureToNextTokenJunction();
 
             if ("while".equals(name = new String(expr, start, cursor - start))) {
-                skipWhitespaceWithLineAccounting();
+                skipWhitespace();
                 startCond = cursor + 1;
                 endCond = cursor = balancedCaptureWithLineAccounting(expr, cursor, '(', pCtx);
                 return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd), type);
             }
             else if ("until".equals(name)) {
-                skipWhitespaceWithLineAccounting();
+                skipWhitespace();
                 startCond = cursor + 1;
                 endCond = cursor = balancedCaptureWithLineAccounting(expr, cursor, '(', pCtx);
                 return createBlockToken(startCond, endCond, trimRight(blockStart + 1), trimLeft(blockEnd),
@@ -1568,7 +1568,7 @@ public class AbstractParser implements Serializable {
     protected boolean ifThenElseBlockContinues() {
         if ((cursor + 4) < length) {
             if (expr[cursor] != ';') cursor--;
-            skipWhitespaceWithLineAccounting();
+            skipWhitespace();
 
             return expr[cursor] == 'e' && expr[cursor + 1] == 'l' && expr[cursor + 2] == 's' && expr[cursor + 3] == 'e'
                     && (isWhitespace(expr[cursor + 4]) || expr[cursor + 4] == '{');
@@ -1586,7 +1586,7 @@ public class AbstractParser implements Serializable {
         else if (expr[cursor] == '.' || expr[cursor] == '[') return true;
         else if (isWhitespace(expr[cursor])) {
             int markCurrent = cursor;
-            skipWhitespaceWithLineAccounting();
+            skipWhitespace();
             if (cursor != length && (expr[cursor] == '.' || expr[cursor] == '[')) return true;
             cursor = markCurrent;
         }
@@ -1595,7 +1595,7 @@ public class AbstractParser implements Serializable {
 
 
     protected void expectEOS() {
-        skipWhitespaceWithLineAccounting();
+        skipWhitespace();
         if (cursor != length && expr[cursor] != ';') {
             switch (expr[cursor]) {
                 case '&':
@@ -1711,7 +1711,7 @@ public class AbstractParser implements Serializable {
      * From the current cursor position, capture to the end of the current token.
      */
     protected void captureToEOT() {
-        skipWhitespaceWithLineAccounting();
+        skipWhitespace();
         do {
             switch (expr[cursor]) {
                 case '(':
@@ -1730,7 +1730,7 @@ public class AbstractParser implements Serializable {
                     return;
 
                 case '.':
-                    skipWhitespaceWithLineAccounting();
+                    skipWhitespace();
                     break;
 
                 case '\'':
@@ -1742,11 +1742,11 @@ public class AbstractParser implements Serializable {
 
                 default:
                     if (isWhitespace(expr[cursor])) {
-                        skipWhitespaceWithLineAccounting();
+                        skipWhitespace();
 
                         if (expr[cursor] == '.') {
                             if (cursor != length) cursor++;
-                            skipWhitespaceWithLineAccounting();
+                            skipWhitespace();
                             break;
                         }
                         else {
@@ -1791,19 +1791,15 @@ public class AbstractParser implements Serializable {
         return pos;
     }
 
-    /**
-     * If the cursor is currently pointing to whitespace, move the cursor forward to the first non-whitespace
-     * character.
-     */
-    protected void skipWhitespace() {
-        while (cursor != length && isWhitespace(expr[cursor])) cursor++;
-    }
+//    protected void skipWhitespace() {
+//        while (cursor != length && isWhitespace(expr[cursor])) cursor++;
+//    }
 
     /**
      * If the cursor is currently pointing to whitespace, move the cursor forward to the first non-whitespace
      * character, but account for carraige returns in the script (updates parser field: line).
      */
-    protected void skipWhitespaceWithLineAccounting() {
+    protected void skipWhitespace() {
         Skip:
         while (cursor != length) {
             switch (expr[cursor]) {

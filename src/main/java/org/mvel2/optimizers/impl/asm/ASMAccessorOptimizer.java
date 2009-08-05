@@ -286,7 +286,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             this.length = (this.expr = property).length;
             this.cursor = this.start = 0;
 
-            skipWhitespaceWithLineAccounting();
+            skipWhitespace();
 
             if (collection) {
                 int start = cursor;
@@ -1189,7 +1189,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         int start = ++cursor;
 
-        skipWhitespaceWithLineAccounting();
+        skipWhitespace();
 
         if (cursor == length)
             throw new CompileException("unterminated '['");
@@ -1338,7 +1338,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         int start = ++cursor;
 
-        skipWhitespaceWithLineAccounting();
+        skipWhitespace();
 
         if (cursor == length)
             throw new CompileException("unterminated '['");
