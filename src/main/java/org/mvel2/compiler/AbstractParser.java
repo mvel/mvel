@@ -825,7 +825,7 @@ public class AbstractParser implements Serializable {
                                 return new Sign(expr, start, cursor, fields, pCtx);
                             }
                             else if ((cursor != 0 && !isWhitespace(expr[cursor-1]) && (
-                                    !(lastNode instanceof BooleanNode || lastNode.isOperator())))
+                                    !(lastNode != null && (lastNode instanceof BooleanNode || lastNode.isOperator()))))
                                     || !isDigit(lookAhead())){
 
                             return createOperator(expr, start, cursor++ + 1);
