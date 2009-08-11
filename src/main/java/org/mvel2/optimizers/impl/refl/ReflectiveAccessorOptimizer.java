@@ -890,7 +890,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
          * adjust the Class scope target.
          */
         Class<?> cls = currType != null ? currType : (ctx instanceof Class ? (Class<?>) ctx : ctx.getClass());
-
+        currType = null;
 
         Method m;
         Class[] parameterTypes = null;

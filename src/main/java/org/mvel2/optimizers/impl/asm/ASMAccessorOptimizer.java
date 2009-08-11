@@ -1685,6 +1685,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          * adjust the Class scope target.
          */
         Class<?> cls = currType != null ? currType : (ctx instanceof Class ? (Class<?>) ctx : ctx.getClass());
+        currType = null;
 
         Method m;
         Class[] parameterTypes = null;
