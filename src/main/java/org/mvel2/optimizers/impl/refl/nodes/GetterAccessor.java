@@ -19,10 +19,10 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.CompileException;
-import static org.mvel2.util.ParseTools.getBestCandidate;
 import static org.mvel2.MVEL.getProperty;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
+import static org.mvel2.util.ParseTools.getBestCandidate;
 
 import java.lang.reflect.Method;
 
@@ -59,10 +59,19 @@ public class GetterAccessor implements AccessorNode {
                 return getProperty(method.getName() + "()", ctx);
             }
         }
+        catch (NullPointerException e) {
+            if (ctx == null) {
+                throw new CompileException("unable to invoke method: " + method.getDeclaringClass().getName() + "." + method.getName() + ": " +
+                        "target of method is null", e);
+            }
+            else {
+                throw new CompileException("cannot invoke getter: " + method.getName() + " (see trace)", e);
+            }
+        }
         catch (Exception e) {
             throw new CompileException("cannot invoke getter: " + method.getName()
                     + " [declr.class: " + method.getDeclaringClass().getName() + "; act.class: "
-                    + (ctx != null ? ctx.getClass().getName() : "null") + "]", e);
+                    + (ctx != null ? ctx.getClass().getName() : "null") + "] (see trace)", e);
         }
     }
 
