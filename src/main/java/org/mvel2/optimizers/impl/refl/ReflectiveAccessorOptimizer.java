@@ -422,10 +422,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     private Object getBeanProperty(Object ctx, String property) throws Exception {
-        if ((currType = pCtx == null ? null : pCtx.getVarOrInputTypeOrNull(property)) == Object.class 
+        if ((currType = !first || pCtx == null ? null : pCtx.getVarOrInputTypeOrNull(property)) == Object.class
                 && !pCtx.isStrongTyping()) {
             currType = null;
-        }
+        } 
 
         if (first) {
             if ("this".equals(property)) {
