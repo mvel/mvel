@@ -1,7 +1,6 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.*;
-
 import static org.mvel2.MVEL.*;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.AbstractParser;
@@ -29,7 +28,6 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
 
@@ -4601,29 +4599,39 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public static class ProcessManager {
-        public void startProcess( String name, Map<String,Object> variables) {
+        public void startProcess(String name, Map<String, Object> variables) {
             System.out.println("Process started");
         }
     }
-    
+
     public static class KnowledgeRuntimeHelper {
         public ProcessManager getProcessManager() {
             return new ProcessManager();
         }
     }
-    
+
     public void testDeepMethodNameResolution() {
-        String expression = "variables = [ \"symbol\" : \"RHT\" ]; \n"+
-                            "drools.getProcessManager().startProcess(\"id\", variables );";
-        
+        String expression = "variables = [ \"symbol\" : \"RHT\" ]; \n" +
+                "drools.getProcessManager().startProcess(\"id\", variables );";
+
         // third pass
         ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping( true );
+        ctx.setStrongTyping(true);
         ctx.addInput("drools", KnowledgeRuntimeHelper.class);
         Map vars = new HashMap();
-        vars.put( "drools", new KnowledgeRuntimeHelper() );
-        Serializable expr = MVEL.compileExpression( expression, ctx );
-        MVEL.executeExpression( expr, vars );
+        vars.put("drools", new KnowledgeRuntimeHelper());
+        Serializable expr = MVEL.compileExpression(expression, ctx);
+        MVEL.executeExpression(expr, vars);
     }
-    
+
+    public void testJIRA183() {
+        String exp1 = "int end = 'attribute'.indexOf('@');  if(end == -1)" +
+                " { end = 'attribute'.length()} 'attribute'.substring(0, end);";
+        Object val1 = MVEL.eval(exp1, new HashMap<String, Object>());
+
+        String exp2 = "int end = 'attribute'.indexOf('@');  if(end == -1)" +
+                " { end = 'attribute'.length() } 'attribute'.substring(0, end);";                       
+        Object val2 = MVEL.eval(exp2, new HashMap<String, Object>());
+    }
+
 }
