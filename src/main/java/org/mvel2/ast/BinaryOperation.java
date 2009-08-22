@@ -36,6 +36,10 @@ public class BinaryOperation extends BooleanNode {
     private int lType = -1;
     private int rType = -1;
 
+    public BinaryOperation(int operation) {
+        this.operation = operation;
+    }
+
     public BinaryOperation(int operation, ASTNode left, ASTNode right) {
         this.operation = operation;
         if ((this.left = left) == null) {

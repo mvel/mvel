@@ -49,7 +49,8 @@ public class SimpleVariableResolverFactory extends BaseVariableResolverFactory {
 
     @Override
     public VariableResolver getVariableResolver(String name) {
-        return variableResolvers.containsKey(name) ? variableResolvers.get(name) : (nextFactory == null ? null : nextFactory.getVariableResolver(name));
+        VariableResolver vr = variableResolvers.get(name);
+        return vr != null ? vr : (nextFactory == null ? null : nextFactory.getVariableResolver(name));
     }
 
     public Set<String> getKnownVariables() {

@@ -68,7 +68,38 @@ public class CompilerTools {
                         throw new CompileException("illegal use of operator: " + tkOp.getName());
                     }
 
-                    BinaryOperation bo = new BinaryOperation(op, tk, astLinkedList.nextNode(), ctx);
+
+                    ASTNode tk2 = astLinkedList.nextNode();
+                    BinaryOperation bo;
+
+                    if (tk.getEgressType() == Integer.class && tk2.getEgressType() == Integer.class) {
+                        switch (op) {
+                            case Operator.ADD:
+                                bo = new IntAdd(tk, tk2);
+                                break;
+
+                            case Operator.SUB:
+                                bo = new IntSub(tk, tk2);
+                                break;
+
+                            case Operator.MULT:
+                                bo = new IntMult(tk, tk2);
+                                break;
+
+//                            case Operator.DIV:
+//                                bo = new IntDiv(tk, tk2);
+//                                break;
+
+                            default:
+                                bo = new BinaryOperation(op, tk, tk2, ctx);
+                                break;
+
+                        }
+                    }
+                    else {
+                        bo = new BinaryOperation(op, tk, tk2, ctx);
+                    }
+
 
                     tkOp2 = null;
 
@@ -87,14 +118,26 @@ public class CompilerTools {
                                 bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
                             }
                             else {
-                                bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
+                                tk2 = astLinkedList.nextNode();
+
+                                if (isIntOptimizationviolation(bo, tk2)) {
+                                    bo = new BinaryOperation(bo.getOperation(), bo.getLeft(), bo.getRight(), ctx);
+                                }
+
+                                bo.setRight(new BinaryOperation(op2, bo.getRight(), tk2, ctx));
                             }
                         }
                         else if (PTABLE[bo.getOperation()] >= PTABLE[op2]) {
                             bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
                         }
                         else {
-                            bo.setRight(new BinaryOperation(op2, bo.getRight(), astLinkedList.nextNode(), ctx));
+                            tk2 = astLinkedList.nextNode();
+
+                            if (isIntOptimizationviolation(bo, tk2)) {
+                                bo = new BinaryOperation(bo.getOperation(), bo.getLeft(), bo.getRight(), ctx);
+                            }
+                            
+                            bo.setRight(new BinaryOperation(op2, bo.getRight(), tk2, ctx));
                         }
 
                         op = op2;
@@ -219,6 +262,10 @@ public class CompilerTools {
             default:
                 optimizedAst.addTokenNode(tk, tkOp);
         }
+    }
+
+    private static boolean isIntOptimizationviolation(BooleanNode bn, ASTNode bn2) {
+        return (bn instanceof IntOptimized && bn2.getEgressType() != Integer.class);
     }
 
     /**
