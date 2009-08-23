@@ -83,9 +83,6 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver getVariableResolver(String name) {
-        if (variableResolvers == null) {
-            variableResolvers = new HashMap<String, VariableResolver>();
-        }
         
         VariableResolver vr = variableResolvers.get(name);
         if (vr != null) {
@@ -104,20 +101,19 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
 
 
     public boolean isResolveable(String name) {
-        return (variableResolvers != null && variableResolvers.containsKey(name))
+        return (variableResolvers.containsKey(name))
                 || (variables != null && variables.containsKey(name))
                 || (nextFactory != null && nextFactory.isResolveable(name));
     }
 
     protected VariableResolver addResolver(String name, VariableResolver vr) {
-        if (variableResolvers == null) variableResolvers = new HashMap<String, VariableResolver>();
         variableResolvers.put(name, vr);
         return vr;
     }
 
 
     public boolean isTarget(String name) {
-        return variableResolvers != null && variableResolvers.containsKey(name);
+        return variableResolvers.containsKey(name);
     }
 
     public Set<String> getKnownVariables() {

@@ -22,6 +22,7 @@ import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -31,7 +32,7 @@ import java.util.Set;
  * for the vast majority of integration needs.
  */
 public abstract class BaseVariableResolverFactory implements VariableResolverFactory {
-    protected Map<String, VariableResolver> variableResolvers;
+    protected Map<String, VariableResolver> variableResolvers = new HashMap<String, VariableResolver>();
     protected VariableResolverFactory nextFactory;
 
     protected String[] indexedVariableNames;
@@ -47,7 +48,7 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
     public VariableResolver getVariableResolver(String name) {
         if (isResolveable(name)) {
-            if (variableResolvers != null && variableResolvers.containsKey(name)) {
+            if (variableResolvers.containsKey(name)) {
                 return variableResolvers.get(name);
             }
             else if (nextFactory != null) {
@@ -87,16 +88,13 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
     public Set<String> getKnownVariables() {
         if (nextFactory == null) {
-            if (variableResolvers != null) return new HashSet<String>(variableResolvers.keySet());
-            return new HashSet<String>(0);
+            return new HashSet<String>(variableResolvers.keySet());
+            //   return new HashSet<String>(0);
         }
         else {
-            if (variableResolvers != null)  {
-                HashSet<String> vars = new HashSet<String>(variableResolvers.keySet());
-                vars.addAll(nextFactory.getKnownVariables());
-                return vars;
-            }
-            return new HashSet<String>(0);
+            HashSet<String> vars = new HashSet<String>(variableResolvers.keySet());
+            vars.addAll(nextFactory.getKnownVariables());
+            return vars;
         }
     }
 
