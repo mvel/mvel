@@ -727,6 +727,12 @@ public class ParserContext implements Serializable {
         this.allowBootstrapBypass = allowBootstrapBypass;
     }
 
+    public String[] getIndexedVarNames() {
+        String[] s = new String[indexedVariables.size()];
+        indexedVariables.toArray(s);
+        return s;
+    }
+
     // Introduce some new Fluent API stuff here.
 
     public static ParserContext create() {
@@ -760,6 +766,15 @@ public class ParserContext implements Serializable {
 
     public ParserContext withImport(Class clazz) {
         addImport(clazz);
+        return this;
+    }
+
+    public ParserContext withIndexedVars(String[] varNames) {
+        indexedVariables = new ArrayList<String>();
+        for (String s : varNames) {
+            indexedVariables.add(s);
+        }
+
         return this;
     }
 
