@@ -86,9 +86,9 @@ public class CompilerTools {
                                 bo = new IntMult(tk, tk2);
                                 break;
 
-//                            case Operator.DIV:
-//                                bo = new IntDiv(tk, tk2);
-//                                break;
+                            case Operator.DIV:
+                                bo = new IntDiv(tk, tk2);
+                                break;
 
                             default:
                                 bo = new BinaryOperation(op, tk, tk2, ctx);
@@ -99,7 +99,6 @@ public class CompilerTools {
                     else {
                         bo = new BinaryOperation(op, tk, tk2, ctx);
                     }
-
 
                     tkOp2 = null;
 
