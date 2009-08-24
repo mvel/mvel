@@ -36,7 +36,7 @@ public class IndexedVariableResolverFactory extends BaseVariableResolverFactory 
     public IndexedVariableResolverFactory(String[] varNames, Object[] values) {
         this.indexedVariableNames = varNames;
         this.values = values;
-        this.nextFactory = new MapVariableResolverFactory();
+       // this.nextFactory = new MapVariableResolverFactory();
         this.indexedVariableResolvers = createResolvers(values);
     }
 
@@ -69,22 +69,8 @@ public class IndexedVariableResolverFactory extends BaseVariableResolverFactory 
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
+        if (nextFactory == null) nextFactory = new MapVariableResolverFactory();
         return nextFactory.createVariable(name, value, type);
-//        VariableResolver vr;
-//        try {
-//            vr = getVariableResolver(name);
-//        }
-//        catch (UnresolveablePropertyException e) {
-//            vr = null;
-//        }
-//
-//        if (vr != null && vr.getType() != null) {
-//            throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
-//        }
-//        else {
-//            addResolver(name, vr = new MapVariableResolver(variables, name, type)).setValue(value);
-//            return vr;
-//        }
     }
 
     public VariableResolver getVariableResolver(String name) {
@@ -99,8 +85,7 @@ public class IndexedVariableResolverFactory extends BaseVariableResolverFactory 
 
 
     public boolean isResolveable(String name) {
-        if (nextFactory.isResolveable(name)) return true;
-        else return isTarget(name);
+        return isTarget(name) || (nextFactory != null && nextFactory.isResolveable(name));
     }
 
     protected VariableResolver addResolver(String name, VariableResolver vr) {
