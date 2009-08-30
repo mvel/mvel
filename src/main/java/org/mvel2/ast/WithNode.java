@@ -136,7 +136,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                 case ',':
                     if (end == -1) end = i;
 
-                    if (parm == null) {
+                    if (parm == null || parm.length() == 0) {
                         parms.add(
                                 new ParmValuePair(null, (ExecutableStatement)
                                         subCompileExpression(
@@ -173,7 +173,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                 parms.add(
                         new ParmValuePair(null, (ExecutableStatement)
                                 subCompileExpression(new StringAppender(nestParm).append('.')
-                                        .append(subset(block, start, end - start)).toChars()), egressType, pCtx)
+                                        .append(subset(block, start, end - start)).toChars(), pCtx), egressType, pCtx)
                 );
             }
             else {

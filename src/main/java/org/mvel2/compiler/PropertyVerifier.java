@@ -59,6 +59,12 @@ public class PropertyVerifier extends AbstractOptimizer {
         this.pCtx = parserContext;
     }
 
+    public PropertyVerifier(char[] property, ParserContext parserContext, Class contextType) {
+        this.length = (this.expr = property).length;
+        this.pCtx = parserContext;
+        this.ctx = contextType;
+    }
+
     public PropertyVerifier(String property, ParserContext parserContext) {
         this.length = (this.expr = property.toCharArray()).length;
         this.pCtx = parserContext;
@@ -274,7 +280,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         ++cursor;
 
         skipWhitespace();
-        
+
         int start = cursor;
 
         if (cursor == length)
@@ -355,7 +361,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             /**
              *  Subcompile all the arguments to determine their known types.
              */
-          //  ExpressionCompiler compiler;
+            //  ExpressionCompiler compiler;
             CompiledExpression ce;
             for (int i = 0; i < subtokens.length; i++) {
                 args[i] = (ce = new ExpressionCompiler(subtokens[i], true)._compile()).getKnownEgressType() != null
@@ -385,7 +391,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 if ("size".equals(name) && args.length == 0 && ctx.isArray()) {
                     return Integer.class;
                 }
-                
+
                 if (pCtx.isStrictTypeEnforcement()) {
                     addFatalError("unable to resolve method using strict-mode: "
                             + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")");

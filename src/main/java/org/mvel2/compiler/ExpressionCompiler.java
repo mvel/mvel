@@ -467,6 +467,7 @@ public class ExpressionCompiler extends AbstractParser {
         this.verifyOnly = verifyOnly;
     }
 
+
     public Class getReturnType() {
         return returnType;
     }

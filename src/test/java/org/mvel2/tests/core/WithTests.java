@@ -137,4 +137,10 @@ public class WithTests extends AbstractTest {
 
         assertEquals("sarah", b.barfoo);
     }
+
+    public void testWithMultipleMethodCalls() {
+        ParserContext ctx = ParserContext.create().stronglyTyped().withInput("foo", Foo.class);
+
+        MVEL.compileExpression("with (foo) { setName('foo'), setBar(null) }", ctx);
+    }
 }
