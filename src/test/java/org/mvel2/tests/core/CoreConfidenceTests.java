@@ -4633,4 +4633,12 @@ public class CoreConfidenceTests extends AbstractTest {
                 " { end = 'attribute'.length() } 'attribute'.substring(0, end);";                       
         Object val2 = MVEL.eval(exp2, new HashMap<String, Object>());
     }
+
+
+    public void testContextAssignments() {
+        Foo foo = new Foo();
+        MVEL.eval("this.name = 'bar'", foo);
+
+        assertEquals("bar", foo.getName());
+    }
 }

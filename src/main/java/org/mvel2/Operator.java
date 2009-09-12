@@ -126,6 +126,8 @@ public interface Operator {
     public static final int WITH = 46;
     public static final int ISDEF = 47;
 
+    public static final int PROTO = 48;
+
     public static final int INC = 50;
     public static final int DEC = 51;
     public static final int ASSIGN_ADD = 52;

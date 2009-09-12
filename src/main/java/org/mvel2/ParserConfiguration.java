@@ -22,6 +22,7 @@ import org.mvel2.compiler.AbstractParser;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.PropertyTools;
+import org.mvel2.ast.Proto;
 
 import java.io.Serializable;
 import static java.lang.Thread.currentThread;
@@ -155,6 +156,11 @@ public class ParserConfiguration implements Serializable {
         this.imports.put(name, cls);
     }
 
+    public void addImport(String name, Proto proto) {
+        if (this.imports == null) this.imports = new HashMap<String, Object>();
+        this.imports.put(name, proto);
+    }
+
     public void addImport(String name, Method method) {
         addImport(name, new MethodStub(method));
     }
@@ -190,6 +196,9 @@ public class ParserConfiguration implements Serializable {
             }
             else if (val instanceof MethodStub) {
                 addImport(entry.getKey(), (MethodStub) val);
+            }
+            else if (val instanceof Proto) {
+                addImport(entry.getKey(), (Proto) entry.getValue());
             }
             else {
                 throw new RuntimeException("invalid element in imports map: " + entry.getKey() + " (" + val + ")");

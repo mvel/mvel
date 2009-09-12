@@ -32,6 +32,8 @@ import org.mvel2.util.ExecutionStack;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.isEmpty;
 import org.mvel2.util.Soundex;
+import org.mvel2.util.ProtoParser;
+import org.mvel2.ast.Proto;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -161,7 +163,7 @@ public class AbstractParser implements Serializable {
             }
         }
 
-        setLanguageLevel(5);
+        setLanguageLevel(6);
     }
 
 
@@ -285,7 +287,14 @@ public class AbstractParser implements Serializable {
                                  */
                                 if (cursor < length && !lastNonWhite(']')) captureToEOT();
 
-                                lastNode = new NewObjectNode(subArray(start, cursor), fields, pCtx);
+                                TypeDescriptor descr = new TypeDescriptor(subArray(start, cursor), fields);
+
+                                if ((pCtx = getParserContext()).hasProtoImport(descr.getClassName())) {
+                                //    Proto proto = pCtx.getProtoImport(descr.getClassName());
+                                    return lastNode = new NewPrototypeNode(descr);
+                                }
+
+                                lastNode = new NewObjectNode(descr, fields, pCtx);
 
                                 skipWhitespace();
                                 if (cursor != length && expr[cursor] == '{') {
@@ -357,6 +366,9 @@ public class AbstractParser implements Serializable {
 
                             case DO:
                                 return captureCodeBlock(ASTNode.BLOCK_DO);
+
+                            case PROTO:
+                                return captureCodeBlock(PROTO);
 
                             case ISDEF:
                                 start = cursor = trimRight(cursor);
@@ -824,19 +836,19 @@ public class AbstractParser implements Serializable {
                                 captureToEOT();
                                 return new Sign(expr, start, cursor, fields, pCtx);
                             }
-                            else if ((cursor != 0 && !isWhitespace(expr[cursor-1]) && (
+                            else if ((cursor != 0 && !isWhitespace(expr[cursor - 1]) && (
                                     !(lastNode != null && (lastNode instanceof BooleanNode || lastNode.isOperator()))))
-                                    || !isDigit(lookAhead())){
+                                    || !isDigit(lookAhead())) {
 
-                            return createOperator(expr, start, cursor++ + 1);
-                        }
-                        else if ((cursor - 1) != 0 || (!isDigit(expr[cursor-1])) && isDigit(lookAhead())) {
-                            cursor++;
-                            break;
-                        }
-                        else {
-                            throw new CompileException("not a statement", expr, cursor);
-                        }
+                                return createOperator(expr, start, cursor++ + 1);
+                            }
+                            else if ((cursor - 1) != 0 || (!isDigit(expr[cursor - 1])) && isDigit(lookAhead())) {
+                                cursor++;
+                                break;
+                            }
+                            else {
+                                throw new CompileException("not a statement", expr, cursor);
+                            }
 
 
                         case '+':
@@ -1400,103 +1412,125 @@ public class AbstractParser implements Serializable {
         /**
          * Functions are a special case we handle differently from the rest of block parsing
          */
-        if (type == FUNCTION) {
-            int start = cursor;
 
-            captureToNextTokenJunction();
+        switch (type) {
+            case FUNCTION: {
+                int start = cursor;
 
-            if (cursor == length) {
-                throw new CompileException("unexpected end of statement", expr, start);
-            }
+                captureToNextTokenJunction();
 
-            /**
-             * Check to see if the name is legal.
-             */
-            if (isReservedWord(name = createStringTrimmed(expr, start, (startCond = cursor) - start))
-                    || isNotValidNameorLabel(name))
-                throw new CompileException("illegal function name or use of reserved word", expr, cursor);
+                if (cursor == length) {
+                    throw new CompileException("unexpected end of statement", expr, start);
+                }
 
-            if (expr[cursor = nextNonBlank()] == '(') {
                 /**
-                 * If we discover an opening bracket after the function name, we check to see
-                 * if this function accepts parameters.
+                 * Check to see if the name is legal.
                  */
+                if (isReservedWord(name = createStringTrimmed(expr, start, (startCond = cursor) - start))
+                        || isNotValidNameorLabel(name))
+                    throw new CompileException("illegal function name or use of reserved word", expr, cursor);
 
-                endCond = cursor = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(', pCtx);
-                startCond++;
+                if (expr[cursor = nextNonBlank()] == '(') {
+                    /**
+                     * If we discover an opening bracket after the function name, we check to see
+                     * if this function accepts parameters.
+                     */
+                    endCond = cursor = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(', pCtx);
+                    startCond++;
+                    cursor++;
+
+                    skipWhitespace();
+
+                    if (cursor >= length) {
+                        throw new CompileException("incomplete statement", expr, cursor);
+                    }
+                    else if (expr[cursor] == '{') {
+                        blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{', pCtx);
+                    }
+                    else {
+                        blockStart = cursor - 1;
+                        captureToEOS();
+                        blockEnd = cursor;
+                    }
+                }
+                else {
+                    /**
+                     * This function has not parameters.
+                     */
+                    if (expr[cursor] == '{') {
+                        /**
+                         * This function is bracketed.  We capture the entire range in the brackets.
+                         */
+                        blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{', pCtx);
+                    }
+                    else {
+                        /**
+                         * This is a single statement function declaration.  We only capture the statement.
+                         */
+                        blockStart = cursor - 1;
+                        captureToEOS();
+                        blockEnd = cursor;
+                    }
+                }
+
+                /**
+                 * Trim any whitespace from the captured block range.
+                 */
+                blockStart = trimRight(blockStart + 1);
+                blockEnd = trimLeft(blockEnd);
+
                 cursor++;
 
-                skipWhitespace();
-
-                if (cursor >= length) {
-                    throw new CompileException("incomplete statement", expr, cursor);
-                }
-                else if (expr[cursor] == '{') {
-                    blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{', pCtx);
-                }
-                else {
-                    blockStart = cursor - 1;
-                    captureToEOS();
-                    blockEnd = cursor;
-                }
-            }
-            else {
                 /**
-                 * This function has not parameters.
+                 * Check if the function is manually terminated.
                  */
-                if (expr[cursor] == '{') {
+                if (isStatementNotManuallyTerminated()) {
                     /**
-                     * This function is bracketed.  We capture the entire range in the brackets.
+                     * Add an EndOfStatement to the split accumulator in the parser.
                      */
-                    blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{', pCtx);
+                    splitAccumulator.add(new EndOfStatement());
                 }
-                else {
-                    /**
-                     * This is a single statement function declaration.  We only capture the statement.
-                     */
-                    blockStart = cursor - 1;
-                    captureToEOS();
-                    blockEnd = cursor;
-                }
-            }
 
-            /**
-             * Trim any whitespace from the captured block range.
-             */
-            blockStart = trimRight(blockStart + 1);
-            blockEnd = trimLeft(blockEnd);
-
-            cursor++;
-
-            /**
-             * Check if the function is manually terminated.
-             */
-            if (isStatementNotManuallyTerminated()) {
                 /**
-                 * Add an EndOfStatement to the split accumulator in the parser.
+                 * Produce the funciton node.
                  */
-                splitAccumulator.add(new EndOfStatement());
+                return new Function(name, subArray(startCond, endCond), subArray(blockStart, blockEnd),
+                        pCtx == null ? pCtx = getParserContext() : pCtx);
             }
+            case PROTO:
+                int start = cursor;
+                captureToNextTokenJunction();
 
-            /**
-             * Produce the funciton node.
-             */
-            return new Function(name, subArray(startCond, endCond), subArray(blockStart, blockEnd),
-                    pCtx == null ? pCtx = getParserContext() : pCtx);
-        }
-        else if (cond) {
-            if (expr[cursor] != '(') {
-                throw new CompileException("expected '(' but encountered: " + expr[cursor]);
-            }
+                if (isReservedWord(name = createStringTrimmed(expr, start, (startCond = cursor) - start))
+                        || isNotValidNameorLabel(name))
+                    throw new CompileException("illegal prototype name or use of reserved word", expr, cursor);
 
-            /**
-             * This block is an: IF, FOREACH or WHILE node.
-             */
+                if (expr[cursor = nextNonBlank()] != '{') {
+                    throw new CompileException("expected '{' but found: " + expr[cursor]);
+                }
 
-            endCond = cursor = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(', pCtx);
+                cursor = balancedCaptureWithLineAccounting(expr, start = cursor + 1, '{', pCtx);
 
-            startCond++;
-            cursor++;
+                Proto proto =  new ProtoParser(expr, start, cursor++ - 1, name, pCtx).parse();
+                getParserContext().addImport(proto);
+
+                return proto;
+
+            default:
+                if (cond) {
+                    if (expr[cursor] != '(') {
+                        throw new CompileException("expected '(' but encountered: " + expr[cursor]);
+                    }
+
+                    /**
+                     * This block is an: IF, FOREACH or WHILE node.
+                     */
+
+                    endCond = cursor = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(', pCtx);
+
+                    startCond++;
+                    cursor++;
+                }
         }
 
         skipWhitespace();
@@ -1998,7 +2032,7 @@ public class AbstractParser implements Serializable {
 
     public int nextNonBlank() {
         if ((cursor + 1) >= length) {
-            return -1;
+            throw new CompileException("unexpected end of statement", expr, cursor);
         }
         int i = cursor;
         while (i != length && isWhitespace(expr[i])) i++;
@@ -2133,6 +2167,9 @@ public class AbstractParser implements Serializable {
     public static HashMap<String, Integer> loadLanguageFeaturesByLevel(int languageLevel) {
         HashMap<String, Integer> operatorsTable = new HashMap<String, Integer>();
         switch (languageLevel) {
+            case 6:  // prototype definition
+                operatorsTable.put("proto", PROTO);
+
             case 5:  // control flow operations
                 operatorsTable.put("if", IF);
                 operatorsTable.put("else", ELSE);

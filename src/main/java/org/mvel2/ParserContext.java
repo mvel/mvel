@@ -20,6 +20,7 @@ package org.mvel2;
 
 import org.mvel2.ast.Function;
 import org.mvel2.ast.LineLabel;
+import org.mvel2.ast.Proto;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.util.MethodStub;
 
@@ -274,6 +275,15 @@ public class ParserContext implements Serializable {
         return parserConfiguration.hasImport(name);
     }
 
+    public boolean hasProtoImport(String name) {
+        Object o = parserConfiguration.getImports().get(name);
+        return o != null && o instanceof Proto;
+    }
+
+    public Proto getProtoImport(String name) {
+        return (Proto) parserConfiguration.getImports().get(name);
+    }
+
     /**
      * Adds an import for the specified <tt>Class</tt>.
      *
@@ -281,6 +291,11 @@ public class ParserContext implements Serializable {
      */
     public void addImport(Class cls) {
         addImport(cls.getSimpleName(), cls);
+    }
+
+    public void addImport(Proto proto) {
+        parserConfiguration.addImport(proto.getName(), proto);
+
     }
 
     /**

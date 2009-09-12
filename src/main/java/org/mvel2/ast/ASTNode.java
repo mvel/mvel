@@ -44,25 +44,23 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int IDENTIFIER = 1 << 3;
     public static final int COMPILE_IMMEDIATE = 1 << 4;
     public static final int NUMERIC = 1 << 5;
-    public static final int NEGATION = 1 << 6;
-    public static final int INVERT = 1 << 7;
-    public static final int FOLD = 1 << 8;
-    public static final int METHOD = 1 << 9;
-    public static final int ASSIGN = 1 << 10;
-    public static final int LOOKAHEAD = 1 << 11;
-    public static final int COLLECTION = 1 << 12;
-    public static final int THISREF = 1 << 13;
-    public static final int INLINE_COLLECTION = 1 << 14;
-    public static final int STR_LITERAL = 1 << 15;
 
-    public static final int BLOCK_IF = 1 << 16;
-    public static final int BLOCK_FOREACH = 1 << 17;
-    public static final int BLOCK_WITH = 1 << 18;
-    public static final int BLOCK_UNTIL = 1 << 19;
-    public static final int BLOCK_WHILE = 1 << 20;
-    public static final int BLOCK_DO = 1 << 21;
-    public static final int BLOCK_DO_UNTIL = 1 << 22;
-    public static final int BLOCK_FOR = 1 << 23;
+    public static final int INVERT = 1 << 6;
+    public static final int ASSIGN = 1 << 7;
+
+    public static final int COLLECTION = 1 << 8;
+    public static final int THISREF = 1 << 9;
+    public static final int INLINE_COLLECTION = 1 << 10;
+
+    public static final int BLOCK_IF = 1 << 11;
+    public static final int BLOCK_FOREACH = 1 << 12;
+    public static final int BLOCK_WITH = 1 << 13;
+    public static final int BLOCK_UNTIL = 1 << 14;
+    public static final int BLOCK_WHILE = 1 << 15;
+    public static final int BLOCK_DO = 1 << 16;
+    public static final int BLOCK_DO_UNTIL = 1 << 17;
+    public static final int BLOCK_FOR = 1 << 18;
+    public static final int BLOCK_PROTO = 1 << 19;
 
     public static final int STRONG_TYPING = 1 << 24;
     public static final int PCTX_STORED = 1 << 25;

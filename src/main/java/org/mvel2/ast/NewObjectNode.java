@@ -48,8 +48,10 @@ public class NewObjectNode extends ASTNode {
     private transient Accessor newObjectOptimizer;
     private TypeDescriptor typeDescr;
 
-    public NewObjectNode(char[] expr, int fields, ParserContext pCtx) {
-        typeDescr = new TypeDescriptor(this.name = expr, this.fields = fields);
+    public NewObjectNode(TypeDescriptor typeDescr, int fields, ParserContext pCtx) {
+      //  typeDescr = new TypeDescriptor(this.name = expr, this.fields = fields);
+        this.typeDescr = typeDescr;
+        this.fields = fields;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             if (pCtx != null && pCtx.hasImport(typeDescr.getClassName())) {
