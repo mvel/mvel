@@ -21,8 +21,8 @@ import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import org.mvel2.ast.Function;
-import org.mvel2.ast.TypeDescriptor;
 import org.mvel2.ast.Proto;
+import org.mvel2.ast.TypeDescriptor;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
@@ -30,14 +30,13 @@ import org.mvel2.integration.GlobalListenerFactory;
 import static org.mvel2.integration.GlobalListenerFactory.notifySetListeners;
 import static org.mvel2.integration.PropertyHandlerFactory.*;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.CallableProxy;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.*;
-import static org.mvel2.util.ParseTools.captureStringLiteral;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import org.mvel2.util.StringAppender;
-import org.mvel2.util.CallableProxy;
 
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Thread.currentThread;
@@ -577,7 +576,7 @@ public class PropertyAccessor {
             }
             else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
                 if (ctx instanceof Proto.ProtoInstance) {
-                    return ((Proto.ProtoInstance) ctx).get(property).call(ctx, thisReference, variableFactory, EMPTY_OBJ_ARR);
+                    return ((Proto.ProtoInstance) ctx).get(property).call(null, thisReference, variableFactory, EMPTY_OBJ_ARR);
                 }
                 return ((Map) ctx).get(property);
             }
@@ -811,11 +810,8 @@ public class PropertyAccessor {
             }
             else if (ptr instanceof Function) {
                 ((Function) ptr).checkArgumentCount(args.length);
-                return ((Function) ptr).call(ctx, thisReference, variableFactory, args);
+                return ((Function) ptr).call(null, thisReference, variableFactory, args);
             }
-//            else if (ptr instanceof CallableProxy) {
-//                return ((CallableProxy) ptr).call(ctx, thisReference, variableFactory, args);
-//            }
             else {
                 throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
                         + name + " (reference is type: " + (ctx != null ? ctx.getClass().getName() : null) + ")");
@@ -826,15 +822,15 @@ public class PropertyAccessor {
 
         if (ctx == null) throw new CompileException("no such method or function: " + name);
 
-        if (ctx instanceof CallableProxy) {
-             return ((CallableProxy) ctx).call(ctx, thisReference, variableFactory, args); 
-        }
-
         /**
          * If the target object is an instance of java.lang.Class itself then do not
          * adjust the Class scope target.
          */
         Class cls = (ctx instanceof Class ? (Class) ctx : ctx.getClass());
+
+        if (cls == Proto.ProtoInstance.class) {
+            return ((Proto.ProtoInstance) ctx).get(name).call(null, thisReference, variableFactory, args);
+        }
 
         /**
          * Check to see if we have already cached this method;
@@ -877,6 +873,8 @@ public class PropertyAccessor {
         }
 
         if (m == null) {
+
+
             StringAppender errorBuild = new StringAppender();
             for (int i = 0; i < args.length; i++) {
                 errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);
@@ -886,6 +884,7 @@ public class PropertyAccessor {
             if ("size".equals(name) && args.length == 0 && cls.isArray()) {
                 return getLength(ctx);
             }
+
 
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
         }

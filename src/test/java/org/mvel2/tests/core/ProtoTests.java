@@ -20,7 +20,14 @@ public class ProtoTests extends TestCase {
     }
 
     public void testProtoWithFunction() {
-        Object o = MVEL.eval("proto Person { int age; def multAge() { age * 10 }; }; ", new HashMap<String, Object>());
+        Object o = MVEL.eval("proto Person { " +
+                "               int age = 2; " +
+                "               def multAge() { " +
+                "                   age * 10 " +
+                "               }; " +
+                "             };" +
+                "             p = new Person(); " +
+                "             p.multAge();", new HashMap<String, Object>());
         System.out.println(o);
     }
 

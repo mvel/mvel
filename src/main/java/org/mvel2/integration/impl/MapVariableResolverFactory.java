@@ -83,7 +83,6 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     }
 
     public VariableResolver getVariableResolver(String name) {
-        
         VariableResolver vr = variableResolvers.get(name);
         if (vr != null) {
             return vr;
