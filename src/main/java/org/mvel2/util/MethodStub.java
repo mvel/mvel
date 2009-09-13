@@ -18,13 +18,16 @@
 
 package org.mvel2.util;
 
+import org.mvel2.integration.VariableResolverFactory;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 
 public class MethodStub implements Serializable {
     private Class classReference;
-    private String methodName;
+    private String name;
 
     private transient Method method;
 
@@ -33,12 +36,12 @@ public class MethodStub implements Serializable {
 
     public MethodStub(Method method) {
         this.classReference = method.getDeclaringClass();
-        this.methodName = method.getName();
+        this.name = method.getName();
     }
 
     public MethodStub(Class classReference, String methodName) {
         this.classReference = classReference;
-        this.methodName = methodName;
+        this.name = methodName;
     }
 
     public Class getClassReference() {
@@ -50,19 +53,26 @@ public class MethodStub implements Serializable {
     }
 
     public String getMethodName() {
-        return methodName;
+        return name;
     }
 
     public void setMethodName(String methodName) {
-        this.methodName = methodName;
+        this.name = methodName;
     }
 
     public Method getMethod() {
         if (method == null) {
             for (Method method : classReference.getMethods()) {
-                if (methodName.equals(method.getName())) return this.method = method;
+                if (name.equals(method.getName())) return this.method = method;
             }
         }
         return method;
     }
+
+    public Object call(Object ctx, Object thisCtx, VariableResolverFactory factory, Object[] parameters)
+            throws IllegalAccessException, InvocationTargetException {
+        return method.invoke(ctx, parameters);
+    }
+
+
 }

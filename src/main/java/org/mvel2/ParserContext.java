@@ -276,6 +276,7 @@ public class ParserContext implements Serializable {
     }
 
     public boolean hasProtoImport(String name) {
+        if (parserConfiguration.getImports() == null) return false;
         Object o = parserConfiguration.getImports().get(name);
         return o != null && o instanceof Proto;
     }

@@ -20,6 +20,7 @@ public class ProtoParser {
     private Class type;
     private String name;
 
+
     public ProtoParser(char[] expr, int offset, int offsetEnd, String protoName, ParserContext pCtx) {
         this.expr = expr;
 
@@ -43,11 +44,29 @@ public class ProtoParser {
 
                 if (cursor > start) {
                     tk1 = new String(expr, start, cursor - start);
+
+                    if ("def".equals(tk1) || "function".equals(tk1)) {
+                        cursor++;
+                        skipWhitespace();
+                        start = cursor;
+                        while (cursor < endOffset && isIdentifierPart(expr[cursor])) cursor++;
+
+                        if (start == cursor) {
+                            throw new CompileException("attempt to declare an anonymous function as a prototype member");
+                        }
+
+                        FunctionParser parser = new FunctionParser(new String(expr, start, cursor - start), cursor, endOffset, expr, pCtx, null);
+                        proto.declareReceiver(parser.getName(), parser.parse());
+                        cursor = parser.getCursor() + 1;
+
+                        tk1 = null;
+                        continue;
+                    }
+
                 }
 
                 skipWhitespace();
             }
-
 
             if (cursor == endOffset) {
                 throw new CompileException("unexpected end of statement in proto declaration: " + protoName);
@@ -77,16 +96,14 @@ public class ProtoParser {
 
                             case ';':
                                 break Loop;
-
                         }
+                        cursor++;
                     }
 
                     calculateDecl();
 
-                    ExecutableStatement stmt = (ExecutableStatement)
-                            subCompileExpression(new String(expr, start, cursor - start), pCtx);
-                    proto.declareReceiver(name, type, stmt);
-
+                    proto.declareReceiver(name, type, (ExecutableStatement)
+                            subCompileExpression(new String(expr, start, cursor++ - start), pCtx));
 
                     break;
 
@@ -97,14 +114,10 @@ public class ProtoParser {
                         tk2 = new String(expr, start, cursor - start);
                         continue Mainloop;
                     }
-
-
             }
-
-
         }
-        return proto;
 
+        return proto;
     }
 
     private void calculateDecl() {
@@ -121,9 +134,6 @@ public class ProtoParser {
             type = Object.class;
             name = tk1;
         }
-
-    //    System.out.println("declare (type=" + type.getName() + "):" + name);
-
 
         tk1 = null;
         tk2 = null;

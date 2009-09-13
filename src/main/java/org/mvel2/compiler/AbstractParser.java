@@ -33,6 +33,7 @@ import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.isEmpty;
 import org.mvel2.util.Soundex;
 import org.mvel2.util.ProtoParser;
+import org.mvel2.util.FunctionParser;
 import org.mvel2.ast.Proto;
 
 import java.io.Serializable;
@@ -289,8 +290,9 @@ public class AbstractParser implements Serializable {
 
                                 TypeDescriptor descr = new TypeDescriptor(subArray(start, cursor), fields);
 
-                                if ((pCtx = getParserContext()).hasProtoImport(descr.getClassName())) {
-                                //    Proto proto = pCtx.getProtoImport(descr.getClassName());
+                                if (pCtx == null) pCtx = getParserContext();
+
+                                if (pCtx.hasProtoImport(descr.getClassName())) {
                                     return lastNode = new NewPrototypeNode(descr);
                                 }
 
@@ -308,7 +310,7 @@ public class AbstractParser implements Serializable {
 
                                     if (egressType == null) {
                                         try {
-                                            egressType = getClassReference(pCtx, ((NewObjectNode) lastNode).getTypeDescr());
+                                            egressType = getClassReference(pCtx, descr);
                                         }
                                         catch (ClassNotFoundException e) {
                                             throw new CompileException("could not instantiate class", e);
@@ -1429,73 +1431,16 @@ public class AbstractParser implements Serializable {
                 if (isReservedWord(name = createStringTrimmed(expr, start, (startCond = cursor) - start))
                         || isNotValidNameorLabel(name))
                     throw new CompileException("illegal function name or use of reserved word", expr, cursor);
+                
+                if (pCtx == null) pCtx = getParserContext();
 
-                if (expr[cursor = nextNonBlank()] == '(') {
-                    /**
-                     * If we discover an opening bracket after the function name, we check to see
-                     * if this function accepts parameters.
-                     */
-                    endCond = cursor = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(', pCtx);
-                    startCond++;
-                    cursor++;
+                FunctionParser parser = new FunctionParser(name, cursor, expr.length, expr, pCtx, splitAccumulator);
 
-                    skipWhitespace();
+                Function function = parser.parse();
 
-                    if (cursor >= length) {
-                        throw new CompileException("incomplete statement", expr, cursor);
-                    }
-                    else if (expr[cursor] == '{') {
-                        blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{', pCtx);
-                    }
-                    else {
-                        blockStart = cursor - 1;
-                        captureToEOS();
-                        blockEnd = cursor;
-                    }
-                }
-                else {
-                    /**
-                     * This function has not parameters.
-                     */
-                    if (expr[cursor] == '{') {
-                        /**
-                         * This function is bracketed.  We capture the entire range in the brackets.
-                         */
-                        blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{', pCtx);
-                    }
-                    else {
-                        /**
-                         * This is a single statement function declaration.  We only capture the statement.
-                         */
-                        blockStart = cursor - 1;
-                        captureToEOS();
-                        blockEnd = cursor;
-                    }
-                }
+                cursor = parser.getCursor();
 
-                /**
-                 * Trim any whitespace from the captured block range.
-                 */
-                blockStart = trimRight(blockStart + 1);
-                blockEnd = trimLeft(blockEnd);
-
-                cursor++;
-
-                /**
-                 * Check if the function is manually terminated.
-                 */
-                if (isStatementNotManuallyTerminated()) {
-                    /**
-                     * Add an EndOfStatement to the split accumulator in the parser.
-                     */
-                    splitAccumulator.add(new EndOfStatement());
-                }
-
-                /**
-                 * Produce the funciton node.
-                 */
-                return new Function(name, subArray(startCond, endCond), subArray(blockStart, blockEnd),
-                        pCtx == null ? pCtx = getParserContext() : pCtx);
+                return function;
             }
             case PROTO:
                 int start = cursor;
@@ -1511,8 +1456,13 @@ public class AbstractParser implements Serializable {
 
                 cursor = balancedCaptureWithLineAccounting(expr, start = cursor + 1, '{', pCtx);
 
+                if (pCtx == null) pCtx = getParserContext();
+
                 Proto proto =  new ProtoParser(expr, start, cursor++ - 1, name, pCtx).parse();
-                getParserContext().addImport(proto);
+
+                if (pCtx == null) pCtx = getParserContext();
+
+                pCtx.addImport(proto);
 
                 return proto;
 
@@ -1912,30 +1862,6 @@ public class AbstractParser implements Serializable {
         while (cursor != 0 && isWhitespace(expr[cursor - 1])) cursor--;
     }
 
-
-    /**
-     * Check if the specified string is a reserved word in the parser.
-     *
-     * @param name -
-     * @return -
-     */
-    public static boolean isReservedWord(String name) {
-        return LITERALS.containsKey(name) || OPERATORS.containsKey(name);
-    }
-
-    /**
-     * Check if the specfied string represents a valid name of label.
-     *
-     * @param name -
-     * @return -
-     */
-    public static boolean isNotValidNameorLabel(String name) {
-        for (char c : name.toCharArray()) {
-            if (c == '.') return true;
-            else if (!isIdentifierPart(c)) return true;
-        }
-        return false;
-    }
 
     protected void setExpression(String expression) {
         if (expression != null && expression.length() != 0) {
@@ -2530,6 +2456,7 @@ public class AbstractParser implements Serializable {
     }
 
     public void setPCtx(ParserContext pCtx) {
+       
         this.debugSymbols = (this.pCtx = pCtx).isDebugSymbols();
     }
 }

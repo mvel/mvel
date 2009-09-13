@@ -23,9 +23,8 @@ import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataTypes.*;
 import static org.mvel2.MVEL.getDebuggingOutputFileName;
 import org.mvel2.ast.ASTNode;
-import static org.mvel2.compiler.AbstractParser.LITERALS;
-import static org.mvel2.compiler.AbstractParser.isReservedWord;
 import org.mvel2.compiler.*;
+import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.integration.ResolverTools.insertFactory;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
@@ -984,6 +983,160 @@ public class ParseTools {
         return null;
     }
 
+    public static int captureToNextTokenJunction(char[] expr, int cursor, ParserContext pCtx) {
+        while (cursor != expr.length) {
+            switch (expr[cursor]) {
+                case '{':
+                case '(':
+                    return cursor;
+                case '[':
+                    cursor = balancedCaptureWithLineAccounting(expr, cursor, '[', pCtx) + 1;
+                    continue;
+                default:
+                    if (isWhitespace(expr[cursor])) {
+                        return cursor;
+                    }
+                    cursor++;
+            }
+        }
+        return cursor;
+    }
+
+    public static int nextNonBlank(char[] expr, int cursor) {
+        if ((cursor + 1) >= expr.length) {
+            throw new CompileException("unexpected end of statement", expr, cursor);
+        }
+        int i = cursor;
+        while (i != expr.length && isWhitespace(expr[i])) i++;
+        return i;
+    }
+
+    public static int skipWhitespace(char[] expr, int cursor, ParserContext pCtx) {
+        int line = pCtx.getLineCount();
+        int lastLineStart = pCtx.getLineOffset();
+
+        Skip:
+        while (cursor != expr.length) {
+            switch (expr[cursor]) {
+                case '\n':
+                    line++;
+                    lastLineStart = cursor;
+                case '\r':
+                    cursor++;
+                    continue;
+                case '/':
+                    if (cursor + 1 != expr.length) {
+                        switch (expr[cursor + 1]) {
+                            case '/':
+                                expr[cursor++] = ' ';
+                                while (cursor != expr.length && expr[cursor] != '\n') expr[cursor++] = ' ';
+                                if (cursor != expr.length) expr[cursor++] = ' ';
+
+                                line++;
+                                lastLineStart = cursor;
+
+                                continue;
+
+                            case '*':
+                                int len = expr.length - 1;
+                                expr[cursor++] = ' ';
+                                while (cursor != len && !(expr[cursor] == '*' && expr[cursor + 1] == '/')) {
+                                    if (expr[cursor] == '\n') {
+                                        line++;
+                                        lastLineStart = cursor;
+                                    }
+
+                                    expr[cursor++] = ' ';
+                                }
+                                if (cursor != len) expr[cursor++] = expr[cursor++] = ' ';
+                                continue;
+
+                            default:
+                                break Skip;
+
+                        }
+                    }
+                default:
+                    if (!isWhitespace(expr[cursor])) break Skip;
+
+            }
+            cursor++;
+        }
+        return cursor;
+
+    }
+
+    public static boolean isStatementNotManuallyTerminated(char[] expr, int cursor) {
+        if (cursor >= expr.length) return false;
+        int c = cursor;
+        while (c != expr.length && isWhitespace(expr[c])) c++;
+        return !(c != expr.length && expr[c] == ';');
+    }
+
+
+    public static int captureToEOS(char[] expr, int cursor, ParserContext pCtx) {
+        while (cursor != expr.length) {
+            switch (expr[cursor]) {
+                case '(':
+                case '[':
+                case '{':
+                    if ((cursor = balancedCaptureWithLineAccounting(expr, cursor, expr[cursor], pCtx)) >= expr.length)
+                        return cursor;
+                    break;
+
+                case '"':
+                case '\'':
+                    cursor = captureStringLiteral(expr[cursor], expr, cursor, expr.length);
+                    break;
+
+                case ',':
+                case ';':
+                case '}':
+                    return cursor;
+            }
+            cursor++;
+        }
+        return cursor;
+    }
+
+
+    /**
+     * From the specified cursor position, trim out any whitespace between the current position and the end of the
+     * last non-whitespace character.
+     *
+     * @param pos - current position
+     * @return new position.
+     */
+    public static int trimLeft(char[] expr, int start, int pos) {
+        if (pos > expr.length) pos = expr.length;
+        while (pos > 0 && pos >= start && isWhitespace(expr[pos - 1])) pos--;
+        return pos;
+    }
+
+    /**
+     * From the specified cursor position, trim out any whitespace between the current position and beginning of the
+     * first non-whitespace character.
+     *
+     * @param pos -
+     * @return -
+     */
+    public static int trimRight(char[] expr, int start, int pos) {
+        while (pos != expr.length && isWhitespace(expr[pos])) pos++;
+        return pos;
+    }
+
+    public static char[] subArray(char[] expr, final int start, final int end) {
+        if (start >= end) return new char[0];
+
+        char[] newA = new char[end - start];
+        for (int i = 0; i != newA.length; i++) {
+            newA[i] = expr[i + start];
+        }
+
+        return newA;
+    }
+
+
     /**
      * This is an important aspect of the core parser tools.  This method is used throughout the core parser
      * and sub-lexical parsers to capture a balanced capture between opening and terminating tokens such as:
@@ -1659,6 +1812,30 @@ public class ParseTools {
         return -1;
     }
 
+    /**
+     * Check if the specified string is a reserved word in the parser.
+     *
+     * @param name -
+     * @return -
+     */
+    public static boolean isReservedWord(String name) {
+        return LITERALS.containsKey(name) || AbstractParser.OPERATORS.containsKey(name);
+    }
+
+    /**
+     * Check if the specfied string represents a valid name of label.
+     *
+     * @param name -
+     * @return -
+     */
+    public static boolean isNotValidNameorLabel(String name) {
+        for (char c : name.toCharArray()) {
+            if (c == '.') return true;
+            else if (!isIdentifierPart(c)) return true;
+        }
+        return false;
+    }
+
     public static final class WithStatementPair implements java.io.Serializable {
         private String parm;
         private String value;
@@ -1721,7 +1898,7 @@ public class ParseTools {
         if (ctx != null) c.setPCtx(ctx);
         return _optimizeTree(c._compile());
     }
-    
+
     public static Serializable subCompileExpression(String expression, ParserContext ctx) {
         ExpressionCompiler c = new ExpressionCompiler(expression);
         c.setPCtx(ctx);
@@ -1832,4 +2009,6 @@ public class ParseTools {
             if (inStream != null) inStream.close();
         }
     }
+
+
 }

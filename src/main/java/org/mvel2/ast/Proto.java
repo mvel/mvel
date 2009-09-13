@@ -1,13 +1,14 @@
 package org.mvel2.ast;
 
-import org.mvel2.ast.Function;
-import org.mvel2.ast.ASTNode;
+import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
-import org.mvel2.compiler.ExecutableStatement;
+import org.mvel2.util.CallableProxy;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.Collection;
 
 public class Proto extends ASTNode {
     private String name;
@@ -22,10 +23,8 @@ public class Proto extends ASTNode {
         receivers.put(name, new Receiver(ReceiverType.FUNCTION, function));
     }
 
-    public void declareReceiver(String name, Class type, ExecutableStatement initCode) {
-        Receiver newReceiver = new Receiver(ReceiverType.PROPERTY, null);
-        newReceiver.initValue = initCode;
-        receivers.put(name, newReceiver);
+    public void declareReceiver(String name, Class type, ExecutableStatement initCode) {        
+        receivers.put(name, new Receiver(ReceiverType.PROPERTY, initCode));
     }
 
     public ProtoInstance newInstance(Object ctx, Object thisCtx, VariableResolverFactory factory) {
@@ -44,7 +43,7 @@ public class Proto extends ASTNode {
         return this;
     }
 
-    public class Receiver {
+    public class Receiver implements CallableProxy {
         private ReceiverType type;
         private Object receiver;
         private ExecutableStatement initValue;
@@ -54,12 +53,19 @@ public class Proto extends ASTNode {
             this.receiver = receiver;
         }
 
-        public void sendMessage(Object ctx, Object thisCtx, VariableResolverFactory factory, Message message) {
+        public Receiver(ReceiverType type, ExecutableStatement stmt) {
+            this.type = type;
+            this.initValue = stmt;
+        }
+
+        public Object call(Object ctx, Object thisCtx, VariableResolverFactory factory, Object[] parms) {
             switch (type) {
                 case FUNCTION:
-                    ((Function) receiver).call(ctx, thisCtx, factory, message.parameterValues);
-                    break;
+                    return ((Function) receiver).call(ctx, thisCtx, factory, parms);
+                case PROPERTY:
+                    return receiver;
             }
+            return null;
         }
 
         public void setInitValue(ExecutableStatement stmt) {
@@ -69,17 +75,7 @@ public class Proto extends ASTNode {
         public Receiver init(Object ctx, Object thisCtx, VariableResolverFactory factory) {
             return new Receiver(type,
                     type == ReceiverType.PROPERTY && initValue != null ? initValue.getValue(ctx, thisCtx, factory) :
-                receiver);
-        }
-    }
-
-    public class Message {
-        public String[] parameterNames;
-        public Object[] parameterValues;
-
-        public Message(String[] parameterNames, Object[] parameterValues) {
-            this.parameterNames = parameterNames;
-            this.parameterValues = parameterValues;
+                            receiver);
         }
     }
 
@@ -87,23 +83,66 @@ public class Proto extends ASTNode {
         FUNCTION, MAPPED_METHOD, PROPERTY
     }
 
-    public class ProtoInstance {
+    public class ProtoInstance implements Map<String, Receiver> {
         private Proto protoType;
         private VariableResolverFactory instanceStates;
+        private Map<String, Receiver> receivers;
 
         public ProtoInstance(Proto protoType, Object ctx, Object thisCtx, VariableResolverFactory factory) {
             this.protoType = protoType;
 
-            Map<String, Receiver> receivers = new HashMap<String, Receiver>();
+            receivers = new HashMap<String, Receiver>();
             for (Map.Entry<String, Receiver> entry : protoType.receivers.entrySet()) {
-                 receivers.put(entry.getKey(), entry.getValue().init(ctx, thisCtx, factory));
+                receivers.put(entry.getKey(), entry.getValue().init(ctx, thisCtx, factory));
             }
 
             instanceStates = new MapVariableResolverFactory(receivers);
         }
 
-        public void sendMessage(String name, Object ctx, Object thisCtx, VariableResolverFactory factory, Message message) {
-            protoType.receivers.get(name).sendMessage(ctx, thisCtx, factory, message);
+        public int size() {
+            return receivers.size();
+        }
+
+        public boolean isEmpty() {
+            return receivers.isEmpty();
+        }
+
+        public boolean containsKey(Object key) {
+            return receivers.containsKey(key);
+        }
+
+        public boolean containsValue(Object value) {
+            return receivers.containsValue(value);
+        }
+
+        public Receiver get(Object key) {
+            return receivers.get(key);
+        }
+
+        public Receiver put(String key, Receiver value) {
+            return receivers.put(key, value);
+        }
+
+        public Receiver remove(Object key) {
+            return receivers.remove(key);
+        }
+
+        public void putAll(Map m) {
+        }
+
+        public void clear() {
+        }
+
+        public Set<String> keySet() {
+            return receivers.keySet();
+        }
+
+        public Collection<Receiver> values() {
+            return receivers.values();
+        }
+
+        public Set<Entry<String,Receiver>> entrySet() {
+            return receivers.entrySet();
         }
     }
 

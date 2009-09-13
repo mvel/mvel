@@ -1,7 +1,7 @@
 package org.mvel2.tests.fuzz;
 
 import org.mvel2.MVEL;
-import org.mvel2.compiler.AbstractParser;
+import org.mvel2.util.ParseTools;
 
 import static java.lang.Character.isJavaIdentifierStart;
 
@@ -43,7 +43,7 @@ public class IdentifierFuzzer {
 
         }
 
-        if (AbstractParser.isReservedWord(new String(sample, 0, idLength).trim())) {
+        if (ParseTools.isReservedWord(new String(sample, 0, idLength).trim())) {
             return getIndentifierSample();
         }
 

@@ -35,6 +35,7 @@ import java.util.LinkedList;
 
 public class TypeDescriptor implements Serializable {
     private String className;
+    private char[] classNameArray;
     private ArraySize[] arraySize;
     private ExecutableStatement[] compiledArraySize;
     int endRange;
@@ -43,10 +44,11 @@ public class TypeDescriptor implements Serializable {
     }
 
     public TypeDescriptor(char[] name, int fields) {
-        updateClassName(name, fields);
+        updateClassName(this.classNameArray = name, fields);
     }
 
     public void updateClassName(char[] name, int fields) {
+        this.classNameArray = name;
         if (name.length == 0 || !ParseTools.isIdentifierPart(name[0]) || isDigit(name[0])) return;
 
         if ((endRange = findFirst('(', name)) == -1) {
@@ -181,5 +183,9 @@ public class TypeDescriptor implements Serializable {
 
     public static Class getContextFreeImport(String name) {
         return (Class) AbstractParser.LITERALS.get(name);
+    }
+
+    public char[] getClassNameArray() {
+        return classNameArray;
     }
 }

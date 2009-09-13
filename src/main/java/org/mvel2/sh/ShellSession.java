@@ -28,6 +28,8 @@ import org.mvel2.templates.TemplateRuntime;
 import static org.mvel2.util.PropertyTools.contains;
 import org.mvel2.util.StringAppender;
 import org.mvel2.ast.ASTNode;
+import org.mvel2.ParserContext;
+import org.mvel2.MVELInterpretedRuntime;
 
 import java.io.*;
 import static java.lang.Boolean.parseBoolean;
@@ -49,6 +51,7 @@ public class ShellSession {
     private Map<String, String> env;
     private Object ctxObject;
 
+    ParserContext pCtx = new ParserContext();
     VariableResolverFactory lvrf;
 
     private int depth;
@@ -164,7 +167,9 @@ public class ShellSession {
                     outputBuffer = executeExpression(compileExpression(inBuffer.toString()), ctxObject, lvrf);
                 }
                 else {
-                    outputBuffer = eval(inBuffer.toString(), ctxObject, lvrf);
+                    MVELInterpretedRuntime runtime = new MVELInterpretedRuntime(inBuffer.toString(), ctxObject, lvrf);
+                    runtime.setPCtx(pCtx);
+                    outputBuffer = runtime.parse();
                 }
             }
             catch (Exception e) {

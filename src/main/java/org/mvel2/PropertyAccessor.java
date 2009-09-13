@@ -22,6 +22,7 @@ import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import org.mvel2.ast.Function;
 import org.mvel2.ast.TypeDescriptor;
+import org.mvel2.ast.Proto;
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
@@ -36,6 +37,7 @@ import static org.mvel2.util.ParseTools.captureStringLiteral;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 import org.mvel2.util.StringAppender;
+import org.mvel2.util.CallableProxy;
 
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Thread.currentThread;
@@ -574,6 +576,9 @@ public class PropertyAccessor {
                 return ((Field) member).get(ctx);
             }
             else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
+                if (ctx instanceof Proto.ProtoInstance) {
+                    return ((Proto.ProtoInstance) ctx).get(property).call(ctx, thisReference, variableFactory, EMPTY_OBJ_ARR);
+                }
                 return ((Map) ctx).get(property);
             }
             else if ("length".equals(property) && ctx.getClass().isArray()) {
@@ -808,6 +813,9 @@ public class PropertyAccessor {
                 ((Function) ptr).checkArgumentCount(args.length);
                 return ((Function) ptr).call(ctx, thisReference, variableFactory, args);
             }
+//            else if (ptr instanceof CallableProxy) {
+//                return ((CallableProxy) ptr).call(ctx, thisReference, variableFactory, args);
+//            }
             else {
                 throw new OptimizationFailure("attempt to optimize a method call for a reference that does not point to a method: "
                         + name + " (reference is type: " + (ctx != null ? ctx.getClass().getName() : null) + ")");
@@ -818,6 +826,9 @@ public class PropertyAccessor {
 
         if (ctx == null) throw new CompileException("no such method or function: " + name);
 
+        if (ctx instanceof CallableProxy) {
+             return ((CallableProxy) ctx).call(ctx, thisReference, variableFactory, args); 
+        }
 
         /**
          * If the target object is an instance of java.lang.Class itself then do not

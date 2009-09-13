@@ -49,9 +49,9 @@ public class NewObjectNode extends ASTNode {
     private TypeDescriptor typeDescr;
 
     public NewObjectNode(TypeDescriptor typeDescr, int fields, ParserContext pCtx) {
-      //  typeDescr = new TypeDescriptor(this.name = expr, this.fields = fields);
         this.typeDescr = typeDescr;
         this.fields = fields;
+        this.name = typeDescr.getClassNameArray();
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             if (pCtx != null && pCtx.hasImport(typeDescr.getClassName())) {
