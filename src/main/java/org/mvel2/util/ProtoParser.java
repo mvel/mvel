@@ -68,7 +68,7 @@ public class ProtoParser {
                 skipWhitespace();
             }
 
-            if (cursor == endOffset) {
+            if (cursor > endOffset) {
                 throw new CompileException("unexpected end of statement in proto declaration: " + protoName);
             }
 
