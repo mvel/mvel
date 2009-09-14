@@ -95,10 +95,18 @@ public class Proto extends ASTNode {
                     type == ReceiverType.PROPERTY && initValue != null ? initValue.getValue(ctx, thisCtx, factory) :
                             receiver);
         }
+
+        public void setType(ReceiverType type) {
+            this.type = type;
+        }
+
+        public void setInitValue(ExecutableStatement initValue) {
+            this.initValue = initValue;
+        }
     }
 
     public enum ReceiverType {
-        DEFERRED, FUNCTION, PROTO, PROPERTY
+        DEFERRED, FUNCTION, PROPERTY
     }
 
     public class ProtoInstance implements Map<String, Receiver> {
@@ -279,8 +287,6 @@ public class Proto extends ASTNode {
                             + " to: " + knownType.getName());
                 }
             }
-
-            //noinspection unchecked
 
             ((Receiver) variableMap.get(name)).receiver = value;
         }

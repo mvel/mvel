@@ -55,8 +55,9 @@ public class ProtoTests extends TestCase {
     }
 
     public void testProtoWithOtherProtoRef() {
-        String ex = "proto Parents { Child child; }; proto Child { Parent parent; }";
-        MVEL.eval(ex, new HashMap<String, Object>());
+        String ex = "proto Parent { Child child = new Child(); }; proto Child { Parent parent; }; " +
+                "Parent parent = new Parent(); if (parent.child.parent == null) { 'YEP' } else { 'NOPE' }";
+        Object o = MVEL.eval(ex, new HashMap<String, Object>());
+        assertEquals("YEP", o);
     }
-
 }

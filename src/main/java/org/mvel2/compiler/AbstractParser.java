@@ -1289,9 +1289,20 @@ public class AbstractParser implements Serializable {
                     splitAccumulator.add(new TypedVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Class)
                             lastNode.getLiteralValue(), pCtx));
                 }
-
             }
-            // needed to work with MVELSH properly.
+             else if (lastNode instanceof Proto) {
+                    captureToEOS();
+                    if (decl) {
+                        splitAccumulator.add(new DeclProtoVarNode(new String(expr, start, cursor - start),
+                                (Proto) lastNode, fields | ASTNode.ASSIGN, pCtx));
+                    }
+                    else {
+                        splitAccumulator.add(new ProtoVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Proto)
+                                lastNode, pCtx));
+                    }
+                }
+
+            // this redundant looking code is needed to work with the interpreter and MVELSH properly.
             else if ((fields & ASTNode.COMPILE_IMMEDIATE) == 0) {
                 if (stk.peek() instanceof Class) {
                     captureToEOS();
@@ -1304,7 +1315,20 @@ public class AbstractParser implements Serializable {
                                 stk.pop(), pCtx));
                     }
                 }
-                throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
+                else if (stk.peek() instanceof Proto) {
+                    captureToEOS();
+                    if (decl) {
+                        splitAccumulator.add(new DeclProtoVarNode(new String(expr, start, cursor - start),
+                                (Proto) stk.pop(), fields | ASTNode.ASSIGN, pCtx));
+                    }
+                    else {
+                        splitAccumulator.add(new ProtoVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Proto)
+                                stk.pop(), pCtx));
+                    }
+                }
+                else {
+                    throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
+                }
             }
             else {
                 throw new CompileException("unknown class or illegal statement: " + lastNode.getLiteralValue(), expr, cursor);
@@ -1470,6 +1494,8 @@ public class AbstractParser implements Serializable {
 
                 proto.setCursorPosition(start, cursor);
                 cursor = parser.getCursor();
+
+                ProtoParser.notifyForLateResolution(proto);
 
                 return lastNode = proto;
 

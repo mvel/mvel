@@ -49,8 +49,6 @@ public class ProtoParser {
     public Proto parse() {
         Proto proto = new Proto(protoName);
 
-        notifyForLateResolution(proto);
-
         Mainloop:
         while (cursor < endOffset) {
             cursor = ParseTools.skipWhitespace(expr, cursor, pCtx);
@@ -102,7 +100,8 @@ public class ProtoParser {
                          * If this type could not be immediately resolved, it may be a look-ahead case, so
                          * we defer resolution of the type until later and place it in the wait queue.
                          */
-                        enqueueReceiverForLateResolution(deferredName, proto.declareReceiver(name, Proto.ReceiverType.DEFERRED, null));
+                        enqueueReceiverForLateResolution(deferredName,
+                                proto.declareReceiver(name, Proto.ReceiverType.DEFERRED, null), null);
                     }
                     else {
                         proto.declareReceiver(name, type, null);
@@ -133,14 +132,15 @@ public class ProtoParser {
 
                     calculateDecl();
 
-                    ExecutableStatement initializer = (ExecutableStatement)
-                            subCompileExpression(new String(expr, start, cursor++ - start), pCtx);
+                    String initString = new String(expr, start, cursor++ - start);
 
                     if (interpreted && type == DeferredTypeResolve.class) {
-                        proto.declareReceiver(name, Proto.ReceiverType.DEFERRED, initializer);
+                        enqueueReceiverForLateResolution(deferredName,
+                                proto.declareReceiver(name, Proto.ReceiverType.DEFERRED, null), initString);
                     }
                     else {
-                        proto.declareReceiver(name, type, initializer);
+                        proto.declareReceiver(name, type,  (ExecutableStatement)
+                            subCompileExpression(initString, pCtx));
                     }
                     break;
 
@@ -205,10 +205,11 @@ public class ProtoParser {
         public boolean isWaitingFor(Proto proto);
 
         public String getName();
+
     }
 
 
-    private void enqueueReceiverForLateResolution(final String name, final Proto.Receiver receiver) {
+    private void enqueueReceiverForLateResolution(final String name, final Proto.Receiver receiver, final String initializer) {
         Queue<DeferredTypeResolve> recv = deferred.get();
         if (recv == null) {
             deferred.set(recv = new LinkedList<DeferredTypeResolve>());
@@ -216,23 +217,28 @@ public class ProtoParser {
 
         recv.add(new DeferredTypeResolve() {
             public boolean isWaitingFor(Proto proto) {
-                return name.equals(proto.getName());
+                if (name.equals(proto.getName())) {
+                    receiver.setType(Proto.ReceiverType.PROPERTY);
+                    receiver.setInitValue((ExecutableStatement) subCompileExpression(initializer, pCtx));
+                    return true;
+                }
+                return false;
             }
 
             public String getName() {
                 return name;
             }
         });
-
-        // recv.add(receiver);
     }
 
-    private void notifyForLateResolution(final Proto proto) {
+    public static void notifyForLateResolution(final Proto proto) {
         if (deferred.get() != null) {
             Queue<DeferredTypeResolve> recv = deferred.get();
             Set<DeferredTypeResolve> remove = new HashSet<DeferredTypeResolve>();
             for (DeferredTypeResolve r : recv) {
-                if (r.isWaitingFor(proto)) remove.add(r);
+                if (r.isWaitingFor(proto)) {
+                    remove.add(r);
+                }
             }
 
             for (DeferredTypeResolve r : remove) {
