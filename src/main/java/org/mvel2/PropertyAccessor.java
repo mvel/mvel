@@ -30,7 +30,6 @@ import org.mvel2.integration.GlobalListenerFactory;
 import static org.mvel2.integration.GlobalListenerFactory.notifySetListeners;
 import static org.mvel2.integration.PropertyHandlerFactory.*;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.util.CallableProxy;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.*;
@@ -873,8 +872,6 @@ public class PropertyAccessor {
         }
 
         if (m == null) {
-
-
             StringAppender errorBuild = new StringAppender();
             for (int i = 0; i < args.length; i++) {
                 errorBuild.append(args[i] != null ? args[i].getClass().getName() : null);

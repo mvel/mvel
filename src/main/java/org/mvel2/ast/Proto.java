@@ -7,7 +7,6 @@ import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.impl.MapVariableResolver;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.util.CallableProxy;
 
@@ -19,18 +18,30 @@ import java.util.Set;
 public class Proto extends ASTNode {
     private String name;
     private Map<String, Receiver> receivers;
+    private int cursorStart;
+    private int cursorEnd;
 
     public Proto(String name) {
         this.name = name;
         this.receivers = new HashMap<String, Receiver>();
     }
 
-    public void declareReceiver(String name, Function function) {
-        receivers.put(name, new Receiver(null, ReceiverType.FUNCTION, function));
+    public Receiver declareReceiver(String name, Function function) {
+        Receiver r = new Receiver(null, ReceiverType.FUNCTION, function);
+        receivers.put(name, r);
+        return r;
     }
 
-    public void declareReceiver(String name, Class type, ExecutableStatement initCode) {
-        receivers.put(name, new Receiver(null, ReceiverType.PROPERTY, initCode));
+    public Receiver declareReceiver(String name, Class type, ExecutableStatement initCode) {
+        Receiver r = new Receiver(null, ReceiverType.PROPERTY, initCode);
+        receivers.put(name, r);
+        return r;
+    }
+
+    public Receiver declareReceiver(String name, ReceiverType type, ExecutableStatement initCode) {
+        Receiver r = new Receiver(null, type, initCode);
+        receivers.put(name, r);
+        return r;
     }
 
     public ProtoInstance newInstance(Object ctx, Object thisCtx, VariableResolverFactory factory) {
@@ -73,12 +84,10 @@ public class Proto extends ASTNode {
                     return ((Function) receiver).call(ctx, thisCtx, new InvokationContextFactory(factory, instance.instanceStates), parms);
                 case PROPERTY:
                     return receiver;
+                case DEFERRED:
+                    throw new CompileException("unresolved prototype receiver");
             }
             return null;
-        }
-
-        public void setInitValue(ExecutableStatement stmt) {
-            initValue = stmt;
         }
 
         public Receiver init(ProtoInstance instance, Object ctx, Object thisCtx, VariableResolverFactory factory) {
@@ -89,7 +98,7 @@ public class Proto extends ASTNode {
     }
 
     public enum ReceiverType {
-        FUNCTION, MAPPED_METHOD, PROPERTY
+        DEFERRED, FUNCTION, PROTO, PROPERTY
     }
 
     public class ProtoInstance implements Map<String, Receiver> {
@@ -106,6 +115,10 @@ public class Proto extends ASTNode {
             }
 
             instanceStates = new ProtoContextFactory(receivers);
+        }
+
+        public Proto getProtoType() {
+            return protoType;
         }
 
         public int size() {
@@ -230,7 +243,7 @@ public class Proto extends ASTNode {
             this.name = name;
         }
 
-        public ProtoResolver(Map variableMap, String name, Class knownType) {
+        public ProtoResolver(Map<String, Object> variableMap, String name, Class knownType) {
             this.name = name;
             this.knownType = knownType;
             this.variableMap = variableMap;
@@ -281,7 +294,6 @@ public class Proto extends ASTNode {
         }
     }
 
-
     public class InvokationContextFactory extends MapVariableResolverFactory {
         private VariableResolverFactory protoContext;
 
@@ -298,7 +310,6 @@ public class Proto extends ASTNode {
             else {
                 return protoContext.createVariable(name, value);
             }
-
         }
 
         @Override
@@ -330,5 +341,17 @@ public class Proto extends ASTNode {
         public boolean isResolveable(String name) {
             return protoContext.isResolveable(name) || nextFactory.isResolveable(name);
         }
+    }
+
+    public void setCursorPosition(int start, int end) {
+        this.cursorStart = start; this.cursorEnd = end;
+    }
+
+    public int getCursorStart() {
+        return cursorStart;
+    }
+
+    public int getCursorEnd() {
+        return cursorEnd;
     }
 }

@@ -29,12 +29,11 @@ import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ArrayTools.isLiteralOnly;
 import org.mvel2.util.ExecutionStack;
+import org.mvel2.util.FunctionParser;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.isEmpty;
-import org.mvel2.util.Soundex;
 import org.mvel2.util.ProtoParser;
-import org.mvel2.util.FunctionParser;
-import org.mvel2.ast.Proto;
+import org.mvel2.util.Soundex;
 
 import java.io.Serializable;
 import static java.lang.Boolean.FALSE;
@@ -96,7 +95,6 @@ public class AbstractParser implements Serializable {
     protected boolean debugSymbols = false;
 
     static {
-
         /**
          * Setup the basic literals
          */
@@ -1414,7 +1412,6 @@ public class AbstractParser implements Serializable {
         /**
          * Functions are a special case we handle differently from the rest of block parsing
          */
-
         switch (type) {
             case FUNCTION: {
                 int start = cursor;
@@ -1431,7 +1428,7 @@ public class AbstractParser implements Serializable {
                 if (isReservedWord(name = createStringTrimmed(expr, start, (startCond = cursor) - start))
                         || isNotValidNameorLabel(name))
                     throw new CompileException("illegal function name or use of reserved word", expr, cursor);
-                
+
                 if (pCtx == null) pCtx = getParserContext();
 
                 FunctionParser parser = new FunctionParser(name, cursor, expr.length, expr, pCtx, splitAccumulator);
@@ -1440,9 +1437,14 @@ public class AbstractParser implements Serializable {
 
                 cursor = parser.getCursor();
 
-                return function;
+                return lastNode = function;
             }
             case PROTO:
+                if (ProtoParser.isUnresolvedWaiting()) {
+                    if (pCtx == null) pCtx = getParserContext();
+                    ProtoParser.checkForPossibleUnresolvedViolations(expr, cursor, pCtx);
+                }
+
                 int start = cursor;
                 captureToNextTokenJunction();
 
@@ -1458,13 +1460,18 @@ public class AbstractParser implements Serializable {
 
                 if (pCtx == null) pCtx = getParserContext();
 
-                Proto proto =  new ProtoParser(expr, start, cursor++ - 1, name, pCtx).parse();
+                ProtoParser parser = new ProtoParser(expr, start, cursor, name, pCtx, fields, splitAccumulator);
+
+                Proto proto = parser.parse();
 
                 if (pCtx == null) pCtx = getParserContext();
 
                 pCtx.addImport(proto);
 
-                return proto;
+                proto.setCursorPosition(start, cursor);
+                cursor = parser.getCursor();
+
+                return lastNode = proto;
 
             default:
                 if (cond) {
@@ -1861,7 +1868,6 @@ public class AbstractParser implements Serializable {
     protected void trimWhitespace() {
         while (cursor != 0 && isWhitespace(expr[cursor - 1])) cursor--;
     }
-
 
     protected void setExpression(String expression) {
         if (expression != null && expression.length() != 0) {
@@ -2456,7 +2462,6 @@ public class AbstractParser implements Serializable {
     }
 
     public void setPCtx(ParserContext pCtx) {
-       
         this.debugSymbols = (this.pCtx = pCtx).isDebugSymbols();
     }
 }

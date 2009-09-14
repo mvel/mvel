@@ -2,8 +2,8 @@ package org.mvel2.tests.core;
 
 import junit.framework.TestCase;
 import org.mvel2.MVEL;
-import org.mvel2.compiler.AbstractParser;
 import org.mvel2.ast.Proto;
+import org.mvel2.compiler.AbstractParser;
 
 import java.util.HashMap;
 
@@ -31,7 +31,32 @@ public class ProtoTests extends TestCase {
                 "             };" +
                 "             p = new Person(); " +
                 "             p.multAge();", new HashMap<String, Object>());
-        System.out.println(o);
+        assertEquals(20, o);
+    }
+
+    public void testProtoWithFunction2() {
+        String ex =
+                "proto Adder {" +
+                        "int count = 0;" +
+                        "def accumulate() {" +
+                        "if (count < 10) {" +
+                        "System.out.println('counting:' + count);" +
+                        "count++;" +
+                        "accumulate();" +
+                        "}" +
+                        "}" +
+                        "};" +
+                        "adder = new Adder();" +
+                        "adder.accumulate();" +
+                        "adder.count;";
+
+        Object o = MVEL.eval(ex, new HashMap<String, Object>());
+        assertEquals(10, o);
+    }
+
+    public void testProtoWithOtherProtoRef() {
+        String ex = "proto Parents { Child child; }; proto Child { Parent parent; }";
+        MVEL.eval(ex, new HashMap<String, Object>());
     }
 
 }

@@ -27,10 +27,7 @@ import org.mvel2.ast.Proto;
 import java.io.Serializable;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The resusable parser configuration object.
@@ -79,14 +76,14 @@ public class ParserConfiguration implements Serializable {
     }
 
     public void addPackageImport(String packageName) {
-        if (packageImports == null) packageImports = new HashSet<String>();
+        if (packageImports == null) packageImports = new LinkedHashSet<String>();
         packageImports.add(packageName);
     }
 
     public void addAllImports(Map<String, Object> imports) {
         if (imports == null) return;
 
-        if (this.imports == null) this.imports = new HashMap<String, Object>();
+        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
         Object o;
 
         for (Map.Entry<String, Object> entry : imports.entrySet()) {
@@ -152,12 +149,12 @@ public class ParserConfiguration implements Serializable {
     }
 
     public void addImport(String name, Class cls) {
-        if (this.imports == null) this.imports = new HashMap<String, Object>();
+        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
         this.imports.put(name, cls);
     }
 
     public void addImport(String name, Proto proto) {
-        if (this.imports == null) this.imports = new HashMap<String, Object>();
+        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
         this.imports.put(name, proto);
     }
 
@@ -166,7 +163,7 @@ public class ParserConfiguration implements Serializable {
     }
 
     public void addImport(String name, MethodStub method) {
-        if (this.imports == null) this.imports = new HashMap<String, Object>();
+        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
         this.imports.put(name, method);
     }
 
