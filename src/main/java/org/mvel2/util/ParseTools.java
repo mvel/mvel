@@ -209,7 +209,7 @@ public class ParseTools {
 
     public static Method getBestCandidate(Object[] arguments, String method, Class decl, Method[] methods, boolean requireExact) {
         Class[] targetParms = new Class[arguments.length];
-        for (int i = 0; i < arguments.length; i++) {
+        for (int i = 0; i != arguments.length; i++) {
             targetParms[i] = arguments[i] != null ? arguments[i].getClass() : null;
         }
         return getBestCandidate(targetParms, method, decl, methods, requireExact);
@@ -242,7 +242,7 @@ public class ParseTools {
                     break;
                 }
 
-                for (int i = 0; i < arguments.length; i++) {
+                for (int i = 0; i != arguments.length; i++) {
                     if (arguments[i] == null) {
                         if (!parmTypes[i].isPrimitive()) {
                             score += 5;
@@ -368,7 +368,7 @@ public class ParseTools {
 
         Class[] arguments = new Class[args.length];
 
-        for (int i = 0; i < args.length; i++) {
+        for (int i = 0; i != args.length; i++) {
             if (args[i] != null) {
                 arguments[i] = args[i].getClass();
             }
@@ -388,9 +388,7 @@ public class ParseTools {
                 return construct;
             }
 
-            for (int i = 0; i < args.length; i++) {
-
-
+            for (int i = 0; i != args.length; i++) {
                 if (arguments[i] == null) {
                     if (!parmTypes[i].isPrimitive()) {
                         score += 5;
@@ -1109,7 +1107,7 @@ public class ParseTools {
      */
     public static int trimLeft(char[] expr, int start, int pos) {
         if (pos > expr.length) pos = expr.length;
-        while (pos > 0 && pos >= start && isWhitespace(expr[pos - 1])) pos--;
+        while (pos != 0 && pos >= start && isWhitespace(expr[pos - 1])) pos--;
         return pos;
     }
 
@@ -1243,7 +1241,7 @@ public class ParseTools {
         }
 
         if (type == term) {
-            for (start++; start < chars.length; start++) {
+            for (start++; start != chars.length; start++) {
                 if (chars[start] == type) {
                     return start;
                 }
@@ -1270,7 +1268,7 @@ public class ParseTools {
                     else if (chars[start + 1] == '*') {
                         start += 2;
                         Skiploop:
-                        while (start < chars.length) {
+                        while (start != chars.length) {
                             switch (chars[start]) {
                                 case '*':
                                     if (start + 1 < chars.length && chars[start + 1] == '/') {
@@ -1353,7 +1351,6 @@ public class ParseTools {
          * MAINTENANCE NOTE: A COMPILING VERSION OF THIS CODE IS DUPLICATED IN: WithNode
          *
          */
-
         int start = begin;
         String parm = "";
         int end = -1;
@@ -1437,7 +1434,6 @@ public class ParseTools {
                         new String(createShortFormOperativeAssignment(new StringAppender(nestParm).append(".").append(parm).toString(),
                                 subset(block, start, end - start), oper)), ctx, factory));
             }
-
         }
     }
 
@@ -1543,7 +1539,7 @@ public class ParseTools {
             }
         }
 
-        if (len > 0) {
+        if (len != 0) {
             if (fp) {
                 return DOUBLE;
             }
@@ -1929,7 +1925,7 @@ public class ParseTools {
             if (tk.isLiteral() && !tk.isThisVal()) {
                 return new ExecutableLiteral(tk.getLiteralValue());
             }
-            return tk.canSerializeAccessor() ? new ExecutableAccessorSafe(tk, false, compiled.getKnownEgressType()) :
+            return tk.canSerializeAccessor() ? new ExecutableAccessorSafe(tk, compiled.getKnownEgressType()) :
                     new ExecutableAccessor(tk, compiled.getKnownEgressType());
         }
 

@@ -35,8 +35,7 @@ public class ProtoTests extends TestCase {
     }
 
     public void testProtoWithFunction2() {
-        String ex =
-                "proto Adder {" +
+        String ex = "proto Adder {" +
                         "int count = 0;" +
                         "def accumulate() {" +
                         "if (count < 10) {" +
