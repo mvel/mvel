@@ -66,7 +66,6 @@ public class ShellSession {
 
     final BufferedReader readBuffer = new BufferedReader(new InputStreamReader(System.in));
 
-
     public ShellSession() {
         System.out.println("Starting session...");
 
@@ -168,7 +167,7 @@ public class ShellSession {
                 }
                 else {
                     MVELInterpretedRuntime runtime = new MVELInterpretedRuntime(inBuffer.toString(), ctxObject, lvrf);
-                    runtime.setPCtx(pCtx);
+                    runtime.newContext(pCtx);
                     outputBuffer = runtime.parse();
                 }
             }

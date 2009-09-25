@@ -393,10 +393,6 @@ public class ASTNode implements Cloneable, Serializable {
         return fields != -1 && (fields & DISCARD) != 0;
     }
 
-//    public void setDiscard(boolean discard) {
-//        this.fields |= DISCARD;
-//    }
-
     public void discard() {
         this.fields |= DISCARD;
     }
@@ -408,19 +404,6 @@ public class ASTNode implements Cloneable, Serializable {
     public void storePctx() {
         this.fields |= PCTX_STORED;
     }
-
-
-//    public boolean isDiscard() {
-//        return discard;
-//    }
-//
-//    public void setDiscard(boolean discard) {
-//        this.discard = discard;
-//    }
-//
-//    public void discard() {
-//        this.discard = true;
-//    }
 
     public boolean isDebuggingSymbol() {
         return this.fields == -1;

@@ -36,7 +36,7 @@ public class MapVariableResolver implements VariableResolver {
         this.name = name;
     }
 
-    public MapVariableResolver(Map variableMap, String name, Class knownType) {
+    public MapVariableResolver(Map<String, Object> variableMap, String name, Class knownType) {
         this.name = name;
         this.knownType = knownType;
         this.variableMap = variableMap;
@@ -50,7 +50,7 @@ public class MapVariableResolver implements VariableResolver {
         this.knownType = knownType;
     }
 
-    public void setVariableMap(Map variableMap) {
+    public void setVariableMap(Map<String, Object> variableMap) {
         this.variableMap = variableMap;
     }
 

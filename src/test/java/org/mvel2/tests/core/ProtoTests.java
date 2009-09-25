@@ -18,7 +18,8 @@ public class ProtoTests extends TestCase {
     }
 
     public void testProtoFieldAccess() {
-        Object o = MVEL.eval("proto Person { int age = 5; String name; }; (p = new Person()).age", new HashMap<String, Object>());
+        Object o = MVEL.eval("proto Person { int age = 5; String name; }; (p = new Person()).age",
+                new HashMap<String, Object>());
         assertEquals(5, o);
     }
 

@@ -35,6 +35,7 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     protected Map<String, VariableResolver> variableResolvers = new HashMap<String, VariableResolver>();
     protected VariableResolverFactory nextFactory;
 
+    protected int indexOffset = 0;
     protected String[] indexedVariableNames;
     protected VariableResolver[] indexedVariableResolvers;
 
@@ -100,7 +101,7 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
     public VariableResolver createIndexedVariable(int index, String name, Object value) {
         if (nextFactory != null) {
-            return nextFactory.createIndexedVariable(index, name, value);
+            return nextFactory.createIndexedVariable(index - indexOffset, name, value);
         }
         else {
             throw new RuntimeException("cannot create indexed variable: " + name + "(" + index + "). operation not supported by resolver: " + this.getClass().getName());
@@ -109,7 +110,7 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
     public VariableResolver getIndexedVariableResolver(int index) {
         if (nextFactory != null) {
-            return nextFactory.getIndexedVariableResolver(index);
+            return nextFactory.getIndexedVariableResolver(index - indexOffset);
         }
         else {
             throw new RuntimeException("cannot access indexed variable: " + index + ".  operation not supported by resolver: " + this.getClass().getName());
@@ -118,7 +119,7 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
     public VariableResolver createIndexedVariable(int index, String name, Object value, Class<?> type) {
         if (nextFactory != null) {
-            return nextFactory.createIndexedVariable(index, name, value, type);
+            return nextFactory.createIndexedVariable(index - indexOffset, name, value, type);
         }
         else {
             throw new RuntimeException("cannot access indexed variable: " + name + "(" + index + ").  operation not supported by resolver.: " + this.getClass().getName());
@@ -152,10 +153,10 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
     public VariableResolver setIndexedVariableResolver(int index, VariableResolver resolver) {
         if (indexedVariableResolvers == null) {
-            return (indexedVariableResolvers = new VariableResolver[indexedVariableNames.length])[index] = resolver;
+            return (indexedVariableResolvers = new VariableResolver[indexedVariableNames.length])[index-indexOffset] = resolver;
         }
         else {
-            return indexedVariableResolvers[index] = resolver;
+            return indexedVariableResolvers[index-indexOffset] = resolver;
         }
     }
 

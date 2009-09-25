@@ -24,7 +24,6 @@ import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class FunctionVariableResolverFactory extends BaseVariableResolverFactory implements LocalVariableResolverFactory {
     private Function function;
@@ -38,7 +37,7 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
         for (int i = 0; i < parameters.length; i++) {
             variableResolvers.put(indexedVariableNames[i], null);
             this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]);
-       //     variableResolvers.put(indexedVariableNames[i], this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]));
+            //     variableResolvers.put(indexedVariableNames[i], this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]));
         }
     }
 
@@ -52,9 +51,9 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
             int idx = increaseRegisterTableSize();
             this.indexedVariableNames[idx] = name;
             this.indexedVariableResolvers[idx] = new SimpleValueResolver(value);
-            variableResolvers.put(name,null);
+            variableResolvers.put(name, null);
 
-       //     variableResolvers.put(name, this.indexedVariableResolvers[idx] = new SimpleValueResolver(value));
+            //     variableResolvers.put(name, this.indexedVariableResolvers[idx] = new SimpleValueResolver(value));
             return this.indexedVariableResolvers[idx];
         }
         else {
@@ -74,7 +73,7 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     }
 
     public VariableResolver createIndexedVariable(int index, String name, Object value) {
-
+        index = index - indexOffset;
         if (indexedVariableResolvers[index] != null) {
             indexedVariableResolvers[index].setValue(value);
         }
@@ -88,6 +87,7 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     }
 
     public VariableResolver createIndexedVariable(int index, String name, Object value, Class<?> type) {
+        index = index - indexOffset;
         if (indexedVariableResolvers[index] != null) {
             indexedVariableResolvers[index].setValue(value);
         }
@@ -110,8 +110,8 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
 
     public VariableResolver getVariableResolver(String name) {
         int idx;
-     //   if (variableResolvers.containsKey(name)) return variableResolvers.get(name);
-         if ((idx = variableIndexOf(name)) != -1) {
+        //   if (variableResolvers.containsKey(name)) return variableResolvers.get(name);
+        if ((idx = variableIndexOf(name)) != -1) {
             if (indexedVariableResolvers[idx] == null) {
                 indexedVariableResolvers[idx] = new SimpleValueResolver(null);
             }
@@ -147,7 +147,7 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     }
 
     public void updateParameters(Object[] parameters) {
-    //    this.indexedVariableResolvers = new VariableResolver[parameters.length];
+        //    this.indexedVariableResolvers = new VariableResolver[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
             this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]);
         }
@@ -166,5 +166,9 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
 
     public Function getFunction() {
         return function;
+    }
+
+    public void setIndexOffset(int offset) {
+        this.indexOffset = offset;
     }
 }

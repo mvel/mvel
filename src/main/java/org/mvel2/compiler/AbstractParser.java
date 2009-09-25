@@ -495,13 +495,16 @@ public class AbstractParser implements Serializable {
                                         captureToEOS();
 
                                         if (union) {
-                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, ADD, name, pCtx);
+                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields,
+                                                    ADD, name, pCtx);
                                         }
                                         else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                                            return lastNode = new IndexedAssignmentNode(subArray(start, cursor), fields, ADD, name, idx, pCtx);
+                                            return lastNode = new IndexedAssignmentNode(subArray(start, cursor), fields,
+                                                    ADD, name, idx, pCtx);
                                         }
                                         else {
-                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), ADD, fields, pCtx);
+                                            return lastNode = new OperativeAssign(name, subArray(start, cursor),
+                                                    ADD, fields, pCtx);
                                         }
                                 }
 
@@ -537,13 +540,16 @@ public class AbstractParser implements Serializable {
                                         captureToEOS();
 
                                         if (union) {
-                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, SUB, t, pCtx);
+                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields,
+                                                    SUB, t, pCtx);
                                         }
                                         else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), Operator.SUB, idx, fields, pCtx);
+                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor),
+                                                    SUB, idx, fields, pCtx);
                                         }
                                         else {
-                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), Operator.SUB, fields, pCtx);
+                                            return lastNode = new OperativeAssign(name, subArray(start, cursor),
+                                                    SUB, fields, pCtx);
                                         }
                                 }
 
@@ -584,13 +590,16 @@ public class AbstractParser implements Serializable {
                                     captureToEOS();
 
                                     if (union) {
-                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, opLookup(op), t, pCtx);
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields,
+                                                opLookup(op), t, pCtx);
                                     }
                                     else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), opLookup(op), idx, fields, pCtx);
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor),
+                                                opLookup(op), idx, fields, pCtx);
                                     }
                                     else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), opLookup(op), fields, pCtx);
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor),
+                                                opLookup(op), fields, pCtx);
                                     }
                                 }
                                 break CaptureLoop;
@@ -604,13 +613,16 @@ public class AbstractParser implements Serializable {
                                     captureToEOS();
 
                                     if (union) {
-                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_SHIFT_LEFT, t, pCtx);
+                                        return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields,
+                                                BW_SHIFT_LEFT, t, pCtx);
                                     }
                                     else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_SHIFT_LEFT, idx, fields, pCtx);
+                                        return lastNode = new IndexedOperativeAssign(subArray(start, cursor),
+                                                BW_SHIFT_LEFT, idx, fields, pCtx);
                                     }
                                     else {
-                                        return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_SHIFT_LEFT, fields, pCtx);
+                                        return lastNode = new OperativeAssign(name, subArray(start, cursor),
+                                                BW_SHIFT_LEFT, fields, pCtx);
                                     }
                                 }
                                 break CaptureLoop;
@@ -625,13 +637,16 @@ public class AbstractParser implements Serializable {
                                         captureToEOS();
 
                                         if (union) {
-                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_SHIFT_RIGHT, t, pCtx);
+                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields,
+                                                    BW_SHIFT_RIGHT, t, pCtx);
                                         }
                                         else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_SHIFT_RIGHT, idx, fields, pCtx);
+                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor),
+                                                    BW_SHIFT_RIGHT, idx, fields, pCtx);
                                         }
                                         else {
-                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_SHIFT_RIGHT, fields, pCtx);
+                                            return lastNode = new OperativeAssign(name, subArray(start, cursor),
+                                                    BW_SHIFT_RIGHT, fields, pCtx);
                                         }
                                     }
                                     else if ((lookAhead(2) == '>' && lookAhead(3) == '=')) {
@@ -641,13 +656,16 @@ public class AbstractParser implements Serializable {
                                         captureToEOS();
 
                                         if (union) {
-                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields, BW_USHIFT_RIGHT, t, pCtx);
+                                            return lastNode = new DeepAssignmentNode(subArray(start, cursor), fields,
+                                                    BW_USHIFT_RIGHT, t, pCtx);
                                         }
                                         else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor), BW_USHIFT_RIGHT, idx, fields, pCtx);
+                                            return lastNode = new IndexedOperativeAssign(subArray(start, cursor),
+                                                    BW_USHIFT_RIGHT, idx, fields, pCtx);
                                         }
                                         else {
-                                            return lastNode = new OperativeAssign(name, subArray(start, cursor), BW_USHIFT_RIGHT, fields, pCtx);
+                                            return lastNode = new OperativeAssign(name, subArray(start, cursor),
+                                                    BW_USHIFT_RIGHT, fields, pCtx);
                                         }
                                     }
                                 }
@@ -921,13 +939,16 @@ public class AbstractParser implements Serializable {
                                                         if (--brace < level) {
                                                             cursor++;
                                                             if (tokenContinues()) {
-                                                                lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2), fields, pCtx);
+                                                                lastNode = new Fold(subset(expr, trimRight(start + 1),
+                                                                        cursor - start - 2), fields, pCtx);
                                                                 if (expr[start = cursor] == '.') start++;
                                                                 captureToEOT();
-                                                                return lastNode = new Union(expr, trimRight(start), cursor, fields, lastNode);
+                                                                return lastNode = new Union(expr, trimRight(start),
+                                                                        cursor, fields, lastNode);
                                                             }
                                                             else {
-                                                                return lastNode = new Fold(subset(expr, trimRight(start + 1), cursor - start - 2), fields, pCtx);
+                                                                return lastNode = new Fold(subset(expr, trimRight(start + 1),
+                                                                        cursor - start - 2), fields, pCtx);
                                                             }
 
                                                         }
@@ -941,7 +962,8 @@ public class AbstractParser implements Serializable {
                                                 }
                                             }
 
-                                            throw new CompileException("unterminated projection; closing parathesis required", expr, cursor);
+                                            throw new CompileException("unterminated projection; closing parathesis required",
+                                                    expr, cursor);
                                         }
                                         break;
 
@@ -1002,7 +1024,11 @@ public class AbstractParser implements Serializable {
                                 return handleUnion(handleSubstatement(new Substatement(tmp, fields, pCtx)));
                             }
                             else {
-                                return handleUnion(handleSubstatement(new Substatement(subset(expr, start = trimRight(start + 1), trimLeft(cursor - 1) - start), fields, pCtx)));
+                                return handleUnion(
+                                        handleSubstatement(
+                                                new Substatement(
+                                                        subset(expr, start = trimRight(start + 1),
+                                                                trimLeft(cursor - 1) - start), fields, pCtx)));
                             }
                         }
 
@@ -1807,10 +1833,6 @@ public class AbstractParser implements Serializable {
         while (pos != length && isWhitespace(expr[pos])) pos++;
         return pos;
     }
-
-//    protected void skipWhitespace() {
-//        while (cursor != length && isWhitespace(expr[cursor])) cursor++;
-//    }
 
     /**
      * If the cursor is currently pointing to whitespace, move the cursor forward to the first non-whitespace

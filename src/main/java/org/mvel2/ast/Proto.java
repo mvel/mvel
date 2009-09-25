@@ -8,10 +8,11 @@ import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.integration.impl.SimpleValueResolver;
 import org.mvel2.util.CallableProxy;
+import org.mvel2.util.SimpleIndexHashMapWrapper;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,7 +24,7 @@ public class Proto extends ASTNode {
 
     public Proto(String name) {
         this.name = name;
-        this.receivers = new HashMap<String, Receiver>();
+        this.receivers = new SimpleIndexHashMapWrapper<String, Receiver>();
     }
 
     public Receiver declareReceiver(String name, Function function) {
@@ -112,12 +113,12 @@ public class Proto extends ASTNode {
     public class ProtoInstance implements Map<String, Receiver> {
         private Proto protoType;
         private VariableResolverFactory instanceStates;
-        private Map<String, Receiver> receivers;
+        private SimpleIndexHashMapWrapper<String, Receiver> receivers;
 
         public ProtoInstance(Proto protoType, Object ctx, Object thisCtx, VariableResolverFactory factory) {
             this.protoType = protoType;
 
-            receivers = new HashMap<String, Receiver>();
+            receivers = new SimpleIndexHashMapWrapper<String, Receiver>();
             for (Map.Entry<String, Receiver> entry : protoType.receivers.entrySet()) {
                 receivers.put(entry.getKey(), entry.getValue().init(this, ctx, thisCtx, factory));
             }
@@ -187,8 +188,11 @@ public class Proto extends ASTNode {
     }
 
     public class ProtoContextFactory extends MapVariableResolverFactory {
-        public ProtoContextFactory(Map variables) {
+        private final SimpleIndexHashMapWrapper<String, VariableResolver> variableResolvers;
+
+        public ProtoContextFactory(SimpleIndexHashMapWrapper variables) {
             super(variables);
+            variableResolvers = new SimpleIndexHashMapWrapper<String, VariableResolver>(variables, true);
         }
 
         @Override
@@ -222,6 +226,60 @@ public class Proto extends ASTNode {
                 addResolver(name, vr = new ProtoResolver(variables, name, type)).setValue(value);
                 return vr;
             }
+        }
+
+        @Override
+        public void setIndexedVariableNames(String[] indexedVariableNames) {
+            //
+        }
+
+        @Override
+        public String[] getIndexedVariableNames() {
+            //
+            return null;
+        }
+
+        @Override
+        public VariableResolver createIndexedVariable(int index, String name, Object value, Class<?> type) {
+            VariableResolver vr = this.variableResolvers != null ? this.variableResolvers.getByIndex(index) : null;
+            if (vr != null && vr.getType() != null) {
+                throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
+            }
+            else {
+                return createIndexedVariable(variableIndexOf(name), name, value);
+            }
+        }
+
+        @Override
+        public VariableResolver createIndexedVariable(int index, String name, Object value) {
+            VariableResolver vr = variableResolvers.getByIndex(index);
+
+            if (vr == null) {
+                vr = new SimpleValueResolver(value);
+                variableResolvers.putAtIndex(index, vr);
+            }
+            else {
+                vr.setValue(value);
+            }
+
+
+            return indexedVariableResolvers[index];
+        }
+
+        @Override
+        public VariableResolver getIndexedVariableResolver(int index) {
+            return variableResolvers.getByIndex(index);
+        }
+
+        @Override
+        public VariableResolver setIndexedVariableResolver(int index, VariableResolver resolver) {
+            variableResolvers.putAtIndex(index, resolver);
+            return resolver;
+        }
+
+        @Override
+        public int variableIndexOf(String name) {
+            return variableResolvers.indexOf(name);
         }
 
         public VariableResolver getVariableResolver(String name) {
@@ -347,10 +405,16 @@ public class Proto extends ASTNode {
         public boolean isResolveable(String name) {
             return protoContext.isResolveable(name) || nextFactory.isResolveable(name);
         }
+
+        @Override
+        public boolean isIndexedFactory() {
+            return true;
+        }
     }
 
     public void setCursorPosition(int start, int end) {
-        this.cursorStart = start; this.cursorEnd = end;
+        this.cursorStart = start;
+        this.cursorEnd = end;
     }
 
     public int getCursorStart() {
