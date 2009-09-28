@@ -162,7 +162,7 @@ public class AbstractParser implements Serializable {
             }
         }
 
-        setLanguageLevel(6);
+        setLanguageLevel(Boolean.getBoolean("mvel.future.lang.support") ? 6 : 5);
     }
 
 

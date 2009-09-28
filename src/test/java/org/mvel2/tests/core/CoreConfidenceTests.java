@@ -3993,32 +3993,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertTrue(requiredInputs.contains("aKey"));
     }
 
-    public void testImperativeCode() {
-        String ex = "if (cheese.price == 10) { cheese.price = 5; }";
-        ParserContext ctx = new ParserContext();
-        ctx.setStrongTyping(true);
-        ctx.addInput("cheese",
-                Cheese.class);
-        // following line is causing an infinite loop when compiling the code
-        // NOTE: drools expects the code to compile, even in the presence of the
-        // "if" statement, but in case the application tries to execute the code,
-        // drools expects mvel to raise the exception, since control flow statements
-        // are disabled
-        AbstractParser.setLanguageLevel(AbstractParser.LEVEL_4_ASSIGNMENT);
-        try {
-            ExpressionCompiler compiler = new ExpressionCompiler(ex);
-            compiler.compile(ctx);
-        }
-        catch (Exception e) {
-            return;
-        }
-        finally {
-            AbstractParser.setLanguageLevel(AbstractParser.LEVEL_5_CONTROL_FLOW);
-        }
-
-        fail("Should have thrown exception");
-    }
-
     public static void testProjectionUsingThis() {
         Set records = new HashSet();
         for (int i = 0; i < 53; i++) {
