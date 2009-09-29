@@ -3,7 +3,6 @@ package org.mvel2.tests.core;
 import org.mvel2.*;
 import static org.mvel2.MVEL.*;
 import org.mvel2.ast.ASTNode;
-import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.Interceptor;
@@ -17,6 +16,7 @@ import org.mvel2.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.*;
 import org.mvel2.tests.core.res.res2.ClassProvider;
+import org.mvel2.tests.core.res.res2.Outer;
 import org.mvel2.tests.core.res.res2.PublicClass;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ReflectionUtil;
@@ -4604,7 +4604,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Object val1 = MVEL.eval(exp1, new HashMap<String, Object>());
 
         String exp2 = "int end = 'attribute'.indexOf('@');  if(end == -1)" +
-                " { end = 'attribute'.length() } 'attribute'.substring(0, end);";                       
+                " { end = 'attribute'.length() } 'attribute'.substring(0, end);";
         Object val2 = MVEL.eval(exp2, new HashMap<String, Object>());
     }
 
@@ -4614,5 +4614,20 @@ public class CoreConfidenceTests extends AbstractTest {
         MVEL.eval("this.name = 'bar'", foo);
 
         assertEquals("bar", foo.getName());
+    }
+
+    public void testMVEL187() {
+        ParserContext context = new ParserContext();
+        context.addPackageImport("test");
+        context.addInput("outer", Outer.class);
+
+        Object compiled = MVEL.compileExpression(
+                "outer.getInner().getValue()", context);
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put("outer", new Outer());
+        VariableResolverFactory varsResolver = new MapVariableResolverFactory(vars);
+
+        assertEquals(2, MVEL.executeExpression(compiled, varsResolver));
     }
 }
