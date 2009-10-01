@@ -37,6 +37,7 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
     public static long timeSpan = 100;
     public static int maximumTenure = 1500;
     public static int totalRecycled = 0;
+    private static volatile boolean useSafeClassloading = false;
 
     public void init() {
         _init();

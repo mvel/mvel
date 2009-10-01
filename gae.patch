@@ -1,0 +1,112 @@
+Index: src/main/java/org/mvel2/optimizers/dynamic/DynamicOptimizer.java
+===================================================================
+--- src/main/java/org/mvel2/optimizers/dynamic/DynamicOptimizer.java	(revision 2278)
++++ src/main/java/org/mvel2/optimizers/dynamic/DynamicOptimizer.java	Tue Sep 22 14:24:54 EST 2009
+@@ -37,13 +37,18 @@
+     public static long timeSpan = 100;
+     public static int maximumTenure = 1500;
+     public static int totalRecycled = 0;
++    private static volatile boolean useSafeClassloading = false;
+
++    public static void useSafeClassloading(boolean useSafe) {
++        useSafeClassloading = useSafe;
++    }
++
+     public void init() {
+         _init();
+     }
+
+     private static void _init() {
+-        setMVELClassLoader(classLoader = new DynamicClassLoader(currentThread().getContextClassLoader(), maximumTenure));
++        setMVELClassLoader(classLoader = new DynamicClassLoader(currentThread().getContextClassLoader(), maximumTenure, useSafeClassloading));
+     }
+
+     public static void enforceTenureLimit() {
+Index: src/main/java/org/mvel2/util/JITClassLoader.java
+===================================================================
+--- src/main/java/org/mvel2/util/JITClassLoader.java	(revision 2724)
++++ src/main/java/org/mvel2/util/JITClassLoader.java	Tue Sep 22 14:21:09 EST 2009
+@@ -26,7 +26,7 @@
+     private static boolean sunJVM;
+     private static Object sunUnsafe;
+
+-    static {
++    private static void init() {
+         try {
+             Field f = Unsafe.class.getDeclaredField("theUnsafe");
+             f.setAccessible(true);
+@@ -39,9 +39,13 @@
+         }
+     }
+
+-
+-    public JITClassLoader(ClassLoader classLoader) {
++    public JITClassLoader(ClassLoader classLoader, boolean useSafeClassloading) {
+         super(classLoader);
++
++      if (useSafeClassloading)
++        sunJVM = false;
++      else
++        init();
+     }
+
+     public Class<?> defineClassX(String className, byte[] b, int off, int len) {
+Index: src/main/java/org/mvel2/optimizers/impl/asm/ASMAccessorOptimizer.java
+===================================================================
+--- src/main/java/org/mvel2/optimizers/impl/asm/ASMAccessorOptimizer.java	(revision 2746)
++++ src/main/java/org/mvel2/optimizers/impl/asm/ASMAccessorOptimizer.java	Tue Sep 22 15:26:40 EST 2009
+@@ -1946,7 +1946,12 @@
+     }
+
+     private static MVELClassLoader classLoader;
++    private static volatile boolean useSafeClassloading = false;
+
++    public static void useSafeClassloading(boolean useSafe) {
++      useSafeClassloading = useSafe;
++    }
++
+     public static void setMVELClassLoader(MVELClassLoader cl) {
+         classLoader = cl;
+     }
+@@ -1957,7 +1962,7 @@
+
+     public void init() {
+         try {
+-            classLoader = new JITClassLoader(currentThread().getContextClassLoader());
++            classLoader = new JITClassLoader(currentThread().getContextClassLoader(), useSafeClassloading);
+         }
+         catch (Exception e) {
+             throw new RuntimeException(e);
+Index: src/main/java/org/mvel2/optimizers/dynamic/DynamicClassLoader.java
+===================================================================
+--- src/main/java/org/mvel2/optimizers/dynamic/DynamicClassLoader.java	(revision 2360)
++++ src/main/java/org/mvel2/optimizers/dynamic/DynamicClassLoader.java	Mon Sep 21 19:02:04 EST 2009
+@@ -34,7 +34,7 @@
+     private static boolean sunJVM;
+     private static Object sunUnsafe;
+
+-    static {
++    private static void init() {
+         try {
+             Field f = Unsafe.class.getDeclaredField("theUnsafe");
+             f.setAccessible(true);
+@@ -48,11 +48,18 @@
+     }
+
+
+-    public DynamicClassLoader(ClassLoader classLoader, int tenureLimit) {
++    public DynamicClassLoader(ClassLoader classLoader, int tenureLimit, boolean useSafeClassloading) {
+         super(classLoader);
+         this.tenureLimit = tenureLimit;
++
++        // Do not call init() from here. =0
++        if (useSafeClassloading)
++          sunJVM = false;
++        else
++          init();
+     }
+
++
+     public Class defineClassX(String className, byte[] b, int start, int end) {
+         totalClasses++;
+         if (sunJVM) {
