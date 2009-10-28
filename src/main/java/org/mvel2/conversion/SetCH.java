@@ -32,10 +32,10 @@ public class SetCH implements ConversionHandler {
         if (type.isArray()) {
             newSet.addAll(Arrays.asList(((Object[]) in)));
         }
-        else if (type.isAssignableFrom(Collection.class)) {
+        else if (Collection.class.isAssignableFrom(type)) {
             newSet.addAll((Collection) in);
         }
-        else if (type.isAssignableFrom(Iterable.class)) {
+        else if (Iterable.class.isAssignableFrom(type)) {
             for (Object o : (Iterable) in) {
                 newSet.add(o);
             }

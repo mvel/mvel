@@ -2,14 +2,14 @@ package org.mvel2.tests.core;
 
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
+
+import org.mvel2.MVEL;
 import org.mvel2.tests.core.res.Base;
+import org.mvel2.tests.core.res.Cake;
 import org.mvel2.tests.core.res.Foo;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 
 public class PropertyAccessTests extends AbstractTest {
@@ -234,5 +234,23 @@ public class PropertyAccessTests extends AbstractTest {
 
         assertEquals("bar", executeExpression(compileExpression("mp.test = 'bar'; mp.test"), vars));
     }
+
+
+    public void testBindingCoercion() {
+        List list = new LinkedList();
+        list.add("Apple");
+        list.add("Peach");
+        list.add("Icing");
+
+        Cake cake = new Cake();
+
+        MVEL.setProperty(cake, "ingredients", list);
+
+        assertTrue(cake.getIngredients().contains("Apple"));
+        assertTrue(cake.getIngredients().contains("Peach"));
+        assertTrue(cake.getIngredients().contains("Icing"));
+
+    }
+
 
 }
