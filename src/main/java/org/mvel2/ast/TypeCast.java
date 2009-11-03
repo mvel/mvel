@@ -18,11 +18,15 @@
 
 package org.mvel2.ast;
 
+import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
+
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.subCompileExpression;
+
 import org.mvel2.util.CompilerTools;
 import org.mvel2.ParserContext;
 import org.mvel2.DataConversion;
@@ -30,14 +34,21 @@ import org.mvel2.CompileException;
 
 public class TypeCast extends ASTNode {
     private ExecutableStatement statement;
+    private boolean widen;
 
     public TypeCast(char[] expr, Class cast, int fields, ParserContext pCtx) {
         this.egressType = cast;
         this.name = expr;
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            if (!cast.isAssignableFrom((statement = (ExecutableStatement) subCompileExpression(name, pCtx)).getKnownEgressType()) &&
-                   statement.getKnownEgressType() != Object.class && !DataConversion.canConvert(cast, statement.getKnownEgressType())) {
-                throw new CompileException("unable to cast type: " + statement.getKnownEgressType() + "; to: " + cast);
+
+            if ((statement = (ExecutableStatement) subCompileExpression(name, pCtx)).getKnownEgressType() != Object.class
+                    && !canConvert(cast, statement.getKnownEgressType())) {
+
+                if (statement.getKnownEgressType().isAssignableFrom(cast)) {
+                    widen = true;
+                } else {
+                    throw new CompileException("unable to cast type: " + statement.getKnownEgressType() + "; to: " + cast);
+                }
             }
 
         }
@@ -46,11 +57,21 @@ public class TypeCast extends ASTNode {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         //noinspection unchecked
-        return convert(statement.getValue(ctx, thisValue, factory), egressType);
+        return widen ? typeCheck(statement.getValue(ctx, thisValue, factory), egressType) : convert(statement.getValue(ctx, thisValue, factory), egressType);
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         //noinspection unchecked
-        return convert(eval(name, ctx, factory), egressType);
+        return widen ? typeCheck(eval(name, ctx, factory), egressType) : convert(eval(name, ctx, factory), egressType);
+    }
+
+    private static Object typeCheck(Object inst, Class type) {
+        if (inst == null) return null;
+        if (type.isInstance(inst)) {
+            return inst;
+        }
+        else {
+            throw new ClassCastException(inst.getClass().getName() + " cannot be cast to: " + type.getClass().getName());
+        }
     }
 }

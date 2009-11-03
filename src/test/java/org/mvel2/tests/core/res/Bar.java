@@ -39,7 +39,6 @@ public class Bar {
         return obj instanceof Foo;
     }
 
-
     public String getAssignTest() {
         return assignTest;
     }

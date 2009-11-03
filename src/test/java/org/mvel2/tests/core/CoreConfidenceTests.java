@@ -4630,4 +4630,30 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(2, MVEL.executeExpression(compiled, varsResolver));
     }
+
+    public void testMVEL190() {
+        ParserContext context = new ParserContext();
+        context.addImport(Ship.class);
+        context.addImport(MapObject.class);
+
+        context.addInput("obj", MapObject.class);
+
+        Object compiled = MVEL.compileExpression(
+                "((Ship) obj).getName()", context);
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put("obj", new Ship());
+
+        VariableResolverFactory varsResolver
+                = new MapVariableResolverFactory(vars);
+
+        System.out.println(
+                MVEL.executeExpression(compiled, varsResolver));
+
+    }
+
+    public void testMVEL190a() {
+
+
+    }
 }

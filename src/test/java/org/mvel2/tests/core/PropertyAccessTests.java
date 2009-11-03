@@ -224,8 +224,6 @@ public class PropertyAccessTests extends AbstractTest {
     }
 
     public void testVirtProperty() {
-        //   OptimizerFactory.setDefaultOptimizer("ASM");
-
         Map<String, Object> testMap = new HashMap<String, Object>();
         testMap.put("test", "foo");
 
