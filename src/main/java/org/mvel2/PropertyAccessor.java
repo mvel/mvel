@@ -39,6 +39,8 @@ import org.mvel2.util.StringAppender;
 
 import static java.lang.Character.isJavaIdentifierPart;
 import static java.lang.Thread.currentThread;
+
+import java.lang.ref.WeakReference;
 import java.lang.reflect.*;
 import static java.lang.reflect.Array.getLength;
 import java.util.*;
@@ -72,16 +74,16 @@ public class PropertyAccessor {
 
     private static final Object[] EMPTYARG = new Object[0];
 
-    private static final WeakHashMap<Class, WeakHashMap<Integer, Member>> READ_PROPERTY_RESOLVER_CACHE;
-    private static final WeakHashMap<Class, WeakHashMap<Integer, Member>> WRITE_PROPERTY_RESOLVER_CACHE;
-    private static final WeakHashMap<Class, WeakHashMap<Integer, Object[]>> METHOD_RESOLVER_CACHE;
-    private static final WeakHashMap<Member, Class[]> METHOD_PARMTYPES_CACHE;
+    private static final WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Member>>> READ_PROPERTY_RESOLVER_CACHE;
+    private static final WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Member>>> WRITE_PROPERTY_RESOLVER_CACHE;
+    private static final WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Object[]>>> METHOD_RESOLVER_CACHE;
+    private static final WeakHashMap<Member, WeakReference<Class[]>> METHOD_PARMTYPES_CACHE;
 
     static {
-        READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, Member>>(10));
-        WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, Member>>(10));
-        METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, Object[]>>(10));
-        METHOD_PARMTYPES_CACHE = new WeakHashMap<Member, Class[]>(10);
+        READ_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Member>>>(10));
+        WRITE_PROPERTY_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Member>>>(10));
+        METHOD_RESOLVER_CACHE = (new WeakHashMap<Class, WeakHashMap<Integer, WeakReference<Object[]>>>(10));
+        METHOD_PARMTYPES_CACHE = new WeakHashMap<Member, WeakReference<Class[]>>(10);
     }
 
 
@@ -458,65 +460,68 @@ public class PropertyAccessor {
 
     private static void addReadCache(Class cls, Integer property, Member member) {
         synchronized (READ_PROPERTY_RESOLVER_CACHE) {
-            WeakHashMap<Integer, Member> nestedMap = READ_PROPERTY_RESOLVER_CACHE.get(cls);
+            WeakHashMap<Integer, WeakReference<Member>> nestedMap = READ_PROPERTY_RESOLVER_CACHE.get(cls);
 
             if (nestedMap == null) {
-                READ_PROPERTY_RESOLVER_CACHE.put(cls, nestedMap = new WeakHashMap<Integer, Member>());
+                READ_PROPERTY_RESOLVER_CACHE.put(cls, nestedMap = new WeakHashMap<Integer, WeakReference<Member>>());
             }
 
-            nestedMap.put(property, member);
+            nestedMap.put(property, new WeakReference<Member>(member));
         }
     }
 
     private static Member checkReadCache(Class cls, Integer property) {
-        WeakHashMap<Integer, Member> map = READ_PROPERTY_RESOLVER_CACHE.get(cls);
+        WeakHashMap<Integer, WeakReference<Member>> map = READ_PROPERTY_RESOLVER_CACHE.get(cls);
         if (map != null) {
-            return map.get(property);
+            WeakReference<Member> member = map.get(property);
+            if (member != null) return member.get();
         }
         return null;
     }
 
     private static void addWriteCache(Class cls, Integer property, Member member) {
         synchronized (WRITE_PROPERTY_RESOLVER_CACHE) {
-            WeakHashMap<Integer, Member> map = WRITE_PROPERTY_RESOLVER_CACHE.get(cls);
+            WeakHashMap<Integer, WeakReference<Member>> map = WRITE_PROPERTY_RESOLVER_CACHE.get(cls);
             if (map == null) {
-                WRITE_PROPERTY_RESOLVER_CACHE.put(cls, map = new WeakHashMap<Integer, Member>());
+                WRITE_PROPERTY_RESOLVER_CACHE.put(cls, map = new WeakHashMap<Integer, WeakReference<Member>>());
             }
-            map.put(property, member);
+            map.put(property, new WeakReference<Member>(member));
         }
     }
 
     private static Member checkWriteCache(Class cls, Integer property) {
-        Map<Integer, Member> map = WRITE_PROPERTY_RESOLVER_CACHE.get(cls);
+        Map<Integer, WeakReference<Member>> map = WRITE_PROPERTY_RESOLVER_CACHE.get(cls);
         if (map != null) {
-            return map.get(property);
+            WeakReference<Member> member = map.get(property);
+            if (member != null) return member.get();
         }
         return null;
     }
 
     public static Class[] checkParmTypesCache(Method member) {
-        Class[] pt = METHOD_PARMTYPES_CACHE.get(member);
+        WeakReference<Class[]> pt = METHOD_PARMTYPES_CACHE.get(member);
         if (pt == null) {
-            METHOD_PARMTYPES_CACHE.put(member, pt = member.getParameterTypes());
+            METHOD_PARMTYPES_CACHE.put(member, pt=  new WeakReference<Class[]>(member.getParameterTypes()));
         }
-        return pt;
+        return pt.get();
     }
 
 
     private static void addMethodCache(Class cls, Integer property, Method member) {
         synchronized (METHOD_RESOLVER_CACHE) {
-            WeakHashMap<Integer, Object[]> map = METHOD_RESOLVER_CACHE.get(cls);
+            WeakHashMap<Integer, WeakReference<Object[]>> map = METHOD_RESOLVER_CACHE.get(cls);
             if (map == null) {
-                METHOD_RESOLVER_CACHE.put(cls, map = new WeakHashMap<Integer, Object[]>());
+                METHOD_RESOLVER_CACHE.put(cls, map = new WeakHashMap<Integer, WeakReference<Object[]>>());
             }
-            map.put(property, new Object[]{member, member.getParameterTypes()});
+            map.put(property, new WeakReference<Object[]>(new Object[]{member, member.getParameterTypes()}));
         }
     }
 
     private static Object[] checkMethodCache(Class cls, Integer property) {
-        Map<Integer, Object[]> map = METHOD_RESOLVER_CACHE.get(cls);
+        Map<Integer, WeakReference<Object[]>> map = METHOD_RESOLVER_CACHE.get(cls);
         if (map != null) {
-            return map.get(property);
+            WeakReference<Object[]> ref =  map.get(property);
+            if (ref != null) return ref.get();
         }
         return null;
     }
