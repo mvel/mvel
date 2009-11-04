@@ -41,7 +41,6 @@ public class ExecutableAccessor implements ExecutableStatement {
         return node.getReducedValueAccelerated(staticContext, staticContext, factory);
     }
 
-
     public void setKnownIngressType(Class type) {
         this.ingress = type;
     }
