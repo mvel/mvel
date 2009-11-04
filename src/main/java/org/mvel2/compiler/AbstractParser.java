@@ -77,11 +77,8 @@ public class AbstractParser implements Serializable {
 
     private static final WeakHashMap<String, char[]> EX_PRECACHE = new WeakHashMap<String, char[]>(15);
 
-    public static final HashMap<String, Object> LITERALS =
-            new HashMap<String, Object>(35 * 2, 0.4f);
-
-    public static final HashMap<String, Integer> OPERATORS =
-            new HashMap<String, Integer>(25 * 2, 0.4f);
+    public static HashMap<String, Object> LITERALS;
+    public static HashMap<String, Integer> OPERATORS;
 
     protected ExecutionStack stk;
     protected ExecutionStack splitAccumulator = new ExecutionStack();
@@ -95,76 +92,81 @@ public class AbstractParser implements Serializable {
     protected boolean debugSymbols = false;
 
     static {
-        /**
-         * Setup the basic literals
-         */
-        LITERALS.put("true", TRUE);
-        LITERALS.put("false", FALSE);
-
-        LITERALS.put("null", null);
-        LITERALS.put("nil", null);
-
-        LITERALS.put("empty", BlankLiteral.INSTANCE);
-
-        /**
-         * Add System and all the class wrappers from the JCL.
-         */
-        LITERALS.put("System", System.class);
-        LITERALS.put("String", String.class);
-        LITERALS.put("CharSequence", CharSequence.class);
-
-        LITERALS.put("Integer", Integer.class);
-        LITERALS.put("int", Integer.class);
-
-        LITERALS.put("Long", Long.class);
-        LITERALS.put("long", Long.class);
-
-        LITERALS.put("Boolean", Boolean.class);
-        LITERALS.put("boolean", Boolean.class);
-
-        LITERALS.put("Short", Short.class);
-        LITERALS.put("short", Short.class);
-
-        LITERALS.put("Character", Character.class);
-        LITERALS.put("char", Character.class);
-
-        LITERALS.put("Double", Double.class);
-        LITERALS.put("double", Double.class);
-
-        LITERALS.put("Float", Float.class);
-        LITERALS.put("float", Float.class);
-
-        LITERALS.put("Byte", Byte.class);
-        LITERALS.put("byte", Byte.class);
-
-        LITERALS.put("Math", Math.class);
-        LITERALS.put("Void", Void.class);
-        LITERALS.put("Object", Object.class);
-
-        LITERALS.put("Class", Class.class);
-        LITERALS.put("ClassLoader", ClassLoader.class);
-        LITERALS.put("Runtime", Runtime.class);
-        LITERALS.put("Thread", Thread.class);
-        LITERALS.put("Compiler", Compiler.class);
-        LITERALS.put("StringBuffer", StringBuffer.class);
-        LITERALS.put("ThreadLocal", ThreadLocal.class);
-        LITERALS.put("SecurityManager", SecurityManager.class);
-        LITERALS.put("StrictMath", StrictMath.class);
-
-        LITERALS.put("Array", java.lang.reflect.Array.class);
-
-        if (parseDouble(getProperty("java.version").substring(0, 3)) >= 1.5) {
-            try {
-                LITERALS.put("StringBuilder", currentThread().getContextClassLoader().loadClass("java.lang.StringBuilder"));
-            }
-            catch (Exception e) {
-                throw new RuntimeException("cannot resolve a built-in literal", e);
-            }
-        }
-
-        setLanguageLevel(Boolean.getBoolean("mvel.future.lang.support") ? 6 : 5);
+        setupParser();
     }
 
+    public static void setupParser() {
+        if (LITERALS == null || LITERALS.isEmpty()) {
+            LITERALS = new HashMap<String, Object>();
+            OPERATORS = new HashMap<String, Integer>();
+
+            LITERALS.put("true", TRUE);
+            LITERALS.put("false", FALSE);
+
+            LITERALS.put("null", null);
+            LITERALS.put("nil", null);
+
+            LITERALS.put("empty", BlankLiteral.INSTANCE);
+
+            /**
+             * Add System and all the class wrappers from the JCL.
+             */
+            LITERALS.put("System", System.class);
+            LITERALS.put("String", String.class);
+            LITERALS.put("CharSequence", CharSequence.class);
+
+            LITERALS.put("Integer", Integer.class);
+            LITERALS.put("int", Integer.class);
+
+            LITERALS.put("Long", Long.class);
+            LITERALS.put("long", Long.class);
+
+            LITERALS.put("Boolean", Boolean.class);
+            LITERALS.put("boolean", Boolean.class);
+
+            LITERALS.put("Short", Short.class);
+            LITERALS.put("short", Short.class);
+
+            LITERALS.put("Character", Character.class);
+            LITERALS.put("char", Character.class);
+
+            LITERALS.put("Double", Double.class);
+            LITERALS.put("double", Double.class);
+
+            LITERALS.put("Float", Float.class);
+            LITERALS.put("float", Float.class);
+
+            LITERALS.put("Byte", Byte.class);
+            LITERALS.put("byte", Byte.class);
+
+            LITERALS.put("Math", Math.class);
+            LITERALS.put("Void", Void.class);
+            LITERALS.put("Object", Object.class);
+
+            LITERALS.put("Class", Class.class);
+            LITERALS.put("ClassLoader", ClassLoader.class);
+            LITERALS.put("Runtime", Runtime.class);
+            LITERALS.put("Thread", Thread.class);
+            LITERALS.put("Compiler", Compiler.class);
+            LITERALS.put("StringBuffer", StringBuffer.class);
+            LITERALS.put("ThreadLocal", ThreadLocal.class);
+            LITERALS.put("SecurityManager", SecurityManager.class);
+            LITERALS.put("StrictMath", StrictMath.class);
+
+            LITERALS.put("Array", java.lang.reflect.Array.class);
+
+            if (parseDouble(getProperty("java.version").substring(0, 3)) >= 1.5) {
+                try {
+                    LITERALS.put("StringBuilder", currentThread().getContextClassLoader().loadClass("java.lang.StringBuilder"));
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("cannot resolve a built-in literal", e);
+                }
+            }
+
+            setLanguageLevel(Boolean.getBoolean("mvel.future.lang.support") ? 6 : 5);
+        }
+    }
 
     protected ASTNode nextTokenSkipSymbols() {
         ASTNode n = nextToken();
