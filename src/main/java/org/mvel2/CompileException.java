@@ -20,9 +20,11 @@ package org.mvel2;
 
 import static org.mvel2.util.ParseTools.isWhitespace;
 import static org.mvel2.util.ParseTools.repeatChar;
+
 import org.mvel2.util.StringAppender;
 
 import static java.lang.String.copyValueOf;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,27 +63,7 @@ public class CompileException extends RuntimeException {
     }
 
     public String toString() {
-        StringAppender appender = new StringAppender().append("[Error: " + getMessage() + "]\n");
-
-        int offset = appender.length();
-
-        appender.append("[Near : {... ");
-
-        offset = appender.length() - offset;
-
-        appender.append(showCodeNearError(expr, cursor))
-                .append(" ....}]\n")
-                .append(repeatChar(' ', offset));
-
-        if ((offset = cursor - msgOffset - 1) < 0) offset = 0;
-
-        appender.append(repeatChar(' ', offset)).append("^");
-
-        if (lineNumber != -1) {
-            appender.append('\n')
-                    .append("[Line: " + lineNumber + ", Column: " + column + "]");
-        }
-        return appender.toString();
+       return generateErrorMessage();
     }
 
     public CompileException(String message, char[] expr, int cursor, Throwable e) {
@@ -102,6 +84,11 @@ public class CompileException extends RuntimeException {
 
     public CompileException(Throwable cause) {
         super(cause);
+    }
+
+    @Override
+    public String getMessage() {
+        return generateErrorMessage();
     }
 
     private CharSequence showCodeNearError(char[] expr, int cursor) {
@@ -136,6 +123,29 @@ public class CompileException extends RuntimeException {
         return cs;
     }
 
+    private String generateErrorMessage() {
+        StringAppender appender = new StringAppender().append("[Error: " + super.getMessage() + "]\n");
+
+        int offset = appender.length();
+
+        appender.append("[Near : {... ");
+
+        offset = appender.length() - offset;
+
+        appender.append(showCodeNearError(expr, cursor))
+                .append(" ....}]\n")
+                .append(repeatChar(' ', offset));
+
+        if ((offset = cursor - msgOffset - 1) < 0) offset = 0;
+
+        appender.append(repeatChar(' ', offset)).append("^");
+
+        if (lineNumber != -1) {
+            appender.append('\n')
+                    .append("[Line: " + lineNumber + ", Column: " + column + "]");
+        }
+        return appender.toString();
+    }
 
     public char[] getExpr() {
         return expr;

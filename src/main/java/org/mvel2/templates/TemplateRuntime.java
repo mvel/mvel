@@ -20,16 +20,19 @@ package org.mvel2.templates;
 
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
-import static org.mvel2.templates.TemplateCompiler.compileTemplate;
 import org.mvel2.templates.res.Node;
-import org.mvel2.templates.util.TemplateTools;
 import org.mvel2.templates.util.TemplateOutputStream;
-import org.mvel2.templates.util.io.StringAppenderStream;
+import org.mvel2.templates.util.TemplateTools;
 import org.mvel2.templates.util.io.StandardOutputStream;
+import org.mvel2.templates.util.io.StringAppenderStream;
 import org.mvel2.util.StringAppender;
 
-import java.io.*;
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
+
+import static org.mvel2.templates.TemplateCompiler.compileTemplate;
 
 /**
  * This is the root of the template runtime, and contains various utility methods for executing templates.
@@ -47,6 +50,26 @@ public class TemplateRuntime {
 
     public static Object eval(File file, Object ctx, VariableResolverFactory vars, TemplateRegistry registry) {
         return execute(compileTemplate(TemplateTools.readInFile(file)), ctx, vars, registry);
+    }
+
+    public static Object eval(InputStream instream) {
+        return eval(instream, null, (VariableResolverFactory) null, null);
+    }
+
+    public static Object eval(InputStream instream, Object ctx) {
+        return eval(instream, ctx, (VariableResolverFactory) null, null);
+    }
+
+    public static Object eval(InputStream instream, Object ctx, VariableResolverFactory vars) {
+        return eval(instream, ctx, vars);
+    }
+
+    public static Object eval(InputStream instream, Object ctx, Map vars) {
+        return eval(instream, ctx, new MapVariableResolverFactory(vars), null);
+    }
+
+    public static Object eval(InputStream instream, Object ctx, Map vars, TemplateRegistry registry) {
+        return execute(compileTemplate(TemplateTools.readStream(instream)), ctx, new MapVariableResolverFactory(vars), registry);
     }
 
     public static Object eval(InputStream instream, Object ctx, VariableResolverFactory vars, TemplateRegistry registry) {
@@ -68,7 +91,7 @@ public class TemplateRuntime {
     public static Object eval(String template, Object ctx) {
         return execute(compileTemplate(template), ctx);
     }
-    
+
     public static Object eval(String template, Object ctx, Map vars) {
         return execute(compileTemplate(template), ctx, new MapVariableResolverFactory(vars));
     }
@@ -146,7 +169,7 @@ public class TemplateRuntime {
     }
 
     public static void execute(CompiledTemplate compiled, Object context, TemplateRegistry registry, OutputStream stream) {
-         execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, null, registry);
+        execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, null, registry);
     }
 
     public static Object execute(CompiledTemplate compiled, Object context, Map vars, TemplateRegistry registry) {
@@ -154,7 +177,7 @@ public class TemplateRuntime {
     }
 
     public static void execute(CompiledTemplate compiled, Object context, Map vars, TemplateRegistry registry, OutputStream stream) {
-         execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, new MapVariableResolverFactory(vars), registry);
+        execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, new MapVariableResolverFactory(vars), registry);
     }
 
     public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory) {
@@ -162,7 +185,7 @@ public class TemplateRuntime {
     }
 
     public static void execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, OutputStream stream) {
-         execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, factory, null);
+        execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, factory, null);
     }
 
     public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, TemplateRegistry registry) {

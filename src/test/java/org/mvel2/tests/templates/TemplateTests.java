@@ -16,6 +16,7 @@ import org.mvel2.tests.core.res.Foo;
 import org.mvel2.tests.templates.tests.res.TestPluginNode;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

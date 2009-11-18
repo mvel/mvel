@@ -108,6 +108,14 @@ public class TemplateTools {
 
             return appender.toString();
         }
+        catch (NullPointerException e) {
+            if (instream == null) {
+                throw new TemplateError("null input stream", e);
+            }
+            else {
+                throw e;
+            }
+        }
         catch (IOException e) {
             throw new TemplateError("unknown I/O exception while including (stacktrace nested)", e);
         }

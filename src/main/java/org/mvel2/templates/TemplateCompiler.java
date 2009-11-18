@@ -25,6 +25,7 @@ import org.mvel2.templates.res.*;
 import org.mvel2.templates.util.TemplateTools;
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.ParseTools;
+
 import static org.mvel2.util.ParseTools.balancedCaptureWithLineAccounting;
 import static org.mvel2.util.ParseTools.subset;
 
@@ -192,8 +193,7 @@ public class TemplateCompiler {
                                     if (name.length() == 0) {
                                         n = markTextNode(n).next =
                                                 new ExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1);
-                                    }
-                                    else if (customNodes != null && customNodes.containsKey(name)) {
+                                    } else if (customNodes != null && customNodes.containsKey(name)) {
                                         Class<? extends Node> customNode = customNodes.get(name);
 
                                         try {
@@ -215,8 +215,7 @@ public class TemplateCompiler {
                                         catch (IllegalAccessException e) {
                                             throw new RuntimeException("unable to instantiate custom node class: " + customNode.getName());
                                         }
-                                    }
-                                    else {
+                                    } else {
                                         throw new RuntimeException("unknown token type: " + name);
                                     }
 
@@ -266,8 +265,7 @@ public class TemplateCompiler {
         if (n != null && n.getLength() == template.length - 1) {
             if (n instanceof ExpressionNode) {
                 return new TerminalExpressionNode(n);
-            }
-            else {
+            } else {
                 return n;
             }
         }
@@ -345,8 +343,16 @@ public class TemplateCompiler {
         return new TemplateCompiler(template, customNodes).compile();
     }
 
+    public static CompiledTemplate compileTemplate(InputStream stream) {
+        return compileTemplate(stream, null);
+    }
+
     public static CompiledTemplate compileTemplate(InputStream stream, Map<String, Class<? extends Node>> customNodes) {
         return new TemplateCompiler(TemplateTools.readStream(stream), customNodes).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(File file) {
+        return compileTemplate(file, null);
     }
 
     public static CompiledTemplate compileTemplate(File file, Map<String, Class<? extends Node>> customNodes) {
