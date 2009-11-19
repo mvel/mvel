@@ -8,7 +8,7 @@
     <url>http://mvel.codehaus.org/</url>
 
     <scm>
-        <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/2.0.15-SNAPSHOT-111809-2</developerConnection>
+        <developerConnection>scm:svn:https://svn.codehaus.org/mvel/tags/2.0.13-SNAPSHOT-072309</developerConnection>
     </scm>
 
     <pluginRepositories>
