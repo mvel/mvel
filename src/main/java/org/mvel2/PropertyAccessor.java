@@ -500,10 +500,11 @@ public class PropertyAccessor {
 
     public static Class[] checkParmTypesCache(Method member) {
         WeakReference<Class[]> pt = METHOD_PARMTYPES_CACHE.get(member);
-        if (pt == null) {
-            METHOD_PARMTYPES_CACHE.put(member, pt=  new WeakReference<Class[]>(member.getParameterTypes()));
+        Class[] ret = null;
+        if (pt == null || pt.get() == null) {
+            METHOD_PARMTYPES_CACHE.put(member, pt = new WeakReference<Class[]>(ret = member.getParameterTypes()));
         }
-        return pt.get();
+        return ret;
     }
 
 
