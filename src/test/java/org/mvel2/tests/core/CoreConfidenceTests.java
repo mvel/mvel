@@ -4655,5 +4655,9 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testMVEL190a() {
 
 
+        Serializable compiled = MVEL.compileExpression("a.toString()", ParserContext.create().stronglyTyped().withInput("a", String.class));
+
+
+
     }
 }
