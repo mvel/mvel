@@ -24,4 +24,8 @@ public class IntSub extends BinaryOperation implements IntOptimized {
     }
 
 
+    @Override
+    public Class getEgressType() {
+        return Integer.class;
+    }
 }

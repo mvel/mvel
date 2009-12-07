@@ -21,5 +21,9 @@ public class IntAdd extends BinaryOperation implements IntOptimized {
         return ((Integer) left.getReducedValue(ctx, thisValue, factory))
                 + ((Integer) right.getReducedValue(ctx, thisValue, factory));
     }
-    
+
+    @Override
+    public Class getEgressType() {
+        return Integer.class;
+    }
 }

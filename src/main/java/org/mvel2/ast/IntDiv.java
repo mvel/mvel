@@ -27,4 +27,9 @@ public class IntDiv extends BinaryOperation implements IntOptimized {
     public void setRight(ASTNode node) {
         super.setRight(node);
     }
+
+    @Override
+    public Class getEgressType() {
+        return Integer.class;
+    }
 }
