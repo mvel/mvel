@@ -28,6 +28,7 @@ public interface Opcodes {
     public static int INCLUDE_NAMED = 51;
     public static int COMMENT = 52;
     public static int CODE = 53;
+    public static int EVAL = 55;
 
     public static int DECLARE = 54;
 

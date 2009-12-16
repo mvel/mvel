@@ -623,6 +623,10 @@ public class TemplateTests extends TestCase {
         assertEquals("foo@foo.com", test("foo@@@{'foo.com'}"));
     }
 
+    public void testEvalNodes() {
+        assertEquals("foo", test("@eval{\"@{'foo'}\"}"));
+    }
+
 
     public void testIteration1() {
         List<String> list = new ArrayList<String>();

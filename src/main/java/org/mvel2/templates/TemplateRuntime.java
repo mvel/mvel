@@ -104,12 +104,20 @@ public class TemplateRuntime {
         return execute(compileTemplate(template), ctx, vars);
     }
 
+    public static void eval(String template, Object ctx, VariableResolverFactory vars, TemplateOutputStream stream) {
+        execute(compileTemplate(template), ctx, vars, null, stream);
+    }
+
     public static void eval(String template, Object ctx, VariableResolverFactory vars, OutputStream stream) {
         execute(compileTemplate(template), ctx, vars, null, stream);
     }
 
     public static Object eval(String template, Map vars, TemplateRegistry registry) {
         return execute(compileTemplate(template), null, new MapVariableResolverFactory(vars), registry);
+    }
+
+    public static void eval(String template, Map vars, TemplateRegistry registry, TemplateOutputStream stream) {
+        execute(compileTemplate(template), null, new MapVariableResolverFactory(vars), registry, stream);
     }
 
     public static void eval(String template, Map vars, TemplateRegistry registry, OutputStream stream) {
@@ -131,6 +139,12 @@ public class TemplateRuntime {
     public static void eval(String template, Object ctx, VariableResolverFactory vars, TemplateRegistry registry, OutputStream stream) {
         execute(compileTemplate(template), ctx, vars, registry, stream);
     }
+
+    public static void eval(String template, Object ctx, VariableResolverFactory vars, TemplateRegistry registry, TemplateOutputStream stream) {
+        execute(compileTemplate(template), ctx, vars, registry, stream);
+    }
+
+    ///
 
     public static Object execute(CompiledTemplate compiled) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), null, null, null);
@@ -195,6 +209,11 @@ public class TemplateRuntime {
 
     public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, TemplateRegistry registry, OutputStream stream) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, factory, registry);
+    }
+
+
+    public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, TemplateRegistry registry, TemplateOutputStream stream) {
+        return execute(compiled.getRoot(), compiled.getTemplate(), stream, context, factory, registry);
     }
 
     public static Object execute(Node root, char[] template,

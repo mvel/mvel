@@ -67,6 +67,7 @@ public class TemplateCompiler {
         OPCODES.put("include", Opcodes.INCLUDE_FILE);
         OPCODES.put("comment", Opcodes.COMMENT);
         OPCODES.put("code", Opcodes.CODE);
+        OPCODES.put("eval", Opcodes.EVAL);
 
         OPCODES.put("declare", Opcodes.DECLARE);
 
@@ -157,6 +158,11 @@ public class TemplateCompiler {
                                 case Opcodes.CODE:
                                     n = markTextNode(n)
                                             .next = new CodeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
+                                    break;
+
+                                case Opcodes.EVAL:
+                                    n = markTextNode(n).next =
+                                            new EvalNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                                     break;
 
                                 case Opcodes.COMMENT:
