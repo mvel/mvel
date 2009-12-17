@@ -20,7 +20,9 @@ package org.mvel2.templates;
 
 import org.mvel2.templates.res.Node;
 
-public class CompiledTemplate {
+import java.io.Serializable;
+
+public class CompiledTemplate implements Serializable {
     private char[] template;
     private Node root;
 
