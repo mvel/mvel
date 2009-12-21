@@ -411,12 +411,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     private Object getBeanPropertyAO(Object ctx, String property)
             throws Exception {
-        if (ctx != null && hasPropertyHandler(ctx.getClass())) return propHandler(property, ctx, ctx.getClass());
-
+        
         if (GlobalListenerFactory.hasGetListeners()) {
             notifyGetListeners(ctx, property, variableFactory);
             addAccessorNode(new Notify(property));
         }
+
+        if (ctx != null && hasPropertyHandler(ctx.getClass())) return propHandler(property, ctx, ctx.getClass());
+
 
         return getBeanProperty(ctx, property);
     }

@@ -4,6 +4,10 @@ import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
+import org.mvel2.integration.PropertyHandler;
+import org.mvel2.integration.PropertyHandlerFactory;
+import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Cake;
 import org.mvel2.tests.core.res.Foo;
@@ -248,6 +252,74 @@ public class PropertyAccessTests extends AbstractTest {
         assertTrue(cake.getIngredients().contains("Peach"));
         assertTrue(cake.getIngredients().contains("Icing"));
 
+    }
+
+    public void testMVELCompilerBoth() {
+        MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = true;
+        PropertyHandlerFactory.registerPropertyHandler(DynaBean.class, new DynaBeanPropertyHandler());
+
+        TestBean bean = new TestBean("value1");
+
+        Map<String, Object> vars = new LinkedHashMap<String, Object>();
+        vars.put("attr", bean);
+
+        ParserContext parserContext = new ParserContext();
+        Object compiled = MVEL.compileExpression("attr.value", parserContext);
+
+        assertEquals("value1", MVEL.executeExpression(compiled, null, vars));
+
+        DynaBean dyna = new LazyDynaBean();
+        dyna.set("value", "value2");
+
+        vars.put("attr", dyna);
+
+        assertEquals("value2", MVEL.executeExpression(compiled, null, vars));
+    }
+
+    public static class TestBean {
+        private String _value;
+
+        public TestBean(String value) {
+            _value = value;
+        }
+
+        public String getValue() {
+            return _value;
+        }
+
+        public void setValue(String value) {
+            _value = value;
+        }
+    }
+
+    public static interface DynaBean {
+        public void set(String key, Object value);
+
+        public Object get(String key);
+    }
+
+    public static class LazyDynaBean implements DynaBean {
+        private Map<String, Object> values = new HashMap<String, Object>();
+
+        public void set(String key, Object value) {
+            values.put(key, value);
+        }
+
+        public Object get(String key) {
+            return values.get(key);
+        }
+    }
+
+
+    private static class DynaBeanPropertyHandler implements PropertyHandler {
+        public Object getProperty(String name, Object contextObj, VariableResolverFactory variableFactory) {
+            return ((DynaBean) contextObj).get(name);
+        }
+
+        public Object setProperty(String name, Object contextObj, VariableResolverFactory variableFactory, Object value) {
+            ((DynaBean) contextObj).set(name, value);
+            return value;
+        }
     }
 
 

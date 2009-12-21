@@ -22,7 +22,10 @@ import org.mvel2.CompileException;
 import static org.mvel2.MVEL.getProperty;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.ReflectionUtil;
+
 import static org.mvel2.util.ParseTools.getBestCandidate;
+import static org.mvel2.util.ReflectionUtil.getPropertyFromAccessor;
 
 import java.lang.reflect.Method;
 
@@ -53,10 +56,10 @@ public class GetterAccessor implements AccessorNode {
              * HACK: Try to access this another way.
              */
             if (nextNode != null) {
-                return nextNode.getValue(getProperty(method.getName() + "()", ctx), elCtx, vars);
+                return nextNode.getValue(getProperty(getPropertyFromAccessor(method.getName()), ctx), elCtx, vars);
             }
             else {
-                return getProperty(method.getName() + "()", ctx);
+                return getProperty(getPropertyFromAccessor(method.getName()), ctx);
             }
         }
         catch (NullPointerException e) {
@@ -110,10 +113,10 @@ public class GetterAccessor implements AccessorNode {
              */
 
             if (nextNode != null) {
-                return nextNode.setValue(getProperty(method.getName() + "()", ctx), elCtx, vars, value);
+                return nextNode.setValue(getProperty(getPropertyFromAccessor(method.getName()), ctx), elCtx, vars, value);
             }
             else {
-                return getProperty(method.getName() + "()", ctx);
+                return getProperty(getPropertyFromAccessor(method.getName()), ctx);
             }
         }
         catch (CompileException e) {
