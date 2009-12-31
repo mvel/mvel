@@ -674,11 +674,11 @@ public class TemplateTests extends TestCase {
         assertEquals("aaa", r);
     }
 
-    class Page {
+    public class Page {
         String name;
         Folder parent;
 
-        Page(String name, Folder parent) {
+        public Page(String name, Folder parent) {
             this.name = name;
             this.parent = parent;
         }
@@ -692,8 +692,8 @@ public class TemplateTests extends TestCase {
         }
     }
 
-    class Folder extends Page {
-        Folder(String name, Folder parent) {
+    public class Folder extends Page {
+        public Folder(String name, Folder parent) {
             super(name, parent);
         }
 

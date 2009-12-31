@@ -18,7 +18,6 @@
 
 package org.mvel2.compiler;
 
-import org.mvel2.util.ParseTools;
 import static org.mvel2.util.ParseTools.isNumeric;
 
 import java.io.Serializable;

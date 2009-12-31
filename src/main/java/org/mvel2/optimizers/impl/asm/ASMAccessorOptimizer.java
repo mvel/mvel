@@ -992,7 +992,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             catch (IllegalAccessException e) {
                 Method iFaceMeth = determineActualTargetMethod((Method) member);
                 if (iFaceMeth == null)
-                    throw new PropertyAccessException("could not access field: " + cls.getName() + "." + property);
+                    throw new PropertyAccessException("could not access field: " + cls.getName() + "." + property, e);
 
                 assert debug("CHECKCAST " + getInternalName(iFaceMeth.getDeclaringClass()));
                 mv.visitTypeInsn(CHECKCAST, getInternalName(iFaceMeth.getDeclaringClass()));

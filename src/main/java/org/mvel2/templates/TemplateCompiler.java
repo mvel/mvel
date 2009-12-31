@@ -52,6 +52,8 @@ public class TemplateCompiler {
     private int line;
     private int colStart;
 
+    private boolean codeCache = false;
+
     private Map<String, Class<? extends Node>> customNodes;
 
     private static final Map<String, Integer> OPCODES = new HashMap<String, Integer>();
@@ -116,7 +118,8 @@ public class TemplateCompiler {
                                      * Capture any residual text node, and push the if statement on the nesting stack.
                                      */
                                     stack.push(n = markTextNode(n).next =
-                                            new IfNode(start, name, template, captureOrbInternal(), start));
+                                            codeCache ? new CompiledIfNode(start, name, template, captureOrbInternal(), start)
+                                                    : new IfNode(start, name, template, captureOrbInternal(), start));
 
                                     n.setTerminus(new TerminalNode());
 
@@ -127,7 +130,8 @@ public class TemplateCompiler {
                                         markTextNode(n).next = (last = (IfNode) stack.pop()).getTerminus();
 
                                         last.demarcate(last.getTerminus(), template);
-                                        last.next = n = new IfNode(start, name, template, captureOrbInternal(), start);
+                                        last.next = n = codeCache ? new CompiledIfNode(start, name, template, captureOrbInternal(), start)
+                                                : new IfNode(start, name, template, captureOrbInternal(), start);
                                         n.setTerminus(last.getTerminus());
 
                                         stack.push(n);
@@ -136,7 +140,8 @@ public class TemplateCompiler {
 
                                 case Opcodes.FOREACH:
                                     stack.push(
-                                            n = markTextNode(n).next = new ForEachNode(start, name, template, captureOrbInternal(), start)
+                                            n = markTextNode(n).next = codeCache ? new CompiledForEachNode(start, name, template, captureOrbInternal(), start)
+                                                    : new ForEachNode(start, name, template, captureOrbInternal(), start)
                                     );
 
                                     n.setTerminus(new TerminalNode());
@@ -145,24 +150,27 @@ public class TemplateCompiler {
 
                                 case Opcodes.INCLUDE_FILE:
                                     n = markTextNode(n).next =
-                                            new IncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1
-                                            );
+                                            codeCache ? new CompiledIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                                    : new IncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                                     break;
 
                                 case Opcodes.INCLUDE_NAMED:
                                     n = markTextNode(n).next =
-                                            new NamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1
-                                            );
+                                            codeCache ? new CompiledNamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                                    : new NamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                                     break;
 
                                 case Opcodes.CODE:
                                     n = markTextNode(n)
-                                            .next = new CodeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
+                                            .next = codeCache ? new CompiledCodeNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                            : new CodeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                                     break;
 
                                 case Opcodes.EVAL:
                                     n = markTextNode(n).next =
-                                            new EvalNode(start, name, template, captureOrbInternal(), start = cursor + 1);
+                                            codeCache ? new CompiledEvalNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                                    : new EvalNode(start, name, template, captureOrbInternal(), start = cursor + 1);
+
                                     break;
 
                                 case Opcodes.COMMENT:
@@ -173,8 +181,9 @@ public class TemplateCompiler {
 
                                 case Opcodes.DECLARE:
                                     stack.push(n = markTextNode(n).next =
-                                            new DeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1
-                                            ));
+                                            codeCache ?
+                                                    new CompiledDeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                                    : new DeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1));
 
                                     n.setTerminus(new TerminalNode());
 
@@ -198,7 +207,9 @@ public class TemplateCompiler {
                                 default:
                                     if (name.length() == 0) {
                                         n = markTextNode(n).next =
-                                                new ExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1);
+                                                codeCache ?
+                                                        new CompiledExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                                        : new ExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                                     } else if (customNodes != null && customNodes.containsKey(name)) {
                                         Class<? extends Node> customNode = customNodes.get(name);
 
@@ -232,7 +243,7 @@ public class TemplateCompiler {
             }
         }
         catch (RuntimeException e) {
-            CompileException ce = new CompileException(e.getMessage());
+            CompileException ce = new CompileException(e.getMessage(), e);
             ce.setExpr(template);
 
             if (e instanceof CompileException) {
@@ -270,7 +281,7 @@ public class TemplateCompiler {
 
         if (n != null && n.getLength() == template.length - 1) {
             if (n instanceof ExpressionNode) {
-                return new TerminalExpressionNode(n);
+                return codeCache ? new CompiledTerminalExpressionNode(n) : new TerminalExpressionNode(n);
             } else {
                 return n;
             }
@@ -326,27 +337,27 @@ public class TemplateCompiler {
     }
 
     public static CompiledTemplate compileTemplate(String template) {
-        return new TemplateCompiler(template).compile();
+        return new TemplateCompiler(template, true).compile();
     }
 
     public static CompiledTemplate compileTemplate(char[] template) {
-        return new TemplateCompiler(template).compile();
+        return new TemplateCompiler(template, true).compile();
     }
 
     public static CompiledTemplate compileTemplate(CharSequence template) {
-        return new TemplateCompiler(template).compile();
+        return new TemplateCompiler(template, true).compile();
     }
 
     public static CompiledTemplate compileTemplate(String template, Map<String, Class<? extends Node>> customNodes) {
-        return new TemplateCompiler(template, customNodes).compile();
+        return new TemplateCompiler(template, customNodes, true).compile();
     }
 
     public static CompiledTemplate compileTemplate(char[] template, Map<String, Class<? extends Node>> customNodes) {
-        return new TemplateCompiler(template, customNodes).compile();
+        return new TemplateCompiler(template, customNodes, true).compile();
     }
 
     public static CompiledTemplate compileTemplate(CharSequence template, Map<String, Class<? extends Node>> customNodes) {
-        return new TemplateCompiler(template, customNodes).compile();
+        return new TemplateCompiler(template, customNodes, true).compile();
     }
 
     public static CompiledTemplate compileTemplate(InputStream stream) {
@@ -354,7 +365,7 @@ public class TemplateCompiler {
     }
 
     public static CompiledTemplate compileTemplate(InputStream stream, Map<String, Class<? extends Node>> customNodes) {
-        return new TemplateCompiler(TemplateTools.readStream(stream), customNodes).compile();
+        return new TemplateCompiler(TemplateTools.readStream(stream), customNodes, true).compile();
     }
 
     public static CompiledTemplate compileTemplate(File file) {
@@ -362,7 +373,7 @@ public class TemplateCompiler {
     }
 
     public static CompiledTemplate compileTemplate(File file, Map<String, Class<? extends Node>> customNodes) {
-        return new TemplateCompiler(TemplateTools.readInFile(file), customNodes).compile();
+        return new TemplateCompiler(TemplateTools.readInFile(file), customNodes, true).compile();
     }
 
     public TemplateCompiler(String template) {
@@ -373,8 +384,23 @@ public class TemplateCompiler {
         this.length = (this.template = template).length;
     }
 
+    public TemplateCompiler(String template, boolean codeCache) {
+        this.length = (this.template = template.toCharArray()).length;
+        this.codeCache = codeCache;
+    }
+
+    public TemplateCompiler(char[] template, boolean codeCache) {
+        this.length = (this.template = template).length;
+        this.codeCache = codeCache;
+    }
+
     public TemplateCompiler(CharSequence sequence) {
         this.length = (this.template = sequence.toString().toCharArray()).length;
+    }
+
+    public TemplateCompiler(CharSequence sequence, boolean codeCache) {
+        this.length = (this.template = sequence.toString().toCharArray()).length;
+        this.codeCache = codeCache;
     }
 
     public TemplateCompiler(String template, Map<String, Class<? extends Node>> customNodes) {
@@ -391,5 +417,24 @@ public class TemplateCompiler {
         this.length = (this.template = sequence.toString().toCharArray()).length;
         this.customNodes = customNodes;
     }
+
+    public TemplateCompiler(String template, Map<String, Class<? extends Node>> customNodes, boolean codeCache) {
+        this.length = (this.template = template.toCharArray()).length;
+        this.customNodes = customNodes;
+        this.codeCache = codeCache;
+    }
+
+    public TemplateCompiler(char[] template, Map<String, Class<? extends Node>> customNodes, boolean codeCache) {
+        this.length = (this.template = template).length;
+        this.customNodes = customNodes;
+        this.codeCache = codeCache;
+    }
+
+    public TemplateCompiler(CharSequence sequence, Map<String, Class<? extends Node>> customNodes, boolean codeCache) {
+        this.length = (this.template = sequence.toString().toCharArray()).length;
+        this.customNodes = customNodes;
+        this.codeCache = codeCache;
+    }
+
 
 }

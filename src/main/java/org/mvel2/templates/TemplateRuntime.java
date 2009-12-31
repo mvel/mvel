@@ -144,8 +144,6 @@ public class TemplateRuntime {
         execute(compileTemplate(template), ctx, vars, registry, stream);
     }
 
-    ///
-
     public static Object execute(CompiledTemplate compiled) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringAppender(), null, null, null);
     }

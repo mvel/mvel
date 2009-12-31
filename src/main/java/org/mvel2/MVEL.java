@@ -1070,6 +1070,16 @@ public class MVEL {
         }
     }
 
+    public static <T> T executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory vars, Class<T> toType) {
+        try {
+            return convert(executeExpression(compiledExpression, ctx, vars), toType);
+        }
+        catch (EndWithValue end) {
+            return convert(end.getValue(), toType);
+        }
+    }
+
+
     /**
      * Execute a compiled expression and convert the result to a type
      *

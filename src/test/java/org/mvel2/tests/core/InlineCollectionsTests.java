@@ -77,7 +77,7 @@ public class InlineCollectionsTests extends AbstractTest {
     }
 
     public void testCompiledMapStructures() {
-        executeExpression(compileExpression("['foo':'bar'] contains 'foo'"), null, null, Boolean.class);
+        executeExpression(compileExpression("['foo':'bar'] contains 'foo'"), null, (Map) null, Boolean.class);
     }
 
     public void testSubListInMap() {

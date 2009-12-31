@@ -22,45 +22,37 @@ import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
-import org.mvel2.util.StringAppender;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.io.Serializable;
 
-public class IfNode extends Node {
-    protected Node trueNode;
-    protected Node elseNode;
+import static java.lang.String.valueOf;
+import static org.mvel2.util.ParseTools.subset;
 
-    public IfNode(int begin, String name, char[] template, int start, int end) {
-        super(begin, name, template, start, end);
+public class CompiledExpressionNode extends ExpressionNode {
+    private Serializable ce;
+
+    public CompiledExpressionNode() {
     }
 
-    public Node getTrueNode() {
-        return trueNode;
+    public CompiledExpressionNode(int begin, String name, char[] template, int start, int end) {
+        this.begin = begin;
+        this.name = name;
+        ce = MVEL.compileExpression(this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1));
     }
 
-    public void setTrueNode(ExpressionNode trueNode) {
-        this.trueNode = trueNode;
-    }
-
-    public Node getElseNode() {
-        return elseNode;
-    }
-
-    public void setElseNode(ExpressionNode elseNode) {
-        this.elseNode = elseNode;
-    }
-
-    public boolean demarcate(Node terminatingNode, char[] template) {
-        trueNode = next;
-        next = terminus;
-        return true;
+    public CompiledExpressionNode(int begin, String name, char[] template, int start, int end, Node next) {
+        this.name = name;
+        this.begin = begin;
+        ce = MVEL.compileExpression(this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1));
+        this.next = next;
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        if (contents.length == 0 || MVEL.eval(contents, ctx, factory, Boolean.class)) {
-            return trueNode.eval(runtime, appender, ctx, factory);
-        }
+        appender.append(valueOf(MVEL.executeExpression(ce, ctx, factory)));
         return next != null ? next.eval(runtime, appender, ctx, factory) : null;
+    }
+
+    public String toString() {
+        return "ExpressionNode:" + name + "{" + (contents == null ? "" : new String(contents)) + "} (start=" + begin + ";end=" + end + ")";
     }
 }

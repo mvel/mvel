@@ -22,33 +22,32 @@ import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
+
+import java.io.Serializable;
+
 import static org.mvel2.util.ParseTools.subset;
-import org.mvel2.util.StringAppender;
 
-import static java.lang.String.valueOf;
-import java.io.PrintStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+public class CompiledCodeNode extends Node {
+    private Serializable ce;
 
-public class ExpressionNode extends Node {
-    public ExpressionNode() {
+    public CompiledCodeNode() {
     }
 
-    public ExpressionNode(int begin, String name, char[] template, int start, int end) {
+    public CompiledCodeNode(int begin, String name, char[] template, int start, int end) {
         this.begin = begin;
         this.name = name;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+        ce = MVEL.compileExpression(this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1));
     }
 
-    public ExpressionNode(int begin, String name, char[] template, int start, int end, Node next) {
+    public CompiledCodeNode(int begin, String name, char[] template, int start, int end, Node next) {
         this.name = name;
         this.begin = begin;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+        ce = MVEL.compileExpression(this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1));
         this.next = next;
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        appender.append(valueOf(MVEL.eval(contents, ctx, factory)));
+        MVEL.executeExpression(ce, ctx, factory);
         return next != null ? next.eval(runtime, appender, ctx, factory) : null;
     }
 
@@ -57,6 +56,6 @@ public class ExpressionNode extends Node {
     }
 
     public String toString() {
-        return "ExpressionNode:" + name + "{" + (contents == null ? "" : new String(contents)) + "} (start=" + begin + ";end=" + end + ")";
+        return "CodeNode:" + name + "{" + (contents == null ? "" : new String(contents)) + "} (start=" + begin + ";end=" + end + ")";
     }
 }

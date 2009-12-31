@@ -20,43 +20,45 @@ package org.mvel2.templates.res;
 
 import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.templates.CompiledTemplate;
+import org.mvel2.templates.SimpleTemplateRegistry;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
+
+import java.io.Serializable;
+
 import static org.mvel2.util.ParseTools.subset;
-import org.mvel2.util.StringAppender;
 
-import static java.lang.String.valueOf;
-import java.io.PrintStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+public class CompiledDeclareNode extends Node {
+    private Node nestedNode;
+    private Serializable ce;
 
-public class ExpressionNode extends Node {
-    public ExpressionNode() {
-    }
-
-    public ExpressionNode(int begin, String name, char[] template, int start, int end) {
+    public CompiledDeclareNode(int begin, String name, char[] template, int start, int end) {
         this.begin = begin;
         this.name = name;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
-    }
-
-    public ExpressionNode(int begin, String name, char[] template, int start, int end, Node next) {
-        this.name = name;
-        this.begin = begin;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
-        this.next = next;
+        ce = MVEL.compileExpression(this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1));
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        appender.append(valueOf(MVEL.eval(contents, ctx, factory)));
+        if (runtime.getNamedTemplateRegistry() == null) {
+            runtime.setNamedTemplateRegistry(new SimpleTemplateRegistry());
+        }
+
+        runtime.getNamedTemplateRegistry()
+                .addNamedTemplate(MVEL.executeExpression(ce, ctx, factory, String.class),
+                        new CompiledTemplate(runtime.getTemplate(), nestedNode));
+
         return next != null ? next.eval(runtime, appender, ctx, factory) : null;
     }
 
     public boolean demarcate(Node terminatingNode, char[] template) {
-        return false;
-    }
+        Node n = nestedNode = next;
 
-    public String toString() {
-        return "ExpressionNode:" + name + "{" + (contents == null ? "" : new String(contents)) + "} (start=" + begin + ";end=" + end + ")";
+        while (n.getNext() != null) n = n.next;
+
+        n.next = new EndNode();
+
+        next = terminus;
+        return false;
     }
 }
