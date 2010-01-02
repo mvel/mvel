@@ -19,6 +19,7 @@
 package org.mvel2.compiler;
 
 import org.mvel2.CompileException;
+import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessException;
 import org.mvel2.ast.Function;
@@ -356,6 +357,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             subtokens = new String[0];
         }
         else {
+         //   ParserContext subCtx = pCtx.createSubcontext();
             args = new Class[subtokens.length];
 
             /**
@@ -364,8 +366,10 @@ public class PropertyVerifier extends AbstractOptimizer {
             //  ExpressionCompiler compiler;
             CompiledExpression ce;
             for (int i = 0; i < subtokens.length; i++) {
-                args[i] = (ce = new ExpressionCompiler(subtokens[i], true)._compile()).getKnownEgressType() != null
-                        ? ce.getKnownEgressType() : Object.class;
+                args[i] = MVEL.analyze(subtokens[i], pCtx);
+
+//                args[i] = (ce = new ExpressionCompiler(subtokens[i], true)._compile()).getKnownEgressType() != null
+//                        ? ce.getKnownEgressType() : Object.class;
             }
         }
 

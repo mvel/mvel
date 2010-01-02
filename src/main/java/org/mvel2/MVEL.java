@@ -19,20 +19,24 @@ package org.mvel2;
 
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVELRuntime.execute;
+
 import org.mvel2.compiler.*;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.impl.refl.nodes.GetterAccessor;
+
 import static org.mvel2.util.ParseTools.loadFromFile;
 import static org.mvel2.util.ParseTools.optimizeTree;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+
 import static java.lang.Boolean.getBoolean;
 import static java.lang.String.valueOf;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -734,8 +738,9 @@ public class MVEL {
     /**
      * Performs an analysis compile, which will populate the ParserContext with type, input and variable information,
      * but will not produce a payload.
+     *
      * @param expression - the expression to analyze
-     * @param ctx - the parser context
+     * @param ctx        - the parser context
      */
     public static void analysisCompile(char[] expression, ParserContext ctx) {
         ExpressionCompiler compiler = new ExpressionCompiler(expression);
@@ -747,6 +752,17 @@ public class MVEL {
         analysisCompile(expression.toCharArray(), ctx);
     }
 
+
+    public static Class analyze(char[] expression, ParserContext ctx) {
+        ExpressionCompiler compiler = new ExpressionCompiler(expression);
+        compiler.setVerifyOnly(true);
+        compiler.compile(ctx);
+        return compiler.getReturnType();
+    }
+
+    public static Class analyze(String expression, ParserContext ctx) {
+        return analyze(expression.toCharArray(), ctx);
+    }
 
 
     /**
@@ -992,7 +1008,7 @@ public class MVEL {
 
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final VariableResolverFactory resolverFactory) {
         try {
-            return ((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory);                            
+            return ((ExecutableStatement) compiledExpression).getValue(ctx, resolverFactory);
         }
         catch (EndWithValue end) {
             return end.getValue();
@@ -1157,8 +1173,7 @@ public class MVEL {
             if (expression.isImportInjectionRequired()) {
                 return execute(true, expression, ctx, new ClassImportResolverFactory(expression
                         .getParserContext().getParserConfiguration(), vars));
-            }
-            else {
+            } else {
                 return execute(true, expression, ctx, vars);
             }
         }

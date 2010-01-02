@@ -1,7 +1,9 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.*;
+
 import static org.mvel2.MVEL.*;
+
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
@@ -30,6 +32,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static java.util.Collections.unmodifiableCollection;
+
 import java.util.List;
 
 @SuppressWarnings({"ALL"})
@@ -56,6 +59,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     // interpreted
+
     public void testThisReferenceMapVirtualObjects() {
         Map<String, String> map = new HashMap<String, String>();
         map.put("foo",
@@ -69,6 +73,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     // compiled - reflective
+
     public void testThisReferenceMapVirtualObjects1() {
         // Create our root Map object
         Map<String, String> map = new HashMap<String, String>();
@@ -87,6 +92,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     // compiled - asm
+
     public void testThisReferenceMapVirtualObjects2() {
         // Create our root Map object
         Map<String, String> map = new HashMap<String, String>();
@@ -456,7 +462,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 executeExpression(compiler.compile(ctx),
                         new DefaultLocalVariableResolverFactory()));
     }
-    
+
     public void testStrictTypingCompilation4() throws NoSuchMethodException {
         ParserContext ctx = new ParserContext();
 
@@ -469,55 +475,54 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(Foo.class,
                 ctx.getVariables().get("x_a"));
-    }     
+    }
 
     public void testStrictStrongTypingCompilationErrors1() throws Exception {
         ParserContext ctx = new ParserContext();
         ctx.setStrictTypeEnforcement(true);
-        ctx.setStrongTyping( true );
+        ctx.setStrongTyping(true);
         ctx.addImport(Foo.class);
-        ctx.addInput( "$bar", Bar.class );
+        ctx.addInput("$bar", Bar.class);
 
         try {
             ExpressionCompiler compiler = new ExpressionCompiler("System.out.println( $ba );");
-    
+
             compiler.compile(ctx);
-            fail( "This should not compile" );
+            fail("This should not compile");
         } catch (Exception e) {
         }
-    }  
-    
+    }
+
     public void testStrictStrongTypingCompilationErrors2() throws Exception {
         ParserContext ctx = new ParserContext();
         ctx.setStrictTypeEnforcement(true);
-        ctx.setStrongTyping( true );
+        ctx.setStrongTyping(true);
         ctx.addImport(Foo.class);
-        ctx.addInput( "$bar", Bar.class );
+        ctx.addInput("$bar", Bar.class);
 
         try {
-            ExpressionCompiler compiler = new ExpressionCompiler("x_a = new Foo( $ba );");
-    
-            compiler.compile(ctx);
-            fail( "This should not compile" );
+            MVEL.compileExpression("x_a = new Foo( $ba ); x_a.equals($ba);", ctx);
+            fail("This should not compile");
         } catch (Exception e) {
+            e.printStackTrace();
         }
-    }  
-    
+    }
+
     public void testDetermineRequiredInputsInConstructor() throws Exception {
         ParserContext ctx = new ParserContext();
         ctx.setStrictTypeEnforcement(false);
-        ctx.setStrongTyping( false );
+        ctx.setStrongTyping(false);
         ctx.addImport(Foo.class);
-        
+
         ExpressionCompiler compiler = new ExpressionCompiler("new Foo( $bar,  $bar.age );");
-        
+
         Serializable compiled = compiler.compile(ctx);
-        
+
         Set<String> requiredInputs = compiler.getParserContextState().getInputs().keySet();
-        assertEquals( 1, requiredInputs.size() );
-        assertTrue( requiredInputs.contains( "$bar" ) );
-        
-    }       
+        assertEquals(1, requiredInputs.size());
+        assertTrue(requiredInputs.contains("$bar"));
+
+    }
 
     public void testProvidedExternalTypes() {
         ExpressionCompiler compiler = new ExpressionCompiler("foo.bar");
@@ -1752,12 +1757,10 @@ public class CoreConfidenceTests extends AbstractTest {
             final Recipient other = (Recipient) obj;
             if (email == null) {
                 if (other.email != null) return false;
-            }
-            else if (!email.equals(other.email)) return false;
+            } else if (!email.equals(other.email)) return false;
             if (name == null) {
                 if (other.name != null) return false;
-            }
-            else if (!name.equals(other.name)) return false;
+            } else if (!name.equals(other.name)) return false;
             return true;
         }
     }
@@ -1856,12 +1859,10 @@ public class CoreConfidenceTests extends AbstractTest {
             final EmailMessage other = (EmailMessage) obj;
             if (from == null) {
                 if (other.from != null) return false;
-            }
-            else if (!from.equals(other.from)) return false;
+            } else if (!from.equals(other.from)) return false;
             if (recipients == null) {
                 if (other.recipients != null) return false;
-            }
-            else if (!recipients.equals(other.recipients)) return false;
+            } else if (!recipients.equals(other.recipients)) return false;
             return true;
         }
     }
@@ -2617,8 +2618,7 @@ public class CoreConfidenceTests extends AbstractTest {
         public boolean canConvertFrom(Class cls) {
             if (cls == String.class || cls.isAssignableFrom(Date.class)) {
                 return true;
-            }
-            else {
+            } else {
                 return false;
             }
         }
@@ -2628,8 +2628,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
                 if (o instanceof String) {
                     return sdf.parse((String) o);
-                }
-                else {
+                } else {
                     return o;
                 }
             }
@@ -4705,7 +4704,6 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
         Serializable compiled = MVEL.compileExpression("a.toString()", ParserContext.create().stronglyTyped().withInput("a", String.class));
-
 
 
     }
