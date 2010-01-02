@@ -28,6 +28,7 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 import static java.util.Collections.unmodifiableCollection;
 import java.util.List;
 
@@ -500,7 +501,23 @@ public class CoreConfidenceTests extends AbstractTest {
             fail( "This should not compile" );
         } catch (Exception e) {
         }
-    }     
+    }  
+    
+    public void testDetermineRequiredInputsInConstructor() throws Exception {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement(false);
+        ctx.setStrongTyping( false );
+        ctx.addImport(Foo.class);
+        
+        ExpressionCompiler compiler = new ExpressionCompiler("new Foo( $bar,  $bar.age );");
+        
+        Serializable compiled = compiler.compile(ctx);
+        
+        Set<String> requiredInputs = compiler.getParserContextState().getInputs().keySet();
+        assertEquals( 1, requiredInputs.size() );
+        assertTrue( requiredInputs.contains( "$bar" ) );
+        
+    }       
 
     public void testProvidedExternalTypes() {
         ExpressionCompiler compiler = new ExpressionCompiler("foo.bar");
