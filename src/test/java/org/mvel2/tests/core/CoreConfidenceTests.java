@@ -455,7 +455,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 executeExpression(compiler.compile(ctx),
                         new DefaultLocalVariableResolverFactory()));
     }
-
+    
     public void testStrictTypingCompilation4() throws NoSuchMethodException {
         ParserContext ctx = new ParserContext();
 
@@ -468,7 +468,39 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(Foo.class,
                 ctx.getVariables().get("x_a"));
-    }
+    }     
+
+    public void testStrictStrongTypingCompilationErrors1() throws Exception {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement(true);
+        ctx.setStrongTyping( true );
+        ctx.addImport(Foo.class);
+        ctx.addInput( "$bar", Bar.class );
+
+        try {
+            ExpressionCompiler compiler = new ExpressionCompiler("System.out.println( $ba );");
+    
+            compiler.compile(ctx);
+            fail( "This should not compile" );
+        } catch (Exception e) {
+        }
+    }  
+    
+    public void testStrictStrongTypingCompilationErrors2() throws Exception {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrictTypeEnforcement(true);
+        ctx.setStrongTyping( true );
+        ctx.addImport(Foo.class);
+        ctx.addInput( "$bar", Bar.class );
+
+        try {
+            ExpressionCompiler compiler = new ExpressionCompiler("x_a = new Foo( $ba );");
+    
+            compiler.compile(ctx);
+            fail( "This should not compile" );
+        } catch (Exception e) {
+        }
+    }     
 
     public void testProvidedExternalTypes() {
         ExpressionCompiler compiler = new ExpressionCompiler("foo.bar");
