@@ -4701,10 +4701,22 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testMVEL190a() {
-
-
         Serializable compiled = MVEL.compileExpression("a.toString()", ParserContext.create().stronglyTyped().withInput("a", String.class));
+    }
 
+    public void testGenericInference() {
+        ParserContext ctx;
+        MVEL.analysisCompile("$result = person.footributes.name",
+               ctx = ParserContext.create().stronglyTyped().withInput("person", Person.class));
 
+        assertEquals(String.class, ctx.getVarOrInputTypeOrNull("$result"));
+    }
+
+    public void testGenericInference2() {
+        ParserContext ctx;
+        MVEL.analysisCompile("$result = person.maptributes['fooey'].name",
+               ctx = ParserContext.create().stronglyTyped().withInput("person", Person.class));
+
+        assertEquals(String.class, ctx.getVarOrInputTypeOrNull("$result"));
     }
 }

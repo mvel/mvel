@@ -538,8 +538,9 @@ public abstract class AbstractTest extends TestCase {
 
     public static class Person {
         private String name;
-
         private int age;
+        private List<Foo> footributes;
+        private Map<String, Foo> maptributes;
 
         public Person() {
 
@@ -563,6 +564,22 @@ public abstract class AbstractTest extends TestCase {
 
         public void setAge(int age) {
             this.age = age;
+        }
+
+        public List<Foo> getFootributes() {
+            return footributes;
+        }
+
+        public void setFootributes(List<Foo> footributes) {
+            this.footributes = footributes;
+        }
+
+        public Map<String, Foo> getMaptributes() {
+            return maptributes;
+        }
+
+        public void setMaptributes(Map<String, Foo> maptributes) {
+            this.maptributes = maptributes;
         }
     }
 

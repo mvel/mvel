@@ -153,6 +153,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         start = cursor;
 
         Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
+        boolean switchStateReg;
 
         if (member instanceof Field) {
             if (pCtx.isStrictTypeEnforcement()) {
@@ -197,7 +198,14 @@ public class PropertyVerifier extends AbstractOptimizer {
         else if (pCtx != null && pCtx.hasImport(property)) {
             return pCtx.getImport(property);
         }
-        else {
+        else if (pCtx.getLastTypeParameters() != null
+                && ((Collection.class.isAssignableFrom(ctx) && !(switchStateReg = false))
+                || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true))) ) {
+            Class parm = pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0].getClass();
+            pCtx.setLastTypeParameters(null);
+            return getBeanProperty(parm, property);
+        }
+        else {   
             Object tryStaticMethodRef = tryStaticAccess();
 
             if (tryStaticMethodRef != null) {
@@ -367,9 +375,6 @@ public class PropertyVerifier extends AbstractOptimizer {
             CompiledExpression ce;
             for (int i = 0; i < subtokens.length; i++) {
                 args[i] = MVEL.analyze(subtokens[i], pCtx);
-
-//                args[i] = (ce = new ExpressionCompiler(subtokens[i], true)._compile()).getKnownEgressType() != null
-//                        ? ce.getKnownEgressType() : Object.class;
             }
         }
 
