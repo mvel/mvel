@@ -4705,11 +4705,26 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testGenericInference() {
+        String expression = "$result = person.footributes[0].name";
+
         ParserContext ctx;
-        MVEL.analysisCompile("$result = person.footributes.name",
+        MVEL.analysisCompile(expression,
                ctx = ParserContext.create().stronglyTyped().withInput("person", Person.class));
 
         assertEquals(String.class, ctx.getVarOrInputTypeOrNull("$result"));
+
+        Serializable s =
+                MVEL.compileExpression(expression, ParserContext.create().stronglyTyped().withInput("person", Person.class));
+
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+        Person p = new Person();
+        p.setFootributes(new ArrayList<Foo>());
+        p.getFootributes().add(new Foo());
+
+        vars.put("person", p);
+
+        assertEquals("dog", MVEL.executeExpression(s, vars));
     }
 
     public void testGenericInference2() {

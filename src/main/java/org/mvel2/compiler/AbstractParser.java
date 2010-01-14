@@ -986,7 +986,7 @@ public class AbstractParser implements Serializable {
                                                     }
                                             }
                                         }
-                                        else if (isWhitespace(expr[cursor])) {
+                                        else if (isWhitespace(expr[cursor]) || cursor == 1) {
                                             lastWS = true;
                                             skipWhitespace();
                                             cursor--;

@@ -2087,7 +2087,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 debug("SWAP");
                 mv.visitInsn(SWAP);
 
-                debug("INVOKESPECIAL java/lang/Boolan.<init>::(Z)V");
+                debug("INVOKESPECIAL java/lang/Boolean.<init>::(Z)V");
                 mv.visitMethodInsn(INVOKESPECIAL, "java/lang/Boolean", "<init>", "(Z)V");
             }
             else if (cls == int.class || cls == Integer.class) {

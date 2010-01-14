@@ -7,12 +7,15 @@ import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.templates.CompiledTemplate;
 import org.mvel2.templates.SimpleTemplateRegistry;
 import org.mvel2.templates.TemplateCompiler;
+
 import static org.mvel2.templates.TemplateCompiler.compileTemplate;
+
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.res.Node;
 import org.mvel2.tests.core.res.Bar;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Foo;
+import org.mvel2.tests.core.res.TestMVEL197;
 import org.mvel2.tests.templates.tests.res.TestPluginNode;
 
 import java.io.File;
@@ -672,6 +675,20 @@ public class TemplateTests extends TestCase {
         String r = (String) TemplateRuntime.eval(template, map);
         System.out.println("r: " + r);
         assertEquals("aaa", r);
+    }
+
+    public void testMVEL197() {
+        Map<String, Object> context = new HashMap<String, Object>();
+        Object[] args = new Object[1];
+        TestMVEL197 test = new TestMVEL197();
+        test.setName1("name1");
+        test.setName2("name2");
+        args[0] = test;
+        context.put("args", args);
+        String template = "${(args[0].name1=='name1'&&args[0].name2=='name2')?'a':'b'}";
+        Object value = TemplateRuntime.eval(template, context);
+
+        assertEquals("a", value);
     }
 
     public class Page {
