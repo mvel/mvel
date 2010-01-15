@@ -579,7 +579,7 @@ public class PropertyAccessor {
             else if (member != null) {
                 return ((Field) member).get(ctx);
             }
-            else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
+            else if (ctx instanceof Map && (((Map) ctx).containsKey(property) || nullHandle)) {
                 if (ctx instanceof Proto.ProtoInstance) {
                     return ((Proto.ProtoInstance) ctx).get(property).call(null, thisReference, variableFactory, EMPTY_OBJ_ARR);
                 }

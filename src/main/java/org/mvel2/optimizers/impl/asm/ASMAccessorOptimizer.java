@@ -1013,7 +1013,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             return o;
         }
-        else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
+        else if (ctx instanceof Map && (((Map) ctx).containsKey(property) || nullSafe)) {
             assert debug("CHECKCAST java/util/Map");
             mv.visitTypeInsn(CHECKCAST, "java/util/Map");
 

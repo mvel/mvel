@@ -322,5 +322,12 @@ public class PropertyAccessTests extends AbstractTest {
         }
     }
 
+    public void testNullSafe() {
+        Map<String, Map<String, Float>> ctx = new HashMap<String, Map<String, Float>>();
+        Map<String, Float> tmp = new HashMap<String, Float>();
+     //   tmp.put("latitude", 0.5f);
+        ctx.put("SessionSetupRequest", tmp);
 
+        System.out.println("Result = " + MVEL.getProperty("SessionSetupRequest.?latitude", ctx));
+    }
 }

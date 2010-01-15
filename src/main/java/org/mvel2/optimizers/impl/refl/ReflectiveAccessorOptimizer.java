@@ -527,7 +527,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
             return o;
         }
-        else if (ctx instanceof Map && ((Map) ctx).containsKey(property)) {
+        else if (ctx instanceof Map && (((Map) ctx).containsKey(property) || nullSafe)) {
             addAccessorNode(new MapAccessor(property));
             return ((Map) ctx).get(property);
         }
