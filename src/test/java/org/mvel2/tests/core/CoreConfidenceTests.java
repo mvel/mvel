@@ -4709,7 +4709,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         ParserContext ctx;
         MVEL.analysisCompile(expression,
-               ctx = ParserContext.create().stronglyTyped().withInput("person", Person.class));
+                ctx = ParserContext.create().stronglyTyped().withInput("person", Person.class));
 
         assertEquals(String.class, ctx.getVarOrInputTypeOrNull("$result"));
 
@@ -4730,8 +4730,15 @@ public class CoreConfidenceTests extends AbstractTest {
     public void testGenericInference2() {
         ParserContext ctx;
         MVEL.analysisCompile("$result = person.maptributes['fooey'].name",
-               ctx = ParserContext.create().stronglyTyped().withInput("person", Person.class));
+                ctx = ParserContext.create().stronglyTyped().withInput("person", Person.class));
 
         assertEquals(String.class, ctx.getVarOrInputTypeOrNull("$result"));
+    }
+
+    public void testRegExSurroundedByBrackets() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("x", "foobie");
+
+        assertEquals(Boolean.TRUE, MVEL.eval("x ~= ('f.*')", map));
     }
 }

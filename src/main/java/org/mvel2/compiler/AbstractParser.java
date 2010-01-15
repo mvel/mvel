@@ -692,9 +692,9 @@ public class AbstractParser implements Serializable {
 
                                     start = cursor += 2;
 
-                                    if (!isNextIdentifierOrLiteral()) {
-                                        throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, cursor);
-                                    }
+//                                    if (!isNextIdentifierOrLiteral()) {
+//                                        throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, cursor);
+//                                    }
 
                                     captureToEOT();
 
