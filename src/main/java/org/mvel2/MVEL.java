@@ -293,7 +293,6 @@ public class MVEL {
         }
     }
 
-
     /**
      * Evaluates an expression and returns the resultant value as a String.
      *
@@ -327,7 +326,6 @@ public class MVEL {
             return valueOf(end.getValue());
         }
     }
-
 
     /**
      * Evaluates an expression and returns the resultant value as a String.
@@ -381,7 +379,6 @@ public class MVEL {
             return valueOf(end.getValue());
         }
     }
-
 
     /**
      * Evaluate an expression and return the value.
@@ -443,7 +440,6 @@ public class MVEL {
         }
     }
 
-
     /**
      * Evaluate an expression against a context object and return the value
      *
@@ -481,7 +477,6 @@ public class MVEL {
             return convert(end.getValue(), toType);
         }
     }
-
 
     /**
      * Evaluate an expression with a context object and return the value. If necessary convert
@@ -521,7 +516,6 @@ public class MVEL {
             return convert(end.getValue(), toType);
         }
     }
-
 
     /**
      * Evaluate an expression with injected variables and return the value. If necessary convert
@@ -651,7 +645,6 @@ public class MVEL {
         }
     }
 
-
     /**
      * Evaluate an expression in Boolean-only mode against a root context object and injected variables.
      *
@@ -734,7 +727,6 @@ public class MVEL {
         }
     }
 
-
     /**
      * Performs an analysis compile, which will populate the ParserContext with type, input and variable information,
      * but will not produce a payload.
@@ -752,7 +744,6 @@ public class MVEL {
         analysisCompile(expression.toCharArray(), ctx);
     }
 
-
     public static Class analyze(char[] expression, ParserContext ctx) {
         ExpressionCompiler compiler = new ExpressionCompiler(expression);
         compiler.setVerifyOnly(true);
@@ -763,7 +754,6 @@ public class MVEL {
     public static Class analyze(String expression, ParserContext ctx) {
         return analyze(expression.toCharArray(), ctx);
     }
-
 
     /**
      * Compiles an expression and returns a Serializable object containing the compiled expression.  The returned value
@@ -1198,7 +1188,6 @@ public class MVEL {
     public static String preprocess(String input, PreProcessor[] preprocessors) {
         return preprocess(input.toCharArray(), preprocessors);
     }
-
 
     public static Object getProperty(String property, Object ctx) {
         return PropertyAccessor.get(property, ctx);

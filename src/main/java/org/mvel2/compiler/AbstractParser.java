@@ -20,27 +20,37 @@ package org.mvel2.compiler;
 import org.mvel2.CompileException;
 import org.mvel2.ErrorDetail;
 import org.mvel2.Operator;
+
 import static org.mvel2.Operator.*;
+
 import org.mvel2.ParserContext;
 import org.mvel2.ast.*;
+
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
+
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ArrayTools.isLiteralOnly;
+
 import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.FunctionParser;
+
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.isEmpty;
+
 import org.mvel2.util.ProtoParser;
 import org.mvel2.util.Soundex;
 
 import java.io.Serializable;
+
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Double.parseDouble;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
+
 import java.util.HashMap;
 import java.util.WeakHashMap;
 
@@ -974,16 +984,18 @@ public class AbstractParser implements Serializable {
                                          * type-cast candidate.
                                          */
 
-                                        if (lastWS && expr[cursor] != '.') {
-                                            switch (expr[cursor]) {
-                                                case '[':
-                                                case ']':
-                                                    break;
+                                        if (lastWS) {
+                                            if (expr[cursor] != '.') {
+                                                switch (expr[cursor]) {
+                                                    case '[':
+                                                    case ']':
+                                                        break;
 
-                                                default:
-                                                    if (!(isIdentifierPart(expr[cursor]) || expr[cursor] == '.')) {
-                                                        singleToken = false;
-                                                    }
+                                                    default:
+                                                        if (!(isIdentifierPart(expr[cursor]) || expr[cursor] == '.')) {
+                                                            singleToken = false;
+                                                        }
+                                                }
                                             }
                                         }
                                         else if (isWhitespace(expr[cursor]) || cursor == 1) {
@@ -991,6 +1003,8 @@ public class AbstractParser implements Serializable {
                                             skipWhitespace();
                                             cursor--;
                                         }
+
+
                                 }
                             }
 
@@ -1242,6 +1256,7 @@ public class AbstractParser implements Serializable {
     }
 
     //todo: improve performance of this method
+
     private ASTNode createPropertyToken(int start, int end) {
         String tmp;
 
@@ -1317,17 +1332,17 @@ public class AbstractParser implements Serializable {
                             lastNode.getLiteralValue(), pCtx));
                 }
             }
-             else if (lastNode instanceof Proto) {
-                    captureToEOS();
-                    if (decl) {
-                        splitAccumulator.add(new DeclProtoVarNode(new String(expr, start, cursor - start),
-                                (Proto) lastNode, fields | ASTNode.ASSIGN, pCtx));
-                    }
-                    else {
-                        splitAccumulator.add(new ProtoVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Proto)
-                                lastNode, pCtx));
-                    }
+            else if (lastNode instanceof Proto) {
+                captureToEOS();
+                if (decl) {
+                    splitAccumulator.add(new DeclProtoVarNode(new String(expr, start, cursor - start),
+                            (Proto) lastNode, fields | ASTNode.ASSIGN, pCtx));
                 }
+                else {
+                    splitAccumulator.add(new ProtoVarNode(subArray(start, cursor), fields | ASTNode.ASSIGN, (Proto)
+                            lastNode, pCtx));
+                }
+            }
 
             // this redundant looking code is needed to work with the interpreter and MVELSH properly.
             else if ((fields & ASTNode.COMPILE_IMMEDIATE) == 0) {
