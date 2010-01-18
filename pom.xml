@@ -3,7 +3,7 @@
     <groupId>org.mvel</groupId>
     <artifactId>mvel2</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.16-SNAPSHOT</version>
+    <version>2.0.16.SNAPSHOT</version>
     <name>mvel</name>
     <url>http://mvel.codehaus.org/</url>
 
@@ -131,9 +131,7 @@
                     <manifestLocation>META-INF</manifestLocation>
 					<instructions>
                         <Bundle-SymbolicName>org.mvel2</Bundle-SymbolicName>
-                        <Bundle-Name>mvel2</Bundle-Name>
-						<Import-Package>org.mvel2.*,*;resolution:=optional</Import-Package>
-						<Export-Package>org.mvel2.*</Export-Package>                     
+                        <Bundle-Name>mvel2</Bundle-Name>                  
 					</instructions>
 				</configuration>
 			</plugin>             
