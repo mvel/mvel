@@ -1,6 +1,7 @@
 package org.mvel2.optimizers.impl.refl.nodes;
 
 import org.mvel2.CompileException;
+import org.mvel2.MVEL;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.VariableResolverFactory;
 
@@ -8,13 +9,23 @@ import org.mvel2.integration.VariableResolverFactory;
 public class PropertyHandlerAccessor extends BaseAccessor {
     private String propertyName;
     private PropertyHandler propertyHandler;
+    private Class conversionType;
 
-    public PropertyHandlerAccessor(String propertyName, PropertyHandler propertyHandler) {
+    public PropertyHandlerAccessor(String propertyName, Class conversionType, PropertyHandler propertyHandler) {
         this.propertyName = propertyName;
+        this.conversionType = conversionType;
         this.propertyHandler = propertyHandler;
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
+        if (!conversionType.isAssignableFrom(ctx.getClass())) {
+            if (nextNode != null) {
+                return nextNode.getValue(MVEL.getProperty(propertyName, ctx), elCtx, variableFactory);
+            }
+            else {
+                return MVEL.getProperty(propertyName, ctx);
+            }
+        }
         try {
             if (nextNode != null) {
                 return nextNode.getValue(propertyHandler.getProperty(propertyName, ctx, variableFactory), elCtx, variableFactory);

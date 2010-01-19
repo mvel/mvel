@@ -1003,8 +1003,6 @@ public class AbstractParser implements Serializable {
                                             skipWhitespace();
                                             cursor--;
                                         }
-
-
                                 }
                             }
 

@@ -251,7 +251,6 @@ public class PropertyAccessTests extends AbstractTest {
         assertTrue(cake.getIngredients().contains("Apple"));
         assertTrue(cake.getIngredients().contains("Peach"));
         assertTrue(cake.getIngredients().contains("Icing"));
-
     }
 
     public void testMVELCompilerBoth() {
@@ -274,6 +273,25 @@ public class PropertyAccessTests extends AbstractTest {
         vars.put("attr", dyna);
 
         assertEquals("value2", MVEL.executeExpression(compiled, null, vars));
+    }
+
+    public void testMVELCompilerBoth2() {
+        PropertyHandlerFactory.registerPropertyHandler(DynaBean.class, new DynaBeanPropertyHandler());
+
+        Map<String, Object> vars = new LinkedHashMap<String, Object>();
+
+        ParserContext parserContext = new ParserContext();
+        Object compiled = MVEL.compileExpression("attr.value", parserContext);
+
+        DynaBean dyna = new LazyDynaBean();
+        dyna.set("value", "value2");
+        vars.put("attr", dyna);
+        assertEquals("value2", MVEL.executeExpression(compiled, null, vars));
+
+        TestBean bean = new TestBean("value1");
+        vars.put("attr", bean);
+        assertEquals("value1", MVEL.executeExpression(compiled, null, vars));
+
     }
 
     public static class TestBean {
@@ -309,7 +327,6 @@ public class PropertyAccessTests extends AbstractTest {
             return values.get(key);
         }
     }
-
 
     private static class DynaBeanPropertyHandler implements PropertyHandler {
         public Object getProperty(String name, Object contextObj, VariableResolverFactory variableFactory) {

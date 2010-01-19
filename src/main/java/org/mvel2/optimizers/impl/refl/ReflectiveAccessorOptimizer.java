@@ -460,7 +460,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         Class<?> cls = (ctx instanceof Class ? ((Class<?>) ctx) : ctx != null ? ctx.getClass() : null);
 
         if (hasPropertyHandler(cls)) {
-            PropertyHandlerAccessor acc = new PropertyHandlerAccessor(property, getPropertyHandler(cls));
+            PropertyHandlerAccessor acc = new PropertyHandlerAccessor(property, cls, getPropertyHandler(cls));
             addAccessorNode(acc);
             return acc.getValue(ctx, thisRef, variableFactory);
         }
@@ -1178,13 +1178,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     private Object propHandler(String property, Object ctx, Class handler) {
         PropertyHandler ph = getPropertyHandler(handler);
-        addAccessorNode(new PropertyHandlerAccessor(property, ph));
+        addAccessorNode(new PropertyHandlerAccessor(property, handler, ph));
         return ph.getProperty(property, ctx, variableFactory);
     }
 
     public void propHandlerSet(String property, Object ctx, Class handler, Object value) {
         PropertyHandler ph = getPropertyHandler(handler);
-        addAccessorNode(new PropertyHandlerAccessor(property, ph));
+        addAccessorNode(new PropertyHandlerAccessor(property, handler, ph));
         ph.setProperty(property, ctx, variableFactory, value);
     }
 }
