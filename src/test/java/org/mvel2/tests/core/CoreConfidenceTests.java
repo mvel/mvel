@@ -26,6 +26,8 @@ import org.mvel2.util.ReflectionUtil;
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -34,6 +36,8 @@ import java.util.*;
 import static java.util.Collections.unmodifiableCollection;
 
 import java.util.List;
+
+import junit.framework.TestCase;
 
 @SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
@@ -4741,4 +4745,45 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(Boolean.TRUE, MVEL.eval("x ~= ('f.*')", map));
     }
+    
+    public void testMethodScoring() {
+        ParserConfiguration pconf = new ParserConfiguration();
+        for( Method m : StaticMethods.class.getMethods() ) {
+            if( Modifier.isStatic( m.getModifiers() ) ) {
+                pconf.addImport( m.getName(), m );
+                
+            }
+        }
+        pconf.addImport( "TestCase", TestCase.class );
+        ParserContext pctx = new ParserContext( pconf );
+        
+        Map<String,Object> vars = new HashMap<String, Object>();
+        // force errasure on "x"
+        List x = new ArrayList<String>();
+        vars.put( "x", x );
+        
+        // this is successful
+        TestCase.assertTrue( StaticMethods.is( StaticMethods.getList( java.util.Formatter.class ) ) );
+        
+        // this is also should be fine
+        Serializable expr = MVEL.compileExpression( "TestCase.assertTrue( is( getList( java.util.Formatter ) ) )", pctx ); 
+        MVEL.executeExpression( expr, vars );
+    }
+    
+    public static class StaticMethods {
+        public static <T> boolean is( List<T> arg ) {
+            return true;
+        }
+        public static <T> boolean is( T arg ) {
+            throw new RuntimeException( "Wrong method called" );
+        }
+        public static List<Object> getList( Class<?> arg ) {
+            ArrayList<Object> result = new ArrayList<Object>(); 
+            result.add( arg );
+            return result;
+        }
+    }
+    
+    
+    
 }
