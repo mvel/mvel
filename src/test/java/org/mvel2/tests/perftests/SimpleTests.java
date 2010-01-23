@@ -55,6 +55,7 @@ public class SimpleTests {
         ps.println("Rate  : " + (COUNT / (time / 1000)) + " per second.");
         ps.println("FreeMem: " + dc.format((double) getRuntime().freeMemory() / (1024d * 1024d)) + "MB / TotalMem: " + dc.format((double) getRuntime().totalMemory() / (1024d * 1024d)) + "MB");
         ps.println("TotalGarbaged: " + DynamicOptimizer.totalRecycled);
+        
     }
 
     private static void testQuickSortNative(PrintStream ps) {

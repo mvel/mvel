@@ -208,7 +208,7 @@ public class ParserConfiguration implements Serializable {
     }
 
     public ClassLoader getClassLoader() {
-        return classLoader;
+        return classLoader == null ? classLoader = Thread.currentThread().getContextClassLoader() : classLoader;
     }
 
     public void setClassLoader(ClassLoader classLoader) {

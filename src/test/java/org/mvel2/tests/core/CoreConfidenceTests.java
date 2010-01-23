@@ -4783,7 +4783,4 @@ public class CoreConfidenceTests extends AbstractTest {
             return result;
         }
     }
-    
-    
-    
 }

@@ -369,7 +369,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return rootNode;
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException(new String(expr) + ": " + e.getMessage(), e);
+            throw new PropertyAccessException(new String(expr) + ": " + e.getTargetException().getMessage(), e);
         }
         catch (IllegalAccessException e) {
             throw new PropertyAccessException(new String(expr) + ": " + e.getMessage(), e);
