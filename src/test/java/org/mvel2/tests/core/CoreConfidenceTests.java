@@ -4747,6 +4747,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
     
     public void testMethodScoring() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
         ParserConfiguration pconf = new ParserConfiguration();
         for( Method m : StaticMethods.class.getMethods() ) {
             if( Modifier.isStatic( m.getModifiers() ) ) {

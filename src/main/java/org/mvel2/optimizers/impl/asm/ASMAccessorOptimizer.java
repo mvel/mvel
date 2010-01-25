@@ -18,46 +18,63 @@
 package org.mvel2.optimizers.impl.asm;
 
 import org.mvel2.*;
+
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
 import static org.mvel2.MVEL.isAdvancedDebugging;
+
 import org.mvel2.asm.ClassWriter;
 import org.mvel2.asm.Label;
 import org.mvel2.asm.MethodVisitor;
 import org.mvel2.asm.Opcodes;
+
 import static org.mvel2.asm.Opcodes.*;
 import static org.mvel2.asm.Type.*;
+
 import org.mvel2.ast.Function;
 import org.mvel2.ast.TypeDescriptor;
+
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
+
 import org.mvel2.ast.WithNode;
 import org.mvel2.compiler.*;
 import org.mvel2.integration.GlobalListenerFactory;
+
 import static org.mvel2.integration.GlobalListenerFactory.hasGetListeners;
 import static org.mvel2.integration.GlobalListenerFactory.notifyGetListeners;
+
 import org.mvel2.integration.PropertyHandler;
+
 import static org.mvel2.integration.PropertyHandlerFactory.*;
+
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizationNotSupported;
 import org.mvel2.optimizers.impl.refl.nodes.Union;
+
 import static org.mvel2.util.ArrayTools.findFirst;
+
 import org.mvel2.util.*;
+
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 
 import java.io.FileWriter;
 import java.io.IOException;
+
 import static java.lang.String.valueOf;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
+
 import java.lang.reflect.*;
+
 import static java.lang.reflect.Array.getLength;
 import static java.lang.reflect.Modifier.FINAL;
 import static java.lang.reflect.Modifier.STATIC;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -1830,13 +1847,19 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                                 continue;
                             }
                             else if (canConvert(parameterTypes[i], lit.getClass())) {
-                                assert debug("LDC " + lit + " (" + lit.getClass().getName() + ")");
-                                mv.visitLdcInsn(convert(lit, parameterTypes[i]));
-
-                                if (isPrimitiveWrapper(parameterTypes[i])) {
-                                    wrapPrimitive(lit.getClass());
+                                Object c = convert(lit, parameterTypes[i]);
+                                if (c instanceof Class) {
+                                    ldcClassConstant((Class) c);
                                 }
+                                else {
+                                    assert debug("LDC " + lit + " (" + lit.getClass().getName() + ")");
 
+                                    mv.visitLdcInsn(convert(lit, parameterTypes[i]));
+
+                                    if (isPrimitiveWrapper(parameterTypes[i])) {
+                                        wrapPrimitive(lit.getClass());
+                                    }
+                                }
                                 continue;
                             }
                         }
