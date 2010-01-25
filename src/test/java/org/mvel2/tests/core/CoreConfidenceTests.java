@@ -4759,14 +4759,11 @@ public class CoreConfidenceTests extends AbstractTest {
         ParserContext pctx = new ParserContext( pconf );
         
         Map<String,Object> vars = new HashMap<String, Object>();
-        // force errasure on "x"
-        List x = new ArrayList<String>();
-        vars.put( "x", x );
         
         // this is successful
         TestCase.assertTrue( StaticMethods.is( StaticMethods.getList( java.util.Formatter.class ) ) );
         
-        // this is also should be fine
+        // this also should be fine
         Serializable expr = MVEL.compileExpression( "TestCase.assertTrue( is( getList( java.util.Formatter ) ) )", pctx ); 
         MVEL.executeExpression( expr, vars );
     }
@@ -4775,7 +4772,7 @@ public class CoreConfidenceTests extends AbstractTest {
         public static <T> boolean is( List<T> arg ) {
             return true;
         }
-        public static <T> boolean is( T arg ) {
+        public static boolean is( Collection arg ) {
             throw new RuntimeException( "Wrong method called" );
         }
         public static List<Object> getList( Class<?> arg ) {
