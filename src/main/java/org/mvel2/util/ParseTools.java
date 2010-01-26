@@ -267,7 +267,7 @@ public class ParseTools {
                         score += 5;
                     } else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
                         score += 4;
-                    } else if (parmTypes[i] != Object.class && boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i]))) {
+                    } else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i])) && Object.class != arguments[i]) {
                         score += 3;
                     } else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
                         if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
@@ -406,7 +406,7 @@ public class ParseTools {
                     score += 5;
                 } else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
                     score += 4;
-                } else if (parmTypes[i] != Object.class && boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i]))) {
+                } else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i])) && parmTypes[i] != Object.class) {
                     score += 3;
                 } else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
                     if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
