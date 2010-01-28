@@ -4781,4 +4781,29 @@ public class CoreConfidenceTests extends AbstractTest {
             return result;
         }
     }
+
+    public void testStrictTypingCompilationWithVarInsideConstructor() {
+        ParserContext ctx = new ParserContext();
+        ctx.addInput("$likes", String.class);
+        ctx.addInput("results", List.class);
+        ctx.addImport(Cheese.class);
+        ctx.setStrictTypeEnforcement(true);
+
+        Serializable expr = null;
+        try {
+            expr = MVEL.compileExpression( "Cheese c = new Cheese( $likes, 15 );\nresults.add( c ); ", ctx );
+        }
+        catch (CompileException e) {
+            fail( "This should not fail:\n" + e.getMessage() );
+        }
+        List results = new ArrayList();
+
+        Map vars = new HashMap();
+        vars.put( "$likes", "stilton" );
+        vars.put( "results", results );
+        MVEL.executeExpression( expr,vars );
+
+        assertEquals( new Cheese("stilton", 15), results.get(0));
+    }
+
 }
