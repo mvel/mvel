@@ -4787,13 +4787,14 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addInput("$likes", String.class);
         ctx.addInput("results", List.class);
         ctx.addImport(Cheese.class);
-        ctx.setStrictTypeEnforcement(true);
+        ctx.setStrongTyping(true);
 
         Serializable expr = null;
         try {
             expr = MVEL.compileExpression( "Cheese c = new Cheese( $likes, 15 );\nresults.add( c ); ", ctx );
         }
         catch (CompileException e) {
+            e.printStackTrace();
             fail( "This should not fail:\n" + e.getMessage() );
         }
         List results = new ArrayList();

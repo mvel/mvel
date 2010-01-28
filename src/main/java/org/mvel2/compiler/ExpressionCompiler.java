@@ -373,7 +373,7 @@ public class ExpressionCompiler extends AbstractParser {
                         pCtx.addInput(tk.getAbsoluteName(), returnType);
                     }
 
-                    ExecutableStatement c = (ExecutableStatement) subCompileExpression(a.getExpression());
+                    ExecutableStatement c = (ExecutableStatement) subCompileExpression(a.getExpression(), pCtx);
 
                     if (pCtx.isStrictTypeEnforcement()) {
                         /**
