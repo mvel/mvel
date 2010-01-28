@@ -232,6 +232,26 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertTrue(compiler.getParserContextState().getInputs().keySet().contains("message"));
     }
+    
+    public void testVarInputs5() {
+        ParserContext pCtx = ParserContext.create();
+        MVEL.analysisCompile("String nodeName = list[0];\nSystem.out.println(nodeName);nodeName = list[1];\nSystem.out.println(nodeName);", pCtx);
+
+        assertEquals(1,
+                pCtx.getInputs().size());
+
+        assertTrue(pCtx.getInputs().containsKey("list"));
+
+        assertEquals(1,
+                pCtx.getVariables().size());
+
+        assertTrue(pCtx.getVariables().containsKey("nodeName"));
+
+        assertEquals(List.class,
+                pCtx.getVarOrInputType("list"));
+        assertEquals(String.class,
+                pCtx.getVarOrInputType("nodeName"));        
+    }    
 
     public void testAnalyzer() {
         ParserContext ctx = new ParserContext();
