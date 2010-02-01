@@ -234,7 +234,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
     
     public void testVarInputs5() {
-        ParserContext pCtx = ParserContext.create();
+        ParserContext pCtx = ParserContext.create().withInput("list", List.class);
         MVEL.analysisCompile("String nodeName = list[0];\nSystem.out.println(nodeName);nodeName = list[1];\nSystem.out.println(nodeName);", pCtx);
 
         assertEquals(1,

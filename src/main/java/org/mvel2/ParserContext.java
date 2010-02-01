@@ -378,7 +378,7 @@ public class ParserContext implements Serializable {
 
     public void addInput(String name, Class type) {
         if (inputs == null) inputs = new LinkedHashMap<String, Class>();
-        if (inputs.containsKey(name)) return;
+        if (inputs.containsKey(name) || (variables != null && variables.containsKey(name))) return;
         if (type == null) type = Object.class;
 
         inputs.put(name, type);
