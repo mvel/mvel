@@ -82,7 +82,8 @@ public class ExpressionCompiler extends AbstractParser {
                 }
 
                 //noinspection ThrowFromFinallyBlock
-                throw new CompileException("Failed to compile: " + pCtx.getErrorList().size() + " compilation error(s): " + err.toString(), pCtx.getErrorList());
+                throw new CompileException("Failed to compile: " + pCtx.getErrorList().size()
+                        + " compilation error(s): " + err.toString(), pCtx.getErrorList());
             }
         }
     }

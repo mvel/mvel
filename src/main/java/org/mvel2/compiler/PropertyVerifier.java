@@ -25,8 +25,10 @@ import org.mvel2.PropertyAccessException;
 import org.mvel2.ast.Function;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
+
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
+
 import org.mvel2.util.StringAppender;
 
 import java.lang.reflect.*;
@@ -123,6 +125,15 @@ public class PropertyVerifier extends AbstractOptimizer {
         return ctx;
     }
 
+    private void recordTypeParmsForProperty(String property) {
+        if (pCtx.isStrictTypeEnforcement()) {
+            if ((paramTypes = pCtx.getTypeParameters(property)) == null) {
+                pCtx.addTypeParameters(property, pCtx.getVarOrInputType(property));
+            }
+            pCtx.setLastTypeParameters(pCtx.getTypeParametersAsArray(property));
+        }
+    }
+
     /**
      * Process bean property
      *
@@ -134,10 +145,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         if (first) {
             if (pCtx.hasVarOrInput(property)) {
                 if (pCtx.isStrictTypeEnforcement()) {
-                    if ((paramTypes = pCtx.getTypeParameters(property)) == null) {
-                        pCtx.addTypeParameters(property, pCtx.getVarOrInputType(property));
-                    }
-                    pCtx.setLastTypeParameters(pCtx.getTypeParametersAsArray(property));
+                    recordTypeParmsForProperty(property);
                 }
                 return pCtx.getVarOrInputType(property);
             }
@@ -145,15 +153,22 @@ public class PropertyVerifier extends AbstractOptimizer {
                 resolvedExternally = false;
                 return pCtx.getImport(property);
             }
-            if (!pCtx.isStrongTyping()) {
+            else if (!pCtx.isStrongTyping()) {
                 return Object.class;
+
+            }
+            else if (pCtx.hasVarOrInput("this")) {
+                if (pCtx.isStrictTypeEnforcement()) {
+                    recordTypeParmsForProperty("this");
+                }
+                ctx = pCtx.getVarOrInputType("this");
             }
         }
 
         start = cursor;
+        boolean switchStateReg;
 
         Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
-        boolean switchStateReg;
 
         if (member instanceof Field) {
             if (pCtx.isStrictTypeEnforcement()) {
@@ -200,12 +215,12 @@ public class PropertyVerifier extends AbstractOptimizer {
         }
         else if (pCtx.getLastTypeParameters() != null
                 && ((Collection.class.isAssignableFrom(ctx) && !(switchStateReg = false))
-                || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true))) ) {
-            Class parm = pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0].getClass();
+                || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true)))) {
+            Class parm = (Class) pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0];
             pCtx.setLastTypeParameters(null);
-            return getBeanProperty(parm, property);
+            return parm;
         }
-        else {   
+        else {
             Object tryStaticMethodRef = tryStaticAccess();
 
             if (tryStaticMethodRef != null) {
@@ -365,7 +380,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             subtokens = new String[0];
         }
         else {
-         //   ParserContext subCtx = pCtx.createSubcontext();
+            //   ParserContext subCtx = pCtx.createSubcontext();
             args = new Class[subtokens.length];
 
             /**

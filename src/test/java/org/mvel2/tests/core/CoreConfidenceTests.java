@@ -4827,4 +4827,83 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals( new Cheese("stilton", 15), results.get(0));
     }
 
+  	public void testSetterViaDotNotation() {
+
+		TestClass tc = new TestClass();
+		tc.getExtra().put("test", "value");
+
+		ParserContext ctx = new ParserContext();
+		ctx.setStrongTyping(true);
+		String expression = "extra.test";
+		Serializable compiled = MVEL.compileSetExpression(expression, ctx);
+		MVEL.executeSetExpression(compiled, tc, "value2");
+		assertEquals("value2", tc.getExtra().get("test"));
+	}
+
+	public void testSetterViaMapNotation() {
+
+		TestClass tc = new TestClass();
+		tc.getExtra().put("test", "value");
+
+		ParserContext ctx = new ParserContext();
+        ctx.withInput("this", TestClass.class);
+		ctx.setStrongTyping(true);
+		String expression = "extra[\"test\"]";
+		Serializable compiled = MVEL.compileSetExpression(expression, tc.getClass(), ctx);
+		MVEL.executeSetExpression(compiled, tc, "value3");
+		assertEquals("value3", tc.getExtra().get("test"));
+	}
+
+
+	public void testGetterViaDotNotation() {
+
+		TestClass tc = new TestClass();
+		tc.getExtra().put("test", "value");
+
+        Map vars = new HashMap();
+        vars.put("tc", tc);
+
+		ParserContext ctx = new ParserContext();
+		ctx.setStrongTyping(true);
+		ctx.addInput("tc", tc.getClass());
+		String expression = "tc.extra.test";
+		Serializable compiled = MVEL.compileExpression(expression, ctx);
+		String val = (String)MVEL.executeExpression(compiled, vars);
+		assertEquals("value", val);
+	}
+
+	public void testGetterViaMapNotation() {
+
+		TestClass tc = new TestClass();
+		tc.getExtra().put("test", "value");
+
+        Map vars = new HashMap();
+        vars.put("tc", tc);
+
+		ParserContext ctx = new ParserContext();
+		ctx.setStrongTyping(true);
+		ctx.addInput("tc", tc.getClass());
+		String expression = "tc.extra[\"test\"]";
+		Serializable compiled = MVEL.compileExpression(expression, ctx);
+		String val = (String)MVEL.executeExpression(compiled, vars);
+		assertEquals("value", val);
+	}
+
+	public void testGetterViaMapGetter() {
+
+		TestClass tc = new TestClass();
+		tc.getExtra().put("test", "value");
+
+        Map vars = new HashMap();
+        vars.put("tc", tc);
+
+		ParserContext ctx = new ParserContext();
+		ctx.setStrongTyping(true);
+		ctx.addInput("tc", tc.getClass());
+		String expression = "tc.extra.get(\"test\")";
+		Serializable compiled = MVEL.compileExpression(expression, ctx);
+		String val = (String)MVEL.executeExpression(compiled, vars);
+		assertEquals("value", val);
+	}
+
 }
