@@ -4906,4 +4906,12 @@ public class CoreConfidenceTests extends AbstractTest {
 		assertEquals("value", val);
 	}
 
+    public void testJIRA198() {
+        Map<String, Map<String, Float>> ctx = new HashMap<String, Map<String, Float>>();
+Map<String, Float> tmp = new HashMap<String, Float>();
+ctx.put("SessionSetupRequest", tmp);
+
+System.out.println("Result = " + MVEL.eval("SessionSetupRequest.latitude", ctx));
+    }
+
 }
