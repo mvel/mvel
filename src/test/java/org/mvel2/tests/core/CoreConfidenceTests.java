@@ -232,7 +232,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertTrue(compiler.getParserContextState().getInputs().keySet().contains("message"));
     }
-    
+
     public void testVarInputs5() {
         ParserContext pCtx = ParserContext.create().withInput("list", List.class);
         MVEL.analysisCompile("String nodeName = list[0];\nSystem.out.println(nodeName);nodeName = list[1];\nSystem.out.println(nodeName);", pCtx);
@@ -250,8 +250,8 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(List.class,
                 pCtx.getVarOrInputType("list"));
         assertEquals(String.class,
-                pCtx.getVarOrInputType("nodeName"));        
-    }    
+                pCtx.getVarOrInputType("nodeName"));
+    }
 
     public void testAnalyzer() {
         ParserContext ctx = new ParserContext();
@@ -513,7 +513,8 @@ public class CoreConfidenceTests extends AbstractTest {
 
             compiler.compile(ctx);
             fail("This should not compile");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
         }
     }
 
@@ -527,7 +528,8 @@ public class CoreConfidenceTests extends AbstractTest {
         try {
             MVEL.compileExpression("x_a = new Foo( $ba ); x_a.equals($ba);", ctx);
             fail("This should not compile");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -1781,10 +1783,12 @@ public class CoreConfidenceTests extends AbstractTest {
             final Recipient other = (Recipient) obj;
             if (email == null) {
                 if (other.email != null) return false;
-            } else if (!email.equals(other.email)) return false;
+            }
+            else if (!email.equals(other.email)) return false;
             if (name == null) {
                 if (other.name != null) return false;
-            } else if (!name.equals(other.name)) return false;
+            }
+            else if (!name.equals(other.name)) return false;
             return true;
         }
     }
@@ -1883,10 +1887,12 @@ public class CoreConfidenceTests extends AbstractTest {
             final EmailMessage other = (EmailMessage) obj;
             if (from == null) {
                 if (other.from != null) return false;
-            } else if (!from.equals(other.from)) return false;
+            }
+            else if (!from.equals(other.from)) return false;
             if (recipients == null) {
                 if (other.recipients != null) return false;
-            } else if (!recipients.equals(other.recipients)) return false;
+            }
+            else if (!recipients.equals(other.recipients)) return false;
             return true;
         }
     }
@@ -2642,7 +2648,8 @@ public class CoreConfidenceTests extends AbstractTest {
         public boolean canConvertFrom(Class cls) {
             if (cls == String.class || cls.isAssignableFrom(Date.class)) {
                 return true;
-            } else {
+            }
+            else {
                 return false;
             }
         }
@@ -2652,7 +2659,8 @@ public class CoreConfidenceTests extends AbstractTest {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy");
                 if (o instanceof String) {
                     return sdf.parse((String) o);
-                } else {
+                }
+                else {
                     return o;
                 }
             }
@@ -4765,39 +4773,41 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(Boolean.TRUE, MVEL.eval("x ~= ('f.*')", map));
     }
-    
+
     public void testMethodScoring() {
         OptimizerFactory.setDefaultOptimizer("ASM");
         ParserConfiguration pconf = new ParserConfiguration();
-        for( Method m : StaticMethods.class.getMethods() ) {
-            if( Modifier.isStatic( m.getModifiers() ) ) {
-                pconf.addImport( m.getName(), m );
-                
+        for (Method m : StaticMethods.class.getMethods()) {
+            if (Modifier.isStatic(m.getModifiers())) {
+                pconf.addImport(m.getName(), m);
+
             }
         }
-        pconf.addImport( "TestCase", TestCase.class );
-        ParserContext pctx = new ParserContext( pconf );
-        
-        Map<String,Object> vars = new HashMap<String, Object>();
-        
+        pconf.addImport("TestCase", TestCase.class);
+        ParserContext pctx = new ParserContext(pconf);
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+
         // this is successful
-        TestCase.assertTrue( StaticMethods.is( StaticMethods.getList( java.util.Formatter.class ) ) );
-        
+        TestCase.assertTrue(StaticMethods.is(StaticMethods.getList(java.util.Formatter.class)));
+
         // this also should be fine
-        Serializable expr = MVEL.compileExpression( "TestCase.assertTrue( is( getList( java.util.Formatter ) ) )", pctx ); 
-        MVEL.executeExpression( expr, vars );
+        Serializable expr = MVEL.compileExpression("TestCase.assertTrue( is( getList( java.util.Formatter ) ) )", pctx);
+        MVEL.executeExpression(expr, vars);
     }
-    
+
     public static class StaticMethods {
-        public static <T> boolean is( List<T> arg ) {
+        public static <T> boolean is(List<T> arg) {
             return true;
         }
-        public static boolean is( Collection arg ) {
-            throw new RuntimeException( "Wrong method called" );
+
+        public static boolean is(Collection arg) {
+            throw new RuntimeException("Wrong method called");
         }
-        public static List<Object> getList( Class<?> arg ) {
-            ArrayList<Object> result = new ArrayList<Object>(); 
-            result.add( arg );
+
+        public static List<Object> getList(Class<?> arg) {
+            ArrayList<Object> result = new ArrayList<Object>();
+            result.add(arg);
             return result;
         }
     }
@@ -4811,107 +4821,98 @@ public class CoreConfidenceTests extends AbstractTest {
 
         Serializable expr = null;
         try {
-            expr = MVEL.compileExpression( "Cheese c = new Cheese( $likes, 15 );\nresults.add( c ); ", ctx );
+            expr = MVEL.compileExpression("Cheese c = new Cheese( $likes, 15 );\nresults.add( c ); ", ctx);
         }
         catch (CompileException e) {
             e.printStackTrace();
-            fail( "This should not fail:\n" + e.getMessage() );
+            fail("This should not fail:\n" + e.getMessage());
         }
         List results = new ArrayList();
 
         Map vars = new HashMap();
-        vars.put( "$likes", "stilton" );
-        vars.put( "results", results );
-        MVEL.executeExpression( expr,vars );
+        vars.put("$likes", "stilton");
+        vars.put("results", results);
+        MVEL.executeExpression(expr, vars);
 
-        assertEquals( new Cheese("stilton", 15), results.get(0));
+        assertEquals(new Cheese("stilton", 15), results.get(0));
     }
 
-  	public void testSetterViaDotNotation() {
+    public void testSetterViaDotNotation() {
 
-		TestClass tc = new TestClass();
-		tc.getExtra().put("test", "value");
+        TestClass tc = new TestClass();
+        tc.getExtra().put("test", "value");
 
-		ParserContext ctx = new ParserContext();
-		ctx.setStrongTyping(true);
-		String expression = "extra.test";
-		Serializable compiled = MVEL.compileSetExpression(expression, ctx);
-		MVEL.executeSetExpression(compiled, tc, "value2");
-		assertEquals("value2", tc.getExtra().get("test"));
-	}
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        String expression = "extra.test";
+        Serializable compiled = MVEL.compileSetExpression(expression, ctx);
+        MVEL.executeSetExpression(compiled, tc, "value2");
+        assertEquals("value2", tc.getExtra().get("test"));
+    }
 
-	public void testSetterViaMapNotation() {
+    public void testSetterViaMapNotation() {
 
-		TestClass tc = new TestClass();
-		tc.getExtra().put("test", "value");
+        TestClass tc = new TestClass();
+        tc.getExtra().put("test", "value");
 
-		ParserContext ctx = new ParserContext();
+        ParserContext ctx = new ParserContext();
         ctx.withInput("this", TestClass.class);
-		ctx.setStrongTyping(true);
-		String expression = "extra[\"test\"]";
-		Serializable compiled = MVEL.compileSetExpression(expression, tc.getClass(), ctx);
-		MVEL.executeSetExpression(compiled, tc, "value3");
-		assertEquals("value3", tc.getExtra().get("test"));
-	}
-
-
-	public void testGetterViaDotNotation() {
-
-		TestClass tc = new TestClass();
-		tc.getExtra().put("test", "value");
-
-        Map vars = new HashMap();
-        vars.put("tc", tc);
-
-		ParserContext ctx = new ParserContext();
-		ctx.setStrongTyping(true);
-		ctx.addInput("tc", tc.getClass());
-		String expression = "tc.extra.test";
-		Serializable compiled = MVEL.compileExpression(expression, ctx);
-		String val = (String)MVEL.executeExpression(compiled, vars);
-		assertEquals("value", val);
-	}
-
-	public void testGetterViaMapNotation() {
-
-		TestClass tc = new TestClass();
-		tc.getExtra().put("test", "value");
-
-        Map vars = new HashMap();
-        vars.put("tc", tc);
-
-		ParserContext ctx = new ParserContext();
-		ctx.setStrongTyping(true);
-		ctx.addInput("tc", tc.getClass());
-		String expression = "tc.extra[\"test\"]";
-		Serializable compiled = MVEL.compileExpression(expression, ctx);
-		String val = (String)MVEL.executeExpression(compiled, vars);
-		assertEquals("value", val);
-	}
-
-	public void testGetterViaMapGetter() {
-
-		TestClass tc = new TestClass();
-		tc.getExtra().put("test", "value");
-
-        Map vars = new HashMap();
-        vars.put("tc", tc);
-
-		ParserContext ctx = new ParserContext();
-		ctx.setStrongTyping(true);
-		ctx.addInput("tc", tc.getClass());
-		String expression = "tc.extra.get(\"test\")";
-		Serializable compiled = MVEL.compileExpression(expression, ctx);
-		String val = (String)MVEL.executeExpression(compiled, vars);
-		assertEquals("value", val);
-	}
-
-    public void testJIRA198() {
-        Map<String, Map<String, Float>> ctx = new HashMap<String, Map<String, Float>>();
-Map<String, Float> tmp = new HashMap<String, Float>();
-ctx.put("SessionSetupRequest", tmp);
-
-System.out.println("Result = " + MVEL.eval("SessionSetupRequest.latitude", ctx));
+        ctx.setStrongTyping(true);
+        String expression = "extra[\"test\"]";
+        Serializable compiled = MVEL.compileSetExpression(expression, tc.getClass(), ctx);
+        MVEL.executeSetExpression(compiled, tc, "value3");
+        assertEquals("value3", tc.getExtra().get("test"));
     }
 
+
+    public void testGetterViaDotNotation() {
+
+        TestClass tc = new TestClass();
+        tc.getExtra().put("test", "value");
+
+        Map vars = new HashMap();
+        vars.put("tc", tc);
+
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("tc", tc.getClass());
+        String expression = "tc.extra.test";
+        Serializable compiled = MVEL.compileExpression(expression, ctx);
+        String val = (String) MVEL.executeExpression(compiled, vars);
+        assertEquals("value", val);
+    }
+
+    public void testGetterViaMapNotation() {
+
+        TestClass tc = new TestClass();
+        tc.getExtra().put("test", "value");
+
+        Map vars = new HashMap();
+        vars.put("tc", tc);
+
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("tc", tc.getClass());
+        String expression = "tc.extra[\"test\"]";
+        Serializable compiled = MVEL.compileExpression(expression, ctx);
+        String val = (String) MVEL.executeExpression(compiled, vars);
+        assertEquals("value", val);
+    }
+
+    public void testGetterViaMapGetter() {
+
+        TestClass tc = new TestClass();
+        tc.getExtra().put("test", "value");
+
+        Map vars = new HashMap();
+        vars.put("tc", tc);
+
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("tc", tc.getClass());
+        String expression = "tc.extra.get(\"test\")";
+        Serializable compiled = MVEL.compileExpression(expression, ctx);
+        String val = (String) MVEL.executeExpression(compiled, vars);
+        assertEquals("value", val);
+    }
 }

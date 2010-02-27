@@ -151,6 +151,7 @@ public class AbstractParser implements Serializable {
             LITERALS.put("Math", Math.class);
             LITERALS.put("Void", Void.class);
             LITERALS.put("Object", Object.class);
+            LITERALS.put("Number", Number.class);
 
             LITERALS.put("Class", Class.class);
             LITERALS.put("ClassLoader", ClassLoader.class);
@@ -1010,7 +1011,6 @@ public class AbstractParser implements Serializable {
                                 throw new CompileException("unbalanced braces in expression: (" + brace + "):", expr, cursor);
                             }
 
-                            //todo: support typecast to array types
                             tmp = null;
                             if (singleToken) {
                                 int st;
@@ -1253,8 +1253,6 @@ public class AbstractParser implements Serializable {
         return newA;
     }
 
-    //todo: improve performance of this method
-
     private ASTNode createPropertyToken(int start, int end) {
         String tmp;
 
@@ -1489,7 +1487,7 @@ public class AbstractParser implements Serializable {
                 /**
                  * Check to see if the name is legal.
                  */
-                if (isReservedWord(name = createStringTrimmed(expr, start, (startCond = cursor) - start))
+                if (isReservedWord(name = createStringTrimmed(expr, start, cursor - start))
                         || isNotValidNameorLabel(name))
                     throw new CompileException("illegal function name or use of reserved word", expr, cursor);
 
@@ -1512,7 +1510,7 @@ public class AbstractParser implements Serializable {
                 int start = cursor;
                 captureToNextTokenJunction();
 
-                if (isReservedWord(name = createStringTrimmed(expr, start, (startCond = cursor) - start))
+                if (isReservedWord(name = createStringTrimmed(expr, start, cursor - start))
                         || isNotValidNameorLabel(name))
                     throw new CompileException("illegal prototype name or use of reserved word", expr, cursor);
 

@@ -18,6 +18,7 @@
 
 package org.mvel2.compiler;
 
+import static java.lang.reflect.Array.getLength;
 import static org.mvel2.util.ParseTools.isNumeric;
 
 import java.io.Serializable;
@@ -42,7 +43,7 @@ public class BlankLiteral implements Serializable {
             return ((Collection) obj).size() == 0;
         }
         else if (obj.getClass().isArray()) {
-            return Array.getLength(obj) == 0;
+            return getLength(obj) == 0;
         }
         return false;
     }
