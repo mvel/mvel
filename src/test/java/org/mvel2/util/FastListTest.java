@@ -18,8 +18,6 @@ public class FastListTest extends TestCase {
     }
 
     public void testHashCode() {
-        System.out.println(MapBuilder.start()._("foo", "bar").finish());
-
         List list = (List) parseDirect("[ 'key1', var0 ]");
         System.out.println(list.hashCode());
     }
