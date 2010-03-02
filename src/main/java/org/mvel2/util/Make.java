@@ -45,11 +45,11 @@ public class Make {
             return this;
         }
 
-        public T f() {
+        public java.util.Map<K,V> f() {
             return finish();
         }
 
-        public T finish() {
+        public java.util.Map<K,V> finish() {
             return mapInstance;
         }
     }
@@ -130,11 +130,11 @@ public class Make {
             return this;
         }
 
-        public T f() {
+        public java.util.List<V> f() {
             return finish();
         }
 
-        public T finish() {
+        public java.util.List<V> finish() {
             return listInstance;
         }
     }
