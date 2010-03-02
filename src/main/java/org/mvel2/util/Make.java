@@ -40,7 +40,7 @@ public class Make {
             this.mapInstance = mapInstance;
         }
 
-        public Map _(K key, V value) {
+        public Map<K, V, T> _(K key, V value) {
             mapInstance.put(key, value);
             return this;
         }
@@ -125,7 +125,7 @@ public class Make {
             this.listInstance = listInstance;
         }
 
-        public List _(V value) {
+        public List<V, T> _(V value) {
             listInstance.add(value);
             return this;
         }
