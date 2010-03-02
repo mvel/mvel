@@ -14,14 +14,18 @@ public class Make {
         }
 
         public static <K, V, T extends java.util.Map<K, V>> Map<?, ?, T> start(Class<T> mapImpl) {
-            return (Map<?,?,T>) start(HashMap.class, Object.class, Object.class);
+            return (Map<?, ?, T>) start(HashMap.class, Object.class, Object.class);
+        }
+
+        public static <K, V, T extends java.util.Map<K, V>> Map<K, V, T> s(Class<K> keyType, Class<V> valType) {
+            return (Map<K, V, T>) start(HashMap.class, null, null);
         }
 
         public static <K, V, T extends java.util.Map<K, V>> Map<K, V, T> s(Class<T> mapImpl, Class<K> keyType, Class<V> valType) {
             return start(mapImpl, null, null);
         }
 
-        public static <K, V, T extends java.util.Map<K, V>> Map<K, V, T> start(Class<T> mapImpl,  Class<K> keyType, Class<V> valType) {
+        public static <K, V, T extends java.util.Map<K, V>> Map<K, V, T> start(Class<T> mapImpl, Class<K> keyType, Class<V> valType) {
             try {
                 return new Map(mapImpl.newInstance());
             }
@@ -101,7 +105,7 @@ public class Make {
         public static <V, T extends java.util.List<V>> List<V, T> s(Class<T> listImpl) {
             return start(listImpl, null);
         }
-        
+
         public static <V, T extends java.util.List<V>> List<V, T> s(Class<T> listImpl, Class<V> valType) {
             return start(listImpl, null);
         }
