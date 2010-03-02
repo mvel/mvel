@@ -18,6 +18,8 @@ public class FastListTest extends TestCase {
     }
 
     public void testHashCode() {
+        System.out.println(MapBuilder.start()._("foo", "bar").finish());
+
         List list = (List) parseDirect("[ 'key1', var0 ]");
         System.out.println(list.hashCode());
     }
@@ -37,6 +39,7 @@ public class FastListTest extends TestCase {
     }
 
     public Object compiledExecute(String ex) {
+
         Serializable compiled = MVEL.compileExpression(ex);
         Object first = MVEL.executeExpression(compiled, null, map);
         Object second = MVEL.executeExpression(compiled, null, map);

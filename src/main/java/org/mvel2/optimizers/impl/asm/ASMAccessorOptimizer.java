@@ -291,7 +291,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             deferFinish = true;
             noinit = true;
 
-            compileAccessor();
+            compileAccessor();                                                                                                                                       
             ctx = this.val;
         }
         else {
