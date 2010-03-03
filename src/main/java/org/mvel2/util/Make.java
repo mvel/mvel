@@ -4,28 +4,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Make {
-    public static class Map<K, V, T extends java.util.Map<K, V>> {
-        public static Map s() {
+    public static class Map<K, V> {
+        public static <K,V> Map<K,V> s() {
             return start();
         }
 
-        public static Map start() {
-            return start(HashMap.class, null, null);
+        public static <K, V> Map<K, V> start() {
+            return start(HashMap.class);
         }
 
-        public static <K, V, T extends java.util.Map<K, V>> Map<?, ?, T> start(Class<T> mapImpl) {
-            return (Map<?, ?, T>) start(HashMap.class, Object.class, Object.class);
-        }
-
-        public static <K, V, T extends java.util.Map<K, V>> Map<K, V, T> s(Class<K> keyType, Class<V> valType) {
-            return (Map<K, V, T>) start(HashMap.class, null, null);
-        }
-
-        public static <K, V, T extends java.util.Map<K, V>> Map<K, V, T> s(Class<T> mapImpl, Class<K> keyType, Class<V> valType) {
-            return start(mapImpl, null, null);
-        }
-
-        public static <K, V, T extends java.util.Map<K, V>> Map<K, V, T> start(Class<T> mapImpl, Class<K> keyType, Class<V> valType) {
+        public static <K, V> Map<K, V> start(Class<? extends java.util.Map> mapImpl) {
             try {
                 return new Map(mapImpl.newInstance());
             }
@@ -34,13 +22,13 @@ public class Make {
             }
         }
 
-        private T mapInstance;
+        private java.util.Map<K,V> mapInstance;
 
-        public Map(T mapInstance) {
+        private Map(java.util.Map<K,V> mapInstance) {
             this.mapInstance = mapInstance;
         }
 
-        public Map<K, V, T> _(K key, V value) {
+        public Map<K, V> _(K key, V value) {
             mapInstance.put(key, value);
             return this;
         }
@@ -73,7 +61,7 @@ public class Make {
 
         private StringAppender stringAppender;
 
-        public String(StringAppender stringAppender) {
+        String(StringAppender stringAppender) {
             this.stringAppender = stringAppender;
         }
 
@@ -93,24 +81,16 @@ public class Make {
         }
     }
 
-    public static class List<V, T extends java.util.List<V>> {
+    public static class List<V> {
         public static List s() {
             return start();
         }
 
         public static List start() {
-            return start(ArrayList.class, null);
+            return start(ArrayList.class);
         }
 
-        public static <V, T extends java.util.List<V>> List<V, T> s(Class<T> listImpl) {
-            return start(listImpl, null);
-        }
-
-        public static <V, T extends java.util.List<V>> List<V, T> s(Class<T> listImpl, Class<V> valType) {
-            return start(listImpl, null);
-        }
-
-        public static <V, T extends java.util.List<V>> List<V, T> start(Class<T> listImpl, Class<V> valType) {
+        public static <V> List<V> start(Class<? extends java.util.List> listImpl) {
             try {
                 return new List(listImpl.newInstance());
             }
@@ -119,13 +99,13 @@ public class Make {
             }
         }
 
-        private T listInstance;
+        private java.util.List<V> listInstance;
 
-        public List(T listInstance) {
+        List(java.util.List<V> listInstance) {
             this.listInstance = listInstance;
         }
 
-        public List<V, T> _(V value) {
+        public List<V> _(V value) {
             listInstance.add(value);
             return this;
         }
