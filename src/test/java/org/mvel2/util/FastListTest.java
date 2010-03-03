@@ -18,7 +18,8 @@ public class FastListTest extends TestCase {
     }
 
     public void testHashCode() {
-        List list = (List) parseDirect("[ 'key1', var0 ]");
+
+      List list = (List) parseDirect("[ 'key1', var0 ]");
         System.out.println(list.hashCode());
     }
 

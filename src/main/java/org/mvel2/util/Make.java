@@ -2,10 +2,11 @@ package org.mvel2.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class Make {
     public static class Map<K, V> {
-        public static <K,V> Map<K,V> s() {
+        public static <K, V> Map<K, V> $() {
             return start();
         }
 
@@ -22,9 +23,9 @@ public class Make {
             }
         }
 
-        private java.util.Map<K,V> mapInstance;
+        private java.util.Map<K, V> mapInstance;
 
-        private Map(java.util.Map<K,V> mapInstance) {
+        private Map(java.util.Map<K, V> mapInstance) {
             this.mapInstance = mapInstance;
         }
 
@@ -33,17 +34,17 @@ public class Make {
             return this;
         }
 
-        public java.util.Map<K,V> f() {
+        public java.util.Map<K, V> _() {
             return finish();
         }
 
-        public java.util.Map<K,V> finish() {
+        public java.util.Map<K, V> finish() {
             return mapInstance;
         }
     }
 
     public static class String {
-        public static String s() {
+        public static String $() {
             return start();
         }
 
@@ -51,7 +52,7 @@ public class Make {
             return new String(new StringAppender());
         }
 
-        public java.lang.String f() {
+        public java.lang.String _() {
             return finish();
         }
 
@@ -82,11 +83,11 @@ public class Make {
     }
 
     public static class List<V> {
-        public static List s() {
+        public static <V> List<V> $() {
             return start();
         }
 
-        public static List start() {
+        public static <V> List<V> start() {
             return start(ArrayList.class);
         }
 
@@ -110,7 +111,7 @@ public class Make {
             return this;
         }
 
-        public java.util.List<V> f() {
+        public java.util.List<V> _() {
             return finish();
         }
 
@@ -118,4 +119,43 @@ public class Make {
             return listInstance;
         }
     }
+
+    public static class Set<V> {
+        public static <V> Set<V> $() {
+            return start();
+        }
+
+        public static <V> Set<V> start() {
+            return start(HashSet.class);
+        }
+
+        public static <V> Set<V> start(Class<? extends java.util.Set> listImpl) {
+            try {
+                return new Set(listImpl.newInstance());
+            }
+            catch (Throwable t) {
+                throw new RuntimeException("error creating instance", t);
+            }
+        }
+
+        private java.util.Set<V> listInstance;
+
+        Set(java.util.Set<V> listInstance) {
+            this.listInstance = listInstance;
+        }
+
+        public Set<V> _(V value) {
+            listInstance.add(value);
+            return this;
+        }
+
+        public java.util.Set<V> _() {
+            return finish();
+        }
+
+        public java.util.Set<V> finish() {
+            return listInstance;
+        }
+    }
+
 }
