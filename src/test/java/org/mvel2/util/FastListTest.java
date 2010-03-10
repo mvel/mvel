@@ -12,17 +12,14 @@ import java.util.Map;
 public class FastListTest extends TestCase {
     protected Map<String, Object> map = new HashMap<String, Object>();
 
-
     public FastListTest() {
         map.put("var0", "var0");
     }
 
     public void testHashCode() {
-
-      List list = (List) parseDirect("[ 'key1', var0 ]");
+        List list = (List) parseDirect("[ 'key1', var0 ]");
         System.out.println(list.hashCode());
     }
-
 
     public void testEquals() {
         List list1 = (List) parseDirect("[ 'key1', var0 ]");
@@ -38,11 +35,9 @@ public class FastListTest extends TestCase {
     }
 
     public Object compiledExecute(String ex) {
-
         Serializable compiled = MVEL.compileExpression(ex);
         Object first = MVEL.executeExpression(compiled, null, map);
         Object second = MVEL.executeExpression(compiled, null, map);
-
 
         if (first != null && !first.getClass().isArray())
             assertEquals(first, second);

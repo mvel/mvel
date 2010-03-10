@@ -209,7 +209,6 @@ public class AbstractParser implements Serializable {
                 return null;
             }
 
-
             int brace, idx;
             start = cursor;
 
@@ -616,7 +615,6 @@ public class AbstractParser implements Serializable {
                                 }
                                 break CaptureLoop;
 
-
                             case '<':
                                 if ((lookAhead() == '<' && lookAhead(2) == '=')) {
                                     name = new String(expr, start, trimLeft(cursor) - start);
@@ -638,7 +636,6 @@ public class AbstractParser implements Serializable {
                                     }
                                 }
                                 break CaptureLoop;
-
 
                             case '>':
                                 if (lookAhead() == '>') {
@@ -691,7 +688,6 @@ public class AbstractParser implements Serializable {
                                 cursor = balancedCaptureWithLineAccounting(expr, cursor, '[', pCtx) + 1;
                                 continue;
 
-
                             case '{':
                                 if (!union) break CaptureLoop;
                                 cursor = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx) + 1;
@@ -703,16 +699,11 @@ public class AbstractParser implements Serializable {
 
                                     start = cursor += 2;
 
-//                                    if (!isNextIdentifierOrLiteral()) {
-//                                        throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, cursor);
-//                                    }
-
                                     captureToEOT();
 
                                     return lastNode = new RegExMatch(tmp, fields, subArray(start, cursor), pCtx);
                                 }
                                 break CaptureLoop;
-
 
                             case '=':
                                 if (lookAhead() == '+') {
@@ -801,7 +792,6 @@ public class AbstractParser implements Serializable {
                                 else {
                                     break CaptureLoop;
                                 }
-
                         }
                     }
 
@@ -879,7 +869,6 @@ public class AbstractParser implements Serializable {
                             else {
                                 throw new CompileException("not a statement", expr, cursor);
                             }
-
 
                         case '+':
                             if (lookAhead() == '+') {
@@ -1018,9 +1007,7 @@ public class AbstractParser implements Serializable {
 
                                 Class cls;
                                 try {
-
                                     if (tDescr.isClass() && (cls = getClassReference(pCtx, tDescr)) != null) {
-
                                         start = cursor;
                                         captureToEOS();
 
@@ -1258,7 +1245,6 @@ public class AbstractParser implements Serializable {
 
         if (isLiteralOnly(expr, start, end)) {
             if (pCtx != null && pCtx.hasImports()) {
-
                 char[] _subset = subset(expr, start, cursor - start);
                 int offset;
 
@@ -1381,7 +1367,6 @@ public class AbstractParser implements Serializable {
                 return (ASTNode) splitAccumulator.pop();
             }
         }
-
     }
 
     private ASTNode createBlockToken(final int condStart,
@@ -1647,7 +1632,6 @@ public class AbstractParser implements Serializable {
         }
         return false;
     }
-
 
     protected void expectEOS() {
         skipWhitespace();
@@ -2397,7 +2381,6 @@ public class AbstractParser implements Serializable {
         stk.copy2(dStack);
         stk.op();
     }
-
 
     /**
      * This method is called when we reach the point where we must subEval a trinary operation in the expression.

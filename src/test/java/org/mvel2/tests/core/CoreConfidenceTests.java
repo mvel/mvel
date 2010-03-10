@@ -5,6 +5,7 @@ import org.mvel2.*;
 import static org.mvel2.MVEL.*;
 
 import org.mvel2.ast.ASTNode;
+import org.mvel2.ast.Function;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.Interceptor;
@@ -20,6 +21,7 @@ import org.mvel2.tests.core.res.*;
 import org.mvel2.tests.core.res.res2.ClassProvider;
 import org.mvel2.tests.core.res.res2.Outer;
 import org.mvel2.tests.core.res.res2.PublicClass;
+import org.mvel2.util.CompilerTools;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ReflectionUtil;
 
@@ -4915,4 +4917,6 @@ public class CoreConfidenceTests extends AbstractTest {
         String val = (String) MVEL.executeExpression(compiled, vars);
         assertEquals("value", val);
     }
+
+
 }

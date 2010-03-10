@@ -11,7 +11,7 @@ public class Make {
         }
 
         public static <K, V> Map<K, V> start() {
-            return start(HashMap.class);
+            return new Map(new HashMap());
         }
 
         public static <K, V> Map<K, V> start(Class<? extends java.util.Map> mapImpl) {
@@ -88,7 +88,7 @@ public class Make {
         }
 
         public static <V> List<V> start() {
-            return start(ArrayList.class);
+            return new List(new ArrayList());
         }
 
         public static <V> List<V> start(Class<? extends java.util.List> listImpl) {
@@ -126,7 +126,7 @@ public class Make {
         }
 
         public static <V> Set<V> start() {
-            return start(HashSet.class);
+            return new Set(new HashSet());
         }
 
         public static <V> Set<V> start(Class<? extends java.util.Set> listImpl) {
