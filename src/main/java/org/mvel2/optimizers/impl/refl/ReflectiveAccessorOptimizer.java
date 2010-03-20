@@ -18,20 +18,28 @@
 package org.mvel2.optimizers.impl.refl;
 
 import org.mvel2.*;
+
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
+
 import org.mvel2.ast.Function;
 import org.mvel2.ast.TypeDescriptor;
+
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
+
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.PropertyVerifier;
 import org.mvel2.integration.GlobalListenerFactory;
+
 import static org.mvel2.integration.GlobalListenerFactory.*;
+
 import org.mvel2.integration.PropertyHandler;
+
 import static org.mvel2.integration.PropertyHandlerFactory.*;
+
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AbstractOptimizer;
@@ -42,17 +50,24 @@ import org.mvel2.optimizers.impl.refl.collection.ListCreator;
 import org.mvel2.optimizers.impl.refl.collection.MapCreator;
 import org.mvel2.optimizers.impl.refl.nodes.*;
 import org.mvel2.util.ArrayTools;
+
 import static org.mvel2.util.CompilerTools.expectType;
+
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
+
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+
 import org.mvel2.util.StringAppender;
 
 import static java.lang.Integer.parseInt;
+
 import java.lang.reflect.*;
+
 import static java.lang.reflect.Array.getLength;
+
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -411,7 +426,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     private Object getBeanPropertyAO(Object ctx, String property)
             throws Exception {
-        
+
         if (GlobalListenerFactory.hasGetListeners()) {
             notifyGetListeners(ctx, property, variableFactory);
             addAccessorNode(new Notify(property));
@@ -427,7 +442,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         if ((currType = !first || pCtx == null ? null : pCtx.getVarOrInputTypeOrNull(property)) == Object.class
                 && !pCtx.isStrongTyping()) {
             currType = null;
-        } 
+        }
 
         if (first) {
             if ("this".equals(property)) {
@@ -871,7 +886,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 name = ((MethodStub) ptr).getMethodName();
             }
             else if (ptr instanceof Function) {
-                addAccessorNode(new FunctionAccessor((Function) ptr, es));
+                Function func = (Function) ptr;
+                if (!name.equals(func.getName())) {
+                     getBeanProperty(ctx, name);
+                     addAccessorNode(new DynamicFunctionAccessor(es));
+                }
+                else {
+                    addAccessorNode(new FunctionAccessor((Function) ptr, es));
+                }
                 return ((Function) ptr).call(ctx, thisRef, variableFactory, args);
             }
             else {

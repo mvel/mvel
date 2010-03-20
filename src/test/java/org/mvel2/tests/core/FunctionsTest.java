@@ -76,4 +76,26 @@ public class FunctionsTest extends AbstractTest {
     public void testAnonymousFunction() {
         assertEquals("foobar", test("a = function { 'foobar' }; a();"));
     }
+
+    public void testJIRA207() {
+        String ex = "x = 0; y = 0;" +
+                "def foo() { x = 1; System.out.println('Word up'); }\n" +
+                "def bar() { y = 1;  System.out.println('Peace out'); }\n" +
+                "def doMany(fps) {\n" +
+                "foreach(f : fps) { System.out.println(f); f(); }\n" +
+                "}\n" +
+                "doMany([foo,bar]);" +
+                "x == 1 && y == 1;";
+        Boolean bool = (Boolean) MVEL.eval(ex, new HashMap());
+        assertTrue(bool);
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        Serializable s = MVEL.compileExpression(ex);
+
+        bool = (Boolean) MVEL.executeExpression(s, new HashMap());
+        assertTrue(bool);
+
+        OptimizerFactory.setDefaultOptimizer("dynamic");
+    }
+
 }
