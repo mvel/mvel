@@ -22,6 +22,7 @@ import org.mvel2.tests.core.res.res2.ClassProvider;
 import org.mvel2.tests.core.res.res2.Outer;
 import org.mvel2.tests.core.res.res2.PublicClass;
 import org.mvel2.util.CompilerTools;
+import org.mvel2.util.Make;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ReflectionUtil;
 
@@ -4918,5 +4919,30 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("value", val);
     }
 
+    public void testJIRA108() {
+        Map vars = new LinkedHashMap();
+        vars.put("bal", "999");
 
+        String[] testCases = {"bal - 80 - 90 - 30", "bal-80-90-30", "100 + 80 == 180", "100+80==180",
+        };
+
+   //     System.out.println("bal = " + vars.get("bal"));
+
+        Object val1, val2;
+        for (String expr : testCases) {
+            System.out.println("Evaluating '" + expr + "': ......");
+            val1 = MVEL.eval(expr, vars);
+     //       System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(val1);
+            Serializable compiled = MVEL.compileExpression(expr);
+            val2 = MVEL.executeExpression(compiled, vars);
+       //     System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(val2);
+            assertEquals("expression did not evaluate correctly: " + expr, val1, val2);
+        }
+    }
+
+    public void testJIRA108a() {
+       assertEquals(799, MVEL.executeExpression(MVEL.compileExpression("bal - 80 - 90 - 30"), Make.Map.<Object, Object>$()._("bal", 999)._()));
+    }
 }

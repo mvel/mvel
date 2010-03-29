@@ -378,4 +378,22 @@ public class CompilerTools {
         return null;
     }
 
+    public static Number signNumber(Object number) {
+        if (number instanceof Integer) {
+            return ((Integer) number) * -1;
+        }
+        else if (number instanceof Double) {
+            return ((Double) number) * -1;
+        }
+        else if (number instanceof Float) {
+            return ((Float) number) * -1;
+        }
+        else if (number instanceof Short) {
+            return ((Short) number) * -1;
+        }
+        else {
+            throw new CompileException("expected a numeric type but found: " + number.getClass().getName());
+        }
+    }
+
 }

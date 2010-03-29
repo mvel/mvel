@@ -61,6 +61,8 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int BLOCK_DO_UNTIL = 1 << 17;
     public static final int BLOCK_FOR = 1 << 18;
 
+    public static final int OPT_SUBTR =  1 << 19;
+
     public static final int DEFERRED_TYPE_RES = 1 << 23;
     public static final int STRONG_TYPING = 1 << 24;
     public static final int PCTX_STORED = 1 << 25;
