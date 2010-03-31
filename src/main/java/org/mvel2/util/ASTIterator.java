@@ -45,6 +45,8 @@ public interface ASTIterator extends Serializable {
 
     public ASTNode nodesBack(int offset);
 
+    public ASTNode nodesAhead(int offset);
+
     public boolean hasMoreNodes();
 
     public String showNodeChain();

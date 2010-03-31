@@ -1,11 +1,8 @@
 package org.mvel2.tests.core;
 
+import junit.framework.TestCase;
 import org.mvel2.*;
-
-import static org.mvel2.MVEL.*;
-
 import org.mvel2.ast.ASTNode;
-import org.mvel2.ast.Function;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.Interceptor;
@@ -21,7 +18,6 @@ import org.mvel2.tests.core.res.*;
 import org.mvel2.tests.core.res.res2.ClassProvider;
 import org.mvel2.tests.core.res.res2.Outer;
 import org.mvel2.tests.core.res.res2.PublicClass;
-import org.mvel2.util.CompilerTools;
 import org.mvel2.util.Make;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ReflectionUtil;
@@ -35,12 +31,11 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static java.util.Collections.unmodifiableCollection;
-
 import java.util.List;
 
-import junit.framework.TestCase;
+import static java.util.Collections.unmodifiableCollection;
+import static org.mvel2.MVEL.*;
+import static org.mvel2.MVEL.executeExpression;
 
 @SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
@@ -647,7 +642,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 pCtx);
 
         assertEquals(true,
-                MVEL.executeExpression(s,
+                executeExpression(s,
                         map));
 
         assertEquals(1,
@@ -2269,7 +2264,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Serializable s = MVEL.compileExpression("java.math.BigDecimal axx = new java.math.BigDecimal( 10.0 ); java.math.BigDecimal bxx = " +
                 "new java.math.BigDecimal( 10.0 ); java.math.BigDecimal cxx = axx + bxx; return cxx; ");
 
-        assertEquals(new BigDecimal(20), MVEL.executeExpression(s, new HashMap()));
+        assertEquals(new BigDecimal(20), executeExpression(s, new HashMap()));
 
     }
 
@@ -4137,7 +4132,7 @@ public class CoreConfidenceTests extends AbstractTest {
         for (int i = 0; i < 100; i++) {
             System.out.println("i: " + i);
             System.out.flush();
-            MVEL.executeExpression(expression,
+            executeExpression(expression,
                     variables);
         }
     }
@@ -4157,7 +4152,7 @@ public class CoreConfidenceTests extends AbstractTest {
         for (int i = 0; i < 100; i++) {
             System.out.println("i: " + i);
             System.out.flush();
-            MVEL.executeExpression(expression,
+            executeExpression(expression,
                     variables);
         }
     }
@@ -4179,13 +4174,13 @@ public class CoreConfidenceTests extends AbstractTest {
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("a", b);
                 variables.put("value", 123);
-                MVEL.executeExpression(expression, variables);
+                executeExpression(expression, variables);
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("a", c);
                 variables.put("value", 123);
-                MVEL.executeExpression(expression, variables);
+                executeExpression(expression, variables);
             }
 
         }
@@ -4208,13 +4203,13 @@ public class CoreConfidenceTests extends AbstractTest {
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("a", b);
                 variables.put("value", 123);
-                MVEL.executeExpression(expression, variables);
+                executeExpression(expression, variables);
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("a", c);
                 variables.put("value", 123);
-                MVEL.executeExpression(expression, variables);
+                executeExpression(expression, variables);
             }
 
         }
@@ -4224,7 +4219,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(false,
                 MVEL.eval("!(true)"));
         assertEquals(false,
-                MVEL.executeExpression(MVEL.compileExpression("!(true)")));
+                executeExpression(MVEL.compileExpression("!(true)")));
     }
 
     public void testJIRA154() {
@@ -4247,7 +4242,7 @@ public class CoreConfidenceTests extends AbstractTest {
                         new Class[0]));
 
         assertEquals(false,
-                MVEL.executeExpression(MVEL.compileExpression("!(returnTrue())",
+                executeExpression(MVEL.compileExpression("!(returnTrue())",
                         pctx)));
     }
 
@@ -4259,7 +4254,7 @@ public class CoreConfidenceTests extends AbstractTest {
                         new Class[0]));
 
         assertEquals(true,
-                MVEL.executeExpression(MVEL.compileExpression("!true || returnTrue()",
+                executeExpression(MVEL.compileExpression("!true || returnTrue()",
                         pctx)));
     }
 
@@ -4271,7 +4266,7 @@ public class CoreConfidenceTests extends AbstractTest {
                         new Class[0]));
 
         assertEquals(true,
-                MVEL.executeExpression(MVEL.compileExpression("!(!true || !returnTrue())",
+                executeExpression(MVEL.compileExpression("!(!true || !returnTrue())",
                         pctx)));
     }
 
@@ -4304,10 +4299,10 @@ public class CoreConfidenceTests extends AbstractTest {
                 provider);
 
         OptimizerFactory.setDefaultOptimizer("reflective");
-        MVEL.executeExpression(s,
+        executeExpression(s,
                 vars);
         OptimizerFactory.setDefaultOptimizer("ASM");
-        MVEL.executeExpression(s,
+        executeExpression(s,
                 vars);
     }
 
@@ -4328,10 +4323,10 @@ public class CoreConfidenceTests extends AbstractTest {
         MVEL.eval(script,
                 vars);
         OptimizerFactory.setDefaultOptimizer("reflective");
-        MVEL.executeExpression(s,
+        executeExpression(s,
                 vars);
         OptimizerFactory.setDefaultOptimizer("ASM");
-        MVEL.executeExpression(s,
+        executeExpression(s,
                 vars);
     }
 
@@ -4371,11 +4366,11 @@ public class CoreConfidenceTests extends AbstractTest {
 
         OptimizerFactory.setDefaultOptimizer("ASM");
         CompiledExpression expr = compiler.compile(ctx);
-        MVEL.executeExpression(expr);
+        executeExpression(expr);
 
         OptimizerFactory.setDefaultOptimizer("reflective");
         expr = compiler.compile(ctx);
-        MVEL.executeExpression(expr);
+        executeExpression(expr);
     }
 
     public void testArray2() {
@@ -4390,11 +4385,11 @@ public class CoreConfidenceTests extends AbstractTest {
 
         OptimizerFactory.setDefaultOptimizer("ASM");
         CompiledExpression expr = compiler.compile(ctx);
-        MVEL.executeExpression(expr);
+        executeExpression(expr);
 
         OptimizerFactory.setDefaultOptimizer("reflective");
         expr = compiler.compile(ctx);
-        MVEL.executeExpression(expr);
+        executeExpression(expr);
     }
 
     public void testJIRA165() {
@@ -4412,13 +4407,13 @@ public class CoreConfidenceTests extends AbstractTest {
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("a", b);
                 variables.put("value", 123);
-                MVEL.executeExpression(expression, variables);
+                executeExpression(expression, variables);
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("a", a);
                 variables.put("value", 123);
-                MVEL.executeExpression(expression, variables);
+                executeExpression(expression, variables);
             }
         }
     }
@@ -4439,13 +4434,13 @@ public class CoreConfidenceTests extends AbstractTest {
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("a", b);
                 variables.put("value", 123);
-                MVEL.executeExpression(expression, variables);
+                executeExpression(expression, variables);
             }
             {
                 Map<String, Object> variables = new HashMap<String, Object>();
                 variables.put("a", a);
                 variables.put("value", 123);
-                MVEL.executeExpression(expression, variables);
+                executeExpression(expression, variables);
             }
         }
 
@@ -4500,7 +4495,7 @@ public class CoreConfidenceTests extends AbstractTest {
             }
             CompiledExpression expr = new ExpressionCompiler(expressionNaked).compile(ctx);
 
-            Boolean result = (Boolean) MVEL.executeExpression(expr,
+            Boolean result = (Boolean) executeExpression(expr,
                     st);
             assertTrue(result);
 
@@ -4541,10 +4536,10 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void invokeJIRA170(String name, ParserContext pctx, Map<String, ?> vars, Collection<Integer> expected) {
         Serializable expression = MVEL.compileExpression("x.remove((Object) y); x ", pctx);
-        Object result = MVEL.executeExpression(expression, vars);
+        Object result = executeExpression(expression, vars);
 
         assertTrue(String.format("%s Expected %s, Got %s", name, expected, result), expected.equals(result));
-        result = MVEL.executeExpression(expression, vars);
+        result = executeExpression(expression, vars);
 
         assertTrue(String.format("%s Expected %s, Got %s", name, expected, result), expected.equals(result));
     }
@@ -4596,7 +4591,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 "b = test(new java.util.HashSet());");
 
         Map vars = new HashMap();
-        MVEL.executeExpression(s, vars);
+        executeExpression(s, vars);
 
         assertEquals(false, ((Collection) vars.get("a")).contains(2));
         assertEquals(2, ((Collection) vars.get("a")).size());
@@ -4625,12 +4620,12 @@ public class CoreConfidenceTests extends AbstractTest {
         Serializable s = MVEL.compileExpression("mappo['testKey[MyValue=newValue]']");
         OptimizerFactory.setDefaultOptimizer("reflective");
 
-        assertEquals("test", MVEL.executeExpression(s, vars));
+        assertEquals("test", executeExpression(s, vars));
 
         s = MVEL.compileExpression("mappo['testKey[MyValue=newValue]']");
         OptimizerFactory.setDefaultOptimizer("ASM");
 
-        assertEquals("test", MVEL.executeExpression(s, vars));
+        assertEquals("test", executeExpression(s, vars));
     }
 
     public void testRandomSomething() {
@@ -4645,11 +4640,11 @@ public class CoreConfidenceTests extends AbstractTest {
 
         Serializable s = MVEL.compileExpression("name.toUpperCase()", ParserContext.create().stronglyTyped().withInput("name", String.class));
 
-        Object _return = MVEL.executeExpression(s, foo);
+        Object _return = executeExpression(s, foo);
 
         System.out.println("returned value: " + String.valueOf(_return));
 
-        _return = MVEL.executeExpression(s, foo2);
+        _return = executeExpression(s, foo2);
 
         System.out.println("returned value: " + String.valueOf(_return));
 
@@ -4678,7 +4673,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Map vars = new HashMap();
         vars.put("drools", new KnowledgeRuntimeHelper());
         Serializable expr = MVEL.compileExpression(expression, ctx);
-        MVEL.executeExpression(expr, vars);
+        executeExpression(expr, vars);
     }
 
     public void testJIRA183() {
@@ -4711,7 +4706,7 @@ public class CoreConfidenceTests extends AbstractTest {
         vars.put("outer", new Outer());
         VariableResolverFactory varsResolver = new MapVariableResolverFactory(vars);
 
-        assertEquals(2, MVEL.executeExpression(compiled, varsResolver));
+        assertEquals(2, executeExpression(compiled, varsResolver));
     }
 
     public void testMVEL190() {
@@ -4731,7 +4726,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 = new MapVariableResolverFactory(vars);
 
         System.out.println(
-                MVEL.executeExpression(compiled, varsResolver));
+                executeExpression(compiled, varsResolver));
 
     }
 
@@ -4759,7 +4754,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         vars.put("person", p);
 
-        assertEquals("dog", MVEL.executeExpression(s, vars));
+        assertEquals("dog", executeExpression(s, vars));
     }
 
     public void testGenericInference2() {
@@ -4796,7 +4791,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
         // this also should be fine
         Serializable expr = MVEL.compileExpression("TestCase.assertTrue( is( getList( java.util.Formatter ) ) )", pctx);
-        MVEL.executeExpression(expr, vars);
+        executeExpression(expr, vars);
     }
 
     public static class StaticMethods {
@@ -4835,7 +4830,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Map vars = new HashMap();
         vars.put("$likes", "stilton");
         vars.put("results", results);
-        MVEL.executeExpression(expr, vars);
+        executeExpression(expr, vars);
 
         assertEquals(new Cheese("stilton", 15), results.get(0));
     }
@@ -4869,7 +4864,6 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testGetterViaDotNotation() {
-
         TestClass tc = new TestClass();
         tc.getExtra().put("test", "value");
 
@@ -4881,12 +4875,11 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addInput("tc", tc.getClass());
         String expression = "tc.extra.test";
         Serializable compiled = MVEL.compileExpression(expression, ctx);
-        String val = (String) MVEL.executeExpression(compiled, vars);
+        String val = (String) executeExpression(compiled, vars);
         assertEquals("value", val);
     }
 
     public void testGetterViaMapNotation() {
-
         TestClass tc = new TestClass();
         tc.getExtra().put("test", "value");
 
@@ -4898,12 +4891,11 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addInput("tc", tc.getClass());
         String expression = "tc.extra[\"test\"]";
         Serializable compiled = MVEL.compileExpression(expression, ctx);
-        String val = (String) MVEL.executeExpression(compiled, vars);
+        String val = (String) executeExpression(compiled, vars);
         assertEquals("value", val);
     }
 
     public void testGetterViaMapGetter() {
-
         TestClass tc = new TestClass();
         tc.getExtra().put("test", "value");
 
@@ -4915,16 +4907,15 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.addInput("tc", tc.getClass());
         String expression = "tc.extra.get(\"test\")";
         Serializable compiled = MVEL.compileExpression(expression, ctx);
-        String val = (String) MVEL.executeExpression(compiled, vars);
+        String val = (String) executeExpression(compiled, vars);
         assertEquals("value", val);
     }
 
-    public void testJIRA108() {
+    public void testJIRA208() {
         Map vars = new LinkedHashMap();
-        vars.put("bal", "999");
+        vars.put("bal", 999);
 
-        String[] testCases = {"bal - 80 - 90 - 30", "bal-80-90-30", "100 + 80 == 180", "100+80==180",
-        };
+        String[] testCases = {"bal - 80 - 90 - 30", "bal-80-90-30", "100 + 80 == 180", "100+80==180"};
 
    //     System.out.println("bal = " + vars.get("bal"));
 
@@ -4935,14 +4926,39 @@ public class CoreConfidenceTests extends AbstractTest {
      //       System.out.println("'" + expr + " ' = " + ret.toString());
             assertNotNull(val1);
             Serializable compiled = MVEL.compileExpression(expr);
-            val2 = MVEL.executeExpression(compiled, vars);
+            val2 = executeExpression(compiled, vars);
        //     System.out.println("'" + expr + " ' = " + ret.toString());
             assertNotNull(val2);
             assertEquals("expression did not evaluate correctly: " + expr, val1, val2);
         }
     }
 
-    public void testJIRA108a() {
-       assertEquals(799, MVEL.executeExpression(MVEL.compileExpression("bal - 80 - 90 - 30"), Make.Map.<Object, Object>$()._("bal", 999)._()));
+    public void testJIRA1208a() {
+       assertEquals(799, executeExpression(compileExpression("bal - 80 - 90 - 30"), Make.Map.<Object, Object>$()._("bal", 999)._()));
     }
+
+    public void testJIRA208b() {
+        Map vars = new LinkedHashMap();
+        vars.put("bal", 999);
+
+        String[] testCases = {
+                //"bal + 80 - 80", 
+                "bal - 80 + 80", "bal * 80 / 80", "bal / 80 * 80"};
+
+   //     System.out.println("bal = " + vars.get("bal"));
+
+        Object val1, val2;
+        for (String expr : testCases) {
+            System.out.println("Evaluating '" + expr + "': ......");
+            val1 = MVEL.eval(expr, vars);
+     //       System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(val1);
+            Serializable compiled = MVEL.compileExpression(expr);
+            val2 = executeExpression(compiled, vars);
+       //     System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(val2);
+            assertEquals("expression did not evaluate correctly: " + expr, val1, val2);
+        }
+    }
+
 }

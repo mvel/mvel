@@ -20,19 +20,22 @@ package org.mvel2.util;
 
 import org.mvel2.CompileException;
 import org.mvel2.Operator;
+
 import static org.mvel2.Operator.PTABLE;
+
 import org.mvel2.ParserContext;
 import org.mvel2.ast.*;
+
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
-import org.mvel2.compiler.Accessor;
-import org.mvel2.compiler.CompiledExpression;
-import org.mvel2.compiler.ExecutableAccessor;
-import org.mvel2.compiler.ExecutableLiteral;
+
+import org.mvel2.compiler.*;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
+
 import static org.mvel2.util.ParseTools.__resolveType;
 import static org.mvel2.util.ParseTools.boxPrimitive;
 
+import java.lang.management.OperatingSystemMXBean;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -97,7 +100,47 @@ public class CompilerTools {
                         }
                     }
                     else {
-                        bo = new BinaryOperation(op, tk, tk2, ctx);
+                        /**
+                         * Let's see if we can simply the expression more.
+                         */
+                        bo = null;
+
+                        boolean inv = tkOp.isOperator(Operator.SUB);
+                        boolean reduc = isReductionOpportunity(tkOp, tk2);
+                        boolean p_inv = false;
+
+                        while (reduc) {
+                            ASTNode oper = astLinkedList.nextNode();
+                            ASTNode rightNode = astLinkedList.nextNode();
+
+                            if (rightNode == null) break;
+
+                            Object val = new BinaryOperation(oper.getOperator(), inv ?
+                                    new LiteralNode(signNumber(tk2.getLiteralValue())) : tk2, rightNode)
+                                    .getReducedValueAccelerated(null, null, null);
+
+                            if (!astLinkedList.hasMoreNodes() && BlankLiteral.INSTANCE.equals(val)) {
+                                optimizedAst.addTokenNode(tk);
+                                continue;
+                            }
+
+                            reduc = astLinkedList.hasMoreNodes()
+                                    && (reducacbleOperator(astLinkedList.peekNode().getOperator()))
+                                    && astLinkedList.peekNext().isLiteral();
+
+                            if (inv) p_inv = true;
+                            inv = false;
+
+                            if (!reduc) {
+                                bo = new BinaryOperation(tkOp.getOperator(), tk,new LiteralNode(p_inv ? signNumber(val) : val));
+                            }
+                            else {
+                                tk2 = new LiteralNode(val);
+                            }
+                        }
+
+                        if (bo == null)
+                            bo = new BinaryOperation(op, tk, tk2, ctx);
                     }
 
                     tkOp2 = null;
@@ -135,7 +178,7 @@ public class CompilerTools {
                             if (isIntOptimizationviolation(bo, tk2)) {
                                 bo = new BinaryOperation(bo.getOperation(), bo.getLeft(), bo.getRight(), ctx);
                             }
-                            
+
                             bo.setRight(new BinaryOperation(op2, bo.getRight(), tk2, ctx));
                         }
 
@@ -232,6 +275,24 @@ public class CompilerTools {
         }
 
         return optimizedAst;
+    }
+
+    private static boolean isReductionOpportunity(ASTNode oper, ASTNode node) {
+        ASTNode n = node;
+        return (n != null && n.isLiteral()
+                && (n = n.nextASTNode) != null && reducacbleOperator(n.getOperator())
+                && PTABLE[oper.getOperator()] == PTABLE[n.getOperator()]
+                && (n = n.nextASTNode) != null && n.isLiteral());
+    }
+
+    private static boolean reducacbleOperator(int oper) {
+        switch (oper) {
+            case Operator.ADD:
+            case Operator.SUB:
+                return true;
+
+        }
+        return false;
     }
 
     private static void optimizeOperator(int operator, ASTNode tk, ASTNode tkOp,

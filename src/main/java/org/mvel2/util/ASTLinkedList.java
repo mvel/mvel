@@ -111,6 +111,7 @@ public class ASTLinkedList implements ASTIterator {
             return null;
     }
 
+
     public ASTNode peekNode() {
         if (current == null) return null;
         return current;
@@ -128,6 +129,15 @@ public class ASTLinkedList implements ASTIterator {
 
     public ASTNode nodesBack(int offset) {
         throw new RuntimeException("unimplemented");
+    }
+
+    public ASTNode nodesAhead(int offset) {
+        if (current == null) return null;
+        ASTNode cursor = null;
+        for (int i = 0; i < offset; i++) {
+            if ((cursor = current.nextASTNode) == null) return null;
+        }
+        return cursor;
     }
 
     public void back() {

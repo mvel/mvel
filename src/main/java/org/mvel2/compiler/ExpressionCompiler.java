@@ -152,21 +152,9 @@ public class ExpressionCompiler extends AbstractParser {
                          */
                         if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()
                                 && tkOp.getOperator() < 34 && ((lastOp == -1
-                                || (lastOp < PTABLE.length && PTABLE[lastOp] <= PTABLE[tkOp.getOperator()])))) {
+                                || (lastOp < PTABLE.length && PTABLE[lastOp] < PTABLE[tkOp.getOperator()])))) {
 
-
-                            switch (op = tkOp.getOperator()) {
-                                case Operator.SUB:
-                                    if ((literalOnly == 0) && ((fields & OPT_SUBTR) == 0) &&
-                                            (tk.getLiteralValue() instanceof Number)) {
-                                        stk.push(signNumber(tk.getLiteralValue()), tkLA.getLiteralValue(), op);
-                                        fields |= OPT_SUBTR;
-                                        break;
-                                    }
-                                default:
-                                    stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), op = tkOp.getOperator());
-                            }
-
+                            stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), op = tkOp.getOperator());
 
                             /**
                              * Reduce the token now.
@@ -234,7 +222,6 @@ public class ExpressionCompiler extends AbstractParser {
                                         if (tkLA2 != null) astBuild.addTokenNode(verify(pCtx, tkLA2));
                                     }
 
-
                                     break;
                                 }
                             }
@@ -270,8 +257,10 @@ public class ExpressionCompiler extends AbstractParser {
                     if (tk.isOperator()) {
                         lastOp = tk.getOperator();
                     }
+                    else {
+                        literalOnly = 0;
+                    }
 
-                    literalOnly = 0;
                 }
 
                 astBuild.addTokenNode(verify(pCtx, tk));
