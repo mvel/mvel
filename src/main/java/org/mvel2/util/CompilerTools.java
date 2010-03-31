@@ -282,7 +282,7 @@ public class CompilerTools {
         return (n != null && n.isLiteral()
                 && (n = n.nextASTNode) != null && reducacbleOperator(n.getOperator())
                 && PTABLE[oper.getOperator()] == PTABLE[n.getOperator()]
-                && (n = n.nextASTNode) != null && n.isLiteral());
+                && (n = n.nextASTNode) != null && n.isLiteral() && n.getLiteralValue() instanceof Number);
     }
 
     private static boolean reducacbleOperator(int oper) {
