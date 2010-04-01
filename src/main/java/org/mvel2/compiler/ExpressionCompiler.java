@@ -32,7 +32,7 @@ import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
 import org.mvel2.util.*;
 
 import static org.mvel2.ast.ASTNode.OPT_SUBTR;
-import static org.mvel2.util.CompilerTools.optimizeAST;
+import static org.mvel2.util.CompilerTools.finalizePayload;
 
 import static org.mvel2.util.CompilerTools.signNumber;
 import static org.mvel2.util.ParseTools.subCompileExpression;
@@ -278,7 +278,7 @@ public class ExpressionCompiler extends AbstractParser {
 
 
             if (!verifyOnly) {
-                return new CompiledExpression(optimizeAST(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly == 1);
+                return new CompiledExpression(finalizePayload(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly == 1);
             }
             else {
                 return null;

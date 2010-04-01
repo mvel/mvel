@@ -7,9 +7,12 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.util.Make;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ArithmeticTests extends AbstractTest {
@@ -783,5 +786,76 @@ public class ArithmeticTests extends AbstractTest {
     public void testJIRA180() {
         Serializable s = MVEL.compileExpression("-Math.sin(0)");
         MVEL.executeExpression(s);
+    }
+
+        public void testJIRA208() {
+        Map vars = new LinkedHashMap();
+        vars.put("bal", 999);
+
+        String[] testCases = {"bal - 80 - 90 - 30", "bal-80-90-30", "100 + 80 == 180", "100+80==180"};
+
+        //     System.out.println("bal = " + vars.get("bal"));
+
+        Object val1, val2;
+        for (String expr : testCases) {
+            System.out.println("Evaluating '" + expr + "': ......");
+            val1 = MVEL.eval(expr, vars);
+            //       System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(val1);
+            Serializable compiled = MVEL.compileExpression(expr);
+            val2 = executeExpression(compiled, vars);
+            //     System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(val2);
+            assertEquals("expression did not evaluate correctly: " + expr, val1, val2);
+        }
+    }
+
+    public void testJIRA1208a() {
+        assertEquals(799, executeExpression(compileExpression("bal - 80 - 90 - 30"), Make.Map.<Object, Object>$()._("bal", 999)._()));
+    }
+
+    public void testJIRA208b() {
+        Map vars = new LinkedHashMap();
+        vars.put("bal", 999);
+
+        String[] testCases = {
+                "bal + 80 - 80",
+                "bal - 80 + 80", "bal * 80 / 80", "bal / 80 * 80"};
+
+        //     System.out.println("bal = " + vars.get("bal"));
+
+        Object val1, val2;
+        for (String expr : testCases) {
+            System.out.println("Evaluating '" + expr + "': ......");
+            val1 = MVEL.eval(expr, vars);
+            //       System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(val1);
+            Serializable compiled = MVEL.compileExpression(expr);
+            val2 = executeExpression(compiled, vars);
+            //     System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(val2);
+            assertEquals("expression did not evaluate correctly: " + expr, val1, val2);
+        }
+    }
+
+    public void testJIRA210() {
+        Map vars = new LinkedHashMap();
+        vars.put("bal", new BigDecimal("999.99"));
+
+        String[] testCases = {"bal - 1 + \"abc\"",};
+
+
+        Object val1, val2;
+        for (String expr : testCases) {
+            System.out.println("Evaluating '" + expr + "': ......");
+            val1 = MVEL.eval(expr, vars);
+            //       System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(val1);
+            Serializable compiled = MVEL.compileExpression(expr);
+            val2 = executeExpression(compiled, vars);
+            //     System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(val2);
+            assertEquals("expression did not evaluate correctly: " + expr, val1, val2);
+        }
     }
 }

@@ -22,6 +22,7 @@ import static org.mvel2.Operator.*;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.Substatement;
 import org.mvel2.compiler.AbstractParser;
+import org.mvel2.compiler.BlankLiteral;
 import org.mvel2.compiler.EndWithValue;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
@@ -124,6 +125,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                             variableFactory.createVariable(tk.getName(), null, (Class) stk.peek());
                         }
                         continue;
+
                 }
 
                 stk.push(nextToken().getReducedValue(ctx, ctx, variableFactory), operator);
@@ -203,6 +205,12 @@ public class MVELInterpretedRuntime extends AbstractParser {
                     stk.discard();
                     return 0;
                 }
+
+            case CHOR:
+                if (!BlankLiteral.INSTANCE.equals(stk.peek())) {
+                    return -1;
+                }
+                break;
 
             case TERNARY:
                 if (!stk.popBoolean()) {
