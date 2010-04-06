@@ -281,7 +281,7 @@ public class CompilerTools {
         ASTNode n = node;
         return (n != null && n.isLiteral()
                 && (n = n.nextASTNode) != null && reducacbleOperator(n.getOperator())
-                && PTABLE[oper.getOperator()] == PTABLE[n.getOperator()]
+                && PTABLE[oper.getOperator()] <= PTABLE[n.getOperator()]
                 && (n = n.nextASTNode) != null && n.isLiteral() && n.getLiteralValue() instanceof Number);
     }
 
@@ -298,7 +298,6 @@ public class CompilerTools {
     private static void optimizeOperator(int operator, ASTNode tk, ASTNode tkOp,
                                          ASTLinkedList astLinkedList,
                                          ASTLinkedList optimizedAst) {
-
         switch (operator) {
             case Operator.REGEX:
                 optimizedAst.addTokenNode(new RegExMatchNode(tk, astLinkedList.nextNode()));
