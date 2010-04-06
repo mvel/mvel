@@ -611,6 +611,12 @@ public class ParseTools {
         else if (cls == Long[].class || cls == long[].class) {
             return long[].class;
         }
+        else if (cls == Character.class || cls == char.class) {
+            return char.class;
+        }
+        else if (cls == Character[].class || cls == char[].class) {
+            return char[].class;
+        }
         else if (cls == Short.class || cls == short.class) {
             return short.class;
         }
@@ -641,6 +647,7 @@ public class ParseTools {
         else if (cls == Byte[].class || cls == byte[].class) {
             return byte[].class;
         }
+
 
         return cls;
     }

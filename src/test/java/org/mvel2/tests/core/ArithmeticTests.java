@@ -819,8 +819,10 @@ public class ArithmeticTests extends AbstractTest {
         vars.put("bal", 999);
 
         String[] testCases = {
-                "bal + 80 - 80",
-                "bal - 80 + 80", "bal * 80 / 80", "bal / 80 * 80"};
+        //        "bal + 80 - 80",
+        //        "bal - 80 + 80", "bal * 80 / 80",
+                "bal / 80 * 80"
+        };
 
         //     System.out.println("bal = " + vars.get("bal"));
 
