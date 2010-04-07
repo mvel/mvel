@@ -108,6 +108,20 @@ public class LongCH implements ConversionHandler {
                 }
         );
 
+        CNV.put(Double.class,
+                new Converter() {
+                    public Object convert(Object o) {
+                        return ((Double) o).longValue();
+                    }
+                });
+
+        CNV.put(Float.class,
+                new Converter() {
+                    public Object convert(Object o) {
+                        return ((Float) o).longValue();
+                    }
+                });
+
         CNV.put(Boolean.class,
                 new Converter() {
                     public Long convert(Object o) {
