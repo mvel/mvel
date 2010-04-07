@@ -56,7 +56,7 @@ Export-Package: org.mvel2;uses:="org.mvel2.util,org.mvel2.conversion,o
 Bundle-Version: 2.0.18.SNAPSHOT
 Tool: Bnd-0.0.357
 Bundle-Name: mvel2
-Bnd-LastModified: 1270569405097
+Bnd-LastModified: 1270670318442
 Created-By: 1.6.0_17 (Apple Inc.)
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.mvel2
