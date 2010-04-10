@@ -35,7 +35,6 @@ import java.util.List;
 
 import static java.util.Collections.unmodifiableCollection;
 import static org.mvel2.MVEL.*;
-import static org.mvel2.MVEL.executeExpression;
 
 @SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
@@ -4339,6 +4338,10 @@ public class CoreConfidenceTests extends AbstractTest {
                                   Object[] arr) {
             System.out.println(id + " -> " + arr.length);
         }
+        
+        public static void method(Object obj1, Object obj2 ) {
+            System.out.println(obj1+"-> "+obj2);
+        }
 
         public static Calendar minDate() {
             return Calendar.getInstance();
@@ -4940,6 +4943,21 @@ public class CoreConfidenceTests extends AbstractTest {
             assertNotNull(val2);
             assertEquals("expression did not evaluate correctly: " + expr, val1, val2);
         }
+    }
+
+    public void testConstructor() {
+        String ex = " TestHelper.method(new Person('bob', 30), new Person('mark', 40, 999));\n";
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addImport(TestHelper.class);
+        ctx.addImport(Person.class);
+        
+        Serializable expr = MVEL.compileExpression( ex, ctx );
+        
+        // un-comment the following line to see how MVEL is converting the int argument 40 into a
+        // string and then executing the wrong constructor on the Person class 
+        // MVEL.executeExpression( expr, new HashMap() );   
+        fail( "The Person constructor used in the expression does not exist, so an error should have been raised during compilation." );
     }
 
 }
