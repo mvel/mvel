@@ -58,6 +58,7 @@ import java.util.*;
 
 @SuppressWarnings({"ManualArrayCopy"})
 public class ParseTools {
+    public static final String[] EMPTY_STR_ARR = new String[0];
     public static final Object[] EMPTY_OBJ_ARR = new Object[0];
     public static final Class[] EMPTY_CLS_ARR = new Class[0];
 
@@ -88,7 +89,7 @@ public class ParseTools {
             return parseParameterList(parm, --start + 1, balancedCapture(parm, start, '(') - start - 1);
         }
 
-        return null;
+        return EMPTY_STR_ARR;
     }
 
 
@@ -388,12 +389,7 @@ public class ParseTools {
         }
     }
 
-    public static Constructor getBestConstructorCanadidate(Object[] args, Class cls, boolean requireExact) {
-        Class[] parmTypes;
-        Constructor bestCandidate = null;
-        int bestScore = 0;
-        int score = 0;
-
+    public static Constructor getBestConstructorCandidate(Object[] args, Class cls, boolean requireExact) {
         Class[] arguments = new Class[args.length];
 
         for (int i = 0; i != args.length; i++) {
@@ -401,6 +397,17 @@ public class ParseTools {
                 arguments[i] = args[i].getClass();
             }
         }
+
+        return getBestConstructorCandidate(arguments, cls, requireExact);
+    }
+
+    public static Constructor getBestConstructorCandidate(Class[] arguments, Class cls, boolean requireExact) {
+        Class[] parmTypes;
+        Constructor bestCandidate = null;
+        int bestScore = 0;
+        int score = 0;
+
+
         Integer hash = createClassSignatureHash(cls, arguments);
 
         Map<Integer, WeakReference<Constructor>> cache = RESOLVED_CONST_CACHE.get(cls);
@@ -410,14 +417,14 @@ public class ParseTools {
         }
 
         for (Constructor construct : getConstructors(cls)) {
-            if ((parmTypes = getConstructors(construct)).length != args.length) {
+            if ((parmTypes = getConstructors(construct)).length != arguments.length) {
                 continue;
             }
-            else if (args.length == 0 && parmTypes.length == 0) {
+            else if (arguments.length == 0 && parmTypes.length == 0) {
                 return construct;
             }
 
-            for (int i = 0; i != args.length; i++) {
+            for (int i = 0; i != arguments.length; i++) {
                 if (arguments[i] == null) {
                     if (!parmTypes[i].isPrimitive()) {
                         score += 5;
@@ -440,7 +447,7 @@ public class ParseTools {
                     score += 4;
                 }
                 else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i])) && parmTypes[i] != Object.class) {
-                    score += 3 + scoreInterface(parmTypes[i], arguments[i]);                    
+                    score += 3 + scoreInterface(parmTypes[i], arguments[i]);
                 }
                 else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
                     if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;

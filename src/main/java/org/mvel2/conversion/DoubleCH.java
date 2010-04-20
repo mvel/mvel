@@ -72,7 +72,6 @@ public class DoubleCH implements ConversionHandler {
                 }
         );
 
-
         CNV.put(BigInteger.class,
                 new Converter() {
                     public Double convert(Object o) {
@@ -80,7 +79,6 @@ public class DoubleCH implements ConversionHandler {
                     }
                 }
         );
-
 
         CNV.put(Double.class,
                 new Converter() {

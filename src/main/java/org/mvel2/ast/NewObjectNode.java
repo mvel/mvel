@@ -17,28 +17,32 @@
  */
 package org.mvel2.ast;
 
-import org.mvel2.CompileException;
+import org.mvel2.*;
+
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
-import org.mvel2.ParserContext;
-import org.mvel2.PropertyAccessor;
-import org.mvel2.ErrorDetail;
-import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
+
 import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
+
 import org.mvel2.util.ArrayTools;
-import org.mvel2.util.CompilerTools;
+import org.mvel2.util.ParseTools;
+
 import static org.mvel2.util.CompilerTools.getInjectedImports;
 import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ParseTools.*;
 
 import java.io.Serializable;
+
 import static java.lang.Thread.currentThread;
 import static java.lang.reflect.Array.newInstance;
+
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 
 /**
  * @author Christopher Brock
@@ -63,7 +67,7 @@ public class NewObjectNode extends ASTNode {
                     egressType = Class.forName(typeDescr.getClassName(), true, currentThread().getContextClassLoader());
                 }
                 catch (ClassNotFoundException e) {
-                    if (pCtx != null && pCtx.isStrongTyping()) 
+                    if (pCtx != null && pCtx.isStrongTyping())
                         pCtx.addError(new ErrorDetail("could not resolve class: " + typeDescr.getClassName(), true));
 
                     // do nothing.
@@ -83,6 +87,29 @@ public class NewObjectNode extends ASTNode {
                     }
                 }
             }
+
+            if (pCtx != null && pCtx.isStrongTyping()) {
+                if (egressType == null) {
+                    pCtx.addError(new ErrorDetail("could not resolve class: " + typeDescr.getClassName(), true));
+                    return;
+                }
+
+                if (!typeDescr.isArray()) {
+                    String[] cnsRes = captureContructorAndResidual(name);
+                    String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
+
+                    Class[] parms = new Class[constructorParms.length];
+                    for (int i = 0; i < parms.length; i++) {
+                        parms[i] = MVEL.analyze(constructorParms[i], pCtx);
+                    }
+
+                    if (ParseTools.getBestConstructorCandidate(parms, egressType, true) == null) {
+                        if (pCtx.isStrongTyping())
+                            pCtx.addError(new ErrorDetail("could not resolve constructor " + typeDescr.getClassName() + Arrays.toString(parms), pCtx.isStrongTyping()));
+                    }
+                }
+            }
+
         }
     }
 
@@ -200,7 +227,7 @@ public class NewObjectNode extends ASTNode {
                         parms[i] = eval(constructorParms[i], ctx, factory);
                     }
 
-                    Constructor cns = getBestConstructorCanadidate(parms, cls, false);
+                    Constructor cns = getBestConstructorCandidate(parms, cls, false);
 
                     if (cns == null)
                         throw new CompileException("unable to find constructor for: " + cls.getName());
