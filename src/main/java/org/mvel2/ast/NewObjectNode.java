@@ -20,6 +20,7 @@ package org.mvel2.ast;
 import org.mvel2.*;
 
 import static org.mvel2.DataConversion.convert;
+import static org.mvel2.MVEL.analyze;
 import static org.mvel2.MVEL.eval;
 
 import org.mvel2.compiler.Accessor;
@@ -40,6 +41,7 @@ import java.io.Serializable;
 
 import static java.lang.Thread.currentThread;
 import static java.lang.reflect.Array.newInstance;
+import static org.mvel2.util.ParseTools.getBestConstructorCandidate;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -95,17 +97,16 @@ public class NewObjectNode extends ASTNode {
                 }
 
                 if (!typeDescr.isArray()) {
-                    String[] cnsRes = captureContructorAndResidual(name);
-                    String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
-
-                    Class[] parms = new Class[constructorParms.length];
+                    final String[] constructorParms = parseMethodOrConstructor(captureContructorAndResidual(name)[0].toCharArray());
+                    final Class[] parms = new Class[constructorParms.length];
                     for (int i = 0; i < parms.length; i++) {
-                        parms[i] = MVEL.analyze(constructorParms[i], pCtx);
+                        parms[i] = analyze(constructorParms[i], pCtx);
                     }
 
-                    if (ParseTools.getBestConstructorCandidate(parms, egressType, true) == null) {
+                    if (getBestConstructorCandidate(parms, egressType, true) == null) {
                         if (pCtx.isStrongTyping())
-                            pCtx.addError(new ErrorDetail("could not resolve constructor " + typeDescr.getClassName() + Arrays.toString(parms), pCtx.isStrongTyping()));
+                            pCtx.addError(new ErrorDetail("could not resolve constructor " + typeDescr.getClassName()
+                                    + Arrays.toString(parms), pCtx.isStrongTyping()));
                     }
                 }
             }

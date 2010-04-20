@@ -75,6 +75,10 @@ public class MVEL {
         }
     }
 
+    // don't construct this!
+    private MVEL() {
+    }
+
     public static boolean isAdvancedDebugging() {
         return ADVANCED_DEBUG;
     }
