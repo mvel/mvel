@@ -104,6 +104,11 @@ public class AbstractParser implements Serializable {
         setupParser();
     }
 
+    /**
+     * This method is internally called by the static initializer for AbstractParser in order to setup the parser.
+     * The static initialization populates the operator and literal tables for the parser.  In some situations, like
+     * OSGi, it may be necessary to utilize this manually.
+     */
     public static void setupParser() {
         if (LITERALS == null || LITERALS.isEmpty()) {
             LITERALS = new HashMap<String, Object>();
@@ -1641,6 +1646,9 @@ public class AbstractParser implements Serializable {
         return false;
     }
 
+    /**
+     * The parser should find a statement ending condition when this is called, otherwise everything should blow up.
+     */
     protected void expectEOS() {
         skipWhitespace();
         if (cursor != length && expr[cursor] != ';') {
@@ -1683,6 +1691,11 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    /**
+     * Checks to see if the next part of the statement is an identifier part.
+     *
+     * @return boolean true if next part is identifier part.
+     */
     protected boolean isNextIdentifier() {
         while (cursor != length && isWhitespace(expr[cursor])) cursor++;
         return cursor != length && isIdentifierPart(expr[cursor]);
@@ -1921,6 +1934,11 @@ public class AbstractParser implements Serializable {
         while (cursor != 0 && isWhitespace(expr[cursor - 1])) cursor--;
     }
 
+    /**
+     * Set and finesse the expression, trimming an leading or proceeding whitespace.
+     *
+     * @param expression
+     */
     protected void setExpression(String expression) {
         if (expression != null && expression.length() != 0) {
             synchronized (EX_PRECACHE) {
@@ -1944,6 +1962,11 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    /**
+     * Set and finesse the expression, trimming an leading or proceeding whitespace.
+     *
+     * @param expression
+     */
     protected void setExpression(char[] expression) {
         length = (this.expr = expression).length;
         while (length != 0 && isWhitespace(this.expr[length - 1])) length--;
