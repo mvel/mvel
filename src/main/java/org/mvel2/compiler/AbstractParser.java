@@ -1220,6 +1220,11 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    /**
+     * Handle a union between a closed statement and a residual property chain.
+     * @param node
+     * @return
+     */
     protected ASTNode handleUnion(ASTNode node) {
         if (cursor != length) {
             skipWhitespace();
@@ -1241,11 +1246,25 @@ public class AbstractParser implements Serializable {
         return lastNode = node;
     }
 
+    /**
+     * Create an operator node.
+     * @param expr
+     * @param start
+     * @param end
+     * @return
+     */
     private ASTNode createOperator(final char[] expr, final int start, final int end) {
         lastWasIdentifier = false;
         return lastNode = new OperatorNode(OPERATORS.get(new String(expr, start, end - start)));
     }
 
+    /**
+     * Create a copy of an array based on a sub-range.  Works faster than System.arrayCopy() for arrays shorter than
+     * 1000 elements in most cases, so the parser uses this internally.
+     * @param start
+     * @param end
+     * @return
+     */
     private char[] subArray(final int start, final int end) {
         if (start >= end) return new char[0];
 
@@ -1257,6 +1276,12 @@ public class AbstractParser implements Serializable {
         return newA;
     }
 
+    /**
+     * Generate a property token
+     * @param start
+     * @param end
+     * @return
+     */
     private ASTNode createPropertyToken(int start, int end) {
         String tmp;
 
@@ -1301,6 +1326,11 @@ public class AbstractParser implements Serializable {
         return lastNode = new ASTNode(expr, start, end, fields);
     }
 
+    /**
+     * Process the current typed node
+     * @param decl
+     * @return
+     */
     private ASTNode procTypedNode(boolean decl) {
         while (true) {
             if (lastNode.getLiteralValue() instanceof String) {
@@ -1385,6 +1415,15 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    /**
+     * Generate a code block token.
+     * @param condStart
+     * @param condEnd
+     * @param blockStart
+     * @param blockEnd
+     * @param type
+     * @return
+     */
     private ASTNode createBlockToken(final int condStart,
                                      final int condEnd, final int blockStart, final int blockEnd, int type) {
         lastWasIdentifier = false;
@@ -1419,6 +1458,11 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    /**
+     * Capture a code block by type.
+     * @param type
+     * @return
+     */
     private ASTNode captureCodeBlock(int type) {
         boolean cond = true;
 
@@ -1744,6 +1788,10 @@ public class AbstractParser implements Serializable {
         while (cursor != length && (expr[cursor] != '\n')) cursor++;
     }
 
+
+    /**
+     * Capture to the end of the current identifier under the cursor.
+     */
     protected void captureIdentifier() {
         boolean captured = false;
         if (cursor == length) throw new CompileException("unexpected end of statement: EOF", expr, cursor);
@@ -2021,6 +2069,10 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    /**
+     * Returns true if the next is an identifier or literal.
+     * @return
+     */
     protected boolean isNextIdentifierOrLiteral() {
         int tmp = cursor;
         if (tmp == length) return false;
@@ -2032,11 +2084,19 @@ public class AbstractParser implements Serializable {
         }
     }
 
+    /**
+     * Increment one cursor position, and move cursor to next non-blank part.
+     * @return
+     */
     public int incNextNonBlank() {
         cursor++;
         return nextNonBlank();
     }
 
+    /**
+     * Move to next cursor position from current cursor position.
+     * @return
+     */
     public int nextNonBlank() {
         if ((cursor + 1) >= length) {
             throw new CompileException("unexpected end of statement", expr, cursor);
@@ -2046,6 +2106,10 @@ public class AbstractParser implements Serializable {
         return i;
     }
 
+    /**
+     * Expect the next specified character or fail
+     * @param c
+     */
     public void expectNextChar_IW(char c) {
         nextNonBlank();
         if (cursor == length) throw new CompileException("unexpected end of statement", expr, cursor);
@@ -2270,6 +2334,11 @@ public class AbstractParser implements Serializable {
         return operator != -1 && operator < 6;
     }
 
+    /**
+     * Reduce the current operations on the stack.
+     * @param operator
+     * @return
+     */
     protected int arithmeticFunctionReduction(int operator) {
         ASTNode tk;
         int operator2;
