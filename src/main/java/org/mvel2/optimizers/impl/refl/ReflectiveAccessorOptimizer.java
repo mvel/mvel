@@ -183,6 +183,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             ctx = this.val;
         }
 
+        if (ctx == null) {
+            throw new PropertyAccessException("could not access property: " + new String(property) + "; parent is null: " + new String(expr));
+        }
+
         try {
             this.length = (this.expr = property).length;
             this.cursor = this.start = 0;
