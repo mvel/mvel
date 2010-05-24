@@ -75,7 +75,7 @@ public class ForNode extends BlockNode {
         int start = 0;
         int cursor = nextCondPart(condition, start, false);
         try {
-            if (pCtx != null) pCtx = pCtx.createSubcontext().createColoringSubcontext();
+            if (pCtx != null && (fields & COMPILE_IMMEDIATE) != 0) pCtx = pCtx.createSubcontext().createColoringSubcontext();
 
             this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start - 1), pCtx);
 
@@ -85,7 +85,7 @@ public class ForNode extends BlockNode {
             this.after = (ExecutableStatement)
                     subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start, true)) - start), pCtx);
 
-            if (pCtx != null && pCtx.isVariablesEscape()) {
+            if (pCtx != null && (fields & COMPILE_IMMEDIATE) != 0 && pCtx.isVariablesEscape()) {
                 return true;
             }
         }
