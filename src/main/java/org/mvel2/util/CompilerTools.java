@@ -213,11 +213,6 @@ public class CompilerTools {
                 }
             }
             else {
-                if (tk instanceof ForNode) {
-                    ForNode fn = (ForNode) tk;
-
-                }
-
                 optimizedAst.addTokenNode(tk);
             }
         }

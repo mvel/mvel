@@ -45,8 +45,7 @@ public class ForNode extends BlockNode {
         boolean varsEscape = handleCond(this.name = condition, fields, pCtx);
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block, pCtx);
 
-        if (compiledBlock.isEmptyStatement() && !varsEscape) {
-            //   System.ofor ut.println("!!!");
+        if ((fields & COMPILE_IMMEDIATE) != 0 && compiledBlock.isEmptyStatement() && !varsEscape) {
             throw new RedundantCodeException();
         }
 
