@@ -4965,15 +4965,22 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testEmptyLoopSemantics() {
-        Serializable s = MVEL.compileExpression("for (i = 0; i < 100000; i++) { }");
+        Serializable s = MVEL.compileExpression("for (i = 0; i < 100000000000; i++) { }");
         MVEL.executeExpression(s, new HashMap());
     }
 
     public void testLoopWithEscape() {
         Serializable s = MVEL.compileExpression("x = 0; for (; x < 10000; x++) {}");
-        MVEL.executeExpression(s, new HashMap());
+        Map<String, Object> vars = new HashMap<String, Object>();
+        MVEL.executeExpression(s, vars);
 
-        MVEL.eval("x = 0; for (; x < 10000; x++) {}", new HashMap());
+        assertEquals(10000, vars.get("x"));
+
+        vars.remove("x");
+
+        MVEL.eval("x = 0; for (; x < 10000; x++) {}", vars);
+
+        assertEquals(10000, vars.get("x"));
     }
 
 

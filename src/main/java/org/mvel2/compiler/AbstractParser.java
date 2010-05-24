@@ -375,12 +375,7 @@ public class AbstractParser implements Serializable {
                                 return captureCodeBlock(ASTNode.BLOCK_UNTIL);
 
                             case FOR:
-                                try {
-                                    return captureCodeBlock(ASTNode.BLOCK_FOR);
-                                }
-                                catch (RedundantCodeException e) {
-                                    return nextToken();
-                                }
+                                return captureCodeBlock(ASTNode.BLOCK_FOR);
 
                             case WITH:
                                 return captureCodeBlock(ASTNode.BLOCK_WITH);
@@ -1188,6 +1183,9 @@ public class AbstractParser implements Serializable {
                 return null;
             else
                 return createPropertyToken(start, cursor);
+        }
+        catch (RedundantCodeException e) {
+            return nextToken();
         }
         catch (NumberFormatException e) {
             CompileException c = new CompileException("badly formatted number: " + e.getMessage(), expr, cursor, e);

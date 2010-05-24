@@ -47,6 +47,7 @@ public class ParserContext implements Serializable {
     private int lineCount = 1;
     private int lineOffset;
 
+    private ParserContext parent;
     private ParserConfiguration parserConfiguration = new ParserConfiguration();
 
     private ArrayList<String> indexedVariables;
@@ -100,6 +101,7 @@ public class ParserContext implements Serializable {
     public ParserContext createSubcontext() {
         ParserContext ctx = new ParserContext(parserConfiguration);
         ctx.sourceFile = sourceFile;
+        ctx.parent = this;
 
         ctx.addInputs(inputs);
         ctx.addVariables(variables);
@@ -131,10 +133,14 @@ public class ParserContext implements Serializable {
     }
 
     public ParserContext createColoringSubcontext() {
+        if (parent == null) {
+            throw new RuntimeException("create a subContext first");
+        }
+
         ParserContext ctx = new ParserContext(parserConfiguration) {
             @Override
             public void addVariable(String name, Class type) {
-                if ((variables != null && variables.containsKey(name)) || (inputs != null && inputs.containsKey(name))) {
+                if ((parent.variables != null && parent.variables.containsKey(name)) || (parent.inputs != null && parent.inputs.containsKey(name))) {
                     this.variablesEscape = true;
                 }
                 super.addVariable(name, type);
@@ -142,7 +148,7 @@ public class ParserContext implements Serializable {
 
             @Override
             public void addVariable(String name, Class type, boolean failIfNewAssignment) {
-                if ((variables != null && variables.containsKey(name)) || (inputs != null && inputs.containsKey(name))) {
+                if ((parent.variables != null && parent.variables.containsKey(name)) || (parent.inputs != null && parent.inputs.containsKey(name))) {
                     this.variablesEscape = true;
                 }
                 super.addVariable(name, type, failIfNewAssignment);
@@ -150,7 +156,7 @@ public class ParserContext implements Serializable {
 
             @Override
             public Class getVarOrInputType(String name) {
-                if ((variables != null && variables.containsKey(name)) || (inputs != null && inputs.containsKey(name))) {
+                if ((parent.variables != null && parent.variables.containsKey(name)) || (parent.inputs != null && parent.inputs.containsKey(name))) {
                     this.variablesEscape = true;
                 }
 
