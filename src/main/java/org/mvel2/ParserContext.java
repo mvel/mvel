@@ -75,6 +75,7 @@ public class ParserContext implements Serializable {
     private boolean executableCodeReached = false;
     private boolean indexAllocation = false;
     private boolean allowBootstrapBypass = true;
+    protected boolean variablesEscape = false;
 
     public ParserContext() {
     }
@@ -104,6 +105,64 @@ public class ParserContext implements Serializable {
         ctx.addVariables(variables);
         ctx.addIndexedVariables(indexedVariables);
         ctx.addTypeParameters(typeParameters);
+
+        ctx.sourceMap = sourceMap;
+        ctx.lastLineLabel = lastLineLabel;
+
+        ctx.globalFunctions = globalFunctions;
+        ctx.lastTypeParameters = lastTypeParameters;
+        ctx.errorList = errorList;
+        ctx.rootParser = rootParser;
+        ctx.lineCount = lineCount;
+        ctx.lineOffset = lineOffset;
+
+        ctx.compiled = compiled;
+        ctx.strictTypeEnforcement = strictTypeEnforcement;
+        ctx.strongTyping = strongTyping;
+
+        ctx.fatalError = fatalError;
+        ctx.retainParserState = retainParserState;
+        ctx.debugSymbols = debugSymbols;
+        ctx.blockSymbols = blockSymbols;
+        ctx.executableCodeReached = executableCodeReached;
+        ctx.indexAllocation = indexAllocation;
+
+        return ctx;
+    }
+
+    public ParserContext createColoringSubcontext() {
+        ParserContext ctx = new ParserContext(parserConfiguration) {
+            @Override
+            public void addVariable(String name, Class type) {
+                if ((variables != null && variables.containsKey(name)) || (inputs != null && inputs.containsKey(name))) {
+                    this.variablesEscape = true;
+                }
+                super.addVariable(name, type);
+            }
+
+            @Override
+            public void addVariable(String name, Class type, boolean failIfNewAssignment) {
+                if ((variables != null && variables.containsKey(name)) || (inputs != null && inputs.containsKey(name))) {
+                    this.variablesEscape = true;
+                }
+                super.addVariable(name, type, failIfNewAssignment);
+            }
+
+            @Override
+            public Class getVarOrInputType(String name) {
+                if ((variables != null && variables.containsKey(name)) || (inputs != null && inputs.containsKey(name))) {
+                    this.variablesEscape = true;
+                }
+
+                return super.getVarOrInputType(name);
+            }
+        };
+        ctx.sourceFile = sourceFile;
+
+        ctx.inputs = inputs;
+        ctx.variables = variables;
+        ctx.indexedVariables = indexedVariables;
+        ctx.typeParameters = typeParameters;
 
         ctx.sourceMap = sourceMap;
         ctx.lastLineLabel = lastLineLabel;
@@ -666,6 +725,10 @@ public class ParserContext implements Serializable {
 
     public void setBlockSymbols(boolean blockSymbols) {
         this.blockSymbols = blockSymbols;
+    }
+
+    public boolean isVariablesEscape() {
+        return variablesEscape;
     }
 
     public boolean isExecutableCodeReached() {

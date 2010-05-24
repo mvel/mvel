@@ -170,7 +170,6 @@ public class TemplateCompiler {
                                     n = markTextNode(n).next =
                                             codeCache ? new CompiledEvalNode(start, name, template, captureOrbInternal(), start = cursor + 1)
                                                     : new EvalNode(start, name, template, captureOrbInternal(), start = cursor + 1);
-
                                     break;
 
                                 case Opcodes.COMMENT:
@@ -235,9 +234,10 @@ public class TemplateCompiler {
                                     } else {
                                         throw new RuntimeException("unknown token type: " + name);
                                     }
-
                             }
                         }
+
+                        break;
                 }
                 cursor++;
             }

@@ -99,4 +99,8 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
     public Accessor getAccessor() {
         return accessor;
     }
+
+    public boolean isEmptyStatement() {
+        return accessor == null;
+    }
 }

@@ -96,7 +96,6 @@ public class CompilerTools {
                             default:
                                 bo = new BinaryOperation(op, tk, tk2, ctx);
                                 break;
-
                         }
                     }
                     else {
@@ -214,6 +213,11 @@ public class CompilerTools {
                 }
             }
             else {
+                if (tk instanceof ForNode) {
+                    ForNode fn = (ForNode) tk;
+
+                }
+
                 optimizedAst.addTokenNode(tk);
             }
         }
@@ -326,6 +330,7 @@ public class CompilerTools {
     private static boolean isIntOptimizationviolation(BooleanNode bn, ASTNode bn2) {
         return (bn instanceof IntOptimized && bn2.getEgressType() != Integer.class);
     }
+
 
     /**
      * Returns an ordered Map of all functions declared within an compiled script.

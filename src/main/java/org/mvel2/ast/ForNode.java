@@ -23,6 +23,7 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+
 import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 import static org.mvel2.util.ParseTools.subset;
@@ -37,26 +38,33 @@ public class ForNode extends BlockNode {
 
     protected ExecutableStatement initializer;
     protected ExecutableStatement condition;
-    protected ExecutableStatement compiledBlock;
+
     protected ExecutableStatement after;
 
     public ForNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
-        handleCond(this.name = condition, fields);
+        boolean varsEscape = handleCond(this.name = condition, fields, pCtx);
         this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block, pCtx);
+
+        if (compiledBlock.isEmptyStatement() && !varsEscape) {
+            //   System.ofor ut.println("!!!");
+            throw new RedundantCodeException();
+        }
+
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
-        for (initializer.getValue(ctx, thisValue, factory); (Boolean) condition.getValue(ctx, thisValue, factory); after.getValue(ctx, thisValue, factory)) {
+        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(0), factory);
+        for (initializer.getValue(ctx, thisValue, ctxFactory); (Boolean) condition.getValue(ctx, thisValue, ctxFactory); after.getValue(ctx, thisValue, ctxFactory)) {
             compiledBlock.getValue(ctx, thisValue, ctxFactory);
         }
         return null;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        for (initializer.getValue(ctx, thisValue, factory = new MapVariableResolverFactory(new HashMap(0), factory)); (Boolean) condition.getValue(ctx, thisValue, factory); after.getValue(ctx, thisValue, factory)) {
+        for (initializer.getValue(ctx, thisValue, factory = new MapVariableResolverFactory(new HashMap<String, Object>(0), factory)); (Boolean) condition.getValue(ctx, thisValue, factory); after.getValue(ctx, thisValue, factory)) {
             compiledBlock.getValue(ctx, thisValue, factory);
         }
+
         return null;
     }
 
@@ -64,21 +72,28 @@ public class ForNode extends BlockNode {
         super();    //To change body of overridden methods use File | Settings | File Templates.
     }
 
-    private void handleCond(char[] condition, int fields) {
+    private boolean handleCond(char[] condition, int fields, ParserContext pCtx) {
         int start = 0;
         int cursor = nextCondPart(condition, start, false);
         try {
-            this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start - 1));
+            if (pCtx != null) pCtx = pCtx.createSubcontext().createColoringSubcontext();
+
+            this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start - 1), pCtx);
 
             expectType(this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor,
-                    (cursor = nextCondPart(condition, start, false)) - start - 1)), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+                    (cursor = nextCondPart(condition, start, false)) - start - 1), pCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
             this.after = (ExecutableStatement)
-                    subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start, true)) - start));
+                    subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start, true)) - start), pCtx);
+
+            if (pCtx != null && pCtx.isVariablesEscape()) {
+                return true;
+            }
         }
         catch (NegativeArraySizeException e) {
             throw new CompileException("wrong syntax; did you mean to use 'foreach'?");
         }
+        return false;
     }
 
     private static int nextCondPart(char[] condition, int cursor, boolean allowEnd) {

@@ -88,4 +88,8 @@ public class ExecutableAccessorSafe implements ExecutableStatement, Safe {
     public boolean isLiteralOnly() {
         return false;
     }
+
+    public boolean isEmptyStatement() {
+        return node == null;
+    }
 }

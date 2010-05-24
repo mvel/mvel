@@ -33,7 +33,6 @@ import java.util.HashMap;
 public class DoNode extends BlockNode {
     protected String item;
     protected ExecutableStatement condition;
-    protected ExecutableStatement compiledBlock;
 
     public DoNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
         this.condition = (ExecutableStatement) subCompileExpression(this.name = condition, pCtx);

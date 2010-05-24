@@ -96,4 +96,8 @@ public class ExecutableLiteral implements ExecutableStatement, Safe {
     public boolean isLiteralOnly() {
         return true;
     }
+
+    public boolean isEmptyStatement() {
+        return false;
+    }
 }

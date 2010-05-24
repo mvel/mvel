@@ -1,8 +1,10 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
+
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
@@ -208,7 +210,7 @@ public class ArithmeticTests extends AbstractTest {
     public void testMath31() {
         String expression = "40 / 20 + 5 - 4 + 8 / 2 * 2 * 6 ** 2 + 6 - 8";
         double val = 40f / 20f + 5f - 4f + 8f / 2f * 2f * Math.pow(6, 2) + 6f - 8f;
-        assertEquals( val, MVEL.eval(expression));
+        assertEquals(val, MVEL.eval(expression));
     }
 
     public void testMath34() {
@@ -788,8 +790,8 @@ public class ArithmeticTests extends AbstractTest {
         MVEL.executeExpression(s);
     }
 
-        public void testJIRA208() {
-        Map vars = new LinkedHashMap();
+    public void testJIRA208() {
+        Map<String, Object> vars = new LinkedHashMap<String, Object>();
         vars.put("bal", 999);
 
         String[] testCases = {"bal - 80 - 90 - 30", "bal-80-90-30", "100 + 80 == 180", "100+80==180"};
@@ -815,12 +817,12 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testJIRA208b() {
-        Map vars = new LinkedHashMap();
+        Map<String, Object> vars = new LinkedHashMap<String, Object>();
         vars.put("bal", 999);
 
         String[] testCases = {
-        //        "bal + 80 - 80",
-        //        "bal - 80 + 80", "bal * 80 / 80",
+                //        "bal + 80 - 80",
+                //        "bal - 80 + 80", "bal * 80 / 80",
                 "bal / 80 * 80"
         };
 
@@ -841,7 +843,7 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testJIRA210() {
-        Map vars = new LinkedHashMap();
+        Map<String, Object> vars = new LinkedHashMap<String, Object>();
         vars.put("bal", new BigDecimal("999.99"));
 
         String[] testCases = {"bal - 1 + \"abc\"",};
@@ -860,4 +862,6 @@ public class ArithmeticTests extends AbstractTest {
             assertEquals("expression did not evaluate correctly: " + expr, val1, val2);
         }
     }
+
+
 }

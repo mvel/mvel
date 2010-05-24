@@ -177,6 +177,10 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
         return literalOnly;
     }
 
+    public boolean isEmptyStatement() {
+        return firstNode == null;
+    }
+
     public String toString() {
         StringAppender appender = new StringAppender();
         ASTNode node = firstNode;

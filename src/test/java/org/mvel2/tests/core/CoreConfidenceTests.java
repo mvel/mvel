@@ -4964,5 +4964,12 @@ public class CoreConfidenceTests extends AbstractTest {
         // fail( "The Person constructor used in the expression does not exist, so an error should have been raised during compilation." );
     }
 
+    public void testEmptyLoopSemantics() {
+        Serializable s = MVEL.compileExpression("for (i = 0; i < 100000; i++) { }");
+
+        MVEL.executeExpression(s, new HashMap());
+
+    }
+
 
 }

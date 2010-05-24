@@ -106,7 +106,7 @@ public class Sign extends ASTNode {
 
     private class BigDecSigner implements Signer {
         public Object sign(Object o) {
-            return new BigDecimal(-((BigInteger) o).longValue());
+            return new BigDecimal(-((BigDecimal) o).doubleValue());
         }
     }
 

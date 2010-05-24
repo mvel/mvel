@@ -33,7 +33,6 @@ import java.util.HashMap;
 public class UntilNode extends BlockNode {
     protected String item;
     protected ExecutableStatement condition;
-    protected ExecutableStatement compiledBlock;
 
     public UntilNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
         expectType(this.condition = (ExecutableStatement) subCompileExpression(this.name = condition, pCtx),

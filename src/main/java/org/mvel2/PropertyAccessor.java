@@ -20,21 +20,28 @@ package org.mvel2;
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
 import static org.mvel2.MVEL.eval;
+
 import org.mvel2.ast.Function;
 import org.mvel2.ast.Proto;
 import org.mvel2.ast.TypeDescriptor;
+
 import static org.mvel2.ast.TypeDescriptor.getClassReference;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+
 import org.mvel2.integration.GlobalListenerFactory;
+
 import static org.mvel2.integration.GlobalListenerFactory.notifySetListeners;
 import static org.mvel2.integration.PropertyHandlerFactory.*;
+
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
+
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+
 import org.mvel2.util.StringAppender;
 
 import static java.lang.Character.isJavaIdentifierPart;
@@ -42,7 +49,9 @@ import static java.lang.Thread.currentThread;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.*;
+
 import static java.lang.reflect.Array.getLength;
+
 import java.util.*;
 
 
@@ -155,75 +164,11 @@ public class PropertyAccessor {
         curr = ctx;
         try {
             if (!MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING) {
-                while (cursor < length) {
-                    switch (nextToken()) {
-                        case NORM:
-                            curr = getBeanProperty(curr, capture());
-                            break;
-                        case METH:
-                            curr = getMethod(curr, capture());
-                            break;
-                        case COL:
-                            curr = getCollectionProperty(curr, capture());
-                            break;
-                        case WITH:
-                            curr = getWithProperty(curr);
-                            break;
-
-                        case DONE:
-                    }
-
-                    if (nullHandle) {
-                        if (curr == null) {
-                            return null;
-                        }
-                        else {
-                            nullHandle = false;
-                        }
-                    }
-
-                    first = false;
-                }
-                return curr;
+                return getNormal();
             }
             else {
-                while (cursor < length) {
-                    switch (nextToken()) {
-                        case NORM:
-                            if ((curr = getBeanPropertyAO(curr, capture())) == null && hasNullPropertyHandler()) {
-                                curr = getNullPropertyHandler().getProperty(capture(), ctx, variableFactory);
-                            }
-                            break;
-                        case METH:
-                            if ((curr = getMethod(curr, capture())) == null && hasNullMethodHandler()) {
-                                curr = getNullMethodHandler().getProperty(capture(), ctx, variableFactory);
-                            }
-                            break;
-                        case COL:
-                            curr = getCollectionPropertyAO(curr, capture());
-                            break;
-                        case WITH:
-                            curr = getWithProperty(curr);
-                            break;
-
-                        case DONE:
-                    }
-
-                    if (nullHandle) {
-                        if (curr == null) {
-                            return null;
-                        }
-                        else {
-                            nullHandle = false;
-                        }
-                    }
-
-                    first = false;
-                }
-                return curr;
+                return getAllowOverride();
             }
-
-
         }
         catch (InvocationTargetException e) {
             throw new PropertyAccessException("could not access property", e);
@@ -246,6 +191,72 @@ public class PropertyAccessor {
         catch (Exception e) {
             throw new PropertyAccessException("unknown exception in expression: " + new String(property), e);
         }
+    }
+
+    private Object getNormal() throws Exception {
+        while (cursor < length) {
+            switch (nextToken()) {
+                case NORM:
+                    curr = getBeanProperty(curr, capture());
+                    break;
+                case METH:
+                    curr = getMethod(curr, capture());
+                    break;
+                case COL:
+                    curr = getCollectionProperty(curr, capture());
+                    break;
+                case WITH:
+                    curr = getWithProperty(curr);
+                    break;
+            }
+
+            if (nullHandle) {
+                if (curr == null) {
+                    return null;
+                }
+                else {
+                    nullHandle = false;
+                }
+            }
+
+            first = false;
+        }
+        return curr;
+    }
+
+    private Object getAllowOverride() throws Exception {
+        while (cursor < length) {
+            switch (nextToken()) {
+                case NORM:
+                    if ((curr = getBeanPropertyAO(curr, capture())) == null && hasNullPropertyHandler()) {
+                        curr = getNullPropertyHandler().getProperty(capture(), ctx, variableFactory);
+                    }
+                    break;
+                case METH:
+                    if ((curr = getMethod(curr, capture())) == null && hasNullMethodHandler()) {
+                        curr = getNullMethodHandler().getProperty(capture(), ctx, variableFactory);
+                    }
+                    break;
+                case COL:
+                    curr = getCollectionPropertyAO(curr, capture());
+                    break;
+                case WITH:
+                    curr = getWithProperty(curr);
+                    break;
+            }
+
+            if (nullHandle) {
+                if (curr == null) {
+                    return null;
+                }
+                else {
+                    nullHandle = false;
+                }
+            }
+
+            first = false;
+        }
+        return curr;
     }
 
     private void set(Object value) {
@@ -521,7 +532,7 @@ public class PropertyAccessor {
     private static Object[] checkMethodCache(Class cls, Integer property) {
         Map<Integer, WeakReference<Object[]>> map = METHOD_RESOLVER_CACHE.get(cls);
         if (map != null) {
-            WeakReference<Object[]> ref =  map.get(property);
+            WeakReference<Object[]> ref = map.get(property);
             if (ref != null) return ref.get();
         }
         return null;

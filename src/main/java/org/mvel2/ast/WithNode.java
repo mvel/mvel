@@ -20,14 +20,18 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+
 import static org.mvel2.MVEL.executeSetExpression;
+
 import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.ParseTools.parseWithExpressions;
 import static org.mvel2.util.PropertyTools.getReturnType;
+
 import org.mvel2.util.StringAppender;
 import org.mvel2.util.ParseTools;
 
@@ -40,7 +44,7 @@ import java.util.List;
  */
 public class WithNode extends BlockNode implements NestedStatement {
     protected String nestParm;
-    protected ExecutableStatement nestedStatement;
+    //   protected ExecutableStatement nestedStatement;
     protected ParmValuePair[] withExpressions;
 
     public WithNode(char[] expr, char[] block, int fields, ParserContext pCtx) {
@@ -50,7 +54,7 @@ public class WithNode extends BlockNode implements NestedStatement {
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             pCtx.setBlockSymbols(true);
 
-            egressType = (nestedStatement = (ExecutableStatement)
+            egressType = (compiledBlock = (ExecutableStatement)
                     subCompileExpression(nestParm.toCharArray(), pCtx)).getKnownEgressType();
 
             withExpressions = compileWithExpressions(block, nestParm, egressType, pCtx);
@@ -60,7 +64,7 @@ public class WithNode extends BlockNode implements NestedStatement {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        Object ctxObject = nestedStatement.getValue(ctx, thisValue, factory);
+        Object ctxObject = compiledBlock.getValue(ctx, thisValue, factory);
         if (ctxObject == null) throw new CompileException("with-block against null pointer");
 
         for (ParmValuePair pvp : withExpressions) {
@@ -195,7 +199,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
 
     public ExecutableStatement getNestedStatement() {
-        return nestedStatement;
+        return compiledBlock;
     }
 
     public ParmValuePair[] getWithExpressions() {

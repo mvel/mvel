@@ -40,4 +40,6 @@ public interface ExecutableStatement extends Accessor, Serializable, Cloneable {
     public boolean intOptimized();
 
     public boolean isLiteralOnly();
+
+    public boolean isEmptyStatement();
 }

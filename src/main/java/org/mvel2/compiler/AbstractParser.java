@@ -375,7 +375,12 @@ public class AbstractParser implements Serializable {
                                 return captureCodeBlock(ASTNode.BLOCK_UNTIL);
 
                             case FOR:
-                                return captureCodeBlock(ASTNode.BLOCK_FOR);
+                                try {
+                                    return captureCodeBlock(ASTNode.BLOCK_FOR);
+                                }
+                                catch (RedundantCodeException e) {
+                                    return nextToken();
+                                }
 
                             case WITH:
                                 return captureCodeBlock(ASTNode.BLOCK_WITH);
@@ -1222,6 +1227,7 @@ public class AbstractParser implements Serializable {
 
     /**
      * Handle a union between a closed statement and a residual property chain.
+     *
      * @param node
      * @return
      */
@@ -1248,6 +1254,7 @@ public class AbstractParser implements Serializable {
 
     /**
      * Create an operator node.
+     *
      * @param expr
      * @param start
      * @param end
@@ -1261,6 +1268,7 @@ public class AbstractParser implements Serializable {
     /**
      * Create a copy of an array based on a sub-range.  Works faster than System.arrayCopy() for arrays shorter than
      * 1000 elements in most cases, so the parser uses this internally.
+     *
      * @param start
      * @param end
      * @return
@@ -1278,6 +1286,7 @@ public class AbstractParser implements Serializable {
 
     /**
      * Generate a property token
+     *
      * @param start
      * @param end
      * @return
@@ -1328,6 +1337,7 @@ public class AbstractParser implements Serializable {
 
     /**
      * Process the current typed node
+     *
      * @param decl
      * @return
      */
@@ -1417,6 +1427,7 @@ public class AbstractParser implements Serializable {
 
     /**
      * Generate a code block token.
+     *
      * @param condStart
      * @param condEnd
      * @param blockStart
@@ -1460,6 +1471,7 @@ public class AbstractParser implements Serializable {
 
     /**
      * Capture a code block by type.
+     *
      * @param type
      * @return
      */
@@ -2071,6 +2083,7 @@ public class AbstractParser implements Serializable {
 
     /**
      * Returns true if the next is an identifier or literal.
+     *
      * @return
      */
     protected boolean isNextIdentifierOrLiteral() {
@@ -2086,6 +2099,7 @@ public class AbstractParser implements Serializable {
 
     /**
      * Increment one cursor position, and move cursor to next non-blank part.
+     *
      * @return
      */
     public int incNextNonBlank() {
@@ -2095,6 +2109,7 @@ public class AbstractParser implements Serializable {
 
     /**
      * Move to next cursor position from current cursor position.
+     *
      * @return
      */
     public int nextNonBlank() {
@@ -2108,6 +2123,7 @@ public class AbstractParser implements Serializable {
 
     /**
      * Expect the next specified character or fail
+     *
      * @param c
      */
     public void expectNextChar_IW(char c) {
@@ -2161,7 +2177,7 @@ public class AbstractParser implements Serializable {
      * @param pCtx -
      */
     public void newContext(ParserContext pCtx) {
-        contextControl(SET, pCtx, this);
+        contextControl(SET, this.pCtx = pCtx, this);
     }
 
     /**
@@ -2336,6 +2352,7 @@ public class AbstractParser implements Serializable {
 
     /**
      * Reduce the current operations on the stack.
+     *
      * @param operator
      * @return
      */

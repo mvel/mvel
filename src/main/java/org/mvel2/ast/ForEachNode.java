@@ -39,7 +39,6 @@ public class ForEachNode extends BlockNode {
     private char[] cond;
 
     protected ExecutableStatement condition;
-    protected ExecutableStatement compiledBlock;
 
     private static final int ITERABLE = 0;
     private static final int ARRAY = 1;

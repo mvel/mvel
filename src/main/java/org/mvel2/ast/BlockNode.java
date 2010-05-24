@@ -18,13 +18,21 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.compiler.ExecutableStatement;
+
 /**
  * @author Christopher Brock
  */
 public class BlockNode extends ASTNode {
     protected char[] block;
 
+    protected ExecutableStatement compiledBlock;
+
     public BlockNode() {
+    }
+
+    public ExecutableStatement getCompiledBlock() {
+        return compiledBlock;
     }
 }
 

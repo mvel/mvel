@@ -83,6 +83,11 @@ public class ExecutableAccessor implements ExecutableStatement {
         return false;
     }
 
+
+    public boolean isEmptyStatement() {
+        return node == null;
+    }
+
     @Override
     public String toString() {
         return node.toString();
