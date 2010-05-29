@@ -50,6 +50,7 @@ import static java.lang.Double.parseDouble;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.getProperty;
 import static java.lang.Thread.currentThread;
+import static org.mvel2.util.Soundex.soundex;
 
 import java.util.HashMap;
 import java.util.WeakHashMap;
@@ -2058,7 +2059,7 @@ public class AbstractParser implements Serializable {
      * @return -
      */
     protected char lookAhead() {
-        if (cursor + 1 < length) {
+        if (cursor + 1 != length) {
             return expr[cursor + 1];
         }
         else {
@@ -2591,8 +2592,8 @@ public class AbstractParser implements Serializable {
                     break;
 
                 case SOUNDEX:
-                    stk.push(Soundex.soundex(java.lang.String.valueOf(stk.pop()))
-                            .equals(Soundex.soundex(java.lang.String.valueOf(stk.pop()))));
+                    stk.push(soundex(java.lang.String.valueOf(stk.pop()))
+                            .equals(soundex(java.lang.String.valueOf(stk.pop()))));
                     break;
 
                 case SIMILARITY:

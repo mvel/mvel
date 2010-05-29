@@ -19,10 +19,9 @@
 package org.mvel2.util;
 
 import org.mvel2.CompileException;
-import org.mvel2.math.MathProcessor;
-import static org.mvel2.math.MathProcessor.doOperations;
 
 import static java.lang.String.valueOf;
+import static org.mvel2.math.MathProcessor.doOperations;
 
 public class ExecutionStack {
     private StackElement element;
@@ -152,8 +151,8 @@ public class ExecutionStack {
     }
 
     public void xswap_op() {
-        xswap();
-        op();
+        element = new StackElement(element.next.next.next, doOperations(element.next.next.value, (Integer) element.next.value, element.value));
+        size -= 2;
     }
 
     public void op() {

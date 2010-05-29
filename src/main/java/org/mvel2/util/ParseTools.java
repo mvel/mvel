@@ -1931,7 +1931,7 @@ public class ParseTools {
 
     public static boolean isPrimitiveWrapper(Class clazz) {
         return clazz == Integer.class || clazz == Boolean.class || clazz == Long.class || clazz == Double.class
-                || clazz == Float.class || clazz == Short.class || clazz == Byte.class || clazz == Character.class;
+                || clazz == Float.class ||  clazz == Character.class || clazz == Short.class || clazz == Byte.class;
     }
 
     public static Serializable subCompileExpression(char[] expression) {
