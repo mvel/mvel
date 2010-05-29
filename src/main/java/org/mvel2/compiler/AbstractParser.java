@@ -2379,8 +2379,7 @@ public class AbstractParser implements Serializable {
                 if (compileMode && !tk.isLiteral()) {
 
                     // BAIL OUT!
-                    splitAccumulator.push(tk);
-                    splitAccumulator.push(new OperatorNode(operator2));
+                    splitAccumulator.push(tk, new OperatorNode(operator2));
                     return tk instanceof Substatement ? -2 : OP_TERMINATE;
                 }
 

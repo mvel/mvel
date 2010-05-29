@@ -26,6 +26,6 @@ public class StackElement implements Serializable {
         this.value = value;
     }
 
-    public volatile StackElement next;
-    public volatile Object value;
+    public StackElement next;
+    public Object value;
 }
