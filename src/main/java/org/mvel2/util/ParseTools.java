@@ -19,29 +19,13 @@
 package org.mvel2.util;
 
 import org.mvel2.*;
-
-import static org.mvel2.DataConversion.canConvert;
-import static org.mvel2.DataTypes.*;
-import static org.mvel2.MVEL.getDebuggingOutputFileName;
-
 import org.mvel2.ast.ASTNode;
 import org.mvel2.compiler.*;
-
-import static org.mvel2.compiler.AbstractParser.LITERALS;
-import static org.mvel2.integration.ResolverTools.insertFactory;
-
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.math.MathProcessor;
 
 import java.io.*;
-
-import static java.lang.Class.forName;
-import static java.lang.Double.parseDouble;
-import static java.lang.String.valueOf;
-import static java.lang.System.arraycopy;
-import static java.lang.Thread.currentThread;
-
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -49,11 +33,20 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.nio.ByteBuffer;
-
-import static java.nio.ByteBuffer.allocateDirect;
-
 import java.nio.channels.ReadableByteChannel;
 import java.util.*;
+
+import static java.lang.Class.forName;
+import static java.lang.Double.parseDouble;
+import static java.lang.String.valueOf;
+import static java.lang.System.arraycopy;
+import static java.lang.Thread.currentThread;
+import static java.nio.ByteBuffer.allocateDirect;
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataTypes.*;
+import static org.mvel2.MVEL.getDebuggingOutputFileName;
+import static org.mvel2.compiler.AbstractParser.LITERALS;
+import static org.mvel2.integration.ResolverTools.insertFactory;
 
 
 @SuppressWarnings({"ManualArrayCopy"})
@@ -544,7 +537,7 @@ public class ParseTools {
                     continue;
                 case ')':
                     if (1 == depth--) {
-                        return new String[]{new String(cs, 0, ++i), createStringTrimmed(cs, i, cs.length - i)};
+                        return new String[]{createStringTrimmed(cs, 0, ++i), createStringTrimmed(cs, i, cs.length - i)};
                     }
             }
         }
@@ -1931,7 +1924,7 @@ public class ParseTools {
 
     public static boolean isPrimitiveWrapper(Class clazz) {
         return clazz == Integer.class || clazz == Boolean.class || clazz == Long.class || clazz == Double.class
-                || clazz == Float.class ||  clazz == Character.class || clazz == Short.class || clazz == Byte.class;
+                || clazz == Float.class || clazz == Character.class || clazz == Short.class || clazz == Byte.class;
     }
 
     public static Serializable subCompileExpression(char[] expression) {

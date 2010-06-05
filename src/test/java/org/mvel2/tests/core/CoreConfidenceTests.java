@@ -4984,4 +4984,8 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
+    public void testAAA() {
+        MVEL.compileExpression("new String ('foo')");
+    }
+
 }

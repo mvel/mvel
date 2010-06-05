@@ -221,7 +221,7 @@ public class NewObjectNode extends ASTNode {
                 String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
                 if (constructorParms != null) {
-                    Class cls = findClass(factory, new String(subset(name, 0, findFirst('(', name))), null);
+                    Class cls = findClass(factory, new String(subset(name, 0, findFirst('(', name))).trim(), null);
 
                     Object[] parms = new Object[constructorParms.length];
                     for (int i = 0; i < constructorParms.length; i++) {

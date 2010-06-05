@@ -53,7 +53,7 @@ public class TypeDescriptor implements Serializable {
 
         if ((endRange = findFirst('(', name)) == -1) {
             if ((endRange = findFirst('[', name)) != -1) {
-                className = new String(name, 0, endRange);
+                className = new String(name, 0, endRange).trim();
                 int to;
 
                 LinkedList<char[]> sizes = new LinkedList<char[]>();
@@ -86,10 +86,10 @@ public class TypeDescriptor implements Serializable {
                 return;
             }
 
-            className = new String(name);
+            className = new String(name).trim();
         }
         else {
-            className = new String(name, 0, endRange);
+            className = new String(name, 0, endRange).trim();
         }
     }
 
