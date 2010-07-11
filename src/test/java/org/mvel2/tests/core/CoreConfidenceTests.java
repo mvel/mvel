@@ -14,11 +14,11 @@ import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.tests.core.res.*;
 import org.mvel2.tests.core.res.res2.ClassProvider;
 import org.mvel2.tests.core.res.res2.Outer;
 import org.mvel2.tests.core.res.res2.PublicClass;
-import org.mvel2.util.Make;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ReflectionUtil;
 
@@ -4930,7 +4930,6 @@ public class CoreConfidenceTests extends AbstractTest {
                 "bal > 200 && bal < 100"
         };
 
-
         Object val1, val2;
         for (String expr : testCases) {
             System.out.println("Evaluating '" + expr + "': ......");
@@ -4983,9 +4982,67 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(10000, vars.get("x"));
     }
 
+    String[] testCasesMVEL219 = {
+            "map['foo']==map['foo']", // ok
+            "(map['one'] > 0)", // ok
+            "(map['one'] > 0) && (map['foo'] == map['foo'])", // ok
+            "(map['one'] > 0) && (map['foo']==map['foo'])", // broken
+    };
+    String[] templateTestCasesMVEL219 = {
+            "@{map['foo']==map['foo']}", // ok
+            "@(map['one'] > 0)}", // ok
+            "@{(map['one'] > 0) && (map['foo'] == map['foo'])}", // ok
+            "@{(map['one'] > 0) && (map['foo']==map['foo'])}" // broken
+    };
 
-    public void testAAA() {
-        MVEL.compileExpression("new String ('foo')");
+    public void testEvalMVEL219() {
+        Map<String, Object> vars = setupVarsMVEL219();
+
+        for (String expr : testCasesMVEL219) {
+            System.out.println("Evaluating '" + expr + "': ......");
+            Object ret = MVEL.eval(expr, vars);
+            System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(ret);
+        }
     }
 
+    public void testCompiledMVEL219() {
+        Map<String, Object> vars = setupVarsMVEL219();
+
+        for (String expr : testCasesMVEL219) {
+            System.out.println("Compiling '" + expr + "': ......");
+            Serializable compiled = MVEL.compileExpression(expr);
+            Boolean ret = (Boolean) MVEL.executeExpression(compiled, vars);
+            System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(ret);
+        }
+    }
+
+    public void testTemplateMVEL219() {
+        Map<String, Object> vars = setupVarsMVEL219();
+
+        for (String expr : templateTestCasesMVEL219) {
+            System.out.println("Templating '" + expr + "': ......");
+            Object ret = TemplateRuntime.eval(expr, vars);
+            System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(ret);
+        }
+    }
+
+    private Map<String, Object> setupVarsMVEL219() {
+        Map<String, Object> vars = new LinkedHashMap<String, Object>();
+        vars.put("bal", new BigDecimal("999.99"));
+        vars.put("word", "ball");
+        vars.put("object", new Dog());
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("foo", "bar");
+        map.put("fu", new Dog());
+        map.put("trueValue", true);
+        map.put("falseValue", false);
+        map.put("one", 1);
+        map.put("zero", 0);
+        vars.put("map", map);
+
+        return vars;
+    }
 }
