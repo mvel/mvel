@@ -103,4 +103,8 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
     public boolean isEmptyStatement() {
         return accessor == null;
     }
+
+    public boolean isExplicitCast() {
+        return false;
+    }
 }

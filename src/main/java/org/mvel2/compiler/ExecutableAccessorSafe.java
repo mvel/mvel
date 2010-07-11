@@ -20,6 +20,7 @@ package org.mvel2.compiler;
 
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.Safe;
+import org.mvel2.ast.TypeCast;
 import org.mvel2.integration.VariableResolverFactory;
 
 
@@ -91,5 +92,9 @@ public class ExecutableAccessorSafe implements ExecutableStatement, Safe {
 
     public boolean isEmptyStatement() {
         return node == null;
+    }
+
+    public boolean isExplicitCast() {
+        return node != null && node instanceof TypeCast;
     }
 }

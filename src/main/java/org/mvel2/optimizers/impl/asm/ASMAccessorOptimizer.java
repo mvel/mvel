@@ -864,7 +864,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         assert debug("\n  **  ENTER -> {bean: " + property + "; ctx=" + ctx + "}");
 
-        if ((currType = !first || pCtx == null ? null : pCtx.getVarOrInputTypeOrNull(property)) == Object.class
+        if ((pCtx == null ? currType : pCtx.getVarOrInputTypeOrNull(property)) == Object.class
                 && !pCtx.isStrongTyping()) {
             currType = null;
         }
@@ -1564,6 +1564,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 assert debug("subtoken[" + i + "] { " + subtokens[i] + " }");
                 preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray(), pCtx))
                         .getValue(this.ctx, this.thisRef, variableFactory);
+
+                if (es[i].isExplicitCast()) argTypes[i] = es[i].getKnownEgressType();
             }
 
             if (pCtx.isStrictTypeEnforcement()) {
@@ -1573,6 +1575,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
             else {
                 for (int i = 0; i < args.length; i++) {
+                    if (argTypes[i] != null) continue;
+
                     if (es[i].getKnownEgressType() == Object.class) {
                         argTypes[i] = args[i] == null ? null : args[i].getClass();
                     }

@@ -19,6 +19,7 @@
 package org.mvel2.compiler;
 
 import org.mvel2.ast.ASTNode;
+import org.mvel2.ast.TypeCast;
 import org.mvel2.integration.VariableResolverFactory;
 
 public class ExecutableAccessor implements ExecutableStatement {
@@ -83,6 +84,9 @@ public class ExecutableAccessor implements ExecutableStatement {
         return false;
     }
 
+    public boolean isExplicitCast() {
+        return node instanceof TypeCast;
+    }
 
     public boolean isEmptyStatement() {
         return node == null;

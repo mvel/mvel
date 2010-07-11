@@ -100,4 +100,8 @@ public class ExecutableLiteral implements ExecutableStatement, Safe {
     public boolean isEmptyStatement() {
         return false;
     }
+
+    public boolean isExplicitCast() {
+        return false;
+    }
 }

@@ -4589,7 +4589,8 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testJIRA174() {
-        Serializable s = MVEL.compileExpression("def test(a1) { java.util.Collection a = a1; a.clear(); a.add(1); a.add(2); a.add(3); a.remove(2); a; }\n" +
+
+        Serializable s = MVEL.compileExpression("def test(a1) { java.util.Collection a = a1; a.clear(); a.add(1); a.add(2); a.add(3); a.remove((Object) 2); a; }\n" +
                 "a = test(new java.util.ArrayList());\n" +
                 "b = test(new java.util.HashSet());");
 
@@ -5041,6 +5042,78 @@ public class CoreConfidenceTests extends AbstractTest {
         map.put("falseValue", false);
         map.put("one", 1);
         map.put("zero", 0);
+        vars.put("map", map);
+
+        return vars;
+    }
+
+
+    String[] testCasesMVEL220 = {
+    //        "map[\"foundIt\"] = !(map['list']).contains(\"john\")",
+            "map[\"foundIt\"] = !(map['list'].contains(\"john\"))",
+    };
+    String[] templateTestCasesMVEL220 = {
+            "@{map[\"foundIt\"] = !(map['list']).contains(\"john\")}",
+            "@{map[\"foundIt\"] = !(map['list'].contains(\"john\"))}"
+    };
+
+    public void testEvalMVEL220() {
+        Map<String, Object> vars = setupVarsMVEL220();
+
+        System.out.println("Evaluation=====================");
+
+        for (String expr : testCasesMVEL220) {
+            System.out.println("Evaluating '" + expr + "': ......");
+            Object ret = MVEL.eval(expr, vars);
+            System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(ret);
+        }
+
+        System.out.println("Evaluation=====================");
+    }
+
+    public void testCompiledMVEL220() {
+        Map<String, Object> vars = setupVarsMVEL220();
+
+        System.out.println("Compilation=====================");
+
+        for (String expr : testCasesMVEL220) {
+            System.out.println("Compiling '" + expr + "': ......");
+            Serializable compiled = MVEL.compileExpression(expr);
+            Boolean ret = (Boolean) MVEL.executeExpression(compiled, vars);
+            System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(ret);
+        }
+        System.out.println("Compilation=====================");
+    }
+
+    public void testTemplateMVEL220() {
+        Map<String, Object> vars = setupVarsMVEL220();
+
+        System.out.println("Templates=====================");
+
+        for (String expr : templateTestCasesMVEL220) {
+            System.out.println("Templating '" + expr + "': ......");
+            Object ret = TemplateRuntime.eval(expr, vars);
+            System.out.println("'" + expr + " ' = " + ret.toString());
+            assertNotNull(ret);
+        }
+
+        System.out.println("Templates=====================");
+    }
+
+    private Map<String, Object> setupVarsMVEL220() {
+        Map<String, Object> vars = new LinkedHashMap<String, Object>();
+        vars.put("word", "ball");
+        vars.put("object", new Dog());
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("foo", "bar");
+        map.put("fu", new Dog());
+        map.put("trueValue", true);
+        map.put("falseValue", false);
+        map.put("one", 1);
+        map.put("zero", 0);
+        map.put("list", "john,paul,ringo,george");
         vars.put("map", map);
 
         return vars;

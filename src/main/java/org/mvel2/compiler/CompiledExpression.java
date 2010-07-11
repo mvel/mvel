@@ -21,6 +21,7 @@ package org.mvel2.compiler;
 import static org.mvel2.MVELRuntime.execute;
 import org.mvel2.ParserContext;
 import org.mvel2.ast.ASTNode;
+import org.mvel2.ast.TypeCast;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
@@ -179,6 +180,10 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public boolean isEmptyStatement() {
         return firstNode == null;
+    }
+
+    public boolean isExplicitCast() {
+        return firstNode != null && firstNode instanceof TypeCast;
     }
 
     public String toString() {

@@ -443,7 +443,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     private Object getBeanProperty(Object ctx, String property) throws Exception {
-        if ((currType = !first || pCtx == null ? null : pCtx.getVarOrInputTypeOrNull(property)) == Object.class
+        if ((pCtx == null ? currType : pCtx.getVarOrInputTypeOrNull(property)) == Object.class
                 && !pCtx.isStrongTyping()) {
             currType = null;
         }
@@ -844,7 +844,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         Object[] args;
         Class[] argTypes;
-        Accessor[] es;
+        ExecutableStatement[] es;
 
         if (tk.length() == 0) {
             args = ParseTools.EMPTY_OBJ_ARR;
@@ -860,6 +860,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             for (int i = 0; i < subtokens.length; i++) {
                 args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray(), pCtx))
                         .getValue(this.ctx, thisRef, variableFactory);
+
+                if (es[i].isExplicitCast()) argTypes[i] = es[i].getKnownEgressType();
             }
 
             if (pCtx.isStrictTypeEnforcement()) {
@@ -869,6 +871,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
             else {
                 for (int i = 0; i < args.length; i++) {
+                    if (argTypes[i] != null) continue;
+
                     if (es[i].getKnownEgressType() == Object.class) {
                         argTypes[i] = args[i] == null ? null : args[i].getClass();
                     }
@@ -892,8 +896,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             else if (ptr instanceof Function) {
                 Function func = (Function) ptr;
                 if (!name.equals(func.getName())) {
-                     getBeanProperty(ctx, name);
-                     addAccessorNode(new DynamicFunctionAccessor(es));
+                    getBeanProperty(ctx, name);
+                    addAccessorNode(new DynamicFunctionAccessor(es));
                 }
                 else {
                     addAccessorNode(new FunctionAccessor((Function) ptr, es));

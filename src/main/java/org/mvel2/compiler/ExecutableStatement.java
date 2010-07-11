@@ -33,6 +33,8 @@ public interface ExecutableStatement extends Accessor, Serializable, Cloneable {
 
     public Class getKnownEgressType();
 
+    public boolean isExplicitCast();
+
     public boolean isConvertableIngressEgress();
 
     public void computeTypeConversionRule();
