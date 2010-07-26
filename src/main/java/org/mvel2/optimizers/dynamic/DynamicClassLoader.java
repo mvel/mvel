@@ -30,23 +30,6 @@ public class DynamicClassLoader extends ClassLoader implements MVELClassLoader {
     private int tenureLimit;
     private final LinkedList<DynamicAccessor> allAccessors = new LinkedList<DynamicAccessor>();
 
-//    private static boolean sunJVM;
-//    private static Object sunUnsafe;
-
-    static {
-//        try {
-//            Field f = Unsafe.class.getDeclaredField("theUnsafe");
-//            f.setAccessible(true);
-//            sunUnsafe = f.get(null);
-//            sunJVM = true;
-//        }
-//        catch (Throwable t) {
-//            t.printStackTrace();
-//            sunJVM = false;
-//        }
-    }
-
-
     public DynamicClassLoader(ClassLoader classLoader, int tenureLimit) {
         super(classLoader);
         this.tenureLimit = tenureLimit;
@@ -54,12 +37,7 @@ public class DynamicClassLoader extends ClassLoader implements MVELClassLoader {
 
     public Class defineClassX(String className, byte[] b, int start, int end) {
         totalClasses++;
-//        if (sunJVM) {
-//            return ((Unsafe) sunUnsafe).defineClass(className, b, start, end);
-//        }
-//        else {
         return super.defineClass(className, b, start, end);
-//        }
     }
 
     public int getTotalClasses() {
@@ -77,7 +55,7 @@ public class DynamicClassLoader extends ClassLoader implements MVELClassLoader {
             for (DynamicAccessor a : allAccessors) {
                 if (a != null) a.deoptimize();
             }
-
+            allAccessors.clear();
         }
     }
 

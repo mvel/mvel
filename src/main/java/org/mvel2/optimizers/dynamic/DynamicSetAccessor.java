@@ -68,7 +68,7 @@ public class DynamicSetAccessor implements DynamicAccessor {
     }
 
     private Object optimize(Object ctx, Object elCtx, VariableResolverFactory variableResolverFactory, Object value) {
-        if (DynamicOptimizer.classLoader.isOverloaded()) {
+        if (DynamicOptimizer.isOverloaded()) {
             DynamicOptimizer.enforceTenureLimit();
         }
 

@@ -73,7 +73,7 @@ public class DynamicGetAccessor implements DynamicAccessor {
 
     private Object optimize(Object ctx, Object elCtx, VariableResolverFactory variableResolverFactory) {
 
-        if (DynamicOptimizer.classLoader.isOverloaded()) {
+        if (DynamicOptimizer.isOverloaded()) {
             DynamicOptimizer.enforceTenureLimit();
         }
 

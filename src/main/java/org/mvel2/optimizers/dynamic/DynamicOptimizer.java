@@ -23,16 +23,17 @@ import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.AccessorOptimizer;
+
+import static java.lang.Thread.currentThread;
 import static org.mvel2.optimizers.OptimizerFactory.SAFE_REFLECTIVE;
 import static org.mvel2.optimizers.OptimizerFactory.getAccessorCompiler;
 import static org.mvel2.optimizers.impl.asm.ASMAccessorOptimizer.setMVELClassLoader;
 
-import static java.lang.Thread.currentThread;
-
 public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptimizer {
     private AccessorOptimizer firstStage = getAccessorCompiler(SAFE_REFLECTIVE);
 
-    public static DynamicClassLoader classLoader;
+    private static final Object oLock = new Object();
+    private volatile static DynamicClassLoader classLoader;
     public static int tenuringThreshold = 50;
     public static long timeSpan = 100;
     public static int maximumTenure = 1500;
@@ -49,9 +50,11 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
     public static void enforceTenureLimit() {
         if (classLoader.isOverloaded()) {
-            classLoader.deoptimizeAll();
-            totalRecycled = +classLoader.getTotalClasses();
-            _init();
+            synchronized (oLock) {
+                classLoader.deoptimizeAll();
+                totalRecycled = +classLoader.getTotalClasses();
+                _init();
+            }
         }
     }
 
@@ -59,9 +62,10 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
     public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
                                      VariableResolverFactory factory, boolean rootThisRef, Class ingressType) {
-
-        return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, 0,
-                firstStage.optimizeAccessor(pCtx, property, ctx, thisRef, factory, rootThisRef, ingressType)));
+        synchronized (oLock) {
+            return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, 0,
+                    firstStage.optimizeAccessor(pCtx, property, ctx, thisRef, factory, rootThisRef, ingressType)));
+        }
     }
 
     public static final int SET_ACCESSOR = 1;
@@ -69,27 +73,34 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
     public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
                                         VariableResolverFactory factory, boolean rootThisRef, Object value, Class valueType) {
 
-        return classLoader.registerDynamicAccessor(new DynamicSetAccessor(pCtx, property,
-                firstStage.optimizeSetAccessor(pCtx, property, ctx, thisRef, factory, rootThisRef, value, valueType)));
+        synchronized (oLock) {
+            return classLoader.registerDynamicAccessor(new DynamicSetAccessor(pCtx, property,
+                    firstStage.optimizeSetAccessor(pCtx, property, ctx, thisRef, factory, rootThisRef, value, valueType)));
+        }
     }
 
     public static final int COLLECTION = 2;
 
     public Accessor optimizeCollection(ParserContext pCtx, Object rootObject, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-
-
-        return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, type, property, 2,
-                firstStage.optimizeCollection(pCtx, rootObject, type, property, ctx, thisRef, factory)));
+        synchronized (oLock) {
+            return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, type, property, 2,
+                    firstStage.optimizeCollection(pCtx, rootObject, type, property, ctx, thisRef, factory)));
+        }
     }
 
     public static final int OBJ_CREATION = 3;
 
     public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+        synchronized (oLock) {
 
-        return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, 3,
-                firstStage.optimizeObjectCreation(pCtx, property, ctx, thisRef, factory)));
+            return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, 3,
+                    firstStage.optimizeObjectCreation(pCtx, property, ctx, thisRef, factory)));
+        }
     }
 
+    public static boolean isOverloaded() {
+        return classLoader.isOverloaded();
+    }
 
     public Object getResultOptPass() {
         return firstStage.getResultOptPass();

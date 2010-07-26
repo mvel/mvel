@@ -18,11 +18,11 @@
 
 package org.mvel2.optimizers.dynamic;
 
-import org.mvel2.compiler.Accessor;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.AbstractParser;
+import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.ParserContext;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -74,7 +74,7 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
 
     private Object optimize(ParserContext pCtx, Object ctx, Object elCtx, VariableResolverFactory variableResolverFactory) {
 
-        if (DynamicOptimizer.classLoader.isOverloaded()) {
+        if (DynamicOptimizer.isOverloaded()) {
             DynamicOptimizer.enforceTenureLimit();
         }
 
