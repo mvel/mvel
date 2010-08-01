@@ -3,7 +3,9 @@ package org.mvel2.tests.core;
 import junit.framework.TestCase;
 import org.mvel2.*;
 import org.mvel2.ast.ASTNode;
+import org.mvel2.ast.BinaryOperation;
 import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.PropertyHandlerFactory;
@@ -580,6 +582,22 @@ public class CoreConfidenceTests extends AbstractTest {
         compiler.compile(ctx);
         assertEquals(Integer.class,
                 compiler.getParserContextState().getVarOrInputType("total"));
+    }
+    
+    public void testTestIntToLong() {
+        String s =  "1+(long)a" ;
+        
+        ParserContext pc = new ParserContext();
+        pc.addInput( "a", int.class );
+        
+        ExpressionCompiler compiler = new ExpressionCompiler(s, pc);
+        CompiledExpression expr = compiler.compile();
+        
+        Map vars = new HashMap();
+        vars.put( "a", 1 );
+  
+        Object r = ((ExecutableStatement) expr).getValue(null, new MapVariableResolverFactory(vars));
+        assertEquals( new Long(2), r);
     }
 
     public void testMapPropertyCreateCondensed() {
