@@ -585,10 +585,13 @@ public class CoreConfidenceTests extends AbstractTest {
     }
     
     public void testTestIntToLong() {
+        //System.out.println( int.class.isAssignableFrom( Integer.class ) );
+        //Number n = new Integer ( 3 )
+        
         String s =  "1+(long)a" ;
         
         ParserContext pc = new ParserContext();
-        pc.addInput( "a", int.class );
+        pc.addInput( "a", Integer.class );
         
         ExpressionCompiler compiler = new ExpressionCompiler(s, pc);
         CompiledExpression expr = compiler.compile();
@@ -599,6 +602,24 @@ public class CoreConfidenceTests extends AbstractTest {
         Object r = ((ExecutableStatement) expr).getValue(null, new MapVariableResolverFactory(vars));
         assertEquals( new Long(2), r);
     }
+    
+    public void testBinaryOperatorWidening() {
+        String s =  "1f+a" ;
+        
+        ParserContext pc = new ParserContext();
+        pc.addInput( "a", Byte.class );
+        
+        ExpressionCompiler compiler = new ExpressionCompiler(s, pc);
+        CompiledExpression expr = compiler.compile();
+        
+        BinaryOperation binNode = (BinaryOperation) expr.getFirstNode();
+        ASTNode left = binNode.getLeft();
+        assertEquals( Float.class, left.getEgressType() );
+        ASTNode right = binNode.getRight();
+        assertEquals( Float.class, left.getEgressType() );
+        assertEquals( Byte.class, right.getEgressType() );
+        assertEquals( Float.class, binNode.getEgressType() );       
+    }    
 
     public void testMapPropertyCreateCondensed() {
         assertEquals("foo",
