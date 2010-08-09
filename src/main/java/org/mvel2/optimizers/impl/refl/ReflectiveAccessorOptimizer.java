@@ -994,6 +994,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 addAccessorNode(new MethodAccessor(getWidenedTarget(m), (ExecutableStatement[]) es));
             }
 
+            currType = m.getReturnType();
+
             /**
              * return the response.
              */

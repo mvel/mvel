@@ -1753,6 +1753,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         else {
             m = getWidenedTarget(m);
 
+
             if (es != null) {
                 ExecutableStatement cExpr;
                 for (int i = 0; i < es.length; i++) {
@@ -1952,6 +1953,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             Object o = m.invoke(ctx, args);
+
+            currType = m.getReturnType();
+            
 
             if (hasNullMethodHandler()) {
                 writeOutNullHandler(m, 1);
