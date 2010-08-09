@@ -985,6 +985,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             Object o = getWidenedTarget(m).invoke(ctx, args);
+            
+            if (Class.class.isAssignableFrom(m.getReturnType())) {
+                 currType = m.getReturnType();
+            }
 
             if (hasNullMethodHandler()) {
                 addAccessorNode(new MethodAccessorNH(getWidenedTarget(m), (ExecutableStatement[]) es, getNullMethodHandler()));
