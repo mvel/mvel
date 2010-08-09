@@ -18,28 +18,14 @@
 package org.mvel2.optimizers.impl.refl;
 
 import org.mvel2.*;
-
-import static org.mvel2.DataConversion.canConvert;
-import static org.mvel2.DataConversion.convert;
-import static org.mvel2.MVEL.eval;
-
 import org.mvel2.ast.Function;
 import org.mvel2.ast.TypeDescriptor;
-
-import static org.mvel2.ast.TypeDescriptor.getClassReference;
-
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.PropertyVerifier;
 import org.mvel2.integration.GlobalListenerFactory;
-
-import static org.mvel2.integration.GlobalListenerFactory.*;
-
 import org.mvel2.integration.PropertyHandler;
-
-import static org.mvel2.integration.PropertyHandlerFactory.*;
-
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AbstractOptimizer;
@@ -50,27 +36,27 @@ import org.mvel2.optimizers.impl.refl.collection.ListCreator;
 import org.mvel2.optimizers.impl.refl.collection.MapCreator;
 import org.mvel2.optimizers.impl.refl.nodes.*;
 import org.mvel2.util.ArrayTools;
-
-import static org.mvel2.util.CompilerTools.expectType;
-
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
-
-import static org.mvel2.util.ParseTools.*;
-import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
-import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
-
 import org.mvel2.util.StringAppender;
 
-import static java.lang.Integer.parseInt;
-
 import java.lang.reflect.*;
-
-import static java.lang.reflect.Array.getLength;
-
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+
+import static java.lang.Integer.parseInt;
+import static java.lang.reflect.Array.getLength;
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataConversion.convert;
+import static org.mvel2.MVEL.eval;
+import static org.mvel2.ast.TypeDescriptor.getClassReference;
+import static org.mvel2.integration.GlobalListenerFactory.*;
+import static org.mvel2.integration.PropertyHandlerFactory.*;
+import static org.mvel2.util.CompilerTools.expectType;
+import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
+import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 
 public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
     private AccessorNode rootNode;
@@ -348,6 +334,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                         if (curr == null) return null;
                         addAccessorNode(new NullSafe());
                     }
+                    staticAccess = false;
                 }
 
             }
@@ -376,6 +363,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                         if (curr == null) return null;
                         addAccessorNode(new NullSafe());
                     }
+                    staticAccess = false;
                 }
             }
 
@@ -560,7 +548,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
         else {
             Object tryStaticMethodRef = tryStaticAccess();
-
+            staticAccess = true;
             if (tryStaticMethodRef != null) {
                 if (tryStaticMethodRef instanceof Class) {
                     addAccessorNode(new StaticReferenceAccessor(tryStaticMethodRef));
@@ -917,11 +905,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
 
-        /**
-         * If the target object is an instance of java.lang.Class itself then do not
-         * adjust the Class scope target.
-         */
-        Class<?> cls = currType != null ? currType : (ctx instanceof Class ? (Class<?>) ctx : ctx.getClass());
+        boolean classTarget = false;
+        Class<?> cls = currType != null ? currType : ((classTarget = ctx instanceof Class) ? (Class<?>) ctx : ctx.getClass());
+
         currType = null;
 
         Method m;
@@ -934,15 +920,16 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
          * Try to find an instance method from the class target.
          */
 
-        if ((m = getBestCandidate(argTypes, name, cls, cls.getMethods(), false)) != null) {
+
+        if ((m = getBestCandidate(argTypes, name, cls, cls.getMethods(), false, classTarget)) != null) {
             parameterTypes = m.getParameterTypes();
         }
 
-        if (m == null) {
+        if (m == null && classTarget) {
             /**
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
-            if ((m = getBestCandidate(argTypes, name, cls, cls.getClass().getDeclaredMethods(), false)) != null) {
+            if ((m = getBestCandidate(argTypes, name, cls, Class.class.getMethods(), false)) != null) {
                 parameterTypes = m.getParameterTypes();
             }
         }
@@ -985,10 +972,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             Object o = getWidenedTarget(m).invoke(ctx, args);
-            
-            if (Class.class.isAssignableFrom(m.getReturnType())) {
-                 currType = m.getReturnType();
-            }
+
+//            if (Class.class.isAssignableFrom(m.getReturnType())) {
+//                 currType = m.getReturnType();
+//            }
 
             if (hasNullMethodHandler()) {
                 addAccessorNode(new MethodAccessorNH(getWidenedTarget(m), (ExecutableStatement[]) es, getNullMethodHandler()));

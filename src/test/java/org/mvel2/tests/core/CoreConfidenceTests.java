@@ -5162,8 +5162,13 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testAmbiguousGetName() {
         Map<String, Object> vars = createTestMap();
+        vars.put("Foo", Foo.class);
 
         Serializable s = MVEL.compileExpression("foo.getClass().getName()");
+
+        System.out.println(MVEL.executeExpression(s, vars));
+
+        s = MVEL.compileExpression("Foo.getName()");
 
         System.out.println(MVEL.executeExpression(s, vars));
     }

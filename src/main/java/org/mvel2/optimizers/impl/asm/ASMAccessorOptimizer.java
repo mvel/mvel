@@ -1689,7 +1689,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          * If the target object is an instance of java.lang.Class itself then do not
          * adjust the Class scope target.
          */
-        Class<?> cls = currType != null ? currType : (ctx instanceof Class ? (Class<?>) ctx : ctx.getClass());
+
+        boolean classTarget = false;
+        Class<?> cls = currType != null ? currType : ((classTarget = ctx instanceof Class) ? (Class<?>) ctx : ctx.getClass());
+
         currType = null;
 
         Method m;
@@ -1698,15 +1701,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         /**
          * Try to find an instance method from the class target.
          */
-        if ((m = getBestCandidate(argTypes, name, cls, cls.getMethods(), false)) != null) {
+        if ((m = getBestCandidate(argTypes, name, cls, cls.getMethods(), false, classTarget)) != null) {
             parameterTypes = m.getParameterTypes();
         }
 
-        if (m == null) {
+        if (m == null && classTarget) {
             /**
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
-            if ((m = getBestCandidate(argTypes, name, cls, cls.getClass().getDeclaredMethods(), false)) != null) {
+            if ((m = getBestCandidate(argTypes, name, cls, Class.class.getMethods(), false)) != null) {
                 parameterTypes = m.getParameterTypes();
             }
         }
@@ -1736,10 +1739,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         else {
             m = getWidenedTarget(m);
-
-            if (Class.class.isAssignableFrom(m.getReturnType())) {
-                currType = m.getReturnType();
-            }
 
             if (es != null) {
                 ExecutableStatement cExpr;
