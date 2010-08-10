@@ -5,6 +5,7 @@ import static org.mvel2.util.ParseTools.getBestCandidate;
 import static org.mvel2.DataConversion.convert;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.PropertyTools;
 
 import java.lang.reflect.Method;
 
@@ -12,6 +13,7 @@ public class SetterAccessor implements AccessorNode {
     private AccessorNode nextNode;
     private final Method method;
     private Class<?> targetType;
+    private boolean primitive;
 
     private boolean coercionRequired = false;
 
@@ -23,7 +25,7 @@ public class SetterAccessor implements AccessorNode {
                 return method.invoke(ctx, convert(value, targetType));
             }
             else {
-                return method.invoke(ctx, value);
+                return method.invoke(ctx, value == null && primitive ? PropertyTools.getPrimitiveInitialValue(targetType) : value);
             }
         }
         catch (IllegalArgumentException e) {
@@ -53,7 +55,7 @@ public class SetterAccessor implements AccessorNode {
     public SetterAccessor(Method method) {
         this.method = method;
         assert method != null;
-        this.targetType = method.getParameterTypes()[0];
+        primitive = (this.targetType = method.getParameterTypes()[0]).isPrimitive();
     }
 
     public Method getMethod() {
