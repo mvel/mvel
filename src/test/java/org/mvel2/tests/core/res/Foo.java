@@ -10,6 +10,7 @@ public class Foo {
     private String name = "dog";
     private int countTest = 0;
     private boolean boolTest = true;
+    private char charTest;
     private Collection collectionTest;
     private SampleBean sampleBean = new SampleBean();
 
@@ -76,6 +77,14 @@ public class Foo {
 
     public void setBoolTest(boolean boolTest) {
         this.boolTest = boolTest;
+    }
+
+    public char getCharTest() {
+        return charTest;
+    }
+
+    public void setCharTest(char charTest) {
+        this.charTest = charTest;
     }
 
     public boolean equals(Object o) {

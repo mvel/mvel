@@ -5215,4 +5215,27 @@ public class CoreConfidenceTests extends AbstractTest {
         assertFalse(((Foo) vars.get("foo")).isBoolTest());
     }
 
+    public void testBindingNullToPrimitiveTypes3() {
+        Map<String, Object> vars = createTestMap();
+        ((Foo) vars.get("foo")).setCharTest('a');
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        Serializable s = MVEL.compileSetExpression("foo.charTest");
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertEquals(((Foo) vars.get("foo")).getCharTest(), 0);
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        s = MVEL.compileSetExpression("foo.charTest");
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertEquals(((Foo) vars.get("foo")).getCharTest(), 0);
+
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertEquals(((Foo) vars.get("foo")).getCharTest(), 0);
+    }
+
+
+
 }

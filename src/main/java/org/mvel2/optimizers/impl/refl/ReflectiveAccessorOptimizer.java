@@ -301,7 +301,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             throw new PropertyAccessException("could not access property: " + new String(property), e);
         }
         catch (IllegalArgumentException e) {
-            throw new PropertyAccessException("error binding property: " + new String(property) + " (value <<" + value + ">>::" + (value == null ? "null" : value.getClass().getCanonicalName()) + ")");
+            throw new PropertyAccessException("error binding property: " + new String(property) + " (value <<" + value + ">>::" + (value == null ? "null" : value.getClass().getCanonicalName()) + ")", e);
         }
 
 
