@@ -18,67 +18,51 @@
 package org.mvel2.optimizers.impl.asm;
 
 import org.mvel2.*;
-
-import static org.mvel2.DataConversion.canConvert;
-import static org.mvel2.DataConversion.convert;
-import static org.mvel2.MVEL.eval;
-import static org.mvel2.MVEL.isAdvancedDebugging;
-
 import org.mvel2.asm.ClassWriter;
 import org.mvel2.asm.Label;
 import org.mvel2.asm.MethodVisitor;
 import org.mvel2.asm.Opcodes;
-
-import static org.mvel2.asm.Opcodes.*;
-import static org.mvel2.asm.Type.*;
-
 import org.mvel2.ast.Function;
 import org.mvel2.ast.TypeDescriptor;
-
-import static org.mvel2.ast.TypeDescriptor.getClassReference;
-
 import org.mvel2.ast.WithNode;
 import org.mvel2.compiler.*;
 import org.mvel2.integration.GlobalListenerFactory;
-
-import static org.mvel2.integration.GlobalListenerFactory.hasGetListeners;
-import static org.mvel2.integration.GlobalListenerFactory.notifyGetListeners;
-
 import org.mvel2.integration.PropertyHandler;
-
-import static org.mvel2.integration.PropertyHandlerFactory.*;
-
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizationNotSupported;
 import org.mvel2.optimizers.impl.refl.nodes.Union;
-
-import static org.mvel2.util.ArrayTools.findFirst;
-
 import org.mvel2.util.*;
-
-import static org.mvel2.util.ParseTools.*;
-import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
-import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 
 import java.io.FileWriter;
 import java.io.IOException;
-
-import static java.lang.String.valueOf;
-import static java.lang.System.getProperty;
-import static java.lang.Thread.currentThread;
-
 import java.lang.reflect.*;
-
-import static java.lang.reflect.Array.getLength;
-import static java.lang.reflect.Modifier.FINAL;
-import static java.lang.reflect.Modifier.STATIC;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static java.lang.String.valueOf;
+import static java.lang.System.getProperty;
+import static java.lang.Thread.currentThread;
+import static java.lang.reflect.Array.getLength;
+import static java.lang.reflect.Modifier.FINAL;
+import static java.lang.reflect.Modifier.STATIC;
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataConversion.convert;
+import static org.mvel2.MVEL.eval;
+import static org.mvel2.MVEL.isAdvancedDebugging;
+import static org.mvel2.asm.Opcodes.*;
+import static org.mvel2.asm.Type.*;
+import static org.mvel2.ast.TypeDescriptor.getClassReference;
+import static org.mvel2.integration.GlobalListenerFactory.hasGetListeners;
+import static org.mvel2.integration.GlobalListenerFactory.notifyGetListeners;
+import static org.mvel2.integration.PropertyHandlerFactory.*;
+import static org.mvel2.util.ArrayTools.findFirst;
+import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
+import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
 
 /**
  * Implementation of the MVEL Just-in-Time (JIT) compiler for Property Accessors using the ASM bytecode
@@ -291,7 +275,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             deferFinish = true;
             noinit = true;
 
-            compileAccessor();                                                                                                                                       
+            compileAccessor();
             ctx = this.val;
         }
         else {
@@ -1705,7 +1689,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
          * If the target object is an instance of java.lang.Class itself then do not
          * adjust the Class scope target.
          */
-        Class<?> cls = currType != null ? currType : (ctx instanceof Class ? (Class<?>) ctx : ctx.getClass());
+
+        boolean classTarget = false;
+        Class<?> cls = currType != null ? currType : ((classTarget = ctx instanceof Class) ? (Class<?>) ctx : ctx.getClass());
+
         currType = null;
 
         Method m;
@@ -1714,15 +1701,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         /**
          * Try to find an instance method from the class target.
          */
-        if ((m = getBestCandidate(argTypes, name, cls, cls.getMethods(), false)) != null) {
+        if ((m = getBestCandidate(argTypes, name, cls, cls.getMethods(), false, classTarget)) != null) {
             parameterTypes = m.getParameterTypes();
         }
 
-        if (m == null) {
+        if (m == null && classTarget) {
             /**
              * If we didn't find anything, maybe we're looking for the actual java.lang.Class methods.
              */
-            if ((m = getBestCandidate(argTypes, name, cls, cls.getClass().getDeclaredMethods(), false)) != null) {
+            if ((m = getBestCandidate(argTypes, name, cls, Class.class.getMethods(), false)) != null) {
                 parameterTypes = m.getParameterTypes();
             }
         }
@@ -1952,6 +1939,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             Object o = m.invoke(ctx, args);
+
 
             if (hasNullMethodHandler()) {
                 writeOutNullHandler(m, 1);
