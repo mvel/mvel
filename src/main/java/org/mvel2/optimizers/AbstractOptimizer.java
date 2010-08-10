@@ -37,6 +37,7 @@ public class AbstractOptimizer extends AbstractParser {
     protected boolean collection = false;
     protected boolean nullSafe = false;
     protected Class currType = null;
+    protected boolean staticAccess = false;
 
 
     /**

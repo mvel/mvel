@@ -21,9 +21,10 @@ package org.mvel2.conversion;
 import org.mvel2.ConversionException;
 import org.mvel2.ConversionHandler;
 
-import static java.lang.String.valueOf;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.lang.String.valueOf;
 
 public class ByteCH implements ConversionHandler {
     private static final Map<Class, Converter> CNV =
@@ -71,11 +72,37 @@ public class ByteCH implements ConversionHandler {
         CNV.put(Integer.class,
                 new Converter() {
                     public Object convert(Object o) {
-                        return (byte) ((Integer)o).intValue();
+                        return ((Integer) o).byteValue();
                     }
                 }
         );
 
+        CNV.put(Long.class,
+                new Converter() {
+                    public Object convert(Object o) {
+                        return ((Long) o).byteValue();
+                    }
+                });
 
+        CNV.put(Double.class,
+                new Converter() {
+                    public Object convert(Object o) {
+                        return ((Double) o).byteValue();
+                    }
+                });
+
+        CNV.put(Float.class,
+                new Converter() {
+                    public Object convert(Object o) {
+                        return ((Float) o).byteValue();
+                    }
+                });
+
+        CNV.put(Short.class,
+                new Converter() {
+                    public Object convert(Object o) {
+                        return ((Short) o).byteValue();
+                    }
+                });
     }
 }
