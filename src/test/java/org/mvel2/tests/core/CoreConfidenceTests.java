@@ -5258,4 +5258,55 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(((Foo) vars.get("foo")).charTestFld, 0);
     }
 
+    public void testBindListToArray() {
+        Map<String, Object> vars = createTestMap();
+
+        ArrayList<String> list = new ArrayList<String>();
+        list.add("a");
+        list.add("b");
+        list.add("c");
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        Serializable s = MVEL.compileSetExpression("foo.charArray");
+
+        MVEL.executeSetExpression(s, vars, list);
+
+        assertEquals(((Foo) vars.get("foo")).getCharArray().length, 3);
+    }
+
+    public void testBindListToMultiArray() {
+        Map<String, Object> vars = createTestMap();
+
+        ArrayList<List<String>> list = new ArrayList<List<String>>();
+
+        List<String> l1 = new ArrayList<String>();
+        l1.add("a");
+        l1.add("b");
+        l1.add("c");
+
+        List<String> l2 = new ArrayList<String>();
+        l2.add("d");
+        l2.add("e");
+        l2.add("f");
+
+        List<String> l3 = new ArrayList<String>();
+        l3.add("g");
+        l3.add("h");
+        l3.add("i");
+
+        list.add(l1);
+        list.add(l2);
+        list.add(l3);
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        Serializable s = MVEL.compileSetExpression("foo.charArrayMulti");
+
+        MVEL.executeSetExpression(s, vars, list);
+
+        Foo foo = (Foo) vars.get("foo");
+
+        assertEquals(foo.getCharArrayMulti().length, 3);
+        assertEquals(foo.getCharArrayMulti()[2][2], 'i');
+    }
+
 }

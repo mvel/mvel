@@ -18,36 +18,31 @@
 
 package org.mvel2.conversion;
 
-import org.mvel2.ConversionException;
 import org.mvel2.ConversionHandler;
-import static org.mvel2.DataConversion.canConvert;
-import static org.mvel2.DataConversion.convert;
-import org.mvel2.util.ParseTools;
-import static org.mvel2.util.ParseTools.getBaseComponentType;
 
-import static java.lang.reflect.Array.newInstance;
-import static java.lang.reflect.Array.set;
-import static java.lang.reflect.Array.getLength;
-import static java.lang.reflect.Array.get;
 import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PrimArrayHandler implements ConversionHandler {
+import static java.lang.reflect.Array.*;
+import static org.mvel2.DataConversion.convert;
+
+public class ArrayHandler implements ConversionHandler {
     private final Map<Class, Converter> CNV = new HashMap<Class, Converter>();
 
-    private final Class primitiveType;
+    private final Class type;
 
-    public PrimArrayHandler(Class type) {
-        this.primitiveType = getBaseComponentType(type);
+    public ArrayHandler(Class type) {
+        this.type = type;
     }
 
     public Object convertFrom(Object in) {
-        return handleLooseTypeConversion(in.getClass(), in, primitiveType);
+        return handleLooseTypeConversion(in.getClass(), in, type);
     }
 
     public boolean canConvertFrom(Class cls) {
-        return cls.isArray();
+        return cls.isArray() || Collection.class.isAssignableFrom(cls);
     }
 
 
@@ -61,21 +56,26 @@ public class PrimArrayHandler implements ConversionHandler {
      * @return
      */
     private static Object handleLooseTypeConversion(Class sourceType, Object input, Class targetType) {
-        Class targType = getBaseComponentType(targetType);
+        Class targType = targetType.getComponentType();
+        if (Collection.class.isAssignableFrom(sourceType)) {
+            Object newArray = newInstance(targType, ((Collection)input).size());
 
-        int len = getLength(input);
-        Object target = newInstance(targType, len);
-
-        if (len > 0 && canConvert(targetType, getBaseComponentType(sourceType))) {
-            for (int i = 0; i < len; i++) {
-                set(target, i, convert(get(input,i), targType));
+            int i = 0;
+            for (Object o : ((Collection) input)) {
+                Array.set(newArray, i++, convert(o, targType));
             }
+
+            return newArray;
         }
         else {
-            throw new ConversionException("cannot convert to type: "
-                    + targetType.getComponentType().getName() + "[] from " + getBaseComponentType(sourceType).getName());
-        }
+            int len = getLength(input);
+            Object target = newInstance(targType, len);
 
-        return target;
+            for (int i = 0; i < len; i++) {
+                set(target, i, convert(get(input, i), targType));
+            }
+
+            return target;
+        }
     }
 }

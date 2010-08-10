@@ -15,6 +15,10 @@ public class Foo {
     private Collection collectionTest;
     private SampleBean sampleBean = new SampleBean();
 
+    private char[] charArray;
+
+    private char[][] charArrayMulti;
+
     public void abc() {
     }
 
@@ -86,6 +90,22 @@ public class Foo {
 
     public void setCharTest(char charTest) {
         this.charTest = charTest;
+    }
+
+    public char[] getCharArray() {
+        return charArray;
+    }
+
+    public void setCharArray(char[] charArray) {
+        this.charArray = charArray;
+    }
+
+    public char[][] getCharArrayMulti() {
+        return charArrayMulti;
+    }
+
+    public void setCharArrayMulti(char[][] charArrayMulti) {
+        this.charArrayMulti = charArrayMulti;
     }
 
     public boolean equals(Object o) {
