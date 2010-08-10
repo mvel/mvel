@@ -11,6 +11,7 @@ public class Foo {
     private int countTest = 0;
     private boolean boolTest = true;
     private char charTest;
+    public char charTestFld;
     private Collection collectionTest;
     private SampleBean sampleBean = new SampleBean();
 

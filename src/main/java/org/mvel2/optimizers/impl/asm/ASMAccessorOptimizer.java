@@ -432,19 +432,57 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             if (member instanceof Field) {
-                assert debug("CHECKCAST " + ctx.getClass().getName());
-                mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
+                checkcast(ctx.getClass());
 
                 Field fld = (Field) member;
 
-                assert debug("ALOAD 4");
-                mv.visitVarInsn(ALOAD, 4);
-
-                assert debug("CHECKCAST " + fld.getType().getName());
-                mv.visitTypeInsn(CHECKCAST, getInternalName(fld.getType()));
+                Label jmp = null;
+                Label jmp2 = new Label();
 
 
-                if (value != null && !fld.getType().isAssignableFrom(value.getClass())) {
+                if (fld.getType().isPrimitive()) {
+                    assert debug("ASTORE 5");
+                    mv.visitVarInsn(ASTORE, 5);
+
+                    assert debug("ALOAD 4");
+                    mv.visitVarInsn(ALOAD, 4);
+                    
+                    if (value == null) value = PropertyTools.getPrimitiveInitialValue(fld.getType());
+
+                    jmp = new Label();
+                    assert debug("IFNOTNULL jmp");
+                    mv.visitJumpInsn(IFNONNULL, jmp);
+
+                    assert debug("ALOAD 5");
+                    mv.visitVarInsn(ALOAD, 5);
+
+                    assert debug("ICONST_0");
+                    mv.visitInsn(ICONST_0);
+
+                    assert debug("PUTFIELD " + getInternalName(fld.getDeclaringClass()) + "." + tk);
+                    mv.visitFieldInsn(PUTFIELD, getInternalName(fld.getDeclaringClass()), tk, getDescriptor(fld.getType()));
+
+                    assert debug("GOTO jmp2");
+                    mv.visitJumpInsn(GOTO, jmp2);
+
+                    assert debug("jmp:");
+                    mv.visitLabel(jmp);
+
+                    assert debug("ALOAD 5");
+                    mv.visitVarInsn(ALOAD, 5);
+                    
+                    assert debug("ALOAD 4");
+                    mv.visitVarInsn(ALOAD, 4);
+
+                    unwrapPrimitive(fld.getType());
+                }
+                else {
+                    assert debug("ALOAD 4");
+                    mv.visitVarInsn(ALOAD, 4);
+                    checkcast(fld.getType());
+                }
+
+                if (jmp == null && value != null && !fld.getType().isAssignableFrom(value.getClass())) {
                     if (!canConvert(fld.getType(), value.getClass())) {
                         throw new ConversionException("cannot convert type: "
                                 + value.getClass() + ": to " + fld.getType());
@@ -459,6 +497,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 assert debug("PUTFIELD " + getInternalName(fld.getDeclaringClass()) + "." + tk);
                 mv.visitFieldInsn(PUTFIELD, getInternalName(fld.getDeclaringClass()), tk, getDescriptor(fld.getType()));
+
+                assert debug("jmp2:");
+                mv.visitLabel(jmp2);
 
                 assert debug("ALOAD 4");
                 mv.visitVarInsn(ALOAD, 4);
@@ -491,15 +532,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     else checkcast(targetType);
                     meth.invoke(ctx, convert(value, meth.getParameterTypes()[0]));
                 }
-//                else if (value == null && targetType.isPrimitive()) {
-//                    checkcast(targetType);
-//                    meth.invoke(ctx, PropertyTools.getPrimitiveInitialValue(targetType));
-//                }
+
                 else {
                     if (targetType.isPrimitive()) {
 
                         if (value == null) value = PropertyTools.getPrimitiveInitialValue(targetType);
-
 
                         jmp = new Label();
                         assert debug("IFNOTNULL jmp");
@@ -524,10 +561,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         unwrapPrimitive(targetType);
                     }
                     else {
-                        checkcast(targetType);                        
+                        checkcast(targetType);
                     }
 
                     meth.invoke(ctx, value);
+
                 }
 
                 assert debug("INVOKEVIRTUAL " + getInternalName(meth.getDeclaringClass()) + "." + meth.getName());
@@ -601,6 +639,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         assert debug("\n{METHOD STATS (maxstack=" + stacksize + ")}\n");
 
+
+        dumpAdvancedDebugging(); // dump advanced debugging if necessary
+        
+
         mv.visitMaxs(stacksize, maxlocals);
         mv.visitEnd();
 
@@ -637,7 +679,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         cw.visitEnd();
 
-        dumpAdvancedDebugging(); // dump advanced debugging if necessary
     }
 
     private Accessor _initializeAccessor() throws Exception {

@@ -25,10 +25,13 @@ public class AccessorBMModel implements Accessor {
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        Foo foo = (Foo) ctx;
+        Foo foo = (Foo) variableFactory.getVariableResolver("foo").getValue();
     
         if (value == null) {
-        	foo.setCountTest(0);
+        	foo.charTestFld = 0;
+        }
+        else {
+        	foo.charTestFld = (Character) value;
         }
     	
         return value;

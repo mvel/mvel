@@ -259,6 +259,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     fld.set(ctx, convert(value, fld.getType()));
                     addAccessorNode(new DynamicFieldAccessor(fld));
                 }
+                else if (value == null && fld.getType().isPrimitive()) {
+                    fld.set(ctx, PropertyTools.getPrimitiveInitialValue(fld.getType()));
+                    addAccessorNode(new FieldAccessor(fld));
+                }
                 else {
                     fld.set(ctx, value);
                     addAccessorNode(new FieldAccessor(fld));

@@ -5237,5 +5237,25 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
+    public void testBindingNullToPrimitiveTypes4() {
+        Map<String, Object> vars = createTestMap();
+        ((Foo) vars.get("foo")).charTestFld = 'a';
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        Serializable s = MVEL.compileSetExpression("foo.charTestFld");
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertEquals(((Foo) vars.get("foo")).charTestFld, 0);
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        s = MVEL.compileSetExpression("foo.charTestFld");
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertEquals(((Foo) vars.get("foo")).charTestFld, 0);
+
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertEquals(((Foo) vars.get("foo")).charTestFld, 0);
+    }
 
 }
