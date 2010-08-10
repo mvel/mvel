@@ -5172,4 +5172,47 @@ public class CoreConfidenceTests extends AbstractTest {
 
         System.out.println(MVEL.executeExpression(s, vars));
     }
+
+    public void testBindingNullToPrimitiveTypes() {
+        Map<String, Object> vars = createTestMap();
+        ((Foo) vars.get("foo")).setCountTest(10);
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        Serializable s = MVEL.compileSetExpression("foo.countTest");
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertEquals(((Foo) vars.get("foo")).getCountTest(), 0);
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        s = MVEL.compileSetExpression("foo.countTest");
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertEquals(((Foo) vars.get("foo")).getCountTest(), 0);
+
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertEquals(((Foo) vars.get("foo")).getCountTest(), 0);
+    }
+
+    public void testBindingNullToPrimitiveTypes2() {
+        Map<String, Object> vars = createTestMap();
+        ((Foo) vars.get("foo")).setCountTest(10);
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+        Serializable s = MVEL.compileSetExpression("foo.boolTest");
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertFalse(((Foo) vars.get("foo")).isBoolTest());
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        s = MVEL.compileSetExpression("foo.boolTest");
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertFalse(((Foo) vars.get("foo")).isBoolTest());
+
+        MVEL.executeSetExpression(s, vars, null);
+
+        assertFalse(((Foo) vars.get("foo")).isBoolTest());
+    }
+
 }

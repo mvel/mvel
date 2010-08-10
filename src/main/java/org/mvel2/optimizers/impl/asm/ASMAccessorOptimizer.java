@@ -475,6 +475,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 Class targetType = meth.getParameterTypes()[0];
 
+
+                Label jmp = null;
+                Label jmp2 = new Label();
                 if (value != null && !targetType.isAssignableFrom(value.getClass())) {
                     if (!canConvert(targetType, value.getClass())) {
                         throw new ConversionException("cannot convert type: "
@@ -488,14 +491,51 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     else checkcast(targetType);
                     meth.invoke(ctx, convert(value, meth.getParameterTypes()[0]));
                 }
+//                else if (value == null && targetType.isPrimitive()) {
+//                    checkcast(targetType);
+//                    meth.invoke(ctx, PropertyTools.getPrimitiveInitialValue(targetType));
+//                }
                 else {
-                    checkcast(targetType);
+                    if (targetType.isPrimitive()) {
+
+                        if (value == null) value = PropertyTools.getPrimitiveInitialValue(targetType);
+
+
+                        jmp = new Label();
+                        assert debug("IFNOTNULL jmp");
+                        mv.visitJumpInsn(IFNONNULL, jmp);
+
+                        assert debug("ICONST_0");
+                        mv.visitInsn(ICONST_0);
+
+                        assert debug("INVOKEVIRTUAL " + getInternalName(meth.getDeclaringClass()) + "." + meth.getName());
+                        mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(meth.getDeclaringClass()), meth.getName(),
+                                getMethodDescriptor(meth));
+
+                        assert debug("GOTO jmp2");
+                        mv.visitJumpInsn(GOTO, jmp2);
+
+                        assert debug("jmp:");
+                        mv.visitLabel(jmp);
+
+                        assert debug("ALOAD 4");
+                        mv.visitVarInsn(ALOAD, 4);
+
+                        unwrapPrimitive(targetType);
+                    }
+                    else {
+                        checkcast(targetType);                        
+                    }
+
                     meth.invoke(ctx, value);
                 }
 
                 assert debug("INVOKEVIRTUAL " + getInternalName(meth.getDeclaringClass()) + "." + meth.getName());
                 mv.visitMethodInsn(INVOKEVIRTUAL, getInternalName(meth.getDeclaringClass()), meth.getName(),
                         getMethodDescriptor(meth));
+
+                assert debug("jmp2:");
+                mv.visitLabel(jmp2);
 
                 assert debug("ALOAD 4");
                 mv.visitVarInsn(ALOAD, 4);

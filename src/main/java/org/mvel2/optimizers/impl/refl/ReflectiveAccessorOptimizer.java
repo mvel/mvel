@@ -35,10 +35,7 @@ import org.mvel2.optimizers.impl.refl.collection.ExprValueAccessor;
 import org.mvel2.optimizers.impl.refl.collection.ListCreator;
 import org.mvel2.optimizers.impl.refl.collection.MapCreator;
 import org.mvel2.optimizers.impl.refl.nodes.*;
-import org.mvel2.util.ArrayTools;
-import org.mvel2.util.MethodStub;
-import org.mvel2.util.ParseTools;
-import org.mvel2.util.StringAppender;
+import org.mvel2.util.*;
 
 import java.lang.reflect.*;
 import java.util.List;
@@ -65,7 +62,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     private Object ctx;
     private Object thisRef;
     private Object val;
-
+    
     private VariableResolverFactory variableFactory;
 
     private static final int DONE = -1;
@@ -278,6 +275,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
                     meth.invoke(ctx, convert(value, meth.getParameterTypes()[0]));
                 }
+                else if (value == null && meth.getParameterTypes()[0].isPrimitive()) {
+                    meth.invoke(ctx, PropertyTools.getPrimitiveInitialValue(meth.getParameterTypes()[0]));
+                }
                 else {
                     meth.invoke(ctx, value);
                 }
@@ -295,10 +295,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException("could not access property: " + new String(property), e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException("could not access property: " + new String(property), e);
+        }
+        catch (IllegalArgumentException e) {
+            throw new PropertyAccessException("error binding property: " + new String(property) + " (value <<" + value + ">>::" + (value == null ? "null" : value.getClass().getCanonicalName()) + ")");
         }
 
 

@@ -15,17 +15,22 @@ import org.mvel2.util.StringAppender;
 
 public class AccessorBMModel implements Accessor {
     private ExecutableStatement p0;
+    private long foo;
     
     public PropertyHandler nullPropertyHandler;
     public PropertyHandler nullMethodHandler;
     
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-    	StringAppender append = new StringAppender().append("foo").append(((String)ctx).toString().trim());
-    	return append;
+    		return null;
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
-        GlobalListenerFactory.notifySetListeners(ctx, "foobie", variableFactory, value);
+        Foo foo = (Foo) ctx;
+    
+        if (value == null) {
+        	foo.setCountTest(0);
+        }
+    	
         return value;
     }
 
