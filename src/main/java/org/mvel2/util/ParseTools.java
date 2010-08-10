@@ -29,6 +29,7 @@ import java.io.*;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -219,6 +220,10 @@ public class ParseTools {
     }
 
     public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods, boolean requireExact) {
+        return getBestCandidate(arguments, method, decl, methods, requireExact, false);
+    }
+
+    public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods, boolean requireExact, boolean classTarget) {
         if (methods.length == 0) {
             return null;
         }
@@ -239,6 +244,8 @@ public class ParseTools {
         }
 
         for (Method meth : methods) {
+            if (classTarget && (meth.getModifiers() & Modifier.STATIC) == 0) continue;
+            
             if (method.equals(meth.getName())) {
                 if ((parmTypes = meth.getParameterTypes()).length != arguments.length) {
                     continue;
