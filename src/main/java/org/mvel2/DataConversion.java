@@ -36,6 +36,11 @@ public class DataConversion {
     private static final Map<Class, ConversionHandler> CONVERTERS
             = new HashMap<Class, ConversionHandler>(38 * 2, 0.5f);
 
+    private interface ArrayTypeMarker {
+    }
+
+    ;
+
     static {
         ConversionHandler ch;
 
@@ -74,12 +79,14 @@ public class DataConversion {
 
         CONVERTERS.put(Integer[].class, new IntArrayCH());
 
-        CONVERTERS.put(int[].class, new PrimArrayHandler(int[].class));
-        CONVERTERS.put(long[].class, new PrimArrayHandler(long[].class));
-        CONVERTERS.put(double[].class, new PrimArrayHandler(double[].class));
-        CONVERTERS.put(float[].class, new PrimArrayHandler(float[].class));
-        CONVERTERS.put(short[].class, new PrimArrayHandler(short[].class));
-        CONVERTERS.put(boolean[].class, new PrimArrayHandler(boolean[].class));
+        CONVERTERS.put(int[].class, new ArrayHandler(int[].class));
+        CONVERTERS.put(long[].class, new ArrayHandler(long[].class));
+        CONVERTERS.put(double[].class, new ArrayHandler(double[].class));
+        CONVERTERS.put(float[].class, new ArrayHandler(float[].class));
+        CONVERTERS.put(short[].class, new ArrayHandler(short[].class));
+        CONVERTERS.put(boolean[].class, new ArrayHandler(boolean[].class));
+        CONVERTERS.put(char[].class, new ArrayHandler(char[].class));
+        CONVERTERS.put(byte[].class, new ArrayHandler(byte[].class));
 
         CONVERTERS.put(BigDecimal.class, new BigDecimalCH());
         CONVERTERS.put(BigInteger.class, new BigIntegerCH());
@@ -96,9 +103,14 @@ public class DataConversion {
     }
 
     public static boolean canConvert(Class toType, Class convertFrom) {
-        return (CONVERTERS.containsKey(toType)
-                && CONVERTERS.get(toType).canConvertFrom(convertFrom))
-                || toType.isAssignableFrom(convertFrom);
+        if (toType.isAssignableFrom(convertFrom)) return true;
+        if (CONVERTERS.containsKey(toType)) {
+            return CONVERTERS.get(toType).canConvertFrom(convertFrom);
+        }
+        else if (toType.isArray() && canConvert(toType.getComponentType(), convertFrom)) {
+            return true;
+        }
+        return false;
     }
 
     public static <T> T convert(Object in, Class<T> toType) {
@@ -106,9 +118,18 @@ public class DataConversion {
         if (toType == in.getClass() || toType.isAssignableFrom(in.getClass())) {
             return (T) in;
         }
-        return (T) CONVERTERS.get(toType).convertFrom(in);
+
+        ConversionHandler h = CONVERTERS.get(toType);
+        if (h == null && toType.isArray()) {
+            ArrayHandler ah;
+            CONVERTERS.put(toType, ah = new ArrayHandler(toType));
+            return (T) ah.convertFrom(in);
+        }
+        else {
+            return (T) h.convertFrom(in);
+        }
     }
-                                               
+
     /**
      * Register a new {@link ConversionHandler} with the factory.
      *
@@ -117,5 +138,9 @@ public class DataConversion {
      */
     public static void addConversionHandler(Class type, ConversionHandler handler) {
         CONVERTERS.put(type, handler);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(char[][].class);
     }
 }

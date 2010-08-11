@@ -18,19 +18,20 @@
 
 package org.mvel2.util;
 
-import static org.mvel2.DataConversion.canConvert;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.PropertyVerifier;
-import static org.mvel2.util.ParseTools.boxPrimitive;
 
-import static java.lang.String.valueOf;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import static java.lang.reflect.Modifier.PUBLIC;
-import static java.lang.reflect.Modifier.isPublic;
 import java.util.Collection;
 import java.util.Map;
+
+import static java.lang.String.valueOf;
+import static java.lang.reflect.Modifier.PUBLIC;
+import static java.lang.reflect.Modifier.isPublic;
+import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.util.ParseTools.boxPrimitive;
 
 public class PropertyTools {
     public static boolean isEmpty(Object o) {
@@ -63,11 +64,12 @@ public class PropertyTools {
     }
 
     public static Method getSetter(Class clazz, String property, Class type) {
+        String simple = "set" + property;
         property = ReflectionUtil.getSetter(property);
-
+        
         for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 1 &&
-                    property.equals(meth.getName()) && (type == null || canConvert(meth.getParameterTypes()[0], type))) {
+                    (property.equals(meth.getName()) || simple.equals(meth.getName())) && (type == null || canConvert(meth.getParameterTypes()[0], type))) {
                 return meth;
             }
         }
@@ -87,12 +89,13 @@ public class PropertyTools {
     }
 
     public static Method getGetter(Class clazz, String property) {
+        String simple = "get" + property;
         String isGet = ReflectionUtil.getIsGetter(property);
         property = ReflectionUtil.getGetter(property);
 
         for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 0
-                    && (property.equals(meth.getName()) || isGet.equals(meth.getName()))) {
+                    && (property.equals(meth.getName()) || isGet.equals(meth.getName()) || simple.equals(meth.getName()))) {
                 return meth;
             }
         }
@@ -158,6 +161,36 @@ public class PropertyTools {
             }
         }
         return false;
+    }
+   
+    public static Object getPrimitiveInitialValue(Class type) {
+        if (type == int.class) {
+            return 0;
+        }
+        else if (type == boolean.class) {
+            return false;
+        }
+        else if (type == char.class) {
+            return (char) 0;
+        }
+        else if (type == double.class) {
+            return 0d;
+        }
+        else if (type == long.class) {
+            return 0l;
+        }
+        else if (type == float.class) {
+            return 0f;
+        }
+        else if (type == short.class) {
+            return (short) 0;
+        }
+        else if (type == byte.class) {
+            return (byte) 0;
+        }
+        else {
+            return 0;
+        }
     }
 
     public static boolean isAssignable(Class to, Class from) {

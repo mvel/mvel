@@ -25,6 +25,7 @@ import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.TemplateRuntimeError;
 import org.mvel2.templates.util.ArrayIterator;
+import org.mvel2.templates.util.CountIterator;
 import org.mvel2.templates.util.TemplateOutputStream;
 import org.mvel2.util.ParseTools;
 
@@ -85,6 +86,9 @@ public class CompiledForEachNode extends Node {
             }
             else if (o instanceof Object[]) {
                 iters[i] = new ArrayIterator((Object[]) o);
+            }
+            else if (o instanceof Integer) {
+                iters[i] = new CountIterator((Integer) o);
             }
             else {
                 throw new TemplateRuntimeError("cannot iterate object type: " + o.getClass().getName());
