@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="src" path="src/main/java"/>
-	<classpathentry kind="src" output="target/test-classes" path="src/test/java"/>
-	<classpathentry kind="src" path="src/test/resources"/>
 	<classpathentry kind="lib" path="lib/asm.jar"/>
 	<classpathentry kind="lib" path="lib/commons-el-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jsp-api-2.1.jar"/>

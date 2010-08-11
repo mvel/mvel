@@ -22,6 +22,7 @@ import org.mvel2.CompileException;
 import static org.mvel2.DataConversion.convert;
 import org.mvel2.compiler.AccessorNode;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.PropertyTools;
 
 import java.lang.reflect.Field;
 
@@ -29,13 +30,14 @@ public class FieldAccessor implements AccessorNode {
     private AccessorNode nextNode;
     private Field field;
     private boolean coercionRequired = false;
+    private boolean primitive;
 
 
     public FieldAccessor() {
     }
 
     public FieldAccessor(Field field) {
-        this.field = field;
+        primitive = (this.field = field).getType().isPrimitive();
     }
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vars) {
@@ -55,7 +57,7 @@ public class FieldAccessor implements AccessorNode {
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {
         if (nextNode != null) {
             try {
-                return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value);
+                return nextNode.setValue(field.get(ctx), elCtx, variableFactory, value == null && primitive ? PropertyTools.getPrimitiveInitialValue(field.getType()) : value);
             }
             catch (Exception e) {
                 throw new CompileException("unable to access field", e);
