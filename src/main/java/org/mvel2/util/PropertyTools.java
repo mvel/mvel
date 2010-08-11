@@ -64,11 +64,12 @@ public class PropertyTools {
     }
 
     public static Method getSetter(Class clazz, String property, Class type) {
+        String simple = "set" + property;
         property = ReflectionUtil.getSetter(property);
-
+        
         for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 1 &&
-                    property.equals(meth.getName()) && (type == null || canConvert(meth.getParameterTypes()[0], type))) {
+                    (property.equals(meth.getName()) || simple.equals(meth.getName())) && (type == null || canConvert(meth.getParameterTypes()[0], type))) {
                 return meth;
             }
         }
@@ -88,12 +89,13 @@ public class PropertyTools {
     }
 
     public static Method getGetter(Class clazz, String property) {
+        String simple = "get" + property;
         String isGet = ReflectionUtil.getIsGetter(property);
         property = ReflectionUtil.getGetter(property);
 
         for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 0
-                    && (property.equals(meth.getName()) || isGet.equals(meth.getName()))) {
+                    && (property.equals(meth.getName()) || isGet.equals(meth.getName()) || simple.equals(meth.getName()))) {
                 return meth;
             }
         }
