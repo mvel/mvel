@@ -20,6 +20,8 @@ package org.mvel2.templates.res;
 
 import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.templates.CompiledTemplate;
+import org.mvel2.templates.TemplateError;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
 
@@ -51,11 +53,20 @@ public class CompiledNamedIncludeNode extends Node {
             MVEL.executeExpression(cPreExpression, ctx, factory);
         }
 
+
         if (next != null) {
-            return next.eval(runtime,
-                    appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class)), ctx, factory))), ctx, factory);
+            String namedTemplate = MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class);
+            CompiledTemplate ct = runtime.getNamedTemplateRegistry().getNamedTemplate(namedTemplate);
+
+            if (ct == null)
+                throw new TemplateError("named template does not exist: " + namedTemplate);
+
+            return next.eval(runtime, appender.append(String.valueOf(TemplateRuntime.execute(ct, ctx, factory, runtime.getNamedTemplateRegistry()))), ctx, factory);
+
+//            return next.eval(runtime,
+//                    appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class)), ctx, factory))), ctx, factory);
         } else {
-            return appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class)), ctx, factory)));
+            return appender.append(String.valueOf(TemplateRuntime.execute(runtime.getNamedTemplateRegistry().getNamedTemplate(MVEL.executeExpression(cIncludeExpression, ctx, factory, String.class)), ctx, factory, runtime.getNamedTemplateRegistry())));
         }
     }
 
