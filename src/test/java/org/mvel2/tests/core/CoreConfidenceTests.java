@@ -5309,4 +5309,9 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(foo.getCharArrayMulti()[2][2], 'i');
     }
 
+    public void testMVEL224() {
+        ParserContext ctx = new ParserContext();
+        MVEL.compileExpression("(pin == 1)", ctx);
+    }
+
 }

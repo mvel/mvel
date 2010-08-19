@@ -943,7 +943,7 @@ public class AbstractParser implements Serializable {
                                         cursor = captureStringLiteral('"', expr, cursor, length);
                                         break;
                                     case 'i':
-                                        if (brace == 1 && lookAhead() == 'n' && isWhitespace(lookAhead(2))) {
+                                        if (brace == 1 && isWhitespace(lookBehind()) && lookAhead() == 'n' && isWhitespace(lookAhead(2))) {
 
                                             for (int level = brace; cursor != length; cursor++) {
                                                 switch (expr[cursor]) {
