@@ -5336,7 +5336,14 @@ public class CoreConfidenceTests extends AbstractTest {
         String expression = "this.?b.c";
         Serializable compiledExpression = MVEL.compileExpression(expression);
 
-        System.out.println(MVEL.executeExpression(compiledExpression, a2, String.class));
-        System.out.println(MVEL.executeExpression(compiledExpression, a1, String.class));
+        assertEquals(null, MVEL.executeExpression(compiledExpression, a2, String.class));
+        assertEquals("something", MVEL.executeExpression(compiledExpression, a1, String.class));
+
+        OptimizerFactory.setDefaultOptimizer("reflective");
+
+        compiledExpression = MVEL.compileExpression(expression);
+
+        assertEquals(null, MVEL.executeExpression(compiledExpression, a2, String.class));
+        assertEquals("something", MVEL.executeExpression(compiledExpression, a1, String.class));
     }
 }
