@@ -338,8 +338,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     first = false;
                     if (curr != null) returnType = curr.getClass();
                     if (nullSafe && cursor < length) {
-                        if (curr == null) return null;
-                        addAccessorNode(new NullSafe());
+                      //  if (curr == null) return null;
+                        addAccessorNode(new NullSafe(new String(expr, cursor + 1, length - cursor - 1), pCtx));
+                        if (curr == null) break;
                     }
                     staticAccess = false;
                 }
@@ -367,8 +368,9 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     first = false;
                     if (curr != null) returnType = curr.getClass();
                     if (nullSafe && cursor < length) {
-                        if (curr == null) return null;
-                        addAccessorNode(new NullSafe());
+                      //  if (curr == null) return null;
+                        addAccessorNode(new NullSafe(new String(expr, cursor + 1, length - cursor - 1), pCtx));
+                        if (curr == null) break;
                     }
                     staticAccess = false;
                 }

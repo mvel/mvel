@@ -446,7 +446,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                     assert debug("ALOAD 4");
                     mv.visitVarInsn(ALOAD, 4);
-                    
+
                     if (value == null) value = PropertyTools.getPrimitiveInitialValue(fld.getType());
 
                     jmp = new Label();
@@ -470,7 +470,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                     assert debug("ALOAD 5");
                     mv.visitVarInsn(ALOAD, 5);
-                    
+
                     assert debug("ALOAD 4");
                     mv.visitVarInsn(ALOAD, 4);
 
@@ -641,7 +641,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
 
         dumpAdvancedDebugging(); // dump advanced debugging if necessary
-        
+
 
         mv.visitMaxs(stacksize, maxlocals);
         mv.visitEnd();
@@ -744,6 +744,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     // check to see if a null safety is enabled on this property.
                     if (fields == -1) {
                         if (curr == null) {
+                            if (nullSafe) {
+                                throw new OptimizationNotSupported();
+                            }
                             break;
                         }
                         else {
@@ -754,6 +757,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     first = false;
 
                     if (nullSafe && cursor < length) {
+
                         assert debug("DUP");
                         mv.visitInsn(DUP);
 
@@ -790,6 +794,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     // check to see if a null safety is enabled on this property.
                     if (fields == -1) {
                         if (curr == null) {
+                            if (nullSafe) {
+                                throw new OptimizationNotSupported();
+                            }
                             break;
                         }
                         else {
@@ -800,6 +807,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     first = false;
 
                     if (nullSafe && cursor < length) {
+
                         assert debug("DUP");
                         mv.visitInsn(DUP);
 

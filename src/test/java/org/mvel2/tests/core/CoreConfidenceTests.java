@@ -5314,4 +5314,29 @@ public class CoreConfidenceTests extends AbstractTest {
         MVEL.compileExpression("(pin == 1)", ctx);
     }
 
+
+    public static class A221 {
+
+        public B221 b;
+    }
+
+    public static class B221 {
+
+        public String c = "something";
+    }
+
+    public void testMVEL221() {
+        A221 a1 = new A221();
+        a1.b = new B221();
+
+        A221 a2 = new A221();
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        String expression = "this.?b.c";
+        Serializable compiledExpression = MVEL.compileExpression(expression);
+
+        System.out.println(MVEL.executeExpression(compiledExpression, a2, String.class));
+        System.out.println(MVEL.executeExpression(compiledExpression, a1, String.class));
+    }
 }
