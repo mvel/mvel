@@ -26,6 +26,7 @@ import org.mvel2.util.ReflectionUtil;
 
 import java.awt.*;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -5345,5 +5346,17 @@ public class CoreConfidenceTests extends AbstractTest {
 
         assertEquals(null, MVEL.executeExpression(compiledExpression, a2, String.class));
         assertEquals("something", MVEL.executeExpression(compiledExpression, a1, String.class));
+    }
+
+    public void testMVEL222() throws IOException {
+        String script = "for (int i= 0; i < 10; i++ ){ values[i] = 1.0; }";
+        Map<String, Object> scriptVars = new HashMap<String, Object>();
+        double[] values = new double[10];
+        scriptVars.put("values", values);
+        Serializable expression = MVEL.compileExpression(script);
+        for (int i = 0; i < 6; i++) {
+            scriptVars.put("values", values);
+            MVEL.executeExpression(expression, scriptVars);
+        }
     }
 }

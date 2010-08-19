@@ -383,10 +383,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         assert debug("ALOAD 4");
                         mv.visitVarInsn(ALOAD, 4);
 
-                        if (!type.equals(value.getClass())) {
+                        if (type.isPrimitive()) unwrapPrimitive(type);
+                        else if (!type.equals(value.getClass())) {
                             dataConversion(type);
                         }
-                        if (type.isPrimitive()) wrapPrimitive(type);
 
                         arrayStore(type);
 
@@ -980,6 +980,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return thisRef;
             }
             else if (variableFactory != null && variableFactory.isResolveable(property)) {
+
                 if (variableFactory.isIndexedFactory() && variableFactory.isTarget(property)) {
                     int idx;
                     try {
@@ -988,6 +989,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     catch (Exception e) {
                         throw new OptimizationFailure(property);
                     }
+
 
                     return variableFactory.getIndexedVariableResolver(idx).getValue();
                 }
