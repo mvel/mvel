@@ -147,6 +147,11 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
         return true;
     }
 
+    @Override
+    public String getAbsoluteName() {
+        return name;
+    }
+
     public boolean isNewDeclaration() {
         return false;
     }

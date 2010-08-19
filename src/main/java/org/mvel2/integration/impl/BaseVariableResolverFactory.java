@@ -143,20 +143,21 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     }
 
     public int variableIndexOf(String name) {
-        for (int i = 0; i < indexedVariableNames.length; i++) {
-            if (name.equals(indexedVariableNames[i])) {
-                return i;
+        if (indexedVariableNames != null)
+            for (int i = 0; i < indexedVariableNames.length; i++) {
+                if (name.equals(indexedVariableNames[i])) {
+                    return i;
+                }
             }
-        }
         return -1;
     }
 
     public VariableResolver setIndexedVariableResolver(int index, VariableResolver resolver) {
         if (indexedVariableResolvers == null) {
-            return (indexedVariableResolvers = new VariableResolver[indexedVariableNames.length])[index-indexOffset] = resolver;
+            return (indexedVariableResolvers = new VariableResolver[indexedVariableNames.length])[index - indexOffset] = resolver;
         }
         else {
-            return indexedVariableResolvers[index-indexOffset] = resolver;
+            return indexedVariableResolvers[index - indexOffset] = resolver;
         }
     }
 

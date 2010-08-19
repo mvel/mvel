@@ -18,6 +18,9 @@
 
 package org.mvel2.integration.impl;
 
+import org.mvel2.CompileException;
+import org.mvel2.UnresolveablePropertyException;
+import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 
 import java.util.HashMap;
@@ -42,5 +45,78 @@ public class DefaultLocalVariableResolverFactory extends MapVariableResolverFact
 
     public DefaultLocalVariableResolverFactory(VariableResolverFactory nextFactory) {
         super(new HashMap<String, Object>(), nextFactory);
+    }
+
+    public DefaultLocalVariableResolverFactory(VariableResolverFactory nextFactory, String[] indexedVariables) {
+        super(new HashMap<String, Object>(), nextFactory);
+        this.indexedVariableNames = indexedVariables;
+        this.indexedVariableResolvers = new VariableResolver[indexedVariables.length];
+    }
+
+
+
+    public VariableResolver getIndexedVariableResolver(int index) {
+        if (indexedVariableNames == null) return null;
+
+        if (indexedVariableResolvers[index] == null) {
+            /**
+             * If the register is null, this means we need to forward-allocate the variable onto the
+             * register table.
+             */
+            return indexedVariableResolvers[index] = super.getVariableResolver(indexedVariableNames[index]);
+        }
+        return indexedVariableResolvers[index];
+    }
+
+    public VariableResolver getVariableResolver(String name) {
+        if (indexedVariableNames == null) return super.getVariableResolver(name);
+
+        int idx;
+        //   if (variableResolvers.containsKey(name)) return variableResolvers.get(name);
+        if ((idx = variableIndexOf(name)) != -1) {
+            if (indexedVariableResolvers[idx] == null) {
+                indexedVariableResolvers[idx] = new SimpleValueResolver(null);
+            }
+            variableResolvers.put(indexedVariableNames[idx], null);
+            return indexedVariableResolvers[idx];
+        }
+
+        return super.getVariableResolver(name);
+    }
+
+    public VariableResolver createVariable(String name, Object value, Class<?> type) {
+        if (indexedVariableNames == null) return super.createVariable(name, value, type);
+
+        VariableResolver vr;
+        boolean newVar = false;
+
+        try {
+            int idx;
+            if ((idx = variableIndexOf(name)) != -1) {
+                vr = new SimpleValueResolver(value);
+                if (indexedVariableResolvers[idx] == null) {
+                    indexedVariableResolvers[idx] = vr;
+                }
+                variableResolvers.put(indexedVariableNames[idx], vr);
+                vr = indexedVariableResolvers[idx];
+
+                newVar = true;
+            }
+            else {
+                return super.createVariable(name, value, type);
+            }
+
+        }
+        catch (UnresolveablePropertyException e) {
+            vr = null;
+        }
+
+        if (!newVar && vr != null && vr.getType() != null) {
+            throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
+        }
+        else {
+            addResolver(name, vr = new MapVariableResolver(variables, name, type)).setValue(value);
+            return vr;
+        }
     }
 }

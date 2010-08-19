@@ -5359,4 +5359,11 @@ public class CoreConfidenceTests extends AbstractTest {
             MVEL.executeExpression(expression, scriptVars);
         }
     }
+
+    public void testMVEL225() {
+        Serializable compileExpression = MVEL.compileExpression(
+                "def f() { int a=1;a++;return a; }; f();");
+        MapVariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+        assertEquals(2, MVEL.executeExpression(compileExpression, factory));
+    }
 }

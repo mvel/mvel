@@ -766,7 +766,7 @@ public class AbstractParser implements Serializable {
                                         return procTypedNode(false);
                                     }
                                     else if (pCtx != null && ((idx = pCtx.variableIndexOf(t)) != -1
-                                            || (pCtx.isIndexAllocation()))) {
+                                            && (pCtx.isIndexAllocation()))) {
                                         captureToEOS();
 
                                         IndexedAssignmentNode ian = new IndexedAssignmentNode(subArray(start, cursor),
@@ -1549,7 +1549,7 @@ public class AbstractParser implements Serializable {
 
                 if (pCtx == null) pCtx = getParserContext();
 
-                FunctionParser parser = new FunctionParser(name, cursor, expr.length, expr, pCtx, splitAccumulator);
+                FunctionParser parser = new FunctionParser(name, cursor, expr.length, expr, fields, pCtx, splitAccumulator);
                 Function function = parser.parse();
                 cursor = parser.getCursor();
 

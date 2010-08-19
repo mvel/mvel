@@ -73,7 +73,7 @@ public class ProtoParser {
 
                         FunctionParser parser =
                                 new FunctionParser(new String(expr, start, cursor - start),
-                                        cursor, endOffset, expr, pCtx, null);
+                                        cursor, endOffset, expr, 0, pCtx, null);
 
                         proto.declareReceiver(parser.getName(), parser.parse());
                         cursor = parser.getCursor() + 1;

@@ -19,12 +19,13 @@
 package org.mvel2.ast;
 
 import org.mvel2.MVEL;
-import static org.mvel2.MVEL.compileSetExpression;
 import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessor;
 import org.mvel2.compiler.CompiledAccExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
+import static org.mvel2.MVEL.compileSetExpression;
 import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ParseTools.*;
 

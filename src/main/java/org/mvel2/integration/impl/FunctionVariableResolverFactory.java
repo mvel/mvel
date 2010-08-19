@@ -36,7 +36,7 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
         this.indexedVariableResolvers = new VariableResolver[(this.indexedVariableNames = indexedVariables).length];
         for (int i = 0; i < parameters.length; i++) {
             variableResolvers.put(indexedVariableNames[i], null);
-            this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]);
+            this.indexedVariableResolvers[i] = new SimpleValueResolver( parameters[i]);
             //     variableResolvers.put(indexedVariableNames[i], this.indexedVariableResolvers[i] = new SimpleValueResolver(parameters[i]));
         }
     }

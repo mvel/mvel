@@ -13,16 +13,18 @@ public class FunctionParser {
 
     private int cursor;
     private int endOffset;
+    private int fields;
     private char[] expr;
     private ParserContext pCtx;
 
     private ExecutionStack splitAccumulator;
 
-    public FunctionParser(String functionName, int cursor, int endOffset, char[] expr, ParserContext pCtx, ExecutionStack splitAccumulator) {
+    public FunctionParser(String functionName, int cursor, int endOffset, char[] expr, int fields, ParserContext pCtx, ExecutionStack splitAccumulator) {
         this.name = functionName;
         this.cursor = cursor;
         this.endOffset = endOffset;
         this.expr = expr;
+        this.fields = fields;
         this.pCtx = pCtx;
         this.splitAccumulator = splitAccumulator;
     }
@@ -102,7 +104,7 @@ public class FunctionParser {
         /**
          * Produce the funciton node.
          */
-        return new Function(name, ParseTools.subArray(expr, startCond, endCond), ParseTools.subArray(expr, blockStart, blockEnd),
+        return new Function(name, ParseTools.subArray(expr, startCond, endCond), ParseTools.subArray(expr, blockStart, blockEnd), fields,
                 pCtx == null ? pCtx = AbstractParser.getCurrentThreadParserContext() : pCtx);
     }
 

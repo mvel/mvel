@@ -24,14 +24,15 @@ import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.EndWithValue;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
-import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.VariableResolver;
+import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.FunctionVariableResolverFactory;
-import static org.mvel2.util.ParseTools.parseParameterDefList;
-import static org.mvel2.util.ParseTools.subCompileExpression;
 
 import java.util.Map;
+
+import static org.mvel2.util.ParseTools.parseParameterDefList;
+import static org.mvel2.util.ParseTools.subCompileExpression;
 
 
 @SuppressWarnings({"unchecked"})
@@ -41,8 +42,9 @@ public class Function extends ASTNode implements Safe {
 
     protected String[] parameters;
     protected int parmNum;
+    protected boolean cMode = false;
 
-    public Function(String name, char[] parameters, char[] block, ParserContext pCtx) {
+    public Function(String name, char[] parameters, char[] block, int fields, ParserContext pCtx) {
         if ((this.name = name) == null || name.length() == 0) {
             this.name = null;
         }
@@ -52,7 +54,7 @@ public class Function extends ASTNode implements Safe {
         pCtx.declareFunction(this);
 
         ParserContext ctx = new ParserContext(pCtx.getParserConfiguration());
-        ctx.setIndexAllocation(true);
+
 
         /**
          * To prevent the function parameters from being counted as
@@ -67,15 +69,20 @@ public class Function extends ASTNode implements Safe {
          * Compile the expression so we can determine the input-output delta.
          */
 
+
+        ctx.setIndexAllocation(false);
         ExpressionCompiler compiler = new ExpressionCompiler(block);
         compiler.setVerifyOnly(true);
         compiler.compile(ctx);
+
+        ctx.setIndexAllocation(true);
 
         /**
          * Add globals as inputs
          */
         if (pCtx.getVariables() != null) {
             for (Map.Entry<String, Class> e : pCtx.getVariables().entrySet()) {
+                ctx.getVariables().remove(e.getKey());
                 ctx.addInput(e.getKey(), e.getValue());
             }
 
@@ -96,7 +103,10 @@ public class Function extends ASTNode implements Safe {
             this.parameters[i++] = s;
         }
 
+        cMode = (fields & COMPILE_IMMEDIATE) != 0;
+
         this.egressType = this.compiledBlock.getKnownEgressType();
+
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -134,6 +144,10 @@ public class Function extends ASTNode implements Safe {
                     }
                 }
                 return compiledBlock.getValue(ctx, thisValue, new FunctionVariableResolverFactory(this, factory, parameters, parms));
+            }
+            else if (cMode) {
+                Object o = compiledBlock.getValue(ctx, thisValue, new DefaultLocalVariableResolverFactory(factory, parameters));
+                return o;
             }
             else {
                 return compiledBlock.getValue(ctx, thisValue, new DefaultLocalVariableResolverFactory(factory));
