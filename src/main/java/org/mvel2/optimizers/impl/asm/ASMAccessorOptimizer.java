@@ -1272,6 +1272,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             first = false;
         }
 
+        if (ctx == null) return null;
+
         assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
 
         if (first) {
@@ -1425,6 +1427,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             ctx = getBeanProperty(ctx, prop);
             first = false;
         }
+
+        if (ctx == null) return null;
 
         assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
 

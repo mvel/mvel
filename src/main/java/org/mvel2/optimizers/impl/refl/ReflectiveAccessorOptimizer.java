@@ -62,7 +62,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     private Object ctx;
     private Object thisRef;
     private Object val;
-    
+
     private VariableResolverFactory variableFactory;
 
     private static final int DONE = -1;
@@ -338,8 +338,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     first = false;
                     if (curr != null) returnType = curr.getClass();
                     if (nullSafe && cursor < length) {
-                      //  if (curr == null) return null;
-                        addAccessorNode(new NullSafe(new String(expr, cursor + 1, length - cursor - 1), pCtx));
+                        int os = expr[cursor] == '.' ? 1 : 0;
+                        addAccessorNode(new NullSafe(new String(expr, cursor + os, length - cursor - os), pCtx));
                         if (curr == null) break;
                     }
                     staticAccess = false;
@@ -368,8 +368,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     first = false;
                     if (curr != null) returnType = curr.getClass();
                     if (nullSafe && cursor < length) {
-                      //  if (curr == null) return null;
-                        addAccessorNode(new NullSafe(new String(expr, cursor + 1, length - cursor - 1), pCtx));
+                        int os = expr[cursor] == '.' ? 1 : 0;
+                        addAccessorNode(new NullSafe(new String(expr, cursor + os, length - cursor - os), pCtx));
                         if (curr == null) break;
                     }
                     staticAccess = false;
@@ -625,6 +625,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             ctx = getBeanProperty(ctx, prop);
         }
 
+        if (ctx == null) return null;
+
         int start = ++cursor;
 
         skipWhitespace();
@@ -716,6 +718,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         if (prop.length() > 0) {
             ctx = getBeanPropertyAO(ctx, prop);
         }
+
+        if (ctx == null) return null;
 
         int start = ++cursor;
 
