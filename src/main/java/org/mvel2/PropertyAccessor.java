@@ -730,6 +730,8 @@ public class PropertyAccessor {
             ctx = getBeanProperty(ctx, prop);
         }
 
+        if (ctx == null) return null;
+
         int start = ++cursor;
         whiteSpaceSkip();
 

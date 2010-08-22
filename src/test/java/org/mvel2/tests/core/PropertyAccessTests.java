@@ -350,16 +350,15 @@ public class PropertyAccessTests extends AbstractTest {
     }
 
     public static class A226 {
-
         Map<String, Object> map = null;
 
         public Map<String, Object> getMap() {
             return map;
         }
-
     }
 
     public void testMVEL226() {
+
         A226 a = new A226();
         Map m = Collections.singletonMap("a", a);
         Map<String, Object> nestMap = Collections.<String, Object>singletonMap("foo", "bar");

@@ -1428,6 +1428,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             first = false;
         }
 
+        if (ctx == null) return null;
+
         assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
 
         int start = ++cursor;
