@@ -62,7 +62,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     private Object ctx;
     private Object thisRef;
     private Object val;
-    
+
     private VariableResolverFactory variableFactory;
 
     private static final int DONE = -1;
@@ -338,8 +338,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     first = false;
                     if (curr != null) returnType = curr.getClass();
                     if (nullSafe && cursor < length) {
-                      //  if (curr == null) return null;
-                        addAccessorNode(new NullSafe(new String(expr, cursor + 1, length - cursor - 1), pCtx));
+                        if (expr[cursor] == '.') {
+                            addAccessorNode(new NullSafe(new String(expr, cursor + 1, length - cursor - 1), pCtx));
+                        }
+                        else {
+                            addAccessorNode(new NullSafe(new String(expr, cursor, length - cursor), pCtx));
+
+                        }
                         if (curr == null) break;
                     }
                     staticAccess = false;
@@ -368,7 +373,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     first = false;
                     if (curr != null) returnType = curr.getClass();
                     if (nullSafe && cursor < length) {
-                      //  if (curr == null) return null;
+                        //  if (curr == null) return null;
                         addAccessorNode(new NullSafe(new String(expr, cursor + 1, length - cursor - 1), pCtx));
                         if (curr == null) break;
                     }
@@ -624,6 +629,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         if (prop.length() > 0) {
             ctx = getBeanProperty(ctx, prop);
         }
+
+        if (ctx == null) return null;
 
         int start = ++cursor;
 

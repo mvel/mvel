@@ -1,19 +1,20 @@
 package org.mvel2.tests.core;
 
-import static org.mvel2.MVEL.compileExpression;
-import static org.mvel2.MVEL.executeExpression;
-
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Cake;
 import org.mvel2.tests.core.res.Foo;
 
 import java.io.Serializable;
 import java.util.*;
+
+import static org.mvel2.MVEL.compileExpression;
+import static org.mvel2.MVEL.executeExpression;
 
 
 public class PropertyAccessTests extends AbstractTest {
@@ -342,9 +343,43 @@ public class PropertyAccessTests extends AbstractTest {
     public void testNullSafe() {
         Map<String, Map<String, Float>> ctx = new HashMap<String, Map<String, Float>>();
         Map<String, Float> tmp = new HashMap<String, Float>();
-     //   tmp.put("latitude", 0.5f);
+        //   tmp.put("latitude", 0.5f);
         ctx.put("SessionSetupRequest", tmp);
 
         System.out.println("Result = " + MVEL.getProperty("SessionSetupRequest.?latitude", ctx));
+    }
+
+    public static class A226 {
+
+        Map<String, Object> map = null;
+
+        public Map<String, Object> getMap() {
+            return map;
+        }
+
+    }
+
+    public void testMVEL226() {
+        A226 a = new A226();
+        Map m = Collections.singletonMap("a", a);
+        Map<String, Object> nestMap = Collections.<String, Object>singletonMap("foo", "bar");
+        String ex = "a.?map['foo']";
+        Serializable s;
+
+        assertNull(MVEL.getProperty(ex, m));
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+        s = MVEL.compileExpression(ex);
+        assertNull(MVEL.executeExpression(s, m));
+        a.map = nestMap;
+        assertEquals("bar", MVEL.executeExpression(s, m));
+        a.map = null;
+
+        OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+
+        s = MVEL.compileExpression(ex);
+        assertNull(MVEL.executeExpression(s, m));
+        a.map = nestMap;
+        assertEquals("bar", MVEL.executeExpression(s, m));
     }
 }

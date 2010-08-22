@@ -2,60 +2,60 @@ Manifest-Version: 1.0
 Export-Package: org.mvel2;uses:="org.mvel2.util,org.mvel2.conversion,o
  rg.mvel2.integration.impl,org.mvel2.optimizers.impl.refl.nodes,org.mv
  el2.integration,org.mvel2.compiler,org.mvel2.ast,org.mvel2.debug";ver
- sion="2.0.18.RC2",org.mvel2.asm;version="2.0.18.RC2",org.mvel2.asm.si
- gnature;version="2.0.18.RC2",org.mvel2.asm.util;uses:="org.mvel2.asm,
- org.mvel2.asm.signature";version="2.0.18.RC2",org.mvel2.ast;uses:="or
+ sion="2.0.18.RC3",org.mvel2.asm;version="2.0.18.RC3",org.mvel2.asm.si
+ gnature;version="2.0.18.RC3",org.mvel2.asm.util;uses:="org.mvel2.asm,
+ org.mvel2.asm.signature";version="2.0.18.RC3",org.mvel2.ast;uses:="or
  g.mvel2.integration,org.mvel2.optimizers,org.mvel2,org.mvel2.debug,or
  g.mvel2.compiler,org.mvel2.util,org.mvel2.math,org.mvel2.integration.
- impl";version="2.0.18.RC2",org.mvel2.compiler;uses:="org.mvel2.integr
+ impl";version="2.0.18.RC3",org.mvel2.compiler;uses:="org.mvel2.integr
  ation,org.mvel2,org.mvel2.util,org.mvel2.ast,org.mvel2.optimizers,org
  .mvel2.integration.impl,org.mvel2.optimizers.impl.refl.nodes";version
- ="2.0.18.RC2",org.mvel2.conversion;uses:="org.mvel2,org.mvel2.compile
- r";version="2.0.18.RC2",org.mvel2.debug;uses:="org.mvel2.integration,
+ ="2.0.18.RC3",org.mvel2.conversion;uses:="org.mvel2,org.mvel2.compile
+ r";version="2.0.18.RC3",org.mvel2.debug;uses:="org.mvel2.integration,
  org.mvel2.util,org.mvel2.ast,org.mvel2.compiler,org.mvel2";version="2
- .0.18.RC2",org.mvel2.integration;uses:="org.mvel2.ast";version="2.0.1
- 8.RC2",org.mvel2.integration.impl;uses:="org.mvel2.integration,org.mv
- el2,org.mvel2.ast,org.mvel2.util";version="2.0.18.RC2",org.mvel2.math
- ;uses:="org.mvel2,org.mvel2.debug,org.mvel2.util";version="2.0.18.RC2
+ .0.18.RC3",org.mvel2.integration;uses:="org.mvel2.ast";version="2.0.1
+ 8.RC3",org.mvel2.integration.impl;uses:="org.mvel2.integration,org.mv
+ el2,org.mvel2.ast,org.mvel2.util";version="2.0.18.RC3",org.mvel2.math
+ ;uses:="org.mvel2,org.mvel2.debug,org.mvel2.util";version="2.0.18.RC3
  ",org.mvel2.optimizers;uses:="org.mvel2,org.mvel2.util,org.mvel2.comp
  iler,org.mvel2.integration,org.mvel2.optimizers.dynamic,org.mvel2.opt
- imizers.impl.asm,org.mvel2.optimizers.impl.refl";version="2.0.18.RC2"
+ imizers.impl.asm,org.mvel2.optimizers.impl.refl";version="2.0.18.RC3"
  ,org.mvel2.optimizers.dynamic;uses:="org.mvel2.compiler,org.mvel2.uti
  l,org.mvel2.integration,org.mvel2.optimizers,org.mvel2,org.mvel2.opti
- mizers.impl.asm";version="2.0.18.RC2",org.mvel2.optimizers.impl.asm;u
+ mizers.impl.asm";version="2.0.18.RC3",org.mvel2.optimizers.impl.asm;u
  ses:="org.mvel2.integration,org.mvel2.optimizers.impl.refl.nodes,org.
  mvel2.util,org.mvel2.asm,org.mvel2.optimizers,org.mvel2,org.mvel2.com
- piler,org.mvel2.ast";version="2.0.18.RC2",org.mvel2.optimizers.impl.r
+ piler,org.mvel2.ast";version="2.0.18.RC3",org.mvel2.optimizers.impl.r
  efl;uses:="org.mvel2.optimizers.impl.refl.nodes,org.mvel2.integration
  ,org.mvel2.util,org.mvel2.optimizers.impl.refl.collection,org.mvel2.o
  ptimizers,org.mvel2,org.mvel2.compiler,org.mvel2.ast";version="2.0.18
- .RC2",org.mvel2.optimizers.impl.refl.collection;uses:="org.mvel2.inte
+ .RC3",org.mvel2.optimizers.impl.refl.collection;uses:="org.mvel2.inte
  gration,org.mvel2.compiler,org.mvel2,org.mvel2.util";version="2.0.18.
- RC2",org.mvel2.optimizers.impl.refl.nodes;uses:="org.mvel2.integratio
+ RC3",org.mvel2.optimizers.impl.refl.nodes;uses:="org.mvel2.integratio
  n,org.mvel2.compiler,org.mvel2,org.mvel2.util,org.mvel2.ast,org.mvel2
- .optimizers";version="2.0.18.RC2",org.mvel2.sh;uses:="org.mvel2,org.m
+ .optimizers";version="2.0.18.RC3",org.mvel2.sh;uses:="org.mvel2,org.m
  vel2.templates,org.mvel2.integration.impl,org.mvel2.integration,org.m
  vel2.util,org.mvel2.sh.command.basic,org.mvel2.sh.command.file";versi
- on="2.0.18.RC2",org.mvel2.sh.command.basic;uses:="org.mvel2.sh,org.mv
- el2.sh.text,org.mvel2.util,org.mvel2";version="2.0.18.RC2",org.mvel2.
- sh.command.file;uses:="org.mvel2.sh";version="2.0.18.RC2",org.mvel2.s
- h.text;uses:="org.mvel2.util";version="2.0.18.RC2",org.mvel2.template
+ on="2.0.18.RC3",org.mvel2.sh.command.basic;uses:="org.mvel2.sh,org.mv
+ el2.sh.text,org.mvel2.util,org.mvel2";version="2.0.18.RC3",org.mvel2.
+ sh.command.file;uses:="org.mvel2.sh";version="2.0.18.RC3",org.mvel2.s
+ h.text;uses:="org.mvel2.util";version="2.0.18.RC3",org.mvel2.template
  s;uses:="org.mvel2.templates.res,org.mvel2.templates.util,org.mvel2,o
  rg.mvel2.util,org.mvel2.integration.impl,org.mvel2.integration,org.mv
- el2.templates.util.io";version="2.0.18.RC2",org.mvel2.templates.res;u
+ el2.templates.util.io";version="2.0.18.RC3",org.mvel2.templates.res;u
  ses:="org.mvel2.templates,org.mvel2.integration,org.mvel2.templates.u
  til,org.mvel2,org.mvel2.util,org.mvel2.integration.impl";version="2.0
- .18.RC2",org.mvel2.templates.util;uses:="org.mvel2.templates.res,org.
- mvel2.templates,org.mvel2.util";version="2.0.18.RC2",org.mvel2.templa
+ .18.RC3",org.mvel2.templates.util;uses:="org.mvel2.templates.res,org.
+ mvel2.templates,org.mvel2.util";version="2.0.18.RC3",org.mvel2.templa
  tes.util.io;uses:="org.mvel2.templates.util,org.mvel2.util";version="
- 2.0.18.RC2",org.mvel2.util;uses:="org.mvel2.ast,org.mvel2.integration
+ 2.0.18.RC3",org.mvel2.util;uses:="org.mvel2.ast,org.mvel2.integration
  ,org.mvel2,org.mvel2.compiler,org.mvel2.integration.impl,org.mvel2.ma
- th,sun.misc";version="2.0.18.RC2"
-Bundle-Version: 2.0.18.RC2
+ th,sun.misc";version="2.0.18.RC3"
+Bundle-Version: 2.0.18.RC3
 Tool: Bnd-0.0.357
 Bundle-Name: mvel2
-Bnd-LastModified: 1281563526402
-Created-By: 1.6.0_20 (Apple Inc.)
+Bnd-LastModified: 1282239521478
+Created-By: 1.6.0_21 (Apple Inc.)
 Bundle-ManifestVersion: 2
 Bundle-SymbolicName: org.mvel2
 Import-Package: org.mvel2;version="2.0",org.mvel2.asm;version="2.0",or
