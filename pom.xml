@@ -7,11 +7,7 @@
     <name>mvel</name>
     <url>http://mvel.codehaus.org/</url>
 
-    <scm>
-        <connection>scm:git:git@github.com/mikebrock/mvel.git</connection>
-        <url>scm:git:git@github.com/mikebrock/mvel.git</url>
-        <developerConnection>scm:git:git@github.com/mikebrock/mvel.git</developerConnection>
-    </scm>
+
 
     <pluginRepositories>
         <pluginRepository>
@@ -149,6 +145,11 @@
         </resources>
     </build>
 
+      <scm>
+        <connection>scm:git:git://github.com/mikebrock/mvel.git</connection>
+        <url>scm:git:git://github.com/mikebrock/mvel.git</url>
+        <developerConnection>scm:git:git://github.com/mikebrock/mvel.git</developerConnection>
+    </scm>
 
     <reporting>
         <plugins>
