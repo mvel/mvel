@@ -8,7 +8,7 @@
     <url>http://mvel.codehaus.org/</url>
 
     <scm>
-        <developerConnection>scm:git:git://github.com/mikebrock/mvel.git</developerConnection>
+        <developerConnection>scm:git:git://git@github.com/mikebrock/mvel.git</developerConnection>
     </scm>
 
     <pluginRepositories>
@@ -102,7 +102,6 @@
                     <preparationGoals>clean install</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <localCheckout>true</localCheckout>
-                    <username>git</username>
                 </configuration>
             </plugin>
 
