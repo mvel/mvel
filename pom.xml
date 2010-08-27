@@ -3,7 +3,7 @@
     <groupId>org.mvel</groupId>
     <artifactId>mvel2</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.18-RC5</version>
+    <version>2.0.18-RC5-SNAPSHOT</version>
     <name>mvel</name>
     <url>http://mvel.codehaus.org/</url>
 
@@ -140,9 +140,9 @@
     </build>
 
       <scm>
-        <connection>scm:git:git@github.com/mikebrock/mvel.git</connection>
-        <url>scm:git:git@github.com/mikebrock/mvel.git</url>
-        <developerConnection>scm:git:git@github.com/mikebrock/mvel.git</developerConnection>
+        <connection>scm:git:git@github.com:mikebrock/mvel.git</connection>
+        <url>scm:git:git@github.com:mikebrock/mvel.git</url>
+        <developerConnection>scm:git:git@github.com:mikebrock/mvel.git</developerConnection>
     </scm>
 
     <reporting>
