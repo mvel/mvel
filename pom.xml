@@ -8,10 +8,9 @@
     <url>http://mvel.codehaus.org/</url>
 
     <scm>
-        <connection>scm:git:git@github.com:mikebrock/mvel.git</connection>
-        <url>scm:git:git@github.com:mikebrock/mvel.git</url>
-        <developerConnection>scm:git:git@github.com:mikebrock/mvel.git</developerConnection>
-        <!--<developerConnection>scm:git:git://git@github.com/mikebrock/mvel.git</developerConnection>-->
+        <connection>scm:git:git@github.com/mikebrock/mvel.git</connection>
+        <url>scm:git:git@github.com/mikebrock/mvel.git</url>
+        <developerConnection>scm:git:git@github.com/mikebrock/mvel.git</developerConnection>
     </scm>
 
     <pluginRepositories>
@@ -100,7 +99,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.0</version>
             </plugin>
 
             <plugin>
