@@ -146,9 +146,9 @@
     </build>
 
       <scm>
-        <connection>scm:git:git://github.com/mikebrock/mvel.git</connection>
-        <url>scm:git:git://github.com/mikebrock/mvel.git</url>
-        <developerConnection>scm:git:git://github.com/mikebrock/mvel.git</developerConnection>
+        <connection>scm:git:git@github.com/mikebrock/mvel.git</connection>
+        <url>scm:git:git@github.com/mikebrock/mvel.git</url>
+        <developerConnection>scm:git:git@github.com/mikebrock/mvel.git</developerConnection>
     </scm>
 
     <reporting>
