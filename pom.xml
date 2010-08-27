@@ -101,6 +101,7 @@
                 <configuration>
                     <preparationGoals>clean install</preparationGoals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <localCheckout>true</localCheckout>
                 </configuration>
             </plugin>
             
