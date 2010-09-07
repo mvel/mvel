@@ -39,8 +39,6 @@ public class DataConversion {
     private interface ArrayTypeMarker {
     }
 
-    ;
-
     static {
         ConversionHandler ch;
 

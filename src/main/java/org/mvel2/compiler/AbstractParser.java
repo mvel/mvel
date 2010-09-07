@@ -2226,7 +2226,7 @@ public class AbstractParser implements Serializable {
     }
 
     protected void addFatalError(String message) {
-        getParserContext().addError(new ErrorDetail(getParserContext().getLineCount(),
+        pCtx.addError(new ErrorDetail(pCtx.getLineCount(),
                 cursor - getParserContext().getLineOffset(), true, message));
     }
 

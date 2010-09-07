@@ -1,5 +1,12 @@
 package org.mvel2.util;
 
+import org.mvel2.templates.TemplateRuntime;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * This class implements a version of the
  * quicksort algorithm using a partition
@@ -13,8 +20,24 @@ package org.mvel2.util;
  */
 public class QuickSort {
     public static void main(String[] args) {
-        QuickSort qs = new QuickSort(new int[]{50, 20, 21, 209, 10, 77, 8, 9, 55, 73, 41, 99});
-        qs.sort();
+        String template = "My List of things @foreach{item:things}@{item.toUpperCase()}@end{', '}";
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+
+        Set<String> things = new HashSet<String>();
+        things.add("soap");
+        things.add("siphon");
+        things.add("powder");
+
+
+
+        vars.put("name", "Mike");
+        vars.put("things", things);
+
+
+        System.out.println(TemplateRuntime.eval(template, vars));
+
+
     }
 
     public static int[] quickSort(int[] num) {
@@ -76,4 +99,7 @@ public class QuickSort {
     }
 
     private int[] a;
+
+
+
 }

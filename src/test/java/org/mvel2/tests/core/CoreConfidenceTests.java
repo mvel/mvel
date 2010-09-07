@@ -5366,4 +5366,43 @@ public class CoreConfidenceTests extends AbstractTest {
         MapVariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
         assertEquals(2, MVEL.executeExpression(compileExpression, factory));
     }
+
+
+    public static class ScriptHelper228 {
+        public void methodA() {
+        }
+
+        public void methodB(int param1) {
+        }
+    }
+
+    public static class Person228 {
+        public String getName() {
+            return "foo";
+        }
+    }
+
+
+    public void testMVEL228() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.setStrictTypeEnforcement(true);
+        HashMap<String, Class> params = new HashMap<String, Class>();
+        params.put("helper", ScriptHelper228.class);
+        params.put("person", Person228.class);
+
+        ctx.setInputs(params);
+
+        String script = "helper.methodB(2);\n" +
+                "person.getName2();";
+        try {
+            CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(script, ctx);            
+        }
+        catch (Exception e) {
+            return;
+        }
+
+        fail("Should have thrown an exception");
+
+    }
 }
