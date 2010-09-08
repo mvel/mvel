@@ -7,9 +7,6 @@ import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.templates.CompiledTemplate;
 import org.mvel2.templates.SimpleTemplateRegistry;
 import org.mvel2.templates.TemplateCompiler;
-
-import static org.mvel2.templates.TemplateCompiler.compileTemplate;
-
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.res.Node;
 import org.mvel2.tests.core.res.Bar;
@@ -19,11 +16,12 @@ import org.mvel2.tests.core.res.TestMVEL197;
 import org.mvel2.tests.templates.tests.res.TestPluginNode;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.mvel2.templates.TemplateCompiler.compileTemplate;
 
 
 @SuppressWarnings({"AssertEqualsBetweenInconvertibleTypes"})
@@ -723,4 +721,9 @@ public class TemplateTests extends TestCase {
         }
     }
 
+    public void testMVEL229() {
+        final Object context = new Object();
+        final String template = "@code{sumText = 0}@{sumText}";
+        System.out.println(TemplateRuntime.eval(template, new HashMap()));
+    }
 }

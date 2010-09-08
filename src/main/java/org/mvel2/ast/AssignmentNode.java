@@ -18,6 +18,7 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.PropertyAccessor;
@@ -87,9 +88,13 @@ public class AssignmentNode extends ASTNode implements Assignment {
             return accExpr.setValue(ctx, thisValue, factory, statement.getValue(ctx, thisValue, factory));
         }
         else if (statement != null) {
+            if (factory == null)
+                throw new CompileException("cannot assign variables; no variable resolver factory available");
             return factory.createVariable(varName, statement.getValue(ctx, thisValue, factory)).getValue();
         }
         else {
+            if (factory == null)
+                throw new CompileException("cannot assign variables; no variable resolver factory available");
             factory.createVariable(varName, null);
             return null;
         }

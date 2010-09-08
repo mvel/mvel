@@ -18,6 +18,7 @@
 
 package org.mvel2.templates;
 
+import org.mvel2.MVELRuntime;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.templates.res.Node;
@@ -53,11 +54,11 @@ public class TemplateRuntime {
     }
 
     public static Object eval(InputStream instream) {
-        return eval(instream, null, (VariableResolverFactory) null, null);
+        return eval(instream, null,MVELRuntime.IMMUTABLE_DEFAULT_FACTORY, null);
     }
 
     public static Object eval(InputStream instream, Object ctx) {
-        return eval(instream, ctx, (VariableResolverFactory) null, null);
+        return eval(instream, ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY, null);
     }
 
     public static Object eval(InputStream instream, Object ctx, VariableResolverFactory vars) {
