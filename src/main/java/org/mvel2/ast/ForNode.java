@@ -24,11 +24,11 @@ import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 
+import java.util.HashMap;
+
 import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 import static org.mvel2.util.ParseTools.subset;
-
-import java.util.HashMap;
 
 /**
  * @author Christopher Brock
@@ -75,19 +75,24 @@ public class ForNode extends BlockNode {
         int start = 0;
         int cursor = nextCondPart(condition, start, false);
         try {
-            if (pCtx != null && (fields & COMPILE_IMMEDIATE) != 0) pCtx = pCtx.createSubcontext().createColoringSubcontext();
+            ParserContext spCtx = pCtx;
+            if (pCtx != null && (fields & COMPILE_IMMEDIATE) != 0)
+                spCtx = pCtx.createSubcontext().createColoringSubcontext();
 
-            this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start - 1), pCtx);
+            this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start - 1), spCtx);
 
             expectType(this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor,
-                    (cursor = nextCondPart(condition, start, false)) - start - 1), pCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+                    (cursor = nextCondPart(condition, start, false)) - start - 1), spCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
             this.after = (ExecutableStatement)
-                    subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start, true)) - start), pCtx);
+                    subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start, true)) - start), spCtx);
 
-            if (pCtx != null && (fields & COMPILE_IMMEDIATE) != 0 && pCtx.isVariablesEscape()) {
+            if (spCtx != null && (fields & COMPILE_IMMEDIATE) != 0 && spCtx.isVariablesEscape()) {
+                if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
                 return true;
             }
+             if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
+
         }
         catch (NegativeArraySizeException e) {
             throw new CompileException("wrong syntax; did you mean to use 'foreach'?");

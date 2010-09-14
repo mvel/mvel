@@ -163,6 +163,8 @@ public class ParserContext implements Serializable {
                 return super.getVarOrInputType(name);
             }
         };
+        ctx.initializeTables();
+
         ctx.sourceFile = sourceFile;
 
         ctx.inputs = inputs;

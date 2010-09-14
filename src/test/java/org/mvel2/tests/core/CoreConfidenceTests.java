@@ -4057,7 +4057,7 @@ public class CoreConfidenceTests extends AbstractTest {
         // but finds only:
         // Services.log( String );
         // raising the error.
-        String ex = "services.log( \"Drop +5%: \"+$sb+\" avg: $\"+$av+\" price: $\"+$pr );";
+        String ex = "services.log((String) \"Drop +5%: \"+$sb+\" avg: $\"+$av+\" price: $\"+$pr );";
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
         ctx.addInput("$sb",
@@ -5382,7 +5382,6 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
-
     public void testMVEL228() {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
@@ -5396,13 +5395,37 @@ public class CoreConfidenceTests extends AbstractTest {
         String script = "helper.methodB(2);\n" +
                 "person.getName2();";
         try {
-            CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(script, ctx);            
+            CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(script, ctx);
         }
         catch (Exception e) {
             return;
         }
 
         fail("Should have thrown an exception");
+    }
 
+    public void testMVEL231() {
+        System.out.println(MVEL.eval("Q8152405_A35423077=\"1\"; Q8152405_A35423077!=null && (Q8152405_A35423077~=\"^[0-9]$\");", new HashMap()));
+    }
+
+    public void testMVEL232() {
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.setStrictTypeEnforcement(true);
+
+        String script = "for(int i=0;i<2;i++) { " +
+                "  System.out.println(i+\"\");" +
+                "} " +
+                " return true;";
+
+        try {
+            CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(script, ctx);
+            HashMap<String, Object> map = new HashMap<String, Object>();
+            MVEL.executeExpression(compiled, map);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            fail("should now throw an exception");
+        }
     }
 }
