@@ -538,7 +538,7 @@ public class ParserContext implements Serializable {
     /**
      * Enables strong type enforcement.
      *
-     * @param strongTyping
+     * @param strongTyping -
      */
     public void setStrongTyping(boolean strongTyping) {
         if (this.strongTyping = strongTyping) {
