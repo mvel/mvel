@@ -31,9 +31,6 @@ public class MethodStub implements Serializable {
 
     private transient Method method;
 
-    public MethodStub() {
-    }
-
     public MethodStub(Method method) {
         this.classReference = method.getDeclaringClass();
         this.name = method.getName();
@@ -73,6 +70,4 @@ public class MethodStub implements Serializable {
             throws IllegalAccessException, InvocationTargetException {
         return method.invoke(ctx, parameters);
     }
-
-
 }
