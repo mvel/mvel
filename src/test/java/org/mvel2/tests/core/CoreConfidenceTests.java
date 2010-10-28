@@ -5070,6 +5070,15 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testTemplateStringCoercion() {
+        String expr = "@code{ buffer = new StringBuilder(); i = 10; buffer.append( i + \"blah\" );}@{buffer.toString()}"; 
+        Map<String, Object> vars = setupVarsMVEL219();
+        System.out.println("Templating '" + expr + "': ......");
+        Object ret = TemplateRuntime.eval(expr, vars);
+        System.out.println("'" + expr + " ' = " + ret.toString());
+        assertNotNull(ret);
+    }
+
     private Map<String, Object> setupVarsMVEL219() {
         Map<String, Object> vars = new LinkedHashMap<String, Object>();
         vars.put("bal", new BigDecimal("999.99"));
