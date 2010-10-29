@@ -61,7 +61,7 @@ public class BinaryOperation extends BooleanNode {
             throw new CompileException("not a statement");
         }
 
-        if (ctx.isStrongTyping()) {
+    //    if (ctx.isStrongTyping()) {
             switch (operation) {
                 case Operator.ADD:
                     /**
@@ -76,6 +76,8 @@ public class BinaryOperation extends BooleanNode {
                     }
 
                 default:
+                    if (!ctx.isStrongTyping()) break;
+
                     if (!left.getEgressType().isAssignableFrom(right.getEgressType())) {
                         if (right.isLiteral() && canConvert(right.getEgressType(), left.getEgressType())) {
                             this.right = new LiteralNode(convert(right.getReducedValueAccelerated(null, null, null), left.getEgressType()));
@@ -90,7 +92,7 @@ public class BinaryOperation extends BooleanNode {
             }
 
 
-        }
+       // }
 
         if (this.left.isLiteral() && this.right.isLiteral()) {
             if (this.left.egressType == this.right.egressType) {

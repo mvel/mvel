@@ -5070,6 +5070,13 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testStringCoercion() {
+        String expr = " buffer = new StringBuilder(); i = 10; buffer.append( i + \"blah\" ); buffer.toString()";
+        Serializable s = MVEL.compileExpression(expr);
+        Object ret = MVEL.executeExpression(s, setupVarsMVEL219());
+        System.out.println(":" + ret);
+    }
+
     public void testTemplateStringCoercion() {
         String expr = "@code{ buffer = new StringBuilder(); i = 10; buffer.append( i + \"blah\" );}@{buffer.toString()}"; 
         Map<String, Object> vars = setupVarsMVEL219();
