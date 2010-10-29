@@ -31,7 +31,7 @@ import java.lang.reflect.TypeVariable;
 import java.util.*;
 
 /**
- * The <tt>ParserContext</tt> is the main enviroment object used for sharing state throughout the entire
+ * The <tt>ParserContext</tt> is the main environment object used for sharing state throughout the entire
  * parser/compile process.<br/><br/>
  * The <tt>ParserContext</tt> is used to configure the parser/compiler.  For example:
  * <pre><code>
@@ -90,7 +90,7 @@ public class ParserContext implements Serializable {
     }
 
     public ParserContext(ParserConfiguration parserConfiguration) {
-        this.parserConfiguration = parserConfiguration;
+        this.parserConfiguration = parserConfiguration;             
     }
 
     public ParserContext(Map<String, Object> imports, Map<String, Interceptor> interceptors, String sourceFile) {
@@ -538,7 +538,7 @@ public class ParserContext implements Serializable {
     /**
      * Enables strong type enforcement.
      *
-     * @param strongTyping
+     * @param strongTyping -
      */
     public void setStrongTyping(boolean strongTyping) {
         if (this.strongTyping = strongTyping) {
