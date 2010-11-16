@@ -5442,4 +5442,26 @@ public class CoreConfidenceTests extends AbstractTest {
             fail("should now throw an exception");
         }
     }
+    
+    public static class MapWrapper {
+        private Map map = new HashMap();
+        public Map getMap() { return map; }
+        public void setMap(Map map) { this.map = map; }
+    }
+    
+    public void testMapPropertyAccess() {
+        ParserContext ctx = new ParserContext();
+        ctx.addImport( MapWrapper.class );
+        ctx.addInput( "wrapper", MapWrapper.class );
+        ctx.setStrongTyping( true );
+        
+        Serializable expr = MVEL.compileExpression( "wrapper.map[\"key\"]", ctx );
+        MapWrapper wrapper = new MapWrapper();
+        wrapper.getMap().put( "key", "value" );
+        Map vars = new HashMap();
+        vars.put( "wrapper", wrapper );
+        
+        assertEquals("value", MVEL.executeExpression( expr, vars ) );
+    }
+
 }
