@@ -2679,9 +2679,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 actualCheese.getUseBy());
     }
 
-    public static class MVELDateCoercion
-            implements
-            ConversionHandler {
+    public static class MVELDateCoercion implements ConversionHandler {
         public boolean canConvertFrom(Class cls) {
             if (cls == String.class || cls.isAssignableFrom(Date.class)) {
                 return true;

@@ -925,7 +925,6 @@ public class AbstractParser implements Serializable {
                             cursor++;
 
                             boolean singleToken = true;
-                            boolean lastWS = false;
 
                             skipWhitespace();
                             for (brace = 1; cursor != length && brace != 0; cursor++) {
@@ -988,7 +987,6 @@ public class AbstractParser implements Serializable {
                                          * type-cast candidate.
                                          */
 
-//                                        if (lastWS) {
                                         if (expr[cursor] != '.') {
                                             switch (expr[cursor]) {
                                                 case '[':
@@ -1000,13 +998,7 @@ public class AbstractParser implements Serializable {
                                                         singleToken = false;
                                                     }
                                             }
-//                                            }
                                         }
-//                                        else if (isWhitespace(expr[cursor]) || cursor == 1) {
-//                                            lastWS = true;
-//                                            skipWhitespace();
-//                                            cursor--;
-//                                        }
                                 }
                             }
 
