@@ -5456,6 +5456,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ctx.setStrongTyping( true );
         
         Serializable expr = MVEL.compileExpression( "wrapper.map[\"key\"]", ctx );
+
         MapWrapper wrapper = new MapWrapper();
         wrapper.getMap().put( "key", "value" );
         Map vars = new HashMap();

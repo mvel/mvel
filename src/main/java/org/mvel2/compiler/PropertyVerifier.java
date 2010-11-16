@@ -285,10 +285,10 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         if (pCtx.isStrictTypeEnforcement()) {
             if (Map.class.isAssignableFrom(property.length() != 0 ? ctx = getBeanProperty(ctx, property) : ctx)) {
-                ctx = (Class) pCtx.getLastTypeParameters()[1];
+                ctx = (Class) (pCtx.getLastTypeParameters().length != 0 ? pCtx.getLastTypeParameters()[1] : Object.class);
             }
             else if (Collection.class.isAssignableFrom(ctx)) {
-                ctx = (Class) pCtx.getLastTypeParameters()[0];
+                ctx = (Class) (pCtx.getLastTypeParameters().length != 0 ? pCtx.getLastTypeParameters()[0] : Object.class);
             }
             else if (ctx.isArray()) {
                 ctx = getBaseComponentType(ctx);
