@@ -2,27 +2,41 @@ package org.mvel2.templates.util.io;
 
 import org.mvel2.templates.util.TemplateOutputStream;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
 public class StandardOutputStream implements TemplateOutputStream {
     private OutputStream outputStream;
-    private PrintWriter printWriter;
 
     public StandardOutputStream(OutputStream outputStream) {
-        this.printWriter = new PrintWriter(this.outputStream = outputStream);
+        this.outputStream = outputStream;
     }
 
     public TemplateOutputStream append(CharSequence c) {
-        printWriter.append(c);
-        return this;
+        try {
+            for (int i = 0; i < c.length(); i++) {
+                outputStream.write(c.charAt(i));
+            }
+
+            return this;
+        }
+        catch (IOException e) {
+            throw new RuntimeException("failed to write to stream", e);
+        }
     }
 
     public TemplateOutputStream append(char[] c) {
-        for (char i : c) {
-            printWriter.append(i);
+        try {
+
+            for (char i : c) {
+                outputStream.write(i);
+            }
+            return this;
         }
-        return this;
+        catch (IOException e) {
+            throw new RuntimeException("failed to write to stream", e);
+        }
     }
 
     @Override

@@ -16,6 +16,8 @@ import org.mvel2.tests.core.res.TestMVEL197;
 import org.mvel2.tests.templates.tests.res.TestPluginNode;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -726,4 +728,25 @@ public class TemplateTests extends TestCase {
         final String template = "@code{sumText = 0}@{sumText}";
         System.out.println(TemplateRuntime.eval(template, new HashMap()));
     }
+
+    public void testOutputStream1() {
+        final StringBuilder sb = new StringBuilder();
+        OutputStream outstream = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                sb.append((char) b);
+            }
+        };
+
+        String template = "@code{stuff=['foo','far']}@foreach{item : stuff}@{item}@end{}";
+
+        CompiledTemplate compiled = TemplateCompiler.compileTemplate(template);
+
+        TemplateRuntime.execute(compiled, new HashMap(), outstream);
+
+        assertEquals("foofar", sb.toString());
+
+    }
+
+
 }
