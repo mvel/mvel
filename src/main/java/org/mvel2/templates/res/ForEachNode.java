@@ -136,7 +136,8 @@ public class ForEachNode extends Node {
                         start = i + 1;
                     }
                     else {
-                        throw new CompileException("unexpected character '" + contents[i] + "' in foreach tag", cStart + 1);
+                        throw new CompileException("unexpected character '" + contents[i]
+                                + "' in foreach tag", cStart + 1);
                     }
                     break;
 
