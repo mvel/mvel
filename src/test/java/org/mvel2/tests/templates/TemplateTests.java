@@ -738,7 +738,7 @@ public class TemplateTests extends TestCase {
             }
         };
 
-        String template = "@code{stuff=['foo','far']}@foreach{item : stuff}@{item}@end{}";
+        String template = "@foreach{item:['foo','far']}@{item}@end{}";
 
         CompiledTemplate compiled = TemplateCompiler.compileTemplate(template);
 

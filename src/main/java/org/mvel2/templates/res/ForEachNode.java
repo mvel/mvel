@@ -29,6 +29,7 @@ import org.mvel2.templates.util.TemplateOutputStream;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.StringAppender;
 
+import java.awt.image.renderable.ParameterBlock;
 import java.util.*;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -123,6 +124,22 @@ public class ForEachNode extends Node {
         int start = 0;
         for (int i = 0; i < contents.length; i++) {
             switch (contents[i]) {
+                case '(':
+                case '[':
+                case '{':
+                case '"':
+                case '\'':
+                    if (expr.size() < items.size()) {
+                        start = i;
+                        i = ParseTools.balancedCapture(contents, i, contents[i]);
+                        expr.add(ParseTools.createStringTrimmed(contents, start, i - start + 1));
+                        start = i + 1;
+                    }
+                    else {
+                        throw new CompileException("unexpected character '" + contents[i] + "' in foreach tag", cStart + 1);
+                    }
+                    break;
+
                 case ':':
                     items.add(ParseTools.createStringTrimmed(contents, start, i - start));
                     start = i + 1;

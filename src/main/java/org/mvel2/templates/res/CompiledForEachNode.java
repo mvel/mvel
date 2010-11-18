@@ -135,6 +135,22 @@ public class CompiledForEachNode extends Node {
         int start = 0;
         for (int i = 0; i < contents.length; i++) {
             switch (contents[i]) {
+                case '(':
+                case '[':
+                case '{':
+                case '"':
+                case '\'':
+                    if (expr.size() < items.size()) {
+                        start = i;
+                        i = ParseTools.balancedCapture(contents, i, contents[i]);
+                        expr.add(ParseTools.createStringTrimmed(contents, start, i - start + 1));
+                        start = i + 1;
+                    }
+                    else {
+                        throw new CompileException("unexpected character '" + contents[i] + "' in foreach tag", cStart + 1);
+                    }
+                    break;
+
                 case ':':
                     items.add(ParseTools.createStringTrimmed(contents, start, i - start));
                     start = i + 1;
