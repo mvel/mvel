@@ -691,6 +691,12 @@ public class TemplateTests extends TestCase {
         assertEquals("a", value);
     }
 
+
+    public void testEscaping() {
+        String template = "@@{'foo'}";
+        assertEquals("@{'foo'}", TemplateRuntime.eval(template, new Object()));
+    }
+
     public class Page {
         String name;
         Folder parent;

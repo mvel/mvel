@@ -106,7 +106,7 @@ public class TemplateCompiler {
                         if (isNext(template[cursor])) {
                             start = ++cursor;
                             (n = markTextNode(n)).setEnd(n.getEnd() + 1);
-                            lastTextRangeEnding = ++cursor;
+                            start = lastTextRangeEnding = ++cursor;
 
                             continue;
                         }
