@@ -19,7 +19,9 @@
 package org.mvel2.ast;
 
 import org.mvel2.PropertyAccessor;
+
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
@@ -39,10 +41,15 @@ public class Union extends ASTNode {
             return accessor.getValue(main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory);
         }
         else {
-            AccessorOptimizer o = OptimizerFactory.getThreadAccessorOptimizer();
-            accessor = o.optimizeAccessor(getCurrentThreadParserContext(), name,
-                    main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false, main.getEgressType());
-            return o.getResultOptPass();
+            try {
+                AccessorOptimizer o = OptimizerFactory.getThreadAccessorOptimizer();
+                accessor = o.optimizeAccessor(getCurrentThreadParserContext(), name,
+                        main.getReducedValueAccelerated(ctx, thisValue, factory), thisValue, factory, false, main.getEgressType());
+                return o.getResultOptPass();
+            }
+            finally {
+                OptimizerFactory.clearThreadAccessorOptimizer();
+            }
         }
     }
 

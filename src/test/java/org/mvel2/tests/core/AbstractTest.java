@@ -14,6 +14,8 @@ import org.mvel2.debug.DebugTools;
 import static org.mvel2.debug.DebugTools.decompile;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import static org.mvel2.optimizers.OptimizerFactory.setDefaultOptimizer;
+
+import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.optimizers.dynamic.DynamicOptimizer;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.DerivedClass;
@@ -21,6 +23,7 @@ import org.mvel2.tests.core.res.Foo;
 import org.mvel2.tests.core.res.TestInterface;
 import org.mvel2.util.StringAppender;
 
+import javax.swing.plaf.OptionPaneUI;
 import java.io.*;
 import static java.lang.Integer.parseInt;
 import static java.lang.String.valueOf;
@@ -98,6 +101,8 @@ public abstract class AbstractTest extends TestCase {
 
     protected Object test(final String ex) {
         Thread[] threads;
+
+
 
         if (Boolean.getBoolean("mvel.tests.quick")) {
             threads = new Thread[1];

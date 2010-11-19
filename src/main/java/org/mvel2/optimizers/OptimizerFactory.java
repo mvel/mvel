@@ -24,6 +24,7 @@ import org.mvel2.optimizers.impl.asm.ASMAccessorOptimizer;
 import org.mvel2.optimizers.impl.refl.ReflectiveAccessorOptimizer;
 
 import static java.lang.Thread.currentThread;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -109,5 +110,15 @@ public class OptimizerFactory {
         catch (Exception e) {
             throw new CompileException("unable to instantiate accessor compiler", e);
         }
+    }
+
+    public static void clearThreadAccessorOptimizer() {
+        threadOptimizer.set(null);
+        threadOptimizer.remove();
+    }
+
+    public static boolean isThreadAccessorOptimizerInitialized()
+    {
+        return threadOptimizer.get() != null;
     }
 }

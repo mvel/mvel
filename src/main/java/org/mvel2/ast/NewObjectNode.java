@@ -30,6 +30,7 @@ import org.mvel2.optimizers.AccessorOptimizer;
 
 import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
+import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.ArrayTools;
 import org.mvel2.util.ParseTools;
 
@@ -180,20 +181,25 @@ public class NewObjectNode extends ASTNode {
                         .getValue(ctx, thisValue, factory);
             }
 
-            AccessorOptimizer optimizer = getThreadAccessorOptimizer();
+            try {
+                AccessorOptimizer optimizer = getThreadAccessorOptimizer();
 
-            ParserContext pCtx = new ParserContext();
-            pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
+                ParserContext pCtx = new ParserContext();
+                pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
-            newObjectOptimizer = optimizer.optimizeObjectCreation(pCtx, name, ctx, thisValue, factory);
+                newObjectOptimizer = optimizer.optimizeObjectCreation(pCtx, name, ctx, thisValue, factory);
 
-            /**
-             * Check to see if the optimizer actually produced the object during optimization.  If so,
-             * we return that value now.
-             */
-            if (optimizer.getResultOptPass() != null) {
-                egressType = optimizer.getEgressType();
-                return optimizer.getResultOptPass();
+                /**
+                 * Check to see if the optimizer actually produced the object during optimization.  If so,
+                 * we return that value now.
+                 */
+                if (optimizer.getResultOptPass() != null) {
+                    egressType = optimizer.getEgressType();
+                    return optimizer.getResultOptPass();
+                }
+            }
+            finally {
+                OptimizerFactory.clearThreadAccessorOptimizer();
             }
         }
 

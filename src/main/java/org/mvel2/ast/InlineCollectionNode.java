@@ -26,6 +26,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.CollectionParser;
+
 import static org.mvel2.util.ParseTools.*;
 
 import java.lang.reflect.Array;
@@ -46,9 +47,14 @@ public class InlineCollectionNode extends ASTNode {
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             parseGraph(true, null, pctx);
-            AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-            accessor = ao.optimizeCollection(pctx, collectionGraph, egressType, trailing, null, null, null);
-            egressType = ao.getEgressType();
+            try {
+                AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
+                accessor = ao.optimizeCollection(pctx, collectionGraph, egressType, trailing, null, null, null);
+                egressType = ao.getEgressType();
+            }
+            finally {
+                OptimizerFactory.clearThreadAccessorOptimizer();
+            }
         }
     }
 
@@ -58,10 +64,15 @@ public class InlineCollectionNode extends ASTNode {
         this.egressType = type;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            parseGraph(true, type, pctx);
-            AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-            accessor = ao.optimizeCollection(pctx,collectionGraph, egressType, trailing, null, null, null);
-            egressType = ao.getEgressType();
+            try {
+                parseGraph(true, type, pctx);
+                AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
+                accessor = ao.optimizeCollection(pctx, collectionGraph, egressType, trailing, null, null, null);
+                egressType = ao.getEgressType();
+            }
+            finally {
+                OptimizerFactory.clearThreadAccessorOptimizer();
+            }
         }
     }
 
@@ -70,20 +81,25 @@ public class InlineCollectionNode extends ASTNode {
             return accessor.getValue(ctx, thisValue, factory);
         }
         else {
-            AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-            if (collectionGraph == null) parseGraph(true, null, null);
+            try {
+                AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
+                if (collectionGraph == null) parseGraph(true, null, null);
 
-            accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph, egressType, trailing, ctx, thisValue, factory);
-            egressType = ao.getEgressType();
+                accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph, egressType, trailing, ctx, thisValue, factory);
+                egressType = ao.getEgressType();
 
-            return accessor.getValue(ctx, thisValue, factory);
+                return accessor.getValue(ctx, thisValue, factory);
+            }
+            finally {
+                OptimizerFactory.clearThreadAccessorOptimizer();
+            }
         }
 
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         parseGraph(false, egressType, null);
-        return  execGraph(collectionGraph, egressType, ctx, factory);
+        return execGraph(collectionGraph, egressType, ctx, factory);
     }
 
     private void parseGraph(boolean compile, Class type, ParserContext pCtx) {
@@ -102,12 +118,12 @@ public class InlineCollectionNode extends ASTNode {
         if (this.egressType == null) this.egressType = collectionGraph.getClass();
     }
 
-      private Object execGraph(Object o, Class type, Object ctx, VariableResolverFactory factory) {
+    private Object execGraph(Object o, Class type, Object ctx, VariableResolverFactory factory) {
         if (o instanceof List) {
-            ArrayList list = new ArrayList(((List)o).size());
+            ArrayList list = new ArrayList(((List) o).size());
 
             for (Object item : (List) o) {
-               list.add(execGraph(item, type, ctx, factory));
+                list.add(execGraph(item, type, ctx, factory));
             }
 
             return list;
@@ -116,7 +132,7 @@ public class InlineCollectionNode extends ASTNode {
             HashMap map = new HashMap();
 
             for (Object item : ((Map) o).keySet()) {
-                map.put(execGraph(item, type, ctx, factory), execGraph(((Map)o).get(item), type, ctx, factory));
+                map.put(execGraph(item, type, ctx, factory), execGraph(((Map) o).get(item), type, ctx, factory));
             }
 
             return map;
@@ -133,7 +149,7 @@ public class InlineCollectionNode extends ASTNode {
                 dim = 1;
             }
 
-            Object newArray = Array.newInstance(getSubComponentType(type), ((Object[])o).length);
+            Object newArray = Array.newInstance(getSubComponentType(type), ((Object[]) o).length);
 
             try {
                 Class cls = dim > 1 ? findClass(null, repeatChar('[', dim - 1) + "L" + getBaseComponentType(type).getName() + ";", AbstractParser.getCurrentThreadParserContext())
@@ -141,7 +157,7 @@ public class InlineCollectionNode extends ASTNode {
 
                 int c = 0;
                 for (Object item : (Object[]) o) {
-                   Array.set(newArray, c++, execGraph(item, cls, ctx, factory));
+                    Array.set(newArray, c++, execGraph(item, cls, ctx, factory));
                 }
 
                 return newArray;
@@ -159,7 +175,7 @@ public class InlineCollectionNode extends ASTNode {
 
             }
             else {
-                 return MVEL.eval((String) o, ctx, factory);
+                return MVEL.eval((String) o, ctx, factory);
             }
         }
     }

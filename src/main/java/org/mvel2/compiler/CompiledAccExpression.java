@@ -20,6 +20,8 @@ package org.mvel2.compiler;
 
 import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.optimizers.OptimizerFactory;
+
 import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
 import java.io.Serializable;
@@ -44,15 +46,21 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
 
         }
         else {
-             accessor.setValue(ctx, elCtx, vrf, value);
+            accessor.setValue(ctx, elCtx, vrf, value);
         }
         return value;
     }
 
     public Object getValue(Object staticContext, VariableResolverFactory factory) {
         if (accessor == null) {
-            accessor = getThreadAccessorOptimizer()
-                    .optimizeAccessor(context, expression, staticContext, staticContext, factory, false, ingressType);
+            try {
+                accessor = getThreadAccessorOptimizer()
+                        .optimizeAccessor(context, expression, staticContext, staticContext, factory, false, ingressType);
+                return getValue(staticContext, factory);
+            }
+            finally {
+                OptimizerFactory.clearThreadAccessorOptimizer();
+            }
         }
         return accessor.getValue(staticContext, staticContext, factory);
     }
@@ -90,8 +98,14 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         if (accessor == null) {
-            accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, ctx, elCtx,
-                    variableFactory, false, ingressType);
+            try {
+                accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, ctx, elCtx,
+                        variableFactory, false, ingressType);
+                return getValue(ctx, elCtx, variableFactory);
+            }
+            finally {
+                OptimizerFactory.clearThreadAccessorOptimizer();
+            }
         }
         return accessor.getValue(ctx, elCtx, variableFactory);
     }
