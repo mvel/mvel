@@ -26,6 +26,7 @@ import org.mvel2.util.ReflectionUtil;
 
 import java.awt.*;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -38,6 +39,7 @@ import java.util.List;
 
 import static java.util.Collections.unmodifiableCollection;
 import static org.mvel2.MVEL.*;
+import static org.mvel2.util.ParseTools.loadFromFile;
 
 @SuppressWarnings({"ALL"})
 public class CoreConfidenceTests extends AbstractTest {
@@ -5076,7 +5078,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testTemplateStringCoercion() {
-        String expr = "@code{ buffer = new StringBuilder(); i = 10; buffer.append( i + \"blah\" );}@{buffer.toString()}"; 
+        String expr = "@code{ buffer = new StringBuilder(); i = 10; buffer.append( i + \"blah\" );}@{buffer.toString()}";
         Map<String, Object> vars = setupVarsMVEL219();
         System.out.println("Templating '" + expr + "': ......");
         Object ret = TemplateRuntime.eval(expr, vars);
@@ -5442,27 +5444,42 @@ public class CoreConfidenceTests extends AbstractTest {
             fail("should now throw an exception");
         }
     }
-    
+
     public static class MapWrapper {
         private Map map = new HashMap();
-        public Map getMap() { return map; }
-        public void setMap(Map map) { this.map = map; }
+
+        public Map getMap() {
+            return map;
+        }
+
+        public void setMap(Map map) {
+            this.map = map;
+        }
     }
-    
+
     public void testMapPropertyAccess() {
         ParserContext ctx = new ParserContext();
-        ctx.addImport( MapWrapper.class );
-        ctx.addInput( "wrapper", MapWrapper.class );
-        ctx.setStrongTyping( true );
-        
-        Serializable expr = MVEL.compileExpression( "wrapper.map[\"key\"]", ctx );
+        ctx.addImport(MapWrapper.class);
+        ctx.addInput("wrapper", MapWrapper.class);
+        ctx.setStrongTyping(true);
+
+        Serializable expr = MVEL.compileExpression("wrapper.map[\"key\"]", ctx);
 
         MapWrapper wrapper = new MapWrapper();
-        wrapper.getMap().put( "key", "value" );
+        wrapper.getMap().put("key", "value");
         Map vars = new HashMap();
-        vars.put( "wrapper", wrapper );
-        
-        assertEquals("value", MVEL.executeExpression( expr, vars ) );
+        vars.put("wrapper", wrapper);
+
+        assertEquals("value", MVEL.executeExpression(expr, vars));
+    }
+
+    public void testMVEL238() throws IOException {
+        String expr = new String(loadFromFile(new File("src/test/java/org/mvel2/tests/MVEL238.mvel")));
+
+        Serializable s = MVEL.compileExpression(expr);
+
+        System.out.println(MVEL.executeExpression(s, new HashMap()));
+        System.out.println(MVEL.executeExpression(s, new HashMap()));
     }
 
 }
