@@ -5482,4 +5482,9 @@ public class CoreConfidenceTests extends AbstractTest {
         System.out.println(MVEL.executeExpression(s, new HashMap()));
     }
 
+    public void testParsingRegression() {
+        String expr = "if (false) {System.out.println(\" foo\")} else {System.out.println(\" bar\")}";
+        MVEL.eval(expr);
+    }
+
 }

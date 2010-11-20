@@ -1618,7 +1618,7 @@ public class AbstractParser implements Serializable {
 
             if (node != null) {
                 if (!cond) {
-                    return ifNode.setElseBlock(subArray(trimRight(blockStart + 1), trimLeft(blockEnd - 1)));
+                    return ifNode.setElseBlock(subArray(trimRight(blockStart + 1), trimLeft(blockEnd)));
                 }
                 else {
                     return ifNode.setElseIf((IfNode) createBlockToken(startCond, endCond, trimRight(blockStart + 1),

@@ -693,8 +693,8 @@ public class TemplateTests extends TestCase {
 
 
     public void testEscaping() {
-        String template = "@@{'foo'}";
-        assertEquals("@{'foo'}", TemplateRuntime.eval(template, new Object()));
+        String template = "@@{'foo'}ABC";
+        assertEquals("@{'foo'}ABC", TemplateRuntime.eval(template, new Object()));
     }
 
     public class Page {
