@@ -2372,7 +2372,8 @@ public class AbstractParser implements Serializable {
 
                     // BAIL OUT!
                     splitAccumulator.push(tk, new OperatorNode(operator2));
-                    return tk instanceof Substatement ? -2 : OP_TERMINATE;
+                    //    return tk instanceof Substatement ? -2 : OP_TERMINATE;
+                    return -2;
                 }
 
                 dStack.push(operator = operator2, tk.getReducedValue(ctx, ctx, variableFactory));

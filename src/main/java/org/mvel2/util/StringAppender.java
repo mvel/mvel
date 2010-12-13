@@ -125,7 +125,7 @@ public class StringAppender implements CharSequence {
     }
 
     public StringAppender append(char c) {
-        if (size >= capacity) grow(1);
+        if (size >= capacity) grow(size);
         str[size++] = c;
         return this;
     }

@@ -153,7 +153,6 @@ public class ExpressionCompiler extends AbstractParser {
                         if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()
                                 && tkOp.getOperator() < 34 && ((lastOp == -1
                                 || (lastOp < PTABLE.length && PTABLE[lastOp] < PTABLE[tkOp.getOperator()])))) {
-
                             stk.push(tk.getLiteralValue(), tkLA.getLiteralValue(), op = tkOp.getOperator());
 
                             /**
@@ -167,6 +166,7 @@ public class ExpressionCompiler extends AbstractParser {
                             }
 
                             firstLA = true;
+
 
                             /**
                              * Now we need to check to see if this is a continuing reduction.
@@ -225,6 +225,7 @@ public class ExpressionCompiler extends AbstractParser {
                                     break;
                                 }
                             }
+
 
                             /**
                              * If there are no more tokens left to parse, we check to see if

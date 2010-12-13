@@ -5486,5 +5486,4 @@ public class CoreConfidenceTests extends AbstractTest {
         String expr = "if (false) {System.out.println(\" foo\")} else {System.out.println(\" bar\")}";
         MVEL.eval(expr);
     }
-
 }
