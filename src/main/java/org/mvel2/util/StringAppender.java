@@ -213,10 +213,12 @@ public class StringAppender implements CharSequence {
         return str[index];
     }
 
-    public CharSequence subSequence(int start, int end) {
+    public CharSequence substring(int start, int end) {
         return new String(str, start, (end - start));
     }
 
-
+    public CharSequence subSequence(int start, int end) {
+        return substring(start, end);
+    }
 }
 
