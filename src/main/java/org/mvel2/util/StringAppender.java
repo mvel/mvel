@@ -187,10 +187,10 @@ public class StringAppender implements CharSequence {
                 encoding = System.getProperty("file.encoding");
             String s;
             try {
-                s = new String(btr, encoding);
+                s = new String(btr, 0, size, encoding);
             }
             catch (UnsupportedEncodingException e) {
-                s = new String(btr);
+                s = new String(btr, 0, size);
             }
             return s;
         }
