@@ -4096,6 +4096,39 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testStringConcatenation3() {
+        // BUG: return type of the string concatenation is inferred as double instead of String
+        String ex = "services.log(\"Drop +5%: \"+$sb+\" avg: $\"+percent($av)+\" price: $\"+$pr );";
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.setStrictTypeEnforcement( true );
+        ctx.addInput("$sb",
+                String.class);
+        ctx.addInput("$av",
+                double.class);
+        ctx.addInput("$pr",
+                double.class);
+        ctx.addInput("services",
+                Services.class);
+        ctx.addImport("percent", MVEL.getStaticMethod(String.class, "valueOf", new Class[]{double.class}));
+        try {
+            Serializable compiledExpression = MVEL.compileExpression( ex, ctx );
+            
+            Services services = new Services() {public void log(String text) {}};
+            Map<String,Object> vars = new HashMap<String, Object>();
+            vars.put( "services", services );
+            vars.put( "$sb", "RHT" );
+            vars.put( "$av", 15.0 );
+            vars.put( "$pr", 10.0 );
+            
+            MVEL.executeExpression( compiledExpression, vars );
+        }
+        catch (Throwable e) {
+            e.printStackTrace();
+            fail("Should not raise exception: " + e.getMessage());
+        }
+    }
+
     public void testMapsWithVariableAsKey() {
         String ex = "aMap[aKey] == 'aValue'";
         ParserContext ctx = new ParserContext();
