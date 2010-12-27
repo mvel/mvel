@@ -1453,14 +1453,14 @@ public class ParseTools {
                     if (end == -1) end = i;
 
                     if (parm == null) {
-                        MVEL.eval(new StringAppender(nestParm).append('.')
+                        MVEL.eval(new StringBuilder(nestParm).append('.')
                                 .append(block, start, end - start).toString(), ctx, factory);
 
                         oper = -1;
                         start = ++i;
                     }
                     else {
-                        MVEL.setProperty(ctx, parm, MVEL.eval(new String(createShortFormOperativeAssignment(new StringAppender(nestParm).append(".").append(parm).toString(),
+                        MVEL.setProperty(ctx, parm, MVEL.eval(new String(createShortFormOperativeAssignment(new StringBuilder(nestParm).append(".").append(parm).toString(),
                                 subset(block, start, end - start), oper)), ctx, factory));
 
                         parm = null;
@@ -1480,7 +1480,7 @@ public class ParseTools {
             }
             else {
                 MVEL.setProperty(ctx, parm, MVEL.eval(
-                        new String(createShortFormOperativeAssignment(new StringAppender(nestParm).append(".").append(parm).toString(),
+                        new String(createShortFormOperativeAssignment(new StringBuilder(nestParm).append(".").append(parm).toString(),
                                 subset(block, start, end - start), oper)), ctx, factory));
             }
         }

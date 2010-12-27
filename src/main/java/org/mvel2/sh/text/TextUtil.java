@@ -24,7 +24,7 @@ import static java.lang.String.valueOf;
 
 public class TextUtil {
     public static String pad(int colLength, int tabPos) {
-        StringAppender sAppend = new StringAppender();
+        StringBuilder sAppend = new StringBuilder();
         for (int len = tabPos - colLength; len != -1; len--) {
             sAppend.append(' ');
         }
@@ -33,7 +33,7 @@ public class TextUtil {
     }
 
     public static String paint(char c, int amount) {
-        StringAppender append = new StringAppender();
+        StringBuilder append = new StringBuilder();
         for (; amount != -1; amount--) {
             append.append(c);
         }

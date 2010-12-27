@@ -102,7 +102,7 @@ public class IncludeNode extends Node {
             int read;
             int i;
 
-            StringAppender appender = new StringAppender();
+            StringBuilder appender = new StringBuilder();
 
             while ((read = bufstream.read(buf)) != -1) {
                 for (i = 0; i < read; i++) {

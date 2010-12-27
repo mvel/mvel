@@ -67,7 +67,7 @@ public class TemplateTools {
         try {
             FileChannel fc = new FileInputStream(file).getChannel();
             ByteBuffer buf = allocateDirect(10);
-            StringAppender appender = new StringAppender();
+            StringBuilder appender = new StringBuilder();
             int read;
 
             while (true) {
@@ -98,7 +98,7 @@ public class TemplateTools {
     public static String readStream(InputStream instream) {
         try {
             byte[] buf = new byte[10];
-            StringAppender appender = new StringAppender();
+            StringBuilder appender = new StringBuilder();
             int read;
             while ((read = instream.read(buf)) != -1) {
                 for (int i = 0; i < read; i++) {

@@ -178,7 +178,7 @@ public class ExecutionStack {
 
         if (element == null) return "<EMPTY>";
 
-        StringAppender appender = new StringAppender().append("[");
+        StringBuilder appender = new StringBuilder().append("[");
         do {
             appender.append(valueOf(el.value));
             if (el.next != null) appender.append(", ");

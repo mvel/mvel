@@ -46,7 +46,7 @@ public class Soundex {
     public static String soundex(String s) {
         char[] ca = s.toUpperCase().toCharArray();
 
-        StringAppender res = new StringAppender();
+        StringBuilder res = new StringBuilder();
         char c, prev = '?';
 
         // Main loop: find up to 4 chars that map.

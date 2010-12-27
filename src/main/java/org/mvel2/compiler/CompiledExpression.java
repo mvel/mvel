@@ -207,7 +207,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
     }
 
     public String toString() {
-        StringAppender appender = new StringAppender();
+        StringBuilder appender = new StringBuilder();
         ASTNode node = firstNode;
         while (node != null) {
             appender.append(node.toString()).append(";\n");

@@ -20,24 +20,17 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
-
-import static org.mvel2.MVEL.executeSetExpression;
-
 import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 
-import static org.mvel2.util.ParseTools.*;
-import static org.mvel2.util.ParseTools.parseWithExpressions;
-import static org.mvel2.util.PropertyTools.getReturnType;
-
-import org.mvel2.util.StringAppender;
-import org.mvel2.util.ParseTools;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.mvel2.util.ParseTools.*;
+import static org.mvel2.util.PropertyTools.getReturnType;
 
 /**
  * @author Christopher Brock
@@ -144,8 +137,8 @@ public class WithNode extends BlockNode implements NestedStatement {
                         parms.add(
                                 new ParmValuePair(null, (ExecutableStatement)
                                         subCompileExpression(
-                                                new StringAppender(nestParm).append('.')
-                                                        .append(subset(block, start, end - start)).toChars(), pCtx), egressType, pCtx)
+                                                new StringBuilder(nestParm).append('.')
+                                                        .append(subset(block, start, end - start)).toString().toCharArray(), pCtx), egressType, pCtx)
                         );
 
                         oper = -1;
@@ -176,8 +169,8 @@ public class WithNode extends BlockNode implements NestedStatement {
             if (parm == null || "".equals(parm)) {
                 parms.add(
                         new ParmValuePair(null, (ExecutableStatement)
-                                subCompileExpression(new StringAppender(nestParm).append('.')
-                                        .append(subset(block, start, end - start)).toChars(), pCtx), egressType, pCtx)
+                                subCompileExpression(new StringBuilder(nestParm).append('.')
+                                        .append(subset(block, start, end - start)).toString().toCharArray(), pCtx), egressType, pCtx)
                 );
             }
             else {

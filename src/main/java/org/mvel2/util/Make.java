@@ -49,7 +49,7 @@ public class Make {
         }
 
         public static String start() {
-            return new String(new StringAppender());
+            return new String(new StringBuilder());
         }
 
         public java.lang.String _() {
@@ -60,9 +60,9 @@ public class Make {
             return stringAppender.toString();
         }
 
-        private StringAppender stringAppender;
+        private StringBuilder stringAppender;
 
-        String(StringAppender stringAppender) {
+        String(StringBuilder stringAppender) {
             this.stringAppender = stringAppender;
         }
 
