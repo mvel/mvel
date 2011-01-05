@@ -282,6 +282,7 @@ public class ExpressionCompiler extends AbstractParser {
                 return new CompiledExpression(finalizePayload(astBuild, secondPassOptimization, pCtx), pCtx.getSourceFile(), returnType, pCtx, literalOnly == 1);
             }
             else {
+                returnType = CompilerTools.getReturnType(astBuild);
                 return null;
             }
 

@@ -4098,7 +4098,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testStringConcatenation3() {
         // BUG: return type of the string concatenation is inferred as double instead of String
-        String ex = "services.log(\"Drop +5%: \"+$sb+\" avg: $\"+percent($av)+\" price: $\"+$pr );";
+        String ex = "services.log($av + \"Drop +5%: \"+$sb+\" avg: $\"+percent($av)+\" price: $\"+$pr );";
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
         ctx.setStrictTypeEnforcement(true);

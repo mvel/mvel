@@ -131,7 +131,7 @@ public class CompilerTools {
                             inv = false;
 
                             if (!reduc) {
-                                bo = new BinaryOperation(tkOp.getOperator(), tk,new LiteralNode(p_inv ? signNumber(val) : val));
+                                bo = new BinaryOperation(tkOp.getOperator(), tk, new LiteralNode(p_inv ? signNumber(val) : val));
                             }
                             else {
                                 tk2 = new LiteralNode(val);
@@ -326,6 +326,34 @@ public class CompilerTools {
         return (bn instanceof IntOptimized && bn2.getEgressType() != Integer.class);
     }
 
+
+    public static Class getReturnType(ASTIterator input) {
+        ASTIterator iter = new ASTLinkedList(input.firstNode());
+
+        ASTNode begin = input.firstNode();
+        ASTNode n;
+        while (iter.hasMoreNodes()) {
+            n = iter.nextNode();
+
+            if (n instanceof EndOfStatement) {
+                if (iter.hasMoreNodes()) {
+                    begin = iter.nextNode();
+                }
+            }
+            else if (n instanceof OperatorNode) {
+                if (n.isOperator(Operator.ADD)) {
+                    if (iter.hasMoreNodes()) {
+                        n = iter.nextNode();
+                        if (n.getEgressType() == String.class) {
+                            begin = n;
+                        }
+                    }
+                }
+            }
+        }
+
+        return begin == null ? Object.class : begin.getEgressType();
+    }
 
     /**
      * Returns an ordered Map of all functions declared within an compiled script.
