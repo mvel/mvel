@@ -4101,7 +4101,7 @@ public class CoreConfidenceTests extends AbstractTest {
         String ex = "services.log(\"Drop +5%: \"+$sb+\" avg: $\"+percent($av)+\" price: $\"+$pr );";
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
-        ctx.setStrictTypeEnforcement( true );
+        ctx.setStrictTypeEnforcement(true);
         ctx.addInput("$sb",
                 String.class);
         ctx.addInput("$av",
@@ -4112,16 +4112,19 @@ public class CoreConfidenceTests extends AbstractTest {
                 Services.class);
         ctx.addImport("percent", MVEL.getStaticMethod(String.class, "valueOf", new Class[]{double.class}));
         try {
-            Serializable compiledExpression = MVEL.compileExpression( ex, ctx );
-            
-            Services services = new Services() {public void log(String text) {}};
-            Map<String,Object> vars = new HashMap<String, Object>();
-            vars.put( "services", services );
-            vars.put( "$sb", "RHT" );
-            vars.put( "$av", 15.0 );
-            vars.put( "$pr", 10.0 );
-            
-            MVEL.executeExpression( compiledExpression, vars );
+            Serializable compiledExpression = MVEL.compileExpression(ex, ctx);
+
+            Services services = new Services() {
+                public void log(String text) {
+                }
+            };
+            Map<String, Object> vars = new HashMap<String, Object>();
+            vars.put("services", services);
+            vars.put("$sb", "RHT");
+            vars.put("$av", 15.0);
+            vars.put("$pr", 10.0);
+
+            MVEL.executeExpression(compiledExpression, vars);
         }
         catch (Throwable e) {
             e.printStackTrace();
@@ -5519,4 +5522,19 @@ public class CoreConfidenceTests extends AbstractTest {
         String expr = "if (false) {System.out.println(\" foo\")} else {System.out.println(\" bar\")}";
         MVEL.eval(expr);
     }
+
+    public static class TestClassAZZ {
+        public String hey() {
+           return "Heythere!";
+        }
+    }
+
+    public void testCallGlobalStaticFunctionFromMVELFunction() {
+        TestClassAZZ azz = new TestClassAZZ();
+
+        String expr = "def foobie12345() { hey(); } foobie12345();";
+
+        assertEquals("Heythere!", MVEL.eval(expr, azz, new HashMap<String, Object>()));
+    }
+
 }

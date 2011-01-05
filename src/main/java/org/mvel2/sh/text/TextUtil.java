@@ -41,6 +41,6 @@ public class TextUtil {
     }
 
     public static String padTwo(Object first, Object second, int tab) {
-        return new StringAppender(valueOf(first)).append(pad(valueOf(first).length(), tab)).append(second).toString();
+        return new StringBuilder(valueOf(first)).append(pad(valueOf(first).length(), tab)).append(second).toString();
     }
 }
