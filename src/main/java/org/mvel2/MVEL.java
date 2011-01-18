@@ -24,6 +24,7 @@ import org.mvel2.compiler.*;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
+import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.impl.refl.nodes.GetterAccessor;
 
@@ -60,6 +61,7 @@ public class MVEL {
     static boolean ADVANCED_DEBUG = getBoolean("mvel2.advanced_debugging");
     static boolean WEAK_CACHE = getBoolean("mvel2.weak_caching");
     static boolean NO_JIT = getBoolean("mvel2.disable.jit");
+    public static boolean INVOKED_METHOD_EXCEPTIONS_BUBBLE = getBoolean("mvel2.invoked_meth_exceptions_bubble");
 
     public static boolean COMPILER_OPT_ALLOW_NAKED_METH_CALL =
             getBoolean("mvel2.compiler.allow_naked_meth_calls");
@@ -98,7 +100,7 @@ public class MVEL {
      * @return the resultant value
      */
     public static Object eval(String expression) {
-        return new MVELInterpretedRuntime(expression, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
+        return new MVELInterpretedRuntime(expression, new ImmutableDefaultFactory()).parse();
     }
 
     /**
@@ -115,7 +117,7 @@ public class MVEL {
      * @return The resultant value
      */
     public static Object eval(String expression, Object ctx) {
-        return new MVELInterpretedRuntime(expression, ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
+        return new MVELInterpretedRuntime(expression, ctx, new ImmutableDefaultFactory()).parse();
     }
 
     /**
@@ -393,7 +395,7 @@ public class MVEL {
      */
     public static Object eval(char[] expression) {
         try {
-            return new MVELInterpretedRuntime(expression, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY).parse();
+            return new MVELInterpretedRuntime(expression, new ImmutableDefaultFactory()).parse();
         }
         catch (EndWithValue end) {
             return end.getValue();
@@ -675,7 +677,7 @@ public class MVEL {
      */
     public static Boolean evalToBoolean(String expression, Object ctx) {
         try {
-            return eval(expression, ctx, Boolean.class);
+            return eval(expression, ctx, new ImmutableDefaultFactory(), Boolean.class);
         }
         catch (EndWithValue end) {
             return convert(end.getValue(), Boolean.class);
@@ -965,7 +967,7 @@ public class MVEL {
 
 
     public static void executeSetExpression(Serializable compiledSet, Object ctx, Object value) {
-        ((CompiledAccExpression) compiledSet).setValue(ctx, ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY, value);
+        ((CompiledAccExpression) compiledSet).setValue(ctx, ctx, new ImmutableDefaultFactory(), value);
     }
 
     public static void executeSetExpression(Serializable compiledSet, Object ctx, VariableResolverFactory vrf, Object value) {
@@ -974,7 +976,7 @@ public class MVEL {
 
     public static Object executeExpression(Object compiledExpression) {
         try {
-            return ((ExecutableStatement) compiledExpression).getValue(null, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY);
+            return ((ExecutableStatement) compiledExpression).getValue(null, new ImmutableDefaultFactory());
         }
         catch (EndWithValue e) {
             return e.getValue();
@@ -1036,7 +1038,7 @@ public class MVEL {
      */
     public static Object executeExpression(final Object compiledExpression, final Object ctx) {
         try {
-            return ((ExecutableStatement) compiledExpression).getValue(ctx, MVELRuntime.IMMUTABLE_DEFAULT_FACTORY);
+            return ((ExecutableStatement) compiledExpression).getValue(ctx, new ImmutableDefaultFactory());
         }
         catch (EndWithValue end) {
             return end.getValue();

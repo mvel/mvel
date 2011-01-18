@@ -35,6 +35,7 @@ import static org.mvel2.integration.GlobalListenerFactory.notifySetListeners;
 import static org.mvel2.integration.PropertyHandlerFactory.*;
 
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
 
@@ -134,6 +135,7 @@ public class PropertyAccessor {
     public PropertyAccessor(String property, Object ctx) {
         this.length = (this.property = property.toCharArray()).length;
         this.ctx = ctx;
+        this.variableFactory = new ImmutableDefaultFactory();
     }
 
     public static Object get(String property, Object ctx) {
@@ -926,6 +928,9 @@ public class PropertyAccessor {
                 catch (Exception e2) {
                     throw new PropertyAccessException("unable to invoke method: " + name, e2);
                 }
+            }
+            catch (RuntimeException e) {
+                throw e;
             }
             catch (Exception e) {
                 throw new PropertyAccessException("unable to invoke method: " + name, e);

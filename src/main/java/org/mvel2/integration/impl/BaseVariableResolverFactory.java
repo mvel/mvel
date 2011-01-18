@@ -39,6 +39,8 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
     protected String[] indexedVariableNames;
     protected VariableResolver[] indexedVariableResolvers;
 
+    private boolean tiltFlag;
+
     public VariableResolverFactory getNextFactory() {
         return nextFactory;
     }
@@ -163,5 +165,14 @@ public abstract class BaseVariableResolverFactory implements VariableResolverFac
 
     public boolean isIndexedFactory() {
         return false;
+    }
+
+    public boolean tiltFlag() {
+        return tiltFlag;
+    }
+
+    public void setTiltFlag(boolean tiltFlag) {
+        this.tiltFlag = tiltFlag;
+        if (nextFactory != null) nextFactory.setTiltFlag(tiltFlag);
     }
 }

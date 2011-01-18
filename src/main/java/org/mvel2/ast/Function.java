@@ -146,10 +146,10 @@ public class Function extends ASTNode implements Safe {
                 return compiledBlock.getValue(thisValue, new FunctionVariableResolverFactory(this, factory, parameters, parms));
             }
             else if (cMode) {
-                return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory, parameters));
+                return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory, parameters).setNoTilt(true));
             }
             else {
-                return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory));
+                return compiledBlock.getValue(thisValue, new DefaultLocalVariableResolverFactory(factory).setNoTilt(true));
             }
         }
         catch (EndWithValue end) {

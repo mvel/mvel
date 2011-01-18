@@ -753,6 +753,4 @@ public class TemplateTests extends TestCase {
         assertEquals("foofar", sb.toString());
 
     }
-
-
 }

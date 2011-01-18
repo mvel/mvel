@@ -19,14 +19,18 @@
 package org.mvel2;
 
 import static org.mvel2.Operator.*;
+
 import org.mvel2.ast.ASTNode;
+import org.mvel2.ast.ReturnNode;
 import org.mvel2.ast.Substatement;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.BlankLiteral;
 import org.mvel2.compiler.EndWithValue;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.util.ExecutionStack;
+
 import static org.mvel2.util.ParseTools.findClassImportResolverFactory;
 
 import java.util.Map;
@@ -41,6 +45,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
         try {
             stk = new ExecutionStack();
             dStack = new ExecutionStack();
+            variableFactory.setTiltFlag(false);
             cursor = 0;
             return parseAndExecuteInterpreted();
         }
@@ -93,6 +98,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                 if (stk.isEmpty()) {
                     stk.push(tk.getReducedValue(ctx, ctx, variableFactory));
 
+
                     /**
                      * If this is a substatement, we need to move the result into the d-stack to preserve
                      * proper execution order.
@@ -112,7 +118,14 @@ public class MVELInterpretedRuntime extends AbstractParser {
                     }
                 }
 
+                if (variableFactory.tiltFlag()) {
+                    return stk.pop();
+                }
+
                 switch (procBooleanOperator(operator = tk.getOperator())) {
+                    case RETURN:
+                        variableFactory.setTiltFlag(true);
+                        return stk.pop();
                     case OP_TERMINATE:
                         return stk.peek();
                     case OP_RESET_FRAME:
@@ -169,6 +182,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
     private int procBooleanOperator(int operator) {
         switch (operator) {
+            case RETURN:
+                return RETURN;
             case NOOP:
                 return -2;
 
@@ -310,13 +325,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
         this.expr = expression;
         this.length = expr.length;
         this.ctx = ctx;
-        this.variableFactory = MVELRuntime.IMMUTABLE_DEFAULT_FACTORY;
+        this.variableFactory = new ImmutableDefaultFactory();
     }
 
 
     MVELInterpretedRuntime(String expression) {
         setExpression(expression);
-        this.variableFactory = MVELRuntime.IMMUTABLE_DEFAULT_FACTORY;
+        this.variableFactory = new ImmutableDefaultFactory();
     }
 
     MVELInterpretedRuntime(char[] expression) {
@@ -360,6 +375,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
     MVELInterpretedRuntime(String expression, Object ctx) {
         setExpression(expression);
         this.ctx = ctx;
+        this.variableFactory = new ImmutableDefaultFactory();
     }
 
     protected boolean hasImport(String name) {

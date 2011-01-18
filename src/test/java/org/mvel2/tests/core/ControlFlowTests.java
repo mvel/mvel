@@ -114,6 +114,11 @@ public class ControlFlowTests extends AbstractTest {
         assertEquals(true, MVEL.eval("if (false) { return false; } else if(100 < 50) { return false; } else if (10 > 5) return true;"));
     }
 
+    public void testIfAndElseif3() {
+        assertEquals(true, MVEL.executeExpression(MVEL.compileExpression("if (false) { return false; } else if(100 < 50) { return false; } else if (10 > 5) return true;")));
+    }
+
+
     public void testIfAndElseIfCondensedGrammar() {
         assertEquals("Foo", test("if (false) return 'Bar'; else return 'Foo';"));
     }

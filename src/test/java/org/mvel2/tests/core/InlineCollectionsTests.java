@@ -4,6 +4,7 @@ import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
 import org.mvel2.MVEL;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -91,6 +92,11 @@ public class InlineCollectionsTests extends AbstractTest {
     public void testForEach3() {
         assertEquals(true, test("a = {1,2,3}; foreach (i : a) { if (i == 1) { return true; } }"));
     }
+
+    public void testForEach3a() {
+        assertEquals(true, MVEL.eval("a = {1,2,3}; foreach (i : a) { if (i == 1) { return true; } }", new HashMap()));
+    }
+
 
     public void testForEach4() {
         assertEquals("OneTwoThreeFour", test("a = {1,2,3,4}; builder = ''; foreach (i : a) {" +

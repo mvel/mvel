@@ -119,4 +119,8 @@ public interface VariableResolverFactory extends Serializable {
     public int variableIndexOf(String name);
 
     public boolean isIndexedFactory();
+
+    public boolean tiltFlag();
+
+    public void setTiltFlag(boolean tilt);
 }

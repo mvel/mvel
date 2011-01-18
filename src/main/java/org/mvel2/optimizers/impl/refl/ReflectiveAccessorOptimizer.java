@@ -385,6 +385,15 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return rootNode;
         }
         catch (InvocationTargetException e) {
+            if (MVEL.INVOKED_METHOD_EXCEPTIONS_BUBBLE) {
+                if (e.getTargetException() instanceof RuntimeException) {
+                   throw (RuntimeException) e.getTargetException();
+                }
+                else {
+                    throw new RuntimeException(e);
+                }
+            }
+
             throw new PropertyAccessException(new String(expr) + ": " + e.getTargetException().getMessage(), e);
         }
         catch (IllegalAccessException e) {
@@ -985,10 +994,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             Object o = getWidenedTarget(m).invoke(ctx, args);
-
-//            if (Class.class.isAssignableFrom(m.getReturnType())) {
-//                 currType = m.getReturnType();
-//            }
 
             if (hasNullMethodHandler()) {
                 addAccessorNode(new MethodAccessorNH(getWidenedTarget(m), (ExecutableStatement[]) es, getNullMethodHandler()));

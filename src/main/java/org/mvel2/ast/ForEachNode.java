@@ -25,6 +25,7 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.ItemResolverFactory;
 import org.mvel2.util.ParseTools;
+
 import static org.mvel2.util.ParseTools.*;
 
 import java.lang.reflect.Array;
@@ -71,32 +72,37 @@ public class ForEachNode extends BlockNode {
             determineIterType(iterCond.getClass());
         }
 
+        Object v;
         switch (type) {
             case ARRAY:
                 int len = Array.getLength(iterCond);
                 for (int i = 0; i < len; i++) {
                     itemR.setValue(Array.get(iterCond, i));
-                    compiledBlock.getValue(ctx, thisValue, itemFactory);
+                    v = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                    if (itemFactory.tiltFlag()) return v;
                 }
                 break;
             case CHARSEQUENCE:
                 for (Object o : iterCond.toString().toCharArray()) {
                     itemR.setValue(o);
-                    compiledBlock.getValue(ctx, thisValue, itemFactory);
+                    v = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                    if (itemFactory.tiltFlag()) return v;
                 }
                 break;
             case INTEGER:
                 int max = (Integer) iterCond + 1;
                 for (int i = 1; i != max; i++) {
                     itemR.setValue(i);
-                    compiledBlock.getValue(ctx, thisValue, itemFactory);
+                    v = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                    if (itemFactory.tiltFlag()) return v;
                 }
                 break;
 
             case ITERABLE:
                 for (Object o : (Iterable) iterCond) {
                     itemR.setValue(o);
-                    compiledBlock.getValue(ctx, thisValue, itemFactory);
+                    v = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                    if (itemFactory.tiltFlag()) return v;
                 }
 
                 break;
@@ -116,30 +122,35 @@ public class ForEachNode extends BlockNode {
 
         this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
 
+        Object v;
         if (iterCond instanceof Iterable) {
             for (Object o : (Iterable) iterCond) {
                 itemR.setValue(o);
-                compiledBlock.getValue(ctx, thisValue, itemFactory);
+                v = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                if (itemFactory.tiltFlag()) return v;
             }
         }
         else if (iterCond != null && iterCond.getClass().isArray()) {
             int len = Array.getLength(iterCond);
             for (int i = 0; i < len; i++) {
                 itemR.setValue(Array.get(iterCond, i));
-                compiledBlock.getValue(ctx, thisValue, itemFactory);
+                v = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                if (itemFactory.tiltFlag()) return v;
             }
         }
         else if (iterCond instanceof CharSequence) {
             for (Object o : iterCond.toString().toCharArray()) {
                 itemR.setValue(o);
-                compiledBlock.getValue(ctx, thisValue, itemFactory);
+                v = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                if (itemFactory.tiltFlag()) return v;
             }
         }
         else if (iterCond instanceof Integer) {
             int max = (Integer) iterCond + 1;
             for (int i = 1; i != max; i++) {
                 itemR.setValue(i);
-                compiledBlock.getValue(ctx, thisValue, itemFactory);
+                v = compiledBlock.getValue(ctx, thisValue, itemFactory);
+                if (itemFactory.tiltFlag()) return v;
             }
         }
         else {

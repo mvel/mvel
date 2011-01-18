@@ -18,10 +18,14 @@
 package org.mvel2.ast;
 
 import static org.mvel2.MVEL.eval;
+
+import org.mvel2.Operator;
 import org.mvel2.compiler.Accessor;
 import org.mvel2.compiler.EndWithValue;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.subCompileExpression;
+
 import org.mvel2.ParserContext;
 
 /**
@@ -29,7 +33,7 @@ import org.mvel2.ParserContext;
  */
 public class ReturnNode extends ASTNode {
 
-    public ReturnNode(char[] expr, int fields, ParserContext pCtx){
+    public ReturnNode(char[] expr, int fields, ParserContext pCtx) {
         this.name = expr;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
@@ -42,10 +46,25 @@ public class ReturnNode extends ASTNode {
             setAccessor((Accessor) subCompileExpression(this.name));
         }
 
-        throw new EndWithValue(accessor.getValue(ctx, thisValue, factory));
+        return accessor.getValue(ctx, thisValue, factory);
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        throw new EndWithValue(eval(this.name, ctx, factory));
+        return eval(this.name, ctx, factory);
+    }
+
+    @Override
+    public boolean isOperator() {
+        return true;
+    }
+
+    @Override
+    public Integer getOperator() {
+        return Operator.RETURN;
+    }
+
+    @Override
+    public boolean isOperator(Integer operator) {
+        return Operator.RETURN == operator;
     }
 }

@@ -171,4 +171,8 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     public void setIndexOffset(int offset) {
         this.indexOffset = offset;
     }
+
+    @Override
+    public void setTiltFlag(boolean tiltFlag) {
+    }
 }

@@ -22,6 +22,7 @@ import static org.mvel2.Operator.*;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ast.LineLabel;
 import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.EndWithValue;
 import org.mvel2.debug.Debugger;
 import org.mvel2.debug.DebuggerContext;
 import org.mvel2.integration.VariableResolverFactory;
@@ -34,7 +35,7 @@ import static org.mvel2.util.PropertyTools.isEmpty;
  */
 @SuppressWarnings({"CaughtExceptionImmediatelyRethrown"})
 public class MVELRuntime {
-    public static final ImmutableDefaultFactory IMMUTABLE_DEFAULT_FACTORY = new ImmutableDefaultFactory();
+   // public static final ImmutableDefaultFactory IMMUTABLE_DEFAULT_FACTORY = new ImmutableDefaultFactory();
     private static ThreadLocal<DebuggerContext> debuggerContext;
 
 
@@ -53,6 +54,7 @@ public class MVELRuntime {
 
         Object v1, v2;
         ExecutionStack stk = new ExecutionStack();
+        variableFactory.setTiltFlag(false);
 
         ASTNode tk = expression.getFirstNode();
         Integer operator;
@@ -85,7 +87,16 @@ public class MVELRuntime {
                     stk.push(tk.getReducedValueAccelerated(ctx, ctx, variableFactory));
                 }
 
+                if (variableFactory.tiltFlag()) {
+                    return stk.pop();
+                }
+
                 switch (operator = tk.getOperator()) {
+                    case RETURN:
+                        variableFactory.setTiltFlag(true);
+                        return stk.pop();
+                    //     throw new EndWithValue(stk.pop());
+
                     case NOOP:
                         continue;
 

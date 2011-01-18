@@ -1,12 +1,15 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+
 import static org.mvel2.MVEL.executeExpression;
+
 import org.mvel2.ast.Function;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.CompilerTools;
+
 import static org.mvel2.util.CompilerTools.extractAllDeclaredFunctions;
 
 import java.io.Serializable;
@@ -36,6 +39,11 @@ public class FunctionsTest extends AbstractTest {
         assertEquals("FoobarFoobar",
                 test("function heyFoo() { return 'Foobar'; };\n" +
                         "return heyFoo() + heyFoo();"));
+    }
+
+    public void testFunctionDefAndCall1() {
+        assertEquals("FoobarFoobar", MVEL.eval("function heyFoo() { return 'Foobar'; };\n"
+                + "return heyFoo() + heyFoo();", new HashMap()));
     }
 
     public void testFunctionDefAndCall2() {

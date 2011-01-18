@@ -26,6 +26,8 @@ import org.mvel2.integration.VariableResolverFactory;
 import java.util.Set;
 
 public class ImmutableDefaultFactory implements VariableResolverFactory {
+    private boolean tiltFlag;
+
     private void throwError() {
         throw new CompileException("cannot assign variables; no variable resolver factory available.");
     }
@@ -90,5 +92,13 @@ public class ImmutableDefaultFactory implements VariableResolverFactory {
 
     public boolean isIndexedFactory() {
         return false;
+    }
+
+    public boolean tiltFlag() {
+        return tiltFlag;
+    }
+
+    public void setTiltFlag(boolean tilt) {
+        this.tiltFlag = tilt;
     }
 }

@@ -2331,7 +2331,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    private void anyArrayCheck(Class<? extends Object> cls) {
+    private void anyArrayCheck(Class cls) {
         if (cls == boolean[].class) {
             assert debug("CHECKCAST [Z");
             mv.visitTypeInsn(CHECKCAST, "[Z");
