@@ -22,6 +22,7 @@ import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -69,7 +70,7 @@ public class IndexedVariableResolverFactory extends BaseVariableResolverFactory 
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
-        if (nextFactory == null) nextFactory = new MapVariableResolverFactory();
+        if (nextFactory == null) nextFactory = new MapVariableResolverFactory(new HashMap());
         return nextFactory.createVariable(name, value, type);
     }
 

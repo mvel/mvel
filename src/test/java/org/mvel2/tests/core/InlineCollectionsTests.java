@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class InlineCollectionsTests extends AbstractTest {
     public void testListCreation2() {
         assertTrue(test("[\"test\"]") instanceof List);
@@ -96,7 +95,6 @@ public class InlineCollectionsTests extends AbstractTest {
     public void testForEach3a() {
         assertEquals(true, MVEL.eval("a = {1,2,3}; foreach (i : a) { if (i == 1) { return true; } }", new HashMap()));
     }
-
 
     public void testForEach4() {
         assertEquals("OneTwoThreeFour", test("a = {1,2,3,4}; builder = ''; foreach (i : a) {" +
