@@ -19,7 +19,7 @@ import java.util.Map;
 
 public class ArithmeticTests extends AbstractTest {
     public void testMath() {
-        assertEquals(188.4d, test("pi * hour"));
+        assertEquals(188, test("pi * hour"));
     }
 
     public void testMath2() {

@@ -19,18 +19,24 @@ package org.mvel2.math;
 
 import org.mvel2.CompileException;
 import org.mvel2.ConversionException;
+
 import static org.mvel2.DataConversion.convert;
+
 import org.mvel2.DataTypes;
+
 import static org.mvel2.DataTypes.BIG_DECIMAL;
 import static org.mvel2.DataTypes.EMPTY;
 import static org.mvel2.Operator.*;
+
 import org.mvel2.Unit;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.util.InternalNumber;
+
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.Soundex.soundex;
 
 import static java.lang.String.valueOf;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -79,6 +85,65 @@ public strictfp class MathProcessor {
                 return _doOperations(type1, val1, operation, type2, val2);
 
         }
+    }
+
+    private static Object doPrimWrapperArithmetic(final Number val1, final int operation, final Number val2, boolean iNumber, int returnTarget) {
+        switch (operation) {
+            case ADD:
+                return toType(val1.doubleValue() + val2.doubleValue(), returnTarget);
+            case DIV:
+                return toType(val1.doubleValue() / val2.doubleValue(), returnTarget);
+            case SUB:
+                return toType(val1.doubleValue() - val2.doubleValue(), returnTarget);
+            case MULT:
+                return toType(val1.doubleValue() * val2.doubleValue(), returnTarget);
+            case POWER:
+                return toType(Math.pow(val1.doubleValue(), val2.doubleValue()), returnTarget);
+            case MOD:
+                return toType(val1.doubleValue() % val2.doubleValue(), returnTarget);
+            case GTHAN:
+                return val1.doubleValue() > val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+            case GETHAN:
+                return val1.doubleValue() >= val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+            case LTHAN:
+                return val1.doubleValue() < val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+            case LETHAN:
+                return val1.doubleValue() <= val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+            case EQUAL:
+                return val1.doubleValue() == val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+            case NEQUAL:
+                return val1.doubleValue() != val2.doubleValue() ? Boolean.TRUE : Boolean.FALSE;
+        }
+        return null;
+
+    }
+
+    private static Object toType(Number val, int returnType) {
+        switch (returnType) {
+            case DataTypes.W_DOUBLE:
+            case DataTypes.DOUBLE:
+                return val.doubleValue();
+            case DataTypes.W_FLOAT:
+            case DataTypes.FLOAT:
+                return val.floatValue();
+            case DataTypes.INTEGER:
+            case DataTypes.W_INTEGER:
+                return val.intValue();
+            case DataTypes.W_LONG:
+            case DataTypes.LONG:
+                return val.longValue();
+            case DataTypes.W_SHORT:
+            case DataTypes.SHORT:
+                return val.shortValue();
+            case DataTypes.BIG_DECIMAL:
+                return new BigDecimal(val.doubleValue());
+            case DataTypes.BIG_INTEGER:
+                return BigInteger.valueOf(val.longValue());
+
+            case DataTypes.STRING:
+                return val.doubleValue();
+        }
+        throw new RuntimeException("internal error: " + returnType);
     }
 
     private static Object doBigDecimalArithmetic(final BigDecimal val1, final int operation, final BigDecimal val2, boolean iNumber, int returnTarget) {
@@ -152,9 +217,14 @@ public strictfp class MathProcessor {
             }
             else if ((type1 > 99 && (type2 > 99))
                     || (operation != 0 && isNumber(val1) && isNumber(val2))) {
-                return doBigDecimalArithmetic(getInternalNumberFromType(val1, type1),
+                return doPrimWrapperArithmetic(getNumber(val1, type1),
                         operation,
-                        getInternalNumberFromType(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
+                        getNumber(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
+
+
+//                return doPrimWrapperArithmetic(getInternalNumberFromType(val1, type1),
+//                        operation,
+//                        getInternalNumberFromType(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
             }
             else if (operation != ADD &&
                     (type1 == 15 || type2 == 15) &&
@@ -558,6 +628,48 @@ public strictfp class MathProcessor {
         }
         return type;
     }
+
+    private static Double getNumber(Object in, int type) {
+        if (in == null)
+            return 0d;
+        switch (type) {
+            case BIG_DECIMAL:
+                return ((BigDecimal) in).doubleValue();
+            case DataTypes.BIG_INTEGER:
+                return ((BigInteger) in).doubleValue();
+            case DataTypes.INTEGER:
+            case DataTypes.W_INTEGER:
+                return ((Integer) in).doubleValue();
+            case DataTypes.LONG:
+            case DataTypes.W_LONG:
+                return ((Long) in).doubleValue();
+            case DataTypes.STRING:
+                return Double.parseDouble((String) in);
+            case DataTypes.FLOAT:
+            case DataTypes.W_FLOAT:
+                return ((Float) in).doubleValue();
+            case DataTypes.DOUBLE:
+            case DataTypes.W_DOUBLE:
+                return (Double) in;
+            case DataTypes.SHORT:
+            case DataTypes.W_SHORT:
+                return ((Short) in).doubleValue();
+            case DataTypes.CHAR:
+            case DataTypes.W_CHAR:
+                 return Double.parseDouble(String.valueOf((Character) in));
+            case DataTypes.BOOLEAN:
+            case DataTypes.W_BOOLEAN:
+                return ((Boolean) in) ? 1d : 0d;
+            case DataTypes.W_BYTE:
+            case DataTypes.BYTE:
+                return ((Byte)in).doubleValue();
+        }
+
+        throw new ConversionException("cannot convert <" + in + "> to a numeric type: " + in.getClass() + " [" + type + "]");
+
+
+    }
+
 
     private static InternalNumber getInternalNumberFromType(Object in, int type) {
         if (in == null)

@@ -104,8 +104,8 @@ public class IndexedVariableResolverFactory extends BaseVariableResolverFactory 
     }
 
     public boolean isTarget(String name) {
-        for (int i = 0; i < indexedVariableNames.length; i++) {
-            if (indexedVariableNames[i].equals(name)) {
+        for (String indexedVariableName : indexedVariableNames) {
+            if (indexedVariableName.equals(name)) {
                 return true;
             }
         }
