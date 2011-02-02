@@ -64,14 +64,11 @@ public strictfp class MathProcessor {
         if (type2 == -1)
             type2 = val2 == null ? DataTypes.OBJECT : __resolveType(val2.getClass());
 
-        //      System.out.println("{" + val1 + " " + DebugTools.getOperatorSymbol(operation) + " " + val2 + "}");
-
         switch (type1) {
             case BIG_DECIMAL:
 
                 switch (type2) {
                     case BIG_DECIMAL:
-
                         return doBigDecimalArithmetic((BigDecimal) val1, operation, (BigDecimal) val2, false, -1);
                     default:
                         if (type2 > 99) {
@@ -220,11 +217,6 @@ public strictfp class MathProcessor {
                 return doPrimWrapperArithmetic(getNumber(val1, type1),
                         operation,
                         getNumber(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
-
-
-//                return doPrimWrapperArithmetic(getInternalNumberFromType(val1, type1),
-//                        operation,
-//                        getInternalNumberFromType(val2, type2), true, box(type2) > box(type1) ? box(type2) : box(type1));
             }
             else if (operation != ADD &&
                     (type1 == 15 || type2 == 15) &&
