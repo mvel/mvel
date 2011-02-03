@@ -28,6 +28,7 @@ import org.mvel2.templates.util.TemplateTools;
 import org.mvel2.templates.util.io.StandardOutputStream;
 import org.mvel2.templates.util.io.StringAppenderStream;
 import org.mvel2.templates.util.io.StringBuilderStream;
+import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.StringAppender;
 
 import java.io.File;
@@ -44,11 +45,15 @@ public class TemplateRuntime {
     private char[] template;
     private TemplateRegistry namedTemplateRegistry;
     private Node rootNode;
+    private String baseDir;
+    private ExecutionStack relPath;
 
-    public TemplateRuntime(char[] template, TemplateRegistry namedTemplateRegistry, Node rootNode) {
+
+    public TemplateRuntime(char[] template, TemplateRegistry namedTemplateRegistry, Node rootNode, String baseDir) {
         this.template = template;
         this.namedTemplateRegistry = namedTemplateRegistry;
         this.rootNode = rootNode;
+        this.baseDir = baseDir;
     }
 
     public static Object eval(File file, Object ctx, VariableResolverFactory vars, TemplateRegistry registry) {
@@ -56,7 +61,7 @@ public class TemplateRuntime {
     }
 
     public static Object eval(InputStream instream) {
-        return eval(instream, null,new ImmutableDefaultFactory(), null);
+        return eval(instream, null, new ImmutableDefaultFactory(), null);
     }
 
     public static Object eval(InputStream instream, Object ctx) {
@@ -199,14 +204,25 @@ public class TemplateRuntime {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringBuilder(), context, factory, null);
     }
 
-    public static void execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, OutputStream stream) {
-        execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, factory, null);
-    }
-
     public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, TemplateRegistry registry) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StringBuilder(), context, factory, registry);
     }
 
+    public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, String baseDir) {
+        return execute(compiled.getRoot(), compiled.getTemplate(), new StringBuilder(), context, factory, null, baseDir);
+    }
+
+    public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, TemplateRegistry registry, String baseDir) {
+        return execute(compiled.getRoot(), compiled.getTemplate(), new StringBuilder(), context, factory, registry, baseDir);
+    }
+
+    public static void execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, OutputStream stream) {
+        execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, factory, null);
+    }
+
+    public static void execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, OutputStream stream, String baseDir) {
+        execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, factory, null, baseDir);
+    }
 
     public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, TemplateRegistry registry, OutputStream stream) {
         return execute(compiled.getRoot(), compiled.getTemplate(), new StandardOutputStream(stream), context, factory, registry);
@@ -217,10 +233,15 @@ public class TemplateRuntime {
         return execute(compiled.getRoot(), compiled.getTemplate(), stream, context, factory, registry);
     }
 
+    public static Object execute(CompiledTemplate compiled, Object context, VariableResolverFactory factory, TemplateRegistry registry, TemplateOutputStream stream, String basedir) {
+        return execute(compiled.getRoot(), compiled.getTemplate(), stream, context, factory, registry, basedir);
+    }
+
     public static Object execute(Node root, char[] template,
                                  StringAppender appender, Object context,
                                  VariableResolverFactory factory, TemplateRegistry registry) {
-        return new TemplateRuntime(template, registry, root).execute(appender, context, factory);
+
+        return new TemplateRuntime(template, registry, root, ".").execute(appender, context, factory);
     }
 
     public Object execute(StringBuilder appender, Object context, VariableResolverFactory factory) {
@@ -231,21 +252,35 @@ public class TemplateRuntime {
     public static Object execute(Node root, char[] template,
                                  StringBuilder appender, Object context,
                                  VariableResolverFactory factory, TemplateRegistry registry) {
-        return new TemplateRuntime(template, registry, root).execute(appender, context, factory);
+
+        return new TemplateRuntime(template, registry, root, ".").execute(appender, context, factory);
+    }
+
+    public static Object execute(Node root, char[] template,
+                                 StringBuilder appender, Object context,
+                                 VariableResolverFactory factory, TemplateRegistry registry, String baseDir) {
+
+        return new TemplateRuntime(template, registry, root, baseDir).execute(appender, context, factory);
     }
 
     public static Object execute(Node root, char[] template,
                                  TemplateOutputStream appender, Object context,
                                  VariableResolverFactory factory, TemplateRegistry registry) {
-        return new TemplateRuntime(template, registry, root).execute(appender, context, factory);
+
+        return new TemplateRuntime(template, registry, root, ".").execute(appender, context, factory);
     }
+
+    public static Object execute(Node root, char[] template,
+                                 TemplateOutputStream appender, Object context,
+                                 VariableResolverFactory factory, TemplateRegistry registry, String baseDir) {
+
+        return new TemplateRuntime(template, registry, root, baseDir).execute(appender, context, factory);
+    }
+
 
     public Object execute(StringAppender appender, Object context, VariableResolverFactory factory) {
         return execute(new StringAppenderStream(appender), context, factory);
     }
-
-
-
 
     public Object execute(TemplateOutputStream stream, Object context, VariableResolverFactory factory) {
         return rootNode.eval(this, stream, context, factory);
@@ -273,5 +308,13 @@ public class TemplateRuntime {
 
     public void setNamedTemplateRegistry(TemplateRegistry namedTemplateRegistry) {
         this.namedTemplateRegistry = namedTemplateRegistry;
+    }
+
+    public ExecutionStack getRelPath() {
+        if (relPath == null) {
+            relPath = new ExecutionStack();
+            relPath.push(baseDir);
+        }
+        return relPath;
     }
 }

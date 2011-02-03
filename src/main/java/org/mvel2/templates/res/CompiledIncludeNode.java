@@ -34,8 +34,6 @@ import static org.mvel2.templates.util.TemplateTools.captureToEOS;
 import static org.mvel2.util.ParseTools.subset;
 
 public class CompiledIncludeNode extends Node {
-    private static final StackThreadLocal<ExecutionStack> relativePathStack;
-
     private char[] includeExpression;
     private char[] preExpression;
 
@@ -43,18 +41,6 @@ public class CompiledIncludeNode extends Node {
     private Serializable cPreExpression;
     private long fileDateStamp;
     private CompiledTemplate cFileCache;
-
-    private static class StackThreadLocal<T> extends ThreadLocal<T> {
-        protected T initialValue() {
-            ExecutionStack stk = new ExecutionStack();
-            stk.push(".");
-            return (T) stk;
-        }
-    }
-
-    static {
-        relativePathStack = new StackThreadLocal<ExecutionStack>();
-    }
 
     public CompiledIncludeNode(int begin, String name, char[] template, int start, int end) {
         this.begin = begin;
@@ -75,17 +61,17 @@ public class CompiledIncludeNode extends Node {
         }
 
         if (next != null) {
-            return next.eval(runtime, appender.append(String.valueOf(TemplateRuntime.eval(readFile(file, ctx, factory), ctx, factory))), ctx, factory);
+            return next.eval(runtime, appender.append(String.valueOf(TemplateRuntime.eval(readFile(runtime, file, ctx, factory), ctx, factory))), ctx, factory);
         } else {
-            return appender.append(String.valueOf(MVEL.eval(readFile(file, ctx, factory), ctx, factory)));
+            return appender.append(String.valueOf(MVEL.eval(readFile(runtime, file, ctx, factory), ctx, factory)));
         }
     }
 
-    private String readFile(String fileName, Object ctx, VariableResolverFactory factory) {
-        File file = getFile(fileName);
+    private String readFile(TemplateRuntime runtime, String fileName, Object ctx, VariableResolverFactory factory) {
+        File file = new File(String.valueOf(runtime.getRelPath().peek()) + "/" + fileName);
         if (fileDateStamp == 0 || fileDateStamp != file.lastModified()) {
             fileDateStamp = file.lastModified();
-            cFileCache = TemplateCompiler.compileTemplate(readInFile(file));
+            cFileCache = TemplateCompiler.compileTemplate(readInFile(runtime, file));
         }
         return String.valueOf(TemplateRuntime.execute(cFileCache, ctx, factory));
     }
@@ -94,28 +80,12 @@ public class CompiledIncludeNode extends Node {
         return false;
     }
 
-    private static Object peek() {
-        return relativePathStack.get().peek();
-    }
-
-    public static Object pop() {
-        return relativePathStack.get().pop();
-    }
-
-    private static void push(String path) {
-        relativePathStack.get().push(path);
-    }
-
-    public static File getFile(String fileName) {
-        return new File(String.valueOf(peek()) + "/" + fileName);
-    }
-
-    public static String readInFile(File file) {
+    public static String readInFile(TemplateRuntime runtime, File file) {
         try {
             FileInputStream instream = new FileInputStream(file);
             BufferedInputStream bufstream = new BufferedInputStream(instream);
 
-            push(file.getParent());
+            runtime.getRelPath().push(file.getParent());
 
             byte[] buf = new byte[10];
             int read;
@@ -132,7 +102,7 @@ public class CompiledIncludeNode extends Node {
             bufstream.close();
             instream.close();
 
-            pop();
+            runtime.getRelPath().pop();
 
             return appender.toString();
 

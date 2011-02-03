@@ -31,22 +31,11 @@ import org.mvel2.util.StringAppender;
 import java.io.*;
 
 public class IncludeNode extends Node {
-    private static final StackThreadLocal<ExecutionStack> relativePathStack;
 
     private char[] includeExpression;
     private char[] preExpression;
 
-    private static class StackThreadLocal<T> extends ThreadLocal<T> {
-        protected T initialValue() {
-            ExecutionStack stk = new ExecutionStack();
-            stk.push(".");
-            return (T) stk;
-        }
-    }
 
-    static {
-        relativePathStack = new StackThreadLocal<ExecutionStack>();
-    }
 
     public IncludeNode(int begin, String name, char[] template, int start, int end) {
         this.begin = begin;
@@ -66,10 +55,10 @@ public class IncludeNode extends Node {
         }
 
         if (next != null) {
-            return next.eval(runtime, appender.append(String.valueOf(TemplateRuntime.eval(readInFile(file), ctx, factory))), ctx, factory);
+            return next.eval(runtime, appender.append(String.valueOf(TemplateRuntime.eval(readInFile(runtime, file), ctx, factory))), ctx, factory);
         }
         else {
-            return appender.append(String.valueOf(MVEL.eval(readInFile(file), ctx, factory)));
+            return appender.append(String.valueOf(MVEL.eval(readInFile(runtime, file), ctx, factory)));
         }
     }
 
@@ -77,26 +66,15 @@ public class IncludeNode extends Node {
         return false;
     }
 
-    private static Object peek() {
-        return relativePathStack.get().peek();
-    }
 
-    public static Object pop() {
-        return relativePathStack.get().pop();
-    }
-
-    private static void push(String path) {
-        relativePathStack.get().push(path);
-    }
-
-    public static String readInFile(String fileName) {
-        File file = new File(String.valueOf(peek()) + "/" + fileName);
+    public static String readInFile(TemplateRuntime runtime, String fileName) {
+        File file = new File(String.valueOf(runtime.getRelPath().peek()) + "/" + fileName);
 
         try {
             FileInputStream instream = new FileInputStream(file);
             BufferedInputStream bufstream = new BufferedInputStream(instream);
 
-            push(file.getParent());
+            runtime.getRelPath().push(file.getParent());
 
             byte[] buf = new byte[10];
             int read;
@@ -113,7 +91,7 @@ public class IncludeNode extends Node {
             bufstream.close();
             instream.close();
 
-            pop();
+            runtime.getRelPath().pop();
 
             return appender.toString();
 
