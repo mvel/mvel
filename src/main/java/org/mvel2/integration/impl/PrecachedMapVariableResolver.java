@@ -7,17 +7,17 @@ import org.mvel2.CompileException;
 
 import java.util.Map;
 
-public class CachedMapVariableResolver implements VariableResolver {
+public class PrecachedMapVariableResolver implements VariableResolver {
     private String name;
     private Class<?> knownType;
     private Map.Entry entry;
 
-    public CachedMapVariableResolver(Map.Entry entry, String name) {
+    public PrecachedMapVariableResolver(Map.Entry entry, String name) {
         this.entry = entry;
         this.name = name;
     }
 
-    public CachedMapVariableResolver(Map.Entry entry, String name, Class knownType) {
+    public PrecachedMapVariableResolver(Map.Entry entry, String name, Class knownType) {
         this.name = name;
         this.knownType = knownType;
         this.entry = entry;

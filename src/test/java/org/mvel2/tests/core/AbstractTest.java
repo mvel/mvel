@@ -430,7 +430,7 @@ public abstract class AbstractTest extends TestCase {
 
         if (eighth != null && !eighth.getClass().isArray()) {
             if (!eighth.equals(seventh)) {
-                throw new AssertionError("Different result from test 4 and 5 (Compiled Re-Run / Reflective) [first: "
+                throw new AssertionError("Different result from test 7 and 8 (Compiled Re-Run / Reflective) [first: "
                         + valueOf(first) + "; second: " + valueOf(second) + "]");
             }
         }

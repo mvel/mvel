@@ -116,7 +116,7 @@ public class ArithmeticTests extends AbstractTest {
     public void testMath33() {
         String ex = "x = 20; y = 2; z = 2; x/y/z";
         System.out.println("Expression: " + ex);
-        assertEquals((double) 20 / 2 / 2, testCompiledSimple(ex, new HashMap()));
+        assertEquals(20 / 2 / 2, testCompiledSimple(ex, new HashMap()));
     }
 
     public void testMath20() {

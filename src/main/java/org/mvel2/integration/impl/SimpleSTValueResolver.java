@@ -19,17 +19,26 @@
 package org.mvel2.integration.impl;
 
 import org.mvel2.integration.VariableResolver;
+
 import static org.mvel2.DataConversion.canConvert;
 import static org.mvel2.DataConversion.convert;
+
 import org.mvel2.CompileException;
 
 public class SimpleSTValueResolver implements VariableResolver {
     private Object value;
     private Class type;
+    private boolean updated = false;
 
     public SimpleSTValueResolver(Object value, Class type) {
-        this.value = value;
+        this.value = handleTypeCoercion(type, value);
         this.type = type;
+    }
+
+    public SimpleSTValueResolver(Object value, Class type, boolean updated) {
+        this.value = handleTypeCoercion(type, value);
+        this.type = type;
+        this.updated = updated;
     }
 
     public String getName() {
@@ -45,7 +54,7 @@ public class SimpleSTValueResolver implements VariableResolver {
     }
 
     public int getFlags() {
-        return 0;
+        return updated ? -1 : 0;
     }
 
     public Object getValue() {
@@ -53,20 +62,25 @@ public class SimpleSTValueResolver implements VariableResolver {
     }
 
     public void setValue(Object value) {
+        updated = true;
+        this.value = handleTypeCoercion(type, value);
+    }
+
+    private static Object handleTypeCoercion(Class type, Object value) {
         if (type != null && value != null && value.getClass() != type) {
             if (!canConvert(type, value.getClass())) {
                 throw new CompileException("cannot assign " + value.getClass().getName() + " to type: "
                         + type.getName());
             }
             try {
-                value = convert(value, type);
+                return convert(value, type);
             }
             catch (Exception e) {
                 throw new CompileException("cannot convert value of " + value.getClass().getName()
                         + " to: " + type.getName());
             }
         }
-
-        this.value = value;
+        return value;
     }
+
 }

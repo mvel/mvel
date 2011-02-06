@@ -23,9 +23,7 @@ import static org.mvel2.MVELRuntime.execute;
 import org.mvel2.compiler.*;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.impl.ClassImportResolverFactory;
-import org.mvel2.integration.impl.ImmutableDefaultFactory;
-import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.integration.impl.*;
 import org.mvel2.optimizers.impl.refl.nodes.GetterAccessor;
 
 import static org.mvel2.util.ParseTools.loadFromFile;
@@ -171,8 +169,15 @@ public class MVEL {
      * @see #eval(String, org.mvel2.integration.VariableResolverFactory)
      */
     public static Object eval(String expression, Map<String, Object> vars) {
-        return new MVELInterpretedRuntime(expression, null, new MapVariableResolverFactory(vars)).parse();
+        CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
+        try {
+            return new MVELInterpretedRuntime(expression, null, factory).parse();
+        }
+        finally {
+            factory.externalize();
+        }
     }
+
 
     /**
      * Evaluates an expression against a context object and externally injected variables.  This is a wrapper
@@ -185,7 +190,13 @@ public class MVEL {
      * @see #eval(String, VariableResolverFactory)
      */
     public static Object eval(String expression, Object ctx, Map<String, Object> vars) {
-        return new MVELInterpretedRuntime(expression, ctx, new MapVariableResolverFactory(vars)).parse();
+        CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
+        try {
+            return new MVELInterpretedRuntime(expression, ctx, factory).parse();
+        }
+        finally {
+            factory.externalize();
+        }
     }
 
 
@@ -214,7 +225,7 @@ public class MVEL {
      * @param ctx        The context object to evaluate against.
      * @param toType     The target type that the resultant value will be converted to, if necessary.
      * @return The resultant value
-     * @see #eval(String,Class)
+     * @see #eval(String, Class)
      */
     public static <T> T eval(String expression, Object ctx, Class<T> toType) {
         return convert(new MVELInterpretedRuntime(expression, ctx).parse(), toType);
@@ -229,8 +240,8 @@ public class MVEL {
      * @param vars       The variables to be injected
      * @param toType     The target type that the resultant value will be converted to, if necessary.
      * @return The resultant value
-     * @see #eval(String,VariableResolverFactory)
-     * @see #eval(String,Class)
+     * @see #eval(String, VariableResolverFactory)
+     * @see #eval(String, Class)
      */
     public static <T> T eval(String expression, VariableResolverFactory vars, Class<T> toType) {
         return convert(new MVELInterpretedRuntime(expression, null, vars).parse(), toType);
@@ -249,7 +260,13 @@ public class MVEL {
      * @see #eval(String, org.mvel2.integration.VariableResolverFactory)
      */
     public static <T> T eval(String expression, Map<String, Object> vars, Class<T> toType) {
-        return convert(new MVELInterpretedRuntime(expression, null, new MapVariableResolverFactory(vars)).parse(), toType);
+        CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
+        try {
+            return convert(new MVELInterpretedRuntime(expression, null, factory).parse(), toType);
+        }
+        finally {
+            factory.externalize();
+        }
     }
 
     /**
@@ -261,8 +278,8 @@ public class MVEL {
      * @param vars       The vars to be injected
      * @param toType     The target type that the resultant value will be converted to, if necessary.
      * @return The resultant value.
-     * @see #eval(String,Object,VariableResolverFactory)
-     * @see #eval(String,Class)
+     * @see #eval(String, Object, VariableResolverFactory)
+     * @see #eval(String, Class)
      */
     public static <T> T eval(String expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
         return convert(new MVELInterpretedRuntime(expression, ctx, vars).parse(), toType);
@@ -277,11 +294,17 @@ public class MVEL {
      * @param vars       A Map of variables to be injected.
      * @param toType     The target type that the resultant value will be converted to, if necessary.
      * @return The resultant value.
-     * @see #eval(String,Object,VariableResolverFactory)
-     * @see #eval(String,Class)
+     * @see #eval(String, Object, VariableResolverFactory)
+     * @see #eval(String, Class)
      */
     public static <T> T eval(String expression, Object ctx, Map<String, Object> vars, Class<T> toType) {
-        return convert(new MVELInterpretedRuntime(expression, ctx, new MapVariableResolverFactory(vars)).parse(), toType);
+        CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
+        try {
+            return convert(new MVELInterpretedRuntime(expression, ctx, factory).parse(), toType);
+        }
+        finally {
+            factory.externalize();
+        }
     }
 
     /**
@@ -305,7 +328,7 @@ public class MVEL {
      * @param expression A string containing the expressino to be evaluated.
      * @param ctx        The context object to evaluate against
      * @return The resultant value
-     * @see #eval(String,Object)
+     * @see #eval(String, Object)
      */
     public static String evalToString(String expression, Object ctx) {
         try {
@@ -322,7 +345,7 @@ public class MVEL {
      * @param expression A string containing the expressino to be evaluated.
      * @param vars       The variables to be injected
      * @return The resultant value
-     * @see #eval(String,VariableResolverFactory)
+     * @see #eval(String, VariableResolverFactory)
      */
     public static String evalToString(String expression, VariableResolverFactory vars) {
         try {
@@ -339,7 +362,7 @@ public class MVEL {
      * @param expression A string containing the expressino to be evaluated.
      * @param vars       A Map of variables to be injected
      * @return The resultant value
-     * @see #eval(String,Map)
+     * @see #eval(String, Map)
      */
     public static String evalToString(String expression, Map vars) {
         try {
@@ -357,7 +380,7 @@ public class MVEL {
      * @param ctx        The context object to evaluate against.
      * @param vars       The variables to be injected
      * @return The resultant value
-     * @see #eval(String,Map)
+     * @see #eval(String, Map)
      */
     public static String evalToString(String expression, Object ctx, VariableResolverFactory vars) {
         try {
@@ -375,7 +398,7 @@ public class MVEL {
      * @param ctx        The context object to evaluate against.
      * @param vars       A Map of variables to be injected
      * @return The resultant value
-     * @see #eval(String,Map)
+     * @see #eval(String, Map)
      */
     public static String evalToString(String expression, Object ctx, Map vars) {
         try {
@@ -408,7 +431,7 @@ public class MVEL {
      * @param expression A char[] containing the expression to be evaluated.
      * @param ctx        The context object to evaluate against
      * @return The resultant value
-     * @see #eval(String,Object)
+     * @see #eval(String, Object)
      */
     public static Object eval(char[] expression, Object ctx) {
         try {
@@ -435,7 +458,7 @@ public class MVEL {
      * @param ctx        The context object to evaluate against
      * @param vars       The variables to be injected
      * @return The resultant value
-     * @see #eval(String,Object,VariableResolverFactory)
+     * @see #eval(String, Object, VariableResolverFactory)
      */
     public static Object eval(char[] expression, Object ctx, VariableResolverFactory vars) {
         try {
@@ -453,7 +476,7 @@ public class MVEL {
      * @param ctx        The context object to evaluate against
      * @param vars       A Map of variables to be injected
      * @return The resultant value
-     * @see #eval(String,Object,Map)
+     * @see #eval(String, Object, Map)
      */
     public static Object eval(char[] expression, Object ctx, Map vars) {
         try {
@@ -473,7 +496,7 @@ public class MVEL {
      * @param vars       A Map of variables to be injected
      * @param toType     The target type the resultant value will be converted to, if necessary.
      * @return The resultant value
-     * @see #eval(String,Object,Map,Class)
+     * @see #eval(String, Object, Map, Class)
      */
     public static <T> T eval(char[] expression, Object ctx, Map<String, Object> vars, Class<T> toType) {
         try {
@@ -492,7 +515,7 @@ public class MVEL {
      * @param ctx        The context object to evaluate against
      * @param toType     The target type the resultant value will be converted to, if necessary.
      * @return The resultant value
-     * @see #eval(String,Object,Class)
+     * @see #eval(String, Object, Class)
      */
     public static <T> T eval(char[] expression, Object ctx, Class<T> toType) {
         try {
@@ -512,7 +535,7 @@ public class MVEL {
      * @param vars       The variables to be injected
      * @param toType     The target type the resultant value will be converted to, if necessary.
      * @return The resultant value
-     * @see #eval(String,Object,VariableResolverFactory,Class)
+     * @see #eval(String, Object, VariableResolverFactory, Class)
      */
     public static <T> T eval(char[] expression, Object ctx, VariableResolverFactory vars, Class<T> toType) {
         try {
@@ -531,7 +554,7 @@ public class MVEL {
      * @param vars       The variables to be injected
      * @param toType     The target type the resultant value will be converted to, if necessary.
      * @return The resultant value
-     * @see #eval(String,VariableResolverFactory,Class)
+     * @see #eval(String, VariableResolverFactory, Class)
      */
     public static <T> T eval(char[] expression, VariableResolverFactory vars, Class<T> toType) {
         try {
@@ -550,7 +573,7 @@ public class MVEL {
      * @param vars       The variables to be injected
      * @param toType     The target type the resultant value will be converted to, if necessary.
      * @return The resultant value
-     * @see #eval(String,Map,Class)
+     * @see #eval(String, Map, Class)
      */
     public static <T> T eval(char[] expression, Map<String, Object> vars, Class<T> toType) {
         try {
@@ -569,11 +592,11 @@ public class MVEL {
      * @throws IOException Exception thrown if there is an IO problem accessing the file.
      */
     public static Object evalFile(File file) throws IOException {
-        return _evalFile(file, null, new MapVariableResolverFactory(new HashMap()));
+        return _evalFile(file, null, new CachedMapVariableResolverFactory(new HashMap()));
     }
 
     public static Object evalFile(File file, String encoding) throws IOException {
-        return _evalFile(file, encoding, null, new MapVariableResolverFactory(new HashMap()));
+        return _evalFile(file, encoding, null, new CachedMapVariableResolverFactory(new HashMap()));
     }
 
     /**
@@ -585,11 +608,11 @@ public class MVEL {
      * @throws IOException Exception thrown if there is an IO problem accessing the file.
      */
     public static Object evalFile(File file, Object ctx) throws IOException {
-        return _evalFile(file, ctx, new MapVariableResolverFactory(new HashMap()));
+        return _evalFile(file, ctx, new CachedMapVariableResolverFactory(new HashMap()));
     }
 
     public static Object evalFile(File file, String encoding, Object ctx) throws IOException {
-        return _evalFile(file, encoding, ctx, new MapVariableResolverFactory(new HashMap()));
+        return _evalFile(file, encoding, ctx, new CachedMapVariableResolverFactory(new HashMap()));
     }
 
     /**
@@ -601,7 +624,13 @@ public class MVEL {
      * @throws IOException Exception thrown if there is an IO problem accessing the file.
      */
     public static Object evalFile(File file, Map<String, Object> vars) throws IOException {
-        return _evalFile(file, null, new MapVariableResolverFactory(vars));
+        CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
+        try {
+            return _evalFile(file, null, factory);
+        }
+        finally {
+            factory.externalize();
+        }
     }
 
     /**
@@ -614,11 +643,23 @@ public class MVEL {
      * @throws IOException Exception thrown if there is an IO problem accessing the file.
      */
     public static Object evalFile(File file, Object ctx, Map<String, Object> vars) throws IOException {
-        return _evalFile(file, ctx, new MapVariableResolverFactory(vars));
+        CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
+        try {
+            return _evalFile(file, ctx, factory);
+        }
+        finally {
+            factory.externalize();
+        }
     }
 
     public static Object evalFile(File file, String encoding, Object ctx, Map<String, Object> vars) throws IOException {
-        return _evalFile(file, encoding, ctx, new MapVariableResolverFactory(vars));
+        CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
+        try {
+            return _evalFile(file, encoding, ctx, factory);
+        }
+        finally {
+            factory.externalize();
+        }
     }
 
     /**
@@ -829,7 +870,7 @@ public class MVEL {
 
     /**
      * Compiles an expression and returns a Serializable object containing the compiled expression. This method
-     * accepts a Map of imports and Interceptors.  See {@link #compileExpression(String,Map)} for information on
+     * accepts a Map of imports and Interceptors.  See {@link #compileExpression(String, Map)} for information on
      * imports.  The imports parameter in this method is <em>optional</em> and it is safe to pass a <tt>null</tt>
      * value.<br/>
      * {@link org.mvel2.integration.Interceptor Interceptors} are markers within an expression that allow external hooks
@@ -994,11 +1035,16 @@ public class MVEL {
      */
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Object ctx, final Map vars) {
+        CachingMapVariableResolverFactory factory = vars != null ? new CachingMapVariableResolverFactory(vars) : null;
+
         try {
-            return ((ExecutableStatement) compiledExpression).getValue(ctx, vars != null ? new MapVariableResolverFactory(vars) : null);
+            return ((ExecutableStatement) compiledExpression).getValue(ctx, factory);
         }
         catch (EndWithValue end) {
             return end.getValue();
+        }
+        finally {
+            if (factory != null) factory.externalize();
         }
     }
 
@@ -1055,11 +1101,15 @@ public class MVEL {
      */
     @SuppressWarnings({"unchecked"})
     public static Object executeExpression(final Object compiledExpression, final Map vars) {
+        CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
         try {
-            return ((ExecutableStatement) compiledExpression).getValue(null, new MapVariableResolverFactory(vars));
+            return ((ExecutableStatement) compiledExpression).getValue(null, factory);
         }
         catch (EndWithValue end) {
             return end.getValue();
+        }
+        finally {
+            factory.externalize();
         }
     }
 
@@ -1140,12 +1190,15 @@ public class MVEL {
     }
 
     public static void executeExpression(Iterable<CompiledExpression> compiledExpression, Map vars) {
-        executeExpression(compiledExpression, null, new MapVariableResolverFactory(vars));
-
+        CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
+        executeExpression(compiledExpression, null, factory);
+        factory.externalize();
     }
 
     public static void executeExpression(Iterable<CompiledExpression> compiledExpression, Object ctx, Map vars) {
-        executeExpression(compiledExpression, ctx, new MapVariableResolverFactory(vars));
+        CachingMapVariableResolverFactory factory = new CachingMapVariableResolverFactory(vars);
+        executeExpression(compiledExpression, ctx, factory);
+        factory.externalize();
     }
 
     public static void executeExpression(Iterable<CompiledExpression> compiledExpression, Object ctx, VariableResolverFactory vars) {
@@ -1169,7 +1222,8 @@ public class MVEL {
             if (expression.isImportInjectionRequired()) {
                 return execute(true, expression, ctx, new ClassImportResolverFactory(expression
                         .getParserContext().getParserConfiguration(), vars));
-            } else {
+            }
+            else {
                 return execute(true, expression, ctx, vars);
             }
         }
