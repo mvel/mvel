@@ -435,6 +435,4 @@ public class TemplateCompiler {
         this.customNodes = customNodes;
         this.codeCache = codeCache;
     }
-
-
 }

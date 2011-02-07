@@ -18,22 +18,19 @@
 
 package org.mvel2;
 
-import static org.mvel2.Operator.*;
-
 import org.mvel2.ast.ASTNode;
-import org.mvel2.ast.ReturnNode;
 import org.mvel2.ast.Substatement;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.BlankLiteral;
-import org.mvel2.compiler.EndWithValue;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.util.ExecutionStack;
 
-import static org.mvel2.util.ParseTools.findClassImportResolverFactory;
-
 import java.util.Map;
+
+import static org.mvel2.Operator.*;
+import static org.mvel2.util.ParseTools.findClassImportResolverFactory;
 
 
 /**
@@ -62,9 +59,6 @@ public class MVELInterpretedRuntime extends AbstractParser {
             else {
                 throw e;
             }
-        }
-        catch (EndWithValue end) {
-            return end.getValue();
         }
         finally {
             if (parserContext != null) contextControl(REMOVE, null, null);

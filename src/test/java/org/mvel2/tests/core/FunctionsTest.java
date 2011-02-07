@@ -109,4 +109,25 @@ public class FunctionsTest extends AbstractTest {
         OptimizerFactory.setDefaultOptimizer("dynamic");
     }
 
+    public void testBranchesWithReturn() {
+        String ex = "function max($a, $b) {\n" +
+                " if ($a>$b){\n" +
+                "    System.out.println($a);\n" +
+                "    return $a;\n" +
+                "} else {\n" +
+                "   System.out.println($b);\n" +
+                "   return $b;\n" +
+                "};\n" +
+                "}; val = max(20, 30);";
+
+        Serializable s = MVEL.compileExpression(ex);
+
+        Map<String, Object> map = new HashMap<String, Object>();
+
+        MVEL.executeExpression(s, map);
+
+
+        assertEquals(30, map.get("val"));
+    }
+
 }

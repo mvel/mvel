@@ -17,16 +17,13 @@
  */
 package org.mvel2.ast;
 
-import static org.mvel2.MVEL.eval;
-
 import org.mvel2.Operator;
+import org.mvel2.ParserContext;
 import org.mvel2.compiler.Accessor;
-import org.mvel2.compiler.EndWithValue;
 import org.mvel2.integration.VariableResolverFactory;
 
+import static org.mvel2.MVEL.eval;
 import static org.mvel2.util.ParseTools.subCompileExpression;
-
-import org.mvel2.ParserContext;
 
 /**
  * @author Christopher Brock
