@@ -871,13 +871,4 @@ public class ArithmeticTests extends AbstractTest {
         vars.put("param2", 10);
         assertEquals(1 + 2 * 10, MVEL.executeExpression(MVEL.compileExpression("1 + 2 * param.value"), vars));
     }
-
-    public void testMVEL239() {
-
-
-        MVEL.compileExpression("1/0+1");
-    }
-
-
-
 }

@@ -39,6 +39,7 @@ public class ImportNode extends ASTNode {
         if (ParseTools.endsWith(expr, WC_TEST)) {
             packageImport = true;
             offset = (short) ParseTools.findLast(expr, '.');
+            if (offset == -1) { offset = 0; }
         }
         else {
             try {
