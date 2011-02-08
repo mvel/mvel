@@ -869,9 +869,15 @@ public class ArithmeticTests extends AbstractTest {
         Map<String, Object> vars = new HashMap<String, Object>();
         vars.put("param", params);
         vars.put("param2", 10);
-   //     System.out.println("" + MVEL.executeExpression(MVEL.compileExpression("1 + 2 * param.value"), vars));
         assertEquals(1 + 2 * 10, MVEL.executeExpression(MVEL.compileExpression("1 + 2 * param.value"), vars));
     }
+
+    public void testMVEL239() {
+
+
+        MVEL.compileExpression("1/0+1");
+    }
+
 
 
 }

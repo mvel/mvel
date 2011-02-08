@@ -97,9 +97,6 @@ public class FunctionsTest extends AbstractTest {
 
         Boolean bool;
 
-//        Boolean bool = (Boolean) MVEL.eval(ex, new HashMap());
-//        assertTrue(bool);
-
         OptimizerFactory.setDefaultOptimizer("ASM");
         Serializable s = MVEL.compileExpression(ex);
 
@@ -121,11 +118,8 @@ public class FunctionsTest extends AbstractTest {
                 "}; val = max(20, 30);";
 
         Serializable s = MVEL.compileExpression(ex);
-
         Map<String, Object> map = new HashMap<String, Object>();
-
         MVEL.executeExpression(s, map);
-
 
         assertEquals(30, map.get("val"));
     }

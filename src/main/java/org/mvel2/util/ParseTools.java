@@ -224,6 +224,8 @@ public class ParseTools {
     }
 
     public static Method getBestCandidate(Class[] arguments, String method, Class decl, Method[] methods, boolean requireExact, boolean classTarget) {
+
+
         if (methods.length == 0) {
             return null;
         }
@@ -232,6 +234,7 @@ public class ParseTools {
         Method bestCandidate = null;
         int bestScore = 0;
         int score = 0;
+        boolean retry = false;
 
         Integer hash = createClassSignatureHash(decl, arguments);
 
@@ -243,73 +246,94 @@ public class ParseTools {
             return bestCandidate;
         }
 
-        for (Method meth : methods) {
-            if (classTarget && (meth.getModifiers() & Modifier.STATIC) == 0) continue;
-            
-            if (method.equals(meth.getName())) {
-                if ((parmTypes = meth.getParameterTypes()).length != arguments.length) {
-                    continue;
-                }
-                else if (arguments.length == 0 && parmTypes.length == 0) {
-                    bestCandidate = meth;
-                    break;
-                }
+        do {
+            for (Method meth : methods) {
+                if (classTarget && (meth.getModifiers() & Modifier.STATIC) == 0) continue;
 
-                for (int i = 0; i != arguments.length; i++) {
-                    if (arguments[i] == null) {
-                        if (!parmTypes[i].isPrimitive()) {
+                if (method.equals(meth.getName())) {
+                    if ((parmTypes = meth.getParameterTypes()).length != arguments.length) {
+                        continue;
+                    }
+                    else if (arguments.length == 0 && parmTypes.length == 0) {
+                        bestCandidate = meth;
+                        break;
+                    }
+
+                    for (int i = 0; i != arguments.length; i++) {
+                        if (arguments[i] == null) {
+                            if (!parmTypes[i].isPrimitive()) {
+                                score += 5;
+                            }
+                            else {
+                                score = 0;
+                                break;
+                            }
+                        }
+                        else if (parmTypes[i] == arguments[i]) {
+                            score += 6;
+                        }
+                        else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
                             score += 5;
+                        }
+                        else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
+                            score += 5;
+                        }
+                        else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
+                            score += 4;
+                        }
+                        else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i])) && Object.class != arguments[i]) {
+                            score += 3 + scoreInterface(parmTypes[i], arguments[i]);
+                        }
+                        else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
+                            if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
+                            else if (parmTypes[i] == char.class && arguments[i] == String.class) score += 1;
+
+                            score += 1;
+                        }
+                        else if (arguments[i] == Object.class) {
+                            score += 1;
                         }
                         else {
                             score = 0;
                             break;
                         }
                     }
-                    else if (parmTypes[i] == arguments[i]) {
-                        score += 6;
-                    }
-                    else if (parmTypes[i].isPrimitive() && boxPrimitive(parmTypes[i]) == arguments[i]) {
-                        score += 5;
-                    }
-                    else if (arguments[i].isPrimitive() && unboxPrimitive(arguments[i]) == parmTypes[i]) {
-                        score += 5;
-                    }
-                    else if (isNumericallyCoercible(arguments[i], parmTypes[i])) {
-                        score += 4;
-                    }
-                    else if (boxPrimitive(parmTypes[i]).isAssignableFrom(boxPrimitive(arguments[i])) && Object.class != arguments[i]) {
-                        score += 3 + scoreInterface(parmTypes[i], arguments[i]);
-                    }
-                    else if (!requireExact && canConvert(parmTypes[i], arguments[i])) {
-                        if (parmTypes[i].isArray() && arguments[i].isArray()) score += 1;
-                        else if (parmTypes[i] == char.class && arguments[i] == String.class) score += 1;
 
-                        score += 1;
+                    if (score != 0 && score > bestScore) {
+                        bestCandidate = meth;
+                        bestScore = score;
                     }
-                    else if (arguments[i] == Object.class) {
-                        score += 1;
-                    }
-                    else {
-                        score = 0;
-                        break;
-                    }
+                    score = 0;
                 }
-
-                if (score != 0 && score > bestScore) {
-                    bestCandidate = meth;
-                    bestScore = score;
-                }
-                score = 0;
-            }
-        }
-
-        if (bestCandidate != null) {
-            if (methCache == null) {
-                RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, WeakReference<Method>>());
             }
 
-            methCache.put(hash, new WeakReference<Method>(bestCandidate));
+            if (bestCandidate != null) {
+                if (methCache == null) {
+                    RESOLVED_METH_CACHE.put(method, methCache = new WeakHashMap<Integer, WeakReference<Method>>());
+                }
+
+                methCache.put(hash, new WeakReference<Method>(bestCandidate));
+
+                break;
+            }
+
+            if (!retry && bestCandidate == null && decl.isInterface()) {
+                Method[] objMethods = Object.class.getMethods();
+                Method[] nMethods = new Method[methods.length + objMethods.length];
+                for (int i = 0; i < methods.length; i++) {
+                    nMethods[i] = methods[i];
+                }
+
+                for (int i = 0; i < objMethods.length; i++) {
+                    nMethods[i + methods.length] = objMethods[i];
+                }
+                methods = nMethods;
+            }
+            else {
+                break;
+            }
         }
+        while (true);
 
         return bestCandidate;
     }
@@ -1012,7 +1036,6 @@ public class ParseTools {
             return result.intValue();
         }
     }
-
 
 
     public static Method determineActualTargetMethod(Method method) {

@@ -100,8 +100,8 @@ public class IfNode extends ASTNode implements NestedStatement {
         return elseBlock;
     }
 
-    public IfNode setElseBlock(char[] block) {
-        elseBlock = (ExecutableStatement) subCompileExpression(block);
+    public IfNode setElseBlock(char[] block, ParserContext ctx) {
+        elseBlock = (ExecutableStatement) subCompileExpression(block, ctx);
         return this;
     }
 

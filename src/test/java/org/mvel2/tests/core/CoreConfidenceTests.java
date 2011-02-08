@@ -5525,7 +5525,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public static class TestClassAZZ {
         public String hey() {
-           return "Heythere!";
+            return "Heythere!";
         }
     }
 
@@ -5537,4 +5537,65 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("Heythere!", MVEL.eval(expr, azz, new HashMap<String, Object>()));
     }
 
+    public void testMVEL234() {
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append("import java.text.SimpleDateFormat;");
+        buffer.append("if (\"test\".matches(\"[0-9]\")) {");
+        buffer.append("  return false;");
+        buffer.append("}else{");
+        buffer.append("  SimpleDateFormat sqf = new SimpleDateFormat(\"yyyyMMdd\");");
+        buffer.append("}");
+
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+
+        try {
+            CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(buffer.toString(), ctx);
+        }
+        catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+
+    public void testMVEL235() {
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append("if(var1.equals(var2)) {");
+        buffer.append("return true;");
+        buffer.append("}");
+
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("var1", MyInterface2.class);
+        ctx.addInput("var2", MyInterface2.class);
+
+        try {
+            Serializable compiled = (Serializable) MVEL.compileExpression(buffer.toString(), ctx);
+            System.out.println(compiled);
+        }
+        catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+    public void testMVEL236() {
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append("MyInterface2 var2 = (MyInterface2)var1;");
+
+        ParserContext ctx = new ParserContext();
+        ctx.setStrongTyping(true);
+        ctx.addInput("var1", MyInterface3.class);
+        ctx.addImport(MyInterface2.class);
+        ctx.addImport(MyInterface3.class);
+
+        try {
+            CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(buffer.toString(), ctx);
+        }
+        catch (Exception e) {
+           fail(e.getMessage());
+        }
+    }
 }

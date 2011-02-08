@@ -44,7 +44,7 @@ public class TypeCast extends ASTNode {
             if ((statement = (ExecutableStatement) subCompileExpression(name, pCtx)).getKnownEgressType() != Object.class
                     && !canConvert(cast, statement.getKnownEgressType())) {
 
-                if (statement.getKnownEgressType().isAssignableFrom(cast)) {
+                if (canCast(statement.getKnownEgressType(), cast)) {
                     widen = true;
                 } else {
                     throw new CompileException("unable to cast type: " + statement.getKnownEgressType() + "; to: " + cast);
@@ -52,6 +52,17 @@ public class TypeCast extends ASTNode {
             }
 
         }
+    }
+
+    private boolean canCast(Class from, Class to) {
+        return from.isAssignableFrom(to) || (from.isInterface() && interfaceAssignable(from, to));
+    }
+
+    private boolean interfaceAssignable(Class from, Class to) {
+        for (Class c : from.getInterfaces()) {
+            if (c.isAssignableFrom(to)) return true;
+        }
+        return false;
     }
 
 
