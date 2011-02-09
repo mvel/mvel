@@ -4665,6 +4665,7 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testJIRA174() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
 
         Serializable s = MVEL.compileExpression("def test(a1) { java.util.Collection a = a1; a.clear(); a.add(1); a.add(2); a.add(3); a.remove((Object) 2); a; }\n" +
                 "a = test(new java.util.ArrayList());\n" +

@@ -622,7 +622,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private void _finishJIT() {
-        if (deferFinish) return;
+        if (deferFinish) {
+            return;
+        }
 
         if (returnType != null && returnType.isPrimitive()) {
             //noinspection unchecked
@@ -682,7 +684,9 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
     private Accessor _initializeAccessor() throws Exception {
-        if (deferFinish) return null;
+        if (deferFinish) {
+            return null;
+        }
         /**
          * Hot load the class we just generated.
          */
@@ -1261,7 +1265,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         mv.visitInsn(ACONST_NULL);
         mv.visitInsn(ARETURN);
 
-        deferFinish = true;
+     //   deferFinish = true;
     }
 
 
