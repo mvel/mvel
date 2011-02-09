@@ -18,7 +18,6 @@
 
 package org.mvel2.util;
 
-import com.sun.xml.internal.rngom.parse.Parseable;
 import org.mvel2.CompileException;
 import org.mvel2.Operator;
 
@@ -133,12 +132,12 @@ public class CompilerTools {
                             && tkOp2.getFields() != -1 && (op2 = tkOp2.getOperator()) != -1 && op2 < 21) {
 
                         if (PTABLE[op2] > PTABLE[op]) {
-                     //       bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode(), ctx));
+                            //       bo.setRightMost(new BinaryOperation(op2, bo.getRightMost(), astLinkedList.nextNode(), ctx));
                             bo.setRightMost(boOptimize(op2, bo.getRightMost(), astLinkedList.nextNode(), ctx));
                         }
                         else if (bo.getOperation() != op2 && PTABLE[op] == PTABLE[op2]) {
                             if (PTABLE[bo.getOperation()] == PTABLE[op2]) {
-                           //     bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
+                                //     bo = new BinaryOperation(op2, bo, astLinkedList.nextNode(), ctx);
                                 bo = boOptimize(op2, bo, astLinkedList.nextNode(), ctx);
                             }
                             else {

@@ -278,8 +278,11 @@ public class PropertyVerifier extends AbstractOptimizer {
                 resolvedExternally = false;
                 ctx = getSubComponentType(pCtx.getImport(property));
             }
-            else {
-                ctx = Object.class;
+            else if (pCtx.hasVarOrInput("this")) {
+                if (pCtx.isStrictTypeEnforcement()) {
+                    recordTypeParmsForProperty("this");
+                }
+                ctx = pCtx.getVarOrInputType("this");
             }
         }
 

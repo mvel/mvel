@@ -5595,7 +5595,17 @@ public class CoreConfidenceTests extends AbstractTest {
             CompiledExpression compiled = (CompiledExpression) MVEL.compileExpression(buffer.toString(), ctx);
         }
         catch (Exception e) {
-           fail(e.getMessage());
+            fail(e.getMessage());
         }
+    }
+
+
+    public void testEgressTypeCorrect() {
+        ExecutableStatement stmt = (ExecutableStatement)
+                MVEL.compileExpression("type", ParserContext.create().stronglyTyped()
+                        .withInput("this", Cheese.class));
+
+        assertEquals(String.class,
+                stmt.getKnownEgressType());
     }
 }
