@@ -5608,4 +5608,19 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(String.class,
                 stmt.getKnownEgressType());
     }
+
+    public void testEgressTypeFails2() {
+
+        ParserContext context = new ParserContext();
+        context.setStrongTyping(true);
+        context.addInput("this",
+                SampleBean.class);
+       ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("( map2[ 'yyy' ] )", context);
+
+        SampleBean s = new SampleBean();
+        s.getMap2().put("yyy", 1);
+
+        assertEquals(new Integer(1),
+                MVEL.executeExpression(stmt, s));
+    }
 }
