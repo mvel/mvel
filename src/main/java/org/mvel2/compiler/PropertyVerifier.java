@@ -171,6 +171,11 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
 
+
+        if (member == null && MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+            return getMethod(ctx, property);
+        }
+
         if (member instanceof Field) {
             if (pCtx.isStrictTypeEnforcement()) {
                 Field f = ((Field) member);
@@ -214,7 +219,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         else if (pCtx != null && pCtx.hasImport(property)) {
             return pCtx.getImport(property);
         }
-        else if (pCtx.getLastTypeParameters() != null
+        else if (pCtx != null && pCtx.getLastTypeParameters() != null
                 && ((Collection.class.isAssignableFrom(ctx) && !(switchStateReg = false))
                 || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true)))) {
             Class parm = (Class) pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0];
@@ -366,7 +371,15 @@ public class PropertyVerifier extends AbstractOptimizer {
         /**
          * Get the arguments for the method.
          */
-        String tk = ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ? new String(expr, st + 1, cursor - st - 1) : "";
+        String tk;
+
+        if (cursor < length && expr[cursor] == '(' && ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1) {
+            tk = new String(expr, st + 1, cursor - st - 1);
+        }
+        else {
+            tk = "";
+        }
+
 
         cursor++;
 

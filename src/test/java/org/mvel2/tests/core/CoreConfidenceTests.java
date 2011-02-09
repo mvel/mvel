@@ -5609,7 +5609,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 stmt.getKnownEgressType());
     }
 
-    public void testEgressTypeFails2() {
+    public void testEgressTypeCorrect2() {
 
         ParserContext context = new ParserContext();
         context.setStrongTyping(true);
