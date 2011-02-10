@@ -19,6 +19,7 @@
 package org.mvel2.templates.res;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.CompiledTemplate;
 import org.mvel2.templates.SimpleTemplateRegistry;
@@ -33,10 +34,10 @@ public class CompiledDeclareNode extends Node {
     private Node nestedNode;
     private Serializable ce;
 
-    public CompiledDeclareNode(int begin, String name, char[] template, int start, int end) {
+    public CompiledDeclareNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
         this.begin = begin;
         this.name = name;
-        ce = MVEL.compileExpression(this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1));
+        ce = MVEL.compileExpression(this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1), context);
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {

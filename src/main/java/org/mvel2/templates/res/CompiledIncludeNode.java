@@ -19,6 +19,7 @@
 package org.mvel2.templates.res;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.CompiledTemplate;
 import org.mvel2.templates.TemplateCompiler;
@@ -34,23 +35,24 @@ import static org.mvel2.templates.util.TemplateTools.captureToEOS;
 import static org.mvel2.util.ParseTools.subset;
 
 public class CompiledIncludeNode extends Node {
-    private char[] includeExpression;
-    private char[] preExpression;
 
     private Serializable cIncludeExpression;
     private Serializable cPreExpression;
     private long fileDateStamp;
     private CompiledTemplate cFileCache;
 
-    public CompiledIncludeNode(int begin, String name, char[] template, int start, int end) {
+    private ParserContext context;
+
+    public CompiledIncludeNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
         this.begin = begin;
         this.name = name;
         this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+        this.context = context;
 
         int mark;
-        cIncludeExpression = MVEL.compileExpression(this.includeExpression = subset(contents, 0, mark = captureToEOS(contents, 0)));
+        cIncludeExpression = MVEL.compileExpression( subset(contents, 0, mark = captureToEOS(contents, 0)), context);
         if (mark != contents.length)
-            cPreExpression = MVEL.compileExpression(this.preExpression = subset(contents, ++mark, contents.length - mark));
+            cPreExpression = MVEL.compileExpression( subset(contents, ++mark, contents.length - mark), context);
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
@@ -71,7 +73,7 @@ public class CompiledIncludeNode extends Node {
         File file = new File(String.valueOf(runtime.getRelPath().peek()) + "/" + fileName);
         if (fileDateStamp == 0 || fileDateStamp != file.lastModified()) {
             fileDateStamp = file.lastModified();
-            cFileCache = TemplateCompiler.compileTemplate(readInFile(runtime, file));
+            cFileCache = TemplateCompiler.compileTemplate(readInFile(runtime, file), context);
         }
         return String.valueOf(TemplateRuntime.execute(cFileCache, ctx, factory));
     }

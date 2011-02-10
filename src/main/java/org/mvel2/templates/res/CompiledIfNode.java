@@ -19,6 +19,7 @@
 package org.mvel2.templates.res;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
@@ -29,9 +30,9 @@ public class CompiledIfNode extends IfNode {
 
     private Serializable ce;
 
-    public CompiledIfNode(int begin, String name, char[] template, int start, int end) {
+    public CompiledIfNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
         super(begin, name, template, start, end);
-        ce = MVEL.compileExpression(contents);
+        ce = MVEL.compileExpression(contents, context);
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {

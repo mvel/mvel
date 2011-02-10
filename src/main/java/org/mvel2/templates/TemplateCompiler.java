@@ -56,6 +56,8 @@ public class TemplateCompiler {
 
     private Map<String, Class<? extends Node>> customNodes;
 
+    private ParserContext parserContext;
+
     private static final Map<String, Integer> OPCODES = new HashMap<String, Integer>();
 
     static {
@@ -118,7 +120,7 @@ public class TemplateCompiler {
                                      * Capture any residual text node, and push the if statement on the nesting stack.
                                      */
                                     stack.push(n = markTextNode(n).next =
-                                            codeCache ? new CompiledIfNode(start, name, template, captureOrbInternal(), start)
+                                            codeCache ? new CompiledIfNode(start, name, template, captureOrbInternal(), start, parserContext)
                                                     : new IfNode(start, name, template, captureOrbInternal(), start));
 
                                     n.setTerminus(new TerminalNode());
@@ -130,7 +132,7 @@ public class TemplateCompiler {
                                         markTextNode(n).next = (last = (IfNode) stack.pop()).getTerminus();
 
                                         last.demarcate(last.getTerminus(), template);
-                                        last.next = n = codeCache ? new CompiledIfNode(start, name, template, captureOrbInternal(), start)
+                                        last.next = n = codeCache ? new CompiledIfNode(start, name, template, captureOrbInternal(), start, parserContext)
                                                 : new IfNode(start, name, template, captureOrbInternal(), start);
                                         n.setTerminus(last.getTerminus());
 
@@ -140,7 +142,7 @@ public class TemplateCompiler {
 
                                 case Opcodes.FOREACH:
                                     stack.push(
-                                            n = markTextNode(n).next = codeCache ? new CompiledForEachNode(start, name, template, captureOrbInternal(), start)
+                                            n = markTextNode(n).next = codeCache ? new CompiledForEachNode(start, name, template, captureOrbInternal(), start, parserContext)
                                                     : new ForEachNode(start, name, template, captureOrbInternal(), start)
                                     );
 
@@ -150,25 +152,25 @@ public class TemplateCompiler {
 
                                 case Opcodes.INCLUDE_FILE:
                                     n = markTextNode(n).next =
-                                            codeCache ? new CompiledIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                            codeCache ? new CompiledIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
                                                     : new IncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                                     break;
 
                                 case Opcodes.INCLUDE_NAMED:
                                     n = markTextNode(n).next =
-                                            codeCache ? new CompiledNamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                            codeCache ? new CompiledNamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
                                                     : new NamedIncludeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                                     break;
 
                                 case Opcodes.CODE:
                                     n = markTextNode(n)
-                                            .next = codeCache ? new CompiledCodeNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                            .next = codeCache ? new CompiledCodeNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
                                             : new CodeNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                                     break;
 
                                 case Opcodes.EVAL:
                                     n = markTextNode(n).next =
-                                            codeCache ? new CompiledEvalNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                            codeCache ? new CompiledEvalNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
                                                     : new EvalNode(start, name, template, captureOrbInternal(), start = cursor + 1);
                                     break;
 
@@ -181,7 +183,7 @@ public class TemplateCompiler {
                                 case Opcodes.DECLARE:
                                     stack.push(n = markTextNode(n).next =
                                             codeCache ?
-                                                    new CompiledDeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                                    new CompiledDeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
                                                     : new DeclareNode(start, name, template, captureOrbInternal(), start = cursor + 1));
 
                                     n.setTerminus(new TerminalNode());
@@ -207,9 +209,10 @@ public class TemplateCompiler {
                                     if (name.length() == 0) {
                                         n = markTextNode(n).next =
                                                 codeCache ?
-                                                        new CompiledExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1)
+                                                        new CompiledExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1, parserContext)
                                                         : new ExpressionNode(start, name, template, captureOrbInternal(), start = cursor + 1);
-                                    } else if (customNodes != null && customNodes.containsKey(name)) {
+                                    }
+                                    else if (customNodes != null && customNodes.containsKey(name)) {
                                         Class<? extends Node> customNode = customNodes.get(name);
 
                                         try {
@@ -231,7 +234,8 @@ public class TemplateCompiler {
                                         catch (IllegalAccessException e) {
                                             throw new RuntimeException("unable to instantiate custom node class: " + customNode.getName());
                                         }
-                                    } else {
+                                    }
+                                    else {
                                         throw new RuntimeException("unknown token type: " + name);
                                     }
                             }
@@ -281,8 +285,9 @@ public class TemplateCompiler {
 
         if (n != null && n.getLength() == template.length - 1) {
             if (n instanceof ExpressionNode) {
-                return codeCache ? new CompiledTerminalExpressionNode(n) : new TerminalExpressionNode(n);
-            } else {
+                return codeCache ? new CompiledTerminalExpressionNode(n, parserContext) : new TerminalExpressionNode(n);
+            }
+            else {
                 return n;
             }
         }
@@ -292,18 +297,18 @@ public class TemplateCompiler {
 
     // Parse Utilities Start Here
 
-    public boolean isNext(char c) {
+    private boolean isNext(char c) {
         return cursor != length && template[cursor + 1] == c;
     }
 
-    public int captureOrbToken() {
+    private int captureOrbToken() {
         int newStart = ++cursor;
         while ((cursor != length) && ParseTools.isIdentifierPart(template[cursor])) cursor++;
         if (cursor != length && template[cursor] == '{') return newStart;
         return -1;
     }
 
-    public int captureOrbInternal() {
+    private int captureOrbInternal() {
         try {
             ParserContext pCtx = new ParserContext();
             cursor = balancedCaptureWithLineAccounting(template, start = cursor, '{', pCtx);
@@ -319,7 +324,7 @@ public class TemplateCompiler {
         }
     }
 
-    public char[] capture() {
+    private char[] capture() {
         char[] newChar = new char[cursor - start];
         for (int i = 0; i < newChar.length; i++) {
             newChar[i] = template[i + start];
@@ -327,7 +332,7 @@ public class TemplateCompiler {
         return newChar;
     }
 
-    public Node markTextNode(Node n) {
+    private Node markTextNode(Node n) {
         int s = (n.getEnd() > lastTextRangeEnding ? n.getEnd() : lastTextRangeEnding);
 
         if (s < start) {
@@ -336,45 +341,99 @@ public class TemplateCompiler {
         return n;
     }
 
+    public ParserContext getParserContext() {
+        return parserContext;
+    }
+
     public static CompiledTemplate compileTemplate(String template) {
-        return new TemplateCompiler(template, true).compile();
+        return new TemplateCompiler(template, true, ParserContext.create()).compile();
     }
 
     public static CompiledTemplate compileTemplate(char[] template) {
-        return new TemplateCompiler(template, true).compile();
+        return new TemplateCompiler(template, true, ParserContext.create()).compile();
     }
 
     public static CompiledTemplate compileTemplate(CharSequence template) {
-        return new TemplateCompiler(template, true).compile();
+        return new TemplateCompiler(template, true, ParserContext.create()).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(String template, ParserContext context) {
+        return new TemplateCompiler(template, true, context).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(char[] template, ParserContext context) {
+        return new TemplateCompiler(template, true, context).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(CharSequence template, ParserContext context) {
+        return new TemplateCompiler(template, true, context).compile();
     }
 
     public static CompiledTemplate compileTemplate(String template, Map<String, Class<? extends Node>> customNodes) {
-        return new TemplateCompiler(template, customNodes, true).compile();
+        return new TemplateCompiler(template, customNodes, true, ParserContext.create()).compile();
     }
 
     public static CompiledTemplate compileTemplate(char[] template, Map<String, Class<? extends Node>> customNodes) {
-        return new TemplateCompiler(template, customNodes, true).compile();
+        return new TemplateCompiler(template, customNodes, true, ParserContext.create()).compile();
     }
 
     public static CompiledTemplate compileTemplate(CharSequence template, Map<String, Class<? extends Node>> customNodes) {
-        return new TemplateCompiler(template, customNodes, true).compile();
+        return new TemplateCompiler(template, customNodes, true, ParserContext.create()).compile();
     }
 
+
+    public static CompiledTemplate compileTemplate(String template, Map<String, Class<? extends Node>> customNodes,
+                                                   ParserContext context) {
+        return new TemplateCompiler(template, customNodes, true, context).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(char[] template, Map<String, Class<? extends Node>> customNodes,
+                                                   ParserContext context) {
+        return new TemplateCompiler(template, customNodes, true, context).compile();
+    }
+
+    public static CompiledTemplate compileTemplate(CharSequence template, Map<String, Class<? extends Node>> customNodes,
+                                                   ParserContext context) {
+        return new TemplateCompiler(template, customNodes, true, context).compile();
+    }
+
+
     public static CompiledTemplate compileTemplate(InputStream stream) {
-        return compileTemplate(stream, null);
+        return compileTemplate(stream, ParserContext.create());
+    }
+
+    public static CompiledTemplate compileTemplate(InputStream stream, ParserContext context) {
+        return compileTemplate(stream, null, context);
     }
 
     public static CompiledTemplate compileTemplate(InputStream stream, Map<String, Class<? extends Node>> customNodes) {
-        return new TemplateCompiler(TemplateTools.readStream(stream), customNodes, true).compile();
+        return new TemplateCompiler(TemplateTools.readStream(stream), customNodes, true, ParserContext.create()).compile();
     }
 
+    public static CompiledTemplate compileTemplate(InputStream stream, Map<String, Class<? extends Node>> customNodes,
+                                                   ParserContext context) {
+        return new TemplateCompiler(TemplateTools.readStream(stream), customNodes, true, context).compile();
+    }
+
+
     public static CompiledTemplate compileTemplate(File file) {
-        return compileTemplate(file, null);
+        return compileTemplate(file, ParserContext.create());
+    }
+
+
+    public static CompiledTemplate compileTemplate(File file, ParserContext context) {
+        return compileTemplate(file, null, context);
     }
 
     public static CompiledTemplate compileTemplate(File file, Map<String, Class<? extends Node>> customNodes) {
-        return new TemplateCompiler(TemplateTools.readInFile(file), customNodes, true).compile();
+        return new TemplateCompiler(TemplateTools.readInFile(file), customNodes, true, ParserContext.create()).compile();
     }
+
+    public static CompiledTemplate compileTemplate(File file, Map<String, Class<? extends Node>> customNodes,
+                                                   ParserContext context) {
+        return new TemplateCompiler(TemplateTools.readInFile(file), customNodes, true, context).compile();
+    }
+
 
     public TemplateCompiler(String template) {
         this.length = (this.template = template.toCharArray()).length;
@@ -394,6 +453,12 @@ public class TemplateCompiler {
         this.codeCache = codeCache;
     }
 
+    public TemplateCompiler(char[] template, boolean codeCache, ParserContext context) {
+        this.length = (this.template = template).length;
+        this.codeCache = codeCache;
+        this.parserContext = context;
+    }
+
     public TemplateCompiler(CharSequence sequence) {
         this.length = (this.template = sequence.toString().toCharArray()).length;
     }
@@ -401,6 +466,12 @@ public class TemplateCompiler {
     public TemplateCompiler(CharSequence sequence, boolean codeCache) {
         this.length = (this.template = sequence.toString().toCharArray()).length;
         this.codeCache = codeCache;
+    }
+
+    public TemplateCompiler(CharSequence sequence, boolean codeCache, ParserContext context) {
+        this.length = (this.template = sequence.toString().toCharArray()).length;
+        this.codeCache = codeCache;
+        this.parserContext = context;
     }
 
     public TemplateCompiler(String template, Map<String, Class<? extends Node>> customNodes) {
@@ -434,5 +505,29 @@ public class TemplateCompiler {
         this.length = (this.template = sequence.toString().toCharArray()).length;
         this.customNodes = customNodes;
         this.codeCache = codeCache;
+    }
+
+    public TemplateCompiler(String template, Map<String, Class<? extends Node>> customNodes, boolean codeCache,
+                            ParserContext context) {
+        this.length = (this.template = template.toCharArray()).length;
+        this.customNodes = customNodes;
+        this.codeCache = codeCache;
+        this.parserContext = context;
+    }
+
+    public TemplateCompiler(char[] template, Map<String, Class<? extends Node>> customNodes, boolean codeCache,
+                            ParserContext context) {
+        this.length = (this.template = template).length;
+        this.customNodes = customNodes;
+        this.codeCache = codeCache;
+        this.parserContext = context;
+    }
+
+    public TemplateCompiler(CharSequence sequence, Map<String, Class<? extends Node>> customNodes, boolean codeCache,
+                            ParserContext context) {
+        this.length = (this.template = sequence.toString().toCharArray()).length;
+        this.customNodes = customNodes;
+        this.codeCache = codeCache;
+        this.parserContext = context;
     }
 }

@@ -19,21 +19,27 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+
 import static org.mvel2.Operator.NOOP;
+
 import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
+
 import static org.mvel2.PropertyAccessor.get;
+
 import org.mvel2.compiler.Accessor;
 import org.mvel2.debug.DebugTools;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.AccessorOptimizer;
 import org.mvel2.optimizers.OptimizationNotSupported;
+
 import static org.mvel2.optimizers.OptimizerFactory.*;
 import static org.mvel2.util.CompilerTools.getInjectedImports;
 import static org.mvel2.util.ParseTools.handleNumericConversion;
 import static org.mvel2.util.ParseTools.isNumber;
 
 import java.io.Serializable;
+
 import static java.lang.Thread.currentThread;
 
 @SuppressWarnings({"ManualArrayCopy", "CaughtExceptionImmediatelyRethrown"})
@@ -61,7 +67,7 @@ public class ASTNode implements Cloneable, Serializable {
     public static final int BLOCK_DO_UNTIL = 1 << 17;
     public static final int BLOCK_FOR = 1 << 18;
 
-    public static final int OPT_SUBTR =  1 << 19;
+    public static final int OPT_SUBTR = 1 << 19;
 
     public static final int DEFERRED_TYPE_RES = 1 << 23;
     public static final int STRONG_TYPING = 1 << 24;
@@ -98,66 +104,73 @@ public class ASTNode implements Cloneable, Serializable {
                 return accessor.getValue(ctx, thisValue, factory);
             }
             catch (ClassCastException ce) {
-                if ((fields & DEOP) == 0) {
-                    accessor = null;
-                    fields |= DEOP | NOJIT;
-
-                    synchronized (this) {
-                        return getReducedValueAccelerated(ctx, thisValue, factory);
-                    }
-                }
-                else {
-                    throw ce;
-                }
+                return deop(ctx, thisValue, factory, ce);
             }
         }
         else {
-            if ((fields & DEOP) != 0) {
-                fields ^= DEOP;
-            }
-
-            AccessorOptimizer optimizer;
-            Object retVal = null;
-
-            if ((fields & NOJIT) != 0 || factory != null && factory.isResolveable(nameCache)) {
-                optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
-            }
-            else {
-                optimizer = getDefaultAccessorCompiler();
-            }
-
-            ParserContext pCtx;
-
-            if ((fields & PCTX_STORED) != 0) {
-                pCtx = (ParserContext) literal;
-            }
-            else {
-                pCtx = new ParserContext(new ParserConfiguration(getInjectedImports(factory), null));
-            }
-            
-            try {
-                setAccessor(optimizer.optimizeAccessor(pCtx, name, ctx, thisValue, factory, true, egressType));
-            }
-            catch (OptimizationNotSupported ne) {
-                setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
-                        .optimizeAccessor(pCtx, name, ctx, thisValue, factory, true, null));
-            }
-
-
-            if (accessor == null) {
-                return get(name, ctx, factory, thisValue);
-            }
-
-            if (retVal == null) {
-                retVal = optimizer.getResultOptPass();
-            }
-
-            if (egressType == null) {
-                egressType = optimizer.getEgressType();
-            }
-
-            return retVal;
+            return optimize(ctx, thisValue, factory);
         }
+    }
+
+    private Object deop(Object ctx, Object thisValue, VariableResolverFactory factory, RuntimeException e) {
+        if ((fields & DEOP) == 0) {
+            accessor = null;
+            fields |= DEOP | NOJIT;
+
+            synchronized (this) {
+                return getReducedValueAccelerated(ctx, thisValue, factory);
+            }
+        }
+        else {
+            throw e;
+        }
+    }
+
+    private Object optimize(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        if ((fields & DEOP) != 0) {
+            fields ^= DEOP;
+        }
+
+        AccessorOptimizer optimizer;
+        Object retVal = null;
+
+        if ((fields & NOJIT) != 0 || factory != null && factory.isResolveable(nameCache)) {
+            optimizer = getAccessorCompiler(SAFE_REFLECTIVE);
+        }
+        else {
+            optimizer = getDefaultAccessorCompiler();
+        }
+
+        ParserContext pCtx;
+
+        if ((fields & PCTX_STORED) != 0) {
+            pCtx = (ParserContext) literal;
+        }
+        else {
+            pCtx = new ParserContext(new ParserConfiguration(getInjectedImports(factory), null));
+        }
+
+        try {
+            setAccessor(optimizer.optimizeAccessor(pCtx, name, ctx, thisValue, factory, true, egressType));
+        }
+        catch (OptimizationNotSupported ne) {
+            setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
+                    .optimizeAccessor(pCtx, name, ctx, thisValue, factory, true, null));
+        }
+
+        if (accessor == null) {
+            return get(name, ctx, factory, thisValue);
+        }
+
+        if (retVal == null) {
+            retVal = optimizer.getResultOptPass();
+        }
+
+        if (egressType == null) {
+            egressType = optimizer.getEgressType();
+        }
+
+        return retVal;
     }
 
 
@@ -321,7 +334,7 @@ public class ASTNode implements Cloneable, Serializable {
                     }
                     if (endOfName == 0) {
                         endOfName = i;
-                        if (i < name.length && name[i+1] == ']') fields |= ARRAY_TYPE_LITERAL;
+                        if (i < name.length && name[i + 1] == ']') fields |= ARRAY_TYPE_LITERAL;
                         break Scan;
                     }
             }

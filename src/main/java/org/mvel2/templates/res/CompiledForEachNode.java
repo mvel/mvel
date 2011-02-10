@@ -20,6 +20,7 @@ package org.mvel2.templates.res;
 
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
@@ -40,16 +41,15 @@ public class CompiledForEachNode extends Node {
     private Serializable[] ce;
 
     private String[] item;
-    private String[] expression;
 
     private char[] sepExpr;
     private Serializable cSepExpr;
 
-    public CompiledForEachNode() {
-    }
+    private ParserContext context;
 
-    public CompiledForEachNode(int begin, String name, char[] template, int start, int end) {
+    public CompiledForEachNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
         super(begin, name, template, start, end);
+        this.context = context;
         configure();
     }
 
@@ -70,7 +70,7 @@ public class CompiledForEachNode extends Node {
             sepExpr = null;
         }
         else {
-            cSepExpr = MVEL.compileExpression(sepExpr);
+            cSepExpr = MVEL.compileExpression(sepExpr, context);
         }
 
         return false;
@@ -176,10 +176,11 @@ public class CompiledForEachNode extends Node {
         int i = 0;
         for (String s : items) item[i++] = s;
 
+        String[] expression;
         ce = new Serializable[(expression = new String[expr.size()]).length];
         i = 0;
         for (String s : expr) {
-            ce[i] = MVEL.compileExpression(expression[i++] = s);
+            ce[i] = MVEL.compileExpression(expression[i++] = s, context);
         }
     }
 }

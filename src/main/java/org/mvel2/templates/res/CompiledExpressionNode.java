@@ -19,6 +19,7 @@
 package org.mvel2.templates.res;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
@@ -31,20 +32,11 @@ import static org.mvel2.util.ParseTools.subset;
 public class CompiledExpressionNode extends ExpressionNode {
     private Serializable ce;
 
-    public CompiledExpressionNode() {
-    }
-
-    public CompiledExpressionNode(int begin, String name, char[] template, int start, int end) {
+    public CompiledExpressionNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
         this.begin = begin;
         this.name = name;
-        ce = MVEL.compileExpression(this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1));
-    }
-
-    public CompiledExpressionNode(int begin, String name, char[] template, int start, int end, Node next) {
-        this.name = name;
-        this.begin = begin;
-        ce = MVEL.compileExpression(this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1));
-        this.next = next;
+        ce = MVEL.compileExpression(this.contents = subset(template, this.cStart = start,
+                (this.end = this.cEnd = end) - start - 1), context);
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {

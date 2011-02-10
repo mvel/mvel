@@ -19,6 +19,7 @@
 package org.mvel2.templates.res;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.CompiledTemplate;
 import org.mvel2.templates.TemplateError;
@@ -31,21 +32,20 @@ import static org.mvel2.templates.util.TemplateTools.captureToEOS;
 import static org.mvel2.util.ParseTools.subset;
 
 public class CompiledNamedIncludeNode extends Node {
-    private char[] includeExpression;
     private char[] preExpression;
 
     private Serializable cIncludeExpression;
     private Serializable cPreExpression;
 
-    public CompiledNamedIncludeNode(int begin, String name, char[] template, int start, int end) {
+    public CompiledNamedIncludeNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
         this.begin = begin;
         this.name = name;
         this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
 
         int mark;
-        this.cIncludeExpression = MVEL.compileExpression(this.includeExpression = subset(contents, 0, mark = captureToEOS(contents, 0)));
+        this.cIncludeExpression = MVEL.compileExpression(subset(contents, 0, mark = captureToEOS(contents, 0)), context);
         if (mark != contents.length)
-            this.cPreExpression = MVEL.compileExpression(this.preExpression = subset(contents, ++mark, contents.length - mark));
+            this.cPreExpression = MVEL.compileExpression(this.preExpression = subset(contents, ++mark, contents.length - mark), context);
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
