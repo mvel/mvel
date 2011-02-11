@@ -1219,7 +1219,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return getMethod(ctx, property);
             }
 
-            throw new PropertyAccessException("could not access: " + property);
+            if (ctx == null) {
+                throw new PropertyAccessException("unresolvable property or identifier: " + property);
+            }
+            else {
+                throw new PropertyAccessException("could not access: " + property + "; in class: " + ctx.getClass().getName());
+            }
         }
     }
 
@@ -1265,7 +1270,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         mv.visitInsn(ACONST_NULL);
         mv.visitInsn(ARETURN);
 
-     //   deferFinish = true;
+        //   deferFinish = true;
     }
 
 

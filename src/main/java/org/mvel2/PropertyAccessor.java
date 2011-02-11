@@ -636,7 +636,12 @@ public class PropertyAccessor {
             return getMethod(ctx, property);
         }
 
-        throw new PropertyAccessException("could not access property: " + property);
+        if (ctx == null) {
+            throw new PropertyAccessException("unresolvable property or identifier: " + property);
+        }
+        else {
+            throw new PropertyAccessException("could not access: " + property + "; in class: " + ctx.getClass().getName());
+        }
     }
 
     private void whiteSpaceSkip() {

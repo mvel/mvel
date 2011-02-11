@@ -45,9 +45,17 @@ public class DynamicClassLoader extends ClassLoader implements MVELClassLoader {
     }
 
     public DynamicAccessor registerDynamicAccessor(DynamicAccessor accessor) {
-        allAccessors.add(accessor);
-        assert accessor != null;
-        return accessor;
+        synchronized (allAccessors) {
+            allAccessors.add(accessor);
+            while (allAccessors.size() > tenureLimit) {
+                DynamicAccessor da = allAccessors.removeFirst();
+                if (da != null) {
+                    da.deoptimize();
+                }
+            }
+            assert accessor != null;
+            return accessor;
+        }
     }
 
     public void deoptimizeAll() {

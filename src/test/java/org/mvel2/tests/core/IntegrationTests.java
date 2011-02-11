@@ -1,10 +1,18 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.integration.impl.CachingMapVariableResolverFactory;
+import org.mvel2.integration.impl.IndexedVariableResolverFactory;
+import org.mvel2.integration.impl.MapVariableResolver;
+import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
+
+import java.io.Serializable;
+import java.util.HashMap;
 
 public class IntegrationTests extends AbstractTest {
     class NullPropertyHandler implements PropertyHandler {
@@ -67,5 +75,19 @@ public class IntegrationTests extends AbstractTest {
     public void test2() {
         // "NullPointerException" fired
         assertEquals(null, MVEL.eval("whatever", new MyInterfacedSubClass()));
+    }
+
+    public void testIndexedVariableFactory() {
+        ParserContext ctx = ParserContext.create();
+        String[] vars = {"a", "b"};
+        Object[] vals = {"foo", "bar"};
+        ctx.setIndexAllocation(true);
+        ctx.addIndexedVariables(vars);
+
+        Serializable s = MVEL.compileExpression("def myfunc(z) { a + b + z }; myfunc('poop');", ctx);
+
+        VariableResolverFactory locals = new CachingMapVariableResolverFactory(new HashMap<String, Object>());
+        VariableResolverFactory injected = new IndexedVariableResolverFactory(vars, vals, locals);
+        assertEquals("foobarpoop", MVEL.executeExpression(s, injected));
     }
 }

@@ -36,6 +36,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
     protected Map<String, Object> variables;
 
     public MapVariableResolverFactory() {
+        this.variables = new HashMap();
     }
 
     public MapVariableResolverFactory(Map variables) {

@@ -84,7 +84,6 @@ public class IndexedVariableResolverFactory extends BaseVariableResolverFactory 
         throw new UnresolveablePropertyException("unable to resolve variable '" + name + "'");
     }
 
-
     public boolean isResolveable(String name) {
         return isTarget(name) || (nextFactory != null && nextFactory.isResolveable(name));
     }

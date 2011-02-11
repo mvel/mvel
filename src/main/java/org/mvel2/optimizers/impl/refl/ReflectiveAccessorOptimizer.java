@@ -387,7 +387,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         catch (InvocationTargetException e) {
             if (MVEL.INVOKED_METHOD_EXCEPTIONS_BUBBLE) {
                 if (e.getTargetException() instanceof RuntimeException) {
-                   throw (RuntimeException) e.getTargetException();
+                    throw (RuntimeException) e.getTargetException();
                 }
                 else {
                     throw new RuntimeException(e);
@@ -617,7 +617,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 return getMethod(ctx, property);
             }
 
-            throw new PropertyAccessException("could not access: " + property + "; in class: " + (ctx == null ? "null" : ctx.getClass().getName()));
+            if (ctx == null) {
+                throw new PropertyAccessException("unresolvable property or identifier: " + property);
+            }
+            else {
+                throw new PropertyAccessException("could not access: " + property + "; in class: " + ctx.getClass().getName());
+            }
         }
     }
 
