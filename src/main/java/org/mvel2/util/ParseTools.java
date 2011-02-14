@@ -328,6 +328,8 @@ public class ParseTools {
                     nMethods[i + methods.length] = objMethods[i];
                 }
                 methods = nMethods;
+
+                retry = true;
             }
             else {
                 break;
