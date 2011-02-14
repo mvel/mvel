@@ -32,7 +32,6 @@ import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.ArrayTools;
-import org.mvel2.util.ParseTools;
 
 import static org.mvel2.util.CompilerTools.getInjectedImports;
 import static org.mvel2.util.ArrayTools.findFirst;
@@ -54,11 +53,21 @@ import java.util.Arrays;
 public class NewObjectNode extends ASTNode {
     private transient Accessor newObjectOptimizer;
     private TypeDescriptor typeDescr;
+    private char[] name;
 
     public NewObjectNode(TypeDescriptor typeDescr, int fields, ParserContext pCtx) {
         this.typeDescr = typeDescr;
         this.fields = fields;
-        this.name = typeDescr.getClassNameArray();
+        this.expr = typeDescr.getExpr();
+        this.start = typeDescr.getStart();
+        this.offset = typeDescr.getOffset();
+
+        if (offset < expr.length) {
+            this.name = subArray(expr, start, start + offset);
+        }
+        else {
+            this.name = expr;
+        }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             if (pCtx != null && pCtx.hasImport(typeDescr.getClassName())) {
@@ -71,7 +80,7 @@ public class NewObjectNode extends ASTNode {
                 }
                 catch (ClassNotFoundException e) {
                     if (pCtx != null && pCtx.isStrongTyping())
-                        pCtx.addError(new ErrorDetail("could not resolve class: " + typeDescr.getClassName(), true));
+                        pCtx.addError(new ErrorDetail("could not resolve class: " + typeDescr.getClassName(), true, pCtx));
 
                     // do nothing.
                 }
@@ -93,12 +102,12 @@ public class NewObjectNode extends ASTNode {
 
             if (pCtx != null && pCtx.isStrongTyping()) {
                 if (egressType == null) {
-                    pCtx.addError(new ErrorDetail("could not resolve class: " + typeDescr.getClassName(), true));
+                    pCtx.addError(new ErrorDetail("could not resolve class: " + typeDescr.getClassName(), true, pCtx));
                     return;
                 }
 
                 if (!typeDescr.isArray()) {
-                    final String[] constructorParms = parseMethodOrConstructor(captureContructorAndResidual(name)[0].toCharArray());
+                    final String[] constructorParms = parseMethodOrConstructor(captureContructorAndResidual(expr)[start].toCharArray());
                     final Class[] parms = new Class[constructorParms.length];
                     for (int i = 0; i < parms.length; i++) {
                         parms[i] = analyze(constructorParms[i], pCtx);
@@ -107,7 +116,7 @@ public class NewObjectNode extends ASTNode {
                     if (getBestConstructorCandidate(parms, egressType, true) == null) {
                         if (pCtx.isStrongTyping())
                             pCtx.addError(new ErrorDetail("could not resolve constructor " + typeDescr.getClassName()
-                                    + Arrays.toString(parms), pCtx.isStrongTyping()));
+                                    + Arrays.toString(parms), pCtx.isStrongTyping(), pCtx));
                     }
                 }
             }
@@ -119,7 +128,7 @@ public class NewObjectNode extends ASTNode {
         String FQCN = egressType.getName();
 
         if (typeDescr.getClassName().indexOf('.') == -1) {
-            int idx = ArrayTools.findFirst('(', name);
+            int idx = ArrayTools.findFirst('(', 0, name.length, name);
 
             char[] fqcn = FQCN.toCharArray();
 
@@ -142,7 +151,7 @@ public class NewObjectNode extends ASTNode {
                 this.name = newName;
             }
 
-            this.typeDescr.updateClassName(name, fields);
+            this.typeDescr.updateClassName(name, 0, name.length, fields);
         }
     }
 
@@ -187,7 +196,7 @@ public class NewObjectNode extends ASTNode {
                 ParserContext pCtx = new ParserContext();
                 pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
-                newObjectOptimizer = optimizer.optimizeObjectCreation(pCtx, name, ctx, thisValue, factory);
+                newObjectOptimizer = optimizer.optimizeObjectCreation(pCtx, expr, start, offset, ctx, thisValue, factory);
 
                 /**
                  * Check to see if the optimizer actually produced the object during optimization.  If so,
@@ -227,7 +236,7 @@ public class NewObjectNode extends ASTNode {
                 String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
                 if (constructorParms != null) {
-                    Class cls = findClass(factory, new String(subset(name, 0, findFirst('(', name))).trim(), null);
+                    Class cls = findClass(factory, new String(subset(name, 0, findFirst('(', 0, name.length, name))).trim(), null);
 
                     Object[] parms = new Object[constructorParms.length];
                     for (int i = 0; i < constructorParms.length; i++) {

@@ -21,6 +21,7 @@ package org.mvel2;
 import org.mvel2.ast.Function;
 import org.mvel2.ast.LineLabel;
 import org.mvel2.ast.Proto;
+import org.mvel2.compiler.Parser;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.util.MethodStub;
 
@@ -63,7 +64,7 @@ public class ParserContext implements Serializable {
     private HashMap<String, Set<Integer>> sourceMap;
     private LineLabel lastLineLabel;
 
-    private transient Object rootParser;
+    private transient Parser rootParser;
 
     private boolean compiled = false;
     private boolean strictTypeEnforcement = false;
@@ -85,7 +86,7 @@ public class ParserContext implements Serializable {
         this.debugSymbols = debugSymbols;
     }
 
-    public ParserContext(Object rootParser) {
+    public ParserContext(Parser rootParser) {
         this.rootParser = rootParser;
     }
 
@@ -555,11 +556,11 @@ public class ParserContext implements Serializable {
         this.retainParserState = retainParserState;
     }
 
-    public Object getRootParser() {
+    public Parser getRootParser() {
         return rootParser;
     }
 
-    public void setRootParser(Object rootParser) {
+    public void setRootParser(Parser rootParser) {
         this.rootParser = rootParser;
     }
 

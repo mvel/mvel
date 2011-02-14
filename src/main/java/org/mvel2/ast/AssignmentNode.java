@@ -45,11 +45,14 @@ public class AssignmentNode extends ASTNode implements Assignment {
     private boolean col = false;
 
 
-    public AssignmentNode(char[] expr, int fields, ParserContext pCtx) {
-        this.name = expr;
+    public AssignmentNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
+
         int assignStart;
 
-        if ((assignStart = find(expr, '=')) != -1) {
+        if ((assignStart = find(expr, start, offset, '=')) != -1) {
             this.varName = createStringTrimmed(expr, 0, assignStart);
             stmt = subset(expr, assignStart + 1);
 
@@ -57,12 +60,12 @@ public class AssignmentNode extends ASTNode implements Assignment {
                 this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt, pCtx)).getKnownEgressType();
             }
 
-            if (col = ((endOfName = findFirst('[', indexTarget = this.varName.toCharArray())) > 0)) {
+            if (col = ((endOfName = findFirst('[', start, offset, indexTarget = this.varName.toCharArray())) > 0)) {
                 if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
                     accExpr = (CompiledAccExpression) compileSetExpression(indexTarget, pCtx);
                 }
 
-                this.varName = new String(expr, 0, endOfName);
+                this.varName = new String(expr, start, endOfName);
                 index = new String(indexTarget, endOfName, indexTarget.length - endOfName);
             }
 
@@ -76,7 +79,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
             pCtx.addVariable(this.varName, egressType);
         }
 
-        this.name = this.varName.toCharArray();
+        this.expr = this.varName.toCharArray();
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

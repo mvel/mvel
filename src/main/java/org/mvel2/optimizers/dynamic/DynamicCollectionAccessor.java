@@ -29,7 +29,11 @@ import static java.lang.System.currentTimeMillis;
 public class DynamicCollectionAccessor implements DynamicAccessor {
     private Object rootObject;
     private Class colType;
+
     private char[] property;
+    private int start;
+    private int offset;
+
     private long stamp;
     private int type;
 
@@ -40,12 +44,16 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
     private Accessor _safeAccessor;
     private Accessor _accessor;
 
-    public DynamicCollectionAccessor(Object rootObject, Class colType, char[] property, int type, Accessor _accessor) {
+    public DynamicCollectionAccessor(Object rootObject, Class colType, char[] property, int start, int offset, int type, Accessor _accessor) {
         this.rootObject = rootObject;
         this.colType = colType;
         this._safeAccessor = this._accessor = _accessor;
         this.type = type;
+
         this.property = property;
+        this.start = start;
+        this.offset = offset;
+
         stamp = currentTimeMillis();
     }
 
@@ -78,7 +86,8 @@ public class DynamicCollectionAccessor implements DynamicAccessor {
             DynamicOptimizer.enforceTenureLimit();
         }
 
-        _accessor = OptimizerFactory.getAccessorCompiler("ASM").optimizeCollection(pCtx, rootObject, colType, property, ctx, elCtx, variableResolverFactory);
+        _accessor = OptimizerFactory.getAccessorCompiler("ASM").optimizeCollection(pCtx, rootObject, colType,
+                property, start, offset, ctx, elCtx, variableResolverFactory);
         return _accessor.getValue(ctx, elCtx, variableResolverFactory);
     }
 

@@ -39,35 +39,38 @@ public class Fold extends ASTNode {
     private ExecutableStatement dataEx;
     private ExecutableStatement constraintEx;
 
-    public Fold(char[] name, int fields, ParserContext pCtx) {
-        this.name = name;
-        int cursor = 0;
-        for (; cursor < name.length; cursor++) {
-            if (isWhitespace(name[cursor])) {
-                while (cursor < name.length && isWhitespace(name[cursor])) cursor++;
+    public Fold(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
 
-                if (name[cursor] == 'i' && name[cursor + 1] == 'n' && isJunct(name[cursor + 2])) {
+        int cursor = start;
+        for (; cursor < expr.length; cursor++) {
+            if (isWhitespace(expr[cursor])) {
+                while (cursor < expr.length && isWhitespace(expr[cursor])) cursor++;
+
+                if (expr[cursor] == 'i' && expr[cursor + 1] == 'n' && isJunct(expr[cursor + 2])) {
                     break;
                 }
             }
         }
 
-        subEx = (ExecutableStatement) subCompileExpression(subset(name, 0, cursor - 1), pCtx);
-        int start = cursor += 2; // skip 'in'
+        subEx = (ExecutableStatement) subCompileExpression(expr, start, cursor - 1, pCtx);
+        int st = cursor += 2; // skip 'in'
 
-        for (; cursor < name.length; cursor++) {
-            if (isWhitespace(name[cursor])) {
-                while (cursor < name.length && isWhitespace(name[cursor])) cursor++;
+        for (; cursor < expr.length; cursor++) {
+            if (isWhitespace(expr[cursor])) {
+                while (cursor < expr.length && isWhitespace(expr[cursor])) cursor++;
 
-                if (name[cursor] == 'i' && name[cursor + 1] == 'f' && isJunct(name[cursor + 2])) {
+                if (expr[cursor] == 'i' && expr[cursor + 1] == 'f' && isJunct(expr[cursor + 2])) {
                     int s = cursor + 2;
-                    constraintEx = (ExecutableStatement) subCompileExpression(subset(name, s, name.length - s), pCtx);
+                    constraintEx = (ExecutableStatement) subCompileExpression(subset(expr, s, expr.length - s), pCtx);
                     break;
                 }
             }
         }
 
-        expectType(dataEx = (ExecutableStatement) subCompileExpression(subset(name, start, cursor - start), pCtx),
+        expectType(dataEx = (ExecutableStatement) subCompileExpression(expr, st, cursor - st, pCtx),
                 Collection.class, ((fields & COMPILE_IMMEDIATE) != 0));
     }
 

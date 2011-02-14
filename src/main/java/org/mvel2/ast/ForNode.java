@@ -41,14 +41,13 @@ public class ForNode extends BlockNode {
 
     protected ExecutableStatement after;
 
-    public ForNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
-        boolean varsEscape = handleCond(this.name = condition, fields, pCtx);
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block, pCtx);
+    public ForNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
+        boolean varsEscape = handleCond(this.expr = expr, this.start = start, this.offset = offset, fields, pCtx);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, pCtx);
 
         if ((fields & COMPILE_IMMEDIATE) != 0 && compiledBlock.isEmptyStatement() && !varsEscape) {
             throw new RedundantCodeException();
         }
-
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -67,31 +66,27 @@ public class ForNode extends BlockNode {
         return null;
     }
 
-    public ForNode() {
-        super();    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    private boolean handleCond(char[] condition, int fields, ParserContext pCtx) {
-        int start = 0;
-        int cursor = nextCondPart(condition, start, false);
+    private boolean handleCond(char[] condition, int start, int offset, int fields, ParserContext pCtx) {
+        int end = offset - start;
+        int cursor = nextCondPart(condition, start, end, false);
         try {
             ParserContext spCtx = pCtx;
             if (pCtx != null && (fields & COMPILE_IMMEDIATE) != 0)
                 spCtx = pCtx.createSubcontext().createColoringSubcontext();
 
-            this.initializer = (ExecutableStatement) subCompileExpression(subset(condition, start, cursor - start - 1), spCtx);
+            this.initializer = (ExecutableStatement) subCompileExpression(condition, start, cursor - start - 1, spCtx);
 
-            expectType(this.condition = (ExecutableStatement) subCompileExpression(subset(condition, start = cursor,
-                    (cursor = nextCondPart(condition, start, false)) - start - 1), spCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+            expectType(this.condition = (ExecutableStatement) subCompileExpression(condition, start = cursor,
+                    (cursor = nextCondPart(condition, start, end, false)) - start - 1, spCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
             this.after = (ExecutableStatement)
-                    subCompileExpression(subset(condition, start = cursor, (nextCondPart(condition, start, true)) - start), spCtx);
+                    subCompileExpression(condition, start = cursor, (nextCondPart(condition, start, end, true)) - start, spCtx);
 
             if (spCtx != null && (fields & COMPILE_IMMEDIATE) != 0 && spCtx.isVariablesEscape()) {
                 if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
                 return true;
             }
-             if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
+            if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
 
         }
         catch (NegativeArraySizeException e) {
@@ -100,8 +95,8 @@ public class ForNode extends BlockNode {
         return false;
     }
 
-    private static int nextCondPart(char[] condition, int cursor, boolean allowEnd) {
-        for (; cursor < condition.length; cursor++) {
+    private static int nextCondPart(char[] condition, int cursor, int end, boolean allowEnd) {
+        for (; cursor < end; cursor++) {
             if (condition[cursor] == ';') return ++cursor;
         }
         if (!allowEnd) throw new CompileException("expected ;");

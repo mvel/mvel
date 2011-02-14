@@ -27,11 +27,13 @@ import static org.mvel2.util.ParseTools.subCompileExpression;
 public class Substatement extends ASTNode {
     private ExecutableStatement statement;
 
-    public Substatement(char[] expr, int fields, ParserContext pCtx) {
-        this.name = expr;
+    public Substatement(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
 
         if (((this.fields = fields) & COMPILE_IMMEDIATE) != 0) {
-            this.egressType = (this.statement = (ExecutableStatement) subCompileExpression(this.name, pCtx))
+            this.egressType = (this.statement = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx))
                     .getKnownEgressType();
         }
     }
@@ -41,7 +43,7 @@ public class Substatement extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return MVEL.eval(this.name, ctx, factory);
+        return MVEL.eval(this.expr, start, offset, ctx, factory);
     }
 
 
@@ -50,7 +52,7 @@ public class Substatement extends ASTNode {
     }
 
     public String toString() {
-        return statement == null ? "(" + new String(name) + ")" : statement.toString();
+        return statement == null ? "(" + new String(expr, start, offset) + ")" : statement.toString();
     }
 
 }

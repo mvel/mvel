@@ -8,11 +8,15 @@ import org.mvel2.optimizers.OptimizerFactory;
 
 public class NullSafe implements AccessorNode {
     private AccessorNode nextNode;
-    private String expression;
+    private char[] expr;
+    private int start;
+    private int offset;
     private ParserContext pCtx;
 
-    public NullSafe(String expression, ParserContext pCtx) {
-        this.expression = expression;
+    public NullSafe(char[] expr, int start, int offset, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
         this.pCtx = pCtx;
     }
 
@@ -20,7 +24,7 @@ public class NullSafe implements AccessorNode {
         if (ctx == null) return null;
         if (nextNode == null) {
             final Accessor a = OptimizerFactory.getAccessorCompiler(OptimizerFactory.SAFE_REFLECTIVE)
-                    .optimizeAccessor(pCtx, expression.toCharArray(), ctx, elCtx, variableFactory, true, ctx.getClass());
+                    .optimizeAccessor(pCtx, expr, start, offset, ctx, elCtx, variableFactory, true, ctx.getClass());
 
             nextNode = new AccessorNode() {
                 public AccessorNode getNextNode() {

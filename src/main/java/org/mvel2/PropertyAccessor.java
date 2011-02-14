@@ -124,12 +124,13 @@ public class PropertyAccessor {
     }
 
 
-    public PropertyAccessor(char[] property, int offset, int end, Object ctx, VariableResolverFactory resolver) {
+    public PropertyAccessor(char[] property, int offset, int end, Object ctx, VariableResolverFactory resolver, Object thisReference) {
         this.property = property;
         this.cursor = offset;
         this.length = end;
         this.ctx = ctx;
         this.variableFactory = resolver;
+        this.thisReference = thisReference;
     }
 
     public PropertyAccessor(String property, Object ctx) {
@@ -147,7 +148,11 @@ public class PropertyAccessor {
     }
 
     public static Object get(char[] property, int offset, int end, Object ctx, VariableResolverFactory resolver) {
-        return new PropertyAccessor(property, offset, end, ctx, resolver).get();
+        return new PropertyAccessor(property, offset, end, ctx, resolver, null).get();
+    }
+
+    public static Object get(char[] property, int offset, int end, Object ctx, VariableResolverFactory resolver, Object thisReferece) {
+        return new PropertyAccessor(property, offset, end, ctx, resolver, thisReferece).get();
     }
 
     public static Object get(String property, Object ctx, VariableResolverFactory resolver, Object thisReference) {
@@ -724,7 +729,7 @@ public class PropertyAccessor {
         else {
             //     TypeDescriptor td = new TypeDescriptor(property, 0);
             try {
-                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, 0));
+                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, start, length, 0));
             }
             catch (Exception e) {
                 throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()), e);
@@ -786,7 +791,7 @@ public class PropertyAccessor {
         }
         else {
             try {
-                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, 0));
+                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, start, length, 0));
             }
             catch (Exception e) {
                 throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));

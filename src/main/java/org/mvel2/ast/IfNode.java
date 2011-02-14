@@ -32,23 +32,26 @@ import java.util.HashMap;
 /**
  * @author Christopher Brock
  */
-public class IfNode extends ASTNode implements NestedStatement {
-    protected char[] block;
+public class IfNode extends BlockNode implements NestedStatement {
     protected ExecutableStatement condition;
     protected ExecutableStatement nestedStatement;
 
     protected IfNode elseIf;
     protected ExecutableStatement elseBlock;
 
-    public IfNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
-        if ((this.name = condition) == null || condition.length == 0) {
+    public IfNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
+        if ((this.expr = expr) == null || offset - start == 0) {
             throw new CompileException("statement expected");
         }
-        this.block = block;
+        this.start = start;
+        this.offset = offset;
+        this.blockStart = blockStart;
+        this.blockOffset = blockOffset;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            expectType(this.condition = (ExecutableStatement) subCompileExpression(condition, pCtx), Boolean.class, true);
-            this.nestedStatement = (ExecutableStatement) subCompileExpression(block, pCtx);
+            expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
+                    Boolean.class, true);
+            this.nestedStatement = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
         }
     }
 
@@ -74,8 +77,8 @@ public class IfNode extends ASTNode implements NestedStatement {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if ((Boolean) eval(name, ctx, factory)) {
-            return eval(block, ctx, new MapVariableResolverFactory(new HashMap(0), factory));
+        if ((Boolean) eval(expr, start, offset, ctx, factory)) {
+            return eval(expr, start, offset, ctx, new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else if (elseIf != null) {
             return elseIf.getReducedValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
@@ -106,6 +109,6 @@ public class IfNode extends ASTNode implements NestedStatement {
     }
 
     public String toString() {
-        return new String(name);
+        return new String(expr, start, offset);
     }
 }

@@ -40,17 +40,19 @@ public class WithNode extends BlockNode implements NestedStatement {
     //   protected ExecutableStatement nestedStatement;
     protected ParmValuePair[] withExpressions;
 
-    public WithNode(char[] expr, char[] block, int fields, ParserContext pCtx) {
-        nestParm = createStringTrimmed(this.name = expr);
-        this.block = block;
+    public WithNode(char[] expr, int start, int end, int blockStart, int blockOffset, int fields,
+                    ParserContext pCtx) {
+        nestParm = createStringTrimmed(this.expr = expr, start, end);
+        this.blockStart = blockStart;
+        this.blockOffset = blockOffset;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             pCtx.setBlockSymbols(true);
 
             egressType = (compiledBlock = (ExecutableStatement)
-                    subCompileExpression(nestParm.toCharArray(), pCtx)).getKnownEgressType();
+                    subCompileExpression(expr, start, end, pCtx)).getKnownEgressType();
 
-            withExpressions = compileWithExpressions(block, nestParm, egressType, pCtx);
+            withExpressions = compileWithExpressions(expr, nestParm, egressType, pCtx);
 
             pCtx.setBlockSymbols(false);
         }
@@ -69,7 +71,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        parseWithExpressions(nestParm, block, 0, block.length, ctx = MVEL.eval(name, ctx, factory), factory);
+        parseWithExpressions(nestParm, expr, blockStart, blockOffset, ctx = MVEL.eval(expr, start, offset, ctx, factory), factory);
         return ctx;
     }
 

@@ -261,6 +261,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 }
             }
 
+
             if (pCtx.isStrictTypeEnforcement()) {
                 addFatalError("unqualified type in strict mode for: " + property);
             }

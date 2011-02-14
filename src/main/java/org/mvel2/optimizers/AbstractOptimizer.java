@@ -19,9 +19,13 @@ package org.mvel2.optimizers;
 
 import org.mvel2.CompileException;
 import org.mvel2.compiler.AbstractParser;
+import org.mvel2.util.ParseTools;
+
 import static org.mvel2.util.ParseTools.*;
 
 import static java.lang.Thread.currentThread;
+import static org.mvel2.util.ParseTools.skipWhitespace;
+
 import java.lang.reflect.Method;
 
 /**
@@ -33,7 +37,6 @@ public class AbstractOptimizer extends AbstractParser {
     protected static final int COL = 2;
     protected static final int WITH = 3;
 
-    protected int start = 0;
     protected boolean collection = false;
     protected boolean nullSafe = false;
     protected Class currType = null;
@@ -59,19 +62,20 @@ public class AbstractOptimizer extends AbstractParser {
              *
              */
             boolean meth = false;
-            int last = length;
-            for (int i = length - 1; i > 0; i--) {
+            int end = start + length;
+            int last = end;
+            for (int i = end - 1; i > start; i--) {
                 switch (expr[i]) {
                     case '.':
                         if (!meth) {
                             try {
-                                return Class.forName(new String(expr, 0, cursor = last), true, pCtx != null ?
+                                return Class.forName(new String(expr, start, cursor = last), true, pCtx != null ?
                                         pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
                             }
                             catch (ClassNotFoundException e) {
-                                Class cls = Class.forName(new String(expr, 0, i), true, pCtx != null ?
+                                Class cls = Class.forName(new String(expr, start, i), true, pCtx != null ?
                                         pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
-                                String name = new String(expr, i + 1, expr.length - i - 1);
+                                String name = new String(expr, i + 1, end - i - 1);
                                 try {
                                     return cls.getField(name);
                                 }
@@ -90,7 +94,7 @@ public class AbstractOptimizer extends AbstractParser {
 
                     case '}':
                         i--;
-                        for (int d = 1; i > 0 && d != 0; i--) {
+                        for (int d = 1; i > start && d != 0; i--) {
                             switch (expr[i]) {
                                 case '}':
                                     d++;
@@ -101,7 +105,7 @@ public class AbstractOptimizer extends AbstractParser {
                                 case '"':
                                 case '\'':
                                     char s = expr[i];
-                                    while (i > 0 && (expr[i] != s && expr[i - 1] != '\\')) i--;
+                                    while (i > start && (expr[i] != s && expr[i - 1] != '\\')) i--;
                             }
                         }
                         break;
@@ -109,7 +113,7 @@ public class AbstractOptimizer extends AbstractParser {
                     case ')':
                         i--;
 
-                        for (int d = 1; i > 0 && d != 0; i--) {
+                        for (int d = 1; i > start && d != 0; i--) {
                             switch (expr[i]) {
                                 case ')':
                                     d++;
@@ -120,7 +124,7 @@ public class AbstractOptimizer extends AbstractParser {
                                 case '"':
                                 case '\'':
                                     char s = expr[i];
-                                    while (i > 0 && (expr[i] != s && expr[i - 1] != '\\')) i--;
+                                    while (i > start && (expr[i] != s && expr[i - 1] != '\\')) i--;
                             }
                         }
 
@@ -130,7 +134,7 @@ public class AbstractOptimizer extends AbstractParser {
 
 
                     case '\'':
-                        while (--i > 0) {
+                        while (--i > start) {
                             if (expr[i] == '\'' && expr[i - 1] != '\\') {
                                 break;
                             }
@@ -138,7 +142,7 @@ public class AbstractOptimizer extends AbstractParser {
                         break;
 
                     case '"':
-                        while (--i > 0) {
+                        while (--i > start) {
                             if (expr[i] == '"' && expr[i - 1] != '\\') {
                                 break;
                             }
@@ -190,7 +194,7 @@ public class AbstractOptimizer extends AbstractParser {
         }
 
         //noinspection StatementWithEmptyBody
-        while (++cursor < length && isIdentifierPart(expr[cursor])) ;
+        while (++cursor < length && isIdentifierPart(expr[cursor]));
 
         if (cursor < length) {
             skipWhitespace();
@@ -248,7 +252,8 @@ public class AbstractOptimizer extends AbstractParser {
         int split = -1;
         int depth = 0;
 
-        for (int i = expr.length - 1; i != 0; i--) {
+        int end = start + length;
+        for (int i = expr.length - 1; i != end; i--) {
             switch (expr[i]) {
                 case '}':
                 case ']':

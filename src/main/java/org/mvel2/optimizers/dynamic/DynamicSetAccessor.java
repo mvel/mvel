@@ -28,6 +28,9 @@ import static java.lang.System.currentTimeMillis;
 
 public class DynamicSetAccessor implements DynamicAccessor {
     private char[] property;
+    private int start;
+    private int offset;
+
     private boolean opt = false;
     private int runcount = 0;
     private long stamp;
@@ -37,11 +40,15 @@ public class DynamicSetAccessor implements DynamicAccessor {
     private Accessor _accessor;
     private String description;
 
-    public DynamicSetAccessor(ParserContext context, char[] property, Accessor _accessor) {
+    public DynamicSetAccessor(ParserContext context, char[] property, int start, int offset, Accessor _accessor) {
         assert _accessor != null;
         this._safeAccessor = this._accessor = _accessor;
         this.context = context;
+
         this.property = property;
+        this.start = start;
+        this.offset = offset;
+
         this.stamp = System.currentTimeMillis();
     }
 
@@ -73,7 +80,7 @@ public class DynamicSetAccessor implements DynamicAccessor {
         }
 
         AccessorOptimizer ao = OptimizerFactory.getAccessorCompiler("ASM");
-        _accessor = ao.optimizeSetAccessor(context, property, ctx, elCtx,
+        _accessor = ao.optimizeSetAccessor(context, property, start, offset, ctx, elCtx,
                 variableResolverFactory, false, value, value != null ? value.getClass() : Object.class);
         assert _accessor != null;
 

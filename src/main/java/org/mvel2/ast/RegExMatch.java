@@ -36,12 +36,15 @@ public class RegExMatch extends ASTNode {
     private char[] pattern;
     private Pattern p;
 
-    public RegExMatch(char[] expr, int fields, char[] pattern, ParserContext pCtx) {
-        this.name = expr;
+    public RegExMatch(char[] expr, int start, int offset, int fields, char[] pattern, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
+
         this.pattern = pattern;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            this.stmt = (ExecutableStatement) subCompileExpression(expr);
+            this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset);
             if ((this.patternStmt = (ExecutableStatement)
                     subCompileExpression(pattern, pCtx)) instanceof ExecutableLiteral) {
 
@@ -67,7 +70,7 @@ public class RegExMatch extends ASTNode {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
-            return compile(valueOf(eval(pattern, ctx, factory))).matcher(valueOf(eval(name, ctx, factory))).matches();
+            return compile(valueOf(eval(pattern, ctx, factory))).matcher(valueOf(eval(expr, start, offset, ctx, factory))).matches();
         }
         catch (PatternSyntaxException e) {
             throw new CompileException("bad regular expression", e);

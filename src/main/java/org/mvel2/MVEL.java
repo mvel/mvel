@@ -419,6 +419,10 @@ public class MVEL {
         return new MVELInterpretedRuntime(expression, ctx, vars).parse();
     }
 
+    public static Object eval(char[] expression, int start, int offset, Object ctx, VariableResolverFactory vars) {
+        return new MVELInterpretedRuntime(expression, start, offset, ctx, vars).parse();
+    }
+
     /**
      * Evaluate an expression against a context object and return the value
      *

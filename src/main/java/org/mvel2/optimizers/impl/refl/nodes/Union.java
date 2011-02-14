@@ -30,10 +30,14 @@ import org.mvel2.optimizers.OptimizerFactory;
 public class Union implements Accessor {
     private Accessor accessor;
     private char[] nextExpr;
+    private int start;
+    private int offset;
     private Accessor nextAccessor;
 
-    public Union(Accessor accessor, char[] nextAccessor) {
+    public Union(Accessor accessor, char[] nextAccessor, int start, int offset) {
         this.accessor = accessor;
+        this.start = start;
+        this.offset = offset;
         this.nextExpr = nextAccessor;
     }
 
@@ -56,7 +60,7 @@ public class Union implements Accessor {
             AccessorOptimizer ao = OptimizerFactory.getDefaultAccessorCompiler();
             Class ingress = accessor.getKnownEgressType();
 
-            nextAccessor = ao.optimizeAccessor(getCurrentThreadParserContext(), nextExpr, o, elCtx, variableFactory,
+            nextAccessor = ao.optimizeAccessor(getCurrentThreadParserContext(), nextExpr, start, offset, o, elCtx, variableFactory,
                     false, ingress);
             return ao.getResultOptPass();
         }

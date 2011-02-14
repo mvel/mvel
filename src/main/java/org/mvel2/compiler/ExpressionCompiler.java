@@ -80,7 +80,7 @@ public class ExpressionCompiler extends AbstractParser {
 
                 //noinspection ThrowFromFinallyBlock
                 throw new CompileException("Failed to compile: " + pCtx.getErrorList().size()
-                        + " compilation error(s): " + err.toString(), pCtx.getErrorList());
+                        + " compilation error(s): " + err.toString(), pCtx.getErrorList(), pCtx);
             }
         }
     }
@@ -470,6 +470,22 @@ public class ExpressionCompiler extends AbstractParser {
         contextControl(SET, ctx, this);
     }
 
+    public ExpressionCompiler(char[] expression, int start, int offset) {
+        this.expr = expression;
+        this.start = start;
+        this.length = offset;
+        this.end = start + offset;
+    }
+
+    public ExpressionCompiler(String expression, int start, int offset, ParserContext ctx) {
+        this.expr = expression.toCharArray();
+        this.start = start;
+        this.length = offset;
+        this.end = start + offset;
+
+        contextControl(SET, ctx, this);
+    }
+
     public ExpressionCompiler(char[] expression, ParserContext ctx) {
         setExpression(expression);
         contextControl(SET, ctx, this);
@@ -498,10 +514,6 @@ public class ExpressionCompiler extends AbstractParser {
 
     public void setReturnType(Class returnType) {
         this.returnType = returnType;
-    }
-
-    public String getExpression() {
-        return new String(expr);
     }
 
     public ParserContext getParserContextState() {

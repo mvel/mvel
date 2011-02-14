@@ -1218,8 +1218,8 @@ public class TypesAndInferenceTests extends AbstractTest {
     public void testPrimitiveTypes() {
         ParserContext ctx = new ParserContext();
         ctx.setStrongTyping(true);
-        ctx.addInput("base",
-                Base.class);
+//        ctx.addInput("base",
+//                Base.class);
 
         Serializable s = compileExpression("int x = 5; x = x + base.intValue; x",
                 ctx);

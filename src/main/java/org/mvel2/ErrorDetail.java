@@ -18,15 +18,19 @@
 
 package org.mvel2;
 
+import org.mvel2.compiler.Parser;
+
 public class ErrorDetail {
     private int row;
     private int col;
     private boolean critical;
     private String message;
-
-    public ErrorDetail(String message, boolean critical) {
+//
+    public ErrorDetail(String message, boolean critical, ParserContext parser) {
         this.message = message;
         this.critical = critical;
+        this.row = parser.getLineCount();
+        this.col = parser.getLineOffset();
     }
 
     public ErrorDetail(int row, int col, boolean critical, String message) {

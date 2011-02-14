@@ -28,12 +28,22 @@ import java.io.Serializable;
 
 public class CompiledAccExpression implements ExecutableStatement, Serializable {
     private char[] expression;
+    private int start;
+    private int offset;
+
     private transient Accessor accessor;
     private ParserContext context;
     private Class ingressType;
 
     public CompiledAccExpression(char[] expression, Class ingressType, ParserContext context) {
+        this(expression, 0, expression.length, ingressType, context);
+    }
+
+    public CompiledAccExpression(char[] expression, int start, int offset, Class ingressType, ParserContext context) {
         this.expression = expression;
+        this.start = start;
+        this.offset = offset;
+
         this.context = context;
         this.ingressType = ingressType != null ? ingressType : Object.class;
     }
@@ -42,7 +52,7 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
         if (accessor == null) {
             if (ingressType == Object.class && value != null) ingressType = value.getClass();
             accessor = getThreadAccessorOptimizer()
-                    .optimizeSetAccessor(context, expression, ctx, ctx, vrf, false, value, ingressType);
+                    .optimizeSetAccessor(context, expression, start, offset, ctx, ctx, vrf, false, value, ingressType);
 
         }
         else {
@@ -55,7 +65,7 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
         if (accessor == null) {
             try {
                 accessor = getThreadAccessorOptimizer()
-                        .optimizeAccessor(context, expression, staticContext, staticContext, factory, false, ingressType);
+                        .optimizeAccessor(context, expression, start, offset, staticContext, staticContext, factory, false, ingressType);
                 return getValue(staticContext, factory);
             }
             finally {
@@ -99,7 +109,7 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
         if (accessor == null) {
             try {
-                accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, ctx, elCtx,
+                accessor = getThreadAccessorOptimizer().optimizeAccessor(context, expression, start, offset, ctx, elCtx,
                         variableFactory, false, ingressType);
                 return getValue(ctx, elCtx, variableFactory);
             }

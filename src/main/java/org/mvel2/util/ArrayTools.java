@@ -28,15 +28,16 @@ public class ArrayTools {
         return true;
     }
 
-    public static int findFirst(char c, char[] array) {
-        for (int i = 0; i < array.length; i++) {
+    public static int findFirst(char c, int start, int offset, char[] array) {
+        int end = start + offset;
+        for (int i = start; i < end; i++) {
             if (array[i] == c) return i;
         }
         return -1;
     }
 
-    public static int findLast(char c, char[] array) {
-        for (int i = array.length - 1; i >= 0; i--) {
+    public static int findLast(char c, int start, int offset, char[] array) {
+        for (int i = start + offset - 1; i >= 0; i--) {
             if (array[i] == c) return i;
         }
         return -1;

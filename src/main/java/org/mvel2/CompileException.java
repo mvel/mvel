@@ -52,9 +52,10 @@ public class CompileException extends RuntimeException {
         super(message);
     }
 
-    public CompileException(String message, List<ErrorDetail> errors) {
+    public CompileException(String message, List<ErrorDetail> errors, ParserContext ctx) {
         super(message);
         this.errors = errors;
+        this.expr = ctx.getRootParser().getExpression();
     }
 
     public CompileException(String message, int cursor) {
@@ -94,12 +95,12 @@ public class CompileException extends RuntimeException {
     private CharSequence showCodeNearError(char[] expr, int cursor) {
         if (expr == null) return "Unknown";
 
-        int start = cursor - 10;
-        int end = (cursor + 20);
+        int start = cursor - 20;
+        int end = (cursor + 30);
 
         if (end > expr.length) {
-            end = expr.length - 1;
-            start -= 20;
+            end = expr.length;
+            start -= 30;
         }
 
         if (start < 0) {
@@ -108,7 +109,7 @@ public class CompileException extends RuntimeException {
 
         while (start < end && isWhitespace(expr[start])) start++;
 
-        CharSequence cs = null;
+        CharSequence cs;
 
         try {
             cs = copyValueOf(expr, start, end - start);
@@ -138,7 +139,7 @@ public class CompileException extends RuntimeException {
 
         if ((offset = cursor - msgOffset - 1) < 0) offset = 0;
 
-        appender.append(repeatChar(' ', offset)).append("^");
+        appender.append(repeatChar(' ', offset+2)).append("^");
 
         if (lineNumber != -1) {
             appender.append('\n')

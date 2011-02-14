@@ -32,18 +32,20 @@ public class AssertNode extends ASTNode {
     public ExecutableStatement assertion;
     public ExecutableStatement fail;
 
-    public AssertNode(char[] expr, int fields, ParserContext pCtx) {
-        this.name = expr;
+    public AssertNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            assertion = (ExecutableStatement) subCompileExpression(expr, pCtx);
+            assertion = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx);
         }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
             if (!((Boolean) assertion.getValue(ctx, thisValue, factory))) {
-                throw new AssertionError("assertion failed in expression: " + new String(this.name));
+                throw new AssertionError("assertion failed in expression: " + new String(this.expr, start, offset));
             }
             else {
                 return true;
@@ -56,8 +58,8 @@ public class AssertNode extends ASTNode {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
-            if (!((Boolean) MVEL.eval(this.name, ctx, factory))) {
-               throw new AssertionError("assertion failed in expression: " + new String(this.name));
+            if (!((Boolean) MVEL.eval(this.expr, ctx, factory))) {
+               throw new AssertionError("assertion failed in expression: " + new String(this.expr, start, offset));
             }
             else {
                 return true;

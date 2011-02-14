@@ -37,7 +37,7 @@ import java.util.Iterator;
 public class ForEachNode extends BlockNode {
     protected String item;
     protected Class itemType;
-    private char[] cond;
+   // private char[] cond;
 
     protected ExecutableStatement condition;
 
@@ -48,9 +48,10 @@ public class ForEachNode extends BlockNode {
 
     private int type = -1;
 
-    public ForEachNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
-        handleCond(this.name = condition, this.fields = fields, pCtx);
-        this.block = block;
+    public ForEachNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
+        handleCond(this.expr = expr, this.start = start, this.offset = offset, this.fields = fields, pCtx);
+        this.blockStart = blockStart;
+        this.blockOffset = blockOffset;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             if (pCtx.isStrictTypeEnforcement() && itemType != null) {
@@ -58,7 +59,7 @@ public class ForEachNode extends BlockNode {
                 pCtx.addInput(item, itemType);
             }
 
-            this.compiledBlock = (ExecutableStatement) subCompileExpression(block, pCtx);
+            this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
         }
     }
 
@@ -115,12 +116,12 @@ public class ForEachNode extends BlockNode {
         ItemResolverFactory.ItemResolver itemR = new ItemResolverFactory.ItemResolver(item);
         ItemResolverFactory itemFactory = new ItemResolverFactory(itemR, new DefaultLocalVariableResolverFactory(factory));
 
-        Object iterCond = MVEL.eval(cond, thisValue, factory);
+        Object iterCond = MVEL.eval(expr, start, offset, thisValue, factory);
 
         if (itemType != null && itemType.isArray())
             enforceTypeSafety(itemType, getBaseComponentType(iterCond.getClass()));
 
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(block);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset);
 
         Object v;
         if (iterCond instanceof Iterable) {
@@ -160,15 +161,16 @@ public class ForEachNode extends BlockNode {
         return null;
     }
 
-    private void handleCond(char[] condition, int fields, ParserContext pCtx) {
-        int cursor = 0;
-        while (cursor < condition.length && condition[cursor] != ':') cursor++;
+    private void handleCond(char[] condition, int start, int offset, int fields, ParserContext pCtx) {
+        int cursor = start;
+        int end = start + offset;
+        while (cursor < end && condition[cursor] != ':') cursor++;
 
-        if (cursor == condition.length || condition[cursor] != ':')
+        if (cursor == end || condition[cursor] != ':')
             throw new CompileException("expected : in foreach");
 
         int x;
-        if ((x = (item = createStringTrimmed(condition, 0, cursor)).indexOf(' ')) != -1) {
+        if ((x = (item = createStringTrimmed(condition, start, cursor)).indexOf(' ')) != -1) {
             String tk = new String(condition, 0, x).trim();
             try {
                 itemType = ParseTools.findClass(null, tk, pCtx);
@@ -180,10 +182,12 @@ public class ForEachNode extends BlockNode {
             }
         }
 
-        this.cond = subset(condition, ++cursor);
+        this.start = ++cursor;
+
+     //   this.cond = subset(condition, ++cursor);
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            Class egress = (this.condition = (ExecutableStatement) subCompileExpression(this.cond, pCtx)).getKnownEgressType();
+            Class egress = (this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType();
 
             if (itemType != null && egress.isArray()) {
                 enforceTypeSafety(itemType, getBaseComponentType(this.condition.getKnownEgressType()));

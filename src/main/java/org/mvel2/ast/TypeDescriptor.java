@@ -35,7 +35,11 @@ import java.util.LinkedList;
 
 public class TypeDescriptor implements Serializable {
     private String className;
-    private char[] classNameArray;
+    private char[] expr;
+
+    private int start;
+    private int offset;
+
     private ArraySize[] arraySize;
     private ExecutableStatement[] compiledArraySize;
     int endRange;
@@ -43,17 +47,18 @@ public class TypeDescriptor implements Serializable {
     public TypeDescriptor() {
     }
 
-    public TypeDescriptor(char[] name, int fields) {
-        updateClassName(this.classNameArray = name, fields);
+    public TypeDescriptor(char[] name, int start, int offset, int fields) {
+        updateClassName(this.expr = name, this.start = start, this.offset = offset, fields);
     }
 
-    public void updateClassName(char[] name, int fields) {
-        this.classNameArray = name;
-        if (name.length == 0 || !ParseTools.isIdentifierPart(name[0]) || isDigit(name[0])) return;
+    public void updateClassName(char[] name, int start, int offset, int fields) {
+        this.expr = name;
 
-        if ((endRange = findFirst('(', name)) == -1) {
-            if ((endRange = findFirst('[', name)) != -1) {
-                className = new String(name, 0, endRange).trim();
+        if (offset == 0 || !ParseTools.isIdentifierPart(name[start]) || isDigit(name[start])) return;
+
+        if ((endRange = findFirst('(', start, offset, name)) == -1) {
+            if ((endRange = findFirst('[', start, offset, name)) != -1) {
+                className = new String(name, start, endRange).trim();
                 int to;
 
                 LinkedList<char[]> sizes = new LinkedList<char[]>();
@@ -66,7 +71,7 @@ public class TypeDescriptor implements Serializable {
                     if (name[endRange] != '[') {
                         throw new CompileException("unexpected token in contstructor", name, endRange);
                     }
-                    to = balancedCapture(name, endRange, '[');
+                    to = balancedCapture(name, endRange, start + offset, '[');
                     sizes.add(subset(name, ++endRange, to - endRange));
                     endRange = to + 1;
                 }
@@ -185,7 +190,15 @@ public class TypeDescriptor implements Serializable {
         return (Class) AbstractParser.LITERALS.get(name);
     }
 
-    public char[] getClassNameArray() {
-        return classNameArray;
+    public char[] getExpr() {
+        return expr;
+    }
+
+    public int getStart() {
+        return start;
+    }
+
+    public int getOffset() {
+        return offset;
     }
 }

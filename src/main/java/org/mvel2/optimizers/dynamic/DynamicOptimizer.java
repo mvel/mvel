@@ -60,41 +60,43 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
 
     public static final int REGULAR_ACCESSOR = 0;
 
-    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
+    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, int start, int offset,  Object ctx, Object thisRef,
                                      VariableResolverFactory factory, boolean rootThisRef, Class ingressType) {
         synchronized (oLock) {
-            return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, 0,
-                    firstStage.optimizeAccessor(pCtx, property, ctx, thisRef, factory, rootThisRef, ingressType)));
+            return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 0,
+                    firstStage.optimizeAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, ingressType)));
         }
     }
 
     public static final int SET_ACCESSOR = 1;
 
-    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
+    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
                                         VariableResolverFactory factory, boolean rootThisRef, Object value, Class valueType) {
 
         synchronized (oLock) {
-            return classLoader.registerDynamicAccessor(new DynamicSetAccessor(pCtx, property,
-                    firstStage.optimizeSetAccessor(pCtx, property, ctx, thisRef, factory, rootThisRef, value, valueType)));
+            return classLoader.registerDynamicAccessor(new DynamicSetAccessor(pCtx, property, start, offset,
+                    firstStage.optimizeSetAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, value, valueType)));
         }
     }
 
     public static final int COLLECTION = 2;
 
-    public Accessor optimizeCollection(ParserContext pCtx, Object rootObject, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+    public Accessor optimizeCollection(ParserContext pCtx, Object rootObject, Class type, char[] property, int start,
+                                       int offset, Object ctx, Object thisRef, VariableResolverFactory factory) {
         synchronized (oLock) {
-            return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, type, property, 2,
-                    firstStage.optimizeCollection(pCtx, rootObject, type, property, ctx, thisRef, factory)));
+            return classLoader.registerDynamicAccessor(new DynamicCollectionAccessor(rootObject, type, property, start, offset, 2,
+                    firstStage.optimizeCollection(pCtx, rootObject, type, property, start, offset, ctx, thisRef, factory)));
         }
     }
 
     public static final int OBJ_CREATION = 3;
 
-    public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+    public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, int start, int offset,
+                                           Object ctx, Object thisRef, VariableResolverFactory factory) {
         synchronized (oLock) {
 
-            return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, 3,
-                    firstStage.optimizeObjectCreation(pCtx, property, ctx, thisRef, factory)));
+            return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 3,
+                    firstStage.optimizeObjectCreation(pCtx, property, start, offset, ctx, thisRef, factory)));
         }
     }
 

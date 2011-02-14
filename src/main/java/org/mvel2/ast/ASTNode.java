@@ -41,6 +41,7 @@ import static org.mvel2.util.ParseTools.isNumber;
 import java.io.Serializable;
 
 import static java.lang.Thread.currentThread;
+import static org.mvel2.util.ParseTools.subArray;
 
 @SuppressWarnings({"ManualArrayCopy", "CaughtExceptionImmediatelyRethrown"})
 public class ASTNode implements Cloneable, Serializable {
@@ -87,7 +88,10 @@ public class ASTNode implements Cloneable, Serializable {
     public int fields = 0;
 
     protected Class egressType;
-    protected char[] name;
+    protected char[] expr;
+    protected int start;
+    protected int offset;
+
     protected String nameCache;
 
     protected Object literal;
@@ -151,15 +155,15 @@ public class ASTNode implements Cloneable, Serializable {
         }
 
         try {
-            setAccessor(optimizer.optimizeAccessor(pCtx, name, ctx, thisValue, factory, true, egressType));
+            setAccessor(optimizer.optimizeAccessor(pCtx, expr, start, offset, ctx, thisValue, factory, true, egressType));
         }
         catch (OptimizationNotSupported ne) {
             setAccessor((optimizer = getAccessorCompiler(SAFE_REFLECTIVE))
-                    .optimizeAccessor(pCtx, name, ctx, thisValue, factory, true, null));
+                    .optimizeAccessor(pCtx, expr, start, offset, ctx, thisValue, factory, true, null));
         }
 
         if (accessor == null) {
-            return get(name, ctx, factory, thisValue);
+            return get(expr, start, offset, ctx, factory, thisValue);
         }
 
         if (retVal == null) {
@@ -179,13 +183,13 @@ public class ASTNode implements Cloneable, Serializable {
             return literal;
         }
         else {
-            return get(name, ctx, factory, thisValue);
+            return get(expr, start, offset, ctx, factory, thisValue);
         }
     }
 
     protected String getAbsoluteRootElement() {
         if ((fields & (DEEP_PROPERTY | COLLECTION)) != 0) {
-            return new String(name, 0, getAbsoluteFirstPart());
+            return new String(expr, start, getAbsoluteFirstPart());
         }
         return nameCache;
     }
@@ -198,13 +202,8 @@ public class ASTNode implements Cloneable, Serializable {
         this.egressType = egressType;
     }
 
-    protected String getAbsoluteRemainder() {
-        return (fields & COLLECTION) != 0 ? new String(name, endOfName, name.length - endOfName)
-                : ((fields & DEEP_PROPERTY) != 0 ? new String(name, firstUnion + 1, name.length - firstUnion - 1) : null);
-    }
-
     public char[] getNameAsArray() {
-        return name;
+        return subArray(expr, start, offset - start);
     }
 
     private int getAbsoluteFirstPart() {
@@ -221,8 +220,8 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public String getAbsoluteName() {
-        if (firstUnion > 0) {
-            return new String(name, 0, getAbsoluteFirstPart());
+        if (firstUnion > start) {
+            return new String(expr, start, getAbsoluteFirstPart());
         }
         else {
             return getName();
@@ -233,8 +232,8 @@ public class ASTNode implements Cloneable, Serializable {
         if (nameCache != null) {
             return nameCache;
         }
-        else if (name != null) {
-            return nameCache = new String(name);
+        else if (expr != null) {
+            return nameCache = new String(expr, start, offset);
         }
         return "";
     }
@@ -267,20 +266,22 @@ public class ASTNode implements Cloneable, Serializable {
              */
             boolean meth = false;
             int depth = 0;
-            int last = name.length;
-            for (int i = last - 1; i > 0; i--) {
-                switch (name[i]) {
+
+            int end;
+            int last = end = start + offset;
+            for (int i = last - 1; i > start; i--) {
+                switch (expr[i]) {
                     case '.':
                         if (depth == 0 && !meth) {
                             try {
-                                Class.forName(new String(name, 0, i), true, currentThread().getContextClassLoader());
+                                Class.forName(new String(expr, start, i), true, currentThread().getContextClassLoader());
 
-                                return get(new String(name, last, name.length - last),
-                                        Class.forName(new String(name, 0, last), true, currentThread().getContextClassLoader()), factory, thisRef);
+                                return get(new String(expr, last, end - last),
+                                        Class.forName(new String(expr, start, last), true, currentThread().getContextClassLoader()), factory, thisRef);
                             }
                             catch (ClassNotFoundException e) {
-                                return get(new String(name, i + 1, name.length - i - 1),
-                                        Class.forName(new String(name, 0, i), true, currentThread().getContextClassLoader()), factory, thisRef);
+                                return get(new String(expr, i + 1, end - i - 1),
+                                        Class.forName(new String(expr, start, i), true, currentThread().getContextClassLoader()), factory, thisRef);
                             }
                         }
                         meth = false;
@@ -304,8 +305,8 @@ public class ASTNode implements Cloneable, Serializable {
 
     @SuppressWarnings({"SuspiciousMethodCalls"})
     protected void setName(char[] name) {
-        if (isNumber(name)) {
-            egressType = (literal = handleNumericConversion(name)).getClass();
+        if (isNumber(name, start, offset)) {
+            egressType = (literal = handleNumericConversion(name, start, offset)).getClass();
             if (((fields |= NUMERIC | LITERAL | IDENTIFIER) & INVERT) != 0) {
                 try {
                     literal = ~((Integer) literal);
@@ -317,22 +318,21 @@ public class ASTNode implements Cloneable, Serializable {
             return;
         }
 
-        this.literal = new String(name);
-
+        this.literal = new String(name, start, offset);
 
         Scan:
-        for (int i = 0; i < name.length; i++) {
+        for (int i = start; i < name.length; i++) {
             switch (name[i]) {
                 case '.':
-                    if (firstUnion == 0) {
+                    if (firstUnion == start) {
                         firstUnion = i;
                     }
                     break;
                 case '[':
-                    if (firstUnion == 0) {
+                    if (firstUnion == start) {
                         firstUnion = i;
                     }
-                    if (endOfName == 0) {
+                    if (endOfName == start) {
                         endOfName = i;
                         if (i < name.length && name[i + 1] == ']') fields |= ARRAY_TYPE_LITERAL;
                         break Scan;
@@ -340,11 +340,11 @@ public class ASTNode implements Cloneable, Serializable {
             }
         }
 
-        if ((fields & INLINE_COLLECTION) != 0) {
+        if ((fields & INLINE_COLLECTION) != start) {
             return;
         }
 
-        if (firstUnion > 0) {
+        if (firstUnion > start) {
             fields |= DEEP_PROPERTY | IDENTIFIER;
         }
         else {
@@ -441,13 +441,11 @@ public class ASTNode implements Cloneable, Serializable {
 
     public ASTNode(char[] expr, int start, int end, int fields) {
         this.fields = fields;
+        this.expr = expr;
+        this.start = start;
+        this.offset = end - start;
 
-        name = new char[end - (this.cursorPosition = start)];
-        for (int i = 0; i < name.length; i++) {
-            name[i] = expr[i + start];
-        }
-
-        setName(name);
+        setName(expr);
     }
 
     public String toString() {

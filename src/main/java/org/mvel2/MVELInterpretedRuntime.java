@@ -43,7 +43,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
             stk = new ExecutionStack();
             dStack = new ExecutionStack();
             variableFactory.setTiltFlag(false);
-            cursor = 0;
+            cursor = start;
             return parseAndExecuteInterpreted();
         }
         catch (ArrayIndexOutOfBoundsException e) {
@@ -334,6 +334,15 @@ public class MVELInterpretedRuntime extends AbstractParser {
 
     public MVELInterpretedRuntime(char[] expr, Object ctx, VariableResolverFactory resolverFactory) {
         this.length = (this.expr = expr).length;
+        this.ctx = ctx;
+        this.variableFactory = resolverFactory;
+    }
+
+    public MVELInterpretedRuntime(char[] expr, int start, int offset, Object ctx, VariableResolverFactory resolverFactory) {
+        this.expr = expr;
+        this.start = start;
+        this.end = start + offset;
+        this.length = end - start;
         this.ctx = ctx;
         this.variableFactory = resolverFactory;
     }

@@ -1233,6 +1233,10 @@ public class ParseTools {
      * @return -
      */
     public static int balancedCapture(char[] chars, int start, char type) {
+        return balancedCapture(chars, start, chars.length, type);
+    }
+
+    public static int balancedCapture(char[] chars, int start, int end, char type) {
         int depth = 1;
         char term = type;
         switch (type) {
@@ -1248,26 +1252,26 @@ public class ParseTools {
         }
 
         if (type == term) {
-            for (start++; start < chars.length; start++) {
+            for (start++; start < end; start++) {
                 if (chars[start] == type) {
                     return start;
                 }
             }
         }
         else {
-            for (start++; start < chars.length; start++) {
-                if (start < chars.length && chars[start] == '/') {
-                    if (start + 1 == chars.length) return start;
+            for (start++; start < end; start++) {
+                if (start < end && chars[start] == '/') {
+                    if (start + 1 == end) return start;
                     if (chars[start + 1] == '/') {
                         start++;
-                        while (start < chars.length && chars[start] != '\n') start++;
+                        while (start < end && chars[start] != '\n') start++;
                     }
                     else if (chars[start + 1] == '*') {
                         start += 2;
-                        while (start < chars.length) {
+                        while (start < end) {
                             switch (chars[start]) {
                                 case '*':
-                                    if (start + 1 < chars.length && chars[start + 1] == '/') {
+                                    if (start + 1 < end&& chars[start + 1] == '/') {
                                         break;
                                     }
                                 case '\r':
@@ -1279,9 +1283,9 @@ public class ParseTools {
                         }
                     }
                 }
-                if (start == chars.length) return start;
+                if (start == end) return start;
                 if (chars[start] == '\'' || chars[start] == '"') {
-                    start = captureStringLiteral(chars[start], chars, start, chars.length);
+                    start = captureStringLiteral(chars[start], chars, start, end);
                 }
                 else if (chars[start] == type) {
                     depth++;
@@ -1517,55 +1521,55 @@ public class ParseTools {
     }
 
 
-    public static Object handleNumericConversion(final char[] val) {
-        if (val.length != 1 && val[0] == '0' && val[1] != '.') {
-            if (!isDigit(val[val.length - 1])) {
-                switch (val[val.length - 1]) {
+    public static Object handleNumericConversion(final char[] val, int start, int offset) {
+        if (offset != 1 && val[start] == '0' && val[start+1] != '.') {
+            if (!isDigit(val[offset - 1])) {
+                switch (val[offset - 1]) {
                     case 'L':
                     case 'l':
-                        return Long.decode(new String(val, 0, val.length - 1));
+                        return Long.decode(new String(val, start, offset - 1));
                     case 'I':
-                        return BigInteger.valueOf(Long.decode(new String(val, 0, val.length - 1)));
+                        return BigInteger.valueOf(Long.decode(new String(val, start, offset - 1)));
                     case 'D':
-                        return BigDecimal.valueOf(Long.decode(new String(val, 0, val.length - 1)));
+                        return BigDecimal.valueOf(Long.decode(new String(val, start, offset - 1)));
                 }
             }
 
             return Integer.decode(new String(val));
         }
-        else if (!isDigit(val[val.length - 1])) {
-            switch (val[val.length - 1]) {
+        else if (!isDigit(val[offset - 1])) {
+            switch (val[offset - 1]) {
                 case 'l':
                 case 'L':
-                    return java.lang.Long.parseLong(new String(val, 0, val.length - 1));
+                    return java.lang.Long.parseLong(new String(val, start, offset - 1));
                 case '.':
                 case 'd':
                 case 'D':
-                    return parseDouble(new String(val, 0, val.length - 1));
+                    return parseDouble(new String(val, start, offset - 1));
                 case 'f':
                 case 'F':
-                    return java.lang.Float.parseFloat(new String(val, 0, val.length - 1));
+                    return java.lang.Float.parseFloat(new String(val, start, offset - 1));
                 case 'I':
-                    return new BigInteger(new String(val, 0, val.length - 1));
+                    return new BigInteger(new String(val, start, offset - 1));
                 case 'B':
-                    return new BigDecimal(new String(val, 0, val.length - 1));
+                    return new BigDecimal(new String(val, start, offset - 1));
             }
             throw new CompileException("unrecognized numeric literal");
         }
         else {
-            switch (numericTest(val)) {
+            switch (numericTest(val, start, offset)) {
                 case DataTypes.FLOAT:
-                    return java.lang.Float.parseFloat(new String(val));
+                    return java.lang.Float.parseFloat(new String(val, start, offset));
                 case INTEGER:
-                    return java.lang.Integer.parseInt(new String(val));
+                    return java.lang.Integer.parseInt(new String(val, start, offset));
                 case LONG:
-                    return java.lang.Long.parseLong(new String(val));
+                    return java.lang.Long.parseLong(new String(val, start, offset));
                 case DOUBLE:
-                    return parseDouble(new String(val));
+                    return parseDouble(new String(val, start, offset));
                 case DataTypes.BIG_DECIMAL:
                     return new BigDecimal(val, MathContext.DECIMAL128);
                 default:
-                    return new String(val);
+                    return new String(val, start, offset);
             }
         }
     }
@@ -1585,14 +1589,13 @@ public class ParseTools {
                 clz == float.class || Number.class.isAssignableFrom(clz);
     }
 
-    public static int numericTest(final char[] val) {
+    public static int numericTest(final char[] val, int start, int offset) {
         boolean fp = false;
 
-        int len = val.length;
         char c;
-        int i = 0;
+        int i = start;
 
-        if (len > 1) {
+        if (offset > 1) {
             if (val[0] == '-') i++;
             else if (val[0] == '~') {
                 i++;
@@ -1600,7 +1603,7 @@ public class ParseTools {
             }
         }
 
-        for (; i < len; i++) {
+        for (; i < offset; i++) {
             if (!isDigit(c = val[i])) {
                 switch (c) {
                     case '.':
@@ -1609,7 +1612,7 @@ public class ParseTools {
                     case 'e':
                     case 'E':
                         fp = true;
-                        if (i++ < len && val[i] == '-') i++;
+                        if (i++ < offset && val[i] == '-') i++;
                         break;
 
                     default:
@@ -1618,11 +1621,11 @@ public class ParseTools {
             }
         }
 
-        if (len != 0) {
+        if (offset != 0) {
             if (fp) {
                 return DOUBLE;
             }
-            else if (len > 9) {
+            else if (offset > 9) {
                 return LONG;
             }
             else {
@@ -1667,12 +1670,11 @@ public class ParseTools {
         return len > 0;
     }
 
-    public static boolean isNumber(char[] val) {
-        int len = val.length;
+    public static boolean isNumber(char[] val, int start, int offset) {
         char c;
         boolean f = true;
-        int i = 0;
-        if (len > 1) {
+        int i = start;
+        if (offset > 1) {
             switch (val[0]) {
                 case '-':
                     if (val[1] == '-') i++;
@@ -1680,12 +1682,12 @@ public class ParseTools {
                     i++;
             }
         }
-        for (; i < len; i++) {
+        for (; i < offset; i++) {
             if (!isDigit(c = val[i])) {
                 if (f && c == '.') {
                     f = false;
                 }
-                else if (len != 1 && i == len - 1) {
+                else if (offset != 1 && i == offset - 1) {
                     switch (c) {
                         case 'l':
                         case 'L':
@@ -1702,10 +1704,10 @@ public class ParseTools {
                     return false;
                 }
                 else if (i == 1 && c == 'x' && val[0] == '0') {
-                    for (i++; i < len; i++) {
+                    for (i++; i < offset; i++) {
                         if (!isDigit(c = val[i])) {
                             if ((c < 'A' || c > 'F') && (c < 'a' || c > 'f')) {
-                                if (i == len - 1) {
+                                if (i == offset - 1) {
                                     switch (c) {
                                         case 'l':
                                         case 'L':
@@ -1719,10 +1721,10 @@ public class ParseTools {
                             }
                         }
                     }
-                    return len - 2 > 0;
+                    return offset - 2 > 0;
 
                 }
-                else if (i != 0 && (i + 1) < len && (c == 'E' || c == 'e')) {
+                else if (i != 0 && (i + 1) < offset && (c == 'E' || c == 'e')) {
                     if (val[++i] == '-' || val[i] == '+') i++;
                 }
                 else {
@@ -1732,11 +1734,12 @@ public class ParseTools {
             }
         }
 
-        return len > 0;
+        return offset > 0;
     }
 
-    public static int find(char[] c, char find) {
-        for (int i = 0; i < c.length; i++) if (c[i] == find) return i;
+    public static int find(char[] c, int start, int offset, char find) {
+        int length = start + offset;
+        for (int i = start; i < length; i++) if (c[i] == find) return i;
         return -1;
     }
 
@@ -1970,6 +1973,17 @@ public class ParseTools {
 
     public static Serializable subCompileExpression(char[] expression, ParserContext ctx) {
         ExpressionCompiler c = new ExpressionCompiler(expression);
+        if (ctx != null) c.setPCtx(ctx);
+        return _optimizeTree(c._compile());
+    }
+
+
+    public static Serializable subCompileExpression(char[] expression, int start, int offset) {
+        return _optimizeTree(new ExpressionCompiler(expression, start, offset)._compile());
+    }
+
+    public static Serializable subCompileExpression(char[] expression, int start, int offset, ParserContext ctx) {
+        ExpressionCompiler c = new ExpressionCompiler(expression, start, offset);
         if (ctx != null) c.setPCtx(ctx);
         return _optimizeTree(c._compile());
     }

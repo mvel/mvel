@@ -216,19 +216,20 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                         + "integration/VariableResolverFactory;Ljava/lang/Object;)Ljava/lang/Object;", null, null)).visitCode();
     }
 
-    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, Object staticContext,
+    public Accessor optimizeAccessor(ParserContext pCtx, char[] property, int start, int offset, Object staticContext,
                                      Object thisRef, VariableResolverFactory factory, boolean root, Class ingressType) {
         time = System.currentTimeMillis();
 
         if (compiledInputs == null) compiledInputs = new ArrayList<ExecutableStatement>();
 
-        start = cursor = 0;
+        this.start = cursor = start;
+        this.end = start + offset;
+        this.length = end - this.start;
 
         this.first = true;
         this.val = null;
 
         this.pCtx = pCtx;
-        this.length = property.length;
         this.expr = property;
         this.ctx = staticContext;
         this.thisRef = thisRef;
@@ -239,16 +240,18 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         return compileAccessor();
     }
 
-    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, Object ctx, Object thisRef,
+    public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
                                         VariableResolverFactory factory, boolean rootThisRef, Object value, Class ingressType) {
-        this.start = this.cursor = 0;
+        this.start = this.cursor = start;
+        this.end = start + offset;
+        this.length = this.end - this.start;
+
         this.first = true;
         this.ingressType = ingressType;
 
         compiledInputs = new ArrayList<ExecutableStatement>();
 
         this.pCtx = pCtx;
-        this.length = (this.expr = property).length;
         this.ctx = ctx;
         this.thisRef = thisRef;
         this.variableFactory = factory;
@@ -290,7 +293,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             skipWhitespace();
 
             if (collection) {
-                int start = cursor;
+                int st = cursor;
                 whiteSpaceSkip();
 
                 if (cursor == length)
@@ -299,7 +302,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 if (scanTo(']'))
                     throw new PropertyAccessException("unterminated '['");
 
-                String ex = new String(property, start, cursor - start);
+                String ex = new String(property, st, cursor - st);
 
                 assert debug("CHECKCAST " + ctx.getClass().getName());
                 mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
@@ -1412,7 +1415,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
         }
         else {
-            TypeDescriptor tDescr = new TypeDescriptor(expr, 0);
+            TypeDescriptor tDescr = new TypeDescriptor(expr, start, length, 0);
             if (tDescr.isArray()) {
                 try {
                     Class cls = getClassReference((Class) ctx, tDescr, variableFactory, pCtx);
@@ -1602,7 +1605,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
         }
         else {
-            TypeDescriptor tDescr = new TypeDescriptor(expr, 0);
+            TypeDescriptor tDescr = new TypeDescriptor(expr, start, length, 0);
             if (tDescr.isArray()) {
                 try {
                     Class cls = getClassReference((Class) ctx, tDescr, variableFactory, pCtx);
@@ -2819,9 +2822,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
     }
 
 
-    public Accessor optimizeCollection(ParserContext pCtx, Object o, Class type, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
-        this.cursor = 0;
+    public Accessor optimizeCollection(ParserContext pCtx, Object o, Class type, char[] property, int start, int offset,
+                                       Object ctx, Object thisRef, VariableResolverFactory factory) {
+        this.cursor = this.start = start;
+        this.end = start + offset;
+        this.length = this.end - this.start;
+
         this.returnType = type;
+
         if (property != null) this.length = (this.expr = property).length;
         this.compiledInputs = new ArrayList<ExecutableStatement>();
 
@@ -2841,7 +2849,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             Accessor compiledAccessor = _initializeAccessor();
 
             if (property != null && property.length > 0) {
-                return new Union(compiledAccessor, property);
+                return new Union(compiledAccessor, property, start, length);
             }
             else {
                 return compiledAccessor;
@@ -2901,11 +2909,14 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
     }
 
-    public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, Object ctx, Object thisRef, VariableResolverFactory factory) {
+    public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, int start, int offset, Object ctx,
+                                           Object thisRef, VariableResolverFactory factory) {
         _initJIT();
 
         compiledInputs = new ArrayList<ExecutableStatement>();
-        this.length = (this.expr = property).length;
+        this.start = cursor = start;
+        this.end = start + offset;
+        this.length = this.end - this.start;
         this.ctx = ctx;
         this.thisRef = thisRef;
         this.variableFactory = factory;
@@ -2920,7 +2931,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     compiledInputs.add((ExecutableStatement) subCompileExpression(constructorParm.toCharArray(), pCtx));
                 }
 
-                Class cls = findClass(factory, new String(subset(property, 0, findFirst('(', property))), pCtx);
+                Class cls = findClass(factory, new String(subset(property, 0, findFirst('(', start, length, property))), pCtx);
 
                 assert debug("NEW " + getInternalName(cls));
                 mv.visitTypeInsn(NEW, getInternalName(cls));
@@ -2997,7 +3008,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 Accessor acc = _initializeAccessor();
 
                 if (cnsRes.length > 1 && cnsRes[1] != null && !cnsRes[1].trim().equals("")) {
-                    return new Union(acc, cnsRes[1].toCharArray());
+                    return new Union(acc, cnsRes[1].toCharArray(), 0, cnsRes[1].length());
                 }
 
                 return acc;
@@ -3020,7 +3031,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 Accessor acc = _initializeAccessor();
 
                 if (cnsRes.length > 1 && cnsRes[1] != null && !cnsRes[1].trim().equals("")) {
-                    return new Union(acc, cnsRes[1].toCharArray());
+                    return new Union(acc, cnsRes[1].toCharArray(), 0, cnsRes[1].length());
                 }
 
                 return acc;
