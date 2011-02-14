@@ -5,11 +5,12 @@ import org.mvel2.ParserContext;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Foo;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 import java.io.Serializable;
+
+import static org.mvel2.MVEL.compileExpression;
+import static org.mvel2.MVEL.eval;
+import static org.mvel2.MVEL.executeExpression;
 
 
 public class ControlFlowTests extends AbstractTest {
@@ -158,7 +159,7 @@ public class ControlFlowTests extends AbstractTest {
         ParserContext pCtx = new ParserContext();
         pCtx.setStrongTyping(true);
         pCtx.addImport(Foo.class);
-        pCtx.addInput("l", ArrayList.class, new Class[] { Foo.class });
+        pCtx.addInput("l", ArrayList.class, new Class[]{Foo.class});
 
         List l = new ArrayList();
         l.add(new Foo());
@@ -170,10 +171,196 @@ public class ControlFlowTests extends AbstractTest {
 
         Serializable s = MVEL.compileExpression("String s = ''; for (Foo f : l) { s += f.name }; s", pCtx);
 
-        String r  = (String) MVEL.executeExpression(s, vars);
+        String r = (String) MVEL.executeExpression(s, vars);
 
         assertEquals("dogdogdog", r);
     }
 
+
+    public void testEmptyLoopSemantics() {
+        Serializable s = MVEL.compileExpression("for (i = 0; i < 100000000000; i++) { }");
+        MVEL.executeExpression(s, new HashMap());
+    }
+
+    public void testLoopWithEscape() {
+        Serializable s = MVEL.compileExpression("x = 0; for (; x < 10000; x++) {}");
+        Map<String, Object> vars = new HashMap<String, Object>();
+        MVEL.executeExpression(s, vars);
+
+        assertEquals(10000, vars.get("x"));
+
+        vars.remove("x");
+
+        MVEL.eval("x = 0; for (; x < 10000; x++) {}", vars);
+
+        assertEquals(10000, vars.get("x"));
+    }
+
+
+    public static class TargetClass {
+        private short _targetValue = 5;
+
+        public short getTargetValue() {
+            return _targetValue;
+        }
+    }
+
+    public void testNestedMethodCall() {
+        List elements = new ArrayList();
+        elements.add(new TargetClass());
+        Map variableMap = new HashMap();
+        variableMap.put("elements",
+                elements);
+        eval("results = new java.util.ArrayList(); foreach (element : elements) { " +
+                "if( {5} contains element.targetValue.intValue()) { results.add(element); } }; results",
+                variableMap);
+    }
+
+    public void testStaticallyTypedItemInForEach() {
+        assertEquals("1234",
+                test("StringBuffer sbuf = new StringBuffer(); foreach (int i : new int[] { 1,2,3,4 })" +
+                        " { sbuf.append(i); }; sbuf.toString()"));
+    }
+
+    public void testJIRA115() {
+        String exp = "results = new java.util.ArrayList(); foreach (element : elements) { " +
+                "if( {1,32769,32767} contains element ) { results.add(element);  } }; results";
+        Map map = new HashMap();
+        map.put("elements",
+                new int[]{1, 32769, 32767});
+        ArrayList result = (ArrayList) MVEL.eval(exp,
+                map);
+
+        assertEquals(3,
+                result.size());
+    }
+
+    public void testStringWithTernaryIf() {
+        test("System.out.print(\"Hello : \" + (foo != null ? \"FOO!\" : \"NO FOO\") + \". Bye.\");");
+    }
+
+    private static Object testTernary(int i,
+                                      String expression) throws Exception {
+        Object val;
+        Object val2;
+        try {
+            val = executeExpression(compileExpression(expression),
+                    JIRA124_CTX);
+        }
+        catch (Exception e) {
+            System.out.println("FailedCompiled[" + i + "]:" + expression);
+            throw e;
+        }
+
+        try {
+            val2 = MVEL.eval(expression,
+                    JIRA124_CTX);
+        }
+        catch (Exception e) {
+            System.out.println("FailedEval[" + i + "]:" + expression);
+            throw e;
+        }
+
+        if (((val == null || val2 == null) && val != val2) || (val != null && !val.equals(val2))) {
+            throw new AssertionError("results do not match (" + String.valueOf(val)
+                    + " != " + String.valueOf(val2) + ")");
+        }
+
+        return val;
+    }
+
+    private static Map<String, Boolean> JIRA124_CTX = Collections.singletonMap("testValue",
+            true);
+
+    public void testJIRA124() throws Exception {
+        assertEquals("A",
+                testTernary(1,
+                        "testValue == true ? 'A' :  'B' + 'C'"));
+        assertEquals("AB",
+                testTernary(2,
+                        "testValue ? 'A' +  'B' : 'C'"));
+        assertEquals("A",
+                testTernary(3,
+                        "(testValue ? 'A' :  'B' + 'C')"));
+        assertEquals("AB",
+                testTernary(4,
+                        "(testValue ? 'A' +  'B' : 'C')"));
+        assertEquals("A",
+                testTernary(5,
+                        "(testValue ? 'A' :  ('B' + 'C'))"));
+        assertEquals("AB",
+                testTernary(6,
+                        "(testValue ? ('A' + 'B') : 'C')"));
+
+        JIRA124_CTX = Collections.singletonMap("testValue",
+                false);
+
+        assertEquals("BC",
+                testTernary(1,
+                        "testValue ? 'A' :  'B' + 'C'"));
+        assertEquals("C",
+                testTernary(2,
+                        "testValue ? 'A' +  'B' : 'C'"));
+        assertEquals("BC",
+                testTernary(3,
+                        "(testValue ? 'A' :  'B' + 'C')"));
+        assertEquals("C",
+                testTernary(4,
+                        "(testValue ? 'A' +  'B' : 'C')"));
+        assertEquals("BC",
+                testTernary(5,
+                        "(testValue ? 'A' :  ('B' + 'C'))"));
+        assertEquals("C",
+                testTernary(6,
+                        "(testValue ? ('A' + 'B') : 'C')"));
+    }
+
+    /**
+     * Community provided test cases
+     */
+    @SuppressWarnings({"unchecked"})
+    public void testCalculateAge() {
+        Calendar c1 = Calendar.getInstance();
+        c1.set(1999,
+                0,
+                10); // 1999 jan 20
+        Map objectMap = new HashMap(1);
+        Map propertyMap = new HashMap(1);
+        propertyMap.put("GEBDAT",
+                c1.getTime());
+        objectMap.put("EV_VI_ANT1",
+                propertyMap);
+        assertEquals("N",
+                testCompiledSimple(
+                        "new org.mvel2.tests.core.res.PDFFieldUtil().calculateAge(EV_VI_ANT1.GEBDAT) >= 25 ? 'Y' : 'N'",
+                        null,
+                        objectMap));
+    }
+
+    public void testSubEvaluation() {
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("EV_BER_BER_NR",
+                "12345");
+        map.put("EV_BER_BER_PRIV",
+                Boolean.FALSE);
+
+        assertEquals("12345",
+                testCompiledSimple("EV_BER_BER_NR + ((EV_BER_BER_PRIV != empty && EV_BER_BER_PRIV == true) ? \"/PRIVAT\" : '')",
+                        null,
+                        map));
+
+        map.put("EV_BER_BER_PRIV",
+                Boolean.TRUE);
+        assertEquals("12345/PRIVAT",
+                testCompiledSimple("EV_BER_BER_NR + ((EV_BER_BER_PRIV != empty && EV_BER_BER_PRIV == true) ? \"/PRIVAT\" : '')",
+                        null,
+                        map));
+    }
+
+
+    public void testCompactIfElse() {
+        assertEquals("foo",
+                test("if (false) 'bar'; else 'foo';"));
+    }
 
 }

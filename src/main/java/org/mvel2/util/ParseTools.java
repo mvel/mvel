@@ -1136,8 +1136,11 @@ public class ParseTools {
             }
             cursor++;
         }
-        return cursor;
 
+        pCtx.setLineCount(line);
+        pCtx.setLineOffset(lastLineStart);
+
+        return cursor;
     }
 
     public static boolean isStatementNotManuallyTerminated(char[] expr, int cursor) {

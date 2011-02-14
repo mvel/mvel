@@ -7,16 +7,14 @@ import static org.mvel2.MVEL.executeExpression;
 import org.mvel2.ast.Function;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
+import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.CompilerTools;
 
 import static org.mvel2.util.CompilerTools.extractAllDeclaredFunctions;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Dhanji R. Prasanna (dhanji@gmail com)
@@ -123,5 +121,69 @@ public class FunctionsTest extends AbstractTest {
 
         assertEquals(30, map.get("val"));
     }
+
+
+    public static class TestClassAZZ {
+        public String hey() {
+            return "Heythere!";
+        }
+    }
+
+    public void testCallGlobalStaticFunctionFromMVELFunction() {
+        TestClassAZZ azz = new TestClassAZZ();
+
+        String expr = "def foobie12345() { hey(); } foobie12345();";
+
+        assertEquals("Heythere!", MVEL.eval(expr, azz, new HashMap<String, Object>()));
+    }
+
+    public void testDeepNestedLoopsInFunction() {
+        assertEquals(10,
+                test("def increment(i) { i + 1 }; def ff(i) { x = 0; while (i < 1) { " + "x++; " +
+                        "while (i < 10) { i = increment(i); } }; if (x == 1) return i; else -1; }; i = 0; ff(i);"));
+    }
+
+    public void testFunctions5() {
+        String exp = "def foo(a,b) { a + b }; foo(1.5,5.25)";
+        System.out.println(MVEL.eval(exp,
+                new HashMap()));
+    }
+
+        public void testJIRA174() {
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        Serializable s = MVEL.compileExpression("def test(a1) { java.util.Collection a = a1; a.clear(); a.add(1); a.add(2); a.add(3); a.remove((Object) 2); a; }\n" +
+                "a = test(new java.util.ArrayList());\n" +
+                "b = test(new java.util.HashSet());");
+
+        Map vars = new HashMap();
+        executeExpression(s, vars);
+
+        assertEquals(false, ((Collection) vars.get("a")).contains(2));
+        assertEquals(2, ((Collection) vars.get("a")).size());
+
+        assertEquals(false, ((Collection) vars.get("b")).contains(2));
+        assertEquals(2, ((Collection) vars.get("b")).size());
+    }
+
+    public void testMVEL225() {
+         Serializable compileExpression = MVEL.compileExpression(
+                 "def f() { int a=1;a++;return a; }; f();");
+         MapVariableResolverFactory factory = new MapVariableResolverFactory(new HashMap<String, Object>());
+         assertEquals(2, MVEL.executeExpression(compileExpression, factory));
+     }
+
+
+    public void testAnonymousFunctionDecl() {
+        assertEquals(3,
+                test("anonFunc = function (a,b) { return a + b; }; anonFunc(1,2)"));
+    }
+
+    public void testFunctionSemantics() {
+        assertEquals(true,
+                test("function fooFunction(a) { return a; }; x__0 = ''; 'boob' == fooFunction(x__0 = 'boob') " +
+                        "&& x__0 == 'boob';"));
+    }
+
 
 }

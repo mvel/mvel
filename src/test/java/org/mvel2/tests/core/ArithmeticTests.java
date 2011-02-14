@@ -871,4 +871,33 @@ public class ArithmeticTests extends AbstractTest {
         vars.put("param2", 10);
         assertEquals(1 + 2 * 10, MVEL.executeExpression(MVEL.compileExpression("1 + 2 * param.value"), vars));
     }
+
+
+    public void testJIRA99_Interpreted() {
+        Map map = new HashMap();
+        map.put("x",
+                20);
+        map.put("y",
+                10);
+        map.put("z",
+                5);
+
+        assertEquals(20 - 10 - 5,
+                MVEL.eval("x - y - z",
+                        map));
+    }
+
+    public void testJIRA99_Compiled() {
+        Map map = new HashMap();
+        map.put("x",
+                20);
+        map.put("y",
+                10);
+        map.put("z",
+                5);
+
+        assertEquals(20 - 10 - 5,
+                testCompiledSimple("x - y - z",
+                        map));
+    }
 }

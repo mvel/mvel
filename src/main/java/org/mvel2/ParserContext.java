@@ -278,7 +278,7 @@ public class ParserContext implements Serializable {
      *
      * @param lineOffset The offset amount
      */
-    public void setLineOffset(short lineOffset) {
+    public void setLineOffset(int lineOffset) {
         this.lineOffset = lineOffset;
     }
 
