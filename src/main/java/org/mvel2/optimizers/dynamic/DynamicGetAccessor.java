@@ -30,7 +30,7 @@ import static java.lang.System.currentTimeMillis;
 public class DynamicGetAccessor implements DynamicAccessor {
     private char[] expr;
     private int start;
-    private int end;
+    private int offset;
 
     private long stamp;
     private int type;
@@ -44,13 +44,13 @@ public class DynamicGetAccessor implements DynamicAccessor {
     private Accessor _safeAccessor;
     private Accessor _accessor;
 
-    public DynamicGetAccessor(ParserContext context, char[] expr, int start, int end, int type, Accessor _accessor) {
+    public DynamicGetAccessor(ParserContext context, char[] expr, int start, int offset, int type, Accessor _accessor) {
         this._safeAccessor = this._accessor = _accessor;
         this.type = type;
 
         this.expr = expr;
         this.start = start;
-        this.end = end;
+        this.offset = offset;
 
         this.context = context;
         stamp = currentTimeMillis();
@@ -87,13 +87,13 @@ public class DynamicGetAccessor implements DynamicAccessor {
         AccessorOptimizer ao = OptimizerFactory.getAccessorCompiler("ASM");
         switch (type) {
             case DynamicOptimizer.REGULAR_ACCESSOR:
-                _accessor = ao.optimizeAccessor(context, expr, start, end, ctx, elCtx, variableResolverFactory, false, null);
+                _accessor = ao.optimizeAccessor(context, expr, start, offset, ctx, elCtx, variableResolverFactory, false, null);
                 return ao.getResultOptPass();
             case DynamicOptimizer.OBJ_CREATION:
-                _accessor = ao.optimizeObjectCreation(context, expr, start, end, ctx, elCtx, variableResolverFactory);
+                _accessor = ao.optimizeObjectCreation(context, expr, start, offset, ctx, elCtx, variableResolverFactory);
                 return _accessor.getValue(ctx, elCtx, variableResolverFactory);
             case DynamicOptimizer.COLLECTION:
-                _accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), ctx, null, expr, start, end, ctx, elCtx, variableResolverFactory);
+                _accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), ctx, null, expr, start, offset, ctx, elCtx, variableResolverFactory);
                 return _accessor.getValue(ctx, elCtx, variableResolverFactory);
         }
         return null;

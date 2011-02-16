@@ -21,7 +21,7 @@ public class AccessorBMModel implements Accessor {
     public PropertyHandler nullMethodHandler;
     
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory) {
-    		return null;
+    		return new String[][] {{"2008-04-01", "2008-05-10"}, {"2007-03-01", "2007-02-12"}};
     }
 
     public Object setValue(Object ctx, Object elCtx, VariableResolverFactory variableFactory, Object value) {

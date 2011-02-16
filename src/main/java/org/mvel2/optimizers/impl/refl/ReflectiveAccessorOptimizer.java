@@ -326,7 +326,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         try {
             if (!MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING) {
-                while (cursor < length) {
+                while (cursor < end) {
                     switch (nextSubToken()) {
                         case BEAN:
                             curr = getBeanProperty(curr, capture());
@@ -356,7 +356,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
             }
             else {
-                while (cursor < length) {
+                while (cursor < end) {
                     switch (nextSubToken()) {
                         case BEAN:
                             curr = getBeanPropertyAO(curr, capture());
@@ -627,10 +627,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             if (ctx == null) {
-                throw new PropertyAccessException("unresolvable property or identifier: " + property);
+                throw new CompileException("unresolvable property or identifier: " + property, expr, cursor);
             }
             else {
-                throw new PropertyAccessException("could not access: " + property + "; in class: " + ctx.getClass().getName());
+                throw new CompileException("could not access: " + property + "; in class: " + ctx.getClass().getName(), expr, cursor);
             }
         }
     }
@@ -1107,8 +1107,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         Accessor root = _getAccessor(o, returnType);
 
-        if (property != null && length > 0) {
-            return new Union(root, property, start, offset);
+        if (property != null && length > start) {
+            return new Union(root, property, cursor, offset);
         }
         else {
             return root;

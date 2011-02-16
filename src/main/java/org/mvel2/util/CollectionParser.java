@@ -40,7 +40,6 @@ public class CollectionParser {
     private char[] property;
 
     private int cursor;
-    private int length;
     private int start;
     private int end;
 
@@ -64,9 +63,8 @@ public class CollectionParser {
 
     public Object parseCollection(char[] property, int start, int offset, boolean subcompile, ParserContext pCtx) {
         this.property = property;
-        this.cursor = start;
+        this.start = this.cursor = start;
         this.pCtx = pCtx;
-        this.length = offset;
         this.end = start + offset;
 
 
@@ -75,8 +73,8 @@ public class CollectionParser {
 
     public Object parseCollection(char[] property, int start, int offset, boolean subcompile, Class colType, ParserContext pCtx) {
         if (colType != null) this.colType = getBaseComponentType(colType);
-        this.cursor = start;
-        this.length = offset;
+        this.property = property;
+        this.start = this.cursor = start;
         this.end = start + offset;
         this.pCtx = pCtx;
 
@@ -84,7 +82,7 @@ public class CollectionParser {
     }
 
     private Object parseCollection(boolean subcompile) {
-        if (length == 0) {
+        if (end - start == 0) {
             if (type == LIST) return new ArrayList();
             else return EMPTY_ARRAY;
         }
@@ -92,6 +90,7 @@ public class CollectionParser {
         Map<Object, Object> map = null;
         List<Object> list = null;
         String ex;
+        int st = start;
 
         if (type != -1) {
             switch (type) {
@@ -107,6 +106,7 @@ public class CollectionParser {
 
         Object curr = null;
         int newType = -1;
+
 
         for (; cursor < end; cursor++) {
             switch (property[cursor]) {
@@ -125,8 +125,8 @@ public class CollectionParser {
                     /**
                      * Sub-parse nested collections.
                      */
-                    Object o = new CollectionParser(newType).parseCollection(property, (start = cursor) + 1,
-                            cursor = balancedCapture(property, start, property[start]) - start - 1, subcompile, colType, pCtx);
+                    Object o = new CollectionParser(newType).parseCollection(property, (st = cursor) + 1 ,
+                            (cursor = balancedCapture(property, st, end, property[st])) - st - 1, subcompile, colType, pCtx);
 
                     if (type == MAP) {
                         map.put(curr, o);
@@ -136,36 +136,36 @@ public class CollectionParser {
                     }
 
 
-                    if ((start = ++cursor) < (end - 1) && property[cursor] == ',') {
-                        start = cursor + 1;
+                    if ((st = ++cursor) < (end - 1) && property[cursor] == ',') {
+                        st = cursor + 1;
                     }
 
                     continue;
 
                 case '(':
-                    cursor = balancedCapture(property, cursor, '(');
+                    cursor = balancedCapture(property, cursor, end, '(');
 
                     break;
 
                 case '\"':
                 case '\'':
-                    cursor = balancedCapture(property, cursor, property[cursor]);
+                    cursor = balancedCapture(property, cursor, end, property[cursor]);
 
                     break;
 
                 case ',':
                     if (type != MAP) {
-                        list.add(ex = new String(property, start, cursor - start));
+                        list.add(ex = new String(property, st, cursor - st));
                     }
                     else {
-                        map.put(curr, ex = createStringTrimmed(property, start, cursor - start));
+                        map.put(curr, ex = createStringTrimmed(property, st, cursor - st));
                     }
 
                     if (subcompile) {
                         subCompile(ex);
                     }
 
-                    start = cursor + 1;
+                    st = cursor + 1;
 
                     break;
 
@@ -174,13 +174,13 @@ public class CollectionParser {
                         map = new HashMap<Object, Object>();
                         type = MAP;
                     }
-                    curr = createStringTrimmed(property, start, cursor - start);
+                    curr = createStringTrimmed(property, st, cursor - st);
 
                     if (subcompile) {
                         subCompile((String) curr);
                     }
 
-                    start = cursor + 1;
+                    st = cursor + 1;
                     break;
 
                 case '.':
@@ -193,15 +193,15 @@ public class CollectionParser {
             }
         }
 
-        if (start < end) {
+        if (st < end) {
             if (cursor < (end - 1)) cursor++;
 
             if (type == MAP) {
-                map.put(curr, ex = createStringTrimmed(property, start, cursor - start));
+                map.put(curr, ex = createStringTrimmed(property, st, cursor - st));
             }
             else {
                 if (cursor < end) cursor++;
-                list.add(ex = createStringTrimmed(property, start, cursor - start));
+                list.add(ex = createStringTrimmed(property, st, cursor - st));
             }
 
             if (subcompile) subCompile(ex);

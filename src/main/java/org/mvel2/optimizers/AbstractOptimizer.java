@@ -234,11 +234,11 @@ public class AbstractOptimizer extends AbstractParser {
      * @return - returns true is end of statement is hit, false if the scan scar is countered.
      */
     protected boolean scanTo(char c) {
-        for (; cursor < length; cursor++) {
+        for (; cursor < end; cursor++) {
             switch (expr[cursor]) {
                 case '\'':
                 case '"':
-                    cursor = captureStringLiteral(expr[cursor], expr, cursor, expr.length);
+                    cursor = captureStringLiteral(expr[cursor], expr, cursor, end);
                 default:
                     if (expr[cursor] == c) {
                         return false;

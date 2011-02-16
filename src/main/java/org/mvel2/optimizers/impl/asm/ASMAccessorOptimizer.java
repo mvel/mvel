@@ -2826,9 +2826,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     public Accessor optimizeCollection(ParserContext pCtx, Object o, Class type, char[] property, int start, int offset,
                                        Object ctx, Object thisRef, VariableResolverFactory factory) {
+        this.expr = property;
         this.cursor = this.start = start;
         this.end = start + offset;
         this.length = offset;
+
 
         this.returnType = type;
 

@@ -280,10 +280,10 @@ public class NewObjectNode extends ASTNode {
             throw new CompileException("unable to resolve class: " + e.getMessage(), e);
         }
         catch (NoSuchMethodException e) {
-            throw new CompileException("cannot resolve constructor: " + e.getMessage());
+            throw new CompileException("cannot resolve constructor: " + e.getMessage(), e);
         }
         catch (Exception e) {
-            throw new CompileException("could not instantiate class: " + e.getMessage());
+            throw new CompileException("could not instantiate class: " + e.getMessage(), e);
         }
     }
 

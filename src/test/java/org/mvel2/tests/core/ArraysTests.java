@@ -8,6 +8,7 @@ import org.mvel2.tests.core.res.Bar;
 import org.mvel2.tests.core.res.Foo;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 import static org.mvel2.MVEL.*;
 import static org.mvel2.MVEL.compileSetExpression;
@@ -26,8 +27,13 @@ public class ArraysTests extends AbstractTest {
     }
 
     public void testArrayConstructionSupport3() {
+        String exp = "xStr = new String[5][5]; xStr[4][0] = 'foo'; xStr[4][0]";
+        Serializable s = MVEL.compileExpression(exp);
+
+        assertEquals("foo", MVEL.executeExpression(s, new HashMap()));
+
         assertEquals("foo",
-                test("xStr = new String[5][5]; xStr[4][0] = 'foo'; xStr[4][0]"));
+                test(exp));
     }
 
     public void testArrayConstructionSupport4() {
@@ -37,7 +43,7 @@ public class ArraysTests extends AbstractTest {
 
     public void testArrayDefinitionWithInitializer() {
         String[] compareTo = new String[]{"foo", "bar"};
-        String[] results = (String[]) test("new String[] { 'foo', 'bar' }");
+        String[] results = (String[]) MVEL.eval("new String[] { 'foo', 'bar' }");
 
         for (int i = 0; i < compareTo.length; i++) {
             if (!compareTo[i].equals(results[i])) throw new AssertionError("arrays do not match.");
@@ -45,7 +51,7 @@ public class ArraysTests extends AbstractTest {
     }
 
     public void testArrayDefinitionWithCoercion() {
-        Double[] d = (Double[]) test("new double[] { 1,2,3,4 }");
+        Double[] d = (Double[]) MVEL.executeExpression(MVEL.compileExpression("new double[] { 1,2,3,4 }"));
         assertEquals(2d,
                 d[1]);
     }

@@ -340,13 +340,14 @@ public class AbstractParser implements Parser, Serializable {
 
                                     cursor = balancedCaptureWithLineAccounting(expr, cursor, end, expr[cursor], pCtx) + 1;
                                     if (tokenContinues()) {
-                                        lastNode = new InlineCollectionNode(expr, st, st = cursor, fields,
+                                        lastNode = new InlineCollectionNode(expr, st, cursor - st, fields,
                                                 egressType, pCtx);
+                                        st = cursor;
                                         captureToEOT();
                                         return lastNode = new Union(expr, st + 1, cursor, fields, lastNode);
                                     }
                                     else {
-                                        return lastNode = new InlineCollectionNode(expr, st, cursor, fields,
+                                        return lastNode = new InlineCollectionNode(expr, st, cursor - st, fields,
                                                 egressType, pCtx);
                                     }
                                 }

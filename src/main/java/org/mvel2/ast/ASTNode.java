@@ -458,7 +458,7 @@ public class ASTNode implements Cloneable, Serializable {
 
     public String toString() {
         return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" :
-                 (PCTX_STORED & fields) != 0 ? nameCache : String.valueOf(literal);
+                 (PCTX_STORED & fields) != 0 ? nameCache : new String(expr, start, offset);
     }
 }
 

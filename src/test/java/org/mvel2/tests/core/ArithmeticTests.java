@@ -642,11 +642,11 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testJIRA158() {
-        Serializable s = MVEL.compileExpression("4/2 + Math.sin(1)");
+//        Serializable s = MVEL.compileExpression("4/2 + Math.sin(1)");
+//
+//        assertEquals(4 / 2 + Math.sin(1), MVEL.executeExpression(s));
 
-        assertEquals(4 / 2 + Math.sin(1), MVEL.executeExpression(s));
-
-        s = MVEL.compileExpression("(float) (4/2 + Math.sin(1))", ParserContext.create().stronglyTyped());
+        Serializable s = MVEL.compileExpression("(float) (4/2 + Math.sin(1))", ParserContext.create().stronglyTyped());
 
         assertEquals((float) (4 / 2 + Math.sin(1)), MVEL.executeExpression(s));
     }

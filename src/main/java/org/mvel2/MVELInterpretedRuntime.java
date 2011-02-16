@@ -329,11 +329,11 @@ public class MVELInterpretedRuntime extends AbstractParser {
     }
 
     MVELInterpretedRuntime(char[] expression) {
-        this.length = (this.expr = expression).length;
+        this.length = end = (this.expr = expression).length;
     }
 
     public MVELInterpretedRuntime(char[] expr, Object ctx, VariableResolverFactory resolverFactory) {
-        this.length = (this.expr = expr).length;
+        this.length = end = (this.expr = expr).length;
         this.ctx = ctx;
         this.variableFactory = resolverFactory;
     }
@@ -347,24 +347,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
         this.variableFactory = resolverFactory;
     }
 
-    MVELInterpretedRuntime(char[] expr, Object ctx, VariableResolverFactory resolverFactory, boolean returnBigDecimal) {
-        this.length = (this.expr = expr).length;
-        this.ctx = ctx;
-        this.variableFactory = resolverFactory;
-    }
-
-    MVELInterpretedRuntime(Object ctx, Map<String, Object> variables) {
-        this.ctx = ctx;
-        this.variableFactory = new MapVariableResolverFactory(variables);
-    }
 
     public MVELInterpretedRuntime(String expression, Object ctx, VariableResolverFactory resolverFactory) {
-        setExpression(expression);
-        this.ctx = ctx;
-        this.variableFactory = resolverFactory;
-    }
-
-    MVELInterpretedRuntime(String expression, Object ctx, VariableResolverFactory resolverFactory, boolean returnBigDecimal) {
         setExpression(expression);
         this.ctx = ctx;
         this.variableFactory = resolverFactory;

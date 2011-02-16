@@ -58,15 +58,16 @@ public class TypeDescriptor implements Serializable {
 
         if ((endRange = findFirst('(', start, offset, name)) == -1) {
             if ((endRange = findFirst('[', start, offset, name)) != -1) {
-                className = new String(name, start, endRange).trim();
+                className = new String(name, start, endRange - start).trim();
                 int to;
 
                 LinkedList<char[]> sizes = new LinkedList<char[]>();
 
-                while (endRange < name.length) {
-                    while (endRange < name.length && isWhitespace(name[endRange])) endRange++;
+                int end = start + offset;
+                while (endRange < end) {
+                    while (endRange < end&& isWhitespace(name[endRange])) endRange++;
 
-                    if (endRange == name.length || name[endRange] == '{') break;
+                    if (endRange == end || name[endRange] == '{') break;
 
                     if (name[endRange] != '[') {
                         throw new CompileException("unexpected token in contstructor", name, endRange);
@@ -91,10 +92,10 @@ public class TypeDescriptor implements Serializable {
                 return;
             }
 
-            className = new String(name).trim();
+            className = new String(name, start, offset).trim();
         }
         else {
-            className = new String(name, 0, endRange).trim();
+            className = new String(name, start, endRange - start).trim();
         }
     }
 
