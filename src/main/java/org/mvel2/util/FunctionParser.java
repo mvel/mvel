@@ -5,6 +5,7 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.AbstractParser;
 import org.mvel2.ast.EndOfStatement;
 import org.mvel2.ast.Function;
+
 import static org.mvel2.util.ParseTools.balancedCaptureWithLineAccounting;
 import static org.mvel2.util.ParseTools.createStringTrimmed;
 
@@ -23,6 +24,7 @@ public class FunctionParser {
         this.name = functionName;
         this.cursor = cursor;
         this.endOffset = endOffset;
+
         this.expr = expr;
         this.fields = fields;
         this.pCtx = pCtx;
@@ -38,14 +40,16 @@ public class FunctionParser {
         int blockStart;
         int blockEnd;
 
-        cursor = ParseTools.captureToNextTokenJunction(expr, cursor, pCtx);
+        cursor = ParseTools.captureToNextTokenJunction(expr, cursor, cursor + endOffset, pCtx);
+
+        int end = cursor + endOffset;
 
         if (expr[cursor = ParseTools.nextNonBlank(expr, cursor)] == '(') {
             /**
              * If we discover an opening bracket after the function name, we check to see
              * if this function accepts parameters.
              */
-            endCond = cursor = balancedCaptureWithLineAccounting(expr, startCond = cursor, '(', pCtx);
+            endCond = cursor = balancedCaptureWithLineAccounting(expr, startCond = cursor, end, '(', pCtx);
             startCond++;
             cursor++;
 
@@ -55,11 +59,11 @@ public class FunctionParser {
                 throw new CompileException("incomplete statement", expr, cursor);
             }
             else if (expr[cursor] == '{') {
-                blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{', pCtx);
+                blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, end, '{', pCtx);
             }
             else {
                 blockStart = cursor - 1;
-                cursor = ParseTools.captureToEOS(expr, cursor, pCtx);
+                cursor = ParseTools.captureToEOS(expr, cursor, end, pCtx);
                 blockEnd = cursor;
             }
         }
@@ -71,14 +75,14 @@ public class FunctionParser {
                 /**
                  * This function is bracketed.  We capture the entire range in the brackets.
                  */
-                blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, '{', pCtx);
+                blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, end, '{', pCtx);
             }
             else {
                 /**
                  * This is a single statement function declaration.  We only capture the statement.
                  */
                 blockStart = cursor - 1;
-                cursor = ParseTools.captureToEOS(expr, cursor, pCtx);
+                cursor = ParseTools.captureToEOS(expr, cursor,end,  pCtx);
                 blockEnd = cursor;
             }
         }

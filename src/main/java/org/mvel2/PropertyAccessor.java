@@ -63,9 +63,11 @@ import java.util.*;
 public class PropertyAccessor {
     private int start = 0;
     private int cursor = 0;
+    private int st;
 
     private char[] property;
     private int length;
+    private int end;
 
     private Object thisReference;
     private Object ctx;
@@ -99,19 +101,19 @@ public class PropertyAccessor {
 
     public PropertyAccessor(char[] property, Object ctx) {
         this.property = property;
-        this.length = property.length;
+        this.length = end = property.length;
         this.ctx = ctx;
     }
 
     public PropertyAccessor(char[] property, Object ctx, VariableResolverFactory resolver, Object thisReference) {
-        this.length = (this.property = property).length;
+        this.length = end = (this.property = property).length;
         this.ctx = ctx;
         this.variableFactory = resolver;
         this.thisReference = thisReference;
     }
 
     public PropertyAccessor(char[] property, Object ctx, Object thisRef, VariableResolverFactory resolver, Object thisReference) {
-        this.length = (this.property = property).length;
+        this.length = end = (this.property = property).length;
         this.ctx = ctx;
         this.thisReference = thisRef;
         this.variableFactory = resolver;
@@ -124,10 +126,11 @@ public class PropertyAccessor {
     }
 
 
-    public PropertyAccessor(char[] property, int offset, int end, Object ctx, VariableResolverFactory resolver, Object thisReference) {
+    public PropertyAccessor(char[] property, int start, int offset, Object ctx, VariableResolverFactory resolver, Object thisReference) {
         this.property = property;
-        this.cursor = offset;
-        this.length = end;
+        this.cursor = this.st = start;
+        this.length = offset;
+        this.end =  start + offset;
         this.ctx = ctx;
         this.variableFactory = resolver;
         this.thisReference = thisReference;
@@ -169,6 +172,7 @@ public class PropertyAccessor {
 
     private Object get() {
         curr = ctx;
+
         try {
             if (!MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING) {
                 return getNormal();
@@ -201,7 +205,7 @@ public class PropertyAccessor {
     }
 
     private Object getNormal() throws Exception {
-        while (cursor < length) {
+        while (cursor < end) {
             switch (nextToken()) {
                 case NORM:
                     curr = getBeanProperty(curr, capture());
@@ -232,7 +236,7 @@ public class PropertyAccessor {
     }
 
     private Object getAllowOverride() throws Exception {
-        while (cursor < length) {
+        while (cursor < end) {
             switch (nextToken()) {
                 case NORM:
                     if ((curr = getBeanPropertyAO(curr, capture())) == null && hasNullPropertyHandler()) {
@@ -270,24 +274,24 @@ public class PropertyAccessor {
         curr = ctx;
 
         try {
-            int oLength = length;
+            int oLength = end;
 
-            length = findAbsoluteLast(property);
+            end = findAbsoluteLast(property);
 
             if ((curr = get()) == null)
                 throw new PropertyAccessException("cannot bind to null context: " + new String(property));
 
-            length = oLength;
+            end = oLength;
 
             if (nextToken() == COL) {
-                int start = ++cursor;
+                int _start = ++cursor;
 
                 whiteSpaceSkip();
 
                 if (cursor == length || scanTo(']'))
                     throw new PropertyAccessException("unterminated '['");
 
-                String ex = new String(property, start, cursor - start);
+                String ex = new String(property, _start, cursor - _start);
 
                 if (!MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING) {
                     if (curr instanceof Map) {
@@ -407,16 +411,16 @@ public class PropertyAccessor {
 
 
     private int nextToken() {
-        switch (property[start = cursor]) {
+        switch (property[st = cursor]) {
             case '[':
                 return COL;
             case '.':
                 // ++cursor;
-                while (cursor < length && isWhitespace(property[cursor])) cursor++;
-                if ((start + 1) != length) {
-                    switch (property[cursor = ++start]) {
+                while (cursor < end && isWhitespace(property[cursor])) cursor++;
+                if ((st + 1) != end) {
+                    switch (property[cursor = ++st]) {
                         case '?':
-                            cursor = ++start;
+                            cursor = ++st;
                             nullHandle = true;
                             break;
                         case '{':
@@ -426,13 +430,13 @@ public class PropertyAccessor {
                 }
         }
 
-        while (cursor < length && isWhitespace(property[cursor])) cursor++;
-        start = cursor;
+        while (cursor < end && isWhitespace(property[cursor])) cursor++;
+        st = cursor;
 
         //noinspection StatementWithEmptyBody
-        while (++cursor < length && isJavaIdentifierPart(property[cursor])) ;
+        while (++cursor < end && isJavaIdentifierPart(property[cursor])) ;
 
-        if (cursor < length) {
+        if (cursor < end) {
             while (isWhitespace(property[cursor])) cursor++;
             switch (property[cursor]) {
                 case '[':
@@ -447,7 +451,7 @@ public class PropertyAccessor {
     }
 
     private String capture() {
-        return new String(property, start, trimLeft(cursor) - start);
+        return new String(property, st, trimLeft(cursor) - st);
     }
 
     protected int trimLeft(int pos) {
@@ -650,9 +654,9 @@ public class PropertyAccessor {
     }
 
     private void whiteSpaceSkip() {
-        if (cursor < length)
+        if (cursor < end)
             //noinspection StatementWithEmptyBody
-            while (isWhitespace(property[cursor]) && ++cursor < length) ;
+            while (isWhitespace(property[cursor]) && ++cursor < end) ;
     }
 
     /**
@@ -660,11 +664,11 @@ public class PropertyAccessor {
      * @return - returns true is end of statement is hit, false if the scan scar is countered.
      */
     private boolean scanTo(char c) {
-        for (; cursor < length; cursor++) {
+        for (; cursor < end; cursor++) {
             switch (property[cursor]) {
                 case '\'':
                 case '"':
-                    cursor = captureStringLiteral(property[cursor], property, cursor, property.length);
+                    cursor = captureStringLiteral(property[cursor], property, cursor, end - cursor);
                 default:
                     if (property[cursor] == c) {
                         return false;
@@ -677,7 +681,8 @@ public class PropertyAccessor {
 
     private Object getWithProperty(Object ctx) {
         parseWithExpressions(new String(property, 0, cursor - 1).trim(), property, cursor + 1,
-                cursor = balancedCaptureWithLineAccounting(property, cursor, '{', getCurrentThreadParserContext()), ctx, variableFactory);
+                cursor = balancedCaptureWithLineAccounting(property, cursor, end,
+                        '{', getCurrentThreadParserContext()), ctx, variableFactory);
         cursor++;
         return ctx;
     }
@@ -697,13 +702,13 @@ public class PropertyAccessor {
 
         if (ctx == null) return null;
 
-        int start = ++cursor;
+        int _start = ++cursor;
         whiteSpaceSkip();
 
-        if (cursor == length || scanTo(']'))
+        if (cursor == end || scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
-        prop = new String(property, start, cursor++ - start);
+        prop = new String(property, _start, cursor++ - _start);
 
         if (ctx instanceof Map) {
             return ((Map) ctx).get(eval(prop, ctx, variableFactory));
@@ -729,7 +734,7 @@ public class PropertyAccessor {
         else {
             //     TypeDescriptor td = new TypeDescriptor(property, 0);
             try {
-                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, start, length, 0));
+                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, _start, length, 0));
             }
             catch (Exception e) {
                 throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()), e);
@@ -744,13 +749,13 @@ public class PropertyAccessor {
 
         if (ctx == null) return null;
 
-        int start = ++cursor;
+        int _start = ++cursor;
         whiteSpaceSkip();
 
-        if (cursor == length || scanTo(']'))
+        if (cursor == end || scanTo(']'))
             throw new PropertyAccessException("unterminated '['");
 
-        prop = new String(property, start, cursor++ - start);
+        prop = new String(property, _start, cursor++ - _start);
 
         if (ctx instanceof Map) {
             if (hasPropertyHandler(Map.class))
@@ -791,7 +796,7 @@ public class PropertyAccessor {
         }
         else {
             try {
-                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, start, length, 0));
+                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, _start, length, 0));
             }
             catch (Exception e) {
                 throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
@@ -810,11 +815,11 @@ public class PropertyAccessor {
      */
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name) {
-        int st = cursor;
+        int _start = cursor;
 
-        String tk = cursor != length
-                && property[cursor] == '(' && ((cursor = balancedCapture(property, cursor, '(')) - st) > 1 ?
-                new String(property, st + 1, cursor - st - 1) : "";
+        String tk = cursor != end
+                && property[cursor] == '(' && ((cursor = balancedCapture(property, cursor, '(')) - _start) > 1 ?
+                new String(property, _start + 1, cursor - _start - 1) : "";
 
         cursor++;
 
@@ -976,8 +981,8 @@ public class PropertyAccessor {
              *
              */
             boolean meth = false;
-            int last = length;
-            for (int i = length - 1; i > 0; i--) {
+            int last = end;
+            for (int i = end - 1; i > 0; i--) {
                 switch (property[i]) {
                     case '.':
                         if (!meth) {
@@ -986,7 +991,7 @@ public class PropertyAccessor {
                             }
                             catch (ClassNotFoundException e) {
                                 Class cls = currentThread().getContextClassLoader().loadClass(new String(property, 0, i));
-                                String name = new String(property, i + 1, property.length - i - 1);
+                                String name = new String(property, i + 1, end - i - 1);
                                 try {
                                     return cls.getField(name);
                                 }

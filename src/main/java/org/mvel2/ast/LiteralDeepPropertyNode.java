@@ -33,9 +33,12 @@ import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 public class LiteralDeepPropertyNode extends ASTNode {
     private Object literal;
 
-    public LiteralDeepPropertyNode(char[] expr, int fields, Object literal) {
+    public LiteralDeepPropertyNode(char[] expr, int start, int offset, int fields, Object literal) {
         this.fields = fields;
-        this.name = expr;
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
+
         this.literal = literal;
     }
 
@@ -46,7 +49,8 @@ public class LiteralDeepPropertyNode extends ASTNode {
         else {
             try {
                 AccessorOptimizer aO = getThreadAccessorOptimizer();
-                accessor = aO.optimizeAccessor(getCurrentThreadParserContext(), name, literal, thisValue, factory, false, null);
+                accessor = aO.optimizeAccessor(getCurrentThreadParserContext(), expr, start, offset,
+                        literal, thisValue, factory, false, null);
                 return aO.getResultOptPass();
             }
             finally {
@@ -56,6 +60,6 @@ public class LiteralDeepPropertyNode extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return get(name, literal, factory, thisValue);
+        return get(expr, start, offset, literal, factory, thisValue);
     }
 }

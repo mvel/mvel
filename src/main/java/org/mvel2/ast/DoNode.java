@@ -34,12 +34,18 @@ public class DoNode extends BlockNode {
     protected String item;
     protected ExecutableStatement condition;
 
-    public DoNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
-        this.condition = (ExecutableStatement) subCompileExpression(this.name = condition, pCtx);
+    public DoNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
+        this.blockStart = blockStart;
+        this.blockOffset = blockOffset;
+
+        this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx);
 
         expectType(this.condition, Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block, pCtx);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

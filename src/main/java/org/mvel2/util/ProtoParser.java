@@ -121,7 +121,7 @@ public class ProtoParser {
                             case '(':
                             case '\'':
                             case '"':
-                                cursor = balancedCaptureWithLineAccounting(expr, cursor, expr[cursor], pCtx);
+                                cursor = balancedCaptureWithLineAccounting(expr, cursor, endOffset, expr[cursor], pCtx);
                                 break;
 
                             case ';':

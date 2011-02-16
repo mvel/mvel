@@ -203,7 +203,7 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public char[] getNameAsArray() {
-        return subArray(expr, start, offset - start);
+        return subArray(expr, start, offset);
     }
 
     private int getAbsoluteFirstPart() {
@@ -310,15 +310,22 @@ public class ASTNode implements Cloneable, Serializable {
             if (((fields |= NUMERIC | LITERAL | IDENTIFIER) & INVERT) != 0) {
                 try {
                     literal = ~((Integer) literal);
+                    System.out.println("#tk:<<" + literal + ">>");
+
                 }
                 catch (ClassCastException e) {
                     throw new CompileException("bitwise (~) operator can only be applied to integers");
                 }
             }
+            else {
+                System.out.println("#tk:<<" + literal + ">>");
+            }
             return;
         }
 
         this.literal = new String(name, start, offset);
+
+        System.out.println("$tk:<<" + literal + ">>");
 
         Scan:
         for (int i = start; i < name.length; i++) {
@@ -340,7 +347,7 @@ public class ASTNode implements Cloneable, Serializable {
             }
         }
 
-        if ((fields & INLINE_COLLECTION) != start) {
+        if ((fields & INLINE_COLLECTION) != 0) {
             return;
         }
 
@@ -436,20 +443,29 @@ public class ASTNode implements Cloneable, Serializable {
         return safeAccessor != null;
     }
 
-    public ASTNode() {
+    public int getStart() {
+        return start;
     }
 
-    public ASTNode(char[] expr, int start, int end, int fields) {
+    public int getOffset() {
+        return offset;
+    }
+
+    protected ASTNode() {
+    }
+
+    public ASTNode(char[] expr, int start, int offset, int fields) {
         this.fields = fields;
         this.expr = expr;
         this.start = start;
-        this.offset = end - start;
+        this.offset = offset;
 
         setName(expr);
     }
 
     public String toString() {
-        return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" : String.valueOf(literal);
+        return isOperator() ? "<<" + DebugTools.getOperatorName(getOperator()) + ">>" :
+                 (PCTX_STORED & fields) != 0 ? nameCache : String.valueOf(literal);
     }
 }
 

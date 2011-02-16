@@ -42,6 +42,8 @@ public class AbstractOptimizer extends AbstractParser {
     protected Class currType = null;
     protected boolean staticAccess = false;
 
+    protected int tkStart;
+
 
     /**
      * Try static access of the property, and return an instance of the Field, Method of Class if successful.
@@ -163,15 +165,15 @@ public class AbstractOptimizer extends AbstractParser {
         skipWhitespace();
         nullSafe = false;
 
-        switch (expr[start = cursor]) {
+        switch (expr[tkStart = cursor]) {
             case '[':
                 return COL;
             case '.':
-                if ((start + 1) != length) {
-                    switch (expr[cursor = ++start]) {
+                if ((start + 1) != end) {
+                    switch (expr[cursor = ++tkStart]) {
                         case '?':
                             skipWhitespace();
-                            if ((cursor = ++start) == length) {
+                            if ((cursor = ++tkStart) == end) {
                                 throw new CompileException("unexpected end of statement");
                             }
                             nullSafe = true;
@@ -181,9 +183,9 @@ public class AbstractOptimizer extends AbstractParser {
                         case '{':
                             return WITH;
                         default:
-                            if (isWhitespace(expr[start])) {
+                            if (isWhitespace(expr[tkStart])) {
                                 skipWhitespace();
-                                start = cursor;
+                                tkStart = cursor;
                             }
                     }
                 }
@@ -194,9 +196,9 @@ public class AbstractOptimizer extends AbstractParser {
         }
 
         //noinspection StatementWithEmptyBody
-        while (++cursor < length && isIdentifierPart(expr[cursor]));
+        while (++cursor < end && isIdentifierPart(expr[cursor]));
 
-        if (cursor < length) {
+        if (cursor < end) {
             skipWhitespace();
             switch (expr[cursor]) {
                 case '[':
@@ -215,7 +217,7 @@ public class AbstractOptimizer extends AbstractParser {
         /**
          * Trim off any whitespace.
          */
-        return new String(expr, start = trimRight(start), trimLeft(cursor) - start);
+        return new String(expr, tkStart = trimRight(tkStart), trimLeft(cursor) - tkStart);
     }
 
     /**
@@ -253,7 +255,7 @@ public class AbstractOptimizer extends AbstractParser {
         int depth = 0;
 
         int end = start + length;
-        for (int i = expr.length - 1; i != end; i--) {
+        for (int i = end - 1; i != start; i--) {
             switch (expr[i]) {
                 case '}':
                 case ']':

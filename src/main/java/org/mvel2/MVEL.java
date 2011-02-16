@@ -896,6 +896,10 @@ public class MVEL {
         return new CompiledAccExpression(expression, Object.class, ctx);
     }
 
+    public static Serializable compileSetExpression(char[] expression, int start, int offset, ParserContext ctx) {
+        return new CompiledAccExpression(expression, start, offset, Object.class, ctx);
+    }
+
     public static Serializable compileSetExpression(char[] expression, Class ingressType, ParserContext ctx) {
         return new CompiledAccExpression(expression, ingressType, ctx);
     }

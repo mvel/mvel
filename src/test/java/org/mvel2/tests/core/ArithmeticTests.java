@@ -19,7 +19,12 @@ import java.util.Map;
 
 public class ArithmeticTests extends AbstractTest {
     public void testMath() {
-        assertEquals(188, test("pi * hour"));
+        Map vars = createTestMap();
+
+     //   assertEquals(188, MVEL.eval("pi * hour", vars));
+
+        Serializable s = MVEL.compileExpression("pi * hour");
+        assertEquals(188, MVEL.executeExpression(s, vars));
     }
 
     public void testMath2() {
@@ -53,7 +58,15 @@ public class ArithmeticTests extends AbstractTest {
 
     public void testMath6() {
         double val = (300 * 5 + 1) + 100 / 2 * 2;
-        assertEquals(val, test("(300 * five + 1) + (100 / 2 * 2)"));
+        String expression = "(300 * five + 1) + (100 / 2 * 2)";
+        System.out.println(">>" + expression + "<<");
+
+        Map vars = createTestMap();
+        assertEquals(val, MVEL.eval(expression, vars));
+
+        Serializable s = MVEL.compileExpression(expression);
+        assertEquals(val, MVEL.executeExpression(s, vars));
+      //  assertEquals(val, test("(300 * five + 1) + (100 / 2 * 2)"));
     }
 
     public void testMath7() {
@@ -71,7 +84,16 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testSignOperator() {
-        assertEquals(-15, test("int x = 15; -x"));
+        String expr = "int x = 15; -x";
+        Map vars = new HashMap();
+
+      //  assertEquals(-15, MVEL.eval(expr, vars));
+        vars.clear();
+
+        Serializable s = MVEL.compileExpression(expr);
+        assertEquals(-15, MVEL.executeExpression(s, vars));
+
+      //  assertEquals(-15, test("int x = 15; -x"));
     }
 
 

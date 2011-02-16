@@ -30,11 +30,13 @@ import static org.mvel2.util.ParseTools.subCompileExpression;
 public class Invert extends ASTNode {
     private ExecutableStatement stmt;
 
-    public Invert(char[] name, int fields, ParserContext pCtx) {
-        this.name = name;
+    public Invert(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            expectType(this.stmt = (ExecutableStatement) subCompileExpression(name, pCtx), Integer.class, true);
+            expectType(this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx), Integer.class, true);
         }
     }
 
@@ -43,7 +45,7 @@ public class Invert extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        Object o = MVEL.eval(name, ctx, factory);
+        Object o = MVEL.eval(expr, start, offset, ctx, factory);
         if (o instanceof Integer) {
             return ~((Integer) o);
         }

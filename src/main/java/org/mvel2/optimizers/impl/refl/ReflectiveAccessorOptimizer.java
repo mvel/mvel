@@ -91,6 +91,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         this.expr = property;
         this.start = start;
         this.length = property != null ? offset : start;
+        this.end = start + length;
         this.ctx = ctx;
         this.variableFactory = variableFactory;
         this.thisRef = thisRef;
@@ -122,10 +123,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     public Accessor optimizeAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
                                      VariableResolverFactory factory, boolean root, Class ingressType) {
         this.rootNode = this.currNode = null;
+        this.expr = property;
         this.start = start;
-        this.first = true;
+        this.end = start + offset;
+        this.length = end - start;
 
-        this.length =  start + offset;
+
+        this.first = true;
         this.ctx = ctx;
         this.thisRef = thisRef;
         this.variableFactory = factory;
@@ -139,6 +143,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
                                         VariableResolverFactory factory, boolean rootThisRef, Object value, Class ingressType) {
         this.rootNode = this.currNode = null;
+        this.expr = property;
         this.start = start;
         this.first = true;
 
@@ -161,7 +166,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         if (root != null) {
-            this.length = (this.expr = root).length;
+           this.length = end = (this.expr = root).length;
 
             compileGetChain();
             ctx = this.val;
@@ -172,9 +177,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         try {
-            this.length = (this.expr = property).length;
+            this.length = end = (this.expr = property).length;
             int st;
-            this.cursor = st = start;
+            this.cursor = st =  0
+            ;
 
             skipWhitespace();
 
@@ -240,7 +246,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 return rootNode;
             }
 
-            String tk = new String(property, start, offset);
+            String tk = new String(property, 0, length);
 
             if (hasSetListeners()) {
                 notifySetListeners(ctx, tk, variableFactory, value);
@@ -316,6 +322,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
     private Accessor compileGetChain() {
         Object curr = ctx;
+        cursor = start;
 
         try {
             if (!MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING) {
@@ -381,7 +388,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             val = curr;
 
             if (pCtx.isStrictTypeEnforcement()) {
-                this.returnType = new PropertyVerifier(this.expr, pCtx).analyze();
+                this.returnType = new PropertyVerifier(this.expr, start, length, pCtx).analyze();
             }
 
             return rootNode;
@@ -396,19 +403,19 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
             }
 
-            throw new PropertyAccessException(new String(expr) + ": " + e.getTargetException().getMessage(), e);
+            throw new PropertyAccessException(new String(expr, start, length) + ": " + e.getTargetException().getMessage(), e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException(new String(expr) + ": " + e.getMessage(), e);
+            throw new PropertyAccessException(new String(expr, start, length) + ": " + e.getMessage(), e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException(new String(expr) + ": array index out of bounds.", e);
+            throw new PropertyAccessException(new String(expr, start, length) + ": array index out of bounds.", e);
         }
         catch (CompileException e) {
             throw e;
         }
         catch (NullPointerException e) {
-            throw new PropertyAccessException(new String(expr), e);
+            throw new PropertyAccessException(new String(expr, start, length), e);
         }
         catch (Exception e) {
             throw new CompileException(e.getMessage(), e);
@@ -427,7 +434,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         String root = new String(expr, start, cursor - 1).trim();
 
         int st = cursor + 1;
-        cursor = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx);
+        cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '{', pCtx);
 
         WithAccessor wa = new WithAccessor(root, subset(expr, st, cursor++ - st), ingressType, false);
 

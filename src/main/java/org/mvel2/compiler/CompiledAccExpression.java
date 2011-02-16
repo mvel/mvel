@@ -52,7 +52,7 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
         if (accessor == null) {
             if (ingressType == Object.class && value != null) ingressType = value.getClass();
             accessor = getThreadAccessorOptimizer()
-                    .optimizeSetAccessor(context, expression, start, offset, ctx, ctx, vrf, false, value, ingressType);
+                    .optimizeSetAccessor(context, expression, 0, expression.length, ctx, ctx, vrf, false, value, ingressType);
 
         }
         else {
@@ -65,7 +65,7 @@ public class CompiledAccExpression implements ExecutableStatement, Serializable 
         if (accessor == null) {
             try {
                 accessor = getThreadAccessorOptimizer()
-                        .optimizeAccessor(context, expression, start, offset, staticContext, staticContext, factory, false, ingressType);
+                        .optimizeAccessor(context, expression, 0, expression.length, staticContext, staticContext, factory, false, ingressType);
                 return getValue(staticContext, factory);
             }
             finally {

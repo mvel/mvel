@@ -42,6 +42,7 @@ public class CollectionParser {
     private int cursor;
     private int length;
     private int start;
+    private int end;
 
     private int type;
 
@@ -50,7 +51,6 @@ public class CollectionParser {
     public static final int MAP = 2;
 
     private Class colType;
-  //  private boolean strongType;
     private ParserContext pCtx;
 
     private static final Object[] EMPTY_ARRAY = new Object[0];
@@ -58,29 +58,27 @@ public class CollectionParser {
     public CollectionParser() {
     }
 
-
-
     public CollectionParser(int type) {
         this.type = type;
     }
 
-    public Object parseCollection(char[] property, boolean subcompile, ParserContext pCtx) {
-        this.cursor = 0;
+    public Object parseCollection(char[] property, int start, int offset, boolean subcompile, ParserContext pCtx) {
+        this.property = property;
+        this.cursor = start;
         this.pCtx = pCtx;
-        if ((this.length = (this.property = property).length) > 0)
-            while (length > 0 && isWhitespace(property[length - 1]))
-                length--;
+        this.length = offset;
+        this.end = start + offset;
+
 
         return parseCollection(subcompile);
     }
 
-    public Object parseCollection(char[] property, boolean subcompile, Class colType, ParserContext pCtx) {
+    public Object parseCollection(char[] property, int start, int offset, boolean subcompile, Class colType, ParserContext pCtx) {
         if (colType != null) this.colType = getBaseComponentType(colType);
-        this.cursor = 0;
+        this.cursor = start;
+        this.length = offset;
+        this.end = start + offset;
         this.pCtx = pCtx;
-        if ((this.length = (this.property = property).length) > 0)
-            while (length > 0 && isWhitespace(property[length - 1]))
-                length--;
 
         return parseCollection(subcompile);
     }
@@ -110,7 +108,7 @@ public class CollectionParser {
         Object curr = null;
         int newType = -1;
 
-        for (; cursor < length; cursor++) {
+        for (; cursor < end; cursor++) {
             switch (property[cursor]) {
                 case '{':
                     if (newType == -1) {
@@ -127,8 +125,8 @@ public class CollectionParser {
                     /**
                      * Sub-parse nested collections.
                      */
-                    Object o = new CollectionParser(newType).parseCollection(subset(property, (start = cursor) + 1,
-                            cursor = balancedCapture(property, start, property[start])), subcompile, colType, pCtx);
+                    Object o = new CollectionParser(newType).parseCollection(property, (start = cursor) + 1,
+                            cursor = balancedCapture(property, start, property[start]) - start - 1, subcompile, colType, pCtx);
 
                     if (type == MAP) {
                         map.put(curr, o);
@@ -138,7 +136,7 @@ public class CollectionParser {
                     }
 
 
-                    if ((start = ++cursor) < (length - 1) && property[cursor] == ',') {
+                    if ((start = ++cursor) < (end - 1) && property[cursor] == ',') {
                         start = cursor + 1;
                     }
 
@@ -187,22 +185,22 @@ public class CollectionParser {
 
                 case '.':
                     cursor++;
-                    while (cursor != length && isWhitespace(property[cursor])) cursor++;
-                    if (cursor != length && property[cursor] == '{') {
+                    while (cursor != end && isWhitespace(property[cursor])) cursor++;
+                    if (cursor != end && property[cursor] == '{') {
                         cursor = balancedCapture(property, cursor, '{');
                     }
                     break;
             }
         }
 
-        if (start < length) {
-            if (cursor < (length - 1)) cursor++;
+        if (start < end) {
+            if (cursor < (end - 1)) cursor++;
 
             if (type == MAP) {
                 map.put(curr, ex = createStringTrimmed(property, start, cursor - start));
             }
             else {
-                if (cursor < length) cursor++;
+                if (cursor < end) cursor++;
                 list.add(ex = createStringTrimmed(property, start, cursor - start));
             }
 
@@ -235,23 +233,7 @@ public class CollectionParser {
         return pCtx != null && pCtx.isStrongTyping();
     }
 
-    private static char[] subset(char[] property, int start, int end) {
-        while (start < (end - 1) && isWhitespace(property[start]))
-            start++;
-
-        char[] newA = new char[end - start];
-        int i = 0;
-        while (i != newA.length) {
-            newA[i] = property[i + start];
-            i++;
-        }
-
-        return newA;
-    }
-
-
     public int getCursor() {
         return cursor;
     }
-
 }

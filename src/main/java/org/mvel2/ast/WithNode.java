@@ -151,7 +151,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                                 parm,
                                 (ExecutableStatement) subCompileExpression(
                                         createShortFormOperativeAssignment(nestParm + "." + parm,
-                                                subset(block, start, end - start), oper), pCtx
+                                                block, start, end - start, oper), pCtx
                                 )
                                 , egressType, pCtx));
 
@@ -179,7 +179,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                 parms.add(new ParmValuePair(
                         parm,
                         (ExecutableStatement) subCompileExpression(
-                                createShortFormOperativeAssignment(nestParm + "." + parm, subset(block, start, end - start), oper),
+                                createShortFormOperativeAssignment(nestParm + "." + parm, block, start, end - start, oper),
                                 pCtx
 
                         )

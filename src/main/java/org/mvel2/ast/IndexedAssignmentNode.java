@@ -43,8 +43,12 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
 
     private boolean col = false;
 
-    public IndexedAssignmentNode(char[] expr, int fields, int operation, String name, int register, ParserContext pCtx) {
-        super.name = expr;
+    public IndexedAssignmentNode(char[] expr, int start, int offset, int fields, int operation,
+                                 String name, int register, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
+
         this.register = register;
 
         int assignStart;
@@ -53,15 +57,15 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
             checkNameSafety(this.name = name);
 
             this.egressType = (statement = (ExecutableStatement)
-                    subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, operation), pCtx)).getKnownEgressType();
+                    subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, start, offset, operation), pCtx)).getKnownEgressType();
         }
-        else if ((assignStart = find(expr, '=')) != -1) {
-            this.name = createStringTrimmed(expr, 0, assignStart);
+        else if ((assignStart = find(expr, start, offset, '=')) != -1) {
+            this.name = createStringTrimmed(expr, start, assignStart);
             this.egressType = (statement
                     = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1), pCtx))
                     .getKnownEgressType();
 
-            if (col = ((endOfName = (short) findFirst('[', indexTarget = this.name.toCharArray())) > 0)) {
+            if (col = ((endOfName = (short) findFirst('[', start, offset, indexTarget = this.name.toCharArray())) > 0)) {
                 if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
                     accExpr = (CompiledAccExpression) compileSetExpression(indexTarget, pCtx);
                 }
@@ -81,8 +85,8 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
         }
     }
 
-    public IndexedAssignmentNode(char[] expr, int fields, int register, ParserContext pCtx) {
-        this(expr, fields, -1, null, register, pCtx);
+    public IndexedAssignmentNode(char[] expr, int start, int offset, int fields, int register, ParserContext pCtx) {
+        this(expr, start, offset, fields, -1, null, register, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

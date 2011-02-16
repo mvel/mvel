@@ -30,24 +30,26 @@ import static org.mvel2.util.ParseTools.subCompileExpression;
  */
 public class ReturnNode extends ASTNode {
 
-    public ReturnNode(char[] expr, int fields, ParserContext pCtx) {
-        this.name = expr;
+    public ReturnNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            setAccessor((Accessor) subCompileExpression(expr, pCtx));
+            setAccessor((Accessor) subCompileExpression(expr, start, offset, pCtx));
         }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (accessor == null) {
-            setAccessor((Accessor) subCompileExpression(this.name));
+            setAccessor((Accessor) subCompileExpression(expr, start, offset));
         }
 
         return accessor.getValue(ctx, thisValue, factory);
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return eval(this.name, ctx, factory);
+        return eval(expr, start, offset, ctx, factory);
     }
 
     @Override

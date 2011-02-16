@@ -34,11 +34,15 @@ public class DoUntilNode extends BlockNode {
     protected String item;
     protected ExecutableStatement condition;
 
-    public DoUntilNode(char[] condition, char[] block, ParserContext pCtx) {
-        expectType(this.condition = (ExecutableStatement) subCompileExpression(this.name = condition, pCtx),
+    public DoUntilNode(char[] expr, int start, int offset, int blockStart, int blockOffset, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
+
+        expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
                 Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block, pCtx);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

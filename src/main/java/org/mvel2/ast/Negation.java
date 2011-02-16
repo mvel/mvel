@@ -29,11 +29,13 @@ import static org.mvel2.util.ParseTools.subCompileExpression;
 public class Negation extends ASTNode {
     private ExecutableStatement stmt;
 
-    public Negation(char[] name, int fields, ParserContext pCtx) {
-        this.name = name;
+    public Negation(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            if (((this.stmt = (ExecutableStatement) subCompileExpression(name, pCtx)).getKnownEgressType() != null)
+            if (((this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType() != null)
                     && (!ParseTools.boxPrimitive(stmt.getKnownEgressType()).isAssignableFrom(Boolean.class))) {
                 throw new CompileException("negation operator cannot be applied to non-boolean type");
             }
@@ -46,7 +48,7 @@ public class Negation extends ASTNode {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
-            return !((Boolean) MVEL.eval(name, ctx, factory));
+            return !((Boolean) MVEL.eval(expr, start, offset, ctx, factory));
         }
         catch (NullPointerException e) {
             throw new CompileException("negation operator applied to a null value", e);

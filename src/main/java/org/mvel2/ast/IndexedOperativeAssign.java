@@ -31,13 +31,15 @@ public class IndexedOperativeAssign extends ASTNode {
     private ExecutableStatement statement;
     private final int operation;
 
-    public IndexedOperativeAssign(char[] expr, int operation, int register, int fields, ParserContext pCtx) {
+    public IndexedOperativeAssign(char[] expr, int start, int offset, int operation, int register, int fields, ParserContext pCtx) {
         this.operation = operation;
-        this.name = expr;
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
         this.register = register;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            statement = (ExecutableStatement) subCompileExpression(expr, pCtx);
+            statement = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx);
         }
     }
 
@@ -49,7 +51,7 @@ public class IndexedOperativeAssign extends ASTNode {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         VariableResolver resolver = factory.getIndexedVariableResolver(register);
-        resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, eval(name, ctx, factory)));
+        resolver.setValue(ctx = MathProcessor.doOperations(resolver.getValue(), operation, eval(expr, start, offset, ctx, factory)));
         return ctx;
     }
 }

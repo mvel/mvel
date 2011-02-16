@@ -34,14 +34,14 @@ public class WhileNode extends BlockNode {
     protected String item;
     protected ExecutableStatement condition;
 
-    public WhileNode(char[] condition, char[] block, int fields, ParserContext pCtx) {
-        expectType(this.condition = (ExecutableStatement) subCompileExpression(this.name = condition, pCtx),
+    public WhileNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
+        expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
                 Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(this.block = block, pCtx);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
+        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(), factory);
         while ((Boolean) condition.getValue(ctx, thisValue, factory)) {
             compiledBlock.getValue(ctx, thisValue, ctxFactory);
         }
@@ -50,7 +50,7 @@ public class WhileNode extends BlockNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap(0), factory);
+        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(), factory);
 
         while ((Boolean) condition.getValue(ctx, thisValue, factory)) {
             compiledBlock.getValue(ctx, thisValue, ctxFactory);

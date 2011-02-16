@@ -242,6 +242,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
     public Accessor optimizeSetAccessor(ParserContext pCtx, char[] property, int start, int offset, Object ctx, Object thisRef,
                                         VariableResolverFactory factory, boolean rootThisRef, Object value, Class ingressType) {
+        this.expr = property;
         this.start = this.cursor = start;
         this.end = start + offset;
         this.length = this.end - this.start;
@@ -265,6 +266,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (split != -1) {
             root = subset(property, 0, split++);
             property = subset(property, split, property.length - split);
+            length = end = property.length;
         }
 
         AccessorNode rootAccessor = null;
@@ -272,7 +274,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         _initJIT2();
 
         if (root != null) {
-            this.length = (this.expr = root).length;
+            this.length = end = (this.expr = root).length;
 
             // run the compiler but don't finish building.
             deferFinish = true;
@@ -732,7 +734,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         try {
             if (!MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING) {
-                while (cursor < length) {
+                while (cursor < end) {
                     switch (nextSubToken()) {
                         case BEAN:
                             curr = getBeanProperty(curr, capture());
@@ -763,7 +765,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                     first = false;
 
-                    if (nullSafe && cursor < length) {
+                    if (nullSafe && cursor < end) {
 
                         assert debug("DUP");
                         mv.visitInsn(DUP);
@@ -782,7 +784,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 }
             }
             else {
-                while (cursor < length) {
+                while (cursor < end) {
                     switch (nextSubToken()) {
                         case BEAN:
                             curr = getBeanPropertyAO(curr, capture());
@@ -813,7 +815,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                     first = false;
 
-                    if (nullSafe && cursor < length) {
+                    if (nullSafe && cursor < end) {
 
                         assert debug("DUP");
                         mv.visitInsn(DUP);
@@ -876,7 +878,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         String root = new String(expr, 0, cursor - 1).trim();
 
         int start = cursor + 1;
-        cursor = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx);
+        cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '{', pCtx);
         this.returnType = ctx != null ? ctx.getClass() : null;
 
         for (WithNode.ParmValuePair aPvp : WithNode.compileWithExpressions(subset(expr, start, cursor++ - start), root, ingressType, pCtx)) {
@@ -1297,7 +1299,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         skipWhitespace();
 
-        if (cursor == length)
+        if (cursor == end)
             throw new CompileException("unterminated '['");
 
         if (scanTo(']'))
@@ -1448,7 +1450,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         skipWhitespace();
 
-        if (cursor == length)
+        if (cursor == end)
             throw new CompileException("unterminated '['");
 
         if (scanTo(']'))
@@ -1629,7 +1631,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         assert debug("\n  **  {method: " + name + "}");
 
         int st = cursor;
-        String tk = cursor != length && expr[cursor] == '(' && ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ?
+        String tk = cursor != end && expr[cursor] == '(' && ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ?
                 new String(expr, st + 1, cursor - st - 1) : "";
         cursor++;
 
@@ -2826,11 +2828,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                                        Object ctx, Object thisRef, VariableResolverFactory factory) {
         this.cursor = this.start = start;
         this.end = start + offset;
-        this.length = this.end - this.start;
+        this.length = offset;
 
         this.returnType = type;
 
-        if (property != null) this.length = (this.expr = property).length;
         this.compiledInputs = new ArrayList<ExecutableStatement>();
 
         this.ctx = ctx;

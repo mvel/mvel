@@ -98,6 +98,7 @@ public class ExpressionCompiler extends AbstractParser {
         ASTNode tkLA2;
 
         int op, lastOp = -1;
+        cursor = start;
 
         ASTLinkedList astBuild = new ASTLinkedList();
         stk = new ExecutionStack();
@@ -130,7 +131,7 @@ public class ExpressionCompiler extends AbstractParser {
                 returnType = tk.getEgressType();
 
                 if (tk instanceof Substatement) {
-                    ExpressionCompiler subCompiler = new ExpressionCompiler(tk.getNameAsArray(), pCtx);
+                    ExpressionCompiler subCompiler = new ExpressionCompiler(expr, tk.getStart(), tk.getOffset(), pCtx);
                     tk.setAccessor(subCompiler._compile());
 
                     returnType = subCompiler.getReturnType();
@@ -395,7 +396,8 @@ public class ExpressionCompiler extends AbstractParser {
                         pCtx.addInput(tk.getAbsoluteName(), returnType);
                     }
 
-                    ExecutableStatement c = (ExecutableStatement) subCompileExpression(a.getExpression(), pCtx);
+                    ExecutableStatement c = (ExecutableStatement) subCompileExpression(a.getExpression(), tk.getStart(),
+                            tk.getOffset(), pCtx);
 
                     if (pCtx.isStrictTypeEnforcement()) {
                         /**
@@ -485,6 +487,16 @@ public class ExpressionCompiler extends AbstractParser {
 
         contextControl(SET, ctx, this);
     }
+
+    public ExpressionCompiler(char[] expression, int start, int offset, ParserContext ctx) {
+        this.expr = expression;
+        this.start = start;
+        this.length = offset;
+        this.end = start + offset;
+
+        contextControl(SET, ctx, this);
+    }
+
 
     public ExpressionCompiler(char[] expression, ParserContext ctx) {
         setExpression(expression);

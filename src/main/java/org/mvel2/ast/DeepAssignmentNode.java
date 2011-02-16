@@ -20,12 +20,16 @@ package org.mvel2.ast;
 
 import static org.mvel2.MVEL.compileSetExpression;
 import static org.mvel2.MVEL.eval;
+
 import org.mvel2.ParserContext;
+
 import static org.mvel2.PropertyAccessor.set;
 import static org.mvel2.compiler.AbstractParser.getCurrentThreadParserContext;
+
 import org.mvel2.compiler.CompiledAccExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.*;
 
 /**
@@ -38,24 +42,26 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
     private CompiledAccExpression acc;
     private ExecutableStatement statement;
 
-    public DeepAssignmentNode(char[] expr, int fields, int operation, String name, ParserContext pCtx) {
+    public DeepAssignmentNode(char[] expr, int start, int offset, int fields, int operation, String name, ParserContext pCtx) {
         this.fields |= DEEP_PROPERTY | fields;
 
-        this.name = expr;
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
         int mark;
-
 
         if (operation != -1) {
             this.egressType = ((statement =
                     (ExecutableStatement) subCompileExpression(stmt =
-                            createShortFormOperativeAssignment(this.property = name, expr, operation), pCtx))).getKnownEgressType();
+                            createShortFormOperativeAssignment(this.property = name, expr, start, offset, operation), pCtx))).getKnownEgressType();
         }
-        else if ((mark = find(expr, '=')) != -1) {
-            property = createStringTrimmed(expr, 0, mark);
-            stmt = subset(expr, mark + 1);
+        else if ((mark = find(expr, start, offset, '=')) != -1) {
+            property = createStringTrimmed(expr, start, mark - start);
+            stmt = subset(expr, mark + 1, (start+offset) - mark);
 
             if ((fields & COMPILE_IMMEDIATE) != 0) {
-                statement = (ExecutableStatement) subCompileExpression(stmt, pCtx);
+                System.out.println("DEEP_ASSIGNMENT_STATEMENT:" + property + ":" + operation + ":<<" + new String(stmt) + ">>");
+                statement = (ExecutableStatement) subCompileExpression(stmt, 0, stmt.length, pCtx);
             }
         }
         else {
@@ -63,12 +69,12 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            acc = (CompiledAccExpression) compileSetExpression(property.toCharArray(), pCtx);
+            acc = (CompiledAccExpression) compileSetExpression(property.toCharArray(), start, offset, pCtx);
         }
     }
 
-    public DeepAssignmentNode(char[] expr, int fields, ParserContext pCtx) {
-        this(expr, fields, -1, null, pCtx);
+    public DeepAssignmentNode(char[] expr, int start, int offset, int fields, ParserContext pCtx) {
+        this(expr, start, offset, fields, -1, null, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -82,7 +88,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        set(ctx, factory, property, ctx = eval(stmt, ctx, factory));
+        set(ctx, factory, property, ctx = eval(stmt, 0, stmt.length, ctx, factory));
         return ctx;
     }
 

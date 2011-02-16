@@ -805,7 +805,7 @@ public class ParseTools {
         }
     }
 
-    public static char[] createShortFormOperativeAssignment(String name, char[] statement, int operation) {
+    public static char[] createShortFormOperativeAssignment(String name, char[] statement, int start, int offset, int operation) {
         if (operation == -1) {
             return statement;
         }
@@ -848,9 +848,9 @@ public class ParseTools {
                 break;
         }
 
-        arraycopy(name.toCharArray(), 0, (stmt = new char[name.length() + statement.length + 1]), 0, name.length());
+        arraycopy(name.toCharArray(), 0, (stmt = new char[name.length() + offset + 1]), 0, name.length());
         stmt[name.length()] = op;
-        arraycopy(statement, 0, stmt, name.length() + 1, statement.length);
+        arraycopy(statement, start, stmt, name.length() + 1, offset);
 
         return stmt;
     }
@@ -1057,14 +1057,14 @@ public class ParseTools {
         return null;
     }
 
-    public static int captureToNextTokenJunction(char[] expr, int cursor, ParserContext pCtx) {
+    public static int captureToNextTokenJunction(char[] expr, int cursor, int end, ParserContext pCtx) {
         while (cursor != expr.length) {
             switch (expr[cursor]) {
                 case '{':
                 case '(':
                     return cursor;
                 case '[':
-                    cursor = balancedCaptureWithLineAccounting(expr, cursor, '[', pCtx) + 1;
+                    cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '[', pCtx) + 1;
                     continue;
                 default:
                     if (isWhitespace(expr[cursor])) {
@@ -1151,13 +1151,13 @@ public class ParseTools {
     }
 
 
-    public static int captureToEOS(char[] expr, int cursor, ParserContext pCtx) {
+    public static int captureToEOS(char[] expr, int cursor, int end, ParserContext pCtx) {
         while (cursor != expr.length) {
             switch (expr[cursor]) {
                 case '(':
                 case '[':
                 case '{':
-                    if ((cursor = balancedCaptureWithLineAccounting(expr, cursor, expr[cursor], pCtx)) >= expr.length)
+                    if ((cursor = balancedCaptureWithLineAccounting(expr, cursor, end, expr[cursor], pCtx)) >= expr.length)
                         return cursor;
                     break;
 
@@ -1271,7 +1271,7 @@ public class ParseTools {
                         while (start < end) {
                             switch (chars[start]) {
                                 case '*':
-                                    if (start + 1 < end&& chars[start + 1] == '/') {
+                                    if (start + 1 < end && chars[start + 1] == '/') {
                                         break;
                                     }
                                 case '\r':
@@ -1308,7 +1308,7 @@ public class ParseTools {
         }
     }
 
-    public static int balancedCaptureWithLineAccounting(char[] chars, int start, char type, ParserContext pCtx) {
+    public static int balancedCaptureWithLineAccounting(char[] chars, int start, int end, char type, ParserContext pCtx) {
         int depth = 1;
         char term = type;
         switch (type) {
@@ -1324,7 +1324,7 @@ public class ParseTools {
         }
 
         if (type == term) {
-            for (start++; start != chars.length; start++) {
+            for (start++; start != end; start++) {
                 if (chars[start] == type) {
                     return start;
                 }
@@ -1332,7 +1332,7 @@ public class ParseTools {
         }
         else {
             int lines = 0;
-            for (start++; start < chars.length; start++) {
+            for (start++; start < end; start++) {
                 if (isWhitespace(chars[start])) {
                     switch (chars[start]) {
                         case '\r':
@@ -1342,19 +1342,19 @@ public class ParseTools {
                             lines++;
                     }
                 }
-                else if (start < chars.length && chars[start] == '/') {
-                    if (start + 1 == chars.length) return start;
+                else if (start < end && chars[start] == '/') {
+                    if (start + 1 == end) return start;
                     if (chars[start + 1] == '/') {
                         start++;
-                        while (start < chars.length && chars[start] != '\n') start++;
+                        while (start < end && chars[start] != '\n') start++;
                     }
                     else if (chars[start + 1] == '*') {
                         start += 2;
                         Skiploop:
-                        while (start != chars.length) {
+                        while (start != end) {
                             switch (chars[start]) {
                                 case '*':
-                                    if (start + 1 < chars.length && chars[start + 1] == '/') {
+                                    if (start + 1 < end && chars[start + 1] == '/') {
                                         break Skiploop;
                                     }
                                 case '\r':
@@ -1367,9 +1367,9 @@ public class ParseTools {
                         }
                     }
                 }
-                if (start == chars.length) return start;
+                if (start == end) return start;
                 if (chars[start] == '\'' || chars[start] == '"') {
-                    start = captureStringLiteral(chars[start], chars, start, chars.length);
+                    start = captureStringLiteral(chars[start], chars, start, end);
                 }
                 else if (chars[start] == type) {
                     depth++;
@@ -1494,8 +1494,10 @@ public class ParseTools {
                         start = ++i;
                     }
                     else {
-                        MVEL.setProperty(ctx, parm, MVEL.eval(new String(createShortFormOperativeAssignment(new StringBuilder(nestParm).append(".").append(parm).toString(),
-                                subset(block, start, end - start), oper)), ctx, factory));
+                        MVEL.setProperty(ctx, parm, MVEL.eval(new String(
+                                createShortFormOperativeAssignment(
+                                        new StringBuilder(nestParm).append(".").append(parm).toString(),
+                                        block, oper, begin, end - begin)), ctx, factory));
 
                         parm = null;
                         oper = -1;
@@ -1514,15 +1516,16 @@ public class ParseTools {
             }
             else {
                 MVEL.setProperty(ctx, parm, MVEL.eval(
-                        new String(createShortFormOperativeAssignment(new StringBuilder(nestParm).append(".").append(parm).toString(),
-                                subset(block, start, end - start), oper)), ctx, factory));
+                        new String(createShortFormOperativeAssignment(
+                                new StringBuilder(nestParm).append(".").append(parm).toString(),
+                                block, oper, begin, end - begin)), ctx, factory));
             }
         }
     }
 
 
     public static Object handleNumericConversion(final char[] val, int start, int offset) {
-        if (offset != 1 && val[start] == '0' && val[start+1] != '.') {
+        if (offset != 1 && val[start] == '0' && val[start + 1] != '.') {
             if (!isDigit(val[offset - 1])) {
                 switch (val[offset - 1]) {
                     case 'L':
@@ -1537,7 +1540,7 @@ public class ParseTools {
 
             return Integer.decode(new String(val));
         }
-        else if (!isDigit(val[offset - 1])) {
+        else if (!isDigit(val[start + offset - 1])) {
             switch (val[offset - 1]) {
                 case 'l':
                 case 'L':
@@ -1603,7 +1606,8 @@ public class ParseTools {
             }
         }
 
-        for (; i < offset; i++) {
+        int end = start + offset;
+        for (; i < end; i++) {
             if (!isDigit(c = val[i])) {
                 switch (c) {
                     case '.':
@@ -1612,7 +1616,7 @@ public class ParseTools {
                     case 'e':
                     case 'E':
                         fp = true;
-                        if (i++ < offset && val[i] == '-') i++;
+                        if (i++ < end && val[i] == '-') i++;
                         break;
 
                     default:
@@ -1674,15 +1678,16 @@ public class ParseTools {
         char c;
         boolean f = true;
         int i = start;
+        int end = start + offset;
         if (offset > 1) {
-            switch (val[0]) {
+            switch (val[start]) {
                 case '-':
-                    if (val[1] == '-') i++;
+                    if (val[start + 1] == '-') i++;
                 case '~':
                     i++;
             }
         }
-        for (; i < offset; i++) {
+        for (; i < end; i++) {
             if (!isDigit(c = val[i])) {
                 if (f && c == '.') {
                     f = false;
@@ -1703,8 +1708,8 @@ public class ParseTools {
                     }
                     return false;
                 }
-                else if (i == 1 && c == 'x' && val[0] == '0') {
-                    for (i++; i < offset; i++) {
+                else if (i == start + 1 && c == 'x' && val[start] == '0') {
+                    for (i++; i < end; i++) {
                         if (!isDigit(c = val[i])) {
                             if ((c < 'A' || c > 'F') && (c < 'a' || c > 'f')) {
                                 if (i == offset - 1) {
@@ -1724,17 +1729,17 @@ public class ParseTools {
                     return offset - 2 > 0;
 
                 }
-                else if (i != 0 && (i + 1) < offset && (c == 'E' || c == 'e')) {
+                else if (i != start && (i + 1) < offset && (c == 'E' || c == 'e')) {
                     if (val[++i] == '-' || val[i] == '+') i++;
                 }
                 else {
-                    if (i != 0) throw new CompileException("invalid number literal: " + new String(val));
+                    if (i != start) throw new CompileException("invalid number literal: " + new String(val,start,offset));
                     return false;
                 }
             }
         }
 
-        return offset > 0;
+        return end > 0;
     }
 
     public static int find(char[] c, int start, int offset, char find) {
@@ -1743,8 +1748,8 @@ public class ParseTools {
         return -1;
     }
 
-    public static int findLast(char[] c, char find) {
-        for (int i = c.length - 1; i != -1; i--) if (c[i] == find) return i;
+    public static int findLast(char[] c, int start, int offset, char find) {
+        for (int i = start + offset; i >= start; i--) if (c[i] == find) return i;
         return -1;
     }
 
@@ -1766,13 +1771,15 @@ public class ParseTools {
         return new String(s, start, length - start);
     }
 
-    public static boolean endsWith(char[] c, char[] test) {
+    public static boolean endsWith(char[] c, int start, int offset, char[] test) {
         if (test.length > c.length) return false;
 
         int tD = test.length - 1;
-        int cD = c.length - 1;
-        while (tD != -1) {
-            if (c[cD--] != test[tD--]) return false;
+        int cD = offset;
+
+        int diff = cD - tD;
+        while (cD >= start) {
+            if (c[cD--] != test[tD-- - diff]) return false;
         }
 
         return true;

@@ -19,9 +19,11 @@
 package org.mvel2.ast;
 
 import static org.mvel2.MVEL.eval;
+
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.*;
 
 /**
@@ -29,7 +31,6 @@ import static org.mvel2.util.ParseTools.*;
  */
 public class ProtoVarNode extends ASTNode implements Assignment {
     private String name;
-    private char[] stmt;
 
     private ExecutableStatement statement;
 
@@ -38,23 +39,23 @@ public class ProtoVarNode extends ASTNode implements Assignment {
         this.egressType = Proto.ProtoInstance.class;
     }
 
-    public ProtoVarNode(char[] expr, int fields, Proto type, ParserContext pCtx) {
+    public ProtoVarNode(char[] expr, int start, int offset, int fields, Proto type, ParserContext pCtx) {
         this.egressType = Proto.ProtoInstance.class;
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
         this.fields = fields;
 
         int assignStart;
-        if ((assignStart = find(super.name = expr, '=')) != -1) {
+        if ((assignStart = find(super.expr = expr, start, offset, '=')) != -1) {
             checkNameSafety(name = createStringTrimmed(expr, 0, assignStart));
 
             if (((fields |= ASSIGN) & COMPILE_IMMEDIATE) != 0) {
-                statement = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1), pCtx);
-            }
-            else {
-                stmt = subset(expr, assignStart + 1);
+                statement = (ExecutableStatement) subCompileExpression(expr, assignStart + 1, offset, pCtx);
             }
         }
         else {
-            checkNameSafety(name = new String(expr));
+            checkNameSafety(name = new String(expr, start, offset));
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
@@ -63,13 +64,13 @@ public class ProtoVarNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (statement == null) statement = (ExecutableStatement) subCompileExpression(stmt);
+        if (statement == null) statement = (ExecutableStatement) subCompileExpression(expr, start, offset);
         factory.createVariable(name, ctx = statement.getValue(ctx, thisValue, factory), egressType);
         return ctx;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        factory.createVariable(name, ctx = eval(stmt, thisValue, factory), egressType);
+        factory.createVariable(name, ctx = eval(expr, start, offset, thisValue, factory), egressType);
         return ctx;
     }
 
@@ -84,7 +85,7 @@ public class ProtoVarNode extends ASTNode implements Assignment {
     }
 
     public char[] getExpression() {
-        return stmt;
+        return expr;
     }
 
     public boolean isNewDeclaration() {

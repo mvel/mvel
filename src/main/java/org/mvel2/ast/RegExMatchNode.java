@@ -38,7 +38,8 @@ public class RegExMatchNode extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return compile(valueOf(eval(name, ctx, factory))).matcher(valueOf(eval(name, ctx, factory))).matches();
+        return compile(valueOf(eval(expr, patternNode.start, patternNode.offset, ctx, factory)))
+                .matcher(valueOf(eval(expr, node.start, node.offset, ctx, factory))).matches();
     }
 
     public Class getEgressType() {

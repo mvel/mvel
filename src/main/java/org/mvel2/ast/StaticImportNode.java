@@ -35,12 +35,16 @@ public class StaticImportNode extends ASTNode {
     private String methodName;
     private transient Method method;
 
-    public StaticImportNode(char[] expr) {
+    public StaticImportNode(char[] expr, int start, int offset) {
         try {
-            declaringClass = Class.forName(new String(subset(expr, 0, findLast('.', this.name = expr))),
+            this.expr = expr;
+            this.start = start;
+            this.offset = offset;
+
+            declaringClass = Class.forName(new String(expr, start, findLast('.', start, offset, this.expr = expr) - start),
                     true, currentThread().getContextClassLoader());
 
-            methodName = new String(subset(expr, findLast('.', expr) + 1));
+            methodName = new String(expr, start, findLast('.', start, offset, expr) + 1 - start);
 
             if (resolveMethod() == null) {
                 throw new CompileException("can not find method for static import: "

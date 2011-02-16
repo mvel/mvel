@@ -17,9 +17,13 @@ public class Sign extends ASTNode {
     private ExecutableStatement stmt;
 
     public Sign(char[] expr, int start, int end, int fields, ParserContext pCtx) {
-        super(expr, start + 1, end, fields);
+        this.expr = expr;
+        this.start = start + 1;
+        this.offset = end - 1;
+        this.fields = fields;
+
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            stmt = (ExecutableStatement) ParseTools.subCompileExpression(name, pCtx);
+            stmt = (ExecutableStatement) ParseTools.subCompileExpression(expr, this.start, this.offset, pCtx);
 
             egressType = stmt.getKnownEgressType();
 
@@ -37,7 +41,7 @@ public class Sign extends ASTNode {
 
     @Override
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        return sign(MVEL.eval(name, thisValue, factory));
+        return sign(MVEL.eval(expr, start, offset, thisValue, factory));
     }
 
     private Object sign(Object o) {

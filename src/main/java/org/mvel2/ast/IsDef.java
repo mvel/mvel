@@ -22,8 +22,8 @@ import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 
 public class IsDef extends ASTNode {
-    public IsDef(char[] expr) {
-        this.nameCache = new String(this.name = expr);
+    public IsDef(char[] expr, int start, int offset) {
+        this.nameCache = new String(this.expr = expr, this.start = start, this.offset = offset);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

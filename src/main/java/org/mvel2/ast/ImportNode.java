@@ -29,21 +29,24 @@ import static org.mvel2.util.ParseTools.findClassImportResolverFactory;
 public class ImportNode extends ASTNode {
     private Class importClass;
     private boolean packageImport;
-    private short offset;
+    private int _offset;
 
     private static final char[] WC_TEST = new char[]{'.', '*'};
 
-    public ImportNode(char[] expr) {
-        this.name = expr;
+    public ImportNode(char[] expr, int start, int offset) {
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
 
-        if (ParseTools.endsWith(expr, WC_TEST)) {
+        if (ParseTools.endsWith(expr, start, offset, WC_TEST)) {
             packageImport = true;
-            offset = (short) ParseTools.findLast(expr, '.');
-            if (offset == -1) { offset = 0; }
+            _offset = (short) ParseTools.findLast(expr, start, offset, '.');
+            if (_offset == -1) { _offset = 0; }
         }
         else {
             try {
-              this.importClass =  Class.forName(new String(expr), true, Thread.currentThread().getContextClassLoader());
+              this.importClass =  Class.forName(new String(expr, start, offset), true,
+                      Thread.currentThread().getContextClassLoader());
             }
             catch (ClassNotFoundException e) {
                 throw new CompileException("class not found: " + new String(expr));
@@ -57,7 +60,7 @@ public class ImportNode extends ASTNode {
             return findClassImportResolverFactory(factory).addClass(importClass);
         }
         else {
-            findClassImportResolverFactory(factory).addPackageImport(new String(name, 0, (int) offset));
+            findClassImportResolverFactory(factory).addPackageImport(new String(expr, start, _offset));
             return null;
         }
     }
@@ -80,9 +83,7 @@ public class ImportNode extends ASTNode {
     }
 
     public String getPackageImport() {
-        return new String(name, 0, offset);
+        return new String(expr, 0, _offset);
     }
-
-
 }
 

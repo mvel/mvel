@@ -36,12 +36,16 @@ public class TypeCast extends ASTNode {
     private ExecutableStatement statement;
     private boolean widen;
 
-    public TypeCast(char[] expr, Class cast, int fields, ParserContext pCtx) {
+    public TypeCast(char[] expr, int start, int offset, Class cast, int fields, ParserContext pCtx) {
         this.egressType = cast;
-        this.name = expr;
+        this.expr = expr;
+        this.start = start;
+        this.offset = offset;
+
         if ((fields & COMPILE_IMMEDIATE) != 0) {
 
-            if ((statement = (ExecutableStatement) subCompileExpression(name, pCtx)).getKnownEgressType() != Object.class
+            if ((statement = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx))
+                    .getKnownEgressType() != Object.class
                     && !canConvert(cast, statement.getKnownEgressType())) {
 
                 if (canCast(statement.getKnownEgressType(), cast)) {
@@ -73,7 +77,8 @@ public class TypeCast extends ASTNode {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         //noinspection unchecked
-        return widen ? typeCheck(eval(name, ctx, factory), egressType) : convert(eval(name, ctx, factory), egressType);
+        return widen ? typeCheck(eval(expr, start, offset, ctx, factory), egressType) :
+                convert(eval(expr, start, offset, ctx, factory), egressType);
     }
 
     private static Object typeCheck(Object inst, Class type) {

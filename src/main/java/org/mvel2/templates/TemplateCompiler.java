@@ -27,6 +27,7 @@ import org.mvel2.util.ExecutionStack;
 import org.mvel2.util.ParseTools;
 
 import static org.mvel2.util.ParseTools.balancedCaptureWithLineAccounting;
+import static org.mvel2.util.ParseTools.endsWith;
 import static org.mvel2.util.ParseTools.subset;
 
 import java.io.File;
@@ -311,7 +312,7 @@ public class TemplateCompiler {
     private int captureOrbInternal() {
         try {
             ParserContext pCtx = new ParserContext();
-            cursor = balancedCaptureWithLineAccounting(template, start = cursor, '{', pCtx);
+            cursor = balancedCaptureWithLineAccounting(template, start = cursor, length, '{', pCtx);
             line += pCtx.getLineCount();
             int ret = start + 1;
             start = cursor + 1;

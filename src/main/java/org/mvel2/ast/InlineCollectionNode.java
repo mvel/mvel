@@ -40,7 +40,6 @@ import java.util.Map;
  */
 public class InlineCollectionNode extends ASTNode {
     private Object collectionGraph;
-    private char[] trailing;
 
     public InlineCollectionNode(char[] expr, int start, int end, int fields, ParserContext pctx) {
         super(expr, start, end, fields | INLINE_COLLECTION);
@@ -49,7 +48,7 @@ public class InlineCollectionNode extends ASTNode {
             parseGraph(true, null, pctx);
             try {
                 AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-                accessor = ao.optimizeCollection(pctx, collectionGraph, egressType, trailing, null, null, null);
+                accessor = ao.optimizeCollection(pctx, collectionGraph, egressType, expr, start, end, null, null, null);
                 egressType = ao.getEgressType();
             }
             finally {
@@ -67,7 +66,7 @@ public class InlineCollectionNode extends ASTNode {
             try {
                 parseGraph(true, type, pctx);
                 AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
-                accessor = ao.optimizeCollection(pctx, collectionGraph, egressType, trailing, null, null, null);
+                accessor = ao.optimizeCollection(pctx, collectionGraph, egressType, expr, start, end, null, null, null);
                 egressType = ao.getEgressType();
             }
             finally {
@@ -85,7 +84,8 @@ public class InlineCollectionNode extends ASTNode {
                 AccessorOptimizer ao = OptimizerFactory.getThreadAccessorOptimizer();
                 if (collectionGraph == null) parseGraph(true, null, null);
 
-                accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph, egressType, trailing, ctx, thisValue, factory);
+                accessor = ao.optimizeCollection(AbstractParser.getCurrentThreadParserContext(), collectionGraph,
+                        egressType, expr, start, offset, ctx, thisValue, factory);
                 egressType = ao.getEgressType();
 
                 return accessor.getValue(ctx, thisValue, factory);
@@ -106,14 +106,16 @@ public class InlineCollectionNode extends ASTNode {
         CollectionParser parser = new CollectionParser();
 
         if (type == null) {
-            collectionGraph = ((List) parser.parseCollection(name, compile, pCtx)).get(0);
+            collectionGraph = ((List) parser.parseCollection(expr, start, offset, compile, pCtx)).get(0);
         }
         else {
-            collectionGraph = ((List) parser.parseCollection(name, compile, type, pCtx)).get(0);
+            collectionGraph = ((List) parser.parseCollection(expr, start, offset, compile, type, pCtx)).get(0);
         }
 
-        if (parser.getCursor() + 2 < name.length)
-            trailing = subset(name, parser.getCursor() + 2);
+        if (parser.getCursor() + 2 < start + offset) {
+//            trailing = subset(expr, parser.getCursor() + 2);
+            start = parser.getCursor() + 2;
+        }
 
         if (this.egressType == null) this.egressType = collectionGraph.getClass();
     }

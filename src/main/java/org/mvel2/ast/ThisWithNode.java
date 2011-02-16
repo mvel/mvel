@@ -28,8 +28,8 @@ import org.mvel2.integration.VariableResolverFactory;
  */
 public class ThisWithNode extends WithNode {
 
-    public ThisWithNode(char[] expr, char[] block, int fields, ParserContext pCtx) {
-        super(expr, block, fields, pCtx);
+    public ThisWithNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
+        super(expr, start, offset, blockStart, blockOffset, fields, pCtx);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

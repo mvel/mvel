@@ -58,18 +58,21 @@ public class PropertyVerifier extends AbstractOptimizer {
     private Class ctx = null;
 
     public PropertyVerifier(char[] property, ParserContext parserContext) {
-        this.length = (this.expr = property).length;
+        this.length = end = (this.expr = property).length;
         this.pCtx = parserContext;
     }
 
-    public PropertyVerifier(char[] property, ParserContext parserContext, Class contextType) {
-        this.length = (this.expr = property).length;
+    public PropertyVerifier(char[] property, int start, int offset, ParserContext parserContext) {
+        this.expr = property;
+        this.start = start;
+        this.length = offset;
+        this.end = start + offset;
+
         this.pCtx = parserContext;
-        this.ctx = contextType;
     }
 
     public PropertyVerifier(String property, ParserContext parserContext) {
-        this.length = (this.expr = property.toCharArray()).length;
+        this.length = end = (this.expr = property.toCharArray()).length;
         this.pCtx = parserContext;
     }
 
@@ -99,7 +102,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             first = true;
         }
 
-        while (cursor < length) {
+        while (cursor < end) {
             classLiteral = false;
             switch (nextSubToken()) {
                 case NORM:
@@ -363,7 +366,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             else if (pCtx.hasFunction(name)) {
                 resolvedExternally = false;
                 Function f = pCtx.getFunction(name);
-                f.checkArgumentCount(parseParameterList((((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ?
+                f.checkArgumentCount(parseParameterList((((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
                         new String(expr, st + 1, cursor - st - 1) : "").toCharArray(), 0, -1).length);
                 return f.getEgressType();
             }
@@ -374,7 +377,7 @@ public class PropertyVerifier extends AbstractOptimizer {
          */
         String tk;
 
-        if (cursor < length && expr[cursor] == '(' && ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1) {
+        if (cursor < end && expr[cursor] == '(' && ((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1) {
             tk = new String(expr, st + 1, cursor - st - 1);
         }
         else {
@@ -502,7 +505,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         String root = new String(expr, 0, cursor - 1).trim();
 
         int start = cursor + 1;
-        cursor = balancedCaptureWithLineAccounting(expr, cursor, '{', pCtx);
+        cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '{', pCtx);
 
         new WithAccessor(root, subset(expr, start, cursor++ - start), ctx, pCtx.isStrictTypeEnforcement());
 
