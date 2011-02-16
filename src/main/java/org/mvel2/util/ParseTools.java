@@ -1414,12 +1414,12 @@ public class ParseTools {
         return new String(processedEscapeString);
     }
 
-    public static int captureStringLiteral(final char type, final char[] expr, int cursor, int length) {
-        while (++cursor < length && expr[cursor] != type) {
+    public static int captureStringLiteral(final char type, final char[] expr, int cursor, int end) {
+        while (++cursor < end && expr[cursor] != type) {
             if (expr[cursor] == '\\') cursor++;
         }
 
-        if (cursor >= length || expr[cursor] != type) {
+        if (cursor >= end || expr[cursor] != type) {
             throw new CompileException("unterminated literal", expr, cursor);
         }
 
@@ -1427,43 +1427,47 @@ public class ParseTools {
     }
 
 
-    public static void parseWithExpressions(String nestParm, char[] block, int begin, int ending,
+    public static void parseWithExpressions(String nestParm, char[] block, int start, int offset,
                                             Object ctx, VariableResolverFactory factory) {
         /**
          *
          * MAINTENANCE NOTE: A COMPILING VERSION OF THIS CODE IS DUPLICATED IN: WithNode
          *
          */
-        int start = begin;
-        String parm = "";
-        int end = -1;
-        int oper = -1;
+        int _st = start;
+        int _end = -1;
 
-        for (int i = begin; i < ending; i++) {
+        int end = start + offset;
+
+        int oper = -1;
+        String parm = "";
+
+
+        for (int i = start; i < end; i++) {
             switch (block[i]) {
                 case '{':
                 case '[':
                 case '(':
-                    i = balancedCapture(block, i, block[i]);
+                    i = balancedCapture(block, i, end, block[i]);
                     continue;
 
 
                 case '/':
-                    if (i < ending && block[i + 1] == '/') {
-                        while (i < ending && block[i] != '\n') block[i++] = ' ';
-                        if (parm == null) start = i;
+                    if (i < end && block[i + 1] == '/') {
+                        while (i < end && block[i] != '\n') block[i++] = ' ';
+                        if (parm == null) _st = i;
                     }
-                    else if (i < ending && block[i + 1] == '*') {
-                        int len = ending - 1;
+                    else if (i < end && block[i + 1] == '*') {
+                        int len = end - 1;
                         while (i < len && !(block[i] == '*' && block[i + 1] == '/')) {
                             block[i++] = ' ';
                         }
                         block[i++] = ' ';
                         block[i++] = ' ';
 
-                        if (parm == null) start = i;
+                        if (parm == null) _st = i;
                     }
-                    else if (i < ending && block[i + 1] == '=') {
+                    else if (i < end && block[i + 1] == '=') {
                         oper = Operator.DIV;
                     }
                     continue;
@@ -1472,53 +1476,53 @@ public class ParseTools {
                 case '*':
                 case '-':
                 case '+':
-                    if (i + 1 < ending && block[i + 1] == '=') {
+                    if (i + 1 < end && block[i + 1] == '=') {
                         oper = opLookup(block[i]);
                     }
                     continue;
 
 
                 case '=':
-                    parm = new String(block, start, i - start - (oper != -1 ? 1 : 0)).trim();
-                    start = i + 1;
+                    parm = new String(block, _st, i - _st - (oper != -1 ? 1 : 0)).trim();
+                    _st = i + 1;
                     continue;
 
                 case ',':
-                    if (end == -1) end = i;
+                    if (_end == -1) _end = i;
 
                     if (parm == null) {
                         MVEL.eval(new StringBuilder(nestParm).append('.')
-                                .append(block, start, end - start).toString(), ctx, factory);
+                                .append(block, _st, _end - _st).toString(), ctx, factory);
 
                         oper = -1;
-                        start = ++i;
+                        _st = ++i;
                     }
                     else {
                         MVEL.setProperty(ctx, parm, MVEL.eval(new String(
                                 createShortFormOperativeAssignment(
                                         new StringBuilder(nestParm).append(".").append(parm).toString(),
-                                        block, oper, begin, end - begin)), ctx, factory));
+                                        block, oper, start, _end - start)), ctx, factory));
 
                         parm = null;
                         oper = -1;
-                        start = ++i;
+                        _st = ++i;
                     }
 
-                    end = -1;
+                    _end = -1;
                     break;
             }
         }
 
-        if (start != (end = ending)) {
+        if (_st != (_end = offset)) {
             if (parm == null || "".equals(parm)) {
                 MVEL.eval(new StringAppender(nestParm).append('.')
-                        .append(block, start, end - start).toString(), ctx, factory);
+                        .append(block, _st, _end - _st).toString(), ctx, factory);
             }
             else {
                 MVEL.setProperty(ctx, parm, MVEL.eval(
                         new String(createShortFormOperativeAssignment(
                                 new StringBuilder(nestParm).append(".").append(parm).toString(),
-                                block, oper, begin, end - begin)), ctx, factory));
+                                block, _st, end - _st, oper)), ctx, factory));
             }
         }
     }
@@ -1541,7 +1545,7 @@ public class ParseTools {
             return Integer.decode(new String(val));
         }
         else if (!isDigit(val[start + offset - 1])) {
-            switch (val[offset - 1]) {
+            switch (val[start + offset - 1]) {
                 case 'l':
                 case 'L':
                     return java.lang.Long.parseLong(new String(val, start, offset - 1));
@@ -1599,10 +1603,10 @@ public class ParseTools {
         int i = start;
 
         if (offset > 1) {
-            if (val[0] == '-') i++;
-            else if (val[0] == '~') {
+            if (val[start] == '-') i++;
+            else if (val[start] == '~') {
                 i++;
-                if (val[1] == '-') i++;
+                if (val[start+1] == '-') i++;
             }
         }
 
@@ -1692,7 +1696,7 @@ public class ParseTools {
                 if (f && c == '.') {
                     f = false;
                 }
-                else if (offset != 1 && i == offset - 1) {
+                else if (offset != 1 && i == start + offset - 1) {
                     switch (c) {
                         case 'l':
                         case 'L':
@@ -1739,7 +1743,7 @@ public class ParseTools {
             }
         }
 
-        return end > 0;
+        return end > start;
     }
 
     public static int find(char[] c, int start, int offset, char find) {
@@ -1961,7 +1965,7 @@ public class ParseTools {
             throw new CompileException("illegal use of reserved word: " + name);
         }
         else if (isDigit(name.charAt(0))) {
-            throw new CompileException("not an identifier");
+            throw new CompileException("not an identifier: " + name);
         }
     }
 
@@ -1992,6 +1996,9 @@ public class ParseTools {
     public static Serializable subCompileExpression(char[] expression, int start, int offset, ParserContext ctx) {
         ExpressionCompiler c = new ExpressionCompiler(expression, start, offset);
         if (ctx != null) c.setPCtx(ctx);
+
+        System.out.println("About to sub-compile: <" + new String(expression, start, offset) + ">");
+
         return _optimizeTree(c._compile());
     }
 

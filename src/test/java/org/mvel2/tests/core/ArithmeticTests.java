@@ -120,7 +120,10 @@ public class ArithmeticTests extends AbstractTest {
     public void testMath18() {
         String ex = "a = 100d; b = 50d; c = 20d; d = 30d; e = 2d; (a * b) * c / d * e";
         System.out.println("Expression: " + ex);
-        assertEquals((100d * 50d) * 20d / 30d * 2d, testCompiledSimple(ex, new HashMap()));
+
+        Serializable s = MVEL.compileExpression(ex);
+
+        assertEquals((100d * 50d) * 20d / 30d * 2d, MVEL.executeExpression(s, new HashMap()));
     }
 
     public void testMath19() {
@@ -138,7 +141,9 @@ public class ArithmeticTests extends AbstractTest {
     public void testMath33() {
         String ex = "x = 20; y = 2; z = 2; x/y/z";
         System.out.println("Expression: " + ex);
-        assertEquals(20 / 2 / 2, testCompiledSimple(ex, new HashMap()));
+        Serializable s = MVEL.compileExpression(ex);
+
+        assertEquals(20 / 2 / 2, MVEL.executeExpression(s, new HashMap()));
     }
 
     public void testMath20() {
@@ -515,7 +520,10 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testUnsignedShiftRightAssign() {
-        assertEquals(-5 >>> 2, test("_xXx = -5; _xXx >>>= 2"));
+        String exp = "_xXx = -5; _xXx >>>= 2";
+        Serializable s = MVEL.compileExpression(exp);
+
+        assertEquals(-5 >>> 2, MVEL.executeExpression(s, new HashMap()));
     }
 
     public void testXOR() {
@@ -608,7 +616,14 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testStringAppend() {
-        assertEquals("catbar", test("c + 'bar'"));
+        String ex = "c + 'bar'";
+        Map vars = createTestMap();
+
+        assertEquals("catbar", MVEL.eval(ex, vars));
+
+        Serializable s = MVEL.compileExpression(ex);
+
+        assertEquals("catbar", MVEL.executeExpression(s, vars));
     }
 
     public void testNegation() {

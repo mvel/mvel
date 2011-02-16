@@ -198,7 +198,7 @@ public class ExpressionCompiler extends AbstractParser {
                                             astBuild.addTokenNode(new LiteralNode(getStackValueResult()));
                                         }
 
-                                        astBuild.addTokenNode(new OperatorNode(tkOp2.getOperator()), verify(pCtx, tkLA2));
+                                        astBuild.addTokenNode(new OperatorNode(tkOp2.getOperator(), expr, st), verify(pCtx, tkLA2));
                                         break;
                                     }
 
@@ -334,7 +334,7 @@ public class ExpressionCompiler extends AbstractParser {
                  */
 
                 LiteralNode rightValue = new LiteralNode(stk.pop());
-                OperatorNode operator = new OperatorNode((Integer) stk.pop());
+                OperatorNode operator = new OperatorNode((Integer) stk.pop(), expr, st);
 
                 astBuild.addTokenNode(new LiteralNode(stk.pop()), operator);
                 astBuild.addTokenNode(rightValue, (OperatorNode) splitAccumulator.pop());
@@ -368,7 +368,7 @@ public class ExpressionCompiler extends AbstractParser {
 
         if (verifying) {
             if (tk.isIdentifier()) {
-                PropertyVerifier propVerifier = new PropertyVerifier(tk.getNameAsArray(), pCtx);
+                PropertyVerifier propVerifier = new PropertyVerifier(expr, tk.getStart(), tk.getOffset(), pCtx);
 
                 if (tk instanceof Union) {
                     propVerifier.setCtx(((Union) tk).getLeftEgressType());
@@ -396,7 +396,7 @@ public class ExpressionCompiler extends AbstractParser {
                         pCtx.addInput(tk.getAbsoluteName(), returnType);
                     }
 
-                    ExecutableStatement c = (ExecutableStatement) subCompileExpression(a.getExpression(), tk.getStart(),
+                    ExecutableStatement c = (ExecutableStatement) subCompileExpression(expr, tk.getStart(),
                             tk.getOffset(), pCtx);
 
                     if (pCtx.isStrictTypeEnforcement()) {

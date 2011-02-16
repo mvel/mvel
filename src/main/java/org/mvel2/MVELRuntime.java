@@ -147,6 +147,7 @@ public class MVELRuntime {
                     throw new CompileException("syntax error or incomptable types", e);
                 }
                 catch (CompileException e) {
+                    System.out.println();
                     throw e;
                 }
                 catch (Exception e) {

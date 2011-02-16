@@ -96,6 +96,7 @@ public class PropertyVerifier extends AbstractOptimizer {
      * @return known engress type
      */
     public Class analyze() {
+        cursor = start;
         resolvedExternally = true;
         if (ctx == null) {
             ctx = Object.class;
@@ -507,7 +508,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         int start = cursor + 1;
         cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '{', pCtx);
 
-        new WithAccessor(root, subset(expr, start, cursor++ - start), ctx, pCtx.isStrictTypeEnforcement());
+        new WithAccessor(root, expr, start, cursor++ - start, ctx, pCtx.isStrictTypeEnforcement());
 
         return ctx;
     }

@@ -22,17 +22,11 @@ public class WithAccessor implements AccessorNode {
     protected ExecutableStatement nestedStatement;
     protected WithNode.ParmValuePair[] withExpressions;
 
-    public WithAccessor(String property, char[] block, Class ingressType, boolean strict) {
+    public WithAccessor(String property, char[] expr, int start, int offset, Class ingressType, boolean strict) {
         ParserContext pCtx = getCurrentThreadParserContext();
         pCtx.setBlockSymbols(true);
 
-        withExpressions = WithNode.compileWithExpressions(block, property, ingressType, pCtx);
-    //    withExpressions = new ExecutablePairs[pvp.length];
-//
-//        for (int i = 0; i < pvp.length; i++) {
-//            withExpressions[i] = new ExecutablePairs(pvp[i].getParm(),
-//                    (ExecutableStatement) subCompileExpression(pvp[i].getValue().toCharArray()), ingressType, pCtx);
-//        }
+        withExpressions = WithNode.compileWithExpressions(expr, start, offset, property, ingressType, pCtx);
 
         pCtx.setBlockSymbols(false);
     }

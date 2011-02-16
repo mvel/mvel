@@ -436,7 +436,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         int st = cursor + 1;
         cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '{', pCtx);
 
-        WithAccessor wa = new WithAccessor(root, subset(expr, st, cursor++ - st), ingressType, false);
+        WithAccessor wa = new WithAccessor(root, expr, st, cursor++ - st, ingressType, false);
 
         addAccessorNode(wa);
 

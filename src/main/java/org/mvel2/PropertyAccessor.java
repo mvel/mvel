@@ -137,7 +137,7 @@ public class PropertyAccessor {
     }
 
     public PropertyAccessor(String property, Object ctx) {
-        this.length = (this.property = property.toCharArray()).length;
+        this.length = end = (this.property = property.toCharArray()).length;
         this.ctx = ctx;
         this.variableFactory = new ImmutableDefaultFactory();
     }

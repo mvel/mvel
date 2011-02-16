@@ -25,9 +25,11 @@ import org.mvel2.integration.VariableResolverFactory;
 public class OperatorNode extends ASTNode {
     private Integer operator;
 
-    public OperatorNode(Integer operator) {
+    public OperatorNode(Integer operator, char[] expr, int start) {
         assert operator != null;
+        this.expr = expr;
         this.literal = this.operator = operator;
+        this.start = start;
     }
 
     public boolean isOperator() {
@@ -43,10 +45,10 @@ public class OperatorNode extends ASTNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        throw new CompileException("illegal use of operator: " + getOperatorSymbol(operator));
+        throw new CompileException("illegal use of operator: " + getOperatorSymbol(operator), expr, start);
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        throw new CompileException("illegal use of operator: " + getOperatorSymbol(operator));
+        throw new CompileException("illegal use of operator: " + getOperatorSymbol(operator), expr,start);
     }
 }

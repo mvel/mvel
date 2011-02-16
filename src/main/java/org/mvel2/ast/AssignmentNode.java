@@ -40,7 +40,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
     private char[] indexTarget;
     private String index;
 
-    private char[] stmt;
+   // private char[] stmt;
     private ExecutableStatement statement;
     private boolean col = false;
 
@@ -54,10 +54,13 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
         if ((assignStart = find(expr, start, offset, '=')) != -1) {
             this.varName = createStringTrimmed(expr, start, assignStart - start);
-            stmt = subset(expr, assignStart + 1);
+
+            this.start = assignStart + 1;
+            this.offset =  offset - (this.start - start);
 
             if ((fields & COMPILE_IMMEDIATE) != 0) {
-                this.egressType = (statement = (ExecutableStatement) subCompileExpression(stmt, pCtx)).getKnownEgressType();
+                this.egressType = (statement = (ExecutableStatement)
+                        subCompileExpression(expr, this.start, this.offset, pCtx)).getKnownEgressType();
             }
 
             if (col = ((endOfName = findFirst('[', 0, this.varName.length(), indexTarget = this.varName.toCharArray())) > 0)) {
@@ -72,14 +75,12 @@ public class AssignmentNode extends ASTNode implements Assignment {
             checkNameSafety(this.varName);
         }
         else {
-            checkNameSafety(this.varName = new String(expr));
+            checkNameSafety(this.varName = new String(expr, start, offset));
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             pCtx.addVariable(this.varName, egressType);
         }
-
-        this.expr = this.varName.toCharArray();
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
@@ -107,10 +108,10 @@ public class AssignmentNode extends ASTNode implements Assignment {
         checkNameSafety(varName);
 
         if (col) {
-            PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = MVEL.eval(stmt, start, offset, ctx, factory));
+            PropertyAccessor.set(factory.getVariableResolver(varName).getValue(), factory, index, ctx = MVEL.eval(expr, start, offset, ctx, factory));
         }
         else {
-            return factory.createVariable(varName, MVEL.eval(stmt, start, offset, ctx, factory)).getValue();
+            return factory.createVariable(varName, MVEL.eval(expr, start, offset, ctx, factory)).getValue();
         }
 
         return ctx;
@@ -122,7 +123,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
     }
 
     public char[] getExpression() {
-        return stmt;
+        return subset(expr, start, offset);
     }
 
     public boolean isNewDeclaration() {
@@ -131,5 +132,10 @@ public class AssignmentNode extends ASTNode implements Assignment {
 
     public void setValueStatement(ExecutableStatement stmt) {
         this.statement = stmt;
+    }
+
+    @Override
+    public String toString() {
+        return varName + " = " + new String(expr, start, offset);
     }
 }

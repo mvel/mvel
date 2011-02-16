@@ -310,22 +310,15 @@ public class ASTNode implements Cloneable, Serializable {
             if (((fields |= NUMERIC | LITERAL | IDENTIFIER) & INVERT) != 0) {
                 try {
                     literal = ~((Integer) literal);
-                    System.out.println("#tk:<<" + literal + ">>");
-
                 }
                 catch (ClassCastException e) {
                     throw new CompileException("bitwise (~) operator can only be applied to integers");
                 }
             }
-            else {
-                System.out.println("#tk:<<" + literal + ">>");
-            }
             return;
         }
 
         this.literal = new String(name, start, offset);
-
-        System.out.println("$tk:<<" + literal + ">>");
 
         Scan:
         for (int i = start; i < name.length; i++) {

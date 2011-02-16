@@ -881,7 +881,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '{', pCtx);
         this.returnType = ctx != null ? ctx.getClass() : null;
 
-        for (WithNode.ParmValuePair aPvp : WithNode.compileWithExpressions(subset(expr, start, cursor++ - start), root, ingressType, pCtx)) {
+        for (WithNode.ParmValuePair aPvp : WithNode.compileWithExpressions(expr, start, cursor++ - start, root, ingressType, pCtx)) {
             assert debug("DUP");
             mv.visitInsn(DUP);
 

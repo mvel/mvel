@@ -40,9 +40,9 @@ public class WithNode extends BlockNode implements NestedStatement {
     //   protected ExecutableStatement nestedStatement;
     protected ParmValuePair[] withExpressions;
 
-    public WithNode(char[] expr, int start, int end, int blockStart, int blockOffset, int fields,
+    public WithNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields,
                     ParserContext pCtx) {
-        nestParm = createStringTrimmed(this.expr = expr, start, end);
+        nestParm = createStringTrimmed(this.expr = expr, this.start = start, this.offset = offset);
         this.blockStart = blockStart;
         this.blockOffset = blockOffset;
 
@@ -50,9 +50,9 @@ public class WithNode extends BlockNode implements NestedStatement {
             pCtx.setBlockSymbols(true);
 
             egressType = (compiledBlock = (ExecutableStatement)
-                    subCompileExpression(expr, start, end, pCtx)).getKnownEgressType();
+                    subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType();
 
-            withExpressions = compileWithExpressions(expr, nestParm, egressType, pCtx);
+            withExpressions = compileWithExpressions(expr, blockStart, blockOffset,  nestParm, egressType, pCtx);
 
             pCtx.setBlockSymbols(false);
         }
@@ -75,7 +75,7 @@ public class WithNode extends BlockNode implements NestedStatement {
         return ctx;
     }
 
-    public static ParmValuePair[] compileWithExpressions(char[] block, String nestParm, Class egressType, ParserContext pCtx) {
+    public static ParmValuePair[] compileWithExpressions(char[] block, int start, int offset, String nestParm, Class egressType, ParserContext pCtx) {
         /**
          *
          * MAINTENANCE NOTE: AN INTERPRETED MODE VERSION OF THIS CODE IS DUPLICATED IN: ParseTools
@@ -85,34 +85,36 @@ public class WithNode extends BlockNode implements NestedStatement {
         List<ParmValuePair> parms = new ArrayList<ParmValuePair>();
         String parm = "";
 
-        int start = 0;
-        int end = -1;
+        int end = start + offset;
+
+        int _st = start;
+        int _end = -1;
 
         int oper = -1;
-        for (int i = 0; i < block.length; i++) {
+        for (int i = start; i < end; i++) {
             switch (block[i]) {
                 case '{':
                 case '[':
                 case '(':
-                    i = balancedCapture(block, i, block[i]);
+                    i = balancedCapture(block, i, end, block[i]);
                     continue;
 
                 case '/':
-                    if (i < block.length && block[i + 1] == '/') {
-                        while (i < block.length && block[i] != '\n') block[i++] = ' ';
-                        if (parm == null) start = i;
+                    if (i < end && block[i + 1] == '/') {
+                        while (i < end && block[i] != '\n') block[i++] = ' ';
+                        if (parm == null) _st = i;
                     }
-                    else if (i < block.length && block[i + 1] == '*') {
-                        int len = block.length - 1;
+                    else if (i < end && block[i + 1] == '*') {
+                        int len = end - 1;
                         while (i < len && !(block[i] == '*' && block[i + 1] == '/')) {
                             block[i++] = ' ';
                         }
                         block[i++] = ' ';
                         block[i++] = ' ';
 
-                        if (parm == null) start = i;
+                        if (parm == null) _st = i;
                     }
-                    else if (i < block.length && block[i + 1] == '=') {
+                    else if (i < end && block[i + 1] == '=') {
                         oper = Operator.DIV;
                     }
                     continue;
@@ -121,65 +123,65 @@ public class WithNode extends BlockNode implements NestedStatement {
                 case '*':
                 case '-':
                 case '+':
-                    if (i + 1 < block.length && block[i + 1] == '=') {
+                    if (i + 1 < end && block[i + 1] == '=') {
                         oper = opLookup(block[i]);
                     }
                     continue;
 
 
                 case '=':
-                    parm = createStringTrimmed(block, start, i - start - (oper != -1 ? 1 : 0));
-                    start = i + 1;
+                    parm = createStringTrimmed(block, _st, i - _st - (oper != -1 ? 1 : 0));
+                    _st = i + 1;
                     continue;
 
                 case ',':
-                    if (end == -1) end = i;
+                    if (_end == -1) _end = i;
 
                     if (parm == null || parm.length() == 0) {
                         parms.add(
                                 new ParmValuePair(null, (ExecutableStatement)
                                         subCompileExpression(
                                                 new StringBuilder(nestParm).append('.')
-                                                        .append(subset(block, start, end - start)).toString().toCharArray(), pCtx), egressType, pCtx)
+                                                        .append(new String(block, _st, _end - _st)).toString(), pCtx), egressType, pCtx)
                         );
 
                         oper = -1;
-                        start = ++i;
+                        _st = ++i;
                     }
                     else {
                         parms.add(new ParmValuePair(
                                 parm,
                                 (ExecutableStatement) subCompileExpression(
                                         createShortFormOperativeAssignment(nestParm + "." + parm,
-                                                block, start, end - start, oper), pCtx
+                                                block, _st, _end - _st, oper), pCtx
                                 )
                                 , egressType, pCtx));
 
                         parm = null;
                         oper = -1;
-                        start = ++i;
+                        _st = ++i;
                     }
 
-                    end = -1;
+                    _end = -1;
 
                     break;
             }
         }
 
 
-        if (start != (end = block.length)) {
+        if (_st != (_end = end)) {
             if (parm == null || "".equals(parm)) {
                 parms.add(
                         new ParmValuePair(null, (ExecutableStatement)
                                 subCompileExpression(new StringBuilder(nestParm).append('.')
-                                        .append(subset(block, start, end - start)).toString().toCharArray(), pCtx), egressType, pCtx)
+                                        .append(new String(block, _st, _end - _st)).toString(), pCtx), egressType, pCtx)
                 );
             }
             else {
                 parms.add(new ParmValuePair(
                         parm,
                         (ExecutableStatement) subCompileExpression(
-                                createShortFormOperativeAssignment(nestParm + "." + parm, block, start, end - start, oper),
+                                createShortFormOperativeAssignment(nestParm + "." + parm, block, _st, _end - _st, oper),
                                 pCtx
 
                         )
