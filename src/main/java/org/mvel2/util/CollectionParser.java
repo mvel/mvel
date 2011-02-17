@@ -22,6 +22,7 @@ import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
+
 import static org.mvel2.util.ParseTools.*;
 
 import java.util.ArrayList;
@@ -63,10 +64,13 @@ public class CollectionParser {
 
     public Object parseCollection(char[] property, int start, int offset, boolean subcompile, ParserContext pCtx) {
         this.property = property;
-        this.start = this.cursor = start;
         this.pCtx = pCtx;
         this.end = start + offset;
 
+        while (start < end && isWhitespace(property[start])) {
+            start++;
+        }
+        this.start = this.cursor = start;
 
         return parseCollection(subcompile);
     }
@@ -74,8 +78,15 @@ public class CollectionParser {
     public Object parseCollection(char[] property, int start, int offset, boolean subcompile, Class colType, ParserContext pCtx) {
         if (colType != null) this.colType = getBaseComponentType(colType);
         this.property = property;
-        this.start = this.cursor = start;
+
         this.end = start + offset;
+
+        while (start < end && isWhitespace(property[start])) {
+            start++;
+        }
+
+        this.start = this.cursor = start;
+
         this.pCtx = pCtx;
 
         return parseCollection(subcompile);
@@ -125,7 +136,7 @@ public class CollectionParser {
                     /**
                      * Sub-parse nested collections.
                      */
-                    Object o = new CollectionParser(newType).parseCollection(property, (st = cursor) + 1 ,
+                    Object o = new CollectionParser(newType).parseCollection(property, (st = cursor) + 1,
                             (cursor = balancedCapture(property, st, end, property[st])) - st - 1, subcompile, colType, pCtx);
 
                     if (type == MAP) {
@@ -224,7 +235,7 @@ public class CollectionParser {
         else {
             Class r = ((ExecutableStatement) subCompileExpression(ex.toCharArray(), pCtx)).getKnownEgressType();
             if (!colType.isAssignableFrom(r) && (isStrongType() || !DataConversion.canConvert(r, colType))) {
-                 throw new CompileException("expected type: " + colType.getName() + "; but found: " + r.getName());
+                throw new CompileException("expected type: " + colType.getName() + "; but found: " + r.getName());
             }
         }
     }

@@ -61,10 +61,7 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
             this.start = mark + 1;
             this.offset = offset - (this.start - start);
 
-         //   stmt = subset(expr, mark + 1, (start + offset) - mark);
-
             if ((fields & COMPILE_IMMEDIATE) != 0) {
-                System.out.println("DEEP_ASSIGNMENT_STATEMENT:" + property + ":" + operation + ":<<" + new String(expr) + ">>");
                 statement = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx);
             }
         }

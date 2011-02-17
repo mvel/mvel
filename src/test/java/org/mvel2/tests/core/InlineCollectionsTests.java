@@ -47,6 +47,8 @@ public class InlineCollectionsTests extends AbstractTest {
     }
 
     public void testEmptyArray2() {
+        Object o = MVEL.eval("{     }");
+
         assertTrue(((Object[]) test("{    }")).length == 0);
     }
 

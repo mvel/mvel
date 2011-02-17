@@ -54,8 +54,6 @@ public class TypeDescriptor implements Serializable {
     public void updateClassName(char[] name, int start, int offset, int fields) {
         this.expr = name;
 
-        System.out.println("TypeDescriptor<<" + new String(name, start, offset) + ">>");
-
         if (offset == 0 || !ParseTools.isIdentifierPart(name[start]) || isDigit(name[start])) return;
 
         if ((endRange = findFirst('(', start, offset, name)) == -1) {

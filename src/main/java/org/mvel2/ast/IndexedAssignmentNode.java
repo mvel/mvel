@@ -19,11 +19,14 @@
 package org.mvel2.ast;
 
 import org.mvel2.MVEL;
+
 import static org.mvel2.MVEL.compileSetExpression;
+
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledAccExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ArrayTools.findFirst;
 import static org.mvel2.util.ParseTools.*;
 
@@ -60,12 +63,19 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
                     subCompileExpression(stmt = createShortFormOperativeAssignment(name, expr, start, offset, operation), pCtx)).getKnownEgressType();
         }
         else if ((assignStart = find(expr, start, offset, '=')) != -1) {
-            this.name = createStringTrimmed(expr, start, assignStart);
+            this.name = createStringTrimmed(expr, start, assignStart - start);
+
+            this.start = assignStart + 1;
+            this.offset = offset - (this.start - start);
+
             this.egressType = (statement
-                    = (ExecutableStatement) subCompileExpression(stmt = subset(expr, assignStart + 1), pCtx))
+                    = (ExecutableStatement) subCompileExpression(stmt = subset(expr, this.start, this.offset), pCtx))
                     .getKnownEgressType();
 
-            if (col = ((endOfName = (short) findFirst('[', start, offset, indexTarget = this.name.toCharArray())) > 0)) {
+//            this.egressType = (statement = (ExecutableStatement)
+//                     subCompileExpression(expr, this.start, this.offset, pCtx)).getKnownEgressType();
+
+            if (col = ((endOfName = (short) findFirst('[', 0, this.name.length(), indexTarget = this.name.toCharArray())) > 0)) {
                 if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
                     accExpr = (CompiledAccExpression) compileSetExpression(indexTarget, pCtx);
                 }
@@ -90,7 +100,7 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (accExpr == null) {
+        if (accExpr == null && indexTarget != null) {
             accExpr = (CompiledAccExpression) compileSetExpression(indexTarget);
         }
 

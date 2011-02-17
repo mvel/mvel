@@ -21,7 +21,7 @@ public class ArithmeticTests extends AbstractTest {
     public void testMath() {
         Map vars = createTestMap();
 
-     //   assertEquals(188, MVEL.eval("pi * hour", vars));
+        //   assertEquals(188, MVEL.eval("pi * hour", vars));
 
         Serializable s = MVEL.compileExpression("pi * hour");
         assertEquals(188, MVEL.executeExpression(s, vars));
@@ -66,7 +66,7 @@ public class ArithmeticTests extends AbstractTest {
 
         Serializable s = MVEL.compileExpression(expression);
         assertEquals(val, MVEL.executeExpression(s, vars));
-      //  assertEquals(val, test("(300 * five + 1) + (100 / 2 * 2)"));
+        //  assertEquals(val, test("(300 * five + 1) + (100 / 2 * 2)"));
     }
 
     public void testMath7() {
@@ -87,13 +87,13 @@ public class ArithmeticTests extends AbstractTest {
         String expr = "int x = 15; -x";
         Map vars = new HashMap();
 
-      //  assertEquals(-15, MVEL.eval(expr, vars));
+        //  assertEquals(-15, MVEL.eval(expr, vars));
         vars.clear();
 
         Serializable s = MVEL.compileExpression(expr);
         assertEquals(-15, MVEL.executeExpression(s, vars));
 
-      //  assertEquals(-15, test("int x = 15; -x"));
+        //  assertEquals(-15, test("int x = 15; -x"));
     }
 
 
@@ -552,7 +552,7 @@ public class ArithmeticTests extends AbstractTest {
 
     public void testDeepAssignmentIncrement() {
         String ex = "foo.countTest += 5; if (foo.countTest == 5) { foo.countTest = 0; return true; }" +
-                        " else { foo.countTest = 0; return false; }";
+                " else { foo.countTest = 0; return false; }";
 
         Map vars = createTestMap();
         assertEquals(true, MVEL.eval(ex, vars));
@@ -563,6 +563,12 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testDeepAssignmentWithBlock() {
+        String ex = "with (foo) { countTest += 5 }; if (foo.countTest == 5) { foo.countTest = 0; return true; }" +
+                " else { foo.countTest = 0; return false; }";
+
+        Map vars = createTestMap();
+        assertEquals(true, MVEL.eval(ex, vars));
+
         assertEquals(true,
                 test("with (foo) { countTest += 5 }; if (foo.countTest == 5) { foo.countTest = 0; return true; }" +
                         " else { foo.countTest = 0; return false; }"));

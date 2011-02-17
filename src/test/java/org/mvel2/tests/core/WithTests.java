@@ -21,6 +21,12 @@ import java.util.*;
 
 public class WithTests extends AbstractTest {
     public void testWith() {
+        String ex = "with (foo) {aValue = 'One',bValue='Two'}; foo.aValue + foo.bValue;";
+
+        Map vars = createTestMap();
+        Object o = MVEL.eval(ex, vars);
+        assertEquals("OneTwo", o);
+
         assertEquals("OneTwo", test("with (foo) {aValue = 'One',bValue='Two'}; foo.aValue + foo.bValue;"));
     }
 

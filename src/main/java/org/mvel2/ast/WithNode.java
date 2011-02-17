@@ -52,7 +52,7 @@ public class WithNode extends BlockNode implements NestedStatement {
             egressType = (compiledBlock = (ExecutableStatement)
                     subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType();
 
-            withExpressions = compileWithExpressions(expr, blockStart, blockOffset,  nestParm, egressType, pCtx);
+            withExpressions = compileWithExpressions(expr, blockStart, blockOffset, nestParm, egressType, pCtx);
 
             pCtx.setBlockSymbols(false);
         }
@@ -149,12 +149,15 @@ public class WithNode extends BlockNode implements NestedStatement {
                         _st = ++i;
                     }
                     else {
+
                         parms.add(new ParmValuePair(
                                 parm,
-                                (ExecutableStatement) subCompileExpression(
-                                        createShortFormOperativeAssignment(nestParm + "." + parm,
-                                                block, _st, _end - _st, oper), pCtx
-                                )
+                                oper != -1 ?
+                                        (ExecutableStatement) subCompileExpression(
+                                                createShortFormOperativeAssignment(nestParm + "." + parm,
+                                                        block, _st, _end - _st, oper), pCtx)
+                                        //or
+                                        : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
                                 , egressType, pCtx));
 
                         parm = null;
@@ -180,11 +183,12 @@ public class WithNode extends BlockNode implements NestedStatement {
             else {
                 parms.add(new ParmValuePair(
                         parm,
-                        (ExecutableStatement) subCompileExpression(
-                                createShortFormOperativeAssignment(nestParm + "." + parm, block, _st, _end - _st, oper),
-                                pCtx
-
-                        )
+                        oper != -1 ?
+                                (ExecutableStatement) subCompileExpression(
+                                        createShortFormOperativeAssignment(nestParm + "." + parm, block, _st, _end - _st, oper),
+                                        pCtx)
+                                //or
+                                : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
                         , egressType, pCtx));
             }
         }

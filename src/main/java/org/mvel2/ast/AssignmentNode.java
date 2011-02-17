@@ -84,7 +84,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (accExpr == null) {
+        if (accExpr == null && indexTarget != null) {
             accExpr = (CompiledAccExpression) compileSetExpression(indexTarget);
         }
 

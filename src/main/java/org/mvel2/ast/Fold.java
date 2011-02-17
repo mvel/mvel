@@ -45,9 +45,10 @@ public class Fold extends ASTNode {
         this.offset = offset;
 
         int cursor = start;
-        for (; cursor < expr.length; cursor++) {
+        int end = start + offset;
+        for (; cursor < end; cursor++) {
             if (isWhitespace(expr[cursor])) {
-                while (cursor < expr.length && isWhitespace(expr[cursor])) cursor++;
+                while (cursor <  end && isWhitespace(expr[cursor])) cursor++;
 
                 if (expr[cursor] == 'i' && expr[cursor + 1] == 'n' && isJunct(expr[cursor + 2])) {
                     break;
@@ -58,13 +59,13 @@ public class Fold extends ASTNode {
         subEx = (ExecutableStatement) subCompileExpression(expr, start, cursor - 1, pCtx);
         int st = cursor += 2; // skip 'in'
 
-        for (; cursor < expr.length; cursor++) {
+        for (; cursor < end; cursor++) {
             if (isWhitespace(expr[cursor])) {
-                while (cursor < expr.length && isWhitespace(expr[cursor])) cursor++;
+                while (cursor < end && isWhitespace(expr[cursor])) cursor++;
 
                 if (expr[cursor] == 'i' && expr[cursor + 1] == 'f' && isJunct(expr[cursor + 2])) {
                     int s = cursor + 2;
-                    constraintEx = (ExecutableStatement) subCompileExpression(subset(expr, s, expr.length - s), pCtx);
+                    constraintEx = (ExecutableStatement) subCompileExpression(subset(expr, s, end - s), pCtx);
                     break;
                 }
             }

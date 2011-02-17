@@ -64,7 +64,7 @@ public class AbstractOptimizer extends AbstractParser {
              *
              */
             boolean meth = false;
-           // int end = start + length;
+            // int end = start + length;
             int last = end;
             for (int i = end - 1; i > start; i--) {
                 switch (expr[i]) {
@@ -198,10 +198,10 @@ public class AbstractOptimizer extends AbstractParser {
         }
 
         //noinspection StatementWithEmptyBody
-        while (++cursor < end && isIdentifierPart(expr[cursor]));
+        while (++cursor < end && isIdentifierPart(expr[cursor])) ;
 
+        skipWhitespace();
         if (cursor < end) {
-            skipWhitespace();
             switch (expr[cursor]) {
                 case '[':
                     return COL;

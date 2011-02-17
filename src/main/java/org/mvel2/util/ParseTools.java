@@ -1498,10 +1498,16 @@ public class ParseTools {
                         _st = ++i;
                     }
                     else {
-                        MVEL.setProperty(ctx, parm, MVEL.eval(new String(
-                                createShortFormOperativeAssignment(
-                                        new StringBuilder(nestParm).append(".").append(parm).toString(),
-                                        block, oper, start, _end - start)), ctx, factory));
+                        if (oper != -1) {
+                            MVEL.setProperty(ctx, parm, MVEL.eval(new String(
+                                    createShortFormOperativeAssignment(
+                                            new StringBuilder(nestParm).append(".").append(parm).toString(),
+                                            block, oper, start, _end - start)), ctx, factory));
+                        }
+                        else {
+                            MVEL.setProperty(ctx, parm, MVEL.eval(block, start, _end - start, ctx, factory));
+
+                        }
 
                         parm = null;
                         oper = -1;
@@ -1519,10 +1525,15 @@ public class ParseTools {
                         .append(block, _st, _end - _st).toString(), ctx, factory);
             }
             else {
-                MVEL.setProperty(ctx, parm, MVEL.eval(
-                        new String(createShortFormOperativeAssignment(
-                                new StringBuilder(nestParm).append(".").append(parm).toString(),
-                                block, _st, end - _st, oper)), ctx, factory));
+                if (oper != -1) {
+                    MVEL.setProperty(ctx, parm, MVEL.eval(
+                            new String(createShortFormOperativeAssignment(
+                                    new StringBuilder(nestParm).append(".").append(parm).toString(),
+                                    block, _st, end - _st, oper)), ctx, factory));
+                }
+                else {
+                    MVEL.setProperty(ctx, parm, MVEL.eval(block, _st, end - _st, ctx, factory));
+                }
             }
         }
     }
@@ -1606,7 +1617,7 @@ public class ParseTools {
             if (val[start] == '-') i++;
             else if (val[start] == '~') {
                 i++;
-                if (val[start+1] == '-') i++;
+                if (val[start + 1] == '-') i++;
             }
         }
 
@@ -1737,7 +1748,8 @@ public class ParseTools {
                     if (val[++i] == '-' || val[i] == '+') i++;
                 }
                 else {
-                    if (i != start) throw new CompileException("invalid number literal: " + new String(val,start,offset));
+                    if (i != start)
+                        throw new CompileException("invalid number literal: " + new String(val, start, offset));
                     return false;
                 }
             }
@@ -1996,9 +2008,6 @@ public class ParseTools {
     public static Serializable subCompileExpression(char[] expression, int start, int offset, ParserContext ctx) {
         ExpressionCompiler c = new ExpressionCompiler(expression, start, offset);
         if (ctx != null) c.setPCtx(ctx);
-
-        System.out.println("About to sub-compile: <" + new String(expression, start, offset) + ">");
-
         return _optimizeTree(c._compile());
     }
 

@@ -40,7 +40,7 @@ public class SamplesTests extends AbstractTest {
     }
 
     public void testQuickSortScript3() throws IOException {
-        Object[] sorted = (Object[]) test(new String(loadFromFile(new File("samples/scripts/quicksort2.mvel"))));
+        Object[] sorted = (Object[]) MVEL.eval(new String(loadFromFile(new File("samples/scripts/quicksort2.mvel"))), new HashMap());
         int last = -1;
         for (Object o : sorted) {
             if (last == -1) {

@@ -114,11 +114,8 @@ public class InlineCollectionNode extends ASTNode {
             collectionGraph = ((List) parser.parseCollection(expr, start, offset, compile, type, pCtx)).get(0);
         }
 
- //       if (parser.getCursor() + 2 < start + offset) {
-//            trailing = subset(expr, parser.getCursor() + 2);
-            trailingStart = parser.getCursor() + 2;
-            trailingOffset = offset - (trailingStart - start);
-   //     }
+        trailingStart = parser.getCursor() + 2;
+        trailingOffset = offset - (trailingStart - start);
 
         if (this.egressType == null) this.egressType = collectionGraph.getClass();
     }

@@ -245,6 +245,10 @@ public class AbstractParser implements Parser, Serializable {
 
                     skipWhitespace();
 
+                    if (cursor >= end) {
+                        return null;
+                    }
+
                     if (!pCtx.isKnownLine(pCtx.getSourceFile(), pCtx.setLineCount(line)) && !pCtx.isBlockSymbols()) {
                         lastWasLineLabel = true;
                         pCtx.setLineAndOffset(line, cursor);
@@ -518,7 +522,7 @@ public class AbstractParser implements Parser, Serializable {
                                         captureToEOS();
 
                                         if (union) {
-                                            return lastNode = new DeepAssignmentNode(expr, st, cursor - st, fields,
+                                            return lastNode = new DeepAssignmentNode(expr, st = trimRight(st), trimLeft(cursor) - st, fields,
                                                     ADD, name, pCtx);
                                         }
                                         else if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
@@ -526,7 +530,7 @@ public class AbstractParser implements Parser, Serializable {
                                                     ADD, name, idx, pCtx);
                                         }
                                         else {
-                                            return lastNode = new OperativeAssign(name, expr, st, cursor - st,
+                                            return lastNode = new OperativeAssign(name, expr, st = trimRight(st), trimLeft(cursor) - st,
                                                     ADD, fields, pCtx);
                                         }
                                 }
@@ -775,7 +779,8 @@ public class AbstractParser implements Parser, Serializable {
                                             && (pCtx.isIndexAllocation()))) {
                                         captureToEOS();
 
-                                        IndexedAssignmentNode ian = new IndexedAssignmentNode(expr, st, cursor - st,
+                                        IndexedAssignmentNode ian = new IndexedAssignmentNode(expr, st = trimRight(st),
+                                                trimLeft(cursor) - st,
                                                 ASTNode.ASSIGN, idx, pCtx);
 
                                         if (idx == -1) {
@@ -1970,11 +1975,6 @@ public class AbstractParser implements Parser, Serializable {
             }
             cursor++;
         }
-
-        if (pCtx != null) {
-            pCtx.setLineAndOffset(line, lastLineStart);
-        }
-
     }
 
     /**

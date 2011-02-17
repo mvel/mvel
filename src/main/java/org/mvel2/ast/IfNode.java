@@ -49,12 +49,8 @@ public class IfNode extends BlockNode implements NestedStatement {
         this.blockOffset = blockOffset;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            System.out.println("COND<<" + new String(expr, start, offset) + ">>");
-
             expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
                     Boolean.class, true);
-
-            System.out.println("NEST<<" + new String(expr, blockStart, blockOffset) + ">>");
 
             this.nestedStatement = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
         }
