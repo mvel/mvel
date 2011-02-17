@@ -307,13 +307,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException("could not access property: " + new String(property), e);
+            throw new PropertyAccessException("could not access property: " + new String(property), this.expr, start, e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException("could not access property: " + new String(property), e);
+            throw new PropertyAccessException("could not access property: " + new String(property), this.expr, start, e);
         }
         catch (IllegalArgumentException e) {
-            throw new PropertyAccessException("error binding property: " + new String(property) + " (value <<" + value + ">>::" + (value == null ? "null" : value.getClass().getCanonicalName()) + ")", e);
+            throw new PropertyAccessException("error binding property: " + new String(property) + " (value <<" + value + ">>::"
+                    + (value == null ? "null" : value.getClass().getCanonicalName()) + ")", this.expr, start, e);
         }
 
 
@@ -418,7 +419,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             throw new PropertyAccessException(new String(expr, start, length), e);
         }
         catch (Exception e) {
-            throw new CompileException(e.getMessage(), e);
+            throw new CompileException(e.getMessage(), this.expr, start, e);
         }
     }
 
@@ -627,10 +628,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             if (ctx == null) {
-                throw new CompileException("unresolvable property or identifier: " + property, expr, cursor);
+                throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, cursor);
             }
             else {
-                throw new CompileException("could not access: " + property + "; in class: " + ctx.getClass().getName(), expr, cursor);
+                throw new PropertyAccessException("could not access: " + property + "; in class: " + ctx.getClass().getName(), expr, cursor);
             }
         }
     }

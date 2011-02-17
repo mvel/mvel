@@ -92,7 +92,13 @@ public class ControlFlowTests extends AbstractTest {
     }
 
     public void testIf() {
-        assertEquals(10, test("if (5 > 4) { return 10; } else { return 5; }"));
+        String ex = "if (5 > 4) { return 10; } else { return 5; }";
+
+        assertEquals(10, MVEL.eval(ex));
+
+        Serializable s = MVEL.compileExpression(ex);
+
+        assertEquals(10, MVEL.executeExpression(s));
     }
 
     public void testIf2() {

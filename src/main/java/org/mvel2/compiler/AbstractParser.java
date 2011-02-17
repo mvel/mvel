@@ -220,8 +220,6 @@ public class AbstractParser implements Parser, Serializable {
             }
 
             int brace, idx;
-
-            //  char[] tmp;
             int tmpStart;
 
             String name;
@@ -711,11 +709,12 @@ public class AbstractParser implements Parser, Serializable {
                                 if (lookAhead() == '=') {
                                     // tmp = subArray(start, trimLeft(cursor));
                                     tmpStart = st;
+                                    int tmpOffset = cursor - st;
                                     st = cursor += 2;
 
                                     captureToEOT();
 
-                                    return lastNode = new RegExMatch(expr, tmpStart, cursor, fields, subArray(st, cursor), pCtx);
+                                    return lastNode = new RegExMatch(expr, tmpStart, tmpOffset, fields, st, cursor - st, pCtx);
                                 }
                                 break CaptureLoop;
 
@@ -943,10 +942,10 @@ public class AbstractParser implements Parser, Serializable {
                                         brace--;
                                         break;
                                     case '\'':
-                                        cursor = captureStringLiteral('\'', expr, cursor, end - cursor);
+                                        cursor = captureStringLiteral('\'', expr, cursor, end);
                                         break;
                                     case '"':
-                                        cursor = captureStringLiteral('"', expr, cursor, end - cursor);
+                                        cursor = captureStringLiteral('"', expr, cursor, end);
                                         break;
                                     case 'i':
                                         if (brace == 1 && isWhitespace(lookBehind()) && lookAhead() == 'n' && isWhitespace(lookAhead(2))) {
@@ -1143,8 +1142,7 @@ public class AbstractParser implements Parser, Serializable {
                                     return lastNode = new Negation(expr, st, cursor - st, fields, pCtx);
                                 }
                                 else {
-                                    return lastNode = new Negation(name.toCharArray(), st, cursor - name.length(),
-                                            fields, pCtx);
+                                    return lastNode = new Negation(expr, st, cursor - st, fields, pCtx);
                                 }
                             }
                             else if (expr[cursor] == '(') {
@@ -1632,7 +1630,7 @@ public class AbstractParser implements Parser, Serializable {
 
             if (node != null) {
                 if (!cond) {
-                    return ifNode.setElseBlock(subArray(trimRight(blockStart + 1), trimLeft(blockEnd)), pCtx);
+                    return ifNode.setElseBlock(expr, st = trimRight(blockStart + 1), trimLeft(blockEnd) - st, pCtx);
                 }
                 else {
                     return ifNode.setElseIf((IfNode) createBlockToken(startCond, endCond, trimRight(blockStart + 1),

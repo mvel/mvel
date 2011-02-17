@@ -128,7 +128,7 @@ public class PropertyAccessor {
 
     public PropertyAccessor(char[] property, int start, int offset, Object ctx, VariableResolverFactory resolver, Object thisReference) {
         this.property = property;
-        this.cursor = this.st = start;
+        this.cursor = this.st = this.start = start;
         this.length = offset;
         this.end =  start + offset;
         this.ctx = ctx;
@@ -189,9 +189,6 @@ public class PropertyAccessor {
         }
         catch (IndexOutOfBoundsException e) {
             throw new PropertyAccessException("array or collections index out of bounds in property: " + new String(property), e);
-        }
-        catch (PropertyAccessException e) {
-            throw new PropertyAccessException("failed to access property: " + new String(property) + ": " + e.getMessage(), e);
         }
         catch (CompileException e) {
             throw e;
@@ -646,10 +643,10 @@ public class PropertyAccessor {
         }
 
         if (ctx == null) {
-            throw new PropertyAccessException("unresolvable property or identifier: " + property);
+            throw new PropertyAccessException("unresolvable property or identifier: " + property, this.property, start);
         }
         else {
-            throw new PropertyAccessException("could not access: " + property + "; in class: " + ctx.getClass().getName());
+            throw new PropertyAccessException("could not access: " + property + "; in class: " + ctx.getClass().getName(), this.property, start);
         }
     }
 
@@ -982,12 +979,14 @@ public class PropertyAccessor {
              */
             boolean meth = false;
             int last = end;
-            for (int i = end - 1; i > 0; i--) {
+            for (int i = end - 1; i > start; i--) {
                 switch (property[i]) {
                     case '.':
                         if (!meth) {
                             try {
-                                return currentThread().getContextClassLoader().loadClass(new String(property, 0, cursor = last));
+                                String test = new String(property, start, (cursor = last) - start);
+
+                                return currentThread().getContextClassLoader().loadClass(test);
                             }
                             catch (ClassNotFoundException e) {
                                 Class cls = currentThread().getContextClassLoader().loadClass(new String(property, 0, i));

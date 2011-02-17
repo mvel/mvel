@@ -19,34 +19,42 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
+
 import static org.mvel2.MVEL.eval;
+
 import org.mvel2.compiler.ExecutableLiteral;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
 import static java.lang.String.valueOf;
+
 import java.util.regex.Pattern;
+
 import static java.util.regex.Pattern.compile;
+
 import java.util.regex.PatternSyntaxException;
 
 public class RegExMatch extends ASTNode {
     private ExecutableStatement stmt;
     private ExecutableStatement patternStmt;
-    private char[] pattern;
+
+    private int patternStart;
+    private int patternOffset;
     private Pattern p;
 
-    public RegExMatch(char[] expr, int start, int offset, int fields, char[] pattern, ParserContext pCtx) {
+    public RegExMatch(char[] expr, int start, int offset, int fields, int patternStart, int patternOffset, ParserContext pCtx) {
         this.expr = expr;
         this.start = start;
         this.offset = offset;
-
-        this.pattern = pattern;
+        this.patternStart = patternStart;
+        this.patternOffset = patternOffset;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset);
             if ((this.patternStmt = (ExecutableStatement)
-                    subCompileExpression(pattern, pCtx)) instanceof ExecutableLiteral) {
+                    subCompileExpression(expr, patternStart, patternOffset, pCtx)) instanceof ExecutableLiteral) {
 
                 try {
                     p = compile(valueOf(patternStmt.getValue(null, null)));
@@ -70,7 +78,7 @@ public class RegExMatch extends ASTNode {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         try {
-            return compile(valueOf(eval(pattern, ctx, factory))).matcher(valueOf(eval(expr, start, offset, ctx, factory))).matches();
+            return compile(valueOf(eval(expr, patternStart, patternOffset, ctx, factory))).matcher(valueOf(eval(expr, start, offset, ctx, factory))).matches();
         }
         catch (PatternSyntaxException e) {
             throw new CompileException("bad regular expression", e);

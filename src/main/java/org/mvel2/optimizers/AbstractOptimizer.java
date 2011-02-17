@@ -64,14 +64,16 @@ public class AbstractOptimizer extends AbstractParser {
              *
              */
             boolean meth = false;
-            int end = start + length;
+           // int end = start + length;
             int last = end;
             for (int i = end - 1; i > start; i--) {
                 switch (expr[i]) {
                     case '.':
                         if (!meth) {
                             try {
-                                return Class.forName(new String(expr, start, cursor = last), true, pCtx != null ?
+                                String test = new String(expr, start, (cursor = last) - start);
+
+                                return Class.forName(test, true, pCtx != null ?
                                         pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
                             }
                             catch (ClassNotFoundException e) {

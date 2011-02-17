@@ -3,7 +3,9 @@ package org.mvel2.tests.core;
 import org.mvel2.MVEL;
 import org.mvel2.tests.core.res.Foo;
 
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ComparisonTests extends AbstractTest {
 
@@ -59,7 +61,8 @@ public class ComparisonTests extends AbstractTest {
     }
 
     public void testNegation() {
-        assertEquals(true, test("!fun && !fun"));
+        String ex = "!fun && !fun";
+        assertEquals(true, test(ex));
     }
 
     public void testNegation2() {
@@ -95,7 +98,7 @@ public class ComparisonTests extends AbstractTest {
     }
 
     public void testRegExNegate() {
-        assertEquals(false, test("!(foo.bar.name ~= '[a-z].+')"));
+       assertEquals(false, test("!(foo.bar.name ~= '[a-z].+')"));
     }
 
     public void testRegEx2() {

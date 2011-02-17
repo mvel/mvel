@@ -2851,7 +2851,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         try {
             Accessor compiledAccessor = _initializeAccessor();
 
-            if (property != null && property.length > 0) {
+            if (property != null && length > start) {
                 return new Union(compiledAccessor, property, start, length);
             }
             else {

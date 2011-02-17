@@ -152,9 +152,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
             }
         }
         catch (CompileException e) {
-            e.setExpr(expr);
-            e.setLineNumber(line + e.getLineNumber());
-            e.setCursor(cursor);
+//            e.setExpr(expr);
+//            e.setLineNumber(line + e.getLineNumber());
+//            e.setCursor(cursor);
             throw e;
         }
         catch (NullPointerException e) {

@@ -551,6 +551,12 @@ public class ArithmeticTests extends AbstractTest {
     }
 
     public void testDeepAssignmentIncrement() {
+        String ex = "foo.countTest += 5; if (foo.countTest == 5) { foo.countTest = 0; return true; }" +
+                        " else { foo.countTest = 0; return false; }";
+
+        Map vars = createTestMap();
+        assertEquals(true, MVEL.eval(ex, vars));
+
         assertEquals(true,
                 test("foo.countTest += 5; if (foo.countTest == 5) { foo.countTest = 0; return true; }" +
                         " else { foo.countTest = 0; return false; }"));

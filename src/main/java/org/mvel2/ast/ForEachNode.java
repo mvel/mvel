@@ -170,8 +170,8 @@ public class ForEachNode extends BlockNode {
             throw new CompileException("expected : in foreach");
 
         int x;
-        if ((x = (item = createStringTrimmed(condition, start, cursor)).indexOf(' ')) != -1) {
-            String tk = new String(condition, 0, x).trim();
+        if ((x = (item = createStringTrimmed(condition, start, cursor - start)).indexOf(' ')) != -1) {
+            String tk = new String(condition, start, x).trim();
             try {
                 itemType = ParseTools.findClass(null, tk, pCtx);
                 item = new String(condition, x, cursor - x).trim();

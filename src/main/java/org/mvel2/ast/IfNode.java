@@ -60,11 +60,11 @@ public class IfNode extends BlockNode implements NestedStatement {
         }
     }
 
-    public IfNode(ExecutableStatement condition, ExecutableStatement nestedStatement, ExecutableStatement elseBlock) {
-        expectType(this.condition = condition, Boolean.class, true);
-        this.nestedStatement = nestedStatement;
-        this.elseBlock = elseBlock;
-    }
+//    public IfNode(ExecutableStatement condition, ExecutableStatement nestedStatement, ExecutableStatement elseBlock) {
+//        expectType(this.condition = condition, Boolean.class, true);
+//        this.nestedStatement = nestedStatement;
+//        this.elseBlock = elseBlock;
+//    }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
@@ -83,7 +83,7 @@ public class IfNode extends BlockNode implements NestedStatement {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((Boolean) eval(expr, start, offset, ctx, factory)) {
-            return eval(expr, start, offset, ctx, new MapVariableResolverFactory(new HashMap(0), factory));
+            return eval(expr, blockStart, blockOffset, ctx, new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else if (elseIf != null) {
             return elseIf.getReducedValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
@@ -108,8 +108,8 @@ public class IfNode extends BlockNode implements NestedStatement {
         return elseBlock;
     }
 
-    public IfNode setElseBlock(char[] block, ParserContext ctx) {
-        elseBlock = (ExecutableStatement) subCompileExpression(block, ctx);
+    public IfNode setElseBlock(char[] block, int cursor, int offset, ParserContext ctx) {
+        elseBlock = (ExecutableStatement) subCompileExpression(block, cursor, offset, ctx);
         return this;
     }
 

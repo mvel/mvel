@@ -230,6 +230,9 @@ public class PropertyVerifier extends AbstractOptimizer {
             pCtx.setLastTypeParameters(null);
             return parm;
         }
+        else if (pCtx != null && "length".equals(property) && ctx.isArray()) {
+            return Integer.class;
+        }
         else {
             Object tryStaticMethodRef = tryStaticAccess();
 
@@ -431,7 +434,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                     if (i < args.length - 1) errorBuild.append(", ");
                 }
 
-                if ("size".equals(name) && args.length == 0 && ctx.isArray()) {
+                if (("size".equals(name) || "length".equals(name)) && args.length == 0 && ctx.isArray()) {
                     return Integer.class;
                 }
 
