@@ -286,8 +286,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             ctx = this.val;
 
             this.expr = _expr;
-            this.cursor = start + root.length;
-            this.length = _length - root.length;
+            this.cursor = start + root.length + 1;
+            this.length = _length - root.length - 1;
             this.end = this.cursor + this.length;
         }
         else {
@@ -296,19 +296,20 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
         try {
+
             skipWhitespace();
 
             if (collection) {
                 int st = cursor;
                 whiteSpaceSkip();
 
-                if (cursor == length)
+                if (st == end)
                     throw new PropertyAccessException("unterminated '['");
 
                 if (scanTo(']'))
                     throw new PropertyAccessException("unterminated '['");
 
-                String ex = new String(expr, st, length);
+                String ex = new String(expr, st, cursor - st);
 
                 assert debug("CHECKCAST " + ctx.getClass().getName());
                 mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));

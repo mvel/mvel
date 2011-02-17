@@ -358,7 +358,7 @@ public class AbstractParser implements Parser, Serializable {
                             case ASSERT:
                                 st = cursor = trimRight(cursor);
                                 captureToEOS();
-                                return lastNode = new AssertNode(expr, st, cursor--, fields, pCtx);
+                                return lastNode = new AssertNode(expr, st, cursor-- - st, fields, pCtx);
 
                             case RETURN:
                                 st = cursor = trimRight(cursor);
@@ -1243,7 +1243,7 @@ public class AbstractParser implements Parser, Serializable {
 
             if (union != -1) {
                 captureToEOT();
-                return lastNode = new Union(expr, union, cursor, fields, node);
+                return lastNode = new Union(expr, union, cursor - union, fields, node);
             }
 
         }

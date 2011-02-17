@@ -361,9 +361,15 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testTypeCast2() {
+        String ex = "map = new java.util.HashMap(); map.put('doggie', new java.util.ArrayList());" +
+                        " ((java.util.ArrayList) map['doggie']).size()";
+
+        Map map = createTestMap();
+
+        assertEquals(0, MVEL.eval(ex, map));
+
         assertEquals(0,
-                test("map = new java.util.HashMap(); map.put('doggie', new java.util.ArrayList());" +
-                        " ((java.util.ArrayList) map['doggie']).size()"));
+                test(ex));
     }
 
 

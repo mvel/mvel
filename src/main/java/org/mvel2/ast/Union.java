@@ -31,8 +31,8 @@ public class Union extends ASTNode {
     private ASTNode main;
     private transient Accessor accessor;
 
-    public Union(char[] expr, int start, int end, int fields, ASTNode main) {
-        super(expr, start, end, fields);
+    public Union(char[] expr, int start, int offset, int fields, ASTNode main) {
+        super(expr, start, offset, fields);
         this.main = main;
     }
 
