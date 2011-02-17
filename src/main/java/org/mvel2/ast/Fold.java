@@ -56,7 +56,7 @@ public class Fold extends ASTNode {
             }
         }
 
-        subEx = (ExecutableStatement) subCompileExpression(expr, start, cursor - 1, pCtx);
+        subEx = (ExecutableStatement) subCompileExpression(expr, start, cursor - start - 1, pCtx);
         int st = cursor += 2; // skip 'in'
 
         for (; cursor < end; cursor++) {

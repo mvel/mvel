@@ -107,7 +107,8 @@ public class NewObjectNode extends ASTNode {
                 }
 
                 if (!typeDescr.isArray()) {
-                    final String[] constructorParms = parseMethodOrConstructor(captureContructorAndResidual(expr)[0].toCharArray());
+                    final String[] constructorParms
+                            = parseMethodOrConstructor(captureContructorAndResidual(expr, start, offset)[0].toCharArray());
                     final Class[] parms = new Class[constructorParms.length];
                     for (int i = 0; i < parms.length; i++) {
                         parms[i] = analyze(constructorParms[i], pCtx);
@@ -232,7 +233,7 @@ public class NewObjectNode extends ASTNode {
                 return newInstance(cls, s);
             }
             else {
-                String[] cnsRes = captureContructorAndResidual(name);
+                String[] cnsRes = captureContructorAndResidual(name, 0, name.length);
                 String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
                 if (constructorParms != null) {

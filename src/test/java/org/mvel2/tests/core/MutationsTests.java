@@ -2,6 +2,8 @@ package org.mvel2.tests.core;
 
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
+
+import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExpressionCompiler;
@@ -70,7 +72,14 @@ public class MutationsTests extends AbstractTest {
     }
 
     public void testFunctionPointer() {
-        assertEquals(2.0, test("squareRoot = java.lang.Math.sqrt; squareRoot(4)"));
+        String ex = "squareRoot = java.lang.Math.sqrt; squareRoot(4)";
+
+        Object o = MVEL.eval(ex, new HashMap());
+
+        assertEquals(2.0, o);
+
+
+        assertEquals(2.0, test(ex));
     }
 
     public void testFunctionPointerAsParam() {

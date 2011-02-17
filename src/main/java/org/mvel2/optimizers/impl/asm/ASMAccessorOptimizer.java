@@ -2930,7 +2930,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.variableFactory = factory;
         this.pCtx = pCtx;
 
-        String[] cnsRes = captureContructorAndResidual(property);
+        String[] cnsRes = captureContructorAndResidual(property, start, offset);
         String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
         try {

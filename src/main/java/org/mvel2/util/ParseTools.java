@@ -561,20 +561,21 @@ public class ParseTools {
     }
 
 
-    public static String[] captureContructorAndResidual(char[] cs) {
+    public static String[] captureContructorAndResidual(char[] cs, int start, int offset) {
         int depth = 0;
-        for (int i = 0; i < cs.length; i++) {
+        int end = start + offset;
+        for (int i = start; i < end; i++) {
             switch (cs[i]) {
                 case '(':
                     depth++;
                     continue;
                 case ')':
                     if (1 == depth--) {
-                        return new String[]{createStringTrimmed(cs, 0, ++i), createStringTrimmed(cs, i, cs.length - i)};
+                        return new String[]{createStringTrimmed(cs, start, ++i - start), createStringTrimmed(cs, i, end - i)};
                     }
             }
         }
-        return new String[]{new String(cs)};
+        return new String[]{new String(cs, start, offset)};
     }
 
 
@@ -1499,13 +1500,15 @@ public class ParseTools {
                     }
                     else {
                         if (oper != -1) {
-                            MVEL.setProperty(ctx, parm, MVEL.eval(new String(
+                            String rewrittenExpr = new String(
                                     createShortFormOperativeAssignment(
                                             new StringBuilder(nestParm).append(".").append(parm).toString(),
-                                            block, oper, start, _end - start)), ctx, factory));
+                                            block, _st, _end - _st, oper));
+
+                            MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
                         }
                         else {
-                            MVEL.setProperty(ctx, parm, MVEL.eval(block, start, _end - start, ctx, factory));
+                            MVEL.setProperty(ctx, parm, MVEL.eval(block, _st, _end - _st, ctx, factory));
 
                         }
 
@@ -1526,10 +1529,11 @@ public class ParseTools {
             }
             else {
                 if (oper != -1) {
-                    MVEL.setProperty(ctx, parm, MVEL.eval(
-                            new String(createShortFormOperativeAssignment(
-                                    new StringBuilder(nestParm).append(".").append(parm).toString(),
-                                    block, _st, end - _st, oper)), ctx, factory));
+                    String rewrittenExpr = new String(createShortFormOperativeAssignment(
+                            new StringBuilder(nestParm).append(".").append(parm).toString(),
+                            block, _st, end - _st, oper));
+
+                    MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
                 }
                 else {
                     MVEL.setProperty(ctx, parm, MVEL.eval(block, _st, end - _st, ctx, factory));

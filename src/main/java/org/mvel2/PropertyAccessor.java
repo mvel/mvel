@@ -130,7 +130,7 @@ public class PropertyAccessor {
         this.property = property;
         this.cursor = this.st = this.start = start;
         this.length = offset;
-        this.end =  start + offset;
+        this.end = start + offset;
         this.ctx = ctx;
         this.variableFactory = resolver;
         this.thisReference = thisReference;
@@ -917,8 +917,12 @@ public class PropertyAccessor {
                 return getLength(ctx);
             }
 
+            System.out.println("{ " + new String(property) + " }");
 
-            throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
+
+            throw new PropertyAccessException("unable to resolve method: "
+                    + cls.getName() + "." + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]"
+                    , property, start);
         }
         else {
             for (int i = 0; i < args.length; i++) {
@@ -989,7 +993,7 @@ public class PropertyAccessor {
                                 return currentThread().getContextClassLoader().loadClass(test);
                             }
                             catch (ClassNotFoundException e) {
-                                Class cls = currentThread().getContextClassLoader().loadClass(new String(property, 0, i));
+                                Class cls = currentThread().getContextClassLoader().loadClass(new String(property, start, i - start));
                                 String name = new String(property, i + 1, end - i - 1);
                                 try {
                                     return cls.getField(name);

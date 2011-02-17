@@ -442,7 +442,7 @@ public class AbstractParser implements Parser, Serializable {
                                         continue Mainloop;
                                     }
                                     else {
-                                        name = new String(subArray(st, end));
+                                        name = new String(expr, st, end - st);
                                         if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
                                             splitAccumulator.add(lastNode = new IndexedDeclTypedVarNode(idx, st, end - st, Object.class));
                                         }
@@ -452,7 +452,7 @@ public class AbstractParser implements Parser, Serializable {
                                         }
                                     }
 
-                                    if (cursor == end || expr[cursor] != ',') break;
+                                    if (cursor == this.end || expr[cursor] != ',') break;
                                     else {
                                         cursor++;
                                         skipWhitespace();
@@ -837,8 +837,8 @@ public class AbstractParser implements Parser, Serializable {
                             }
                             expectNextChar_IW('{');
 
-                            return lastNode = new ThisWithNode(expr, st, cursor - 1 - st
-                                    , cursor + 1,
+                            return lastNode = new ThisWithNode(expr, st, cursor - st + 1
+                                    , cursor - 1,
                                     (cursor = balancedCaptureWithLineAccounting(expr,
                                             cursor, end, '{', pCtx) + 1) - 1, fields, pCtx);
                         }
@@ -968,21 +968,20 @@ public class AbstractParser implements Parser, Serializable {
                                                                         cursor - st - 2, fields, pCtx);
                                                                 if (expr[st = cursor] == '.') st++;
                                                                 captureToEOT();
-                                                                return lastNode = new Union(expr, trimRight(st),
-                                                                        cursor, fields, lastNode);
+                                                                return lastNode = new Union(expr, st = trimRight(st),
+                                                                        cursor - st, fields, lastNode);
                                                             }
                                                             else {
                                                                 return lastNode = new Fold(expr, trimRight(st + 1),
                                                                         cursor - st - 2, fields, pCtx);
                                                             }
-
                                                         }
                                                         break;
                                                     case '\'':
-                                                        cursor = captureStringLiteral('\'', expr, cursor, end - cursor);
+                                                        cursor = captureStringLiteral('\'', expr, cursor, end);
                                                         break;
                                                     case '"':
-                                                        cursor = captureStringLiteral('\"', expr, cursor, end - cursor);
+                                                        cursor = captureStringLiteral('\"', expr, cursor, end);
                                                         break;
                                                 }
                                             }

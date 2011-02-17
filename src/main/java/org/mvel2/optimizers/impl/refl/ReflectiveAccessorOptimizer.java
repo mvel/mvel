@@ -187,7 +187,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             if (collection) {
                 st = cursor;
 
-                if (cursor == length)
+                if (cursor == end)
                     throw new PropertyAccessException("unterminated '['");
 
                 if (scanTo(']'))
@@ -655,7 +655,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         skipWhitespace();
 
-        if (cursor == length)
+        if (cursor == end)
             throw new CompileException("unterminated '['");
 
         String item;
@@ -749,7 +749,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         skipWhitespace();
 
-        if (cursor == length)
+        if (cursor == end)
             throw new CompileException("unterminated '['");
 
         String item;
@@ -1151,7 +1151,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             InstantiationException, IllegalAccessException, InvocationTargetException,
             ClassNotFoundException, NoSuchMethodException {
 
-        String[] cnsRes = captureContructorAndResidual(expression);
+        String[] cnsRes = captureContructorAndResidual(expression, start, length);
         String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
         if (constructorParms != null) {

@@ -40,6 +40,14 @@ public class WithTests extends AbstractTest {
     }
 
     public void testWith3() {
+        String ex = "with (foo) {aValue = 'One',bValue='Two'}; with (foo) {aValue += 'One', bValue += 'Two'}; foo.aValue + foo.bValue;";
+
+        Map vars = createTestMap();
+
+        assertEquals("OneOneTwoTwo", MVEL.eval(ex, vars));
+
+
+
         assertEquals("OneOneTwoTwo", test("with (foo) {aValue = 'One',bValue='Two'}; with (foo) {aValue += 'One', bValue += 'Two'}; foo.aValue + foo.bValue;"));
     }
 
@@ -49,11 +57,17 @@ public class WithTests extends AbstractTest {
     }
 
     public void testWith5() {
-        Foo foo = (Foo) test("with (foo) { countTest += 5, \n" +
+        String expr = "with (foo) { countTest += 5, \n" +
                 "// foobar!\n" +
                 "aValue = 'Hello',\n" +
                 "/** Comment! **/\n" +
-                "bValue = 'Goodbye'\n }; with (foo) { countTest *= 2 }; foo");
+                "bValue = 'Goodbye'\n }; with (foo) { countTest *= 2 }; foo";
+
+        Map vars = createTestMap();
+
+        assertEquals(true, MVEL.eval(expr, vars) instanceof Foo);
+
+        Foo foo = (Foo) test(expr);
 
         assertEquals(10, foo.getCountTest());
         assertEquals("Hello", foo.aValue);

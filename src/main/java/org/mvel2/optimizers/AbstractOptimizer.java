@@ -77,7 +77,7 @@ public class AbstractOptimizer extends AbstractParser {
                                         pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
                             }
                             catch (ClassNotFoundException e) {
-                                Class cls = Class.forName(new String(expr, start, i), true, pCtx != null ?
+                                Class cls = Class.forName(new String(expr, start, i - start), true, pCtx != null ?
                                         pCtx.getParserConfiguration().getClassLoader() : currentThread().getContextClassLoader());
                                 String name = new String(expr, i + 1, end - i - 1);
                                 try {
