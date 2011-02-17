@@ -203,7 +203,7 @@ public class ASTNode implements Cloneable, Serializable {
     }
 
     public char[] getNameAsArray() {
-        return subArray(expr, start, offset);
+        return subArray(expr, start, start + offset);
     }
 
     private int getAbsoluteFirstPart() {
@@ -221,7 +221,7 @@ public class ASTNode implements Cloneable, Serializable {
 
     public String getAbsoluteName() {
         if (firstUnion > start) {
-            return new String(expr, start, getAbsoluteFirstPart());
+            return new String(expr, start, getAbsoluteFirstPart() - start);
         }
         else {
             return getName();
@@ -320,19 +320,21 @@ public class ASTNode implements Cloneable, Serializable {
 
         this.literal = new String(name, start, offset);
 
+        int end = start + offset;
+
         Scan:
-        for (int i = start; i < name.length; i++) {
+        for (int i = start; i < end; i++) {
             switch (name[i]) {
                 case '.':
-                    if (firstUnion == start) {
+                    if (firstUnion == 0) {
                         firstUnion = i;
                     }
                     break;
                 case '[':
-                    if (firstUnion == start) {
+                    if (firstUnion == 0) {
                         firstUnion = i;
                     }
-                    if (endOfName == start) {
+                    if (endOfName == 0) {
                         endOfName = i;
                         if (i < name.length && name[i + 1] == ']') fields |= ARRAY_TYPE_LITERAL;
                         break Scan;

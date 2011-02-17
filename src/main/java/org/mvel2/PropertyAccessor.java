@@ -665,7 +665,7 @@ public class PropertyAccessor {
             switch (property[cursor]) {
                 case '\'':
                 case '"':
-                    cursor = captureStringLiteral(property[cursor], property, cursor, end - cursor);
+                    cursor = captureStringLiteral(property[cursor], property, cursor, end);
                 default:
                     if (property[cursor] == c) {
                         return false;
@@ -731,7 +731,7 @@ public class PropertyAccessor {
         else {
             //     TypeDescriptor td = new TypeDescriptor(property, 0);
             try {
-                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, _start, length, 0));
+                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, start, length, 0));
             }
             catch (Exception e) {
                 throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()), e);

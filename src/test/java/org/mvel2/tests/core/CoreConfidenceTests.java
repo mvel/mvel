@@ -333,6 +333,15 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testListAccessorAssign() {
+        String ex = "a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]";
+
+        OptimizerFactory.setDefaultOptimizer("ASM");
+
+        Serializable s = MVEL.compileExpression(ex);
+        assertEquals("bar", MVEL.executeExpression(s, new HashMap()));
+
+        OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+
         assertEquals("bar",
                 test("a = new java.util.ArrayList(); a.add('foo'); a.add('BAR'); a[1] = 'bar'; a[1]"));
     }
@@ -1683,7 +1692,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
-
     public void testChainedMethodCallsWithParams() {
         assertEquals(true,
                 test("foo.toUC(\"abcd\").equals(\"ABCD\")"));
@@ -1907,7 +1915,6 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals("coffee",
                 ((Base) vars.get("base")).fooMap.get("foo").getName());
     }
-
 
 
     public void testEmpty() {

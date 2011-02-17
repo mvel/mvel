@@ -37,7 +37,6 @@ import java.util.Iterator;
 public class ForEachNode extends BlockNode {
     protected String item;
     protected Class itemType;
-   // private char[] cond;
 
     protected ExecutableStatement condition;
 
@@ -174,7 +173,7 @@ public class ForEachNode extends BlockNode {
             String tk = new String(condition, start, x).trim();
             try {
                 itemType = ParseTools.findClass(null, tk, pCtx);
-                item = new String(condition, x, cursor - x).trim();
+                item = new String(condition, start + x, (cursor - start) - x).trim();
 
             }
             catch (ClassNotFoundException e) {
@@ -182,12 +181,13 @@ public class ForEachNode extends BlockNode {
             }
         }
 
-        this.start = ++cursor;
+       // this.start = ++cursor;
 
-     //   this.cond = subset(condition, ++cursor);
+        this.start = cursor + 1;
+        this.offset =  offset - (cursor - start) - 1;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
-            Class egress = (this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType();
+            Class egress = (this.condition = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx)).getKnownEgressType();
 
             if (itemType != null && egress.isArray()) {
                 enforceTypeSafety(itemType, getBaseComponentType(this.condition.getKnownEgressType()));

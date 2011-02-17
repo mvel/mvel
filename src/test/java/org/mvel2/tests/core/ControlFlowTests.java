@@ -106,6 +106,10 @@ public class ControlFlowTests extends AbstractTest {
     }
 
     public void testIf3() {
+        String ex = "if(5<4){return 5;}else{return 10;}";
+
+        assertEquals(10, MVEL.eval(ex));
+
         assertEquals(10, test("if(5<4){return 5;}else{return 10;}"));
     }
 
@@ -150,7 +154,11 @@ public class ControlFlowTests extends AbstractTest {
     }
 
     public void testForLoop() {
-        assertEquals("012345", test("String str = ''; for(i=0;i<6;i++) { str += i }; str"));
+        String ex = "String str = ''; for(i=0;i<6;i++) { str += i }; str";
+
+        assertEquals("012345", MVEL.eval(ex, new HashMap()));
+
+        assertEquals("012345", test(ex));
     }
 
     public void testForLoop2() {

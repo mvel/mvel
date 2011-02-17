@@ -179,7 +179,7 @@ public class CompilerTools {
                     optimizeOperator(tkOp.getOperator(), tk, tkOp, astLinkedList, optimizedAst);
                 }
                 else if (!tkOp.isAssignment() && !tkOp.isOperator() && tk.getLiteralValue() instanceof Class) {
-                    optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), (Class) tk.getLiteralValue(), 0, ctx));
+                    optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), tkOp.getStart(), tk.getOffset(), (Class) tk.getLiteralValue(), 0, ctx));
                 }
                 else if (tkOp.isAssignment() && tk.getLiteralValue() instanceof Class) {
                     tk.discard();

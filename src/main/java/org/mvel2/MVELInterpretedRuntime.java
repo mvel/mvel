@@ -277,7 +277,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
     }
 
     private boolean hasMore() {
-        return cursor <= length;
+        return cursor <= end;
     }
 
     /**

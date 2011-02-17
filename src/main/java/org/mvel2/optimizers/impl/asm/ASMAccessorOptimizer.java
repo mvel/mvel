@@ -245,7 +245,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.expr = property;
         this.start = this.cursor = start;
         this.end = start + offset;
-        this.length = this.end - this.start;
+        this.length = start + offset;
 
         this.first = true;
         this.ingressType = ingressType;
@@ -264,9 +264,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         int split = findLastUnion();
 
         if (split != -1) {
-            root = subset(property, 0, split++);
-            property = subset(property, split, property.length - split);
-            length = end = property.length;
+            root = subset(property, 0, split);
         }
 
         AccessorNode rootAccessor = null;
@@ -274,6 +272,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         _initJIT2();
 
         if (root != null) {
+            int _length = this.length;
+            int _end = this.end;
+            char[] _expr = this.expr;
+
             this.length = end = (this.expr = root).length;
 
             // run the compiler but don't finish building.
@@ -282,6 +284,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
             compileAccessor();
             ctx = this.val;
+
+            this.expr = _expr;
+            this.cursor = start + root.length;
+            this.length = _length - root.length;
+            this.end = this.cursor + this.length;
         }
         else {
             assert debug("ALOAD 1");
@@ -289,9 +296,6 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
         try {
-            this.length = (this.expr = property).length;
-            this.cursor = this.start = 0;
-
             skipWhitespace();
 
             if (collection) {
@@ -304,7 +308,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 if (scanTo(']'))
                     throw new PropertyAccessException("unterminated '['");
 
-                String ex = new String(property, st, cursor - st);
+                String ex = new String(expr, st, length);
 
                 assert debug("CHECKCAST " + ctx.getClass().getName());
                 mv.visitTypeInsn(CHECKCAST, getInternalName(ctx.getClass()));
@@ -403,7 +407,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     }
                 }
                 else {
-                    throw new PropertyAccessException("cannot bind to collection property: " + new String(property)
+                    throw new PropertyAccessException("cannot bind to collection property: " + new String(expr)
                             + ": not a recognized collection type: " + ctx.getClass());
                 }
 
@@ -421,7 +425,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 }
             }
 
-            String tk = new String(property);
+            String tk = new String(expr, this.cursor, this.length);
             Member member = getFieldOrWriteAccessor(ctx.getClass(), tk, value == null ? null : ingressType);
 
             if (GlobalListenerFactory.hasSetListeners()) {

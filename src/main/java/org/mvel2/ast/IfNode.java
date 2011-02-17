@@ -40,7 +40,7 @@ public class IfNode extends BlockNode implements NestedStatement {
     protected ExecutableStatement elseBlock;
 
     public IfNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
-        if ((this.expr = expr) == null || offset - start == 0) {
+        if ((this.expr = expr) == null || offset == 0) {
             throw new CompileException("statement expected");
         }
         this.start = start;

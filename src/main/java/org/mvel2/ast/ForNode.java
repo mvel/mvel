@@ -67,7 +67,7 @@ public class ForNode extends BlockNode {
     }
 
     private boolean handleCond(char[] condition, int start, int offset, int fields, ParserContext pCtx) {
-        int end = offset - start;
+        int end = start + offset;
         int cursor = nextCondPart(condition, start, end, false);
         try {
             ParserContext spCtx = pCtx;

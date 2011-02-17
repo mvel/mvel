@@ -60,7 +60,7 @@ public class ImportNode extends ASTNode {
             return findClassImportResolverFactory(factory).addClass(importClass);
         }
         else {
-            findClassImportResolverFactory(factory).addPackageImport(new String(expr, start, _offset));
+            findClassImportResolverFactory(factory).addPackageImport(new String(expr, start, _offset - start));
             return null;
         }
     }

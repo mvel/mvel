@@ -54,6 +54,8 @@ public class TypeDescriptor implements Serializable {
     public void updateClassName(char[] name, int start, int offset, int fields) {
         this.expr = name;
 
+        System.out.println("TypeDescriptor<<" + new String(name, start, offset) + ">>");
+
         if (offset == 0 || !ParseTools.isIdentifierPart(name[start]) || isDigit(name[start])) return;
 
         if ((endRange = findFirst('(', start, offset, name)) == -1) {
@@ -70,7 +72,7 @@ public class TypeDescriptor implements Serializable {
                     if (endRange == end || name[endRange] == '{') break;
 
                     if (name[endRange] != '[') {
-                        throw new CompileException("unexpected token in contstructor", name, endRange);
+                        throw new CompileException("unexpected token in constructor", name, endRange);
                     }
                     to = balancedCapture(name, endRange, start + offset, '[');
                     sizes.add(subset(name, ++endRange, to - endRange));

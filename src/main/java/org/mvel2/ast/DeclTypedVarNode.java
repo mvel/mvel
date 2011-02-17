@@ -30,9 +30,11 @@ import static org.mvel2.util.ParseTools.checkNameSafety;
 public class DeclTypedVarNode extends ASTNode implements Assignment {
     private String name;
 
-    public DeclTypedVarNode(String name, Class type, int fields, ParserContext pCtx) {
+    public DeclTypedVarNode(String name, int start, int offset, Class type, int fields, ParserContext pCtx) {
         this.egressType = type;
         checkNameSafety(this.name = name);
+        this.start = start;
+        this.offset = offset;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             pCtx.addVariable(name, egressType, true);

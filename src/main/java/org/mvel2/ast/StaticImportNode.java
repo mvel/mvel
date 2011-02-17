@@ -41,10 +41,11 @@ public class StaticImportNode extends ASTNode {
             this.start = start;
             this.offset = offset;
 
-            declaringClass = Class.forName(new String(expr, start, findLast('.', start, offset, this.expr = expr) - start),
+            int mark;
+            declaringClass = Class.forName(new String(expr, start, (mark = findLast('.', start, offset, this.expr = expr)) - start),
                     true, currentThread().getContextClassLoader());
 
-            methodName = new String(expr, start, findLast('.', start, offset, expr) + 1 - start);
+            methodName = new String(expr, ++mark, offset - (mark - start));
 
             if (resolveMethod() == null) {
                 throw new CompileException("can not find method for static import: "

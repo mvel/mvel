@@ -196,7 +196,7 @@ public class NewObjectNode extends ASTNode {
                 ParserContext pCtx = new ParserContext();
                 pCtx.getParserConfiguration().setAllImports(getInjectedImports(factory));
 
-                newObjectOptimizer = optimizer.optimizeObjectCreation(pCtx, expr, start, offset, ctx, thisValue, factory);
+                newObjectOptimizer = optimizer.optimizeObjectCreation(pCtx, name, 0, name.length, ctx, thisValue, factory);
 
                 /**
                  * Check to see if the optimizer actually produced the object during optimization.  If so,

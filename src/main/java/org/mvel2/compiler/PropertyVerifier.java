@@ -170,7 +170,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
         }
 
-        start = cursor;
+        st = cursor;
         boolean switchStateReg;
 
         Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;

@@ -27,8 +27,10 @@ import org.mvel2.integration.VariableResolverFactory;
 public class IndexedDeclTypedVarNode extends ASTNode implements Assignment {
     private int register;
 
-    public IndexedDeclTypedVarNode(int register, Class type) {
+    public IndexedDeclTypedVarNode(int register, int start, int offset, Class type) {
         this.egressType = type;
+        this.start = start;
+        this.offset = offset;
         this.register = register;
     }
 

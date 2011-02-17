@@ -1419,8 +1419,8 @@ public class ParseTools {
             if (expr[cursor] == '\\') cursor++;
         }
 
-        if (cursor >= end || expr[cursor] != type) {
-            throw new CompileException("unterminated literal", expr, cursor);
+        if (cursor > end || expr[cursor] != type) {
+            throw new CompileException("unterminated string literal", expr, cursor);
         }
 
         return cursor;
@@ -1779,11 +1779,11 @@ public class ParseTools {
         if (test.length > c.length) return false;
 
         int tD = test.length - 1;
-        int cD = offset;
+        int cD = start + offset - 1;
 
-        int diff = cD - tD;
-        while (cD >= start) {
-            if (c[cD--] != test[tD-- - diff]) return false;
+
+        while (tD >= 0) {
+            if (c[cD--] != test[tD--]) return false;
         }
 
         return true;
