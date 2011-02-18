@@ -1298,17 +1298,12 @@ public class AbstractParser implements Parser, Serializable {
 
         if (isLiteralOnly(expr, st, end)) {
             if (pCtx != null && pCtx.hasImports()) {
-//                char[] _subset = subset(expr, st, cursor - st);
                 int find;
 
                 if ((find = findFirst('.', st, end - st, expr)) != -1) {
                     String iStr = new String(expr, st, find - st);
                     if (pCtx.hasImport(iStr)) {
                         lastWasIdentifier = true;
-//                        return lastNode = new LiteralDeepPropertyNode(subset(_subset, find + 1, _subset.length
-//                                - find - 1),
-//                                fields, pCtx.getImport(iStr));
-
                         return lastNode = new LiteralDeepPropertyNode(expr, find + 1, end - find - 1, fields,
                                 pCtx.getImport(iStr));
                     }

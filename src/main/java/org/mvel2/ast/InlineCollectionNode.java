@@ -100,7 +100,7 @@ public class InlineCollectionNode extends ASTNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        parseGraph(false, egressType, null);
+        parseGraph(false, egressType, AbstractParser.getCurrentThreadParserContext());
         return execGraph(collectionGraph, egressType, ctx, factory);
     }
 

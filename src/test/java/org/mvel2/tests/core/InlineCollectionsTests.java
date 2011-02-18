@@ -305,4 +305,25 @@ public class InlineCollectionsTests extends AbstractTest {
                 result.get(2));
     }
 
+    public void testMVEL241() {
+
+        //Regression in mvel2-2.1-20110218.004106-9.jar
+        String mvelSource = "[ 'Person.age' : [42, 43],\n'Person.sex' : ['M', 'F'] ]";
+        Object eval = MVEL.eval(mvelSource, new HashMap<String, Object>());
+        Map<String, Object> map = (Map<String, Object>) eval;
+
+        assertNotNull(map);
+        assertTrue(map.size() == 2);
+        assertTrue(map.containsKey("Person.age"));
+        assertTrue(map.containsKey("Person.sex"));
+
+        List listSex = (List) map.get("Person.sex");
+        assertNotNull(listSex);
+        assertTrue(listSex.size() == 2);
+
+        List listAge = (List) map.get("Person.age");
+        assertNotNull(listAge);
+        assertTrue(listAge.size() == 2);
+    }
+
 }

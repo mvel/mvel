@@ -146,10 +146,12 @@ public class CollectionParser {
                         list.add(curr = o);
                     }
 
+                    cursor = skipWhitespace(property, ++cursor, pCtx);
 
-                    if ((st = ++cursor) < (end - 1) && property[cursor] == ',') {
+                    if ((st = cursor) < end && property[cursor] == ',') {
                         st = cursor + 1;
                     }
+
 
                     continue;
 
@@ -196,7 +198,7 @@ public class CollectionParser {
 
                 case '.':
                     cursor++;
-                    while (cursor != end && isWhitespace(property[cursor])) cursor++;
+                    cursor = skipWhitespace(property, cursor, pCtx);
                     if (cursor != end && property[cursor] == '{') {
                         cursor = balancedCapture(property, cursor, '{');
                     }
@@ -204,7 +206,7 @@ public class CollectionParser {
             }
         }
 
-        if (st < end) {
+        if (st < end ) {
             if (cursor < (end - 1)) cursor++;
 
             if (type == MAP) {
