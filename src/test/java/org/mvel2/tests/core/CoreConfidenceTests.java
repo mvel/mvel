@@ -3,7 +3,6 @@ package org.mvel2.tests.core;
 import junit.framework.TestCase;
 import org.mvel2.*;
 import org.mvel2.ast.ASTNode;
-import org.mvel2.ast.BinaryOperation;
 import org.mvel2.compiler.CompiledExpression;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
@@ -14,14 +13,11 @@ import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
-import org.mvel2.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
-import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.tests.core.res.*;
 import org.mvel2.tests.core.res.res2.ClassProvider;
 import org.mvel2.tests.core.res.res2.Outer;
 import org.mvel2.tests.core.res.res2.PublicClass;
-import org.mvel2.util.MethodStub;
 import org.mvel2.util.ReflectionUtil;
 
 import java.awt.*;
@@ -31,9 +27,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 
@@ -362,7 +356,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testTypeCast2() {
         String ex = "map = new java.util.HashMap(); map.put('doggie', new java.util.ArrayList());" +
-                        " ((java.util.ArrayList) map['doggie']).size()";
+                " ((java.util.ArrayList) map['doggie']).size()";
 
         Map map = createTestMap();
 
@@ -1320,7 +1314,8 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testStaticallyTypedArrayVar() {
-        assertTrue((Boolean) test("char[] _c___ = new char[10]; _c___ instanceof char[]"));
+        String ex = "char[] _c___ = new char[10]; _c___ instanceof char[]";
+        assertTrue((Boolean) test(ex));
     }
 
     public void testParserErrorHandling() {

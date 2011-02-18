@@ -745,7 +745,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         if (ctx == null) return null;
 
-        int start = ++cursor;
+        int _start = ++cursor;
 
         skipWhitespace();
 
@@ -757,7 +757,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         if (scanTo(']'))
             throw new CompileException("unterminated '['");
 
-        item = new String(expr, start, cursor - start);
+        item = new String(expr, _start, cursor - _start);
 
         boolean itemSubExpr = true;
 
@@ -839,7 +839,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
         }
         else {
-            TypeDescriptor tDescr = new TypeDescriptor(expr, start, length, 0);
+            TypeDescriptor tDescr = new TypeDescriptor(expr, this.start, end - this.start, 0);
             if (tDescr.isArray()) {
                 Class cls = getClassReference((Class) ctx, tDescr, variableFactory, pCtx);
                 rootNode = new StaticReferenceAccessor(cls);

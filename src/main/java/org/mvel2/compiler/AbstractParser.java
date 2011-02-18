@@ -837,10 +837,10 @@ public class AbstractParser implements Parser, Serializable {
                             }
                             expectNextChar_IW('{');
 
-                            return lastNode = new ThisWithNode(expr, st, cursor - st + 1
-                                    , cursor - 1,
+                            return lastNode = new ThisWithNode(expr, st, cursor - st - 1
+                                    , cursor +1,
                                     (cursor = balancedCaptureWithLineAccounting(expr,
-                                            cursor, end, '{', pCtx) + 1) - 1, fields, pCtx);
+                                            cursor, end, '{', pCtx) + 1) - 3, fields, pCtx);
                         }
 
                         case '@': {

@@ -677,9 +677,10 @@ public class PropertyAccessor {
     }
 
     private Object getWithProperty(Object ctx) {
-        parseWithExpressions(new String(property, 0, cursor - 1).trim(), property, cursor + 1,
-                cursor = balancedCaptureWithLineAccounting(property, cursor, end,
-                        '{', getCurrentThreadParserContext()), ctx, variableFactory);
+        int st;
+        parseWithExpressions(new String(property, start, cursor - start - 1).trim(), property, st = cursor + 1,
+                (cursor = balancedCaptureWithLineAccounting(property, cursor, end,
+                        '{', getCurrentThreadParserContext())) - st, ctx, variableFactory);
         cursor++;
         return ctx;
     }
@@ -793,7 +794,7 @@ public class PropertyAccessor {
         }
         else {
             try {
-                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, _start, length, 0));
+                return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, start, end - start, 0));
             }
             catch (Exception e) {
                 throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));

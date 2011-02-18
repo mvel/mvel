@@ -608,14 +608,15 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 ((Map) ctx).put(tk, value);
             }
             else {
-                throw new PropertyAccessException("could not access property (" + tk + ") in: " + ingressType.getName());
+                throw new PropertyAccessException("could not access property (" + tk + ") in: "
+                        + ingressType.getName(), expr, start);
             }
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException("could not access property", expr, start, e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException("could not access property", expr, start, e);
         }
 
         try {
@@ -1451,7 +1452,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
         assert debug("\n  **  ENTER -> {collection:<<" + prop + ">>; ctx=" + ctx + "}");
 
-        int start = ++cursor;
+        int _start = ++cursor;
 
         skipWhitespace();
 
@@ -1461,7 +1462,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         if (scanTo(']'))
             throw new CompileException("unterminated '['");
 
-        String tk = new String(expr, start, cursor - start);
+        String tk = new String(expr, _start, cursor - _start);
 
         assert debug("{collection token:<<" + tk + ">>}");
 
@@ -1612,7 +1613,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
         }
         else {
-            TypeDescriptor tDescr = new TypeDescriptor(expr, start, length, 0);
+            TypeDescriptor tDescr = new TypeDescriptor(expr, start, end - start, 0);
             if (tDescr.isArray()) {
                 try {
                     Class cls = getClassReference((Class) ctx, tDescr, variableFactory, pCtx);

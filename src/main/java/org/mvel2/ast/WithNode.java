@@ -158,7 +158,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                                                         block, _st, _end - _st, oper), pCtx)
                                         //or
                                         : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
-                                , egressType, pCtx));
+                                , Object.class, pCtx));
 
                         parm = null;
                         oper = -1;
@@ -189,7 +189,7 @@ public class WithNode extends BlockNode implements NestedStatement {
                                         pCtx)
                                 //or
                                 : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
-                        , egressType, pCtx));
+                        , Object.class, pCtx));
             }
         }
 

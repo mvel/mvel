@@ -1522,7 +1522,7 @@ public class ParseTools {
             }
         }
 
-        if (_st != (_end = offset)) {
+        if (_st != (_end = end)) {
             if (parm == null || "".equals(parm)) {
                 MVEL.eval(new StringAppender(nestParm).append('.')
                         .append(block, _st, _end - _st).toString(), ctx, factory);
@@ -1531,7 +1531,7 @@ public class ParseTools {
                 if (oper != -1) {
                     String rewrittenExpr = new String(createShortFormOperativeAssignment(
                             new StringBuilder(nestParm).append(".").append(parm).toString(),
-                            block, _st, end - _st, oper));
+                            block, _st, _end - _st, oper));
 
                     MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
                 }
