@@ -56,8 +56,15 @@ public class CompileException extends RuntimeException {
         super(message);
         this.expr = expr;
         this.cursor = cursor;
+
+        if (!errors.isEmpty()) {
+            ErrorDetail detail = errors.iterator().next();
+            this.column = detail.getCol();
+            this.lineNumber = detail.getRow();
+        }
+
         this.errors = errors;
-        this.expr = ctx.getRootParser().getExpression();
+    //    this.expr = ctx.getRootParser().getExpression();
     }
 //
 //    public CompileException(String message, int cursor) {
@@ -95,9 +102,12 @@ public class CompileException extends RuntimeException {
     }
 
     private void calcRowAndColumn() {
-        int row = 0;
+        int row = 1;
         int col = 0;
-        for (int i = 0; i <= cursor; i++) {
+
+        if ((lineNumber != 0 && column != 0) || expr == null || expr.length == 0) return ;
+
+        for (int i = 0; i < cursor; i++) {
             switch (expr[i]) {
                 case '\r':
                     continue;

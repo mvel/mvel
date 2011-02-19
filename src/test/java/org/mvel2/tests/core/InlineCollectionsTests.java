@@ -326,4 +326,16 @@ public class InlineCollectionsTests extends AbstractTest {
         assertTrue(listAge.size() == 2);
     }
 
+    public void testMVEL242() {
+
+        //Regression in mvel2-2.1-20110218.004106-9.jar
+        String mvelSource = "[ 'Fact.field1' : ['val1', 'val2'], 'Fact.field2' : ['val3', 'val4'], 'Fact.field2[field1=val1]' : ['f1val1a', 'f1val1b'], 'Fact.field2[field1=val2]' : ['f1val2a', 'f1val2b'] ]";
+        Object eval = MVEL.eval(mvelSource,
+                new HashMap<String, Object>());
+        Map<String, Object> map = (Map<String, Object>) eval;
+
+        assertNotNull(map);
+        assertEquals(4, map.size());
+    }
+
 }

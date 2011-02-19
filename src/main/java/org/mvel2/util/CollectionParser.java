@@ -20,6 +20,7 @@ package org.mvel2.util;
 
 import org.mvel2.CompileException;
 import org.mvel2.DataConversion;
+import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 
@@ -127,7 +128,7 @@ public class CollectionParser {
                     }
 
                 case '[':
-                    if (cursor > 0 && isIdentifierPart(property[cursor - 1])) continue;
+                    if (cursor > start && isIdentifierPart(property[cursor - 1])) continue;
 
                     if (newType == -1) {
                         newType = LIST;
@@ -151,7 +152,11 @@ public class CollectionParser {
                     if ((st = cursor) < end && property[cursor] == ',') {
                         st = cursor + 1;
                     }
-
+                    else if (cursor < end) {
+                        if (ParseTools.opLookup(property[cursor]) == -1) {
+                            throw new CompileException("unterminated collection element", property, cursor);
+                        }
+                    }
 
                     continue;
 
