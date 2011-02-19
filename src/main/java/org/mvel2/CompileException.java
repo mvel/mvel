@@ -97,8 +97,8 @@ public class CompileException extends RuntimeException {
     private void calcRowAndColumn() {
         int row = 0;
         int col = 0;
-        for (char anExpr : expr) {
-            switch (anExpr) {
+        for (int i = 0; i <= cursor; i++) {
+            switch (expr[i]) {
                 case '\r':
                     continue;
                 case '\n':
@@ -164,7 +164,7 @@ public class CompileException extends RuntimeException {
 
         if ((offset = cursor - msgOffset - 1) < 0) offset = 0;
 
-        appender.append(repeatChar(' ', offset+2)).append("^");
+        appender.append(repeatChar(' ', offset+1)).append("^");
 
         calcRowAndColumn();
 
