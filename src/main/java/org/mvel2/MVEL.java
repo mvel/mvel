@@ -47,9 +47,9 @@ import java.util.Map;
  */
 public class MVEL {
     public static final String NAME = "MVEL (MVFLEX Expression Language)";
-    public static final String VERSION = "2.0.18";
+    public static final String VERSION = "2.1";
     public static final String VERSION_SUB = "";
-    public static final String CODENAME = "enceladus";
+    public static final String CODENAME = "liberty";
 
     static boolean DEBUG_FILE = getBoolean("mvel2.debug.fileoutput");
 
