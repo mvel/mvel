@@ -1,5 +1,6 @@
 package org.mvel2.tests.core;
 
+import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 
@@ -110,4 +111,26 @@ public class FailureTests extends AbstractTest {
 
         assertTrue(false);
     }
+
+    public void testShouldFailCleanly() {
+        try {
+            MVEL.eval("6:f-\t\n" +
+                    "r:wsGbL%X5&wb<C.8n(\n" +
+                    "1X-;zUX-L<%<TG)S#z1fh69:tn`#eH9XneL8XFIB94-z*XzQ-RPhX{&bbp{fLDe@`3<-\tZp9_k*Xo\tDy36t15XX>-75EArR]6`**<kw}P<FpD-+XA-<+K!\n" +
+                    "Rb9n)zA-<L9pIIbHb?!b-bO%n<zLFqzbmm-n#~-zL`5Fq_PYD+9`NPt4Tnt\tvT-L[d\n" +
+                    "<b<9l9XV9-9 X9h7#9Ln?FnnLXLkg5<V-Z%bb-n&Et<B-X[n\"jbvg&@b{X0?*9eC{%zU\n" +
+                    "L\t{RPX\tbwhY&L`z<`Oh`<8pH\n" +
+                    "b:y:#H-;&,PzXw\ttHicFbs");
+        }
+        catch (CompileException e) {
+            return;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            fail("Unclean failure");
+        }
+
+
+    }
+
 }

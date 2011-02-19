@@ -1420,7 +1420,7 @@ public class ParseTools {
             if (expr[cursor] == '\\') cursor++;
         }
 
-        if (cursor > end || expr[cursor] != type) {
+        if (cursor >= end || expr[cursor] != type) {
             throw new CompileException("unterminated string literal", expr, cursor);
         }
 
