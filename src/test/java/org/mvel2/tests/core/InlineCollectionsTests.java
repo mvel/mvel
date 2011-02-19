@@ -24,7 +24,7 @@ public class InlineCollectionsTests extends AbstractTest {
     }
 
     public void testListCreation4() {
-        List ar = (List) test("[   66   , \"test\"   ]");
+        List ar = (List) MVEL.eval("[   66   , \"test\"   ]");
         assertEquals(2, ar.size());
         assertEquals(66, ar.get(0));
         assertEquals("test", ar.get(1));
@@ -337,5 +337,14 @@ public class InlineCollectionsTests extends AbstractTest {
         assertNotNull(map);
         assertEquals(4, map.size());
     }
+
+    public void testEmptyElement() {
+        Object result = MVEL.eval("[2, 3, 4, ]", new HashMap());
+        assertTrue(result instanceof List);
+        List l = (List) result;
+        assertEquals(3, l.size());
+
+    }
+
 
 }

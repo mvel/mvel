@@ -173,7 +173,7 @@ public class CollectionParser {
 
                 case ',':
                     if (type != MAP) {
-                        list.add(new String(property, st, cursor - st));
+                        list.add(new String(property, st, cursor - st).trim());
                     }
                     else {
                         map.put(curr, createStringTrimmed(property, st, cursor - st));
@@ -211,7 +211,11 @@ public class CollectionParser {
             }
         }
 
-        if (st < end ) {
+        if (st < end && isWhitespace(property[st])) {
+            st = skipWhitespace(property, st, pCtx);
+        }
+
+        if (st < end) {
             if (cursor < (end - 1)) cursor++;
 
             if (type == MAP) {
