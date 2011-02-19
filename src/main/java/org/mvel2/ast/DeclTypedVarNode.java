@@ -30,9 +30,10 @@ import static org.mvel2.util.ParseTools.checkNameSafety;
 public class DeclTypedVarNode extends ASTNode implements Assignment {
     private String name;
 
-    public DeclTypedVarNode(String name, int start, int offset, Class type, int fields, ParserContext pCtx) {
+    public DeclTypedVarNode(String name, char[] expr, int start, int offset, Class type, int fields, ParserContext pCtx) {
         this.egressType = type;
         checkNameSafety(this.name = name);
+        this.expr = expr;
         this.start = start;
         this.offset = offset;
 
@@ -43,13 +44,13 @@ public class DeclTypedVarNode extends ASTNode implements Assignment {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (!factory.isResolveable(name)) factory.createVariable(name, null, egressType);
-        else throw new CompileException("variable defined within scope: " + name);
+        else throw new CompileException("variable defined within scope: " + name, expr, start);
         return null;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (!factory.isResolveable(name)) factory.createVariable(name, null, egressType);
-        else throw new CompileException("variable defined within scope: " + name);
+        else throw new CompileException("variable defined within scope: " + name, expr, start);
 
         return null;
     }

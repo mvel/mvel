@@ -35,7 +35,7 @@ public class Convertable extends ASTNode {
             return DataConversion.canConvert(i,o.getClass());
         }
         catch (ClassCastException e) {
-            throw new CompileException("not a class reference: " + clsStmt.getName());
+            throw new RuntimeException("not a class reference: " + clsStmt.getName());
         }
 
     }

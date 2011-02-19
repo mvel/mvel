@@ -44,12 +44,14 @@ public class Function extends ASTNode implements Safe {
     protected int parmNum;
     protected boolean cMode = false;
 
-    public Function(String name, char[] parameters, char[] block, int fields, ParserContext pCtx) {
+    public Function(String name, char[] expr, int start, int offset, int blockStart, int blockOffset,
+                    int fields, ParserContext pCtx) {
         if ((this.name = name) == null || name.length() == 0) {
             this.name = null;
         }
+        this.expr = expr;
 
-        parmNum = (this.parameters = parseParameterDefList(parameters, 0, parameters.length)).length;
+        parmNum = (this.parameters = parseParameterDefList(expr, start, offset)).length;
 
         pCtx.declareFunction(this);
 
@@ -71,7 +73,7 @@ public class Function extends ASTNode implements Safe {
 
 
         ctx.setIndexAllocation(false);
-        ExpressionCompiler compiler = new ExpressionCompiler(block);
+        ExpressionCompiler compiler = new ExpressionCompiler(expr, blockStart, blockOffset);
         compiler.setVerifyOnly(true);
         compiler.compile(ctx);
 
@@ -92,7 +94,7 @@ public class Function extends ASTNode implements Safe {
         ctx.addIndexedVariables(ctx.getVariables().keySet());
         ctx.getVariables().clear();
 
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(block, ctx);
+        this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, ctx);
 
         AbstractParser.setCurrentThreadParserContext(pCtx);
 
@@ -111,7 +113,7 @@ public class Function extends ASTNode implements Safe {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (name != null) {
-            if (factory.isResolveable(name)) throw new CompileException("duplicate function: " + name);
+            if (factory.isResolveable(name)) throw new CompileException("duplicate function: " + name, expr, start);
             factory.createVariable(name, this);
         }
         return this;
@@ -119,7 +121,7 @@ public class Function extends ASTNode implements Safe {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (name != null) {
-            if (factory.isResolveable(name)) throw new CompileException("duplicate function: " + name);
+            if (factory.isResolveable(name)) throw new CompileException("duplicate function: " + name, expr, start);
             factory.createVariable(name, this);
         }
         return this;
@@ -175,7 +177,7 @@ public class Function extends ASTNode implements Safe {
     public void checkArgumentCount(int passing) {
         if (passing != parmNum) {
             throw new CompileException("bad number of arguments in function call: "
-                    + passing + " (expected: " + (parmNum == 0 ? "none" : parmNum) + ")");
+                    + passing + " (expected: " + (parmNum == 0 ? "none" : parmNum) + ")", expr, start);
         }
     }
 

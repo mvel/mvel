@@ -52,7 +52,7 @@ public class AssertNode extends ASTNode {
             }
         }
         catch (ClassCastException e) {
-            throw new CompileException("assertion does not contain a boolean statement");
+            throw new CompileException("assertion does not contain a boolean statement", expr, start);
         }
     }
 
@@ -66,7 +66,7 @@ public class AssertNode extends ASTNode {
             }
         }
         catch (ClassCastException e) {
-            throw new CompileException("assertion does not contain a boolean statement");
+            throw new CompileException("assertion does not contain a boolean statement", expr, start);
         }
     }
 }

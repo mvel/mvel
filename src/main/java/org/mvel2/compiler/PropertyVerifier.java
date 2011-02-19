@@ -247,7 +247,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                         return ((Field) tryStaticMethodRef).get(null).getClass();
                     }
                     catch (Exception e) {
-                        throw new CompileException("in verifier: ", e);
+                        throw new CompileException("in verifier: ", expr, start, e);
                     }
                 }
                 else {
@@ -255,7 +255,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                         return ((Method) tryStaticMethodRef).getReturnType();
                     }
                     catch (Exception e) {
-                        throw new CompileException("in verifier: ", e);
+                        throw new CompileException("in verifier: ", expr, start, e);
                     }
                 }
 
@@ -308,7 +308,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 ctx = getBaseComponentType(ctx);
             }
             else if (pCtx.isStrongTyping()) {
-                throw new CompileException("unknown collection type: " + ctx + "; property=" + property);
+                throw new CompileException("unknown collection type: " + ctx + "; property=" + property, expr, start);
             }
         }
         else {
@@ -322,7 +322,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         int start = cursor;
 
         if (cursor == length)
-            throw new PropertyAccessException("unterminated '['");
+            throw new PropertyAccessException("unterminated '['", expr, this.start);
 
         if (scanTo(']')) {
             addFatalError("unterminated [ in token");

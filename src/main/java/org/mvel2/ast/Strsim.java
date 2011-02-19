@@ -26,12 +26,12 @@ public class Strsim extends ASTNode {
             if (i == null) throw new ClassCastException();
 
             String x = (String) stmt.getReducedValue(ctx, thisValue, factory);
-            if (x == null) throw new CompileException("not a string: " + stmt.getName());
+            if (x == null) throw new CompileException(  "not a string: " + stmt.getName(), stmt.getExpr(), getStart());
 
             return  similarity(i,x);
         }
         catch (ClassCastException e) {
-            throw new CompileException("not a string: " + soundslike.getName());
+            throw new CompileException("not a string: " + soundslike.getName(), soundslike.getExpr(), soundslike.getStart());
         }
 
     }

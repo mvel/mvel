@@ -65,7 +65,7 @@ public class StaticVarAccessor implements AccessorNode {
             }
         }
         catch (Exception e) {
-            throw new CompileException("error accessing static variable", e);
+            throw new RuntimeException("error accessing static variable", e);
         }
         return value;
     }

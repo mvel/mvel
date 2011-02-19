@@ -248,7 +248,7 @@ public class TemplateCompiler {
             }
         }
         catch (RuntimeException e) {
-            CompileException ce = new CompileException(e.getMessage(), e);
+            CompileException ce = new CompileException(e.getMessage(), template, cursor,  e);
             ce.setExpr(template);
 
             if (e instanceof CompileException) {

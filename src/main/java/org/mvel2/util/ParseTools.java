@@ -44,6 +44,7 @@ import static java.lang.System.arraycopy;
 import static java.lang.Thread.currentThread;
 import static java.nio.ByteBuffer.allocateDirect;
 import static org.mvel2.DataConversion.canConvert;
+import static org.mvel2.DataConversion.main;
 import static org.mvel2.DataTypes.*;
 import static org.mvel2.MVEL.getDebuggingOutputFileName;
 import static org.mvel2.compiler.AbstractParser.LITERALS;
@@ -132,7 +133,7 @@ public class ParseTools {
 
                 default:
                     if (!isWhitespace(parm[i]) && !isIdentifierPart(parm[i])) {
-                        throw new CompileException("expected parameter");
+                        throw new CompileException("expected parameter", parm, start);
                     }
             }
         }
@@ -754,14 +755,14 @@ public class ParseTools {
             case 'u':
                 //unicode
                 int s = pos;
-                if (s + 4 > escapeStr.length) throw new CompileException("illegal unicode escape sequence");
+                if (s + 4 > escapeStr.length) throw new CompileException("illegal unicode escape sequence", escapeStr, pos);
                 else {
                     while (++pos - s != 5) {
                         if ((escapeStr[pos] > ('0' - 1) && escapeStr[pos] < ('9' + 1)) ||
                                 (escapeStr[pos] > ('A' - 1) && escapeStr[pos] < ('F' + 1))) {
                         }
                         else {
-                            throw new CompileException("illegal unicode escape sequence");
+                            throw new CompileException("illegal unicode escape sequence", escapeStr, pos);
                         }
                     }
 
@@ -802,7 +803,7 @@ public class ParseTools {
 
                     pos++;
                 }
-                throw new CompileException("illegal escape sequence: " + escapeStr[pos]);
+                throw new CompileException("illegal escape sequence: " + escapeStr[pos], escapeStr, pos);
         }
     }
 
@@ -893,7 +894,7 @@ public class ParseTools {
             throw e;
         }
         catch (Exception e) {
-            throw new CompileException("class not found: " + name, e);
+            throw new RuntimeException("class not found: " + name, e);
         }
     }
 
@@ -1576,7 +1577,7 @@ public class ParseTools {
                 case 'B':
                     return new BigDecimal(new String(val, start, offset - 1));
             }
-            throw new CompileException("unrecognized numeric literal");
+            throw new CompileException("unrecognized numeric literal", val, start);
         }
         else {
             switch (numericTest(val, start, offset)) {
@@ -1723,7 +1724,7 @@ public class ParseTools {
                         case 'B':
                             return true;
                         case '.':
-                            throw new CompileException("invalid number literal: " + new String(val));
+                            throw new CompileException("invalid number literal: " + new String(val), val, start);
                     }
                     return false;
                 }
@@ -1753,7 +1754,7 @@ public class ParseTools {
                 }
                 else {
                     if (i != start)
-                        throw new CompileException("invalid number literal: " + new String(val, start, offset));
+                        throw new CompileException("invalid number literal: " + new String(val, start, offset), val, start);
                     return false;
                 }
             }
@@ -1978,10 +1979,10 @@ public class ParseTools {
 
     public static void checkNameSafety(String name) {
         if (isReservedWord(name)) {
-            throw new CompileException("illegal use of reserved word: " + name);
+            throw new RuntimeException("illegal use of reserved word: " + name);
         }
         else if (isDigit(name.charAt(0))) {
-            throw new CompileException("not an identifier: " + name);
+            throw new RuntimeException("not an identifier: " + name);
         }
     }
 
@@ -2070,7 +2071,7 @@ public class ParseTools {
 
     public static char[] loadFromFile(File file, String encoding) throws IOException {
         if (!file.exists())
-            throw new CompileException("cannot find file: " + file.getName());
+            throw new RuntimeException("cannot find file: " + file.getName());
 
         FileInputStream inStream = null;
         ReadableByteChannel fc = null;

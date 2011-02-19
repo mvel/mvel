@@ -165,7 +165,7 @@ public class InlineCollectionNode extends ASTNode {
                 return newArray;
             }
             catch (IllegalArgumentException e) {
-                throw new CompileException("type mismatch in array", e);
+                throw new CompileException("type mismatch in array", expr, start, e);
             }
             catch (ClassNotFoundException e) {
                 throw new RuntimeException("this error should never throw:" + getBaseComponentType(type).getName(), e);

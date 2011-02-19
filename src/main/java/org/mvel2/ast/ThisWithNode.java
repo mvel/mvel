@@ -33,7 +33,7 @@ public class ThisWithNode extends WithNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        if (thisValue == null) throw new CompileException("with-block against null pointer (this)");
+        if (thisValue == null) throw new CompileException("with-block against null pointer (this)", expr, start);
 
         for (ParmValuePair pvp : withExpressions) {
             if (pvp.getSetExpression() != null) {

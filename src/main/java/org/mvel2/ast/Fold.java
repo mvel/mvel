@@ -114,7 +114,7 @@ public class Fold extends ASTNode {
 
             if (!(x instanceof Collection))
                 throw new CompileException("was expecting type: Collection; but found type: "
-                        + (x == null ? "null" : x.getClass().getName()));
+                        + (x == null ? "null" : x.getClass().getName()), expr, start);
 
             list = new FastList(((Collection) x).size());
             for (Object o : (Collection) x) {
@@ -129,7 +129,7 @@ public class Fold extends ASTNode {
 
             if (!(x instanceof Collection))
                 throw new CompileException("was expecting type: Collection; but found type: "
-                        + (x == null ? "null" : x.getClass().getName()));
+                        + (x == null ? "null" : x.getClass().getName()), expr, start);
 
             list = new FastList(((Collection) x).size());
             for (Object o : (Collection) x) {

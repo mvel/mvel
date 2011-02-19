@@ -312,7 +312,7 @@ public class ASTNode implements Cloneable, Serializable {
                     literal = ~((Integer) literal);
                 }
                 catch (ClassCastException e) {
-                    throw new CompileException("bitwise (~) operator can only be applied to integers");
+                    throw new CompileException("bitwise (~) operator can only be applied to integers", expr, start);
                 }
             }
             return;
@@ -444,6 +444,10 @@ public class ASTNode implements Cloneable, Serializable {
 
     public int getOffset() {
         return offset;
+    }
+
+    public char[] getExpr() {
+        return expr;
     }
 
     protected ASTNode() {

@@ -144,14 +144,14 @@ public class MVELRuntime {
                     }
                 }
                 catch (ClassCastException e) {
-                    throw new CompileException("syntax error or incomptable types", e);
+                    throw new CompileException("syntax error or incomptable types", new char[0], 0, e);
                 }
                 catch (CompileException e) {
                     System.out.println();
                     throw e;
                 }
                 catch (Exception e) {
-                    throw new CompileException("failed to compile sub expression", e);
+                    throw new CompileException("failed to compile sub expression", new char[0], 0, e);
                 }
             }
             while ((tk = tk.nextASTNode) != null);
@@ -161,7 +161,7 @@ public class MVELRuntime {
         catch (NullPointerException e) {
             if (tk != null && tk.isOperator() && tk.nextASTNode != null) {
                 throw new CompileException("incomplete statement: "
-                        + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")");
+                        + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")", tk.getExpr(), tk.getStart());
             }
             else {
                 throw e;

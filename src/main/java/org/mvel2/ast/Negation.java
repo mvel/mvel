@@ -37,7 +37,7 @@ public class Negation extends ASTNode {
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             if (((this.stmt = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx)).getKnownEgressType() != null)
                     && (!ParseTools.boxPrimitive(stmt.getKnownEgressType()).isAssignableFrom(Boolean.class))) {
-                throw new CompileException("negation operator cannot be applied to non-boolean type");
+                throw new CompileException("negation operator cannot be applied to non-boolean type", expr, start);
             }
         }
     }
@@ -51,10 +51,10 @@ public class Negation extends ASTNode {
             return !((Boolean) MVEL.eval(expr, start, offset, ctx, factory));
         }
         catch (NullPointerException e) {
-            throw new CompileException("negation operator applied to a null value", e);
+            throw new CompileException("negation operator applied to a null value", expr, start, e);
         }
         catch (ClassCastException e) {
-            throw new CompileException("negation operator applied to non-boolean expression", e);
+            throw new CompileException("negation operator applied to non-boolean expression", expr, start, e);
         }
     }
 

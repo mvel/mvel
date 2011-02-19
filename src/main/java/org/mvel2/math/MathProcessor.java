@@ -258,7 +258,7 @@ public strictfp class MathProcessor {
                         return val2 != null && (((Comparable) val1).compareTo(val2) >= 1 ? Boolean.TRUE : Boolean.FALSE);
                     }
                     catch (ClassCastException e) {
-                        throw new CompileException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
+                        throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
                     }
                 }
                 else {
@@ -273,7 +273,7 @@ public strictfp class MathProcessor {
                         return val2 != null && ((Comparable) val1).compareTo(val2) >= 0 ? Boolean.TRUE : Boolean.FALSE;
                     }
                     catch (ClassCastException e) {
-                        throw new CompileException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
+                        throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
                     }
 
                 }
@@ -289,7 +289,7 @@ public strictfp class MathProcessor {
                         return val2 != null && ((Comparable) val1).compareTo(val2) <= -1 ? Boolean.TRUE : Boolean.FALSE;
                     }
                     catch (ClassCastException e) {
-                        throw new CompileException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
+                        throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
                     }
 
                 }
@@ -305,7 +305,7 @@ public strictfp class MathProcessor {
                         return val2 != null && ((Comparable) val1).compareTo(val2) <= 0 ? Boolean.TRUE : Boolean.FALSE;
                     }
                     catch (ClassCastException e) {
-                        throw new CompileException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
+                        throw new RuntimeException("uncomparable values <<" + val1 + ">> and <<" + val2 + ">>", e);
                     }
 
                 }
@@ -321,7 +321,7 @@ public strictfp class MathProcessor {
                 return valueOf(val1) + valueOf(val2);
         }
 
-        throw new CompileException("could not perform numeric operation on non-numeric types: left-type="
+        throw new RuntimeException("could not perform numeric operation on non-numeric types: left-type="
                 + (val1 != null ? val1.getClass().getName() : "null") + "; right-type="
                 + (val2 != null ? val2.getClass().getName() : "null")
                 + " [vals (" + valueOf(val1) + ", " + valueOf(val2) + ") operation=" + DebugTools.getOperatorName(operation) + " (opcode:" + operation + ") ]");
@@ -511,7 +511,7 @@ public strictfp class MathProcessor {
                     case BW_SHIFT_RIGHT:
                     case BW_USHIFT_RIGHT:
                     case BW_XOR:
-                        throw new CompileException("bitwise operation on a non-fixed-point number.");
+                        throw new RuntimeException("bitwise operation on a non-fixed-point number.");
                 }
 
             case DataTypes.FLOAT:
@@ -547,7 +547,7 @@ public strictfp class MathProcessor {
                     case BW_SHIFT_RIGHT:
                     case BW_USHIFT_RIGHT:
                     case BW_XOR:
-                        throw new CompileException("bitwise operation on a non-fixed-point number.");
+                        throw new RuntimeException("bitwise operation on a non-fixed-point number.");
                 }
 
             case DataTypes.BIG_INTEGER:
@@ -582,7 +582,7 @@ public strictfp class MathProcessor {
                     case BW_SHIFT_RIGHT:
                     case BW_USHIFT_RIGHT:
                     case BW_XOR:
-                        throw new CompileException("bitwise operation on a number greater than 32-bits not possible");
+                        throw new RuntimeException("bitwise operation on a number greater than 32-bits not possible");
                 }
 
 
@@ -657,7 +657,7 @@ public strictfp class MathProcessor {
                 return ((Byte)in).doubleValue();
         }
 
-        throw new ConversionException("cannot convert <" + in + "> to a numeric type: " + in.getClass() + " [" + type + "]");
+        throw new RuntimeException("cannot convert <" + in + "> to a numeric type: " + in.getClass() + " [" + type + "]");
 
 
     }
@@ -703,6 +703,6 @@ public strictfp class MathProcessor {
 
         }
 
-        throw new ConversionException("cannot convert <" + in + "> to a numeric type: " + in.getClass() + " [" + type + "]");
+        throw new RuntimeException("cannot convert <" + in + "> to a numeric type: " + in.getClass() + " [" + type + "]");
     }
 }

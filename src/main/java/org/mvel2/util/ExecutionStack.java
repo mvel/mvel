@@ -74,7 +74,7 @@ public class ExecutionStack {
     public Boolean peekBoolean() {
         if (size == 0) return null;
         if (element.value instanceof Boolean) return (Boolean) element.value;
-        throw new CompileException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
+        throw new RuntimeException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
     }
 
     public void copy2(ExecutionStack es) {
@@ -113,7 +113,7 @@ public class ExecutionStack {
         }
         try {
             if (element.value instanceof Boolean) return (Boolean) element.value;
-            throw new CompileException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
+            throw new RuntimeException("expected Boolean; but found: " + (element.value == null ? "null" : element.value.getClass().getName()));
         }
         finally {
             element = element.next;

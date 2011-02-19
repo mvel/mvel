@@ -44,24 +44,26 @@ public class CompileException extends RuntimeException {
 
     private List<ErrorDetail> errors;
 
-    public CompileException() {
-        super();
-    }
+//    public CompileException() {
+//        super();
+//    }
+//
+//    public CompileException(String message) {
+//        super(message);
+//    }
 
-    public CompileException(String message) {
+    public CompileException(String message, List<ErrorDetail> errors, char[] expr, int cursor, ParserContext ctx) {
         super(message);
-    }
-
-    public CompileException(String message, List<ErrorDetail> errors, ParserContext ctx) {
-        super(message);
+        this.expr = expr;
+        this.cursor = cursor;
         this.errors = errors;
         this.expr = ctx.getRootParser().getExpression();
     }
-
-    public CompileException(String message, int cursor) {
-        super(message);
-        this.cursor = cursor;
-    }
+//
+//    public CompileException(String message, int cursor) {
+//        super(message);
+//        this.cursor = cursor;
+//    }
 
     public String toString() {
        return generateErrorMessage();
@@ -79,17 +81,40 @@ public class CompileException extends RuntimeException {
         this.cursor = cursor;
     }
 
-    public CompileException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public CompileException(Throwable cause) {
-        super(cause);
-    }
+//    public CompileException(String message, Throwable cause) {
+//        super(message, cause);
+//    }
+//
+//    public CompileException(Throwable cause) {
+//        super(cause);
+//    }
 
     @Override
     public String getMessage() {
         return generateErrorMessage();
+    }
+
+    private void calcRowAndColumn() {
+        int row = 0;
+        int col = 0;
+        for (char anExpr : expr) {
+            switch (anExpr) {
+                case '\r':
+                    continue;
+                case '\n':
+                    row++;
+                    col = 0;
+                    break;
+
+                default:
+                    col++;
+            }
+        }
+
+        this.lineNumber = row;
+        this.column = col;
+
+
     }
 
     private CharSequence showCodeNearError(char[] expr, int cursor) {
@@ -140,6 +165,8 @@ public class CompileException extends RuntimeException {
         if ((offset = cursor - msgOffset - 1) < 0) offset = 0;
 
         appender.append(repeatChar(' ', offset+2)).append("^");
+
+        calcRowAndColumn();
 
         if (lineNumber != -1) {
             appender.append('\n')

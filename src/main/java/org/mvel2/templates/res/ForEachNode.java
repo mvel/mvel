@@ -137,7 +137,7 @@ public class ForEachNode extends Node {
                     }
                     else {
                         throw new CompileException("unexpected character '" + contents[i]
-                                + "' in foreach tag", cStart + 1);
+                                + "' in foreach tag", contents, cStart + 1);
                     }
                     break;
 
@@ -147,7 +147,7 @@ public class ForEachNode extends Node {
                     break;
                 case ',':
                     if (expr.size() != (items.size() - 1)) {
-                        throw new CompileException("unexpected character ',' in foreach tag", cStart + i);
+                        throw new CompileException("unexpected character ',' in foreach tag", contents, cStart + i);
                     }
                     expr.add(ParseTools.createStringTrimmed(contents, start, i - start));
                     start = i + 1;
@@ -157,7 +157,7 @@ public class ForEachNode extends Node {
 
         if (start < contents.length) {
             if (expr.size() != (items.size() - 1)) {
-                throw new CompileException("expected character ':' in foreach tag", cEnd);
+                throw new CompileException("expected character ':' in foreach tag", contents, cEnd);
             }
             expr.add(ParseTools.createStringTrimmed(contents, start, contents.length - start));
         }

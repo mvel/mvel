@@ -51,7 +51,7 @@ public class FieldAccessorNH implements AccessorNode {
             }
         }
         catch (Exception e) {
-            throw new CompileException("unable to access field", e);
+            throw new RuntimeException("unable to access field", e);
         }
     }
 
@@ -74,10 +74,10 @@ public class FieldAccessorNH implements AccessorNode {
                 coercionRequired = true;
                 return setValue(ctx, elCtx, variableFactory, value);
             }
-            throw new CompileException("unable to bind property", e);
+            throw new RuntimeException("unable to bind property", e);
         }
         catch (Exception e) {
-            throw new CompileException("unable to access field", e);
+            throw new RuntimeException("unable to access field", e);
         }
     }
 

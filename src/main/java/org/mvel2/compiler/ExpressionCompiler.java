@@ -36,6 +36,7 @@ import static org.mvel2.util.CompilerTools.finalizePayload;
 
 import static org.mvel2.util.CompilerTools.signNumber;
 import static org.mvel2.util.ParseTools.subCompileExpression;
+import static org.mvel2.util.ParseTools.trimLeft;
 import static org.mvel2.util.ParseTools.unboxPrimitive;
 
 /**
@@ -80,7 +81,7 @@ public class ExpressionCompiler extends AbstractParser {
 
                 //noinspection ThrowFromFinallyBlock
                 throw new CompileException("Failed to compile: " + pCtx.getErrorList().size()
-                        + " compilation error(s): " + err.toString(), pCtx.getErrorList(), pCtx);
+                        + " compilation error(s): " + err.toString(), pCtx.getErrorList(), expr, cursor, pCtx);
             }
         }
     }
@@ -246,7 +247,7 @@ public class ExpressionCompiler extends AbstractParser {
                         }
                     }
                     else if (tkOp != null && !tkOp.isOperator() && !(tk.getLiteralValue() instanceof Class)) {
-                        throw new CompileException("unexpected token: " + tkOp.getName());
+                        throw new CompileException("unexpected token: " + tkOp.getName(), expr, tkOp.getStart());
                     }
                     else {
                         literalOnly = 0;
@@ -275,7 +276,7 @@ public class ExpressionCompiler extends AbstractParser {
             }
 
             if (!stk.isEmpty()) {
-                throw new CompileException("COMPILE ERROR: non-empty stack after compile.");
+                throw new CompileException("COMPILE ERROR: non-empty stack after compile.", expr, cursor);
             }
 
 
@@ -289,7 +290,7 @@ public class ExpressionCompiler extends AbstractParser {
 
         }
         catch (NullPointerException e) {
-            throw new CompileException("not a statement, or badly formed structure", e);
+            throw new CompileException("not a statement, or badly formed structure", expr, st, e);
         }
         catch (CompileException e) {
             e.setExpr(expr);
@@ -302,7 +303,7 @@ public class ExpressionCompiler extends AbstractParser {
             parserContext.set(null);
             if (e instanceof RuntimeException) throw (RuntimeException) e;
             else {
-                throw new CompileException(e.getMessage(), e);
+                throw new CompileException(e.getMessage(), expr, st, e);
             }
         }
     }
@@ -427,7 +428,7 @@ public class ExpressionCompiler extends AbstractParser {
 
                             throw new CompileException(
                                     "cannot assign type " + c.getKnownEgressType().getName()
-                                            + " to " + returnType.getName());
+                                            + " to " + returnType.getName(), expr, st);
                         }
                     }
                 }
@@ -475,15 +476,18 @@ public class ExpressionCompiler extends AbstractParser {
     public ExpressionCompiler(char[] expression, int start, int offset) {
         this.expr = expression;
         this.start = start;
-        this.length = offset;
         this.end = start + offset;
+        this.end = trimLeft(this.end);
+        this.length = this.end - start;
     }
 
     public ExpressionCompiler(String expression, int start, int offset, ParserContext ctx) {
         this.expr = expression.toCharArray();
         this.start = start;
-        this.length = offset;
         this.end = start + offset;
+        this.end = trimLeft(this.end);
+        this.length = this.end - start;
+
 
         contextControl(SET, ctx, this);
     }
@@ -491,8 +495,9 @@ public class ExpressionCompiler extends AbstractParser {
     public ExpressionCompiler(char[] expression, int start, int offset, ParserContext ctx) {
         this.expr = expression;
         this.start = start;
-        this.length = offset;
         this.end = start + offset;
+        this.end = trimLeft(this.end);
+        this.length = this.end - start;
 
         contextControl(SET, ctx, this);
     }

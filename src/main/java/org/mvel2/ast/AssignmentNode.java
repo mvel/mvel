@@ -93,12 +93,12 @@ public class AssignmentNode extends ASTNode implements Assignment {
         }
         else if (statement != null) {
             if (factory == null)
-                throw new CompileException("cannot assign variables; no variable resolver factory available");
+                throw new CompileException("cannot assign variables; no variable resolver factory available", expr, start);
             return factory.createVariable(varName, statement.getValue(ctx, thisValue, factory)).getValue();
         }
         else {
             if (factory == null)
-                throw new CompileException("cannot assign variables; no variable resolver factory available");
+                throw new CompileException("cannot assign variables; no variable resolver factory available", expr, start);
             factory.createVariable(varName, null);
             return null;
         }

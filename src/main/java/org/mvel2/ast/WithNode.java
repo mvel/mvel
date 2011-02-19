@@ -60,7 +60,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         Object ctxObject = compiledBlock.getValue(ctx, thisValue, factory);
-        if (ctxObject == null) throw new CompileException("with-block against null pointer");
+        if (ctxObject == null) throw new CompileException("with-block against null pointer",expr, start);
 
         for (ParmValuePair pvp : withExpressions) {
             pvp.eval(ctxObject, factory);

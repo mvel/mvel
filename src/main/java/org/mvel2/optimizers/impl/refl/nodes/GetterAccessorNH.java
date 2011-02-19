@@ -52,7 +52,7 @@ public class GetterAccessorNH implements AccessorNode {
             return nullHandle(method.getName(), getProperty(method.getName() + "()", ctx), ctx, elCtx, vars);
         }
         catch (Exception e) {
-            throw new CompileException("cannot invoke getter: " + method.getName()
+            throw new RuntimeException("cannot invoke getter: " + method.getName()
                     + " [declr.class: " + method.getDeclaringClass().getName() + "; act.class: "
                     + (ctx != null ? ctx.getClass().getName() : "null") + "]", e);
         }
@@ -99,7 +99,7 @@ public class GetterAccessorNH implements AccessorNode {
             throw e;
         }
         catch (Exception e) {
-            throw new CompileException("error " + method.getName() + ": " + e.getClass().getName() + ":" + e.getMessage(), e);
+            throw new RuntimeException("error " + method.getName() + ": " + e.getClass().getName() + ":" + e.getMessage(), e);
         }
     }
 
@@ -112,7 +112,7 @@ public class GetterAccessorNH implements AccessorNode {
             return nullHandle(o.getName(), o.invoke(ctx, EMPTY), ctx, elCtx, vars);
         }
         catch (Exception e2) {
-            throw new CompileException("unable to invoke method", e2);
+            throw new RuntimeException("unable to invoke method", e2);
         }
     }
 

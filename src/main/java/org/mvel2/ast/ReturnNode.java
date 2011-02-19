@@ -45,10 +45,13 @@ public class ReturnNode extends ASTNode {
             setAccessor((Accessor) subCompileExpression(expr, start, offset));
         }
 
+        factory.setTiltFlag(true);
+
         return accessor.getValue(ctx, thisValue, factory);
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
+        factory.setTiltFlag(true);
         return eval(expr, start, offset, ctx, factory);
     }
 

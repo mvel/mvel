@@ -41,13 +41,13 @@ public class DeclProtoVarNode extends ASTNode implements Assignment {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (!factory.isResolveable(name)) factory.createVariable(name, null, egressType);
-        else throw new CompileException("variable defined within scope: " + name);
+        else throw new RuntimeException("variable defined within scope: " + name);
         return null;
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (!factory.isResolveable(name)) factory.createVariable(name, null, egressType);
-        else throw new CompileException("variable defined within scope: " + name);
+        else throw new RuntimeException("variable defined within scope: " + name);
 
         return null;
     }

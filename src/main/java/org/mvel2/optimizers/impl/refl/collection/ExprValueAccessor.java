@@ -52,7 +52,8 @@ public class ExprValueAccessor implements Accessor {
                 }
             }
            if (pCtx != null && pCtx.isStrongTyping())
-               throw new CompileException("was expecting type: " + tt + "; but found type: " + (et == null ? "null" : et.getName()));
+               throw new RuntimeException("was expecting type: " + tt + "; but found type: "
+                       + (et == null ? "null" : et.getName()));
         }
     }
 

@@ -35,7 +35,7 @@ public class PropertyHandlerAccessor extends BaseAccessor {
             }
         }
         catch (Exception e) {
-            throw new CompileException("unable to access field", e);
+            throw new RuntimeException("unable to access field", e);
         }
     }
 

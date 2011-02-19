@@ -48,7 +48,7 @@ public class DynamicFieldAccessor implements AccessorNode {
             }
         }
         catch (Exception e) {
-            throw new CompileException("unable to access field", e);
+            throw new RuntimeException("unable to access field", e);
         }
 
     }
@@ -64,7 +64,7 @@ public class DynamicFieldAccessor implements AccessorNode {
             }
         }
         catch (Exception e) {
-            throw new CompileException("unable to access field", e);
+            throw new RuntimeException("unable to access field", e);
         }
     }
 

@@ -60,7 +60,7 @@ public class RegExMatch extends ASTNode {
                     p = compile(valueOf(patternStmt.getValue(null, null)));
                 }
                 catch (PatternSyntaxException e) {
-                    throw new CompileException("bad regular expression", e);
+                    throw new CompileException("bad regular expression", expr, patternStart, e);
                 }
             }
         }
@@ -81,7 +81,7 @@ public class RegExMatch extends ASTNode {
             return compile(valueOf(eval(expr, patternStart, patternOffset, ctx, factory))).matcher(valueOf(eval(expr, start, offset, ctx, factory))).matches();
         }
         catch (PatternSyntaxException e) {
-            throw new CompileException("bad regular expression", e);
+            throw new CompileException("bad regular expression", expr, patternStart, e);
         }
     }
 

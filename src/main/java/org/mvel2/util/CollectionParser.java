@@ -100,7 +100,7 @@ public class CollectionParser {
 
         Map<Object, Object> map = null;
         List<Object> list = null;
-        String ex;
+
         int st = start;
 
         if (type != -1) {
@@ -168,14 +168,14 @@ public class CollectionParser {
 
                 case ',':
                     if (type != MAP) {
-                        list.add(ex = new String(property, st, cursor - st));
+                        list.add(new String(property, st, cursor - st));
                     }
                     else {
-                        map.put(curr, ex = createStringTrimmed(property, st, cursor - st));
+                        map.put(curr, createStringTrimmed(property, st, cursor - st));
                     }
 
                     if (subcompile) {
-                        subCompile(ex);
+                        subCompile(st, cursor - st);
                     }
 
                     st = cursor + 1;
@@ -190,7 +190,7 @@ public class CollectionParser {
                     curr = createStringTrimmed(property, st, cursor - st);
 
                     if (subcompile) {
-                        subCompile((String) curr);
+                        subCompile(st, cursor - st);
                     }
 
                     st = cursor + 1;
@@ -210,14 +210,14 @@ public class CollectionParser {
             if (cursor < (end - 1)) cursor++;
 
             if (type == MAP) {
-                map.put(curr, ex = createStringTrimmed(property, st, cursor - st));
+                map.put(curr, createStringTrimmed(property, st, cursor - st));
             }
             else {
                 if (cursor < end) cursor++;
-                list.add(ex = createStringTrimmed(property, st, cursor - st));
+                list.add(createStringTrimmed(property, st, cursor - st));
             }
 
-            if (subcompile) subCompile(ex);
+            if (subcompile) subCompile(st, cursor - st);
         }
 
         switch (type) {
@@ -230,14 +230,14 @@ public class CollectionParser {
         }
     }
 
-    private void subCompile(String ex) {
+    private void subCompile(int start, int offset) {
         if (colType == null) {
-            subCompileExpression(ex.toCharArray(), pCtx);
+            subCompileExpression(property, start, offset, pCtx);
         }
         else {
-            Class r = ((ExecutableStatement) subCompileExpression(ex.toCharArray(), pCtx)).getKnownEgressType();
+            Class r = ((ExecutableStatement) subCompileExpression(property, start, offset, pCtx)).getKnownEgressType();
             if (!colType.isAssignableFrom(r) && (isStrongType() || !DataConversion.canConvert(r, colType))) {
-                throw new CompileException("expected type: " + colType.getName() + "; but found: " + r.getName());
+                throw new CompileException("expected type: " + colType.getName() + "; but found: " + r.getName(), property, cursor);
             }
         }
     }

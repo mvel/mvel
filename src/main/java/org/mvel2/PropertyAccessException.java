@@ -19,21 +19,21 @@ package org.mvel2;
 
 public class PropertyAccessException extends CompileException {
 
-    public PropertyAccessException() {
-        super();
-    }
-
-    public PropertyAccessException(String message) {
-        super( message);
-    }
-
-    public PropertyAccessException(String message, Throwable cause) {
-        super( message, cause);
-    }
-
-    public PropertyAccessException(Throwable cause) {
-        super(cause);
-    }
+//    public PropertyAccessException() {
+//        super();
+//    }
+//
+//    public PropertyAccessException(String message) {
+//        super( message);
+//    }
+//
+//    public PropertyAccessException(String message, Throwable cause) {
+//        super( message, cause);
+//    }
+//
+//    public PropertyAccessException(Throwable cause) {
+//        super(cause);
+//    }
 
     public PropertyAccessException(String message, char[] expr, int cursor, Throwable e) {
         super(message, expr, cursor, e);

@@ -154,7 +154,8 @@ public class ForEachNode extends BlockNode {
             }
         }
         else {
-            throw new CompileException("non-iterable type: " + (iterCond != null ? iterCond.getClass().getName() : "null"));
+            throw new CompileException("non-iterable type: "
+                    + (iterCond != null ? iterCond.getClass().getName() : "null"), expr, start);
         }
 
         return null;
@@ -166,7 +167,7 @@ public class ForEachNode extends BlockNode {
         while (cursor < end && condition[cursor] != ':') cursor++;
 
         if (cursor == end || condition[cursor] != ':')
-            throw new CompileException("expected : in foreach");
+            throw new CompileException("expected : in foreach", condition, cursor);
 
         int x;
         if ((x = (item = createStringTrimmed(condition, start, cursor - start)).indexOf(' ')) != -1) {
@@ -177,7 +178,7 @@ public class ForEachNode extends BlockNode {
 
             }
             catch (ClassNotFoundException e) {
-                throw new CompileException("cannot resolve identifier: " + tk);
+                throw new CompileException("cannot resolve identifier: " + tk, condition, cursor);
             }
         }
 
@@ -212,14 +213,14 @@ public class ForEachNode extends BlockNode {
             type = INTEGER;
         }
         else {
-            throw new CompileException("non-iterable type: " + t.getName());
+            throw new CompileException("non-iterable type: " + t.getName(), expr, start);
         }
     }
 
-    private static void enforceTypeSafety(Class required, Class actual) {
+    private  void enforceTypeSafety(Class required, Class actual) {
         if (!required.isAssignableFrom(actual)) {
             throw new CompileException("type mismatch in foreach: expected: "
-                    + required.getName() + "; but found: " + getBaseComponentType(actual));
+                    + required.getName() + "; but found: " + getBaseComponentType(actual), expr, start);
         }
     }
 }

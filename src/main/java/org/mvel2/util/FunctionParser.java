@@ -108,7 +108,7 @@ public class FunctionParser {
         /**
          * Produce the funciton node.
          */
-        return new Function(name, ParseTools.subArray(expr, startCond, endCond), ParseTools.subArray(expr, blockStart, blockEnd), fields,
+        return new Function(name,expr, startCond, endCond - startCond, blockStart, blockEnd - blockStart, fields,
                 pCtx == null ? pCtx = AbstractParser.getCurrentThreadParserContext() : pCtx);
     }
 

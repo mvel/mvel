@@ -51,7 +51,8 @@ public class TypeCast extends ASTNode {
                 if (canCast(statement.getKnownEgressType(), cast)) {
                     widen = true;
                 } else {
-                    throw new CompileException("unable to cast type: " + statement.getKnownEgressType() + "; to: " + cast);
+                    throw new CompileException("unable to cast type: "
+                            + statement.getKnownEgressType() + "; to: " + cast, expr, start);
                 }
             }
 

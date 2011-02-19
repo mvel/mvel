@@ -182,22 +182,23 @@ public class PropertyAccessor {
             }
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException("could not access property", property, cursor, e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException("could not access property", property, cursor, e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException("array or collections index out of bounds in property: " + new String(property), e);
+            throw new PropertyAccessException("array or collections index out of bounds in property: "
+                    + new String(property, cursor, length), property, cursor, e);
         }
         catch (CompileException e) {
             throw e;
         }
         catch (NullPointerException e) {
-            throw new PropertyAccessException("null pointer exception in property: " + new String(property), e);
+            throw new PropertyAccessException("null pointer exception in property: " + new String(property), property, cursor, e);
         }
         catch (Exception e) {
-            throw new PropertyAccessException("unknown exception in expression: " + new String(property), e);
+            throw new PropertyAccessException("unknown exception in expression: " + new String(property), property, cursor, e);
         }
     }
 
@@ -276,7 +277,7 @@ public class PropertyAccessor {
             end = findAbsoluteLast(property);
 
             if ((curr = get()) == null)
-                throw new PropertyAccessException("cannot bind to null context: " + new String(property));
+                throw new PropertyAccessException("cannot bind to null context: " + new String(property, cursor, length), property, cursor);
 
             end = oLength;
 
@@ -286,7 +287,7 @@ public class PropertyAccessor {
                 whiteSpaceSkip();
 
                 if (cursor == length || scanTo(']'))
-                    throw new PropertyAccessException("unterminated '['");
+                    throw new PropertyAccessException("unterminated '['", property, cursor);
 
                 String ex = new String(property, _start, cursor - _start);
 
@@ -307,7 +308,9 @@ public class PropertyAccessor {
                     }
 
                     else {
-                        throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
+                        throw new PropertyAccessException("cannot bind to collection property: "
+                                + new String(property) + ": not a recognized collection type: " + ctx.getClass(),
+                                property, cursor);
                     }
 
                     return;
@@ -339,7 +342,8 @@ public class PropertyAccessor {
                         getPropertyHandler(curr.getClass()).setProperty(ex, curr, variableFactory, value);
                     }
                     else {
-                        throw new PropertyAccessException("cannot bind to collection property: " + new String(property) + ": not a recognized collection type: " + ctx.getClass());
+                        throw new PropertyAccessException("cannot bind to collection property: " + new String(property)
+                                + ": not a recognized collection type: " + ctx.getClass(), property, cursor);
                     }
 
                     return;
@@ -365,8 +369,8 @@ public class PropertyAccessor {
 
                 if (value != null && !paramaterTypes[0].isAssignableFrom(value.getClass())) {
                     if (!canConvert(paramaterTypes[0], value.getClass())) {
-                        throw new ConversionException("cannot convert type: "
-                                + value.getClass() + ": to " + meth.getParameterTypes()[0]);
+                        throw new CompileException("cannot convert type: "
+                                + value.getClass() + ": to " + meth.getParameterTypes()[0], property, cursor);
                     }
                     meth.invoke(curr, convert(value, paramaterTypes[0]));
                 }
@@ -379,8 +383,8 @@ public class PropertyAccessor {
 
                 if (value != null && !fld.getType().isAssignableFrom(value.getClass())) {
                     if (!canConvert(fld.getType(), value.getClass())) {
-                        throw new ConversionException("cannot convert type: "
-                                + value.getClass() + ": to " + fld.getType());
+                        throw new CompileException("cannot convert type: "
+                                + value.getClass() + ": to " + fld.getType(), property, cursor);
                     }
 
                     fld.set(curr, convert(value, fld.getType()));
@@ -395,14 +399,14 @@ public class PropertyAccessor {
             }
             else {
                 throw new PropertyAccessException("could not access/write property (" + tk + ") in: "
-                        + (curr == null ? "Unknown" : curr.getClass().getName()));
+                        + (curr == null ? "Unknown" : curr.getClass().getName()), property, cursor);
             }
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException("could not access property", property, cursor, e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException("could not access property", e);
+            throw new PropertyAccessException("could not access property", property, cursor, e);
         }
     }
 
@@ -704,7 +708,7 @@ public class PropertyAccessor {
         whiteSpaceSkip();
 
         if (cursor == end || scanTo(']'))
-            throw new PropertyAccessException("unterminated '['");
+            throw new PropertyAccessException("unterminated '['", property, cursor);
 
         prop = new String(property, _start, cursor++ - _start);
 
@@ -717,7 +721,7 @@ public class PropertyAccessor {
         else if (ctx instanceof Collection) {
             int count = (Integer) eval(prop, ctx, variableFactory);
             if (count > ((Collection) ctx).size())
-                throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
+                throw new PropertyAccessException("index [" + count + "] out of bounds on collections", property, cursor);
 
             Iterator iter = ((Collection) ctx).iterator();
             for (int i = 0; i < count; i++) iter.next();
@@ -735,7 +739,8 @@ public class PropertyAccessor {
                 return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, start, length, 0));
             }
             catch (Exception e) {
-                throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()), e);
+                throw new PropertyAccessException("illegal use of []: unknown type: "
+                        + (ctx == null ? null : ctx.getClass().getName()), property, cursor, e);
             }
         }
     }
@@ -751,7 +756,7 @@ public class PropertyAccessor {
         whiteSpaceSkip();
 
         if (cursor == end || scanTo(']'))
-            throw new PropertyAccessException("unterminated '['");
+            throw new PropertyAccessException("unterminated '['", property, cursor);
 
         prop = new String(property, _start, cursor++ - _start);
 
@@ -773,7 +778,8 @@ public class PropertyAccessor {
             else {
                 int count = (Integer) eval(prop, ctx, variableFactory);
                 if (count > ((Collection) ctx).size())
-                    throw new PropertyAccessException("index [" + count + "] out of bounds on collections");
+                    throw new PropertyAccessException("index [" + count + "] out of bounds on collections",
+                            property, cursor);
 
                 Iterator iter = ((Collection) ctx).iterator();
                 for (int i = 0; i < count; i++) iter.next();
@@ -797,7 +803,8 @@ public class PropertyAccessor {
                 return getClassReference(getCurrentThreadParserContext(), (Class) ctx, new TypeDescriptor(property, start, end - start, 0));
             }
             catch (Exception e) {
-                throw new PropertyAccessException("illegal use of []: unknown type: " + (ctx == null ? null : ctx.getClass().getName()));
+                throw new PropertyAccessException("illegal use of []: unknown type: "
+                        + (ctx == null ? null : ctx.getClass().getName()), property, cursor);
             }
         }
     }
@@ -855,7 +862,7 @@ public class PropertyAccessor {
             first = false;
         }
 
-        if (ctx == null) throw new CompileException("no such method or function: " + name);
+        if (ctx == null) throw new CompileException("no such method or function: " + name, property, cursor);
 
         /**
          * If the target object is an instance of java.lang.Class itself then do not
@@ -943,14 +950,14 @@ public class PropertyAccessor {
                     return m.invoke(ctx, args);
                 }
                 catch (Exception e2) {
-                    throw new PropertyAccessException("unable to invoke method: " + name, e2);
+                    throw new PropertyAccessException("unable to invoke method: " + name, property, cursor, e2);
                 }
             }
             catch (RuntimeException e) {
                 throw e;
             }
             catch (Exception e) {
-                throw new PropertyAccessException("unable to invoke method: " + name, e);
+                throw new PropertyAccessException("unable to invoke method: " + name, property, cursor, e);
             }
         }
     }

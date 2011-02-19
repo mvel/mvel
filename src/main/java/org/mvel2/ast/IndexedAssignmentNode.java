@@ -72,15 +72,12 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
                     = (ExecutableStatement) subCompileExpression(stmt = subset(expr, this.start, this.offset), pCtx))
                     .getKnownEgressType();
 
-//            this.egressType = (statement = (ExecutableStatement)
-//                     subCompileExpression(expr, this.start, this.offset, pCtx)).getKnownEgressType();
-
             if (col = ((endOfName = (short) findFirst('[', 0, this.name.length(), indexTarget = this.name.toCharArray())) > 0)) {
                 if (((this.fields |= COLLECTION) & COMPILE_IMMEDIATE) != 0) {
                     accExpr = (CompiledAccExpression) compileSetExpression(indexTarget, pCtx);
                 }
 
-                this.name = new String(expr, 0, endOfName);
+                this.name = this.name.substring(0, endOfName);
                 index = subset(indexTarget, endOfName, indexTarget.length - endOfName);
             }
 

@@ -70,7 +70,7 @@ public class OptimizerFactory {
             return accessorCompilers.get(defaultOptimizer).getClass().newInstance();
         }
         catch (Exception e) {
-            throw new CompileException("unable to instantiate accessor compiler", e);
+            throw new RuntimeException("unable to instantiate accessor compiler", e);
         }
     }
 
@@ -79,7 +79,7 @@ public class OptimizerFactory {
             return accessorCompilers.get(name).getClass().newInstance();
         }
         catch (Exception e) {
-            throw new CompileException("unable to instantiate accessor compiler", e);
+            throw new RuntimeException("unable to instantiate accessor compiler", e);
         }
     }
 
@@ -91,7 +91,7 @@ public class OptimizerFactory {
             return threadOptimizer.get().newInstance();
         }
         catch (Exception e) {
-            throw new CompileException("unable to instantiate accessor compiler", e);
+            throw new RuntimeException("unable to instantiate accessor compiler", e);
         }
     }
 
@@ -108,7 +108,7 @@ public class OptimizerFactory {
             setThreadAccessorOptimizer(ao.getClass());
         }
         catch (Exception e) {
-            throw new CompileException("unable to instantiate accessor compiler", e);
+            throw new RuntimeException("unable to instantiate accessor compiler", e);
         }
     }
 

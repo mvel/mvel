@@ -60,7 +60,7 @@ public class ConstructorAccessor extends BaseAccessor {
             }
         }
         catch (Exception e) {
-            throw new CompileException("cannot construct object", e);
+            throw new RuntimeException("cannot construct object", e);
         }
     }
 

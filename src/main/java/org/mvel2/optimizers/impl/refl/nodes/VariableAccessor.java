@@ -32,7 +32,7 @@ public class VariableAccessor implements AccessorNode {
 
     public Object getValue(Object ctx, Object elCtx, VariableResolverFactory vrf) {
         if (vrf == null)
-            throw new CompileException("cannot access property in optimized accessor: " + property);
+            throw new RuntimeException("cannot access property in optimized accessor: " + property);
 
         if (nextNode != null) {
             return nextNode.getValue(vrf.getVariableResolver(property).getValue(), elCtx, vrf);

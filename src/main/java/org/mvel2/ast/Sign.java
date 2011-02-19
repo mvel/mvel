@@ -62,7 +62,7 @@ public class Sign extends ASTNode {
         else if (BigInteger.class.isAssignableFrom(type)) signer = new BigIntSigner();
         else if (BigDecimal.class.isAssignableFrom(type)) signer = new BigDecSigner();
         else {
-            throw new CompileException("illegal use of '-': cannot be applied to: " + type.getName());
+            throw new CompileException("illegal use of '-': cannot be applied to: " + type.getName(), expr, start);
         }
 
     }

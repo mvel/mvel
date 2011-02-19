@@ -65,7 +65,7 @@ public class FunctionVariableResolverFactory extends BaseVariableResolverFactory
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
         VariableResolver vr = this.variableResolvers != null ? this.variableResolvers.get(name) : null;
         if (vr != null && vr.getType() != null) {
-            throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
+            throw new RuntimeException("variable already defined within scope: " + vr.getType() + " " + name);
         }
         else {
             return createIndexedVariable(variableIndexOf(name), name, value);

@@ -125,7 +125,7 @@ public class ParserConfiguration implements Serializable {
         }
 
         if (found > 1) {
-            throw new CompileException("ambiguous class name: " + className);
+            throw new RuntimeException("ambiguous class name: " + className);
         }
         else if (found == 1) {
             addImport(className, cls);

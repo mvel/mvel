@@ -238,7 +238,7 @@ public class AbstractParser implements Parser, Serializable {
             if (debugSymbols) {
                 if (!lastWasLineLabel) {
                     if (pCtx.getSourceFile() == null) {
-                        throw new CompileException("unable to produce debugging symbols: source name must be provided.");
+                        throw new CompileException("unable to produce debugging symbols: source name must be provided.", expr, st);
                     }
 
                     line = pCtx.getLineCount();
@@ -293,7 +293,7 @@ public class AbstractParser implements Parser, Serializable {
                             case NEW:
                                 if (!isIdentifierPart(expr[st = cursor = trimRight(cursor)])) {
                                     throw new CompileException("unexpected character (expected identifier): "
-                                            + expr[cursor], expr, cursor);
+                                            + expr[cursor], expr, st);
                                 }
 
                                 /**
@@ -325,7 +325,7 @@ public class AbstractParser implements Parser, Serializable {
                                     if (!((NewObjectNode) lastNode).getTypeDescr().isUndimensionedArray()) {
                                         throw new CompileException(
                                                 "conflicting syntax: dimensioned array with initializer block",
-                                                expr, cursor);
+                                                expr, st);
                                     }
 
                                     st = cursor;
@@ -336,11 +336,11 @@ public class AbstractParser implements Parser, Serializable {
                                             egressType = getClassReference(pCtx, descr);
                                         }
                                         catch (ClassNotFoundException e) {
-                                            throw new CompileException("could not instantiate class", e);
+                                            throw new CompileException("could not instantiate class", expr, st, e);
                                         }
                                     }
 
-                                    cursor = balancedCaptureWithLineAccounting(expr, cursor, end, expr[cursor], pCtx) + 1;
+                                    cursor = balancedCaptureWithLineAccounting(expr, st, end, expr[cursor], pCtx) + 1;
                                     if (tokenContinues()) {
                                         lastNode = new InlineCollectionNode(expr, st, cursor - st, fields,
                                                 egressType, pCtx);
@@ -354,7 +354,7 @@ public class AbstractParser implements Parser, Serializable {
                                     }
                                 }
                                 else if (((NewObjectNode) lastNode).getTypeDescr().isUndimensionedArray()) {
-                                    throw new CompileException("array initializer expected", expr, cursor);
+                                    throw new CompileException("array initializer expected", expr, st);
                                 }
 
                                 return lastNode;
@@ -373,7 +373,7 @@ public class AbstractParser implements Parser, Serializable {
                                 return captureCodeBlock(ASTNode.BLOCK_IF);
 
                             case ELSE:
-                                throw new CompileException("else without if", cursor);
+                                throw new CompileException("else without if", expr, st);
 
                             case FOREACH:
                                 return captureCodeBlock(ASTNode.BLOCK_FOREACH);
@@ -437,7 +437,7 @@ public class AbstractParser implements Parser, Serializable {
 
                                     if (cursor != end && expr[cursor] == '=') {
                                         if (end == (cursor = st))
-                                            throw new CompileException("illegal use of reserved word: var");
+                                            throw new CompileException("illegal use of reserved word: var", expr, st);
 
                                         continue Mainloop;
                                     }
@@ -447,7 +447,7 @@ public class AbstractParser implements Parser, Serializable {
                                             splitAccumulator.add(lastNode = new IndexedDeclTypedVarNode(idx, st, end - st, Object.class));
                                         }
                                         else {
-                                            splitAccumulator.add(lastNode = new DeclTypedVarNode(name, st, end - st, Object.class,
+                                            splitAccumulator.add(lastNode = new DeclTypedVarNode(name, expr, st, end - st, Object.class,
                                                     fields, pCtx));
                                         }
                                     }
@@ -729,7 +729,7 @@ public class AbstractParser implements Parser, Serializable {
                                     st = cursor += 2;
 
                                     if (!isNextIdentifierOrLiteral()) {
-                                        throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, cursor);
+                                        throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, st);
                                     }
 
                                     captureToEOS();
@@ -749,7 +749,7 @@ public class AbstractParser implements Parser, Serializable {
                                     st = cursor += 2;
 
                                     if (!isNextIdentifierOrLiteral()) {
-                                        throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, cursor);
+                                        throw new CompileException("unexpected symbol '" + expr[cursor] + "'", expr, st);
                                     }
 
                                     captureToEOS();
@@ -850,7 +850,7 @@ public class AbstractParser implements Parser, Serializable {
                             if (pCtx == null || (pCtx.getInterceptors() == null || !pCtx.getInterceptors().
                                     containsKey(name = new String(expr, st, cursor - st)))) {
                                 throw new CompileException("reference to undefined interceptor: "
-                                        + new String(expr, st, cursor - st), expr, cursor);
+                                        + new String(expr, st, cursor - st), expr, st);
                             }
 
                             return lastNode = new InterceptorWrapper(pCtx.getInterceptors().get(name), nextToken());
@@ -892,7 +892,7 @@ public class AbstractParser implements Parser, Serializable {
                                 break;
                             }
                             else {
-                                throw new CompileException("not a statement", expr, cursor);
+                                throw new CompileException("not a statement", expr, st);
                             }
 
                         case '+':
@@ -987,7 +987,7 @@ public class AbstractParser implements Parser, Serializable {
                                             }
 
                                             throw new CompileException("unterminated projection; closing parathesis required",
-                                                    expr, cursor);
+                                                    expr, st);
                                         }
                                         break;
 
@@ -1014,7 +1014,7 @@ public class AbstractParser implements Parser, Serializable {
 
                             if (brace != 0) {
                                 throw new CompileException("unbalanced braces in expression: (" + brace + "):",
-                                        expr, cursor);
+                                        expr, st);
                             }
 
                             tmpStart = -1;
@@ -1053,7 +1053,7 @@ public class AbstractParser implements Parser, Serializable {
                         case '}':
                         case ']':
                         case ')': {
-                            throw new CompileException("unbalanced braces", expr, cursor);
+                            throw new CompileException("unbalanced braces", expr, st);
                         }
 
                         case '>': {
@@ -1135,7 +1135,7 @@ public class AbstractParser implements Parser, Serializable {
                             ++cursor;
                             if (isNextIdentifier()) {
                                 if (lastNode != null && !lastNode.isOperator()) {
-                                    throw new CompileException("unexpected operator '!'", expr, cursor);
+                                    throw new CompileException("unexpected operator '!'", expr, st);
                                 }
 
                                 st = cursor;
@@ -1155,7 +1155,7 @@ public class AbstractParser implements Parser, Serializable {
                                 return lastNode = new Negation(expr, st, cursor - st, fields, pCtx);
                             }
                             else if (expr[cursor] != '=')
-                                throw new CompileException("unexpected operator '!'", expr, cursor, null);
+                                throw new CompileException("unexpected operator '!'", expr, st, null);
                             else {
                                 return createOperator(expr, st, ++cursor);
                             }
@@ -1190,19 +1190,19 @@ public class AbstractParser implements Parser, Serializable {
             return nextToken();
         }
         catch (NumberFormatException e) {
-            CompileException c = new CompileException("badly formatted number: " + e.getMessage(), expr, cursor, e);
+            CompileException c = new CompileException("badly formatted number: " + e.getMessage(), expr, st, e);
             c.setLineNumber(line);
             c.setColumn(cursor - lastLineStart);
             throw c;
         }
         catch (StringIndexOutOfBoundsException e) {
-            CompileException c = new CompileException("unexpected end of statement", expr, cursor, e);
+            CompileException c = new CompileException("unexpected end of statement", expr, st, e);
             c.setLineNumber(line);
             c.setColumn(cursor - lastLineStart);
             throw c;
         }
         catch (ArrayIndexOutOfBoundsException e) {
-            CompileException c = new CompileException("unexpected end of statement", expr, cursor, e);
+            CompileException c = new CompileException("unexpected end of statement", expr, st, e);
             c.setLineNumber(line);
             c.setColumn(cursor - lastLineStart);
             throw c;
@@ -1362,7 +1362,7 @@ public class AbstractParser implements Parser, Serializable {
                 captureToEOS();
 
                 if (decl) {
-                    splitAccumulator.add(new DeclTypedVarNode(new String(expr, st, cursor - st), st, cursor - st,
+                    splitAccumulator.add(new DeclTypedVarNode(new String(expr, st, cursor - st), expr, st, cursor - st,
                             (Class) lastNode.getLiteralValue(), fields | ASTNode.ASSIGN, pCtx));
                 }
                 else {
@@ -1388,7 +1388,7 @@ public class AbstractParser implements Parser, Serializable {
                 if (stk.peek() instanceof Class) {
                     captureToEOS();
                     if (decl) {
-                        splitAccumulator.add(new DeclTypedVarNode(new String(expr, st, cursor - st), st, cursor - st,
+                        splitAccumulator.add(new DeclTypedVarNode(new String(expr, st, cursor - st), expr, st, cursor - st,
                                 (Class) stk.pop(), fields | ASTNode.ASSIGN, pCtx));
                     }
                     else {
@@ -1576,7 +1576,7 @@ public class AbstractParser implements Parser, Serializable {
                     throw new CompileException("illegal prototype name or use of reserved word", expr, cursor);
 
                 if (expr[cursor = nextNonBlank()] != '{') {
-                    throw new CompileException("expected '{' but found: " + expr[cursor]);
+                    throw new CompileException("expected '{' but found: " + expr[cursor], expr, cursor);
                 }
 
                 cursor = balancedCaptureWithLineAccounting(expr, st = cursor + 1, end, '{', pCtx);
@@ -1600,7 +1600,7 @@ public class AbstractParser implements Parser, Serializable {
             default:
                 if (cond) {
                     if (expr[cursor] != '(') {
-                        throw new CompileException("expected '(' but encountered: " + expr[cursor]);
+                        throw new CompileException("expected '(' but encountered: " + expr[cursor], expr, cursor);
                     }
 
                     /**
@@ -2119,7 +2119,7 @@ public class AbstractParser implements Parser, Serializable {
      */
     public int nextNonBlank() {
         if ((cursor + 1) >= end) {
-            throw new CompileException("unexpected end of statement", expr, cursor);
+            throw new CompileException("unexpected end of statement", expr, st);
         }
         int i = cursor;
         while (i != end && isWhitespace(expr[i])) i++;
@@ -2133,9 +2133,9 @@ public class AbstractParser implements Parser, Serializable {
      */
     public void expectNextChar_IW(char c) {
         nextNonBlank();
-        if (cursor == end) throw new CompileException("unexpected end of statement", expr, cursor);
+        if (cursor == end) throw new CompileException("unexpected end of statement", expr, st);
         if (expr[cursor] != c)
-            throw new CompileException("unexpected character ('" + expr[cursor] + "'); was expecting: " + c);
+            throw new CompileException("unexpected character ('" + expr[cursor] + "'); was expecting: " + c, expr, st);
     }
 
 
@@ -2477,7 +2477,7 @@ public class AbstractParser implements Parser, Serializable {
                 }
             }
             else if (!tk.isOperator()) {
-                throw new CompileException("unexpected token: " + tk.getName());
+                throw new CompileException("unexpected token: " + tk.getName(), expr, st);
             }
             else {
                 reduce();
@@ -2604,13 +2604,13 @@ public class AbstractParser implements Parser, Serializable {
             }
         }
         catch (ClassCastException e) {
-            throw new CompileException("syntax error or incompatable types", expr, cursor, e);
+            throw new CompileException("syntax error or incompatable types", expr, st, e);
         }
         catch (ArithmeticException e) {
-            throw new CompileException("arithmetic error: " + e.getMessage(), e);
+            throw new CompileException("arithmetic error: " + e.getMessage(), expr, st, e);
         }
         catch (Exception e) {
-            throw new CompileException("failed to subEval expression", e);
+            throw new CompileException("failed to subEval expression", expr, st, e);
         }
     }
 

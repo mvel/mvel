@@ -86,7 +86,7 @@ public class Proto extends ASTNode {
                 case PROPERTY:
                     return receiver;
                 case DEFERRED:
-                    throw new CompileException("unresolved prototype receiver");
+                    throw new CompileException("unresolved prototype receiver", expr, start);
             }
             return null;
         }
@@ -220,7 +220,7 @@ public class Proto extends ASTNode {
             }
 
             if (vr != null && vr.getType() != null) {
-                throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
+                throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name, expr, start);
             }
             else {
                 addResolver(name, vr = new ProtoResolver(variables, name, type)).setValue(value);
@@ -243,7 +243,7 @@ public class Proto extends ASTNode {
         public VariableResolver createIndexedVariable(int index, String name, Object value, Class<?> type) {
             VariableResolver vr = this.variableResolvers != null ? this.variableResolvers.getByIndex(index) : null;
             if (vr != null && vr.getType() != null) {
-                throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
+                throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name, expr, start);
             }
             else {
                 return createIndexedVariable(variableIndexOf(name), name, value);
@@ -335,14 +335,14 @@ public class Proto extends ASTNode {
             if (knownType != null && value != null && value.getClass() != knownType) {
                 if (!canConvert(knownType, value.getClass())) {
                     throw new CompileException("cannot assign " + value.getClass().getName() + " to type: "
-                            + knownType.getName());
+                            + knownType.getName(), expr, start);
                 }
                 try {
                     value = convert(value, knownType);
                 }
                 catch (Exception e) {
                     throw new CompileException("cannot convert value of " + value.getClass().getName()
-                            + " to: " + knownType.getName());
+                            + " to: " + knownType.getName(), expr, start);
                 }
             }
 

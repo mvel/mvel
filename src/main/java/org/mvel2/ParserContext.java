@@ -422,7 +422,7 @@ public class ParserContext implements Serializable {
     public void addVariable(String name, Class type, boolean failIfNewAssignment) {
         initializeTables();
         if (variables.containsKey(name) && failIfNewAssignment)
-            throw new CompileException("statically-typed variable already defined in scope: " + name);
+            throw new RuntimeException("statically-typed variable already defined in scope: " + name);
 
         if (type == null) type = Object.class;
 

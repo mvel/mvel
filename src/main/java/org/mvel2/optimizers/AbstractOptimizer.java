@@ -163,7 +163,6 @@ public class AbstractOptimizer extends AbstractParser {
     }
 
     protected int nextSubToken() {
-
         skipWhitespace();
         nullSafe = false;
 
@@ -176,7 +175,7 @@ public class AbstractOptimizer extends AbstractParser {
                         case '?':
                             skipWhitespace();
                             if ((cursor = ++tkStart) == end) {
-                                throw new CompileException("unexpected end of statement");
+                                throw new CompileException("unexpected end of statement", expr, start);
                             }
                             nullSafe = true;
 
@@ -192,7 +191,7 @@ public class AbstractOptimizer extends AbstractParser {
                     }
                 }
                 else {
-                    throw new CompileException("unexpected end of statement");
+                    throw new CompileException("unexpected end of statement", expr, start);
                 }
                 break;
         }

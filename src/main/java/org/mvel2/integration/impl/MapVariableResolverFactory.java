@@ -75,7 +75,7 @@ public class MapVariableResolverFactory extends BaseVariableResolverFactory {
         }
 
         if (vr != null && vr.getType() != null) {
-            throw new CompileException("variable already defined within scope: " + vr.getType() + " " + name);
+            throw new RuntimeException("variable already defined within scope: " + vr.getType() + " " + name);
         }
         else {
             addResolver(name, vr = new MapVariableResolver(variables, name, type)).setValue(value);

@@ -43,10 +43,10 @@ public class BinaryOperation extends BooleanNode {
     public BinaryOperation(int operation, ASTNode left, ASTNode right) {
         this.operation = operation;
         if ((this.left = left) == null) {
-            throw new CompileException("not a statement");
+            throw new RuntimeException("not a statement");
         }
         if ((this.right = right) == null) {
-            throw new CompileException("not a statement");
+            throw new RuntimeException("not a statement");
         }
 
         egressType = getReturnTypeFromOp(operation, left.egressType, right.egressType);
@@ -55,10 +55,10 @@ public class BinaryOperation extends BooleanNode {
     public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
         this.operation = operation;
         if ((this.left = left) == null) {
-            throw new CompileException("not a statement");
+            throw new RuntimeException("not a statement");
         }
         if ((this.right = right) == null) {
-            throw new CompileException("not a statement");
+            throw new RuntimeException("not a statement");
         }
 
     //    if (ctx.isStrongTyping()) {
@@ -86,7 +86,8 @@ public class BinaryOperation extends BooleanNode {
                                 && ((!right.getEgressType().isPrimitive() && !left.getEgressType().isPrimitive())
                                 || (!canConvert(boxPrimitive(left.getEgressType()), boxPrimitive(right.getEgressType()))))) {
 
-                            throw new CompileException("incompatible types in statement: " + right.getEgressType() + " (compared from: " + left.getEgressType() + ")");
+                            throw new CompileException("incompatible types in statement: " + right.getEgressType()
+                                    + " (compared from: " + left.getEgressType() + ")", left.getExpr(), left.getStart());
                         }
                     }
             }

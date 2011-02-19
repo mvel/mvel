@@ -29,7 +29,7 @@ public class ImmutableDefaultFactory implements VariableResolverFactory {
     private boolean tiltFlag;
 
     private void throwError() {
-        throw new CompileException("cannot assign variables; no variable resolver factory available.");
+        throw new RuntimeException("cannot assign variables; no variable resolver factory available.");
     }
 
     public VariableResolver createVariable(String name, Object value) {
@@ -62,7 +62,7 @@ public class ImmutableDefaultFactory implements VariableResolverFactory {
     }
 
     public VariableResolverFactory setNextFactory(VariableResolverFactory resolverFactory) {
-        throw new CompileException("cannot chain to this factory");
+        throw new RuntimeException("cannot chain to this factory");
     }
 
     public VariableResolver getVariableResolver(String name) {

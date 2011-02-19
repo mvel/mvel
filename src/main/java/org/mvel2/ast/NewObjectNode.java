@@ -181,7 +181,8 @@ public class NewObjectNode extends ASTNode {
 
                     }
                     catch (ClassCastException e) {
-                        throw new CompileException("cannot construct object: " + typeDescr.getClassName() + " is not a class reference", e);
+                        throw new CompileException("cannot construct object: " + typeDescr.getClassName()
+                                + " is not a class reference", expr, start, e);
                     }
                 }
             }
@@ -247,7 +248,7 @@ public class NewObjectNode extends ASTNode {
                     Constructor cns = getBestConstructorCandidate(parms, cls, false);
 
                     if (cns == null)
-                        throw new CompileException("unable to find constructor for: " + cls.getName());
+                        throw new CompileException("unable to find constructor for: " + cls.getName(), expr, start);
 
                     for (int i = 0; i < parms.length; i++) {
                         //noinspection unchecked
@@ -278,13 +279,13 @@ public class NewObjectNode extends ASTNode {
             throw e;
         }
         catch (ClassNotFoundException e) {
-            throw new CompileException("unable to resolve class: " + e.getMessage(), e);
+            throw new CompileException("unable to resolve class: " + e.getMessage(), expr, start, e);
         }
         catch (NoSuchMethodException e) {
-            throw new CompileException("cannot resolve constructor: " + e.getMessage(), e);
+            throw new CompileException("cannot resolve constructor: " + e.getMessage(), expr, start,  e);
         }
         catch (Exception e) {
-            throw new CompileException("could not instantiate class: " + e.getMessage(), e);
+            throw new CompileException("could not instantiate class: " + e.getMessage(), expr, start, e);
         }
     }
 

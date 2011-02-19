@@ -127,7 +127,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                     case OP_OVERFLOW:
                         if (!tk.isOperator()) {
                             if (!(stk.peek() instanceof Class)) {
-                                throw new CompileException("unexpected token: " + tk.getName());
+                                throw new CompileException("unexpected token: " + tk.getName(), expr, st);
                             }
                             variableFactory.createVariable(tk.getName(), null, (Class) stk.peek());
                         }
@@ -160,7 +160,8 @@ public class MVELInterpretedRuntime extends AbstractParser {
         catch (NullPointerException e) {
             if (tk != null && tk.isOperator()) {
                 CompileException ce = new CompileException("incomplete statement: "
-                        + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")", e);
+                        + tk.getName() + " (possible use of reserved keyword as identifier: " + tk.getName() + ")"
+                        , expr, st, e);
 
                 ce.setExpr(expr);
                 ce.setLineNumber(line);

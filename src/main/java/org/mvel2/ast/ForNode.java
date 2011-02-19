@@ -90,7 +90,7 @@ public class ForNode extends BlockNode {
 
         }
         catch (NegativeArraySizeException e) {
-            throw new CompileException("wrong syntax; did you mean to use 'foreach'?");
+            throw new CompileException("wrong syntax; did you mean to use 'foreach'?", expr, start);
         }
         return false;
     }
@@ -99,7 +99,7 @@ public class ForNode extends BlockNode {
         for (; cursor < end; cursor++) {
             if (condition[cursor] == ';') return ++cursor;
         }
-        if (!allowEnd) throw new CompileException("expected ;");
+        if (!allowEnd) throw new CompileException("expected ;", condition, cursor);
         return cursor;
     }
 }

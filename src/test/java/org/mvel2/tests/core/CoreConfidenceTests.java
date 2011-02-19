@@ -1223,7 +1223,7 @@ public class CoreConfidenceTests extends AbstractTest {
             compiler.compile(context);
             fail("Compilation must fail with duplicate variable declaration exception.");
         }
-        catch (CompileException ce) {
+        catch (RudntimeException ce) {
             // success
         }
     }

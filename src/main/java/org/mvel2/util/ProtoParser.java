@@ -68,7 +68,8 @@ public class ProtoParser {
                         while (cursor < endOffset && isIdentifierPart(expr[cursor])) cursor++;
 
                         if (start == cursor) {
-                            throw new CompileException("attempt to declare an anonymous function as a prototype member");
+                            throw new CompileException("attempt to declare an anonymous function as a prototype member",
+                                    expr, start);
                         }
 
                         FunctionParser parser =
@@ -87,7 +88,8 @@ public class ProtoParser {
             }
 
             if (cursor > endOffset) {
-                throw new CompileException("unexpected end of statement in proto declaration: " + protoName);
+                throw new CompileException("unexpected end of statement in proto declaration: " + protoName,
+                        expr, start);
             }
 
             switch (expr[cursor]) {
@@ -188,7 +190,7 @@ public class ProtoParser {
                     name = tk2;
                 }
                 else {
-                    throw new CompileException("could not resolve class: " + tk1, e);
+                    throw new CompileException("could not resolve class: " + tk1, expr, cursor, e);
                 }
             }
         }

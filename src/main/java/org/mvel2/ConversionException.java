@@ -18,21 +18,14 @@
 
 package org.mvel2;
 
-public class ConversionException extends PropertyAccessException {
+public class ConversionException extends RuntimeException {
 
-    public ConversionException() {
-        super();
-    }
 
     public ConversionException(String message) {
-        super(message);
+        super(message);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     public ConversionException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public ConversionException(Throwable cause) {
-        super(cause);
+        super(message, cause);    //To change body of overridden methods use File | Settings | File Templates.
     }
 }

@@ -40,11 +40,10 @@ public class SetterAccessor implements AccessorNode {
                 coercionRequired = true;
                 return setValue(ctx, elCtx, variableFactory, value);
             }
-            throw new CompileException("unable to bind property", e);
+            throw new RuntimeException("unable to bind property", e);
         }
         catch (Exception e) {
-            System.out.println("ctx=" + ctx);
-            throw new CompileException("error calling method: " + method.getDeclaringClass().getName() + "." + method.getName(), e);
+            throw new RuntimeException("error calling method: " + method.getDeclaringClass().getName() + "." + method.getName(), e);
         }
     }
 
@@ -83,7 +82,7 @@ public class SetterAccessor implements AccessorNode {
             return o.invoke(ctx, convert(value, targetType));
         }
         catch (Exception e2) {
-            throw new CompileException("unable to invoke method", e2);
+            throw new RuntimeException("unable to invoke method", e2);
         }
     }
 }

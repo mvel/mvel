@@ -64,15 +64,15 @@ public class GetterAccessor implements AccessorNode {
         }
         catch (NullPointerException e) {
             if (ctx == null) {
-                throw new CompileException("unable to invoke method: " + method.getDeclaringClass().getName() + "." + method.getName() + ": " +
+                throw new RuntimeException("unable to invoke method: " + method.getDeclaringClass().getName() + "." + method.getName() + ": " +
                         "target of method is null", e);
             }
             else {
-                throw new CompileException("cannot invoke getter: " + method.getName() + " (see trace)", e);
+                throw new RuntimeException("cannot invoke getter: " + method.getName() + " (see trace)", e);
             }
         }
         catch (Exception e) {
-            throw new CompileException("cannot invoke getter: " + method.getName()
+            throw new RuntimeException("cannot invoke getter: " + method.getName()
                     + " [declr.class: " + method.getDeclaringClass().getName() + "; act.class: "
                     + (ctx != null ? ctx.getClass().getName() : "null") + "] (see trace)", e);
         }
@@ -104,7 +104,7 @@ public class GetterAccessor implements AccessorNode {
                 return nextNode.setValue(method.invoke(ctx, EMPTY), elCtx, vars, value);
             }
             else {
-                throw new CompileException("bad payload");
+                throw new RuntimeException("bad payload");
             }
         }
         catch (IllegalArgumentException e) {
@@ -123,7 +123,7 @@ public class GetterAccessor implements AccessorNode {
             throw e;
         }
         catch (Exception e) {
-            throw new CompileException("error " + method.getName() + ": " + e.getClass().getName() + ":" + e.getMessage(), e);
+            throw new RuntimeException("error " + method.getName() + ": " + e.getClass().getName() + ":" + e.getMessage(), e);
         }
     }
 
@@ -141,7 +141,7 @@ public class GetterAccessor implements AccessorNode {
             }
         }
         catch (Exception e2) {
-            throw new CompileException("unable to invoke method", e2);
+            throw new RuntimeException("unable to invoke method", e2);
         }
     }
 }

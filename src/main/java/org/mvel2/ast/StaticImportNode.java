@@ -49,11 +49,11 @@ public class StaticImportNode extends ASTNode {
 
             if (resolveMethod() == null) {
                 throw new CompileException("can not find method for static import: "
-                        + declaringClass.getName() + "." + methodName);
+                        + declaringClass.getName() + "." + methodName, expr, start);
             }
         }
         catch (Exception e) {
-            throw new CompileException("unable to import class", e);
+            throw new CompileException("unable to import class", expr, start, e);
         }
     }
 

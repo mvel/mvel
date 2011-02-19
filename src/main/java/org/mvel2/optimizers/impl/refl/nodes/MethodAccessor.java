@@ -60,7 +60,7 @@ public class MethodAccessor implements AccessorNode {
                 return getValue(ctx, elCtx, vars);
             }
             catch (Exception e) {
-                throw new CompileException("cannot invoke method: " + method.getName(), e);
+                throw new RuntimeException("cannot invoke method: " + method.getName(), e);
             }
 
         }
@@ -85,7 +85,7 @@ public class MethodAccessor implements AccessorNode {
                 }
             }
             catch (Exception e) {
-                throw new CompileException("cannot invoke method: " + method.getName(), e);
+                throw new RuntimeException("cannot invoke method: " + method.getName(), e);
             }
         }
     }
@@ -109,7 +109,7 @@ public class MethodAccessor implements AccessorNode {
                 }
             }
             catch (Exception e2) {
-                throw new CompileException("unable to invoke method", e2);
+                throw new RuntimeException("unable to invoke method", e2);
             }
         }
         else {
@@ -122,11 +122,11 @@ public class MethodAccessor implements AccessorNode {
                 }
             }
             catch (IllegalAccessException e) {   
-                throw new CompileException("unable to invoke method (expected target: " + method.getDeclaringClass().getName() + "::" + method.getName() + "; " +
+                throw new RuntimeException("unable to invoke method (expected target: " + method.getDeclaringClass().getName() + "::" + method.getName() + "; " +
                         "actual target: " + ctx.getClass().getName() + "::" + method.getName() + "; coercionNeeded=" + (coercionNeeded ? "yes" : "no") + ")");
             }
             catch (Exception e2) {
-                throw new CompileException("unable to invoke method (expected target: " + method.getDeclaringClass().getName() + "::" + method.getName() + "; " +
+                throw new RuntimeException("unable to invoke method (expected target: " + method.getDeclaringClass().getName() + "::" + method.getName() + "; " +
                         "actual target: " + ctx.getClass().getName() + "::" + method.getName() + "; coercionNeeded=" + (coercionNeeded ? "yes" : "no") + ")");
             }
         }
@@ -202,7 +202,7 @@ public class MethodAccessor implements AccessorNode {
             return setValue(ctx, elCtx, variableFactory, value);
         }
         catch (Exception e) {
-            throw new CompileException("cannot invoke method", e);
+            throw new RuntimeException("cannot invoke method", e);
         }
     }
 

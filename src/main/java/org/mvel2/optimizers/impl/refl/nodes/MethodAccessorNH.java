@@ -65,7 +65,7 @@ public class MethodAccessorNH implements AccessorNode {
                 return getValue(ctx, elCtx, vars);
             }
             catch (Exception e) {
-                throw new CompileException("cannot invoke method", e);
+                throw new RuntimeException("cannot invoke method", e);
             }
 
         }
@@ -79,7 +79,7 @@ public class MethodAccessorNH implements AccessorNode {
                 }
             }
             catch (Exception e) {
-                throw new CompileException("cannot invoke method", e);
+                throw new RuntimeException("cannot invoke method", e);
             }
         }
     }
@@ -97,7 +97,7 @@ public class MethodAccessorNH implements AccessorNode {
             }
         }
         catch (Exception e2) {
-            throw new CompileException("unable to invoke method", e2);
+            throw new RuntimeException("unable to invoke method", e2);
         }
     }
 

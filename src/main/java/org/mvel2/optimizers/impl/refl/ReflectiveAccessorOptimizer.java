@@ -166,20 +166,21 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         if (root != null) {
-           this.length = end = (this.expr = root).length;
+            this.length = end = (this.expr = root).length;
 
             compileGetChain();
             ctx = this.val;
         }
 
         if (ctx == null) {
-            throw new PropertyAccessException("could not access property: " + new String(property) + "; parent is null: " + new String(expr));
+            throw new PropertyAccessException("could not access property: " + new String(property, this.start, length) + "; parent is null: "
+                    + new String(expr), expr, this.start);
         }
 
         try {
             this.length = end = (this.expr = property).length;
             int st;
-            this.cursor = st =  0
+            this.cursor = st = 0
             ;
 
             skipWhitespace();
@@ -188,10 +189,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 st = cursor;
 
                 if (cursor == end)
-                    throw new PropertyAccessException("unterminated '['");
+                    throw new PropertyAccessException("unterminated '['", expr, this.start);
 
                 if (scanTo(']'))
-                    throw new PropertyAccessException("unterminated '['");
+                    throw new PropertyAccessException("unterminated '['", expr, this.start);
 
                 String ex = new String(property, st, cursor - st);
 
@@ -238,7 +239,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
                 else {
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) +
-                            ": not a recognized collection type: " + ctx.getClass());
+                            ": not a recognized collection type: " + ctx.getClass(), expr, this.start);
                 }
             }
             else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(ctx.getClass())) {
@@ -260,8 +261,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
                 if (value != null && !fld.getType().isAssignableFrom(value.getClass())) {
                     if (!canConvert(fld.getType(), value.getClass())) {
-                        throw new ConversionException("cannot convert type: "
-                                + value.getClass() + ": to " + fld.getType());
+                        throw new CompileException("cannot convert type: "
+                                + value.getClass() + ": to " + fld.getType(), this.expr, this.start);
                     }
 
                     fld.set(ctx, convert(value, fld.getType()));
@@ -281,8 +282,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
                 if (value != null && !meth.getParameterTypes()[0].isAssignableFrom(value.getClass())) {
                     if (!canConvert(meth.getParameterTypes()[0], value.getClass())) {
-                        throw new ConversionException("cannot convert type: "
-                                + value.getClass() + ": to " + meth.getParameterTypes()[0]);
+                        throw new CompileException("cannot convert type: "
+                                + value.getClass() + ": to " + meth.getParameterTypes()[0], this.expr, this.start);
                     }
 
                     meth.invoke(ctx, convert(value, meth.getParameterTypes()[0]));
@@ -303,7 +304,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 addAccessorNode(new MapAccessor(tk));
             }
             else {
-                throw new PropertyAccessException("could not access property (" + tk + ") in: " + ingressType.getName());
+                throw new PropertyAccessException("could not access property (" + tk + ") in: " + ingressType.getName()
+                        , this.expr, this.start);
             }
         }
         catch (InvocationTargetException e) {
@@ -404,19 +406,22 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
             }
 
-            throw new PropertyAccessException(new String(expr, start, length) + ": " + e.getTargetException().getMessage(), e);
+            throw new PropertyAccessException(new String(expr, start, length) + ": "
+                    + e.getTargetException().getMessage(), this.expr, this.start, e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException(new String(expr, start, length) + ": " + e.getMessage(), e);
+            throw new PropertyAccessException(new String(expr, start, length) + ": "
+                    + e.getMessage(), this.expr, this.start, e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException(new String(expr, start, length) + ": array index out of bounds.", e);
+            throw new PropertyAccessException(new String(expr, start, length)
+                    + ": array index out of bounds.", this.expr, this.start, e);
         }
         catch (CompileException e) {
             throw e;
         }
         catch (NullPointerException e) {
-            throw new PropertyAccessException(new String(expr, start, length), e);
+            throw new PropertyAccessException("null pointer: " + new String(expr, start, length), this.expr, this.start, e);
         }
         catch (Exception e) {
             throw new CompileException(e.getMessage(), this.expr, start, e);
@@ -520,7 +525,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 Method iFaceMeth = determineActualTargetMethod((Method) member);
 
                 if (iFaceMeth == null)
-                    throw new PropertyAccessException("could not access field: " + cls.getName() + "." + property);
+                    throw new PropertyAccessException("could not access field: "
+                            + cls.getName() + "." + property, this.expr, this.start);
 
                 o = iFaceMeth.invoke(ctx, EMPTYARG);
 
@@ -628,10 +634,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             if (ctx == null) {
-                throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, cursor);
+                throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, start);
             }
             else {
-                throw new PropertyAccessException("could not access: " + property + "; in class: " + ctx.getClass().getName(), expr, cursor);
+                throw new PropertyAccessException("could not access: " + property + "; in class: " + ctx.getClass().getName(), expr, start);
             }
         }
     }
@@ -656,12 +662,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         skipWhitespace();
 
         if (cursor == end)
-            throw new CompileException("unterminated '['");
+            throw new CompileException("unterminated '['", this.expr, this.start);
 
         String item;
 
         if (scanTo(']'))
-            throw new CompileException("unterminated '['");
+            throw new CompileException("unterminated '['", this.expr, this.start);
 
         item = new String(expr, start, cursor - start);
 
@@ -733,7 +739,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             throw new CompileException("illegal use of []: unknown type: "
-                    + ctx.getClass().getName());
+                    + ctx.getClass().getName(), this.expr, this.start);
         }
     }
 
@@ -750,12 +756,12 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         skipWhitespace();
 
         if (cursor == end)
-            throw new CompileException("unterminated '['");
+            throw new CompileException("unterminated '['", this.expr, this.start);
 
         String item;
 
         if (scanTo(']'))
-            throw new CompileException("unterminated '['");
+            throw new CompileException("unterminated '['", this.expr, this.start);
 
         item = new String(expr, _start, cursor - _start);
 
@@ -847,7 +853,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             throw new CompileException("illegal use of []: unknown type: "
-                    + ctx.getClass().getName());
+                    + ctx.getClass().getName(), this.expr, this.start);
         }
     }
 
@@ -938,7 +944,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         if (ctx == null) {
-            throw new PropertyAccessException("unable to access property (null parent): " + name);
+            throw new PropertyAccessException("unable to access property (null parent): " + name, this.expr, this.start);
         }
 
 
@@ -984,7 +990,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "."
-                    + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]");
+                    + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]", this.expr, this.start);
         }
         else {
             if (es != null) {
@@ -1129,7 +1135,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             throw e;
         }
         catch (Exception e) {
-            throw new CompileException("could not create constructor: " + e.getMessage(), e);
+            throw new CompileException("could not create constructor: " + e.getMessage(), this.expr, this.start, e);
         }
     }
 
@@ -1155,7 +1161,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
         if (constructorParms != null) {
-            String s = new String(subset(expression, 0, ArrayTools.findFirst('(',  start, length, expression)));
+            String s = new String(subset(expression, 0, ArrayTools.findFirst('(', start, length, expression)));
             Class cls = ParseTools.findClass(vars, s, pCtx);
 
             ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
@@ -1178,7 +1184,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                     if (i + 1 < parms.length) error.append(", ");
                 }
 
-                throw new CompileException("unable to find constructor: " + cls.getName() + "(" + error.toString() + ")");
+                throw new CompileException("unable to find constructor: " + cls.getName()
+                        + "(" + error.toString() + ")", this.expr, this.start);
             }
             for (int i = 0; i < parms.length; i++) {
                 //noinspection unchecked

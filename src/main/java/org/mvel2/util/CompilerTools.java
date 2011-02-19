@@ -68,7 +68,7 @@ public class CompilerTools {
                     int op2;
 
                     if (op == -1) {
-                        throw new CompileException("illegal use of operator: " + tkOp.getName());
+                        throw new CompileException("illegal use of operator: " + tkOp.getName(), tkOp.getExpr(), tk.getStart());
                     }
 
 
@@ -179,7 +179,7 @@ public class CompilerTools {
                     optimizeOperator(tkOp.getOperator(), tk, tkOp, astLinkedList, optimizedAst);
                 }
                 else if (!tkOp.isAssignment() && !tkOp.isOperator() && tk.getLiteralValue() instanceof Class) {
-                    optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), tkOp.getStart(), tk.getOffset(), (Class) tk.getLiteralValue(), 0, ctx));
+                    optimizedAst.addTokenNode(new DeclTypedVarNode(tkOp.getName(), tkOp.getExpr(), tkOp.getStart(), tk.getOffset(), (Class) tk.getLiteralValue(), 0, ctx));
                 }
                 else if (tkOp.isAssignment() && tk.getLiteralValue() instanceof Class) {
                     tk.discard();
@@ -387,12 +387,12 @@ public class CompilerTools {
             if ((retType == null || !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) && (!Object.class.equals(retType)
                     || getCurrentThreadParserContext().isStrictTypeEnforcement())) {
                 throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-                        + (retType != null ? retType.getName() : "null"));
+                        + (retType != null ? retType.getName() : "null"), new char[0], 0);
             }
         }
         else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) {
             throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-                    + (retType != null ? retType.getName() : "null"));
+                    + (retType != null ? retType.getName() : "null"), new char[0], 0);
         }
     }
 
@@ -403,12 +403,12 @@ public class CompilerTools {
                     (getCurrentThreadParserContext().isStrictTypeEnforcement()
                             || getCurrentThreadParserContext().isStrictTypeEnforcement()))) {
                 throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-                        + (retType != null ? retType.getName() : "null"));
+                        + (retType != null ? retType.getName() : "null"), new char[0], 0);
             }
         }
         else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(retType)) {
             throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-                    + (retType != null ? retType.getName() : "null"));
+                    + (retType != null ? retType.getName() : "null"), new char[0], 0);
         }
     }
 
@@ -486,7 +486,7 @@ public class CompilerTools {
             return ((Short) number) * -1;
         }
         else {
-            throw new CompileException("expected a numeric type but found: " + number.getClass().getName());
+            throw new CompileException("expected a numeric type but found: " + number.getClass().getName(), new char[0], 0);
         }
     }
 
