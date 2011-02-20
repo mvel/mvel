@@ -343,8 +343,22 @@ public class InlineCollectionsTests extends AbstractTest {
         assertTrue(result instanceof List);
         List l = (List) result;
         assertEquals(3, l.size());
-
     }
+
+    public void testAddTwoLists() {
+        Object result = test("[1,2,3] + [4,5,6]");
+        assertTrue(result instanceof List);
+        List l = (List) result;
+        assertEquals(6, l.size());
+    }
+
+    public void testElementToList() {
+        Object result = test("[1,2,3] + 4");
+        assertTrue(result instanceof List);
+        List l = (List) result;
+        assertEquals(4, l.size());
+    }
+
 
 
 }

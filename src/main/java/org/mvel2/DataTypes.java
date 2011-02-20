@@ -37,6 +37,10 @@ public interface DataTypes {
     public static final int CHAR = 8;
     public static final int BYTE = 9;
 
+    public static final int W_BOOLEAN = 15;
+
+    public static final int COLLECTION = 50;
+
     public static final int W_SHORT = 105;
     public static final int W_INTEGER = 106;
     public static final int W_LONG = 107;
@@ -45,9 +49,6 @@ public interface DataTypes {
 
     public static final int W_CHAR = 112;
     public static final int W_BYTE = 113;
-
-    public static final int W_BOOLEAN = 15;
-
 
     public static final int BIG_DECIMAL = 110;
     public static final int BIG_INTEGER = 111;

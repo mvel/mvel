@@ -24,15 +24,13 @@ import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.ItemResolverFactory;
-import org.mvel2.util.CompilerTools;
-import org.mvel2.util.FastList;
-import org.mvel2.util.ParseTools;
-import static org.mvel2.util.CompilerTools.expectType;
-import static org.mvel2.util.ParseTools.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Iterator;
+
+import static org.mvel2.util.CompilerTools.expectType;
+import static org.mvel2.util.ParseTools.*;
 
 public class Fold extends ASTNode {
     private ExecutableStatement subEx;
@@ -83,7 +81,7 @@ public class Fold extends ASTNode {
 
         if (constraintEx != null) {
             Collection col = ((Collection) dataEx.getValue(ctx, thisValue, factory));
-            list = new FastList(col.size());
+            list = new ArrayList(col.size());
 
             for (Object o : col) {
                 itemR.value = o;
@@ -95,7 +93,7 @@ public class Fold extends ASTNode {
         }
         else {
             Collection col = ((Collection) dataEx.getValue(ctx, thisValue, factory));
-            list = new FastList(col.size());
+            list = new ArrayList(col.size());
             for (Object o : col) {
                 list.add(subEx.getValue(itemR.value = o, thisValue, itemFactory));
             }
@@ -116,7 +114,7 @@ public class Fold extends ASTNode {
                 throw new CompileException("was expecting type: Collection; but found type: "
                         + (x == null ? "null" : x.getClass().getName()), expr, start);
 
-            list = new FastList(((Collection) x).size());
+            list = new ArrayList(((Collection) x).size());
             for (Object o : (Collection) x) {
                 itemR.value = o;
                 if ((Boolean) constraintEx.getValue(ctx, thisValue, itemFactory)) {
@@ -131,7 +129,7 @@ public class Fold extends ASTNode {
                 throw new CompileException("was expecting type: Collection; but found type: "
                         + (x == null ? "null" : x.getClass().getName()), expr, start);
 
-            list = new FastList(((Collection) x).size());
+            list = new ArrayList(((Collection) x).size());
             for (Object o : (Collection) x) {
                 list.add(subEx.getValue(itemR.value = o, thisValue, itemFactory));
             }

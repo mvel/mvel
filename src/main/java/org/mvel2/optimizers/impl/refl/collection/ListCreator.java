@@ -20,8 +20,9 @@ package org.mvel2.optimizers.impl.refl.collection;
 
 import org.mvel2.compiler.Accessor;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.util.FastList;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -35,7 +36,7 @@ public class ListCreator implements Accessor {
         for (int i = 0; i < values.length; i++) {
             template[i] = values[i].getValue(ctx, elCtx, variableFactory);
         }
-        return new FastList(template);
+        return new ArrayList<Object>(Arrays.asList(template));
     }
 
     public ListCreator(Accessor[] values) {

@@ -40,6 +40,9 @@ import static java.lang.String.valueOf;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Christopher Brock
@@ -209,7 +212,7 @@ public strictfp class MathProcessor {
 
     private static Object _doOperations(int type1, Object val1, int operation, int type2, Object val2) {
         if (operation < 20) {
-            if (type1 > 99 && type1 == type2) {
+            if (type1 > 49 && type1 == type2) {
                 return doOperationsSameType(type1, val1, operation, val2);
             }
             else if ((type1 > 99 && (type2 > 99))
@@ -222,25 +225,32 @@ public strictfp class MathProcessor {
                     (type1 == 15 || type2 == 15) &&
                     type1 != type2 && type1 != EMPTY && type2 != EMPTY) {
 
-                return doOperationNonNumeric(convert(val1, Boolean.class), operation, convert(val2, Boolean.class));
+                return doOperationNonNumeric(type1, convert(val1, Boolean.class), operation, convert(val2, Boolean.class));
             }
             // Fix for: MVEL-56
             else if ((type1 == 1 || type2 == 1) && (type1 == 8 || type1 == 112 || type2 == 8 || type2 == 112)) {
                 if (type1 == 1) {
-                    return doOperationNonNumeric(val1, operation, valueOf(val2));
+                    return doOperationNonNumeric(type1, val1, operation, valueOf(val2));
                 }
                 else {
-                    return doOperationNonNumeric(valueOf(val1), operation, val2);
+                    return doOperationNonNumeric(type1, valueOf(val1), operation, val2);
                 }
             }
         }
-        return doOperationNonNumeric(val1, operation, val2);
+        return doOperationNonNumeric(type1, val1, operation, val2);
     }
 
-    private static Object doOperationNonNumeric(final Object val1, final int operation, final Object val2) {
+    private static Object doOperationNonNumeric(int type1, final Object val1, final int operation, final Object val2) {
         switch (operation) {
             case ADD:
-                return valueOf(val1) + valueOf(val2);
+                if (type1 == DataTypes.COLLECTION) {
+                    List list = new ArrayList((Collection) val1);
+                    list.add(val2);
+                    return list;
+                }
+                else {
+                    return valueOf(val1) + valueOf(val2);
+                }
 
             case EQUAL:
                 return safeEquals(val2, val1) ? Boolean.TRUE : Boolean.FALSE;
@@ -343,6 +353,23 @@ public strictfp class MathProcessor {
 
     private static Object doOperationsSameType(int type1, Object val1, int operation, Object val2) {
         switch (type1) {
+            case DataTypes.COLLECTION:
+                switch (operation) {
+                    case ADD:
+                        List list = new ArrayList((Collection) val1);
+                        list.addAll((Collection) val2);
+                        return list;
+
+                    case EQUAL:
+                        return val1.equals(val2);
+
+                    case NEQUAL:
+                        return !val1.equals(val2);
+
+                    default:
+                        throw new UnsupportedOperationException("illegal operation on Collection type");
+                }
+
             case DataTypes.INTEGER:
             case DataTypes.W_INTEGER:
                 switch (operation) {
@@ -648,13 +675,13 @@ public strictfp class MathProcessor {
                 return ((Short) in).doubleValue();
             case DataTypes.CHAR:
             case DataTypes.W_CHAR:
-                 return Double.parseDouble(String.valueOf((Character) in));
+                return Double.parseDouble(String.valueOf((Character) in));
             case DataTypes.BOOLEAN:
             case DataTypes.W_BOOLEAN:
                 return ((Boolean) in) ? 1d : 0d;
             case DataTypes.W_BYTE:
             case DataTypes.BYTE:
-                return ((Byte)in).doubleValue();
+                return ((Byte) in).doubleValue();
         }
 
         throw new RuntimeException("cannot convert <" + in + "> to a numeric type: " + in.getClass() + " [" + type + "]");

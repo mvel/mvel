@@ -24,6 +24,7 @@ import org.mvel2.compiler.*;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.math.MathProcessor;
+import org.relaxng.datatype.Datatype;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
@@ -968,55 +969,95 @@ public class ParseTools {
         }
     }
 
+    private static final Map<Class, Integer> typeCodes = new HashMap<Class, Integer>(30,  0.5f);
+
+    static {
+        typeCodes.put(Integer.class, DataTypes.W_INTEGER);
+        typeCodes.put(Double.class, DataTypes.W_DOUBLE);
+        typeCodes.put(Boolean.class, DataTypes.W_BOOLEAN);
+        typeCodes.put(String.class, DataTypes.STRING);
+        typeCodes.put(Long.class, DataTypes.W_LONG);
+        typeCodes.put(Short.class, DataTypes.W_SHORT);
+        typeCodes.put(Float.class, DataTypes.W_FLOAT);
+        typeCodes.put(Byte.class, DataTypes.W_BYTE);
+        typeCodes.put(Character.class, DataTypes.W_CHAR);
+
+        typeCodes.put(BigDecimal.class, DataTypes.BIG_DECIMAL);
+        typeCodes.put(BigInteger.class, DataTypes.BIG_INTEGER);
+
+        typeCodes.put(int.class, DataTypes.INTEGER);
+        typeCodes.put(double.class, DataTypes.DOUBLE);
+        typeCodes.put(boolean.class, DataTypes.BOOLEAN);
+        typeCodes.put(long.class, DataTypes.LONG);
+        typeCodes.put(short.class, DataTypes.SHORT);
+        typeCodes.put(float.class, DataTypes.FLOAT);
+        typeCodes.put(byte.class, DataTypes.BYTE);
+        typeCodes.put(char.class, DataTypes.CHAR);
+
+        typeCodes.put(BlankLiteral.class, DataTypes.EMPTY);
+    }
+
     public static int __resolveType(Class cls) {
-        if (Integer.class == cls)
-            return DataTypes.W_INTEGER;
-        if (Double.class == cls)
-            return DataTypes.W_DOUBLE;
-        if (Boolean.class == cls)
-            return DataTypes.W_BOOLEAN;
-        if (String.class == cls)
-            return DataTypes.STRING;
-        if (Long.class == cls)
-            return DataTypes.W_LONG;
+        Integer code = typeCodes.get(cls);
+        if (code == null) {
+            if (cls != null && Collection.class.isAssignableFrom(cls)) {
+                return DataTypes.COLLECTION;
+            }
+            else {
+                return DataTypes.OBJECT;
+            }
+        }
+        return code;
 
-        if (Short.class == cls)
-            return DataTypes.W_SHORT;
-        if (Float.class == cls)
-            return DataTypes.W_FLOAT;
 
-        if (Byte.class == cls)
-            return DataTypes.W_BYTE;
-        if (Character.class == cls)
-            return DataTypes.W_CHAR;
+//        if (Integer.class == cls)
+//            return DataTypes.W_INTEGER;
+//        if (Double.class == cls)
+//            return DataTypes.W_DOUBLE;
+//        if (Boolean.class == cls)
+//            return DataTypes.W_BOOLEAN;
+//        if (String.class == cls)
+//            return DataTypes.STRING;
+//        if (Long.class == cls)
+//            return DataTypes.W_LONG;
+//
+//        if (Short.class == cls)
+//            return DataTypes.W_SHORT;
+//        if (Float.class == cls)
+//            return DataTypes.W_FLOAT;
+//
+//        if (Byte.class == cls)
+//            return DataTypes.W_BYTE;
+//        if (Character.class == cls)
+//            return DataTypes.W_CHAR;
+//
+//        if (BigDecimal.class == cls)
+//            return DataTypes.BIG_DECIMAL;
+//
+//        if (BigInteger.class == cls)
+//            return DataTypes.BIG_INTEGER;
+//
+//        if (int.class == cls)
+//            return INTEGER;
+//        if (short.class == cls)
+//            return DataTypes.SHORT;
+//        if (float.class == cls)
+//            return DataTypes.FLOAT;
+//        if (double.class == cls)
+//            return DOUBLE;
+//        if (long.class == cls)
+//            return LONG;
+//        if (boolean.class == cls)
+//            return DataTypes.BOOLEAN;
+//        if (byte.class == cls)
+//            return DataTypes.BYTE;
+//        if (char.class == cls)
+//            return DataTypes.CHAR;
+//
+//        if (BlankLiteral.class == cls)
+//            return DataTypes.EMPTY;
 
-        if (BigDecimal.class == cls)
-            return DataTypes.BIG_DECIMAL;
-
-        if (BigInteger.class == cls)
-            return DataTypes.BIG_INTEGER;
-
-        if (int.class == cls)
-            return INTEGER;
-        if (short.class == cls)
-            return DataTypes.SHORT;
-        if (float.class == cls)
-            return DataTypes.FLOAT;
-        if (double.class == cls)
-            return DOUBLE;
-        if (long.class == cls)
-            return LONG;
-        if (boolean.class == cls)
-            return DataTypes.BOOLEAN;
-        if (byte.class == cls)
-            return DataTypes.BYTE;
-        if (char.class == cls)
-            return DataTypes.CHAR;
-
-        if (BlankLiteral.class == cls)
-            return DataTypes.EMPTY;
-
-        return DataTypes.OBJECT;
+    //    return DataTypes.OBJECT;
     }
 
     public static boolean isNumericallyCoercible(Class target, Class parm) {

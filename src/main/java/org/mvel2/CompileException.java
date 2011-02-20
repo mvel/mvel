@@ -170,22 +170,13 @@ public class CompileException extends RuntimeException {
                 }
                 else if (firstCr < matchIndex) {
                     cs = cs.substring(firstCr + 1, cs.length() - (firstCr + 1));
-          //          renderColumnOffset += firstCr;
                 }
             }
             else {
                 cs = cs.substring(firstCr + 1, lastCr);
-        //        renderColumnOffset += firstCr;
             }
         }
         while (true);
-
-//        for (int i = 0; i < cs.length(); i++) {
-//            if (isWhitespace(cs.charAt(i))) renderColumnOffset++;
-//            else break;
-//        }
-
-//        msgOffset = start + renderColumnOffset;
 
         String trimmed = cs.trim();
 
@@ -206,10 +197,6 @@ public class CompileException extends RuntimeException {
         appender.append(showCodeNearError(expr, cursor))
                 .append(" ....}]\n")
                 .append(repeatChar(' ', offset));
-
-  //      if ((offset = cursor - msgOffset - 2) < 0) offset = 0;
-
-  //      appender.append(repeatChar(' ', offset + (offset > 0 ? 1 : 0))).append("^");
 
         if (msgOffset < 0) msgOffset = 0;
 
