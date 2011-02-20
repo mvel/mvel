@@ -65,7 +65,7 @@ public class Fold extends ASTNode {
 
                 if (expr[cursor] == 'i' && expr[cursor + 1] == 'f' && isJunct(expr[cursor + 2])) {
                     int s = cursor + 2;
-                    constraintEx = (ExecutableStatement) subCompileExpression(subset(expr, s, end - s), pCtx);
+                    constraintEx = (ExecutableStatement) subCompileExpression(expr, s, end - s, pCtx);
                     break;
                 }
             }

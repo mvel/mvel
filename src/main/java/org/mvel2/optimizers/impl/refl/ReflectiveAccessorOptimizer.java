@@ -685,7 +685,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         ExecutableStatement itemStmt = null;
         if (itemSubExpr) {
-            idx = (itemStmt = (ExecutableStatement) subCompileExpression(item.toCharArray(), pCtx)).getValue(ctx, thisRef, variableFactory);
+            try {
+                idx = (itemStmt = (ExecutableStatement) subCompileExpression(item.toCharArray(), pCtx)).getValue(ctx, thisRef, variableFactory);
+            }
+            catch (CompileException e) {
+                e.setExpr(this.expr);
+                e.setCursor(start);
+                throw e;
+            }
         }
 
         ++cursor;
@@ -889,8 +896,15 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             argTypes = new Class[subtokens.length];
 
             for (int i = 0; i < subtokens.length; i++) {
-                args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray(), pCtx))
-                        .getValue(this.ctx, thisRef, variableFactory);
+                try {
+                    args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray(), pCtx))
+                            .getValue(this.ctx, thisRef, variableFactory);
+                }
+                catch (CompileException e) {
+                    e.setExpr(expr);
+                    e.setCursor(new String(expr).substring(this.start).indexOf(subtokens[i]) + this.start + e.getCursor());
+                    throw e;
+                }
 
                 if (es[i].isExplicitCast()) argTypes[i] = es[i].getKnownEgressType();
             }
@@ -944,7 +958,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         if (ctx == null) {
-            throw new PropertyAccessException("unable to access property (null parent): " + name, this.expr, this.start);
+            throw new PropertyAccessException("null pointer or function not found: " + name, this.expr, this.start);
         }
 
 

@@ -1935,9 +1935,16 @@ public class AbstractParser implements Parser, Serializable {
                     if (cursor + 1 != end) {
                         switch (expr[cursor + 1]) {
                             case '/':
-                                expr[cursor++] = ' ';
-                                while (cursor != end && expr[cursor] != '\n') expr[cursor++] = ' ';
-                                if (cursor != end) expr[cursor++] = ' ';
+                               // expr[cursor++] = ' ';
+                                cursor++;
+                                while (cursor != end && expr[cursor] != '\n') {
+                                    //expr[cursor++] = ' ';
+                                    cursor++;
+                                }
+                                if (cursor != end) {
+                                    //expr[cursor++] = ' ';
+                                    cursor++;
+                                }
 
                                 line++;
                                 lastLineStart = cursor;
@@ -1946,16 +1953,27 @@ public class AbstractParser implements Parser, Serializable {
 
                             case '*':
                                 int len = end - 1;
-                                expr[cursor++] = ' ';
+                                int st = cursor;
+                                cursor++;
+
+                                int countLines = 0;
                                 while (cursor != len && !(expr[cursor] == '*' && expr[cursor + 1] == '/')) {
                                     if (expr[cursor] == '\n') {
-                                        line++;
-                                        lastLineStart = cursor;
+                                        countLines++;
                                     }
 
-                                    expr[cursor++] = ' ';
+                                    cursor++;
                                 }
-                                if (cursor != len) expr[cursor++] = expr[cursor++] = ' ';
+                                if (cursor != len) {
+                                    cursor += 2;
+                                }
+
+                                if (countLines == 0) {
+                                    for (int i = st; i < cursor; i++) {
+                                        expr[i] = ' ';
+                                    }
+                                }
+
                                 continue;
 
                             default:

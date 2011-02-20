@@ -24,6 +24,7 @@ import static org.mvel2.util.ParseTools.repeatChar;
 import org.mvel2.util.StringAppender;
 
 import static java.lang.String.copyValueOf;
+import static org.mvel2.util.ParseTools.trimLeft;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +60,7 @@ public class CompileException extends RuntimeException {
     }
 
     public String toString() {
-       return generateErrorMessage();
+        return generateErrorMessage();
     }
 
     public CompileException(String message, char[] expr, int cursor, Throwable e) {
@@ -82,9 +83,9 @@ public class CompileException extends RuntimeException {
 
     private void calcRowAndColumn() {
         int row = 1;
-        int col = 0;
+        int col = 1;
 
-        if ((lineNumber != 0 && column != 0) || expr == null || expr.length == 0) return ;
+        if ((lineNumber != 0 && column != 0) || expr == null || expr.length == 0) return;
 
         for (int i = 0; i < cursor; i++) {
             switch (expr[i]) {
@@ -121,9 +122,10 @@ public class CompileException extends RuntimeException {
             start = 0;
         }
 
-        while (start < end && isWhitespace(expr[start])) start++;
+        String cs;
 
-        CharSequence cs;
+        int firstCr;
+        int lastCr;
 
         try {
             cs = copyValueOf(expr, start, end - start);
@@ -133,9 +135,63 @@ public class CompileException extends RuntimeException {
             throw e;
         }
 
-        msgOffset = start;
+        String match = new String(expr, cursor, expr.length - cursor);
+        Makematch: for (int i = 0; i < match.length(); i++) {
+            switch (match.charAt(i)) {
+                case '\n':
+                    match = match.substring(0, i);
+                    break Makematch;
+                default:
+                    if (isWhitespace(match.charAt(i))) {
+                        match = match.substring(0, i);
+                        break Makematch;
+                    }
+            }
+        }
 
-        return cs;
+        if (match.length() >= 30) {
+            match = match.substring(0, 30);
+        }
+
+
+//        int renderColumnOffset = 0;
+
+        do {
+            firstCr = cs.indexOf('\n');
+            lastCr = cs.lastIndexOf('\n');
+
+            if (firstCr == -1) break;
+
+            int matchIndex = cs.indexOf(match);
+
+            if (firstCr != -1 && firstCr == lastCr) {
+                if (firstCr > matchIndex) {
+                    cs = cs.substring(0, firstCr);
+                }
+                else if (firstCr < matchIndex) {
+                    cs = cs.substring(firstCr + 1, cs.length() - (firstCr + 1));
+          //          renderColumnOffset += firstCr;
+                }
+            }
+            else {
+                cs = cs.substring(firstCr + 1, lastCr);
+        //        renderColumnOffset += firstCr;
+            }
+        }
+        while (true);
+
+//        for (int i = 0; i < cs.length(); i++) {
+//            if (isWhitespace(cs.charAt(i))) renderColumnOffset++;
+//            else break;
+//        }
+
+//        msgOffset = start + renderColumnOffset;
+
+        String trimmed = cs.trim();
+
+        msgOffset = trimmed.indexOf(match);
+
+        return trimmed;
     }
 
     private String generateErrorMessage() {
@@ -151,15 +207,19 @@ public class CompileException extends RuntimeException {
                 .append(" ....}]\n")
                 .append(repeatChar(' ', offset));
 
-        if ((offset = cursor - msgOffset - 1) < 0) offset = 0;
+  //      if ((offset = cursor - msgOffset - 2) < 0) offset = 0;
 
-        appender.append(repeatChar(' ', offset+1)).append("^");
+  //      appender.append(repeatChar(' ', offset + (offset > 0 ? 1 : 0))).append("^");
+
+        if (msgOffset < 0) msgOffset = 0;
+
+        appender.append(repeatChar(' ', msgOffset)).append('^');
 
         calcRowAndColumn();
 
         if (lineNumber != -1) {
             appender.append('\n')
-                    .append("[Line: " + lineNumber + ", Column: " + column + "]");
+                    .append("[Line: " + lineNumber + ", Column: " + (column+1) + "]");
         }
         return appender.toString();
     }

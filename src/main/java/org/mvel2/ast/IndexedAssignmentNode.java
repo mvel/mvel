@@ -73,9 +73,10 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
             }
 
             this.offset = offset - (this.start - start);
+            stmt = subset(expr, this.start, this.offset);
 
             this.egressType = (statement
-                    = (ExecutableStatement) subCompileExpression(stmt = subset(expr, this.start, this.offset), pCtx))
+                    = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx))
                     .getKnownEgressType();
 
             if (col = ((endOfName = (short) findFirst('[', 0, this.name.length(), indexTarget = this.name.toCharArray())) > 0)) {
