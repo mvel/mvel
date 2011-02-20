@@ -101,7 +101,9 @@ public class InlineCollectionNode extends ASTNode {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         parseGraph(false, egressType, AbstractParser.getCurrentThreadParserContext());
-        return execGraph(collectionGraph, egressType, ctx, factory);
+
+            return execGraph(collectionGraph, egressType, ctx, factory);
+
     }
 
     private void parseGraph(boolean compile, Class type, ParserContext pCtx) {
@@ -174,7 +176,6 @@ public class InlineCollectionNode extends ASTNode {
         else {
             if (type.isArray()) {
                 return MVEL.eval((String) o, ctx, factory, getBaseComponentType(type));
-
             }
             else {
                 return MVEL.eval((String) o, ctx, factory);
