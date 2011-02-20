@@ -21,6 +21,7 @@ package org.mvel2.ast;
 import static org.mvel2.MVEL.compileSetExpression;
 import static org.mvel2.MVEL.eval;
 
+import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
 
 import static org.mvel2.PropertyAccessor.set;
@@ -58,7 +59,13 @@ public class DeepAssignmentNode extends ASTNode implements Assignment {
         else if ((mark = find(expr, start, offset, '=')) != -1) {
             property = createStringTrimmed(expr, start, mark - start);
 
-            this.start = mark + 1;
+           // this.start = mark + 1;
+            this.start = skipWhitespace(expr, mark + 1, pCtx);
+
+            if (this.start >= start + offset) {
+                throw new CompileException("unexpected end of statement", expr, mark + 1);
+            }
+
             this.offset = offset - (this.start - start);
 
             if ((fields & COMPILE_IMMEDIATE) != 0) {

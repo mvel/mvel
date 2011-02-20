@@ -105,7 +105,20 @@ public class FailureTests extends AbstractTest {
             MVEL.compileExpression("for (String s : new java.util.HashMap()) { }", pCtx);
         }
         catch (Exception e) {
-            //        e.printStackTrace();
+                //   e.printStackTrace();
+            return;
+        }
+
+        assertTrue(false);
+    }
+
+    public void testShouldFail9() {
+        try {
+
+            MVEL.eval("foo = ", new HashMap());
+        }
+        catch (Exception e) {
+                   e.printStackTrace();
             return;
         }
 

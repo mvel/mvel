@@ -1089,15 +1089,19 @@ public class ParseTools {
     }
 
     public static int skipWhitespace(char[] expr, int cursor, ParserContext pCtx) {
-        int line = pCtx.getLineCount();
-        int lastLineStart = pCtx.getLineOffset();
-
+//        int line = 0;
+//        int lastLineStart = 0;
+//
+//        if (pCtx != null) {
+//            line = pCtx.getLineCount();
+//            lastLineStart = pCtx.getLineOffset();
+//        }
         Skip:
         while (cursor != expr.length) {
             switch (expr[cursor]) {
                 case '\n':
-                    line++;
-                    lastLineStart = cursor;
+//                    line++;
+//                    lastLineStart = cursor;
                 case '\r':
                     cursor++;
                     continue;
@@ -1109,8 +1113,8 @@ public class ParseTools {
                                 while (cursor != expr.length && expr[cursor] != '\n') expr[cursor++] = ' ';
                                 if (cursor != expr.length) expr[cursor++] = ' ';
 
-                                line++;
-                                lastLineStart = cursor;
+//                                line++;
+//                                lastLineStart = cursor;
 
                                 continue;
 
@@ -1118,10 +1122,10 @@ public class ParseTools {
                                 int len = expr.length - 1;
                                 expr[cursor++] = ' ';
                                 while (cursor != len && !(expr[cursor] == '*' && expr[cursor + 1] == '/')) {
-                                    if (expr[cursor] == '\n') {
-                                        line++;
-                                        lastLineStart = cursor;
-                                    }
+//                                    if (expr[cursor] == '\n') {
+//                                        line++;
+//                                        lastLineStart = cursor;
+//                                    }
 
                                     expr[cursor++] = ' ';
                                 }
@@ -1139,9 +1143,11 @@ public class ParseTools {
             }
             cursor++;
         }
-
-        pCtx.setLineCount(line);
-        pCtx.setLineOffset(lastLineStart);
+//
+//        if (pCtx != null) {
+//            pCtx.setLineCount(line);
+//            pCtx.setLineOffset(lastLineStart);
+//        }
 
         return cursor;
     }

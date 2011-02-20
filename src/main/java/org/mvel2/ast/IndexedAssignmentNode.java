@@ -18,6 +18,7 @@
 
 package org.mvel2.ast;
 
+import org.mvel2.CompileException;
 import org.mvel2.MVEL;
 
 import static org.mvel2.MVEL.compileSetExpression;
@@ -65,7 +66,12 @@ public class IndexedAssignmentNode extends ASTNode implements Assignment {
         else if ((assignStart = find(expr, start, offset, '=')) != -1) {
             this.name = createStringTrimmed(expr, start, assignStart - start);
 
-            this.start = assignStart + 1;
+            this.start = skipWhitespace(expr, assignStart + 1, pCtx);
+
+            if (this.start >= start + offset) {
+                throw new CompileException("unexpected end of statement", expr, assignStart + 1);
+            }
+
             this.offset = offset - (this.start - start);
 
             this.egressType = (statement
