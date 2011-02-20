@@ -40,7 +40,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
     private char[] indexTarget;
     private String index;
 
-   // private char[] stmt;
+    // private char[] stmt;
     private ExecutableStatement statement;
     private boolean col = false;
 
@@ -56,7 +56,7 @@ public class AssignmentNode extends ASTNode implements Assignment {
             this.varName = createStringTrimmed(expr, start, assignStart - start);
 
             this.start = assignStart + 1;
-            this.offset =  offset - (this.start - start);
+            this.offset = offset - (this.start - start);
 
             if ((fields & COMPILE_IMMEDIATE) != 0) {
                 this.egressType = (statement = (ExecutableStatement)
@@ -72,10 +72,21 @@ public class AssignmentNode extends ASTNode implements Assignment {
                 index = new String(indexTarget, endOfName, indexTarget.length - endOfName);
             }
 
-            checkNameSafety(this.varName);
+
+            try {
+                checkNameSafety(this.varName);
+            }
+            catch (RuntimeException e) {
+                throw new CompileException(e.getMessage(), expr, start);
+            }
         }
         else {
-            checkNameSafety(this.varName = new String(expr, start, offset));
+            try {
+                checkNameSafety(this.varName = new String(expr, start, offset));
+            }
+            catch (RuntimeException e) {
+                throw new CompileException(e.getMessage(), expr, start);
+            }
         }
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {

@@ -239,7 +239,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 }
                 else {
                     throw new PropertyAccessException("cannot bind to collection property: " + new String(property) +
-                            ": not a recognized collection type: " + ctx.getClass(), expr, this.start);
+                            ": not a recognized collection type: " + ctx.getClass(), expr, this.st);
                 }
             }
             else if (MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING && hasPropertyHandler(ctx.getClass())) {
@@ -309,14 +309,14 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException("could not access property: " + new String(property), this.expr, start, e);
+            throw new PropertyAccessException("could not access property: " + new String(property), this.expr, st, e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException("could not access property: " + new String(property), this.expr, start, e);
+            throw new PropertyAccessException("could not access property: " + new String(property), this.expr, st, e);
         }
         catch (IllegalArgumentException e) {
             throw new PropertyAccessException("error binding property: " + new String(property) + " (value <<" + value + ">>::"
-                    + (value == null ? "null" : value.getClass().getCanonicalName()) + ")", this.expr, start, e);
+                    + (value == null ? "null" : value.getClass().getCanonicalName()) + ")", this.expr, st, e);
         }
 
 
@@ -407,24 +407,24 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             throw new PropertyAccessException(new String(expr, start, length) + ": "
-                    + e.getTargetException().getMessage(), this.expr, this.start, e);
+                    + e.getTargetException().getMessage(), this.expr, this.st, e);
         }
         catch (IllegalAccessException e) {
             throw new PropertyAccessException(new String(expr, start, length) + ": "
-                    + e.getMessage(), this.expr, this.start, e);
+                    + e.getMessage(), this.expr, this.st, e);
         }
         catch (IndexOutOfBoundsException e) {
             throw new PropertyAccessException(new String(expr, start, length)
-                    + ": array index out of bounds.", this.expr, this.start, e);
+                    + ": array index out of bounds.", this.expr, this.st, e);
         }
         catch (CompileException e) {
             throw e;
         }
         catch (NullPointerException e) {
-            throw new PropertyAccessException("null pointer: " + new String(expr, start, length), this.expr, this.start, e);
+            throw new PropertyAccessException("null pointer: " + new String(expr, start, length), this.expr, this.st, e);
         }
         catch (Exception e) {
-            throw new CompileException(e.getMessage(), this.expr, start, e);
+            throw new CompileException(e.getMessage(), this.expr, st, e);
         }
     }
 
@@ -853,7 +853,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             throw new CompileException("illegal use of []: unknown type: "
-                    + ctx.getClass().getName(), this.expr, this.start);
+                    + ctx.getClass().getName(), this.expr, this.st);
         }
     }
 
@@ -990,7 +990,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             throw new PropertyAccessException("unable to resolve method: " + cls.getName() + "."
-                    + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]", this.expr, this.start);
+                    + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]", this.expr, this.st);
         }
         else {
             if (es != null) {

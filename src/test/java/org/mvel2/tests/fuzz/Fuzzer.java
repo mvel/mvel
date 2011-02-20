@@ -2,6 +2,7 @@ package org.mvel2.tests.fuzz;
 
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import org.mvel2.ScriptRuntimeException;
 import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.util.StringAppender;
 
@@ -64,6 +65,9 @@ public class Fuzzer {
                 //ignore
             }
             catch (ArithmeticException e) {
+                //ignore
+            }
+            catch (ScriptRuntimeException e) {
                 //ignore
             }
             catch (Exception e) {

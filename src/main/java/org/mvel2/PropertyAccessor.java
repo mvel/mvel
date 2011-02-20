@@ -403,10 +403,10 @@ public class PropertyAccessor {
             }
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException("could not access property", property, cursor, e);
+            throw new PropertyAccessException("could not access property", property, st, e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException("could not access property", property, cursor, e);
+            throw new PropertyAccessException("could not access property", property, st, e);
         }
     }
 
@@ -647,10 +647,10 @@ public class PropertyAccessor {
         }
 
         if (ctx == null) {
-            throw new PropertyAccessException("unresolvable property or identifier: " + property, this.property, start);
+            throw new PropertyAccessException("unresolvable property or identifier: " + property, this.property, st);
         }
         else {
-            throw new PropertyAccessException("could not access: " + property + "; in class: " + ctx.getClass().getName(), this.property, start);
+            throw new PropertyAccessException("could not access: " + property + "; in class: " + ctx.getClass().getName(), this.property, st);
         }
     }
 
@@ -740,7 +740,7 @@ public class PropertyAccessor {
             }
             catch (Exception e) {
                 throw new PropertyAccessException("illegal use of []: unknown type: "
-                        + (ctx == null ? null : ctx.getClass().getName()), property, cursor, e);
+                        + (ctx == null ? null : ctx.getClass().getName()), property, st, e);
             }
         }
     }
@@ -804,7 +804,7 @@ public class PropertyAccessor {
             }
             catch (Exception e) {
                 throw new PropertyAccessException("illegal use of []: unknown type: "
-                        + (ctx == null ? null : ctx.getClass().getName()), property, cursor);
+                        + (ctx == null ? null : ctx.getClass().getName()), property, st);
             }
         }
     }

@@ -755,7 +755,8 @@ public class ParseTools {
             case 'u':
                 //unicode
                 int s = pos;
-                if (s + 4 > escapeStr.length) throw new CompileException("illegal unicode escape sequence", escapeStr, pos);
+                if (s + 4 > escapeStr.length)
+                    throw new CompileException("illegal unicode escape sequence", escapeStr, pos);
                 else {
                     while (++pos - s != 5) {
                         if ((escapeStr[pos] > ('0' - 1) && escapeStr[pos] < ('9' + 1)) ||
@@ -1493,24 +1494,37 @@ public class ParseTools {
                     if (_end == -1) _end = i;
 
                     if (parm == null) {
-                        MVEL.eval(new StringBuilder(nestParm).append('.')
-                                .append(block, _st, _end - _st).toString(), ctx, factory);
+                        try {
+                            MVEL.eval(new StringBuilder(nestParm).append('.')
+                                    .append(block, _st, _end - _st).toString(), ctx, factory);
+                        }
+                        catch (CompileException e) {
+                            e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
+                            e.setExpr(block);
+                            throw e;
+                        }
 
                         oper = -1;
                         _st = ++i;
                     }
                     else {
-                        if (oper != -1) {
-                            String rewrittenExpr = new String(
-                                    createShortFormOperativeAssignment(
-                                            new StringBuilder(nestParm).append(".").append(parm).toString(),
-                                            block, _st, _end - _st, oper));
+                        try {
+                            if (oper != -1) {
+                                String rewrittenExpr = new String(
+                                        createShortFormOperativeAssignment(
+                                                new StringBuilder(nestParm).append(".").append(parm).toString(),
+                                                block, _st, _end - _st, oper));
 
-                            MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
+                                MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
+                            }
+                            else {
+                                MVEL.setProperty(ctx, parm, MVEL.eval(block, _st, _end - _st, ctx, factory));
+                            }
                         }
-                        else {
-                            MVEL.setProperty(ctx, parm, MVEL.eval(block, _st, _end - _st, ctx, factory));
-
+                        catch (CompileException e) {
+                            e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
+                            e.setExpr(block);
+                            throw e;
                         }
 
                         parm = null;
@@ -1524,21 +1538,28 @@ public class ParseTools {
         }
 
         if (_st != (_end = end)) {
-            if (parm == null || "".equals(parm)) {
-                MVEL.eval(new StringAppender(nestParm).append('.')
-                        .append(block, _st, _end - _st).toString(), ctx, factory);
-            }
-            else {
-                if (oper != -1) {
-                    String rewrittenExpr = new String(createShortFormOperativeAssignment(
-                            new StringBuilder(nestParm).append(".").append(parm).toString(),
-                            block, _st, _end - _st, oper));
-
-                    MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
+            try {
+                if (parm == null || "".equals(parm)) {
+                    MVEL.eval(new StringAppender(nestParm).append('.')
+                            .append(block, _st, _end - _st).toString(), ctx, factory);
                 }
                 else {
-                    MVEL.setProperty(ctx, parm, MVEL.eval(block, _st, end - _st, ctx, factory));
+                    if (oper != -1) {
+                        String rewrittenExpr = new String(createShortFormOperativeAssignment(
+                                new StringBuilder(nestParm).append(".").append(parm).toString(),
+                                block, _st, _end - _st, oper));
+
+                        MVEL.setProperty(ctx, parm, MVEL.eval(rewrittenExpr, ctx, factory));
+                    }
+                    else {
+                        MVEL.setProperty(ctx, parm, MVEL.eval(block, _st, end - _st, ctx, factory));
+                    }
                 }
+            }
+            catch (CompileException e) {
+                e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
+                e.setExpr(block);
+                throw e;
             }
         }
     }

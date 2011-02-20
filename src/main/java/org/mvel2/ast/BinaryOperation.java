@@ -25,6 +25,8 @@ import org.mvel2.Operator;
 import static org.mvel2.Operator.PTABLE;
 import org.mvel2.ParserContext;
 import static org.mvel2.debug.DebugTools.getOperatorSymbol;
+
+import org.mvel2.ScriptRuntimeException;
 import org.mvel2.integration.VariableResolverFactory;
 import static org.mvel2.math.MathProcessor.doOperations;
 import static org.mvel2.util.CompilerTools.getReturnTypeFromOp;
@@ -55,10 +57,10 @@ public class BinaryOperation extends BooleanNode {
     public BinaryOperation(int operation, ASTNode left, ASTNode right, ParserContext ctx) {
         this.operation = operation;
         if ((this.left = left) == null) {
-            throw new RuntimeException("not a statement");
+            throw new ScriptRuntimeException("not a statement");
         }
         if ((this.right = right) == null) {
-            throw new RuntimeException("not a statement");
+            throw new ScriptRuntimeException("not a statement");
         }
 
     //    if (ctx.isStrongTyping()) {

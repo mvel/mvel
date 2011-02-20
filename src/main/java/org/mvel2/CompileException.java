@@ -44,14 +44,6 @@ public class CompileException extends RuntimeException {
 
     private List<ErrorDetail> errors;
 
-//    public CompileException() {
-//        super();
-//    }
-//
-//    public CompileException(String message) {
-//        super(message);
-//    }
-
     public CompileException(String message, List<ErrorDetail> errors, char[] expr, int cursor, ParserContext ctx) {
         super(message);
         this.expr = expr;
@@ -64,13 +56,7 @@ public class CompileException extends RuntimeException {
         }
 
         this.errors = errors;
-    //    this.expr = ctx.getRootParser().getExpression();
     }
-//
-//    public CompileException(String message, int cursor) {
-//        super(message);
-//        this.cursor = cursor;
-//    }
 
     public String toString() {
        return generateErrorMessage();
@@ -88,13 +74,6 @@ public class CompileException extends RuntimeException {
         this.cursor = cursor;
     }
 
-//    public CompileException(String message, Throwable cause) {
-//        super(message, cause);
-//    }
-//
-//    public CompileException(Throwable cause) {
-//        super(cause);
-//    }
 
     @Override
     public String getMessage() {

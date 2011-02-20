@@ -48,13 +48,13 @@ public class MVELInterpretedRuntime extends AbstractParser {
         }
         catch (ArrayIndexOutOfBoundsException e) {
             e.printStackTrace();
-            throw new ParseException("unexpected end of statement", expr, length);
+            throw new CompileException("unexpected end of statement", expr, length);
         }
         catch (NullPointerException e) {
             e.printStackTrace();
 
             if (cursor >= length) {
-                throw new ParseException("unexpected end of statement", expr, length);
+                throw new CompileException("unexpected end of statement", expr, length);
             }
             else {
                 throw e;
@@ -127,7 +127,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                     case OP_OVERFLOW:
                         if (!tk.isOperator()) {
                             if (!(stk.peek() instanceof Class)) {
-                                throw new CompileException("unexpected token: " + tk.getName(), expr, st);
+                                throw new CompileException("unexpected token", expr, st);
                             }
                             variableFactory.createVariable(tk.getName(), null, (Class) stk.peek());
                         }

@@ -60,7 +60,7 @@ public class WithNode extends BlockNode implements NestedStatement {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         Object ctxObject = compiledBlock.getValue(ctx, thisValue, factory);
-        if (ctxObject == null) throw new CompileException("with-block against null pointer",expr, start);
+        if (ctxObject == null) throw new CompileException("with-block against null pointer", expr, start);
 
         for (ParmValuePair pvp : withExpressions) {
             pvp.eval(ctxObject, factory);
@@ -138,27 +138,42 @@ public class WithNode extends BlockNode implements NestedStatement {
                     if (_end == -1) _end = i;
 
                     if (parm == null || parm.length() == 0) {
-                        parms.add(
-                                new ParmValuePair(null, (ExecutableStatement)
-                                        subCompileExpression(
-                                                new StringBuilder(nestParm).append('.')
-                                                        .append(new String(block, _st, _end - _st)).toString(), pCtx), egressType, pCtx)
-                        );
+                        try {
+                            parms.add(
+                                    new ParmValuePair(null, (ExecutableStatement)
+                                            subCompileExpression(
+                                                    new StringBuilder(nestParm).append('.')
+                                                            .append(new String(block, _st, _end - _st)).toString(), pCtx),
+                                            block, _st, egressType, pCtx)
+                            );
+                        }
+                        catch (CompileException e) {
+                            e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
+                            e.setExpr(block);
+                            throw e;
+                        }
 
                         oper = -1;
                         _st = ++i;
                     }
                     else {
 
-                        parms.add(new ParmValuePair(
-                                parm,
-                                oper != -1 ?
-                                        (ExecutableStatement) subCompileExpression(
-                                                createShortFormOperativeAssignment(nestParm + "." + parm,
-                                                        block, _st, _end - _st, oper), pCtx)
-                                        //or
-                                        : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
-                                , Object.class, pCtx));
+                        try {
+                            parms.add(new ParmValuePair(
+                                    parm,
+                                    oper != -1 ?
+                                            (ExecutableStatement) subCompileExpression(
+                                                    createShortFormOperativeAssignment(nestParm + "." + parm,
+                                                            block, _st, _end - _st, oper), pCtx)
+                                            //or
+                                            : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
+                                    , block, _st, Object.class, pCtx));
+                        }
+                        catch (CompileException e) {
+                            e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
+                            e.setExpr(block);
+                            throw e;
+                        }
 
                         parm = null;
                         oper = -1;
@@ -173,23 +188,31 @@ public class WithNode extends BlockNode implements NestedStatement {
 
 
         if (_st != (_end = end)) {
-            if (parm == null || "".equals(parm)) {
-                parms.add(
-                        new ParmValuePair(null, (ExecutableStatement)
-                                subCompileExpression(new StringBuilder(nestParm).append('.')
-                                        .append(new String(block, _st, _end - _st)).toString(), pCtx), egressType, pCtx)
-                );
+            try {
+                if (parm == null || "".equals(parm)) {
+                    parms.add(
+                            new ParmValuePair(null, (ExecutableStatement)
+                                    subCompileExpression(new StringBuilder(nestParm).append('.')
+                                            .append(new String(block, _st, _end - _st)).toString(), pCtx),
+                                    block, _st, egressType, pCtx)
+                    );
+                }
+                else {
+                    parms.add(new ParmValuePair(
+                            parm,
+                            oper != -1 ?
+                                    (ExecutableStatement) subCompileExpression(
+                                            createShortFormOperativeAssignment(nestParm + "." + parm, block, _st, _end - _st, oper),
+                                            pCtx)
+                                    //or
+                                    : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
+                            , block, _st, Object.class, pCtx));
+                }
             }
-            else {
-                parms.add(new ParmValuePair(
-                        parm,
-                        oper != -1 ?
-                                (ExecutableStatement) subCompileExpression(
-                                        createShortFormOperativeAssignment(nestParm + "." + parm, block, _st, _end - _st, oper),
-                                        pCtx)
-                                //or
-                                : (ExecutableStatement) subCompileExpression(block, _st, _end - _st, pCtx)
-                        , Object.class, pCtx));
+            catch (CompileException e) {
+                e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
+                e.setExpr(block);
+                throw e;
             }
         }
 
@@ -208,13 +231,17 @@ public class WithNode extends BlockNode implements NestedStatement {
     }
 
     public static final class ParmValuePair implements Serializable {
+        private char[] expr;
+        private int cursor;
         private Serializable setExpression;
         private ExecutableStatement statement;
 
         public ParmValuePair() {
         }
 
-        public ParmValuePair(String parameter, ExecutableStatement statement, Class ingressType, ParserContext pCtx) {
+        public ParmValuePair(String parameter, ExecutableStatement statement, char[] expr, int cursor, Class ingressType, ParserContext pCtx) {
+            this.expr = expr;
+            this.cursor = cursor;
             if (parameter != null && parameter.length() != 0) {
                 this.setExpression = MVEL.compileSetExpression(parameter,
                         ingressType != null ? getReturnType(ingressType, parameter, pCtx) : Object.class
@@ -246,6 +273,7 @@ public class WithNode extends BlockNode implements NestedStatement {
             else {
                 MVEL.executeSetExpression(setExpression, ctx, factory, this.statement.getValue(ctx, factory));
             }
+
         }
     }
 }

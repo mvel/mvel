@@ -847,28 +847,28 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return _initializeAccessor();
         }
         catch (InvocationTargetException e) {
-            throw new PropertyAccessException(new String(expr), expr, start, e);
+            throw new PropertyAccessException(new String(expr), expr, st, e);
         }
         catch (IllegalAccessException e) {
-            throw new PropertyAccessException(new String(expr), expr, start, e);
+            throw new PropertyAccessException(new String(expr), expr, st, e);
         }
         catch (IndexOutOfBoundsException e) {
-            throw new PropertyAccessException(new String(expr), expr, start, e);
+            throw new PropertyAccessException(new String(expr), expr, st, e);
         }
         catch (PropertyAccessException e) {
-            throw new CompileException(e.getMessage(), expr, start, e);
+            throw new CompileException(e.getMessage(), expr, st, e);
         }
         catch (CompileException e) {
             throw e;
         }
         catch (NullPointerException e) {
-            throw new PropertyAccessException(new String(expr), expr, start, e);
+            throw new PropertyAccessException(new String(expr), expr, st, e);
         }
         catch (OptimizationNotSupported e) {
             throw e;
         }
         catch (Exception e) {
-            throw new CompileException(e.getMessage(), expr,start, e);
+            throw new CompileException(e.getMessage(), expr,st, e);
         }
     }
 
@@ -1099,7 +1099,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             catch (IllegalAccessException e) {
                 Method iFaceMeth = determineActualTargetMethod((Method) member);
                 if (iFaceMeth == null)
-                    throw new PropertyAccessException("could not access field: " + cls.getName() + "." + property, expr, start, e);
+                    throw new PropertyAccessException("could not access field: " + cls.getName() + "." + property, expr, st, e);
 
                 assert debug("CHECKCAST " + getInternalName(iFaceMeth.getDeclaringClass()));
                 mv.visitTypeInsn(CHECKCAST, getInternalName(iFaceMeth.getDeclaringClass()));
@@ -1231,11 +1231,11 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             if (ctx == null) {
-                throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, start);
+                throw new PropertyAccessException("unresolvable property or identifier: " + property, expr, st);
             }
             else {
                 throw new PropertyAccessException("could not access: " + property + "; in class: "
-                        + ctx.getClass().getName(), expr, start);
+                        + ctx.getClass().getName(), expr, st);
             }
         }
     }
@@ -1307,10 +1307,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         skipWhitespace();
 
         if (cursor == end)
-            throw new CompileException("unterminated '['", expr, start);
+            throw new CompileException("unterminated '['", expr, st);
 
         if (scanTo(']'))
-            throw new CompileException("unterminated '['", expr, start);
+            throw new CompileException("unterminated '['", expr, st);
 
         String tk = new String(expr, start, cursor - start);
 
@@ -1438,7 +1438,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             throw new CompileException("illegal use of []: unknown type: "
-                    + (ctx == null ? null : ctx.getClass().getName()), expr, start);
+                    + (ctx == null ? null : ctx.getClass().getName()), expr, st);
         }
     }
 
@@ -1458,10 +1458,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         skipWhitespace();
 
         if (cursor == end)
-            throw new CompileException("unterminated '['", expr, start);
+            throw new CompileException("unterminated '['", expr, st);
 
         if (scanTo(']'))
-            throw new CompileException("unterminated '['", expr, start);
+            throw new CompileException("unterminated '['", expr, st);
 
         String tk = new String(expr, _start, cursor - _start);
 
@@ -1628,7 +1628,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             throw new CompileException("illegal use of []: unknown type: "
-                    + (ctx == null ? null : ctx.getClass().getName()), expr, start);
+                    + (ctx == null ? null : ctx.getClass().getName()), expr, st);
         }
     }
 
@@ -1852,7 +1852,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             throw new CompileException("unable to resolve method: " + cls.getName() + "."
-                    + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]", expr, start);
+                    + name + "(" + errorBuild.toString() + ") [arglength=" + args.length + "]", expr, st);
         }
         else {
             m = getWidenedTarget(m);
@@ -2788,7 +2788,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 if (!DataConversion.canConvert(type, desiredTarget)) {
                     throw new CompileException("was expecting type: " + desiredTarget.getName()
-                            + "; but found type: " + type.getName(), expr, start);
+                            + "; but found type: " + type.getName(), expr, st);
                 }
                 writeOutLiteralWrapped(convert(((ExecutableLiteral) stmt).getLiteral(), desiredTarget));
             }
@@ -2967,7 +2967,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                     }
 
                     throw new CompileException("unable to find constructor: " + cls.getName()
-                            + "(" + error.toString() + ")", expr, start);
+                            + "(" + error.toString() + ")", expr, st);
                 }
 
                 this.returnType = cns.getDeclaringClass();
@@ -3052,7 +3052,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         catch (ClassNotFoundException e) {
             throw new CompileException("class or class reference not found: "
-                    + new String(property), expr, start);
+                    + new String(property), expr, st);
         }
         catch (Exception e) {
             throw new OptimizationFailure("could not optimize construtor: " + new String(property), e);

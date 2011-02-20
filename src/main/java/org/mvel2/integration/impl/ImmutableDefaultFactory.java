@@ -19,6 +19,7 @@
 package org.mvel2.integration.impl;
 
 import org.mvel2.CompileException;
+import org.mvel2.ScriptRuntimeException;
 import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
@@ -29,7 +30,7 @@ public class ImmutableDefaultFactory implements VariableResolverFactory {
     private boolean tiltFlag;
 
     private void throwError() {
-        throw new RuntimeException("cannot assign variables; no variable resolver factory available.");
+        throw new ScriptRuntimeException("cannot assign variables; no variable resolver factory available.");
     }
 
     public VariableResolver createVariable(String name, Object value) {
