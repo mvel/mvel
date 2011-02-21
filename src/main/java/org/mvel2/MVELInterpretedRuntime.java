@@ -153,7 +153,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
         }
         catch (CompileException e) {
             if (e.getExpr() != expr && e.getExpr().length < expr.length) {
-                e.setCursor(st + new String(expr).substring(st).indexOf(new String(e.getExpr())));
+                e.setCursor(st + new String(expr).substring(e.getCursor()).indexOf(new String(e.getExpr())));
                 e.setExpr(expr);
             }
             throw e;
@@ -271,9 +271,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
         if (dStack.isEmpty()) return;
 
         Object o = stk.pop();
-        stk.push(dStack.pop());
-        stk.push(o);
-        stk.push(dStack.pop());
+        stk.push(dStack.pop(), o, dStack.pop());
 
         reduce();
     }

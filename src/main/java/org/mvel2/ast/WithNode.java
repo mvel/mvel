@@ -186,7 +186,6 @@ public class WithNode extends BlockNode implements NestedStatement {
             }
         }
 
-
         if (_st != (_end = end)) {
             try {
                 if (parm == null || "".equals(parm)) {
@@ -273,7 +272,6 @@ public class WithNode extends BlockNode implements NestedStatement {
             else {
                 MVEL.executeSetExpression(setExpression, ctx, factory, this.statement.getValue(ctx, factory));
             }
-
         }
     }
 }

@@ -66,11 +66,9 @@ public class AbstractParser implements Parser, Serializable {
     protected int start;
     protected int length;
     protected int end;
-
     protected int st;
 
     protected int fields;
-
 
     protected static final int OP_OVERFLOW = -2;
     protected static final int OP_TERMINATE = -1;

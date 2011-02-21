@@ -5,13 +5,9 @@
  */
 
 def quicksort(list) {
-    if (list.size() <= 1) {
-         list;
-    }
-    else {
-         pivot = list[0];
-         (quicksort(($ in list if $ < pivot)) + pivot) + quicksort(($ in list if $ > pivot));
-    }
+    list.size() <= 1 ? list :
+        (pivot = list[0]; (quicksort(($ in list if $ < pivot)) + pivot)
+            + quicksort(($ in list if $ > pivot)))
 }
 
 // create a list to sort

@@ -18,16 +18,15 @@
 
 package org.mvel2;
 
-import static org.mvel2.util.ParseTools.isWhitespace;
-import static org.mvel2.util.ParseTools.repeatChar;
-
 import org.mvel2.util.StringAppender;
-
-import static java.lang.String.copyValueOf;
-import static org.mvel2.util.ParseTools.trimLeft;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.lang.String.copyValueOf;
+import static org.mvel2.util.ParseTools.isIdentifierPart;
+import static org.mvel2.util.ParseTools.isWhitespace;
+import static org.mvel2.util.ParseTools.repeatChar;
 
 /**
  * Standard exception thrown for all general compile and some runtime failures.
@@ -75,7 +74,6 @@ public class CompileException extends RuntimeException {
         this.cursor = cursor;
     }
 
-
     @Override
     public String getMessage() {
         return generateErrorMessage();
@@ -103,8 +101,6 @@ public class CompileException extends RuntimeException {
 
         this.lineNumber = row;
         this.column = col;
-
-
     }
 
     private CharSequence showCodeNearError(char[] expr, int cursor) {
@@ -135,7 +131,17 @@ public class CompileException extends RuntimeException {
             throw e;
         }
 
-        String match = new String(expr, cursor, expr.length - cursor);
+        int matchStart = cursor;
+        if (matchStart > 0) {
+            matchStart--;
+            while (matchStart > 0 && !isWhitespace(expr[matchStart])) {
+                matchStart--;
+            }
+        }
+
+        int matchOffset = cursor - matchStart;
+
+        String match = new String(expr, matchStart, expr.length - matchStart);
         Makematch: for (int i = 0; i < match.length(); i++) {
             switch (match.charAt(i)) {
                 case '\n':
@@ -143,7 +149,6 @@ public class CompileException extends RuntimeException {
                     break Makematch;
                 default:
                     if (isWhitespace(match.charAt(i))) {
-                        match = match.substring(0, i);
                         break Makematch;
                     }
             }
@@ -152,9 +157,6 @@ public class CompileException extends RuntimeException {
         if (match.length() >= 30) {
             match = match.substring(0, 30);
         }
-
-
-//        int renderColumnOffset = 0;
 
         do {
             firstCr = cs.indexOf('\n');
@@ -180,7 +182,7 @@ public class CompileException extends RuntimeException {
 
         String trimmed = cs.trim();
 
-        msgOffset = trimmed.indexOf(match);
+        msgOffset = trimmed.indexOf(match) + matchOffset;
 
         return trimmed;
     }
