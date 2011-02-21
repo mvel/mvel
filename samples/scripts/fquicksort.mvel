@@ -7,7 +7,7 @@
 def quicksort(list) {
     list.size() <= 1 ? list :
         (pivot = list[0]; (quicksort(($ in list if $ < pivot)) + pivot)
-            + quicksort(($ in list if $ > pivot)))
+            + quicksort(($ in lisdt if $ > pivot)))
 }
 
 // create a list to sort

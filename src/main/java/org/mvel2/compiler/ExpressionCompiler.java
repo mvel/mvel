@@ -75,7 +75,7 @@ public class ExpressionCompiler extends AbstractParser {
                 StringAppender err = new StringAppender();
 
                 for (ErrorDetail e : pCtx.getErrorList()) {
-                    err.append("\n - ").append("(").append(e.getRow()).append(",").append(e.getCol()).append(")")
+                    err.append("\n - ").append("(").append(e.getLineNumber()).append(",").append(e.getColumn()).append(")")
                             .append(" ").append(e.getMessage());
                 }
 

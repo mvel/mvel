@@ -21,39 +21,23 @@ package org.mvel2;
 import org.mvel2.compiler.Parser;
 
 public class ErrorDetail {
-    private int row;
-    private int col;
+
+    private char[] expr;
+    private int cursor;
     private boolean critical;
     private String message;
-//
-    public ErrorDetail(String message, boolean critical, ParserContext parser) {
-        this.message = message;
-        this.critical = critical;
-        this.row = parser.getLineCount();
-        this.col = parser.getLineOffset();
-    }
 
-    public ErrorDetail(int row, int col, boolean critical, String message) {
-        this.row = row;
-        this.col = col;
+    private int lineNumber;
+    private int column;
+
+
+    public ErrorDetail(char[] expr, int cursor, boolean critical, String message) {
+        this.expr = expr;
+        this.cursor = cursor;
         this.critical = critical;
         this.message = message;
-    }
 
-    public int getRow() {
-        return row;
-    }
-
-    public void setRow(int row) {
-        this.row = row;
-    }
-
-    public int getCol() {
-        return col;
-    }
-
-    public void setCol(int col) {
-        this.col = col;
+        calcRowAndColumn();
     }
 
     public boolean isCritical() {
@@ -72,12 +56,48 @@ public class ErrorDetail {
         this.message = message;
     }
 
+    public int getCursor() {
+        return cursor;
+    }
+
+    private void calcRowAndColumn() {
+        int row = 1;
+        int col = 1;
+
+        if ((lineNumber != 0 && column != 0) || expr == null || expr.length == 0) return;
+
+        for (int i = 0; i < cursor; i++) {
+            switch (expr[i]) {
+                case '\r':
+                    continue;
+                case '\n':
+                    row++;
+                    col = 0;
+                    break;
+
+                default:
+                    col++;
+            }
+        }
+
+        this.lineNumber = row;
+        this.column = col;
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public int getColumn() {
+        return column;
+    }
+
     public String toString() {
         if (critical) {
-            return "(" + row + "," + col + ") " + message;
+            return "(" + lineNumber + "," + column + ") " + message;
         }
         else {
-            return "(" + row + "," + col + ") WARNING: " + message;
+            return "(" + lineNumber + "," + column + ") WARNING: " + message;
         }
     }
 }

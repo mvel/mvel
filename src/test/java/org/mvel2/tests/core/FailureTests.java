@@ -105,7 +105,7 @@ public class FailureTests extends AbstractTest {
             MVEL.compileExpression("for (String s : new java.util.HashMap()) { }", pCtx);
         }
         catch (Exception e) {
-                //   e.printStackTrace();
+            //   e.printStackTrace();
             return;
         }
 
@@ -115,15 +115,32 @@ public class FailureTests extends AbstractTest {
     public void testShouldFail9() {
         try {
 
-            MVEL.eval("foo = ", new HashMap());
+            MVEL.compileExpression("foo = ", new HashMap());
         }
         catch (Exception e) {
-                   e.printStackTrace();
+            e.printStackTrace();
             return;
         }
 
         assertTrue(false);
     }
+
+    public void testShouldFail10() {
+        try {
+            MVEL.compileExpression("foo = [1,1,qq,zz]", ParserContext.create().stronglyTyped());
+        }
+        catch (CompileException e) {
+            e.printStackTrace();
+
+            assertEquals(12, e.getErrors().get(0).getColumn());
+            assertEquals(15, e.getErrors().get(1).getColumn());
+            return;
+        }
+
+
+        assertTrue(false);
+    }
+
 
     public void testShouldFailCleanly() {
         try {

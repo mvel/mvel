@@ -80,7 +80,7 @@ public class NewObjectNode extends ASTNode {
                 }
                 catch (ClassNotFoundException e) {
                     if (pCtx != null && pCtx.isStrongTyping())
-                        pCtx.addError(new ErrorDetail("could not resolve class: " + typeDescr.getClassName(), true, pCtx));
+                        pCtx.addError(new ErrorDetail(expr, start, true, "could not resolve class: " + typeDescr.getClassName()));
 
                     // do nothing.
                 }
@@ -102,7 +102,7 @@ public class NewObjectNode extends ASTNode {
 
             if (pCtx != null && pCtx.isStrongTyping()) {
                 if (egressType == null) {
-                    pCtx.addError(new ErrorDetail("could not resolve class: " + typeDescr.getClassName(), true, pCtx));
+                    pCtx.addError(new ErrorDetail(expr, start, true, "could not resolve class: " + typeDescr.getClassName()));
                     return;
                 }
 
@@ -116,8 +116,8 @@ public class NewObjectNode extends ASTNode {
 
                     if (getBestConstructorCandidate(parms, egressType, true) == null) {
                         if (pCtx.isStrongTyping())
-                            pCtx.addError(new ErrorDetail("could not resolve constructor " + typeDescr.getClassName()
-                                    + Arrays.toString(parms), pCtx.isStrongTyping(), pCtx));
+                            pCtx.addError(new ErrorDetail(expr, start, pCtx.isStrongTyping(), "could not resolve constructor " + typeDescr.getClassName()
+                                    + Arrays.toString(parms)));
                     }
                 }
             }
@@ -282,7 +282,7 @@ public class NewObjectNode extends ASTNode {
             throw new CompileException("unable to resolve class: " + e.getMessage(), expr, start, e);
         }
         catch (NoSuchMethodException e) {
-            throw new CompileException("cannot resolve constructor: " + e.getMessage(), expr, start,  e);
+            throw new CompileException("cannot resolve constructor: " + e.getMessage(), expr, start, e);
         }
         catch (Exception e) {
             throw new CompileException("could not instantiate class: " + e.getMessage(), expr, start, e);

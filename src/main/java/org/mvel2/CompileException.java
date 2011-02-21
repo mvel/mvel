@@ -51,8 +51,9 @@ public class CompileException extends RuntimeException {
 
         if (!errors.isEmpty()) {
             ErrorDetail detail = errors.iterator().next();
-            this.column = detail.getCol();
-            this.lineNumber = detail.getRow();
+            this.cursor = detail.getCursor();
+            this.lineNumber = detail.getLineNumber();
+            this.column = detail.getColumn();
         }
 
         this.errors = errors;
@@ -80,6 +81,8 @@ public class CompileException extends RuntimeException {
     }
 
     private void calcRowAndColumn() {
+        if (lineNumber > 1 || column > 1) return;
+
         int row = 1;
         int col = 1;
 
@@ -91,7 +94,7 @@ public class CompileException extends RuntimeException {
                     continue;
                 case '\n':
                     row++;
-                    col = 0;
+                    col = 1;
                     break;
 
                 default:
@@ -133,24 +136,26 @@ public class CompileException extends RuntimeException {
 
         int matchStart = cursor;
         if (matchStart > 0) {
-            matchStart--;
-            while (matchStart > 0 && !isWhitespace(expr[matchStart])) {
+            while (matchStart > 0 && !isWhitespace(expr[matchStart-1])) {
                 matchStart--;
             }
         }
 
         int matchOffset = cursor - matchStart;
 
+
         String match = new String(expr, matchStart, expr.length - matchStart);
-        Makematch: for (int i = 0; i < match.length(); i++) {
+        Makematch:
+        for (int i = 0; i < match.length(); i++) {
             switch (match.charAt(i)) {
                 case '\n':
+                case ')':
                     match = match.substring(0, i);
                     break Makematch;
-                default:
-                    if (isWhitespace(match.charAt(i))) {
-                        break Makematch;
-                    }
+//                default:
+//                    if (isWhitespace(match.charAt(i))) {
+//                        break Makematch;
+//                    }
             }
         }
 
@@ -174,8 +179,11 @@ public class CompileException extends RuntimeException {
                     cs = cs.substring(firstCr + 1, cs.length() - (firstCr + 1));
                 }
             }
-            else {
+            else if (firstCr < matchIndex) {
                 cs = cs.substring(firstCr + 1, lastCr);
+            }
+            else {
+                cs = cs.substring(0, firstCr);
             }
         }
         while (true);
@@ -208,7 +216,7 @@ public class CompileException extends RuntimeException {
 
         if (lineNumber != -1) {
             appender.append('\n')
-                    .append("[Line: " + lineNumber + ", Column: " + (column+1) + "]");
+                    .append("[Line: " + lineNumber + ", Column: " + (column) + "]");
         }
         return appender.toString();
     }

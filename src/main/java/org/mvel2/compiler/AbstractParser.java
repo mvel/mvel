@@ -2248,13 +2248,13 @@ public class AbstractParser implements Parser, Serializable {
     }
 
     protected void addFatalError(String message) {
-        pCtx.addError(new ErrorDetail(pCtx.getLineCount(),
-                pCtx.getRootParser().getCursor() + cursor - getParserContext().getLineOffset(), true, message));
+        pCtx.addError(new ErrorDetail(expr, st, true, message));
     }
 
-    protected void addFatalError(String message, int row, int cols) {
-        getParserContext().addError(new ErrorDetail(row, cols, true, message));
+    protected void addFatalError(String message, int start) {
+        pCtx.addError(new ErrorDetail(expr, start, true, message));
     }
+
 
     public static final int LEVEL_5_CONTROL_FLOW = 5;
     public static final int LEVEL_4_ASSIGNMENT = 4;
