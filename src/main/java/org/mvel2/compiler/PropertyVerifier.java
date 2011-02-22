@@ -258,7 +258,6 @@ public class PropertyVerifier extends AbstractOptimizer {
                         throw new CompileException("in verifier: ", expr, start, e);
                     }
                 }
-
             }
             else if (ctx != null && ctx.getClass() == Class.class) {
                 for (Method m : ctx.getMethods()) {
