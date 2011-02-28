@@ -42,8 +42,8 @@ public class ForNode extends BlockNode {
     protected ExecutableStatement after;
 
     public ForNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
-        boolean varsEscape = handleCond(this.expr = expr, this.start = start, this.offset = offset, fields, pCtx);
-        this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, pCtx);
+        boolean varsEscape = buildForEach(this.expr = expr, this.start = start, this.offset = offset,
+                this.blockStart = blockStart, this.blockOffset = blockEnd, fields, pCtx);
 
         if ((fields & COMPILE_IMMEDIATE) != 0 && compiledBlock.isEmptyStatement() && !varsEscape) {
             throw new RedundantCodeException();
@@ -51,7 +51,7 @@ public class ForNode extends BlockNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(0), factory);
+        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(1), factory);
         for (initializer.getValue(ctx, thisValue, ctxFactory); (Boolean) condition.getValue(ctx, thisValue, ctxFactory); after.getValue(ctx, thisValue, ctxFactory)) {
             compiledBlock.getValue(ctx, thisValue, ctxFactory);
         }
@@ -59,19 +59,22 @@ public class ForNode extends BlockNode {
     }
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        for (initializer.getValue(ctx, thisValue, factory = new MapVariableResolverFactory(new HashMap<String, Object>(0), factory)); (Boolean) condition.getValue(ctx, thisValue, factory); after.getValue(ctx, thisValue, factory)) {
+        for (initializer.getValue(ctx, thisValue, factory = new MapVariableResolverFactory(new HashMap<String, Object>(1), factory)); (Boolean) condition.getValue(ctx, thisValue, factory); after.getValue(ctx, thisValue, factory)) {
             compiledBlock.getValue(ctx, thisValue, factory);
         }
 
         return null;
     }
 
-    private boolean handleCond(char[] condition, int start, int offset, int fields, ParserContext pCtx) {
+    private boolean buildForEach(char[] condition, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
         int end = start + offset;
         int cursor = nextCondPart(condition, start, end, false);
+
+        boolean varsEscape = false;
+
         try {
             ParserContext spCtx = pCtx;
-            if (pCtx != null && (fields & COMPILE_IMMEDIATE) != 0)
+            if (pCtx != null)
                 spCtx = pCtx.createSubcontext().createColoringSubcontext();
 
             this.initializer = (ExecutableStatement) subCompileExpression(condition, start, cursor - start - 1, spCtx);
@@ -84,15 +87,17 @@ public class ForNode extends BlockNode {
 
             if (spCtx != null && (fields & COMPILE_IMMEDIATE) != 0 && spCtx.isVariablesEscape()) {
                 if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
-                return true;
+                varsEscape = true;
             }
-            if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
+
+            this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, spCtx);
+      //      if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
 
         }
         catch (NegativeArraySizeException e) {
             throw new CompileException("wrong syntax; did you mean to use 'foreach'?", expr, start);
         }
-        return false;
+        return varsEscape;
     }
 
     private static int nextCondPart(char[] condition, int cursor, int end, boolean allowEnd) {

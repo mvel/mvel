@@ -377,4 +377,14 @@ public class ControlFlowTests extends AbstractTest {
                 test("if (false) 'bar'; else 'foo';"));
     }
 
+    public void testForInitializerScope() {
+        String ex = "for (int i = 0; i < 10; i++) { 'fop'; }\n" +
+                "for (int i = 0; i < 10; i++) { 'foo'; }";
+
+        Serializable s = MVEL.compileExpression(ex);
+
+        MVEL.executeExpression(s, new HashMap());
+    }
+
+
 }

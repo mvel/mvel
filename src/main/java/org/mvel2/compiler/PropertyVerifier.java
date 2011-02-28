@@ -18,10 +18,7 @@
 
 package org.mvel2.compiler;
 
-import org.mvel2.CompileException;
-import org.mvel2.MVEL;
-import org.mvel2.ParserContext;
-import org.mvel2.PropertyAccessException;
+import org.mvel2.*;
 import org.mvel2.ast.Function;
 import org.mvel2.optimizers.AbstractOptimizer;
 import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
@@ -369,8 +366,8 @@ public class PropertyVerifier extends AbstractOptimizer {
                 Function f = pCtx.getFunction(name);
                 f.checkArgumentCount(
                         parseParameterList(
-                            (((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
-                             ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
+                                (((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
+                                        ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
 
                 return f.getEgressType();
             }
@@ -409,9 +406,39 @@ public class PropertyVerifier extends AbstractOptimizer {
              *  Subcompile all the arguments to determine their known types.
              */
             //  ExpressionCompiler compiler;
-            CompiledExpression ce;
+
+            List<ErrorDetail> errors = pCtx.getErrorList().isEmpty() ?
+                    pCtx.getErrorList() : new ArrayList<ErrorDetail>(pCtx.getErrorList());
+
+            CompileException rethrow = null;
             for (int i = 0; i < subtokens.size(); i++) {
-                args[i] = MVEL.analyze(subtokens.get(i), pCtx);
+                try {
+                    args[i] = MVEL.analyze(subtokens.get(i), pCtx);
+                }
+                catch (CompileException e) {
+                    e.setExpr(expr);
+                    e.setCursor(this.st);
+                    rethrow = e;
+                }
+
+                if (errors.size() < pCtx.getErrorList().size()) {
+                    for (ErrorDetail detail : pCtx.getErrorList()) {
+                        if (errors.contains(detail)) continue;
+                        else {
+                            detail.setExpr(expr);
+                            detail.setCursor(new String(expr).substring(this.st).indexOf(new String(subtokens.get(i))) + this.st);
+                            detail.setColumn(0);
+                            detail.setLineNumber(0);
+                            detail.calcRowAndColumn();
+                        }
+                    }
+                }
+
+                if (rethrow != null) {
+
+                    throw rethrow;
+                }
+
             }
         }
 

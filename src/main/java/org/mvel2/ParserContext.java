@@ -498,7 +498,7 @@ public class ParserContext implements Serializable {
     }
 
     public List<ErrorDetail> getErrorList() {
-        return errorList;
+        return errorList == null ? Collections.<ErrorDetail>emptyList() : errorList;
     }
 
     public void setErrorList(List<ErrorDetail> errorList) {

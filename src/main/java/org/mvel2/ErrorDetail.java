@@ -60,7 +60,7 @@ public class ErrorDetail {
         return cursor;
     }
 
-    private void calcRowAndColumn() {
+    public void calcRowAndColumn() {
         int row = 1;
         int col = 1;
 
@@ -90,6 +90,22 @@ public class ErrorDetail {
 
     public int getColumn() {
         return column;
+    }
+
+    public void setCursor(int cursor) {
+        this.cursor = cursor;
+    }
+
+    public void setExpr(char[] expr) {
+        this.expr = expr;
+    }
+
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
+
+    public void setColumn(int column) {
+        this.column = column;
     }
 
     public String toString() {
