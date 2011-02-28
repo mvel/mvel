@@ -833,10 +833,10 @@ public class PropertyAccessor {
             args = ParseTools.EMPTY_OBJ_ARR;
         }
         else {
-            String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
-            args = new Object[subtokens.length];
-            for (int i = 0; i < subtokens.length; i++) {
-                args[i] = eval(subtokens[i], thisReference, variableFactory);
+            List<char[]> subtokens = parseParameterList(tk.toCharArray(), 0, -1);
+            args = new Object[subtokens.size()];
+            for (int i = 0; i < subtokens.size(); i++) {
+                args[i] = eval(subtokens.get(i), thisReference, variableFactory);
             }
         }
 

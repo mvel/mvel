@@ -73,7 +73,7 @@ public class ParseTools {
         }
     }
 
-    public static String[] parseMethodOrConstructor(char[] parm) {
+    public static List<char[]> parseMethodOrConstructor(char[] parm) {
         int start = -1;
         for (int i = 0; i < parm.length; i++) {
             if (parm[i] == '(') {
@@ -85,7 +85,7 @@ public class ParseTools {
             return parseParameterList(parm, --start + 1, balancedCapture(parm, start, '(') - start - 1);
         }
 
-        return EMPTY_STR_ARR;
+        return Collections.emptyList();
     }
 
 
@@ -156,8 +156,8 @@ public class ParseTools {
     }
 
 
-    public static String[] parseParameterList(char[] parm, int offset, int length) {
-        List<String> list = new LinkedList<String>();
+    public static List<char[]> parseParameterList(char[] parm, int offset, int length) {
+        List<char[]> list = new ArrayList<char[]>();
 
         if (length == -1)
             length = parm.length;
@@ -187,7 +187,7 @@ public class ParseTools {
                         while (isWhitespace(parm[start]))
                             start++;
 
-                        list.add(new String(parm, start, i - start));
+                        list.add(subsetTrimmed(parm, start, i - start));
                     }
 
                     while (isWhitespace(parm[i]))
@@ -198,17 +198,17 @@ public class ParseTools {
         }
 
         if (start < (length + offset) && i > start) {
-            String s = createStringTrimmed(parm, start, i - start);
-            if (s.length() > 0)
+            char[] s = subsetTrimmed(parm, start, i - start);
+            if (s.length > 0)
                 list.add(s);
         }
         else if (list.size() == 0) {
-            String s = createStringTrimmed(parm, start, length);
-            if (s.length() > 0)
+            char[] s = subsetTrimmed(parm, start, length);
+            if (s.length > 0)
                 list.add(s);
         }
 
-        return list.toArray(new String[list.size()]);
+        return list;
     }
 
     private static Map<String, Map<Integer, WeakReference<Method>>> RESOLVED_METH_CACHE = new WeakHashMap<String, Map<Integer, WeakReference<Method>>>(10);
@@ -900,8 +900,32 @@ public class ParseTools {
         }
     }
 
+    public static char[] subsetTrimmed(char[] array, int start, int length) {
+        if (length <= 0) {
+            return new char[0];
+        }
+
+        int end = start + length;
+        while (isWhitespace(array[end - 1])) {
+            end--;
+        }
+
+        while (isWhitespace(array[start]) && start < end) {
+            start++;
+        }
+
+        length = end - start;
+
+        if (length == 0) {
+            return new char[0];
+        }
+
+        return subset(array, start, length);
+    }
+
     public static char[] subset(char[] array, int start, int length) {
-        if (length < 0) return new char[0];
+
+
         char[] newArray = new char[length];
 
         for (int i = 0; i < newArray.length; i++) {
@@ -969,7 +993,7 @@ public class ParseTools {
         }
     }
 
-    private static final Map<Class, Integer> typeCodes = new HashMap<Class, Integer>(30,  0.5f);
+    private static final Map<Class, Integer> typeCodes = new HashMap<Class, Integer>(30, 0.5f);
 
     static {
         typeCodes.put(Integer.class, DataTypes.W_INTEGER);
@@ -1057,7 +1081,7 @@ public class ParseTools {
 //        if (BlankLiteral.class == cls)
 //            return DataTypes.EMPTY;
 
-    //    return DataTypes.OBJECT;
+        //    return DataTypes.OBJECT;
     }
 
     public static boolean isNumericallyCoercible(Class target, Class parm) {

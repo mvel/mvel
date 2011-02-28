@@ -31,6 +31,8 @@ import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
 
 import org.mvel2.util.*;
 
+import java.util.List;
+
 import static org.mvel2.ast.ASTNode.OPT_SUBTR;
 import static org.mvel2.util.CompilerTools.finalizePayload;
 
@@ -436,9 +438,9 @@ public class ExpressionCompiler extends AbstractParser {
             else if (tk instanceof NewObjectNode) {
                 // this is a bit of a hack for now.
                 NewObjectNode n = (NewObjectNode) tk;
-                String[] parms = ParseTools.parseMethodOrConstructor(tk.getNameAsArray());
+                List<char[]> parms = ParseTools.parseMethodOrConstructor(tk.getNameAsArray());
                 if (parms != null) {
-                    for (String p : parms) {
+                    for (char[] p : parms) {
                         MVEL.analyze(p, pCtx);
                     }
                 }

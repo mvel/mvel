@@ -1654,16 +1654,16 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             es = null;
         }
         else {
-            String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
+            List<char[]> subtokens = parseParameterList(tk.toCharArray(), 0, -1);
 
-            es = new ExecutableStatement[subtokens.length];
-            args = new Object[subtokens.length];
-            argTypes = new Class[subtokens.length];
+            es = new ExecutableStatement[subtokens.size()];
+            args = new Object[subtokens.size()];
+            argTypes = new Class[subtokens.size()];
             preConvArgs = new Object[es.length];
 
-            for (int i = 0; i < subtokens.length; i++) {
-                assert debug("subtoken[" + i + "] { " + subtokens[i] + " }");
-                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray(), pCtx))
+            for (int i = 0; i < subtokens.size(); i++) {
+                assert debug("subtoken[" + i + "] { " + new String(subtokens.get(i)) + " }");
+                preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens.get(i), pCtx))
                         .getValue(this.ctx, this.thisRef, variableFactory);
 
                 if (es[i].isExplicitCast()) argTypes[i] = es[i].getKnownEgressType();
@@ -2935,12 +2935,12 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         this.pCtx = pCtx;
 
         String[] cnsRes = captureContructorAndResidual(property, start, offset);
-        String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
+        List<char[]> constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
         try {
             if (constructorParms != null) {
-                for (String constructorParm : constructorParms) {
-                    compiledInputs.add((ExecutableStatement) subCompileExpression(constructorParm.toCharArray(), pCtx));
+                for (char[] constructorParm : constructorParms) {
+                    compiledInputs.add((ExecutableStatement) subCompileExpression(constructorParm, pCtx));
                 }
 
                 Class cls = findClass(factory, new String(subset(property, 0, findFirst('(', start, length, property))), pCtx);
@@ -2950,7 +2950,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 assert debug("DUP");
                 mv.visitInsn(DUP);
 
-                Object[] parms = new Object[constructorParms.length];
+                Object[] parms = new Object[constructorParms.size()];
 
                 int i = 0;
                 for (ExecutableStatement es : compiledInputs) {
@@ -2973,7 +2973,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 this.returnType = cns.getDeclaringClass();
 
                 Class tg;
-                for (i = 0; i < constructorParms.length; i++) {
+                for (i = 0; i < constructorParms.size(); i++) {
                     assert debug("ALOAD 0");
                     mv.visitVarInsn(ALOAD, 0);
                     assert debug("GETFIELD p" + i);

@@ -45,6 +45,7 @@ import static org.mvel2.util.ParseTools.getBestConstructorCandidate;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Christopher Brock
@@ -107,11 +108,11 @@ public class NewObjectNode extends ASTNode {
                 }
 
                 if (!typeDescr.isArray()) {
-                    final String[] constructorParms
+                    final List<char[]> constructorParms
                             = parseMethodOrConstructor(captureContructorAndResidual(expr, start, offset)[0].toCharArray());
-                    final Class[] parms = new Class[constructorParms.length];
+                    final Class[] parms = new Class[constructorParms.size()];
                     for (int i = 0; i < parms.length; i++) {
-                        parms[i] = analyze(constructorParms[i], pCtx);
+                        parms[i] = analyze(constructorParms.get(i), pCtx);
                     }
 
                     if (getBestConstructorCandidate(parms, egressType, true) == null) {
@@ -121,7 +122,6 @@ public class NewObjectNode extends ASTNode {
                     }
                 }
             }
-
         }
     }
 
@@ -235,14 +235,14 @@ public class NewObjectNode extends ASTNode {
             }
             else {
                 String[] cnsRes = captureContructorAndResidual(name, 0, name.length);
-                String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
+                List<char[]> constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
                 if (constructorParms != null) {
                     Class cls = findClass(factory, new String(subset(name, 0, findFirst('(', 0, name.length, name))).trim(), null);
 
-                    Object[] parms = new Object[constructorParms.length];
-                    for (int i = 0; i < constructorParms.length; i++) {
-                        parms[i] = eval(constructorParms[i], ctx, factory);
+                    Object[] parms = new Object[constructorParms.size()];
+                    for (int i = 0; i < constructorParms.size(); i++) {
+                        parms[i] = eval(constructorParms.get(i), ctx, factory);
                     }
 
                     Constructor cns = getBestConstructorCandidate(parms, cls, false);

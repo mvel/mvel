@@ -6,6 +6,7 @@ import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.Bar;
 import org.mvel2.tests.core.res.Foo;
+import org.mvel2.util.ParseTools;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -149,4 +150,5 @@ public class ArraysTests extends AbstractTest {
                 String[].class);
         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("x.length", context);
     }
+
 }

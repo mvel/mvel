@@ -890,19 +890,19 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             es = null;
         }
         else {
-            String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
-            es = new ExecutableStatement[subtokens.length];
-            args = new Object[subtokens.length];
-            argTypes = new Class[subtokens.length];
+            List<char[]> subtokens = parseParameterList(tk.toCharArray(), 0, -1);
+            es = new ExecutableStatement[subtokens.size()];
+            args = new Object[subtokens.size()];
+            argTypes = new Class[subtokens.size()];
 
-            for (int i = 0; i < subtokens.length; i++) {
+            for (int i = 0; i < subtokens.size(); i++) {
                 try {
-                    args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens[i].toCharArray(), pCtx))
+                    args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens.get(i), pCtx))
                             .getValue(this.ctx, thisRef, variableFactory);
                 }
                 catch (CompileException e) {
                     e.setExpr(expr);
-                    e.setCursor(new String(expr).substring(this.start).indexOf(subtokens[i]) + this.start + e.getCursor());
+                    e.setCursor(new String(expr).substring(this.start).indexOf(new String(subtokens.get(i))) + this.start + e.getCursor());
                     throw e;
                 }
 
@@ -1172,20 +1172,20 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             ClassNotFoundException, NoSuchMethodException {
 
         String[] cnsRes = captureContructorAndResidual(expression, start, length);
-        String[] constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
+        List<char[]> constructorParms = parseMethodOrConstructor(cnsRes[0].toCharArray());
 
         if (constructorParms != null) {
             String s = new String(subset(expression, 0, ArrayTools.findFirst('(', start, length, expression)));
             Class cls = ParseTools.findClass(vars, s, pCtx);
 
-            ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.length];
+            ExecutableStatement[] cStmts = new ExecutableStatement[constructorParms.size()];
 
-            for (int i = 0; i < constructorParms.length; i++) {
-                cStmts[i] = (ExecutableStatement) subCompileExpression(constructorParms[i].toCharArray(), pCtx);
+            for (int i = 0; i < constructorParms.size(); i++) {
+                cStmts[i] = (ExecutableStatement) subCompileExpression(constructorParms.get(i), pCtx);
             }
 
-            Object[] parms = new Object[constructorParms.length];
-            for (int i = 0; i < constructorParms.length; i++) {
+            Object[] parms = new Object[constructorParms.size()];
+            for (int i = 0; i < constructorParms.size(); i++) {
                 parms[i] = cStmts[i].getValue(ctx, vars);
             }
 

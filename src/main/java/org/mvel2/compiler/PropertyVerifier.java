@@ -29,6 +29,7 @@ import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 
+import org.mvel2.util.ParseTools;
 import org.mvel2.util.StringAppender;
 
 import java.lang.reflect.*;
@@ -175,7 +176,6 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
 
-
         if (member == null && MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
             return getMethod(ctx, property);
         }
@@ -195,7 +195,6 @@ public class PropertyVerifier extends AbstractOptimizer {
                     for (int i = 0; i < gpt.length; i++) {
                         paramTypes.put(classArgs[i].toString(), (Class) gpt[i]);
                     }
-
                 }
 
                 return f.getType();
@@ -368,8 +367,11 @@ public class PropertyVerifier extends AbstractOptimizer {
             else if (pCtx.hasFunction(name)) {
                 resolvedExternally = false;
                 Function f = pCtx.getFunction(name);
-                f.checkArgumentCount(parseParameterList((((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
-                        new String(expr, st + 1, cursor - st - 1) : "").toCharArray(), 0, -1).length);
+                f.checkArgumentCount(
+                        parseParameterList(
+                            (((cursor = balancedCapture(expr, cursor, end, '(')) - st) > 1 ?
+                             ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
+
                 return f.getEgressType();
             }
         }
@@ -393,23 +395,23 @@ public class PropertyVerifier extends AbstractOptimizer {
          * Parse out the arguments list.
          */
         Class[] args;
-        String[] subtokens = parseParameterList(tk.toCharArray(), 0, -1);
+        List<char[]> subtokens = parseParameterList(tk.toCharArray(), 0, -1);
 
-        if (subtokens.length == 0) {
+        if (subtokens.size() == 0) {
             args = new Class[0];
-            subtokens = new String[0];
+            subtokens = Collections.emptyList();
         }
         else {
             //   ParserContext subCtx = pCtx.createSubcontext();
-            args = new Class[subtokens.length];
+            args = new Class[subtokens.size()];
 
             /**
              *  Subcompile all the arguments to determine their known types.
              */
             //  ExpressionCompiler compiler;
             CompiledExpression ce;
-            for (int i = 0; i < subtokens.length; i++) {
-                args[i] = MVEL.analyze(subtokens[i], pCtx);
+            for (int i = 0; i < subtokens.size(); i++) {
+                args[i] = MVEL.analyze(subtokens.get(i), pCtx);
             }
         }
 
@@ -457,7 +459,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             for (int i = 0; i < gpt.length; i++) {
                 if (gpt[i] instanceof ParameterizedType) {
                     pt = (ParameterizedType) gpt[i];
-                    if ((z = pCtx.getImport(subtokens[i])) != null) {
+                    if ((z = pCtx.getImport(new String(subtokens.get(i)))) != null) {
                         /**
                          * We record the value of the type parameter to our typeArgs Map.
                          */
