@@ -23,6 +23,7 @@ import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.util.ParseTools;
 
 import java.util.HashMap;
 
@@ -79,8 +80,22 @@ public class ForNode extends BlockNode {
 
             this.initializer = (ExecutableStatement) subCompileExpression(condition, start, cursor - start - 1, spCtx);
 
-            expectType(this.condition = (ExecutableStatement) subCompileExpression(condition, start = cursor,
-                    (cursor = nextCondPart(condition, start, end, false)) - start - 1, spCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+            try {
+                expectType(this.condition = (ExecutableStatement) subCompileExpression(condition, start = cursor,
+                        (cursor = nextCondPart(condition, start, end, false)) - start - 1, spCtx), Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
+            }
+            catch (CompileException e) {
+                if (e.getExpr().length == 0) {
+                    e.setExpr(expr);
+
+                    while (start < expr.length && ParseTools.isWhitespace(expr[start])) {
+                        start++;
+                    }
+
+                    e.setCursor(start);
+                }
+                throw e;
+            }
 
             this.after = (ExecutableStatement)
                     subCompileExpression(condition, start = cursor, (nextCondPart(condition, start, end, true)) - start, spCtx);
@@ -91,7 +106,7 @@ public class ForNode extends BlockNode {
             }
 
             this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, spCtx);
-      //      if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
+            //      if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
 
         }
         catch (NegativeArraySizeException e) {

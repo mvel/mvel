@@ -836,7 +836,7 @@ public class AbstractParser implements Parser, Serializable {
                             expectNextChar_IW('{');
 
                             return lastNode = new ThisWithNode(expr, st, cursor - st - 1
-                                    , cursor +1,
+                                    , cursor + 1,
                                     (cursor = balancedCaptureWithLineAccounting(expr,
                                             cursor, end, '{', pCtx) + 1) - 3, fields, pCtx);
                         }
@@ -1206,10 +1206,12 @@ public class AbstractParser implements Parser, Serializable {
             throw c;
         }
         catch (CompileException e) {
-            e.setExpr(expr);
-            e.setLineNumber(pCtx == null ? 1 : pCtx.getLineCount());
-            e.setCursor(cursor);
-            e.setColumn(cursor - (pCtx == null ? 0 : pCtx.getLineOffset()));
+            if (e.getExpr() != expr) {
+                e.setExpr(expr);
+                e.setLineNumber(pCtx == null ? 1 : pCtx.getLineCount());
+                e.setCursor(cursor);
+                e.setColumn(cursor - (pCtx == null ? 0 : pCtx.getLineOffset()));
+            }
             throw e;
         }
     }
@@ -1615,7 +1617,7 @@ public class AbstractParser implements Parser, Serializable {
         skipWhitespace();
 
         if (cursor >= end) {
-            throw new CompileException("unexpected end of statement", expr, cursor);
+            throw new CompileException("unexpected end of statement", expr, end);
         }
         else if (expr[cursor] == '{') {
             blockEnd = cursor = balancedCaptureWithLineAccounting(expr, blockStart = cursor, end, '{', pCtx);
@@ -1933,7 +1935,7 @@ public class AbstractParser implements Parser, Serializable {
                     if (cursor + 1 != end) {
                         switch (expr[cursor + 1]) {
                             case '/':
-                               // expr[cursor++] = ' ';
+                                // expr[cursor++] = ' ';
                                 cursor++;
                                 while (cursor != end && expr[cursor] != '\n') {
                                     //expr[cursor++] = ' ';

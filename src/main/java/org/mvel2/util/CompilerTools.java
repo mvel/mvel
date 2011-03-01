@@ -387,12 +387,12 @@ public class CompilerTools {
             if ((retType == null || !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) && (!Object.class.equals(retType)
                     || getCurrentThreadParserContext().isStrictTypeEnforcement())) {
                 throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-                        + (retType != null ? retType.getName() : "null"), new char[0], 0);
+                        + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
             }
         }
         else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(boxPrimitive(retType))) {
             throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-                    + (retType != null ? retType.getName() : "null"), new char[0], 0);
+                    + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
         }
     }
 
@@ -403,12 +403,12 @@ public class CompilerTools {
                     (getCurrentThreadParserContext().isStrictTypeEnforcement()
                             || getCurrentThreadParserContext().isStrictTypeEnforcement()))) {
                 throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-                        + (retType != null ? retType.getName() : "null"), new char[0], 0);
+                        + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
             }
         }
         else if (retType == null || !Object.class.equals(retType) && !boxPrimitive(type).isAssignableFrom(retType)) {
             throw new CompileException("was expecting type: " + type.getName() + "; but found type: "
-                    + (retType != null ? retType.getName() : "null"), new char[0], 0);
+                    + (retType != null ? retType.getName() : "<Unknown>"), new char[0], 0);
         }
     }
 

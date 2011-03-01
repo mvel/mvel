@@ -134,33 +134,34 @@ public class CompileException extends RuntimeException {
             throw e;
         }
 
-        int matchStart = cursor;
-        if (matchStart > 0) {
-            while (matchStart > 0 && !isWhitespace(expr[matchStart-1])) {
-                matchStart--;
+        int matchStart = -1;
+        int matchOffset = 0;
+        String match = null;
+
+        if (cursor < end) {
+            matchStart = cursor;
+            if (matchStart > 0) {
+                while (matchStart > 0 && !isWhitespace(expr[matchStart - 1])) {
+                    matchStart--;
+                }
             }
-        }
 
-        int matchOffset = cursor - matchStart;
+            matchOffset = cursor - matchStart;
 
-
-        String match = new String(expr, matchStart, expr.length - matchStart);
-        Makematch:
-        for (int i = 0; i < match.length(); i++) {
-            switch (match.charAt(i)) {
-                case '\n':
-                case ')':
-                    match = match.substring(0, i);
-                    break Makematch;
-//                default:
-//                    if (isWhitespace(match.charAt(i))) {
-//                        break Makematch;
-//                    }
+            match = new String(expr, matchStart, expr.length - matchStart);
+            Makematch:
+            for (int i = 0; i < match.length(); i++) {
+                switch (match.charAt(i)) {
+                    case '\n':
+                    case ')':
+                        match = match.substring(0, i);
+                        break Makematch;
+                }
             }
-        }
 
-        if (match.length() >= 30) {
-            match = match.substring(0, 30);
+            if (match.length() >= 30) {
+                match = match.substring(0, 30);
+            }
         }
 
         do {
@@ -190,7 +191,12 @@ public class CompileException extends RuntimeException {
 
         String trimmed = cs.trim();
 
-        msgOffset = trimmed.indexOf(match) + matchOffset;
+        if (match != null) {
+            msgOffset = trimmed.indexOf(match) + matchOffset;
+        }
+        else {
+            msgOffset = cs.length() - (cs.length() - trimmed.length());
+        }
 
         return trimmed;
     }

@@ -10,6 +10,10 @@ import java.util.HashMap;
  * Tests to ensure MVEL fails when it should.
  */
 public class FailureTests extends AbstractTest {
+    public void shouldThrowException() {
+        fail("should have thrown exception, but didn't");
+    }
+
     public void testBadParserConstruct() {
         try {
             MVEL.eval("a = 0; a =+++ 5;");
@@ -18,7 +22,7 @@ public class FailureTests extends AbstractTest {
             return;
         }
 
-        assertTrue(false);
+        shouldThrowException();
     }
 
     public void testShouldFail() {
@@ -28,7 +32,8 @@ public class FailureTests extends AbstractTest {
         catch (Exception e) {
             return;
         }
-        assertTrue(false);
+
+        shouldThrowException();
     }
 
     public void testShouldFail2() {
@@ -38,7 +43,8 @@ public class FailureTests extends AbstractTest {
         catch (Exception e) {
             return;
         }
-        assertTrue(false);
+
+        shouldThrowException();
     }
 
     public void testShouldFail3() {
@@ -49,7 +55,8 @@ public class FailureTests extends AbstractTest {
             e.printStackTrace();
             return;
         }
-        assertTrue(false);
+
+        shouldThrowException();
     }
 
     public void testShouldFail4() {
@@ -59,7 +66,8 @@ public class FailureTests extends AbstractTest {
         catch (Exception e) {
             return;
         }
-        assertTrue(false);
+
+        shouldThrowException();
     }
 
     public void testShouldFail5() {
@@ -69,7 +77,8 @@ public class FailureTests extends AbstractTest {
         catch (Exception e) {
             return;
         }
-        assertTrue(false);
+
+        shouldThrowException();
     }
 
     public void testShouldFail6() {
@@ -81,7 +90,8 @@ public class FailureTests extends AbstractTest {
         catch (Exception e) {
             return;
         }
-        assertTrue(false);
+
+        shouldThrowException();
     }
 
     public void testShouldFail7() {
@@ -94,7 +104,8 @@ public class FailureTests extends AbstractTest {
 //            e.printStackTrace();
             return;
         }
-        assertTrue(false);
+
+        shouldThrowException();
     }
 
     public void testShouldFail8() {
@@ -109,7 +120,7 @@ public class FailureTests extends AbstractTest {
             return;
         }
 
-        assertTrue(false);
+        shouldThrowException();
     }
 
     public void testShouldFail9() {
@@ -122,7 +133,7 @@ public class FailureTests extends AbstractTest {
             return;
         }
 
-        assertTrue(false);
+        shouldThrowException();
     }
 
     public void testShouldFail10() {
@@ -137,8 +148,7 @@ public class FailureTests extends AbstractTest {
             return;
         }
 
-
-        assertTrue(false);
+        shouldThrowException();
     }
 
 
@@ -159,8 +169,18 @@ public class FailureTests extends AbstractTest {
             e.printStackTrace();
             fail("Unclean failure");
         }
+    }
 
+    public void testShouldFail11() {
+        try {
+            MVEL.eval("for (int i = 0; i --; ) {}");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
 
+        shouldThrowException();
     }
 
 }
