@@ -177,7 +177,7 @@ public class CompileException extends RuntimeException {
                     cs = cs.substring(0, firstCr);
                 }
                 else if (firstCr < matchIndex) {
-                    cs = cs.substring(firstCr + 1, cs.length() - (firstCr + 1));
+                    cs = cs.substring(firstCr + 1, cs.length());
                 }
             }
             else if (firstCr < matchIndex) {

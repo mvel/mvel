@@ -183,4 +183,15 @@ public class FailureTests extends AbstractTest {
         shouldThrowException();
     }
 
+    public void testShouldFail12() {
+        try {
+            MVEL.eval("def x(_");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+    }
+
 }

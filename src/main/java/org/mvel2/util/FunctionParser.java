@@ -13,7 +13,9 @@ public class FunctionParser {
     private String name;
 
     private int cursor;
-    private int endOffset;
+    private int start;
+    private int length;
+
     private int fields;
     private char[] expr;
     private ParserContext pCtx;
@@ -22,8 +24,8 @@ public class FunctionParser {
 
     public FunctionParser(String functionName, int cursor, int endOffset, char[] expr, int fields, ParserContext pCtx, ExecutionStack splitAccumulator) {
         this.name = functionName;
-        this.cursor = cursor;
-        this.endOffset = endOffset;
+        this.cursor = this.start = cursor;
+        this.length = endOffset;
 
         this.expr = expr;
         this.fields = fields;
@@ -40,9 +42,9 @@ public class FunctionParser {
         int blockStart;
         int blockEnd;
 
-        cursor = ParseTools.captureToNextTokenJunction(expr, cursor, cursor + endOffset, pCtx);
+        int end = cursor + length;
 
-        int end = cursor + endOffset;
+        cursor = ParseTools.captureToNextTokenJunction(expr, cursor, end, pCtx);
 
         if (expr[cursor = ParseTools.nextNonBlank(expr, cursor)] == '(') {
             /**
@@ -55,7 +57,7 @@ public class FunctionParser {
 
             cursor = ParseTools.skipWhitespace(expr, cursor, pCtx);
 
-            if (cursor >= endOffset) {
+            if (cursor >= end) {
                 throw new CompileException("incomplete statement", expr, cursor);
             }
             else if (expr[cursor] == '{') {

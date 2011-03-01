@@ -1188,22 +1188,13 @@ public class AbstractParser implements Parser, Serializable {
             return nextToken();
         }
         catch (NumberFormatException e) {
-            CompileException c = new CompileException("badly formatted number: " + e.getMessage(), expr, st, e);
-            c.setLineNumber(line);
-            c.setColumn(cursor - lastLineStart);
-            throw c;
+            throw new CompileException("badly formatted number: " + e.getMessage(), expr, st, e);
         }
         catch (StringIndexOutOfBoundsException e) {
-            CompileException c = new CompileException("unexpected end of statement", expr, st, e);
-            c.setLineNumber(line);
-            c.setColumn(cursor - lastLineStart);
-            throw c;
+            throw new CompileException("unexpected end of statement", expr, cursor, e);
         }
         catch (ArrayIndexOutOfBoundsException e) {
-            CompileException c = new CompileException("unexpected end of statement", expr, st, e);
-            c.setLineNumber(line);
-            c.setColumn(cursor - lastLineStart);
-            throw c;
+            throw new CompileException("unexpected end of statement", expr, cursor, e);
         }
         catch (CompileException e) {
             if (e.getExpr() != expr) {
@@ -1556,7 +1547,7 @@ public class AbstractParser implements Parser, Serializable {
 
                 if (pCtx == null) pCtx = getParserContext();
 
-                FunctionParser parser = new FunctionParser(name, cursor, expr.length, expr, fields, pCtx, splitAccumulator);
+                FunctionParser parser = new FunctionParser(name, cursor, end - cursor, expr, fields, pCtx, splitAccumulator);
                 Function function = parser.parse();
                 cursor = parser.getCursor();
 

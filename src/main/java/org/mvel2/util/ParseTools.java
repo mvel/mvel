@@ -1384,6 +1384,7 @@ public class ParseTools {
 
     public static int balancedCaptureWithLineAccounting(char[] chars, int start, int end, char type, ParserContext pCtx) {
         int depth = 1;
+        int st = start;
         char term = type;
         switch (type) {
             case '[':
@@ -1457,13 +1458,13 @@ public class ParseTools {
 
         switch (type) {
             case '[':
-                throw new CompileException("unbalanced braces [ ... ]", chars, start);
+                throw new CompileException("unbalanced braces [ ... ]", chars, st);
             case '{':
-                throw new CompileException("unbalanced braces { ... }", chars, start);
+                throw new CompileException("unbalanced braces { ... }", chars, st);
             case '(':
-                throw new CompileException("unbalanced braces ( ... )", chars, start);
+                throw new CompileException("unbalanced braces ( ... )", chars, st);
             default:
-                throw new CompileException("unterminated string literal", chars, start);
+                throw new CompileException("unterminated string literal", chars, st);
         }
     }
 
