@@ -75,8 +75,12 @@ public class ForNode extends BlockNode {
 
         try {
             ParserContext spCtx = pCtx;
-            if (pCtx != null)
+            if (pCtx != null) {
                 spCtx = pCtx.createSubcontext().createColoringSubcontext();
+            }
+            else {
+                spCtx = new ParserContext();
+            }
 
             this.initializer = (ExecutableStatement) subCompileExpression(condition, start, cursor - start - 1, spCtx);
 

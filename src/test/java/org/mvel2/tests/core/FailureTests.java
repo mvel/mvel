@@ -173,7 +173,7 @@ public class FailureTests extends AbstractTest {
 
     public void testShouldFail11() {
         try {
-            MVEL.eval("for (int i = 0; i --; ) {}");
+            MVEL.eval("for (int i = 0; i--; i++) {}");
         }
         catch (Exception e) {
             e.printStackTrace();

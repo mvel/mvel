@@ -40,6 +40,7 @@ public class IndexedOperativeAssign extends ASTNode {
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             statement = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx);
+            egressType = statement.getKnownEgressType();
         }
     }
 

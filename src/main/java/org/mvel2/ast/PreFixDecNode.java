@@ -19,6 +19,7 @@ package org.mvel2.ast;
 
 import org.mvel2.Operator;
 import org.mvel2.DataTypes;
+import org.mvel2.ParserContext;
 import org.mvel2.math.MathProcessor;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
@@ -29,8 +30,11 @@ import org.mvel2.integration.VariableResolverFactory;
 public class PreFixDecNode extends ASTNode {
     private String name;
 
-    public PreFixDecNode(String name) {
+    public PreFixDecNode(String name, ParserContext pCtx) {
         this.name = name;
+        if (pCtx != null) {
+            this.egressType = pCtx.getVarOrInputType(name);
+        }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

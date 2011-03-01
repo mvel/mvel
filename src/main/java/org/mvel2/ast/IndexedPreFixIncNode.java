@@ -20,6 +20,7 @@ package org.mvel2.ast;
 
 import org.mvel2.Operator;
 import org.mvel2.DataTypes;
+import org.mvel2.ParserContext;
 import org.mvel2.math.MathProcessor;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
@@ -30,8 +31,9 @@ import org.mvel2.integration.VariableResolverFactory;
 public class IndexedPreFixIncNode extends ASTNode {
     private int register;
 
-    public IndexedPreFixIncNode(int register) {
+    public IndexedPreFixIncNode(int register, ParserContext pCtx) {
         this.register = register;
+        this.egressType = pCtx.getVarOrInputType(pCtx.getIndexedVarNames()[register]);
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

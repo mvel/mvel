@@ -501,10 +501,10 @@ public class AbstractParser implements Parser, Serializable {
                                     case '+':
                                         name = new String(subArray(st, trimLeft(cursor)));
                                         if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                                            lastNode = new IndexedPostFixIncNode(idx);
+                                            lastNode = new IndexedPostFixIncNode(idx, pCtx);
                                         }
                                         else {
-                                            lastNode = new PostFixIncNode(name);
+                                            lastNode = new PostFixIncNode(name, pCtx);
                                         }
 
                                         cursor += 2;
@@ -547,10 +547,10 @@ public class AbstractParser implements Parser, Serializable {
                                     case '-':
                                         name = new String(subArray(st, trimLeft(cursor)));
                                         if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                                            lastNode = new IndexedPostFixDecNode(idx);
+                                            lastNode = new IndexedPostFixDecNode(idx, pCtx);
                                         }
                                         else {
-                                            lastNode = new PostFixDecNode(name);
+                                            lastNode = new PostFixDecNode(name, pCtx);
                                         }
                                         cursor += 2;
 
@@ -866,10 +866,10 @@ public class AbstractParser implements Parser, Serializable {
 
                                 name = new String(subArray(st, cursor));
                                 if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                                    return lastNode = new IndexedPreFixDecNode(idx);
+                                    return lastNode = new IndexedPreFixDecNode(idx, pCtx);
                                 }
                                 else {
-                                    return lastNode = new PreFixDecNode(name);
+                                    return lastNode = new PreFixDecNode(name, pCtx);
                                 }
                             }
                             else if ((cursor == start || (lastNode != null &&
@@ -902,10 +902,10 @@ public class AbstractParser implements Parser, Serializable {
 
                                 name = new String(subArray(st, cursor));
                                 if (pCtx != null && (idx = pCtx.variableIndexOf(name)) != -1) {
-                                    return lastNode = new IndexedPreFixIncNode(idx);
+                                    return lastNode = new IndexedPreFixIncNode(idx, pCtx);
                                 }
                                 else {
-                                    return lastNode = new PreFixIncNode(name);
+                                    return lastNode = new PreFixIncNode(name, pCtx);
                                 }
                             }
                             return createOperator(expr, st, cursor++ + 1);
