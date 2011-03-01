@@ -170,7 +170,7 @@ public class CompileException extends RuntimeException {
 
             if (firstCr == -1) break;
 
-            int matchIndex = cs.indexOf(match);
+            int matchIndex = match == null ? 0 : cs.indexOf(match);
 
             if (firstCr != -1 && firstCr == lastCr) {
                 if (firstCr > matchIndex) {
