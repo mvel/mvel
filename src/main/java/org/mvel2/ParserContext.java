@@ -507,6 +507,16 @@ public class ParserContext implements Serializable {
 
     public void addError(ErrorDetail errorDetail) {
         if (errorList == null) errorList = new ArrayList<ErrorDetail>();
+        else {
+            for (ErrorDetail detail: errorList) {
+                if (detail.getMessage().equals(errorDetail.getMessage())
+                        && detail.getColumn() == errorDetail.getColumn()
+                        && detail.getLineNumber() == errorDetail.getLineNumber()) {
+                    return;
+                }
+            }
+        }
+
         if (errorDetail.isCritical()) fatalError = true;
         errorList.add(errorDetail);
     }

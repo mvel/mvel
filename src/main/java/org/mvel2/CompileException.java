@@ -21,6 +21,7 @@ package org.mvel2;
 import org.mvel2.util.StringAppender;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static java.lang.String.copyValueOf;
@@ -236,7 +237,7 @@ public class CompileException extends RuntimeException {
     }
 
     public List<ErrorDetail> getErrors() {
-        return errors != null ? errors : new ArrayList<ErrorDetail>(0);
+        return errors != null ? errors : Collections.<ErrorDetail>emptyList();
     }
 
     public void setErrors(List<ErrorDetail> errors) {

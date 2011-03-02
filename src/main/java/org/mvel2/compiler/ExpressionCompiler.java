@@ -31,6 +31,7 @@ import static org.mvel2.ast.ASTNode.COMPILE_IMMEDIATE;
 
 import org.mvel2.util.*;
 
+import java.util.Iterator;
 import java.util.List;
 
 import static org.mvel2.ast.ASTNode.OPT_SUBTR;
@@ -76,10 +77,19 @@ public class ExpressionCompiler extends AbstractParser {
 
                 StringAppender err = new StringAppender();
 
-                for (ErrorDetail e : pCtx.getErrorList()) {
-                    err.append("\n - ").append("(").append(e.getLineNumber()).append(",").append(e.getColumn()).append(")")
-                            .append(" ").append(e.getMessage());
+                Iterator<ErrorDetail> iter = pCtx.getErrorList().iterator();
+                ErrorDetail e;
+                while (iter.hasNext()) {
+                    e = iter.next();
+                    if (e.getExpr() != expr) {
+                        iter.remove();
+                    }
+                    else {
+                        err.append("\n - ").append("(").append(e.getLineNumber()).append(",").append(e.getColumn()).append(")")
+                                .append(" ").append(e.getMessage());
+                    }
                 }
+
 
                 //noinspection ThrowFromFinallyBlock
                 throw new CompileException("Failed to compile: " + pCtx.getErrorList().size()
@@ -295,11 +305,7 @@ public class ExpressionCompiler extends AbstractParser {
             throw new CompileException("not a statement, or badly formed structure", expr, st, e);
         }
         catch (CompileException e) {
-            e.setExpr(expr);
-            e.setLineNumber(pCtx.getLineCount());
-            e.setCursor(cursor);
-            e.setColumn(cursor - pCtx.getLineOffset());
-            throw e;
+            throw ErrorUtil.rewriteIfNeeded(e, expr, cursor);
         }
         catch (Throwable e) {
             parserContext.set(null);

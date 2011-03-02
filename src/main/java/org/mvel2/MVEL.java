@@ -423,6 +423,12 @@ public class MVEL {
         return new MVELInterpretedRuntime(expression, start, offset, ctx, vars).parse();
     }
 
+    public static <T> T eval(char[] expression, int start, int offset, Object ctx,
+                             VariableResolverFactory vars, Class<T> toType) {
+        return convert(new MVELInterpretedRuntime(expression, start, offset, ctx, vars).parse(), toType);
+    }
+
+
     /**
      * Evaluate an expression against a context object and return the value
      *
@@ -821,6 +827,12 @@ public class MVEL {
      */
     public static Serializable compileExpression(String expression, ParserContext ctx) {
         return optimizeTree(new ExpressionCompiler(expression).compile(ctx));
+    }
+
+    public static Serializable compileExpression(char[] expression, int start, int offset, ParserContext ctx) {
+        ExpressionCompiler c = new ExpressionCompiler(expression, start, offset);
+        if (ctx != null) c.setPCtx(ctx);
+        return optimizeTree(c._compile());
     }
 
     public static Serializable compileExpression(String expression, Map<String, Object> imports,

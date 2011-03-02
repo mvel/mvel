@@ -22,6 +22,7 @@ import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
+import org.mvel2.util.ParseTools;
 import org.mvel2.util.StringAppender;
 
 import java.io.PrintStream;
@@ -33,6 +34,7 @@ public class IfNode extends Node {
 
     public IfNode(int begin, String name, char[] template, int start, int end) {
         super(begin, name, template, start, end);
+        while (cEnd > cStart && ParseTools.isWhitespace(template[cEnd])) cEnd--;
     }
 
     public Node getTrueNode() {
@@ -58,7 +60,7 @@ public class IfNode extends Node {
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        if (contents.length == 0 || MVEL.eval(contents, ctx, factory, Boolean.class)) {
+        if (cEnd == cStart || MVEL.eval(contents, cStart, cEnd - cStart, ctx, factory, Boolean.class)) {
             return trueNode.eval(runtime, appender, ctx, factory);
         }
         return next != null ? next.eval(runtime, appender, ctx, factory) : null;

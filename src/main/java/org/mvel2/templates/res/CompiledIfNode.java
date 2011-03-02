@@ -23,6 +23,7 @@ import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
+import org.mvel2.util.ParseTools;
 
 import java.io.Serializable;
 
@@ -32,11 +33,14 @@ public class CompiledIfNode extends IfNode {
 
     public CompiledIfNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
         super(begin, name, template, start, end);
-        ce = MVEL.compileExpression(contents, context);
+        while (cEnd > cStart && ParseTools.isWhitespace(template[cEnd])) cEnd--;
+        if (cStart != cEnd) {
+            ce = MVEL.compileExpression(template, cStart, cEnd - start, context);
+        }
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        if (contents.length == 0 || MVEL.executeExpression(ce, ctx, factory, Boolean.class)) {
+        if (ce == null || MVEL.executeExpression(ce, ctx, factory, Boolean.class)) {
             return trueNode.eval(runtime, appender, ctx, factory);
         }
         return next != null ? next.eval(runtime, appender, ctx, factory) : null;

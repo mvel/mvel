@@ -37,9 +37,15 @@ public class CompiledCodeNode extends Node {
     public CompiledCodeNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
         this.begin = begin;
         this.name = name;
-        ce = MVEL.compileExpression(
-                this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1),
-                   context);
+        this.contents = template;
+        this.cStart = start;
+        this.cEnd = end - 1;
+        this.end = end;
+        ce = MVEL.compileExpression(template, cStart, cEnd - cStart, context);
+
+//        ce = MVEL.compileExpression(
+//                this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1),
+//                   context);
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {

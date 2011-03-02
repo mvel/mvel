@@ -354,6 +354,7 @@ public class AbstractParser implements Parser, Serializable {
                                 else if (((NewObjectNode) lastNode).getTypeDescr().isUndimensionedArray()) {
                                     throw new CompileException("array initializer expected", expr, st);
                                 }
+                                st = cursor;
 
                                 return lastNode;
 

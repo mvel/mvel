@@ -22,7 +22,9 @@ import org.mvel2.MVEL;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
+
 import static org.mvel2.util.ParseTools.subset;
+
 import org.mvel2.util.StringAppender;
 
 import java.io.PrintWriter;
@@ -33,21 +35,30 @@ public class CodeNode extends Node {
     public CodeNode() {
     }
 
+    private int start;
+    private int offset;
+
     public CodeNode(int begin, String name, char[] template, int start, int end) {
         this.begin = begin;
         this.name = name;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+        this.contents = template;
+        this.start = start;
+        this.offset = end - start - 1;
+
+        //  this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
     }
 
     public CodeNode(int begin, String name, char[] template, int start, int end, Node next) {
         this.name = name;
         this.begin = begin;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+        //     this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
         this.next = next;
+        this.start = start;
+        this.offset = end - start - 1;
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        MVEL.eval(contents, ctx, factory);
+        MVEL.eval(contents, start, offset, ctx, factory);
         return next != null ? next.eval(runtime, appender, ctx, factory) : null;
     }
 

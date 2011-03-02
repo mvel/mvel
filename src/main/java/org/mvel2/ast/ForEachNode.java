@@ -178,7 +178,7 @@ public class ForEachNode extends BlockNode {
 
             }
             catch (ClassNotFoundException e) {
-                throw new CompileException("cannot resolve identifier: " + tk, condition, cursor);
+                throw new CompileException("cannot resolve identifier: " + tk, condition, start);
             }
         }
 

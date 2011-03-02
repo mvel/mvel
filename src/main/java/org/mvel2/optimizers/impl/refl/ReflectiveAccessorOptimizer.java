@@ -875,7 +875,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     @SuppressWarnings({"unchecked"})
     private Object getMethod(Object ctx, String name) throws Exception {
         int st = cursor;
-        String tk = cursor != length
+        String tk = cursor != end
                 && expr[cursor] == '(' && ((cursor = balancedCapture(expr, cursor, '(')) - st) > 1 ?
                 new String(expr, st + 1, cursor - st - 1) : "";
         cursor++;
@@ -901,9 +901,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                             .getValue(this.ctx, thisRef, variableFactory);
                 }
                 catch (CompileException e) {
-                    e.setExpr(expr);
-                    e.setCursor(new String(expr).substring(this.start).indexOf(new String(subtokens.get(i))) + this.start + e.getCursor());
-                    throw e;
+                    throw ErrorUtil.rewriteIfNeeded(e, this.expr, this.start);
                 }
 
                 if (es[i].isExplicitCast()) argTypes[i] = es[i].getKnownEgressType();
@@ -1146,10 +1144,13 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             return compileConstructor(property, ctx, factory);
         }
         catch (CompileException e) {
-            throw e;
+            throw ErrorUtil.rewriteIfNeeded(e, property, this.start);
+        }
+        catch (ClassNotFoundException e) {
+            throw new CompileException("could not resolve class: " + e.getMessage(), property, this.start, e);
         }
         catch (Exception e) {
-            throw new CompileException("could not create constructor: " + e.getMessage(), this.expr, this.start, e);
+            throw new CompileException("could not create constructor: " + e.getMessage(), property, this.start, e);
         }
     }
 

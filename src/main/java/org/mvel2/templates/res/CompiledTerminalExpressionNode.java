@@ -34,7 +34,7 @@ public class CompiledTerminalExpressionNode extends TerminalExpressionNode {
     public CompiledTerminalExpressionNode(Node node, ParserContext context) {
         this.begin = node.begin;
         this.name = node.name;
-        ce = MVEL.compileExpression(this.contents = node.contents, context);
+        ce = MVEL.compileExpression(node.contents, node.cStart, node.cEnd - node.cStart, context);
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {

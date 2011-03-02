@@ -21,7 +21,9 @@ package org.mvel2.templates.res;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.templates.TemplateRuntime;
 import org.mvel2.templates.util.TemplateOutputStream;
+
 import static org.mvel2.util.ParseTools.subset;
+
 import org.mvel2.util.StringAppender;
 
 import java.io.Serializable;
@@ -44,14 +46,22 @@ public abstract class Node implements Serializable {
 
     public Node(int begin, String name, char[] template, int start, int end) {
         this.begin = begin;
+        this.cStart = start;
+        this.cEnd = end - 1;
+        this.end = end;
         this.name = name;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+        this.contents = template;
+        //    this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
     }
 
     public Node(int begin, String name, char[] template, int start, int end, Node next) {
         this.name = name;
         this.begin = begin;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+        this.cStart = start;
+        this.cEnd = end - 1;
+        this.end = end;
+        this.contents = template;
+        //  this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
         this.next = next;
     }
 

@@ -280,7 +280,7 @@ public class DebuggerTests extends AbstractTest {
 
     public void testBreakpoints4() {
         String expression = "System.out.println('foo');\n" +
-                "a = new Foo();\n" +
+                "a = new Foo244();\n" +
                 "update (a) { name = 'bar' };\n" +
                 "System.out.println('name:' + a.name);\n" +
                 "return a.name;";
@@ -316,7 +316,7 @@ public class DebuggerTests extends AbstractTest {
         ParserContext ctx = new ParserContext();
         ctx.setDebugSymbols(true);
         ctx.setSourceFile("test2.mv");
-        ctx.addImport("Foo", Foo.class);
+        ctx.addImport("Foo244", Foo.class);
         ctx.setInterceptors(interceptors);
 
         CompiledExpression compiled = compiler.compile(ctx);
@@ -344,7 +344,7 @@ public class DebuggerTests extends AbstractTest {
     public void testBreakpoints5() {
         OptimizerFactory.setDefaultOptimizer("ASM");
         String expression = "System.out.println('foo');\r\n" +
-                "a = new Foo();\r\n" +
+                "a = new Foo244();\r\n" +
                 "a.name = 'bar';\r\n" +
                 "foo.happy();\r\n" +
                 "System.out.println( 'name:' + a.name );               \r\n" +
@@ -382,7 +382,7 @@ public class DebuggerTests extends AbstractTest {
         ParserContext ctx = new ParserContext();
         ctx.setSourceFile("test2.mv");
         ctx.setDebugSymbols(true);
-        ctx.addImport("Foo", Foo.class);
+        ctx.addImport("Foo244", Foo.class);
         ctx.setInterceptors(interceptors);
 
         CompiledExpression compiled = compiler.compile(ctx);

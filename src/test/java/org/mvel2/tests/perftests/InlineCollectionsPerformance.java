@@ -33,7 +33,7 @@ public class InlineCollectionsPerformance {
 
 //    public static void testMVELList() {
 //
-//        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("['Foo':'Bar','Foo':'Bar','Foo':'Bar','Foo':'Bar','Foo':'Bar']");
+//        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("['Foo244':'Bar','Foo244':'Bar','Foo244':'Bar','Foo244':'Bar','Foo244':'Bar']");
 //        Map list;
 //        s.getNode().getReducedValueAccelerated(null, null, null);
 //        for (int i = 0; i < COUNT; i++) {
@@ -44,25 +44,25 @@ public class InlineCollectionsPerformance {
 
 //    public static void testMVELList() {
 //
-//        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("{'Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar'}");
+//        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("{'Foo244','Bar','Foo244','Bar','Foo244','Bar','Foo244','Bar','Foo244','Bar'}");
 //        Object[] list;
 //        s.getNode().getReducedValueAccelerated(null, null, null);
 //        for (int i = 0; i < COUNT; i++) {
 //            list = (Object[]) s.getNode().getAccessor().getValue(null, null, null);
 //
-//            //     assert "Foo".equals(list.get(0)) && "Foo".equals(list.get(2)) && list.size() == 10;
+//            //     assert "Foo244".equals(list.get(0)) && "Foo244".equals(list.get(2)) && list.size() == 10;
 //        }
 //    }
 
     public static void testMVELList() {
 
-        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("['Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar']");
+        ExecutableAccessor s = (ExecutableAccessor) MVEL.compileExpression("['Foo244','Bar','Foo244','Bar','Foo244','Bar','Foo244','Bar','Foo244','Bar']");
         List list;
         s.getNode().getReducedValueAccelerated(null, null, null);
         for (int i = 0; i < COUNT; i++) {
             list = (List) s.getNode().getAccessor().getValue(null, null, null);
 
-            assert "Foo".equals(list.get(0)) && "Foo".equals(list.get(2)) && list.size() == 10;
+            assert "Foo244".equals(list.get(0)) && "Foo244".equals(list.get(2)) && list.size() == 10;
         }
     }
 
@@ -71,7 +71,7 @@ public class InlineCollectionsPerformance {
 //        OgnlContext context = (OgnlContext) Ognl.createDefaultContext(null);
 //        Node node;
 //        try {
-//            node = Ognl.compileExpression(context, null, "{'Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar','Foo','Bar'}");
+//            node = Ognl.compileExpression(context, null, "{'Foo244','Bar','Foo244','Bar','Foo244','Bar','Foo244','Bar','Foo244','Bar'}");
 //        }
 //        catch (Exception e) {
 //            throw new RuntimeException(e);
@@ -81,7 +81,7 @@ public class InlineCollectionsPerformance {
 //        for (int i = 0; i < COUNT; i++) {
 //            list = (List) node.getAccessor().get(null, null);
 //
-//            assert "Foo".equals(list.get(0)) && "Foo".equals(list.get(2)) && list.size() == 10;
+//            assert "Foo244".equals(list.get(0)) && "Foo244".equals(list.get(2)) && list.size() == 10;
 //        }
     }
 
@@ -90,22 +90,22 @@ public class InlineCollectionsPerformance {
         for (int i = 0; i < COUNT; i++) {
             list = new FastList(10);
 
-            list.add("Foo");
+            list.add("Foo244");
             list.add("Bar");
 
-            list.add("Foo");
+            list.add("Foo244");
             list.add("Bar");
 
-            list.add("Foo");
+            list.add("Foo244");
             list.add("Bar");
 
-            list.add("Foo");
+            list.add("Foo244");
             list.add("Bar");
 
-            list.add("Foo");
+            list.add("Foo244");
             list.add("Bar");
 
-            assert "Foo".equals(list.get(0)) && "Bar".equals(list.get(1)) && list.size() == 10;
+            assert "Foo244".equals(list.get(0)) && "Bar".equals(list.get(1)) && list.size() == 10;
         }
 
     }

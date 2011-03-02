@@ -3052,7 +3052,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
         catch (ClassNotFoundException e) {
             throw new CompileException("class or class reference not found: "
-                    + new String(property), expr, st);
+                    + new String(property), property, st);
         }
         catch (Exception e) {
             throw new OptimizationFailure("could not optimize construtor: " + new String(property), e);

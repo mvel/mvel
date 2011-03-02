@@ -42,9 +42,6 @@ public class ForEachNode extends Node {
 
     private char[] sepExpr;
 
-    public ForEachNode() {
-    }
-
     public ForEachNode(int begin, String name, char[] template, int start, int end) {
         super(begin, name, template, start, end);
         configure();
@@ -121,24 +118,15 @@ public class ForEachNode extends Node {
         ArrayList<String> items = new ArrayList<String>();
         ArrayList<String> expr = new ArrayList<String>();
 
-        int start = 0;
-        for (int i = 0; i < contents.length; i++) {
+        int start = cStart;
+        for (int i = start; i < cEnd; i++) {
             switch (contents[i]) {
                 case '(':
                 case '[':
                 case '{':
                 case '"':
                 case '\'':
-                    if (expr.size() < items.size()) {
-                        start = i;
-                        i = ParseTools.balancedCapture(contents, i, contents[i]);
-                        expr.add(ParseTools.createStringTrimmed(contents, start, i - start + 1));
-                        start = i + 1;
-                    }
-                    else {
-                        throw new CompileException("unexpected character '" + contents[i]
-                                + "' in foreach tag", contents, cStart + 1);
-                    }
+                    i = ParseTools.balancedCapture(contents, i, contents[i]);
                     break;
 
                 case ':':
@@ -155,11 +143,11 @@ public class ForEachNode extends Node {
             }
         }
 
-        if (start < contents.length) {
+        if (start < cEnd) {
             if (expr.size() != (items.size() - 1)) {
                 throw new CompileException("expected character ':' in foreach tag", contents, cEnd);
             }
-            expr.add(ParseTools.createStringTrimmed(contents, start, contents.length - start));
+            expr.add(ParseTools.createStringTrimmed(contents, start, cEnd - start));
         }
 
         item = new String[items.size()];

@@ -3,6 +3,7 @@ package org.mvel2.tests.templates;
 import junit.framework.TestCase;
 import org.mvel2.CompileException;
 import org.mvel2.MVEL;
+import org.mvel2.ParserContext;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.templates.CompiledTemplate;
@@ -906,5 +907,59 @@ public class TemplateTests extends TestCase {
         System.out.println("'" + expr + " ' = " + ret.toString());
         assertNotNull(ret);
     }
+
+    public void testMVEL244() {
+        Foo244 foo = new Foo244("plop");
+
+        String template = "@foreach{val : foo.liste[0].liste} plop @end{}";
+
+        CompiledTemplate compiledTemplate = TemplateCompiler.compileTemplate(template);
+
+        Map<String, Object> model = new HashMap<String, Object>();
+        model.put("foo", foo);
+
+        System.out.println(TemplateRuntime.execute(compiledTemplate, new ParserContext(), new MapVariableResolverFactory(model)));
+
+    }
+
+    public static class Foo244 {
+
+        private List<Foo244> liste = new ArrayList<Foo244>();
+
+        private String val = "";
+
+        public Foo244() {
+
+        }
+
+        public Foo244(String plop) {
+            liste.add(new Foo244());
+            liste.add(new Foo244());
+            liste.add(new Foo244());
+            liste.add(new Foo244());
+
+            liste.get(0).getListe().add(new Foo244());
+            liste.get(0).getListe().add(new Foo244());
+            liste.get(0).getListe().add(new Foo244());
+            liste.get(0).getListe().add(new Foo244());
+        }
+
+        public List<Foo244> getListe() {
+            return liste;
+        }
+
+        public void setListe(List<Foo244> liste) {
+            this.liste = liste;
+        }
+
+        public String getVal() {
+            return val;
+        }
+
+        public void setVal(String val) {
+            this.val = val;
+        }
+    }
+
 
 }

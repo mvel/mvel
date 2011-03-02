@@ -904,7 +904,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testClassAliasing() {
         assertEquals("foobar",
-                test("Foo = String; new Foo('foobar')"));
+                test("Foo244 = String; new Foo244('foobar')"));
     }
 
     public void testRandomExpression1() {
@@ -1166,7 +1166,7 @@ public class CoreConfidenceTests extends AbstractTest {
         Vector vectorA = new Vector();
         Vector vectorB = new Vector();
 
-        vectorA.add("Foo");
+        vectorA.add("Foo244");
 
         Map map = new HashMap();
         map.put("vecA",
@@ -1174,11 +1174,11 @@ public class CoreConfidenceTests extends AbstractTest {
         map.put("vecB",
                 vectorB);
 
-        testCompiledSimple("vecB.add(vecA.remove(0)); vecA.add('Foo');",
+        testCompiledSimple("vecB.add(vecA.remove(0)); vecA.add('Foo244');",
                 null,
                 map);
 
-        assertEquals("Foo",
+        assertEquals("Foo244",
                 vectorB.get(0));
     }
 
@@ -2836,13 +2836,13 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testAmbiguousGetName() {
         Map<String, Object> vars = createTestMap();
-        vars.put("Foo", Foo.class);
+        vars.put("Foo244", Foo.class);
 
         Serializable s = MVEL.compileExpression("foo.getClass().getName()");
 
         System.out.println(MVEL.executeExpression(s, vars));
 
-        s = MVEL.compileExpression("Foo.getName()");
+        s = MVEL.compileExpression("Foo244.getName()");
 
         System.out.println(MVEL.executeExpression(s, vars));
     }

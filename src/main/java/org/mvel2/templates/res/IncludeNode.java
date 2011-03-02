@@ -31,27 +31,39 @@ import org.mvel2.util.StringAppender;
 import java.io.*;
 
 public class IncludeNode extends Node {
+//    private char[] includeExpression;
+//    private char[] preExpression;
 
-    private char[] includeExpression;
-    private char[] preExpression;
+    int includeStart;
+    int includeOffset;
 
-
+    int preStart;
+    int preOffset;
 
     public IncludeNode(int begin, String name, char[] template, int start, int end) {
         this.begin = begin;
         this.name = name;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+        this.contents = template;
+        this.cStart = start;
+        this.cEnd = end - 1;
+        this.end = end;
+        //this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
 
-        int mark;
-        this.includeExpression = subset(contents, 0, mark = captureToEOS(contents, 0));
-        if (mark != contents.length) this.preExpression = subset(contents, ++mark, contents.length - mark);
+        int mark = captureToEOS(contents, 0);
+        includeStart = cStart;
+        includeOffset = mark - cStart;
+        preStart = ++mark;
+        preOffset = cEnd - mark;
+
+        //this.includeExpression = subset(contents, 0, mark = captureToEOS(contents, 0));
+//        if (mark != contents.length) this.preExpression = subset(contents, ++mark, contents.length - mark);
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {
-        String file = MVEL.eval(includeExpression, ctx, factory, String.class);
+        String file = MVEL.eval(contents, includeStart, includeOffset, ctx, factory, String.class);
 
-        if (this.preExpression != null) {
-            MVEL.eval(preExpression, ctx, factory);
+        if (preOffset != 0) {
+            MVEL.eval(contents, preStart, preOffset, ctx, factory);
         }
 
         if (next != null) {

@@ -130,7 +130,7 @@ public class TypesAndInferenceTests extends AbstractTest {
         ctx.setStrongTyping(false);
         ctx.addImport(Foo.class);
 
-        ExpressionCompiler compiler = new ExpressionCompiler("new Foo( $bar,  $bar.age );");
+        ExpressionCompiler compiler = new ExpressionCompiler("new Foo244( $bar,  $bar.age );");
 
         Serializable compiled = compiler.compile(ctx);
 
@@ -659,7 +659,7 @@ public class TypesAndInferenceTests extends AbstractTest {
         ctx.addInput("$bar", Bar.class);
 
         try {
-            MVEL.compileExpression("x_a = new Foo( $ba ); x_a.equals($ba);", ctx);
+            MVEL.compileExpression("x_a = new Foo244( $ba ); x_a.equals($ba);", ctx);
             fail("This should not compile");
         }
         catch (Exception e) {

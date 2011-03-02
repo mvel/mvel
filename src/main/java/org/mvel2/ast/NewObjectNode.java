@@ -32,6 +32,7 @@ import static org.mvel2.optimizers.OptimizerFactory.getThreadAccessorOptimizer;
 
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.ArrayTools;
+import org.mvel2.util.ErrorUtil;
 
 import static org.mvel2.util.CompilerTools.getInjectedImports;
 import static org.mvel2.util.ArrayTools.findFirst;
@@ -82,7 +83,7 @@ public class NewObjectNode extends ASTNode {
                 catch (ClassNotFoundException e) {
                     if (pCtx != null && pCtx.isStrongTyping())
                         pCtx.addError(new ErrorDetail(expr, start, true, "could not resolve class: " + typeDescr.getClassName()));
-
+                        return;
                     // do nothing.
                 }
             }
@@ -208,6 +209,9 @@ public class NewObjectNode extends ASTNode {
                     egressType = optimizer.getEgressType();
                     return optimizer.getResultOptPass();
                 }
+            }
+            catch (CompileException e) {
+                throw ErrorUtil.rewriteIfNeeded(e, expr, start);
             }
             finally {
                 OptimizerFactory.clearThreadAccessorOptimizer();

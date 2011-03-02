@@ -46,13 +46,17 @@ public class CompiledIncludeNode extends Node {
     public CompiledIncludeNode(int begin, String name, char[] template, int start, int end, ParserContext context) {
         this.begin = begin;
         this.name = name;
-        this.contents = subset(template, this.cStart = start, (this.end = this.cEnd = end) - start - 1);
+        this.contents = template;
+        this.cStart = start;
+        this.cEnd = end - 1;
+        this.end = end;
         this.context = context;
 
-        int mark;
-        cIncludeExpression = MVEL.compileExpression( subset(contents, 0, mark = captureToEOS(contents, 0)), context);
-        if (mark != contents.length)
-            cPreExpression = MVEL.compileExpression( subset(contents, ++mark, contents.length - mark), context);
+        int mark = captureToEOS(contents, cStart);
+        cIncludeExpression = MVEL.compileExpression(contents, cStart, mark - cStart, context);
+        if (mark != contents.length) {
+            cPreExpression = MVEL.compileExpression(contents, ++mark, cEnd - mark, context);
+        }
     }
 
     public Object eval(TemplateRuntime runtime, TemplateOutputStream appender, Object ctx, VariableResolverFactory factory) {

@@ -100,6 +100,10 @@ public class ErrorDetail {
         this.expr = expr;
     }
 
+    public char[] getExpr() {
+        return expr;
+    }
+
     public void setLineNumber(int lineNumber) {
         this.lineNumber = lineNumber;
     }

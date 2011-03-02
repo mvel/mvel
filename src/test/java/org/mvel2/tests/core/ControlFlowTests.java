@@ -131,7 +131,7 @@ public class ControlFlowTests extends AbstractTest {
 
 
     public void testIfAndElseIfCondensedGrammar() {
-        assertEquals("Foo", test("if (false) return 'Bar'; else return 'Foo';"));
+        assertEquals("Foo244", test("if (false) return 'Bar'; else return 'Foo244';"));
     }
 
     public void testTernary4() {
