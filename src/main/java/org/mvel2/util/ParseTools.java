@@ -24,7 +24,6 @@ import org.mvel2.compiler.*;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
 import org.mvel2.math.MathProcessor;
-import org.relaxng.datatype.Datatype;
 
 import java.io.*;
 import java.lang.ref.WeakReference;
