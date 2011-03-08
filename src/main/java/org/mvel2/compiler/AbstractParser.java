@@ -1168,6 +1168,7 @@ public class AbstractParser implements Parser, Serializable {
                                 st = cursor;
                                 captureToEOT();
                                 if (expr[st] == '.') st++;
+
                                 return lastNode = new Union(expr, st, cursor - st, fields, lastNode);
                             }
                             else {

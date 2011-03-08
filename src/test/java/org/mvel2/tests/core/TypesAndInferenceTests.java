@@ -12,6 +12,8 @@ import org.mvel2.tests.core.res.*;
 import org.mvel2.util.MethodStub;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -1318,5 +1320,57 @@ public class TypesAndInferenceTests extends AbstractTest {
 
         assertEquals(15,
                 x.intValue());
+    }
+
+    public void testStaticFieldAccessForInputs() {
+        ParserContext pCtx = ParserContext.create();
+        MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
+
+        assertFalse(pCtx.getInputs().containsKey("java"));
+
+        assertEquals(0,
+                pCtx.getInputs().size());
+    }
+
+    public void testStaticMethodsInInputsBug() {
+        String text = " getList( java.util.Formatter )";
+
+        ParserConfiguration pconf = new ParserConfiguration();
+        for (Method m : CoreConfidenceTests.StaticMethods.class.getMethods()) {
+            if (Modifier.isStatic(m.getModifiers())) {
+                pconf.addImport(m.getName(), m);
+
+            }
+        }
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.setStrictTypeEnforcement(false);
+        pctx.setStrongTyping(false);
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+
+        Serializable expr = MVEL.compileExpression(text, pctx);
+        List list = (List) MVEL.executeExpression(expr, null, vars);
+        assertEquals(Formatter.class, list.get(0));
+
+        assertEquals(0, pctx.getInputs().size());
+    }
+
+
+    public static class EchoContext {
+        public String echo(String str) {
+            return str;
+        }
+    }
+
+    public void testContextMethodCallsInStrongMode() {
+        ParserContext context = new ParserContext();
+        context.setStrongTyping(true);
+        context.addInput("this",
+                EchoContext.class);
+
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("this.echo( 'Mac')", context);
+        stmt = (ExecutableStatement) MVEL.compileExpression("echo( 'Mac')", context);
+
+        assertEquals("Mac", MVEL.executeExpression(stmt, new EchoContext()));
     }
 }

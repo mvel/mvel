@@ -389,7 +389,7 @@ public class ExpressionCompiler extends AbstractParser {
                     if (propVerifier.isClassLiteral()) {
                         return new LiteralNode(returnType);
                     }
-                    if (propVerifier.isResolvedExternally()) {
+                    if (propVerifier.isInput()) {
                         pCtx.addInput(tk.getAbsoluteName(), propVerifier.isDeepProperty() ? Object.class : returnType);
                     }
                 }

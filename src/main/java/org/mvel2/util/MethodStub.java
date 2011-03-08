@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
-
 public class MethodStub implements Serializable {
     private Class classReference;
     private String name;

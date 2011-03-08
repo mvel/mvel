@@ -3046,39 +3046,7 @@ public class CoreConfidenceTests extends AbstractTest {
         String expr = "if (false) {System.out.println(\" foo\")} else {System.out.println(\" bar\")}";
         MVEL.eval(expr);
     }
-    
-    public void testStaticFieldAccessForInputs() {
-        ParserContext pCtx = ParserContext.create();
-        MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
 
-        assertFalse(pCtx.getInputs().containsKey("java"));
-
-        assertEquals(0,
-                     pCtx.getInputs().size());
-    }
-
-    public void testStaticMethodsInInputsBug() {
-        String text = " getList( java.util.Formatter )";
-        
-      ParserConfiguration pconf = new ParserConfiguration();
-      for (Method m : StaticMethods.class.getMethods()) {
-          if (Modifier.isStatic(m.getModifiers())) {
-              pconf.addImport(m.getName(), m);
-
-          }
-      }
-      ParserContext pctx = new ParserContext(pconf);
-      pctx.setStrictTypeEnforcement( false );
-      pctx.setStrongTyping( false );
-        
-      Map<String, Object> vars = new HashMap<String, Object>();
-      
-      Serializable expr = MVEL.compileExpression( text, pctx );
-      List list = ( List ) MVEL.executeExpression( expr, null, vars );
-      assertEquals( Formatter.class, list.get(0));
-      
-      assertEquals( 0, pctx.getInputs() );
-    }
 
     public static class StaticClassWithStaticMethod {
         public static String getString() {
@@ -3086,11 +3054,11 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
-    public void testStaticImportWithWildcard() {
-        // this isn't supported yet
-        assertEquals("hello",
-                test("import_static " + getClass().getName() + ".StaticClassWithStaticMethod.*; getString()"));
-    }     
+//    public void testStaticImportWithWildcard() {
+//        // this isn't supported yet
+//        assertEquals("hello",
+//                test("import_static " + getClass().getName() + ".StaticClassWithStaticMethod.*; getString()"));
+//    }
     
     public void testArrayLength() {
         ParserContext context = new ParserContext();
@@ -3099,21 +3067,4 @@ public class CoreConfidenceTests extends AbstractTest {
                           String[].class );
         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("x.length", context);
     }
-    
-
-    public static class EchoContext {
-        String echo(String str) {
-            return str;
-        }
-    }
-
-    public void testContextMethodCallsInStrongMode() {
-        ParserContext context = new ParserContext();
-        context.setStrongTyping(true);
-        context.addInput("this",
-                         EchoContext.class);
-        
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("this.echo( 'PC Rules!!!')", context);
-        stmt = (ExecutableStatement) MVEL.compileExpression("echo( 'PC Rules!!!')", context);
-    }     
 }

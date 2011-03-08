@@ -50,6 +50,7 @@ public class PropertyVerifier extends AbstractOptimizer {
     private boolean first = false;
     private boolean classLiteral = false;
     private boolean resolvedExternally;
+    private boolean methodCall = false;
     private boolean deepProperty = false;
     private Map<String, Class> paramTypes;
 
@@ -120,7 +121,7 @@ public class PropertyVerifier extends AbstractOptimizer {
                 case DONE:
                     break;
             }
-            if (!first) deepProperty = true;
+            if (cursor < length && !first) deepProperty = true;
 
             first = false;
         }
@@ -233,9 +234,9 @@ public class PropertyVerifier extends AbstractOptimizer {
             Object tryStaticMethodRef = tryStaticAccess();
 
             if (tryStaticMethodRef != null) {
+                resolvedExternally = false;
                 if (tryStaticMethodRef instanceof Class) {
                     classLiteral = true;
-                    resolvedExternally = false;
                     return (Class) tryStaticMethodRef;
                 }
                 else if (tryStaticMethodRef instanceof Field) {
@@ -347,6 +348,7 @@ public class PropertyVerifier extends AbstractOptimizer {
          */
         if (first) {
             first = false;
+            methodCall = true;
 
             /**
              * It's the first element in the statement, therefore we check to see if there is a static import of a
@@ -370,6 +372,13 @@ public class PropertyVerifier extends AbstractOptimizer {
                                         ParseTools.subset(expr, st + 1, cursor - st - 1) : new char[0]), 0, -1).size());
 
                 return f.getEgressType();
+            }
+            else if (pCtx.hasVarOrInput("this")) {
+                if (pCtx.isStrictTypeEnforcement()) {
+                    recordTypeParmsForProperty("this");
+                }
+                ctx = pCtx.getVarOrInputType("this");
+                resolvedExternally = false;
             }
         }
 
@@ -467,8 +476,10 @@ public class PropertyVerifier extends AbstractOptimizer {
 
                 if (pCtx.isStrictTypeEnforcement()) {
                     addFatalError("unable to resolve method using strict-mode: "
-                            + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")");
+                            + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")", tkStart);
                 }
+
+
                 return Object.class;
             }
         }
@@ -529,6 +540,21 @@ public class PropertyVerifier extends AbstractOptimizer {
             }
         }
 
+        if (!Modifier.isPublic(m.getModifiers())) {
+            StringAppender errorBuild = new StringAppender();
+            for (int i = 0; i < args.length; i++) {
+                errorBuild.append(args[i] != null ? args[i].getName() : null);
+                if (i < args.length - 1) errorBuild.append(", ");
+            }
+
+            String scope = Modifier.toString(m.getModifiers());
+            if (scope.trim().equals("")) scope = "<package local>";
+
+            addFatalError("the referenced method is not accessible: "
+                    + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")"
+                    + " (scope: " + scope + "; required: public", this.tkStart);
+        }
+
         return m.getReturnType();
     }
 
@@ -553,6 +579,10 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     public boolean isDeepProperty() {
         return deepProperty;
+    }
+
+    public boolean isInput() {
+        return resolvedExternally && !methodCall;
     }
 
     public Class getCtx() {
