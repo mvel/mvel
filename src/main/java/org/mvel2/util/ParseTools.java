@@ -905,7 +905,7 @@ public class ParseTools {
         }
 
         int end = start + length;
-        while (isWhitespace(array[end - 1])) {
+        while (end > 0 && isWhitespace(array[end - 1])) {
             end--;
         }
 
