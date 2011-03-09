@@ -3067,4 +3067,18 @@ public class CoreConfidenceTests extends AbstractTest {
                           String[].class );
         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("x.length", context);
     }
+    
+    public void testEmptyConstructorWithSpace() throws Exception {
+        ParserConfiguration pconf = new ParserConfiguration();
+        pconf.addImport( "getString", StaticClassWithStaticMethod.class.getMethod( "getString", null ) );
+        
+        String text = "getString( )";
+        
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.setStrongTyping( true );
+        pctx.setStrictTypeEnforcement( true );
+       
+        
+        MVEL.compileExpression( text, pctx );
+    }    
 }
