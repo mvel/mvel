@@ -1320,7 +1320,6 @@ public class AbstractParser implements Parser, Serializable {
             else if (lastWasIdentifier) {
                 return procTypedNode(true);
             }
-
         }
 
         lastWasIdentifier = true;
@@ -2498,9 +2497,16 @@ public class AbstractParser implements Parser, Serializable {
 
         // while any values remain on the stack                     
         // keep XSWAPing and reducing, until there is nothing left.
-        while (stk.isReduceable()) {
-            reduce();
-            if (stk.isReduceable()) stk.xswap();
+        if (stk.isReduceable()) {
+            while (true) {
+                reduce();
+                if (stk.isReduceable()) {
+                    stk.xswap();
+                }
+                else {
+                    break;
+                }
+            }
         }
 
         return OP_RESET_FRAME;

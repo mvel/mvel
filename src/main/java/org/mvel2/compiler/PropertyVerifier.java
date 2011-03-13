@@ -174,10 +174,6 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
 
-        if (member == null && MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
-            return getMethod(ctx, property);
-        }
-
         if (member instanceof Field) {
             if (pCtx.isStrictTypeEnforcement()) {
                 Field f = ((Field) member);
@@ -264,9 +260,19 @@ public class PropertyVerifier extends AbstractOptimizer {
                 }
             }
 
+            if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
+                Class cls = getMethod(ctx, property);
+                if (cls != Object.class) {
+                    return cls;
+                }
+            }
+
+
             if (pCtx.isStrictTypeEnforcement()) {
                 addFatalError("unqualified type in strict mode for: " + property, start);
             }
+
+
             return Object.class;
         }
     }
