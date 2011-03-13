@@ -19,8 +19,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.mvel2.MVEL.*;
-import static org.mvel2.MVEL.compileSetExpression;
-import static org.mvel2.MVEL.executeSetExpression;
 
 /**
  * @author Mike Brock .
@@ -1322,7 +1320,7 @@ public class TypesAndInferenceTests extends AbstractTest {
                 x.intValue());
     }
 
-    public void testStaticFieldAccessForInputs() {
+    public void testStaticFieldAccessForInputs() {        
         ParserContext pCtx = ParserContext.create();
         MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
 
@@ -1330,7 +1328,42 @@ public class TypesAndInferenceTests extends AbstractTest {
 
         assertEquals(0,
                 pCtx.getInputs().size());
+        
+        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;        
+        
+        pCtx = ParserContext.create();
+        MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
+
+        assertFalse(pCtx.getInputs().containsKey("java"));
+
+        assertEquals(0,
+                pCtx.getInputs().size());        
     }
+
+    
+    public void testStaticFieldAccessForInputsWithStrictStrong() {
+        ParserContext pCtx = ParserContext.create();
+        pCtx.setStrictTypeEnforcement( true );
+        pCtx.setStrongTyping( true );
+        MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
+
+        assertFalse(pCtx.getInputs().containsKey("java"));
+
+        assertEquals(0,
+                     pCtx.getInputs().size());
+        
+        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;              
+        pCtx = ParserContext.create();
+        pCtx.setStrictTypeEnforcement( true );
+        pCtx.setStrongTyping( true );
+        MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
+
+        assertFalse(pCtx.getInputs().containsKey("java"));
+
+        assertEquals(0,
+                     pCtx.getInputs().size());        
+    }
+    
 
     public void testStaticMethodsInInputsBug() {
         String text = " getList( java.util.Formatter )";
@@ -1361,6 +1394,30 @@ public class TypesAndInferenceTests extends AbstractTest {
             return str;
         }
     }
+    
+    public void testStaticMethodCallThrowsException() {
+        String text = " ( throwException( ) ) ";
+
+        ParserConfiguration pconf = new ParserConfiguration();
+        for (Method m : CoreConfidenceTests.StaticMethods.class.getMethods()) {
+            if (Modifier.isStatic(m.getModifiers())) {
+                pconf.addImport(m.getName(), m);
+
+            }
+        }
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.setStrictTypeEnforcement(true);
+        pctx.setStrongTyping(true);
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+        Serializable expr = MVEL.compileExpression(text, pctx);
+        try {
+            MVEL.executeExpression( expr );
+            fail("this should throw an exception");
+        } catch ( Exception e) {
+            e.printStackTrace();
+        }
+    }    
 
     public void testContextMethodCallsInStrongMode() {
         ParserContext context = new ParserContext();

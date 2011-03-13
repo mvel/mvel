@@ -2707,6 +2707,10 @@ public class CoreConfidenceTests extends AbstractTest {
             result.add(arg);
             return result;
         }
+        
+        public static String throwException( ) {
+            throw new RuntimeException( "this should throw an exception" );
+        }
     }
 
     public void testSetterViaDotNotation() {
