@@ -280,6 +280,13 @@ public class CoreConfidenceTests extends AbstractTest {
         compiler.compile();
         assertTrue(compiler.getParserContextState().getInputs().containsKey("p"));
     }
+    
+    public void testIncrementAndAssignWithInputs() {
+        ExpressionCompiler compiler = new ExpressionCompiler("total += cheese");
+        compiler.compile();
+        assertTrue(compiler.getParserContextState().getInputs().containsKey("total"));
+        assertTrue(compiler.getParserContextState().getInputs().containsKey("cheese"));
+    }    
 
     public void testAssignmentRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("total = total + $cheese.price");

@@ -1320,7 +1320,8 @@ public class TypesAndInferenceTests extends AbstractTest {
                 x.intValue());
     }
 
-    public void testStaticFieldAccessForInputs() {        
+    public void testStaticFieldAccessForInputs() {    
+        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true; 
         ParserContext pCtx = ParserContext.create();
         MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
 
@@ -1329,15 +1330,15 @@ public class TypesAndInferenceTests extends AbstractTest {
         assertEquals(0,
                 pCtx.getInputs().size());
         
-        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;        
-        
-        pCtx = ParserContext.create();
-        MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
-
-        assertFalse(pCtx.getInputs().containsKey("java"));
-
-        assertEquals(0,
-                pCtx.getInputs().size());        
+//        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;        
+//        
+//        pCtx = ParserContext.create();
+//        MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
+//
+//        assertFalse(pCtx.getInputs().containsKey("java"));
+//
+//        assertEquals(0,
+//                pCtx.getInputs().size());        
     }
 
     
