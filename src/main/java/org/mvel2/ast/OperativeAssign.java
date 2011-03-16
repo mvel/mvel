@@ -48,6 +48,10 @@ public class OperativeAssign extends ASTNode {
             if (pCtx.isStrongTyping()) {
                 knownInType = ParseTools.__resolveType(egressType);
             }
+
+            if (!pCtx.hasVarOrInput(varName)) {
+                pCtx.addInput(varName, egressType);
+            }
         }
     }
 
