@@ -1431,4 +1431,27 @@ public class TypesAndInferenceTests extends AbstractTest {
 
         assertEquals("Mac", MVEL.executeExpression(stmt, new EchoContext()));
     }
+    
+    public void testForLoopTypeCoercion() {
+        ParserContext pCtx = ParserContext.create();
+        pCtx.setStrictTypeEnforcement( true );
+        pCtx.setStrongTyping( true );
+        pCtx.addInput( "$type", String.class );
+        pCtx.addInput( "l", List.class );
+      
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put(  "$type", "pc!!" );
+        List list = new ArrayList();
+        vars.put(  "l", list );
+        ExecutableStatement stmt = ( ExecutableStatement ) MVEL.compileExpression("for (byte bt:$type.getBytes()) {l.add( bt);}", pCtx);
+        MVEL.executeExpression(stmt, null, vars);
+        
+        byte[] exp = "pc!!".getBytes();
+        byte[] res = new byte[list.size()];
+        for (int i = 0; i < exp.length; i++  ) {
+            assertEquals( exp[i], res[i] );
+        }    
+    }    
+    
+
 }
