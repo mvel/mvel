@@ -67,29 +67,12 @@ public class IndexedVariableResolverFactory extends BaseVariableResolverFactory 
     }
 
     public VariableResolver createVariable(String name, Object value) {
-        VariableResolver vr = getResolver( name );
-        if ( vr != null ) {
-            vr.setValue( value );
-            return vr;
-        } else {
-            if (nextFactory == null) nextFactory = new MapVariableResolverFactory(new HashMap());
-            return nextFactory.createVariable(name, value);
-        }
+        return nextFactory.createVariable(name, value);
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
-        VariableResolver vr = getResolver( name );
-        if ( vr != null ) {
-            if ( vr.getType() != null ) {
-                throw new RuntimeException("variable already defined within scope: " + vr.getType() + " " + name);
-            } else {
-                vr.setValue( value );
-                return vr;
-            }
-        } else {
-            if (nextFactory == null) nextFactory = new MapVariableResolverFactory(new HashMap());
-            return nextFactory.createVariable(name, value, type);
-        }
+        if (nextFactory == null) nextFactory = new MapVariableResolverFactory(new HashMap());
+        return nextFactory.createVariable(name, value, type);
     }
 
     public VariableResolver getVariableResolver(String name) {
