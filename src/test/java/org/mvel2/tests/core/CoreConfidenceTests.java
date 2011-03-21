@@ -303,9 +303,6 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testTestIntToLong() {
-        //System.out.println( int.class.isAssignableFrom( Integer.class ) );
-        //Number n = new Integer ( 3 )
-
         String s = "1+(long)a";
 
         ParserContext pc = new ParserContext();
