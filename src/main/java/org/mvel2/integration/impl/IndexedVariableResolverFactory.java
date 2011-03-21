@@ -58,8 +58,7 @@ public class IndexedVariableResolverFactory extends BaseVariableResolverFactory 
     }
 
     public VariableResolver createIndexedVariable(int index, String name, Object value) {
-        indexedVariableResolvers[index].setValue( value );
-        return indexedVariableResolvers[index];
+        throw new RuntimeException("Error: cannot write to factory");
     }
 
     public VariableResolver getIndexedVariableResolver(int index) {
