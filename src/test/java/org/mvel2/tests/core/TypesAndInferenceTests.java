@@ -1447,9 +1447,10 @@ public class TypesAndInferenceTests extends AbstractTest {
         MVEL.executeExpression(stmt, null, vars);
         
         byte[] exp = "pc!!".getBytes();
-        byte[] res = new byte[list.size()];
+      //  byte[] res = new byte[list.size()];
+
         for (int i = 0; i < exp.length; i++  ) {
-            assertEquals( exp[i], res[i] );
+            assertEquals( exp[i], list.get(i));
         }    
     }    
     
