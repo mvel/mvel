@@ -28,22 +28,13 @@ import java.util.Set;
 
 @SuppressWarnings({"unchecked"})
 public class IndexedVariableResolverFactory extends BaseVariableResolverFactory {
-    /**
-     * Holds the instance of the variables.
-     */
-
-    private Object[] values;
-
     public IndexedVariableResolverFactory(String[] varNames, Object[] values) {
         this.indexedVariableNames = varNames;
-        this.values = values;
-       // this.nextFactory = new MapVariableResolverFactory();
         this.indexedVariableResolvers = createResolvers(values);
     }
 
     public IndexedVariableResolverFactory(String[] varNames, Object[] values, VariableResolverFactory nextFactory) {
         this.indexedVariableNames = varNames;
-        this.values = values;
         this.nextFactory = new MapVariableResolverFactory();
         this.nextFactory.setNextFactory(nextFactory);
         this.indexedVariableResolvers = createResolvers(values);

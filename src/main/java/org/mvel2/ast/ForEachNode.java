@@ -18,6 +18,7 @@
 package org.mvel2.ast;
 
 import org.mvel2.CompileException;
+import org.mvel2.DataConversion;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
@@ -218,7 +219,7 @@ public class ForEachNode extends BlockNode {
     }
 
     private  void enforceTypeSafety(Class required, Class actual) {
-        if (!required.isAssignableFrom(actual)) {
+        if (!required.isAssignableFrom(actual) && !DataConversion.canConvert(actual, required)) {
             throw new CompileException("type mismatch in foreach: expected: "
                     + required.getName() + "; but found: " + getBaseComponentType(actual), expr, start);
         }
