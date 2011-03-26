@@ -898,7 +898,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             for (int i = 0; i < subtokens.size(); i++) {
                 try {
                     args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens.get(i), pCtx))
-                            .getValue(this.ctx, thisRef, variableFactory);
+                            .getValue(this.thisRef, thisRef, variableFactory);
                 }
                 catch (CompileException e) {
                     throw ErrorUtil.rewriteIfNeeded(e, this.expr, this.start);

@@ -1452,7 +1452,5 @@ public class TypesAndInferenceTests extends AbstractTest {
         for (int i = 0; i < exp.length; i++  ) {
             assertEquals( exp[i], list.get(i));
         }    
-    }    
-    
-
+    }
 }

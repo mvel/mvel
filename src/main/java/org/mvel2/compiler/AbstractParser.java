@@ -172,6 +172,8 @@ public class AbstractParser implements Parser, Serializable {
             LITERALS.put("SecurityManager", SecurityManager.class);
             LITERALS.put("StrictMath", StrictMath.class);
 
+            LITERALS.put("Exception", Exception.class);
+
             LITERALS.put("Array", java.lang.reflect.Array.class);
 
             if (parseDouble(getProperty("java.version").substring(0, 3)) >= 1.5) {

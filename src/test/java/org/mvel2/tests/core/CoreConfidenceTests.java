@@ -3096,13 +3096,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ParserContext pctx = new ParserContext(pconf);        
         MVEL.compileExpression( s, pctx );    
     }      
-    
-    public void testBlocks() throws Exception {
-        String s = "{java.lang.Exception e = null;}";
-        ParserConfiguration pconf = new ParserConfiguration();
-        ParserContext pctx = new ParserContext(pconf);        
-        MVEL.compileExpression( s, pctx );      
-    }     
+
     
     public void testContextFieldNotFound() {
         String str = "'stilton'.equals( type );";

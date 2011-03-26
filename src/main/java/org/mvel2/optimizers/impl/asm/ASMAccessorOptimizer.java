@@ -1664,7 +1664,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             for (int i = 0; i < subtokens.size(); i++) {
                 assert debug("subtoken[" + i + "] { " + new String(subtokens.get(i)) + " }");
                 preConvArgs[i] = args[i] = (es[i] = (ExecutableStatement) subCompileExpression(subtokens.get(i), pCtx))
-                        .getValue(this.ctx, this.thisRef, variableFactory);
+                        .getValue(this.thisRef, this.thisRef, variableFactory);
 
                 if (es[i].isExplicitCast()) argTypes[i] = es[i].getKnownEgressType();
             }
