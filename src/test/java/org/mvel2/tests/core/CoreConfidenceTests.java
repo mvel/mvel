@@ -3103,4 +3103,18 @@ public class CoreConfidenceTests extends AbstractTest {
         ParserContext pctx = new ParserContext(pconf);        
         MVEL.compileExpression( s, pctx );      
     }     
+    
+    public void testContextFieldNotFound() {
+        String str = "'stilton'.equals( type );";
+        
+        ParserConfiguration pconf = new ParserConfiguration();
+        
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.addInput( "this", Cheese.class );
+        pctx.setStrictTypeEnforcement( true );
+        pctx.setStrongTyping( true );
+        
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression( str, pctx );
+        MVEL.executeExpression(stmt, new Cheese(), new HashMap() );                
+    }    
 }
