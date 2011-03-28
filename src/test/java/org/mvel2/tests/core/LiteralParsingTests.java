@@ -72,8 +72,6 @@ public class LiteralParsingTests extends AbstractTest {
     }
 
     public void testNumLiterals5() {
-        Object o = MVEL.eval("1e1");
-
         assertEquals(1e1,
                 MVEL.eval("1e1"));
     }

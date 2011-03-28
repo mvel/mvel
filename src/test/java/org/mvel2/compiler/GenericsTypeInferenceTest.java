@@ -170,26 +170,30 @@ public class GenericsTypeInferenceTest extends TestCase {
     public void testAmazed() {
 
         MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
-        ParserContext context = new ParserContext();
-        context.setStrongTyping(true);
-        context.addInput("this",
-                Amazed1.class);
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("list.size", context);
+        try {
+            ParserContext context = new ParserContext();
+            context.setStrongTyping(true);
+            context.addInput("this",
+                    Amazed1.class);
+            ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("list.size", context);
 
-        Amazed1 a1 = new Amazed1();
-        assertEquals(new Integer(0), MVEL.executeExpression(stmt, a1));
+            Amazed1 a1 = new Amazed1();
+            assertEquals(new Integer(0), MVEL.executeExpression(stmt, a1));
 
 
-        context = new ParserContext();
-        context.setStrongTyping(true);
-        context.addInput("this",
-                Amazed2.class);
-        stmt = (ExecutableStatement) MVEL.compileExpression("list.size", context);
+            context = new ParserContext();
+            context.setStrongTyping(true);
+            context.addInput("this",
+                    Amazed2.class);
+            stmt = (ExecutableStatement) MVEL.compileExpression("list.size", context);
 
-        Amazed2 a2 = new Amazed2();
+            Amazed2 a2 = new Amazed2();
 
-        assertEquals(new Integer(0), MVEL.executeExpression(stmt, a2));
+            assertEquals(new Integer(0), MVEL.executeExpression(stmt, a2));
 
-        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
+        }
+        finally {
+            MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = false;
+        }
     }
 }

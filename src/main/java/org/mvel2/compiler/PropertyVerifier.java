@@ -216,7 +216,7 @@ public class PropertyVerifier extends AbstractOptimizer {
         else if (pCtx != null && pCtx.hasImport(property)) {
             return pCtx.getImport(property);
         }
-        else if (pCtx != null && pCtx.getLastTypeParameters() != null
+        else if (pCtx != null && pCtx.getLastTypeParameters() != null && pCtx.getLastTypeParameters().length != 0
                 && ((Collection.class.isAssignableFrom(ctx) && !(switchStateReg = false))
                 || (Map.class.isAssignableFrom(ctx) && (switchStateReg = true)))) {
             Class parm = (Class) pCtx.getLastTypeParameters()[switchStateReg ? 1 : 0];
@@ -269,7 +269,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
 
             if (pCtx.isStrictTypeEnforcement()) {
-                addFatalError("unqualified type in strict mode for: " + property, start);
+                addFatalError("unqualified type in strict mode for: " + property, tkStart);
             }
 
 

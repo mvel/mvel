@@ -253,6 +253,8 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
     public void testStrictTypingCompilation() {
+        //  OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
+
         ExpressionCompiler compiler = new ExpressionCompiler("a.foo;\nb.foo;\n x = 5");
         ParserContext ctx = new ParserContext();
         ctx.setStrictTypeEnforcement(true);
@@ -262,11 +264,20 @@ public class CoreConfidenceTests extends AbstractTest {
         }
         catch (CompileException e) {
             e.printStackTrace();
+
+            System.out.println("**EZR_122**");
+            for (ErrorDetail detail : e.getErrors()) {
+                System.out.println(detail.toString());
+            }
+
             assertEquals(2,
                     e.getErrors().size());
+
             return;
         }
         assertTrue(false);
+
+        // OptimizerFactory.setDefaultOptimizer(OptimizerFactory.DYNAMIC);
     }
 
 
@@ -280,13 +291,13 @@ public class CoreConfidenceTests extends AbstractTest {
         compiler.compile();
         assertTrue(compiler.getParserContextState().getInputs().containsKey("p"));
     }
-    
+
     public void testIncrementAndAssignWithInputs() {
         ExpressionCompiler compiler = new ExpressionCompiler("total += cheese");
         compiler.compile();
         assertTrue(compiler.getParserContextState().getInputs().containsKey("total"));
         assertTrue(compiler.getParserContextState().getInputs().containsKey("cheese"));
-    }    
+    }
 
     public void testAssignmentRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("total = total + $cheese.price");
@@ -2711,9 +2722,9 @@ public class CoreConfidenceTests extends AbstractTest {
             result.add(arg);
             return result;
         }
-        
-        public static String throwException( ) {
-            throw new RuntimeException( "this should throw an exception" );
+
+        public static String throwException() {
+            throw new RuntimeException("this should throw an exception");
         }
     }
 
@@ -3067,48 +3078,48 @@ public class CoreConfidenceTests extends AbstractTest {
 //        assertEquals("hello",
 //                test("import_static " + getClass().getName() + ".StaticClassWithStaticMethod.*; getString()"));
 //    }
-    
+
     public void testArrayLength() {
         ParserContext context = new ParserContext();
         context.setStrongTyping(true);
-        context.addInput( "x",
-                          String[].class );
+        context.addInput("x",
+                String[].class);
         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("x.length", context);
     }
-    
+
     public void testEmptyConstructorWithSpace() throws Exception {
         ParserConfiguration pconf = new ParserConfiguration();
-        pconf.addImport( "getString", StaticClassWithStaticMethod.class.getMethod( "getString", null ) );
-        
+        pconf.addImport("getString", StaticClassWithStaticMethod.class.getMethod("getString", null));
+
         String text = "getString( )";
-        
+
         ParserContext pctx = new ParserContext(pconf);
-        pctx.setStrongTyping( true );
-        pctx.setStrictTypeEnforcement( true );
-       
-        
-        MVEL.compileExpression( text, pctx );
-    }    
-    
+        pctx.setStrongTyping(true);
+        pctx.setStrictTypeEnforcement(true);
+
+
+        MVEL.compileExpression(text, pctx);
+    }
+
     public void testJavaLangImport() throws Exception {
         String s = "Exception e = null;";
         ParserConfiguration pconf = new ParserConfiguration();
-        ParserContext pctx = new ParserContext(pconf);        
-        MVEL.compileExpression( s, pctx );    
-    }      
+        ParserContext pctx = new ParserContext(pconf);
+        MVEL.compileExpression(s, pctx);
+    }
 
-    
+
     public void testContextFieldNotFound() {
         String str = "'stilton'.equals( type );";
-        
+
         ParserConfiguration pconf = new ParserConfiguration();
-        
+
         ParserContext pctx = new ParserContext(pconf);
-        pctx.addInput( "this", Cheese.class );
-        pctx.setStrictTypeEnforcement( true );
-        pctx.setStrongTyping( true );
-        
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression( str, pctx );
-        MVEL.executeExpression(stmt, new Cheese(), new HashMap() );                
-    }    
+        pctx.addInput("this", Cheese.class);
+        pctx.setStrictTypeEnforcement(true);
+        pctx.setStrongTyping(true);
+
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        MVEL.executeExpression(stmt, new Cheese(), new HashMap());
+    }
 }
