@@ -71,6 +71,8 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true,
                 eval("this.foo == 'bar'", map, factory));
     }
+    
+    
 
     // compiled - reflective
 
@@ -3122,4 +3124,12 @@ public class CoreConfidenceTests extends AbstractTest {
         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
         MVEL.executeExpression(stmt, new Cheese(), new HashMap());
     }
+    
+    public void testVarArgs() throws Exception {
+        ParserContext parserContext = new ParserContext();
+        parserContext.setStrictTypeEnforcement( true );
+        parserContext.setStrongTyping( true );
+ 
+        MVEL.analyze("String.format(\"\");", parserContext);
+    }    
 }
