@@ -252,7 +252,7 @@ public class ParseTools {
                 if (classTarget && (meth.getModifiers() & Modifier.STATIC) == 0) continue;
 
                 if (method.equals(meth.getName())) {
-                    if ((parmTypes = meth.getParameterTypes()).length != arguments.length) {
+                    if ((parmTypes = meth.getParameterTypes()).length != arguments.length && !meth.isVarArgs()) {
                         continue;
                     }
                     else if (arguments.length == 0 && parmTypes.length == 0) {
@@ -444,7 +444,7 @@ public class ParseTools {
         }
 
         for (Constructor construct : getConstructors(cls)) {
-            if ((parmTypes = getConstructors(construct)).length != arguments.length) {
+            if ((parmTypes = getConstructors(construct)).length != arguments.length && !construct.isVarArgs()) {
                 continue;
             }
             else if (arguments.length == 0 && parmTypes.length == 0) {

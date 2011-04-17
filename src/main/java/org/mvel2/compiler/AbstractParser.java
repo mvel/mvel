@@ -340,6 +340,7 @@ public class AbstractParser implements Parser, Serializable {
                                         }
                                     }
 
+
                                     cursor = balancedCaptureWithLineAccounting(expr, st, end, expr[cursor], pCtx) + 1;
                                     if (tokenContinues()) {
                                         lastNode = new InlineCollectionNode(expr, st, cursor - st, fields,

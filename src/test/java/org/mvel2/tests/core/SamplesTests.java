@@ -1,12 +1,15 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
+import static org.mvel2.util.ParseTools.containsCheck;
 import static org.mvel2.util.ParseTools.loadFromFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -21,7 +24,7 @@ public class SamplesTests extends AbstractTest {
     }
 
     public void testQuickSortScriptFunctional() throws IOException {
-            MVEL.evalFile(new File("samples/scripts/fquicksort.mvel"));
+        MVEL.evalFile(new File("samples/scripts/fquicksort.mvel"));
     }
 
 
@@ -84,5 +87,4 @@ public class SamplesTests extends AbstractTest {
     public void testMultiLineString() throws IOException {
         MVEL.evalFile(new File("samples/scripts/multilinestring.mvel"));
     }
-
 }
