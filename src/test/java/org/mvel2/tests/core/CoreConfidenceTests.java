@@ -22,9 +22,12 @@ import org.mvel2.util.ReflectionUtil;
 
 import java.awt.*;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
@@ -56,6 +59,14 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testBooleanModeOnly4() {
         assertEquals(true, test("hour == (hour + 0)"));
+    }
+    
+    public void testSimpleFailure() {
+        try {
+            MVEL.eval( "$n" );
+        } catch ( Exception e ) {
+            e.printStackTrace( new PrintWriter( new StringWriter() ) );
+        }
     }
 
     // interpreted
@@ -3131,5 +3142,20 @@ public class CoreConfidenceTests extends AbstractTest {
         parserContext.setStrongTyping( true );
  
         MVEL.analyze("String.format(\"\");", parserContext);
-    }    
+    }   
+    
+    public void testNestedEnum() {
+        Object o = MVEL.eval( "import " + Triangle.class.getName() +"; Triangle.Type.OBTUSE", new HashMap() );
+        assertEquals( Triangle.Type.OBTUSE, o );
+        
+        o = MVEL.eval( "import ex4.Triangle; Triangle.Type.OBTUSE", new HashMap() );
+        assertEquals( Triangle.Type.OBTUSE, ex4.Triangle.Type.OBTUSE );
+    }
+    
+    public static class Triangle {
+        public static enum Type {
+            INCOMPLETE, UNCLASSIFIED,
+            EQUILATERAL, ISOSCELES, RECTANGLED, ISOSCELES_RECTANGLED, ACUTE, OBTUSE;
+        }
+    }
 }
