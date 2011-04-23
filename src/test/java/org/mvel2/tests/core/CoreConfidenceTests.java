@@ -3178,4 +3178,22 @@ public class CoreConfidenceTests extends AbstractTest {
             assertEquals(expected, ((Boolean)MVEL.executeExpression(stmt, null, vars)).booleanValue() );
         }
     }
+    
+    public void testStrictModeAddAll() {        
+        String str = "list.addAll( o );";
+
+        ParserConfiguration pconf = new ParserConfiguration();
+
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.setStrictTypeEnforcement(true);
+        pctx.setStrongTyping(true);
+        pctx.addInput( "o", Object.class );
+        pctx.addInput( "list", ArrayList.class );
+        try {
+            ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+            fail( "This should not compile, as o is not of a type Collection" );
+        } catch ( Exception e ) {
+            
+        }
+    }    
 }
