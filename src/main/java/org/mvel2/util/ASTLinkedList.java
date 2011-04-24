@@ -95,6 +95,7 @@ public class ASTLinkedList implements ASTIterator {
             return current;
         }
         finally {
+            last = current;
             current = current.nextASTNode;
         }
     }
@@ -141,7 +142,7 @@ public class ASTLinkedList implements ASTIterator {
     }
 
     public void back() {
-        throw new RuntimeException("unimplemented");
+        current = last;
     }
 
     public String showNodeChain() {

@@ -3125,11 +3125,22 @@ public class CoreConfidenceTests extends AbstractTest {
         MVEL.executeExpression(stmt, new Cheese(), new HashMap());
     }
     
-    public void testVarArgs() throws Exception {
+        public void testVarArgs() throws Exception {
         ParserContext parserContext = new ParserContext();
         parserContext.setStrictTypeEnforcement( true );
         parserContext.setStrongTyping( true );
  
         MVEL.analyze("String.format(\"\");", parserContext);
-    }    
+    }
+
+
+    public void testOperatorPrecedence() throws IOException {
+        String script = "list = [1, 2, 3]; x = 10; list contains x || x == 20";
+        Serializable expression = MVEL.compileExpression(script);
+        Object result = MVEL.executeExpression(expression, new HashMap());
+
+        assertEquals( Boolean.FALSE, result );
+    }
+
+
 }

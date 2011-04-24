@@ -191,7 +191,8 @@ public class CompilerTools {
                     optimizedAst.addTokenNode(tk, astLinkedList.nextNode());
                 }
                 else {
-                    optimizedAst.addTokenNode(tk, tkOp);
+                    astLinkedList.back();
+                    optimizedAst.addTokenNode(tk);
                 }
             }
             else {
