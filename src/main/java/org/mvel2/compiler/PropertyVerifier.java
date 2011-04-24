@@ -26,6 +26,7 @@ import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 
+import org.mvel2.util.NullType;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.StringAppender;
 
@@ -269,7 +270,9 @@ public class PropertyVerifier extends AbstractOptimizer {
 
 
             if (pCtx.isStrictTypeEnforcement()) {
-                addFatalError("unqualified type in strict mode for: " + property, tkStart);
+                throw new CompileException("unqualified type in strict mode for: " + property, expr, tkStart);
+
+                //      addFatalError("unqualified type in strict mode for: " + property, tkStart);
             }
 
 
@@ -429,6 +432,11 @@ public class PropertyVerifier extends AbstractOptimizer {
             for (int i = 0; i < subtokens.size(); i++) {
                 try {
                     args[i] = MVEL.analyze(subtokens.get(i), pCtx);
+
+                    if ("null".equals(String.valueOf(subtokens.get(i)))) {
+                        args[i] = NullType.class;
+                    }
+
                 }
                 catch (CompileException e) {
                     e.setExpr(expr);
@@ -481,8 +489,10 @@ public class PropertyVerifier extends AbstractOptimizer {
                 }
 
                 if (pCtx.isStrictTypeEnforcement()) {
-                    addFatalError("unable to resolve method using strict-mode: "
-                            + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")", tkStart);
+                    throw new CompileException("unable to resolve method using strict-mode: "
+                            + ctx.getName() + "." + name + "(" + errorBuild.toString() + ")", expr, tkStart);
+
+                    //   addFatalError();
                 }
 
 

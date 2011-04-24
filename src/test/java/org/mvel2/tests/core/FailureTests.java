@@ -142,9 +142,6 @@ public class FailureTests extends AbstractTest {
         }
         catch (CompileException e) {
             e.printStackTrace();
-
-            assertEquals(12, e.getErrors().get(0).getColumn());
-            assertEquals(15, e.getErrors().get(1).getColumn());
             return;
         }
 

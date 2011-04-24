@@ -291,7 +291,7 @@ public class ParseTools {
 
                             score += 1;
                         }
-                        else if (arguments[i] == Object.class) {
+                        else if (parmTypes[i] == Object.class || arguments[i] == NullType.class) {
                             score += 1;
                         }
                         else {
@@ -482,7 +482,7 @@ public class ParseTools {
 
                     score += 1;
                 }
-                else if (arguments[i] == Object.class) {
+                else if (parmTypes[i] == Object.class || arguments[i] == NullType.class) {
                     score += 1;
                 }
                 else {

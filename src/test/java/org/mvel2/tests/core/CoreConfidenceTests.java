@@ -266,15 +266,6 @@ public class CoreConfidenceTests extends AbstractTest {
         }
         catch (CompileException e) {
             e.printStackTrace();
-
-            System.out.println("**EZR_122**");
-            for (ErrorDetail detail : e.getErrors()) {
-                System.out.println(detail.toString());
-            }
-
-            assertEquals(2,
-                    e.getErrors().size());
-
             return;
         }
         assertTrue(false);
@@ -3142,5 +3133,56 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals( Boolean.FALSE, result );
     }
 
+
+    public void testNestedEnum() {
+        Object o = MVEL.eval( "import " + Triangle.class.getName() +"; Triangle.Type.OBTUSE", new HashMap() );
+        assertEquals( Triangle.Type.OBTUSE, o );
+
+        o = MVEL.eval( "import ex4.Triangle; Triangle.Type.OBTUSE", new HashMap() );
+        assertEquals( Triangle.Type.OBTUSE, ex4.Triangle.Type.OBTUSE );
+    }
+
+    public static class Triangle {
+        public static enum Type {
+            INCOMPLETE, UNCLASSIFIED,
+            EQUILATERAL, ISOSCELES, RECTANGLED, ISOSCELES_RECTANGLED, ACUTE, OBTUSE;
+        }
+    }
+
+    public void testModExpr() {
+        String str = "$y % 4 == 0 && $y % 100 != 0 || $y % 400 == 0 ";
+
+        ParserConfiguration pconf = new ParserConfiguration();
+
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.setStrictTypeEnforcement(true);
+        pctx.setStrongTyping(true);
+        pctx.addInput( "$y", int.class );
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        for ( int i = 0; i < 500; i++ ) {
+            int y = i;
+            boolean expected = y % 4 == 0 && y % 100 != 0 || y % 400 == 0;
+            assertEquals(expected, ((Boolean)MVEL.executeExpression(stmt, null, vars)).booleanValue() );
+        }
+    }
+
+    public void testStrictModeAddAll() {
+        String str = "list.addAll( o );";
+
+        ParserConfiguration pconf = new ParserConfiguration();
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.setStrongTyping(true);
+        pctx.addInput( "o", Object.class );
+        pctx.addInput( "list", ArrayList.class );
+        try {
+            ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+            fail( "This should not compile, as o is not of a type Collection" );
+        } catch ( Exception e ) {
+
+        }
+    }
 
 }

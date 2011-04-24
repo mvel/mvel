@@ -24,6 +24,7 @@ import org.mvel2.Operator;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
+import org.mvel2.util.ErrorUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -209,9 +210,11 @@ public class WithNode extends BlockNode implements NestedStatement {
                 }
             }
             catch (CompileException e) {
-                e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
-                e.setExpr(block);
-                throw e;
+                throw ErrorUtil.rewriteIfNeeded(e, block, _st);
+
+//                e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
+//                e.setExpr(block);
+//                throw e;
             }
         }
 

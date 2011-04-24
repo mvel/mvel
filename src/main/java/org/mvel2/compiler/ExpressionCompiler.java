@@ -81,6 +81,9 @@ public class ExpressionCompiler extends AbstractParser {
                 ErrorDetail e;
                 while (iter.hasNext()) {
                     e = iter.next();
+
+                    e = ErrorUtil.rewriteIfNeeded(e, expr, cursor);
+
                     if (e.getExpr() != expr) {
                         iter.remove();
                     }

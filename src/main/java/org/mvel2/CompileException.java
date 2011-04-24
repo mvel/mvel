@@ -89,7 +89,7 @@ public class CompileException extends RuntimeException {
 
         if ((lineNumber != 0 && column != 0) || expr == null || expr.length == 0) return;
 
-        for (int i = 0; i < cursor; i++) {
+        for (int i = 0; i < cursor && i < expr.length; i++) {
             switch (expr[i]) {
                 case '\r':
                     continue;
