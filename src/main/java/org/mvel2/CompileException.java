@@ -263,6 +263,10 @@ public class CompileException extends RuntimeException {
         this.column = column;
     }
 
+    public int getCursorOffet() {
+        return this.msgOffset;
+    }
+
     public void setExpr(char[] expr) {
         this.expr = expr;
     }
