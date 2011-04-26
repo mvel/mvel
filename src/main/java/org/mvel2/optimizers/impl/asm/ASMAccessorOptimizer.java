@@ -868,7 +868,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             throw e;
         }
         catch (Exception e) {
-            throw new CompileException(e.getMessage(), expr,st, e);
+            throw new CompileException(e.getMessage(), expr, st, e);
         }
     }
 
@@ -962,7 +962,24 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             wrapPrimitive(returnType);
         }
 
-        Class cls = (ctx instanceof Class ? ((Class) ctx) : ctx != null ? ctx.getClass() : null);
+
+        Class<?> cls;
+        if (ctx instanceof Class) {
+            if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS
+                    && "class".equals(property)) {
+                ldcClassConstant((Class<?>) ctx);
+
+                return ctx;
+            }
+
+            cls = (Class<?>) ctx;
+        }
+        else if (ctx != null) {
+            cls = ctx.getClass();
+        }
+        else {
+            cls = null;
+        }
 
         if (hasPropertyHandler(cls)) {
             PropertyHandler prop = getPropertyHandler(cls);

@@ -175,6 +175,12 @@ public class PropertyVerifier extends AbstractOptimizer {
 
         Member member = ctx != null ? getFieldOrAccessor(ctx, property) : null;
 
+        if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS && ctx != null) {
+            if ("class".equals(property)) {
+                return (Class<?>) ctx;
+            }
+        }
+
         if (member instanceof Field) {
             if (pCtx.isStrictTypeEnforcement()) {
                 Field f = ((Field) member);

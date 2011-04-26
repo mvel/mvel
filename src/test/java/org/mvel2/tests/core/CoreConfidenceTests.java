@@ -3135,12 +3135,9 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
-    public void testNestedEnum() {
-        Object o = MVEL.eval( "import " + Triangle.class.getName() +"$Foo; Foo.OBTUSE", new HashMap() );
+    public void testNestedEnum() throws Exception {
+        Object o = MVEL.eval( "import " + Triangle.class.getName() +"; Triangle.Foo.OBTUSE", new HashMap() );
         assertEquals( Triangle.Foo.OBTUSE, o );
-//
-//        o = MVEL.eval( "import ex4.Triangle$Foo; Foo.OBTUSE", new HashMap() );
-//        assertEquals( Triangle.Foo.OBTUSE, ex4.Triangle.Type.OBTUSE );
     }
 
     public static class Triangle {

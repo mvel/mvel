@@ -496,8 +496,21 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
         }
 
-        //noinspection unchecked
-        Class<?> cls = (ctx instanceof Class ? ((Class<?>) ctx) : ctx != null ? ctx.getClass() : null);
+        Class<?> cls;
+        if (ctx instanceof Class) {
+            if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS
+                    && "class".equals(property)) {
+                return ctx;
+            }
+
+            cls = (Class<?>) ctx;
+        }
+        else if (ctx != null) {
+            cls = ctx.getClass();
+        }
+        else {
+            cls = null;
+        }
 
         if (hasPropertyHandler(cls)) {
             PropertyHandlerAccessor acc = new PropertyHandlerAccessor(property, cls, getPropertyHandler(cls));
@@ -511,6 +524,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         if (member instanceof Method) {
             try {
+
+
                 o = ((Method) member).invoke(ctx, EMPTYARG);
 
                 if (hasNullPropertyHandler()) {
@@ -628,6 +643,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 catch (ClassNotFoundException cnfe) {
                     // fall through.
                 }
+
+
             }
             else if (MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL) {
                 return getMethod(ctx, property);

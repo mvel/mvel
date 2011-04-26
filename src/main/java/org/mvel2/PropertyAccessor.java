@@ -576,8 +576,23 @@ public class PropertyAccessor {
         }
 
         if (ctx != null) {
-            Class cls;
-            Member member = checkReadCache(cls = (ctx instanceof Class ? ((Class) ctx) : ctx.getClass()), property.hashCode());
+
+
+            Class<?> cls;
+            if (ctx instanceof Class) {
+                if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS
+                        && "class".equals(property)) {
+                    return ctx;
+                }
+
+                cls = (Class<?>) ctx;
+            }
+            else {
+                cls = ctx.getClass();
+            }
+
+
+            Member member = checkReadCache(cls, property.hashCode());
 
             if (member == null) {
                 addReadCache(cls, property.hashCode(), member = getFieldOrAccessor(cls, property));

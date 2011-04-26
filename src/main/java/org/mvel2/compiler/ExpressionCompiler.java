@@ -255,7 +255,6 @@ public class ExpressionCompiler extends AbstractParser {
                             continue;
                         }
                         else {
-
                             astBuild.addTokenNode(verify(pCtx, tk), verify(pCtx, tkOp));
                             if (tkLA != null) astBuild.addTokenNode(verify(pCtx, tkLA));
                             continue;

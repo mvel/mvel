@@ -21,6 +21,7 @@ package org.mvel2.ast;
 import org.mvel2.CompileException;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.util.ParseTools;
+
 import static org.mvel2.util.ParseTools.findClassImportResolverFactory;
 
 /**
@@ -41,15 +42,27 @@ public class ImportNode extends ASTNode {
         if (ParseTools.endsWith(expr, start, offset, WC_TEST)) {
             packageImport = true;
             _offset = (short) ParseTools.findLast(expr, start, offset, '.');
-            if (_offset == -1) { _offset = 0; }
+            if (_offset == -1) {
+                _offset = 0;
+            }
         }
         else {
+            String clsName = new String(expr, start, offset);
+
             try {
-              this.importClass =  Class.forName(new String(expr, start, offset), true,
-                      Thread.currentThread().getContextClassLoader());
+                this.importClass = Class.forName(clsName, true,
+                        Thread.currentThread().getContextClassLoader());
             }
             catch (ClassNotFoundException e) {
-                throw new CompileException("class not found: " + new String(expr), expr, start);
+                int idx;
+                clsName = (clsName.substring(0, idx = clsName.lastIndexOf('.')) + "$" + clsName.substring(idx + 1)).trim();
+
+                try {
+                    this.importClass = Class.forName(clsName, true, Thread.currentThread().getContextClassLoader());
+                }
+                catch (ClassNotFoundException e2) {
+                    throw new CompileException("class not found: " + new String(expr), expr, start);
+                }
             }
         }
     }
