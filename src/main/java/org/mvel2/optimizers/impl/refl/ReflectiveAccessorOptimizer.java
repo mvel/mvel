@@ -54,6 +54,7 @@ import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 import static org.mvel2.util.PropertyTools.getFieldOrWriteAccessor;
+import static org.mvel2.util.PropertyTools.getGetter;
 
 public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements AccessorOptimizer {
     private AccessorNode rootNode;
@@ -524,8 +525,6 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
 
         if (member instanceof Method) {
             try {
-
-
                 o = ((Method) member).invoke(ctx, EMPTYARG);
 
                 if (hasNullPropertyHandler()) {
@@ -552,6 +551,20 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
                 else {
                     addAccessorNode(new GetterAccessor(iFaceMeth));
                 }
+            }
+            catch (IllegalArgumentException e) {
+                if (member.getDeclaringClass().equals(ctx)) {
+                    try{
+                        Class c = Class.forName(member.getDeclaringClass().getName() + "$" + property);
+
+                        throw new CompileException("name collision between innerclass: " + c.getCanonicalName()
+                                + "; and bean accessor: " + property + " (" + member.toString() + ")", expr, tkStart);
+                    }
+                    catch (ClassNotFoundException e2) {
+                       //fallthru
+                    }
+                }
+                throw e;
             }
             return o;
         }

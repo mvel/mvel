@@ -1129,6 +1129,21 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
 
                 o = iFaceMeth.invoke(ctx, EMPTYARG);
             }
+            catch (IllegalArgumentException e) {
+                if (member.getDeclaringClass().equals(ctx)) {
+                    try {
+                        Class c = Class.forName(member.getDeclaringClass().getName() + "$" + property);
+
+                        throw new CompileException("name collision between innerclass: " + c.getCanonicalName()
+                                + "; and bean accessor: " + property + " (" + member.toString() + ")", expr, tkStart);
+                    }
+                    catch (ClassNotFoundException e2) {
+                        //fallthru
+                    }
+                }
+                throw e;
+            }
+
 
             if (hasNullPropertyHandler()) {
                 if (o == null) o = getNullPropertyHandler().getProperty(member.getName(), ctx, variableFactory);

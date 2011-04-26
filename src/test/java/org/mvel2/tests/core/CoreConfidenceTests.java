@@ -3136,8 +3136,13 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testNestedEnum() throws Exception {
-        Object o = MVEL.eval( "import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE", new HashMap() );
-        assertEquals( Triangle.Foo.OBTUSE, o );
+//        assertEquals(Triangle.Foo.class, MVEL.analyze("import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE" , ParserContext.create()));
+
+ //       Serializable o = MVEL.compileExpression( "import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE" );
+
+   //     assertEquals( Triangle.Foo.OBTUSE, MVEL.executeExpression(o, new HashMap()) );
+
+        MVEL.eval("import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE", new HashMap());
     }
 
     public static class Triangle {
@@ -3146,15 +3151,15 @@ public class CoreConfidenceTests extends AbstractTest {
             EQUILATERAL, ISOSCELES, RECTANGLED, ISOSCELES_RECTANGLED, ACUTE, OBTUSE;
         }
         
-        private Foo foo;
-
-        public Foo getFoo() {
-            return foo;
-        }
-
-        public void setFoo(Foo foo) {
-            this.foo = foo;
-        }
+//        private Foo foo;
+//
+//        public Foo getFoo() {
+//            return foo;
+//        }
+//
+//        public void setFoo(Foo foo) {
+//            this.foo = foo;
+//        }
     }
 
     public void testStrictModeAddAll() {

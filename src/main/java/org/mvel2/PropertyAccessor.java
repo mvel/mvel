@@ -613,6 +613,20 @@ public class PropertyAccessor {
                         }
                     }
                 }
+                catch (IllegalArgumentException e) {
+                    if (member.getDeclaringClass().equals(ctx)) {
+                        try {
+                            Class c = Class.forName(member.getDeclaringClass().getName() + "$" + property);
+
+                            throw new CompileException("name collision between innerclass: " + c.getCanonicalName()
+                                    + "; and bean accessor: " + property + " (" + member.toString() + ")", this.property, this.st);
+                        }
+                        catch (ClassNotFoundException e2) {
+                            //fallthru
+                        }
+                    }
+                    throw e;
+                }
             }
             else if (member != null) {
                 return ((Field) member).get(ctx);

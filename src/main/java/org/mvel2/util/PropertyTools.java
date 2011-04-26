@@ -66,7 +66,7 @@ public class PropertyTools {
     public static Method getSetter(Class clazz, String property, Class type) {
         String simple = "set" + property;
         property = ReflectionUtil.getSetter(property);
-        
+
         for (Method meth : clazz.getMethods()) {
             if ((meth.getModifiers() & PUBLIC) != 0 && meth.getParameterTypes().length == 1 &&
                     (property.equals(meth.getName()) || simple.equals(meth.getName())) && (type == null || canConvert(meth.getParameterTypes()[0], type))) {
@@ -162,7 +162,7 @@ public class PropertyTools {
         }
         return false;
     }
-   
+
     public static Object getPrimitiveInitialValue(Class type) {
         if (type == int.class) {
             return 0;
