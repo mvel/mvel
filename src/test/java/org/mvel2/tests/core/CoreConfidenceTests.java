@@ -291,6 +291,23 @@ public class CoreConfidenceTests extends AbstractTest {
         assertTrue(compiler.getParserContextState().getInputs().containsKey("total"));
         assertTrue(compiler.getParserContextState().getInputs().containsKey("cheese"));
     }
+    
+    public void testGetCorrectInputs() {
+        String str = "total = total + $cheese.price";
+
+        ParserConfiguration pconf = new ParserConfiguration();
+
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.setStrictTypeEnforcement(false);
+        pctx.setStrongTyping(false);
+        pctx.addInput( "total", int.class );
+        pctx.addInput( "$cheese", Cheese.class );
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        assertTrue( "Should not contain" + pctx.getVariables(), pctx.getVariables().isEmpty() );
+    }    
 
     public void testAssignmentRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("total = total + $cheese.price");
