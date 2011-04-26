@@ -5,8 +5,10 @@ import org.mvel2.MVEL;
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
 
+import org.mvel2.ParserConfiguration;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.Make;
@@ -948,5 +950,30 @@ public class ArithmeticTests extends AbstractTest {
         assertEquals(20 - 10 - 5,
                 testCompiledSimple("x - y - z",
                         map));
+    }
+
+
+    public void testModExpr() {
+        String str = "$y % 4 == 0 && $y % 100 != 0 || $y % 400 == 0 ";
+
+        ParserConfiguration pconf = new ParserConfiguration();
+
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.setStrictTypeEnforcement(true);
+        pctx.setStrongTyping(true);
+        pctx.addInput("$y", int.class);
+
+        Map<String, Object> vars = new HashMap<String, Object>();
+
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        for (int i = 0; i < 500; i++) {
+            int y = i;
+            boolean expected = y % 4 == 0 && y % 100 != 0 || y % 400 == 0;
+            vars.put("$y", y);
+
+            assertEquals(expected, MVEL.eval(str, vars));
+
+            assertEquals(expected, ((Boolean) MVEL.executeExpression(stmt, null, vars)).booleanValue());
+        }
     }
 }

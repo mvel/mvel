@@ -1320,8 +1320,8 @@ public class TypesAndInferenceTests extends AbstractTest {
                 x.intValue());
     }
 
-    public void testStaticFieldAccessForInputs() {    
-        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true; 
+    public void testStaticFieldAccessForInputs() {
+        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
         ParserContext pCtx = ParserContext.create();
         MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
 
@@ -1329,7 +1329,7 @@ public class TypesAndInferenceTests extends AbstractTest {
 
         assertEquals(0,
                 pCtx.getInputs().size());
-        
+
 //        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;        
 //        
 //        pCtx = ParserContext.create();
@@ -1341,30 +1341,30 @@ public class TypesAndInferenceTests extends AbstractTest {
 //                pCtx.getInputs().size());        
     }
 
-    
+
     public void testStaticFieldAccessForInputsWithStrictStrong() {
         ParserContext pCtx = ParserContext.create();
-        pCtx.setStrictTypeEnforcement( true );
-        pCtx.setStrongTyping( true );
+        pCtx.setStrictTypeEnforcement(true);
+        pCtx.setStrongTyping(true);
         MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
 
         assertFalse(pCtx.getInputs().containsKey("java"));
 
         assertEquals(0,
-                     pCtx.getInputs().size());
-        
-        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;              
+                pCtx.getInputs().size());
+
+        MVEL.COMPILER_OPT_ALLOW_NAKED_METH_CALL = true;
         pCtx = ParserContext.create();
-        pCtx.setStrictTypeEnforcement( true );
-        pCtx.setStrongTyping( true );
+        pCtx.setStrictTypeEnforcement(true);
+        pCtx.setStrongTyping(true);
         MVEL.analysisCompile("java.math.BigDecimal.TEN", pCtx);
 
         assertFalse(pCtx.getInputs().containsKey("java"));
 
         assertEquals(0,
-                     pCtx.getInputs().size());        
+                pCtx.getInputs().size());
     }
-    
+
 
     public void testStaticMethodsInInputsBug() {
         String text = " getList( java.util.Formatter )";
@@ -1395,7 +1395,7 @@ public class TypesAndInferenceTests extends AbstractTest {
             return str;
         }
     }
-    
+
     public void testStaticMethodCallThrowsException() {
         String text = " ( throwException( ) ) ";
 
@@ -1413,12 +1413,13 @@ public class TypesAndInferenceTests extends AbstractTest {
         Map<String, Object> vars = new HashMap<String, Object>();
         Serializable expr = MVEL.compileExpression(text, pctx);
         try {
-            MVEL.executeExpression( expr );
+            MVEL.executeExpression(expr);
             fail("this should throw an exception");
-        } catch ( Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
-    }    
+    }
 
     public void testContextMethodCallsInStrongMode() {
         ParserContext context = new ParserContext();
@@ -1431,26 +1432,41 @@ public class TypesAndInferenceTests extends AbstractTest {
 
         assertEquals("Mac", MVEL.executeExpression(stmt, new EchoContext()));
     }
-    
+
     public void testForLoopTypeCoercion() {
         ParserContext pCtx = ParserContext.create();
-        pCtx.setStrictTypeEnforcement( true );
-        pCtx.setStrongTyping( true );
-        pCtx.addInput( "$type", String.class );
-        pCtx.addInput( "l", List.class );
-      
-        Map<String, Object> vars = new HashMap<String, Object>();
-        vars.put(  "$type", "pc!!" );
-        List list = new ArrayList();
-        vars.put(  "l", list );
-        ExecutableStatement stmt = ( ExecutableStatement ) MVEL.compileExpression("for (byte bt:$type.getBytes()) {l.add( bt);}", pCtx);
-        MVEL.executeExpression(stmt, null, vars);
-        
-        byte[] exp = "pc!!".getBytes();
-      //  byte[] res = new byte[list.size()];
+        pCtx.setStrictTypeEnforcement(true);
+        pCtx.setStrongTyping(true);
+        pCtx.addInput("$type", String.class);
+        pCtx.addInput("l", List.class);
 
-        for (int i = 0; i < exp.length; i++  ) {
-            assertEquals( exp[i], list.get(i));
-        }    
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put("$type", "pc!!");
+        List list = new ArrayList();
+        vars.put("l", list);
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression("for (byte bt:$type.getBytes()) {l.add( bt);}", pCtx);
+        MVEL.executeExpression(stmt, null, vars);
+
+        byte[] exp = "pc!!".getBytes();
+        //  byte[] res = new byte[list.size()];
+
+        for (int i = 0; i < exp.length; i++) {
+            assertEquals(exp[i], list.get(i));
+        }
     }
+
+    public void testGetCorrectInputs() {
+        String str = "total = total + $cheese.price";
+
+        ParserConfiguration pconf = new ParserConfiguration();
+
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.setStrongTyping(true);
+        pctx.addInput("total", int.class);
+        pctx.addInput("$cheese", Cheese.class);
+
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        assertTrue("Should not contain" + pctx.getVariables(), pctx.getVariables().isEmpty());
+    }
+
 }

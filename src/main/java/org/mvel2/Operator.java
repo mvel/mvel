@@ -42,6 +42,7 @@ public interface Operator {
             5,   // BW_XOR
             9,   // BW_SHIFT_RIGHT
             9,   // BW_SHIFT_LEFT
+            9,   // BW_USHIFT_RIGHT
             9,   // BW_USHIFT_LEFT
             5,   // BW_NOT
 

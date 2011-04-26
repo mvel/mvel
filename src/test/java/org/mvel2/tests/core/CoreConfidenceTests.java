@@ -291,23 +291,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertTrue(compiler.getParserContextState().getInputs().containsKey("total"));
         assertTrue(compiler.getParserContextState().getInputs().containsKey("cheese"));
     }
-    
-    public void testGetCorrectInputs() {
-        String str = "total = total + $cheese.price";
 
-        ParserConfiguration pconf = new ParserConfiguration();
-
-        ParserContext pctx = new ParserContext(pconf);
-        pctx.setStrictTypeEnforcement(false);
-        pctx.setStrongTyping(false);
-        pctx.addInput( "total", int.class );
-        pctx.addInput( "$cheese", Cheese.class );
-
-        Map<String, Object> vars = new HashMap<String, Object>();
-
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-        assertTrue( "Should not contain" + pctx.getVariables(), pctx.getVariables().isEmpty() );
-    }    
 
     public void testAssignmentRegression() {
         ExpressionCompiler compiler = new ExpressionCompiler("total = total + $cheese.price");
@@ -3163,26 +3147,6 @@ public class CoreConfidenceTests extends AbstractTest {
         public static enum Foo {
             INCOMPLETE, UNCLASSIFIED,
             EQUILATERAL, ISOSCELES, RECTANGLED, ISOSCELES_RECTANGLED, ACUTE, OBTUSE;
-        }
-    }
-
-    public void testModExpr() {
-        String str = "$y % 4 == 0 && $y % 100 != 0 || $y % 400 == 0 ";
-
-        ParserConfiguration pconf = new ParserConfiguration();
-
-        ParserContext pctx = new ParserContext(pconf);
-        pctx.setStrictTypeEnforcement(true);
-        pctx.setStrongTyping(true);
-        pctx.addInput( "$y", int.class );
-
-        Map<String, Object> vars = new HashMap<String, Object>();
-
-        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-        for ( int i = 0; i < 500; i++ ) {
-            int y = i;
-            boolean expected = y % 4 == 0 && y % 100 != 0 || y % 400 == 0;
-            assertEquals(expected, ((Boolean)MVEL.executeExpression(stmt, null, vars)).booleanValue() );
         }
     }
 

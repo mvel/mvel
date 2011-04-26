@@ -57,4 +57,9 @@ public class LiteralNode extends ASTNode {
     public boolean isLiteral() {
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "Literal<" + literal + ">";
+    }
 }
