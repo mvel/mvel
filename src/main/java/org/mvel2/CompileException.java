@@ -131,7 +131,6 @@ public class CompileException extends RuntimeException {
             cs = copyValueOf(expr, start, end - start);
         }
         catch (StringIndexOutOfBoundsException e) {
-            System.out.println("");
             throw e;
         }
 
@@ -200,6 +199,10 @@ public class CompileException extends RuntimeException {
         }
 
         return trimmed;
+    }
+
+    public CharSequence getCodeNearError() {
+        return showCodeNearError(expr, cursor);
     }
 
     private String generateErrorMessage() {
