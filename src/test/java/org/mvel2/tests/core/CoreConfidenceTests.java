@@ -3136,14 +3136,24 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testNestedEnum() throws Exception {
-        Object o = MVEL.eval( "import " + Triangle.class.getCanonicalName() +"; Triangle.Type.OBTUSE", new HashMap() );
-        assertEquals( Triangle.Type.OBTUSE, o );
+        Object o = MVEL.eval( "import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE", new HashMap() );
+        assertEquals( Triangle.Foo.OBTUSE, o );
     }
 
     public static class Triangle {
-        public static enum Type {
+        public static enum Foo {
             INCOMPLETE, UNCLASSIFIED,
             EQUILATERAL, ISOSCELES, RECTANGLED, ISOSCELES_RECTANGLED, ACUTE, OBTUSE;
+        }
+        
+        private Foo foo;
+
+        public Foo getFoo() {
+            return foo;
+        }
+
+        public void setFoo(Foo foo) {
+            this.foo = foo;
         }
     }
 
