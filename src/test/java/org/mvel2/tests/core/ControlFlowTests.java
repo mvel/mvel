@@ -387,4 +387,16 @@ public class ControlFlowTests extends AbstractTest {
     }
 
 
+    public void testForEachTerminateFlow() {
+        String ex = "for(int i=0;i<5;i++) {\n" +
+                "System.out.println(\"LOOP\" + i);\n" +
+                "return true;\n" +
+                "}\n" +
+                "System.out.println(\"END\");";
+
+        Serializable s = MVEL.compileExpression(ex);
+
+        assertEquals(true, MVEL.executeExpression(s, new HashMap()));
+    }
+
 }
