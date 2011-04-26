@@ -19,35 +19,31 @@
 package org.mvel2.integration.impl;
 
 import org.mvel2.ParserConfiguration;
+import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     private Set<String> packageImports;
     private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    private Map<String, Object> imports;
+    private Map<String, Object> dynImports;
 
     public ClassImportResolverFactory() {
         super();
+   }
 
-        variableResolvers = new HashMap<String, VariableResolver>();
-    }
-
-    public ClassImportResolverFactory(ParserConfiguration ctx, VariableResolverFactory nextFactory) {
-        packageImports = ctx.getPackageImports();
-        Map<String, Object> classes = ctx.getImports();
-        classLoader = ctx.getClassLoader();
-
-        this.nextFactory = nextFactory;
-        this.variableResolvers = new HashMap<String, VariableResolver>();
-
-        for (Map.Entry<String, Object> e : classes.entrySet()) {
-            variableResolvers.put(e.getKey(), new SimpleValueResolver(e.getValue()));
+    public ClassImportResolverFactory(ParserConfiguration ctx, VariableResolverFactory nextFactory, boolean compiled) {
+        if (!compiled) {
+            packageImports = ctx.getPackageImports();
         }
+
+        classLoader = ctx.getClassLoader();
+        this.nextFactory = nextFactory;
+
+        imports = Collections.unmodifiableMap(ctx.getImports());
     }
 
     public VariableResolver createVariable(String name, Object value) {
@@ -58,7 +54,6 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
         return nextFactory.createVariable(name, value);
     }
 
-
     public VariableResolver createVariable(String name, Object value, Class type) {
         if (nextFactory == null) {
             nextFactory = new MapVariableResolverFactory(new HashMap());
@@ -68,16 +63,20 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
     }
 
     public Class addClass(Class clazz) {
-        variableResolvers.put(clazz.getSimpleName(), new SimpleValueResolver(clazz));
+        if (dynImports == null) dynImports = new HashMap<String, Object>();
+        dynImports.put(clazz.getSimpleName(), clazz);
         return clazz;
     }
 
     public boolean isTarget(String name) {
-        return variableResolvers.containsKey(name);
+        if (name == null) return false;
+        return (imports != null && imports.containsKey(name)) || (dynImports != null && dynImports.containsKey(name));
     }
 
     public boolean isResolveable(String name) {
-        if (variableResolvers.containsKey(name) || isNextResolveable(name)) {
+        if (name == null) return false;
+        if ((imports != null && imports.containsKey(name)) || (dynImports != null && dynImports.containsKey(name))
+                || isNextResolveable(name)) {
             return true;
         }
         else if (packageImports != null) {
@@ -97,24 +96,28 @@ public class ClassImportResolverFactory extends BaseVariableResolverFactory {
         return false;
     }
 
-    public void clear() {
-        variableResolvers.clear();
+    @Override
+    public VariableResolver getVariableResolver(String name) {
+        if (isResolveable(name)) {
+            if (imports != null && imports.containsKey(name)) {
+                return new SimpleValueResolver(imports.get(name));
+            }
+            else if (dynImports != null && dynImports.containsKey(name)) {
+                return new SimpleValueResolver(dynImports.get(name));
+            }
+            else if (nextFactory != null) {
+                return nextFactory.getVariableResolver(name);
+            }
+        }
+
+        throw new UnresolveablePropertyException("unable to resolve variable '" + name + "'");
     }
 
-    public void setImportedClasses(Map<String, Class> imports) {
-        if (imports == null) return;
-        for (Map.Entry<String, Class> e : imports.entrySet()) {
-            variableResolvers.put(e.getKey(), new SimpleValueResolver(e.getValue()));
-        }
+    public void clear() {
+     //   variableResolvers.clear();
     }
 
     public Map<String, Object> getImportedClasses() {
-        Map<String, Object> imports = new HashMap<String, Object>();
-
-        for (Map.Entry<String, VariableResolver> e : variableResolvers.entrySet()) {
-            imports.put(e.getKey(), e.getValue().getValue());
-        }
-
         return imports;
     }
 

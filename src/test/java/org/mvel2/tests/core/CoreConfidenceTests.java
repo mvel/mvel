@@ -184,31 +184,31 @@ public class CoreConfidenceTests extends AbstractTest {
     }
 
 
-    public void testClassImportViaFactory() {
-        MapVariableResolverFactory mvf = new MapVariableResolverFactory(createTestMap());
-        ClassImportResolverFactory classes = new ClassImportResolverFactory();
-        classes.addClass(HashMap.class);
-
-        ResolverTools.appendFactory(mvf, classes);
-
-        assertTrue(executeExpression(compileExpression("HashMap map = new HashMap()",
-                classes.getImportedClasses()),
-                mvf) instanceof HashMap);
-    }
-
-    public void testSataticClassImportViaFactory() {
-        MapVariableResolverFactory mvf = new MapVariableResolverFactory(createTestMap());
-        ClassImportResolverFactory classes = new ClassImportResolverFactory();
-        classes.addClass(Person.class);
-
-        ResolverTools.appendFactory(mvf,
-                classes);
-
-        assertEquals("tom",
-                executeExpression(compileExpression("p = new Person('tom'); return p.name;",
-                        classes.getImportedClasses()),
-                        mvf));
-    }
+//    public void testClassImportViaFactory() {
+//        MapVariableResolverFactory mvf = new MapVariableResolverFactory(createTestMap());
+//        ClassImportResolverFactory classes = new ClassImportResolverFactory();
+//        classes.addClass(HashMap.class);
+//
+//        ResolverTools.appendFactory(mvf, classes);
+//
+//        assertTrue(executeExpression(compileExpression("HashMap map = new HashMap()",
+//                classes.getImportedClasses()),
+//                mvf) instanceof HashMap);
+//    }
+//
+//    public void testSataticClassImportViaFactory() {
+//        MapVariableResolverFactory mvf = new MapVariableResolverFactory(createTestMap());
+//        ClassImportResolverFactory classes = new ClassImportResolverFactory();
+//        classes.addClass(Person.class);
+//
+//        ResolverTools.appendFactory(mvf,
+//                classes);
+//
+//        assertEquals("tom",
+//                executeExpression(compileExpression("p = new Person('tom'); return p.name;",
+//                        classes.getImportedClasses()),
+//                        mvf));
+//    }
 
 
     public void testCheeseConstructor() {
@@ -3136,12 +3136,12 @@ public class CoreConfidenceTests extends AbstractTest {
 
 
     public void testNestedEnum() throws Exception {
-        Object o = MVEL.eval( "import " + Triangle.class.getName() +"; Triangle.Foo.OBTUSE", new HashMap() );
-        assertEquals( Triangle.Foo.OBTUSE, o );
+        Object o = MVEL.eval( "import " + Triangle.class.getCanonicalName() +"; Triangle.Type.OBTUSE", new HashMap() );
+        assertEquals( Triangle.Type.OBTUSE, o );
     }
 
     public static class Triangle {
-        public static enum Foo {
+        public static enum Type {
             INCOMPLETE, UNCLASSIFIED,
             EQUILATERAL, ISOSCELES, RECTANGLED, ISOSCELES_RECTANGLED, ACUTE, OBTUSE;
         }

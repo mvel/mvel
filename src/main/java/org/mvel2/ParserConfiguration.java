@@ -28,6 +28,7 @@ import java.io.Serializable;
 import static java.lang.Thread.currentThread;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The resusable parser configuration object.
@@ -149,12 +150,12 @@ public class ParserConfiguration implements Serializable {
     }
 
     public void addImport(String name, Class cls) {
-        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
+        if (this.imports == null) this.imports = new ConcurrentHashMap<String, Object>();
         this.imports.put(name, cls);
     }
 
     public void addImport(String name, Proto proto) {
-        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
+        if (this.imports == null) this.imports = new ConcurrentHashMap<String, Object>();
         this.imports.put(name, proto);
     }
 
@@ -163,7 +164,7 @@ public class ParserConfiguration implements Serializable {
     }
 
     public void addImport(String name, MethodStub method) {
-        if (this.imports == null) this.imports = new LinkedHashMap<String, Object>();
+        if (this.imports == null) this.imports = new ConcurrentHashMap<String, Object>();
         this.imports.put(name, method);
     }
 

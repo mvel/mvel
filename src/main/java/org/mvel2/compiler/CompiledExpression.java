@@ -122,7 +122,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
             }
         }
         if (importInjectionRequired) {
-            return execute(false, this, staticContext, new ClassImportResolverFactory(parserContext.getParserConfiguration(), factory));
+            return execute(false, this, staticContext, new ClassImportResolverFactory(parserContext.getParserConfiguration(), factory, true));
         }
         else {
             return execute(false, this, staticContext, factory);
@@ -131,7 +131,7 @@ public class CompiledExpression implements Serializable, ExecutableStatement {
 
     public Object getDirectValue(Object staticContext, VariableResolverFactory factory) {
         if (importInjectionRequired) {
-            return execute(false, this, staticContext, new ClassImportResolverFactory(parserContext.getParserConfiguration(), factory));
+            return execute(false, this, staticContext, new ClassImportResolverFactory(parserContext.getParserConfiguration(), factory, true));
         }
         else {
             return execute(false, this, staticContext, factory);
