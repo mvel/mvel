@@ -67,6 +67,12 @@ public class MVEL {
     public static boolean COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING =
             getBoolean("mvel2.compiler.allow_override_all_prophandling");
 
+    public static boolean COMPILER_OPT_ALLOW_RESOLVE_INNERCLASSES_WITH_DOTNOTATION =
+            getBoolean("mvel2.compiler.allow_resolve_inner_classes_with_dotnotation");
+
+    public static boolean COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS =
+            getBoolean("mvel2.compiler.support_java_style_class_literals");
+
     static boolean OPTIMIZER = true;
 
     static {
