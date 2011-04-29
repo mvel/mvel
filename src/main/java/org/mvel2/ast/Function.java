@@ -21,7 +21,6 @@ package org.mvel2.ast;
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.AbstractParser;
-import org.mvel2.compiler.EndWithValue;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.VariableResolver;
@@ -64,7 +63,7 @@ public class Function extends ASTNode implements Safe {
          */
         for (String s : this.parameters) {
             ctx.addVariable(s, Object.class);
-            ctx.addIndexedVariable(s);
+            ctx.addIndexedInput(s);
         }
 
         /**
@@ -91,17 +90,17 @@ public class Function extends ASTNode implements Safe {
             ctx.processTables();
         }
 
-        ctx.addIndexedVariables(ctx.getVariables().keySet());
+        ctx.addIndexedInputs(ctx.getVariables().keySet());
         ctx.getVariables().clear();
 
         this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, ctx);
 
         AbstractParser.setCurrentThreadParserContext(pCtx);
 
-        this.parameters = new String[ctx.getIndexedVariables().size()];
+        this.parameters = new String[ctx.getIndexedInputs().size()];
 
         int i = 0;
-        for (String s : ctx.getIndexedVariables()) {
+        for (String s : ctx.getIndexedInputs()) {
             this.parameters[i++] = s;
         }
 
@@ -109,11 +108,15 @@ public class Function extends ASTNode implements Safe {
 
         this.egressType = this.compiledBlock.getKnownEgressType();
 
+        if (pCtx.isIndexAllocation()) {
+            pCtx.addVariable(name, Function.class);
+        }
+
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (name != null) {
-            if (factory.isResolveable(name)) throw new CompileException("duplicate function: " + name, expr, start);
+            if (!factory.isIndexedFactory() && factory.isResolveable(name)) throw new CompileException("duplicate function: " + name, expr, start);
             factory.createVariable(name, this);
         }
         return this;
@@ -121,7 +124,7 @@ public class Function extends ASTNode implements Safe {
 
     public Object getReducedValue(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if (name != null) {
-            if (factory.isResolveable(name)) throw new CompileException("duplicate function: " + name, expr, start);
+            if (!factory.isIndexedFactory() && factory.isResolveable(name)) throw new CompileException("duplicate function: " + name, expr, start);
             factory.createVariable(name, this);
         }
         return this;

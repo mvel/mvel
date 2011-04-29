@@ -51,7 +51,9 @@ public class ParserContext implements Serializable {
     private ParserContext parent;
     private ParserConfiguration parserConfiguration = new ParserConfiguration();
 
-    private ArrayList<String> indexedVariables;
+    private ArrayList<String> indexedInputs;
+    private ArrayList<String> indexedLocals;
+
     private HashMap<String, Class> variables;
     private Map<String, Class> inputs;
 
@@ -91,7 +93,7 @@ public class ParserContext implements Serializable {
     }
 
     public ParserContext(ParserConfiguration parserConfiguration) {
-        this.parserConfiguration = parserConfiguration;             
+        this.parserConfiguration = parserConfiguration;
     }
 
     public ParserContext(Map<String, Object> imports, Map<String, Interceptor> interceptors, String sourceFile) {
@@ -106,7 +108,7 @@ public class ParserContext implements Serializable {
 
         ctx.addInputs(inputs);
         ctx.addVariables(variables);
-        ctx.addIndexedVariables(indexedVariables);
+        ctx.addIndexedInputs(indexedInputs);
         ctx.addTypeParameters(typeParameters);
 
         ctx.sourceMap = sourceMap;
@@ -170,7 +172,7 @@ public class ParserContext implements Serializable {
 
         ctx.inputs = inputs;
         ctx.variables = variables;
-        ctx.indexedVariables = indexedVariables;
+        ctx.indexedInputs = indexedInputs;
         ctx.typeParameters = typeParameters;
 
         ctx.sourceMap = sourceMap;
@@ -508,7 +510,7 @@ public class ParserContext implements Serializable {
     public void addError(ErrorDetail errorDetail) {
         if (errorList == null) errorList = new ArrayList<ErrorDetail>();
         else {
-            for (ErrorDetail detail: errorList) {
+            for (ErrorDetail detail : errorList) {
                 if (detail.getMessage().equals(errorDetail.getMessage())
                         && detail.getColumn() == errorDetail.getColumn()
                         && detail.getLineNumber() == errorDetail.getLineNumber()) {
@@ -759,42 +761,71 @@ public class ParserContext implements Serializable {
     }
 
     private void initIndexedVariables() {
-        if (indexedVariables == null) indexedVariables = new ArrayList<String>();
+        if (indexedInputs == null) indexedInputs = new ArrayList<String>();
+        if (indexedLocals == null) indexedLocals = new ArrayList<String>();
     }
 
-    public ArrayList<String> getIndexedVariables() {
+    public ArrayList<String> getIndexedInputs() {
         initIndexedVariables();
-        return indexedVariables;
+        return indexedInputs;
     }
 
-    public void addIndexedVariables(String[] variables) {
+    public void addIndexedInput(String[] variables) {
         initIndexedVariables();
         for (String s : variables) {
-            if (!indexedVariables.contains(s))
-                indexedVariables.add(s);
+            if (!indexedInputs.contains(s))
+                indexedInputs.add(s);
         }
     }
 
-    public void addIndexedVariable(String variable) {
+    public void addIndexedLocals(String[] variables) {
         initIndexedVariables();
-        if (!indexedVariables.contains(variable)) indexedVariables.add(variable);
+        for (String s : indexedLocals) {
+            if (!indexedLocals.contains(s))
+                indexedLocals.add(s);
+        }
     }
 
-    public void addIndexedVariables(Collection<String> variables) {
+    public void addIndexedLocals(Collection<String> variables) {
         if (variables == null) return;
         initIndexedVariables();
         for (String s : variables) {
-            if (!indexedVariables.contains(s))
-                indexedVariables.add(s);
+            if (!indexedLocals.contains(s))
+                indexedLocals.add(s);
+        }
+    }
+
+    public void addIndexedInput(String variable) {
+        initIndexedVariables();
+        if (!indexedInputs.contains(variable)) indexedInputs.add(variable);
+    }
+
+    public void addIndexedInputs(Collection<String> variables) {
+        if (variables == null) return;
+        initIndexedVariables();
+        for (String s : variables) {
+            if (!indexedInputs.contains(s))
+                indexedInputs.add(s);
         }
     }
 
     public int variableIndexOf(String name) {
-        return indexedVariables != null ? indexedVariables.indexOf(name) : -1;
+        if (indexedInputs != null) {
+            int idx = indexedInputs.indexOf(name);
+            if (idx == -1 && indexedLocals != null) {
+                idx = indexedLocals.indexOf(name);
+                if (idx != -1) {
+                    idx += indexedInputs.size();
+                }
+            }
+            return idx;
+        }
+
+        return -1;
     }
 
-    public boolean hasIndexedVariables() {
-        return indexedVariables != null && indexedVariables.size() != 0;
+    public boolean hasIndexedInputs() {
+        return indexedInputs != null && indexedInputs.size() != 0;
     }
 
     public boolean isIndexAllocation() {
@@ -826,8 +857,8 @@ public class ParserContext implements Serializable {
     }
 
     public String[] getIndexedVarNames() {
-        String[] s = new String[indexedVariables.size()];
-        indexedVariables.toArray(s);
+        String[] s = new String[indexedInputs.size()];
+        indexedInputs.toArray(s);
         return s;
     }
 
@@ -868,9 +899,9 @@ public class ParserContext implements Serializable {
     }
 
     public ParserContext withIndexedVars(String[] varNames) {
-        indexedVariables = new ArrayList<String>();
+        indexedInputs = new ArrayList<String>();
         for (String s : varNames) {
-            indexedVariables.add(s);
+            indexedInputs.add(s);
         }
 
         return this;

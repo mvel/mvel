@@ -786,7 +786,7 @@ public class AbstractParser implements Parser, Serializable {
                                                 ASTNode.ASSIGN, idx, pCtx);
 
                                         if (idx == -1) {
-                                            pCtx.addIndexedVariable(t = ian.getAssignmentVar());
+                                            pCtx.addIndexedInput(t = ian.getAssignmentVar());
                                             ian.setRegister(pCtx.variableIndexOf(t));
                                         }
                                         return lastNode = ian;

@@ -11,6 +11,7 @@ import org.mvel2.integration.VariableResolver;
  */
 public class IndexVariableResolver implements VariableResolver {
     private int indexPos;
+    private Object local;
     private Object[] vars;
 
     public IndexVariableResolver(int indexPos, Object[] vars) {

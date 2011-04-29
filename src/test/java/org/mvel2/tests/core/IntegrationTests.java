@@ -7,9 +7,8 @@ import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.CachingMapVariableResolverFactory;
 import org.mvel2.integration.impl.IndexedVariableResolverFactory;
-import org.mvel2.integration.impl.MapVariableResolver;
-import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.util.VariableSpaceCompiler;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -82,12 +81,16 @@ public class IntegrationTests extends AbstractTest {
         String[] vars = {"a", "b"};
         Object[] vals = {"foo", "bar"};
         ctx.setIndexAllocation(true);
-        ctx.addIndexedVariables(vars);
+        ctx.addIndexedInput(vars);
 
-        Serializable s = MVEL.compileExpression("def myfunc(z) { a + b + z }; myfunc('poop');", ctx);
+        String expr = "def myfunc(z) { a + b + z }; myfunc('poop');";
 
-        VariableResolverFactory locals = new CachingMapVariableResolverFactory(new HashMap<String, Object>());
-        VariableResolverFactory injected = new IndexedVariableResolverFactory(vars, vals, locals);
+        VariableResolverFactory injected = VariableSpaceCompiler.compile(expr, ctx, vals);
+
+        Serializable s = MVEL.compileExpression(expr, ctx);
+
+//        VariableResolverFactory locals = new CachingMapVariableResolverFactory(new HashMap<String, Object>());
+//        VariableResolverFactory injected = new IndexedVariableResolverFactory(vars, vals, locals);
         assertEquals("foobarpoop", MVEL.executeExpression(s, injected));
     }
 }

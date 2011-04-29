@@ -42,9 +42,13 @@ public class ForNode extends BlockNode {
 
     protected ExecutableStatement after;
 
+    protected boolean indexAlloc = false;
+
     public ForNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
         boolean varsEscape = buildForEach(this.expr = expr, this.start = start, this.offset = offset,
                 this.blockStart = blockStart, this.blockOffset = blockEnd, fields, pCtx);
+
+        this.indexAlloc = pCtx != null && pCtx.isIndexAllocation();
 
         if ((fields & COMPILE_IMMEDIATE) != 0 && compiledBlock.isEmptyStatement() && !varsEscape) {
             throw new RedundantCodeException();
@@ -52,7 +56,7 @@ public class ForNode extends BlockNode {
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
-        VariableResolverFactory ctxFactory = new MapVariableResolverFactory(new HashMap<String, Object>(1), factory);
+        VariableResolverFactory ctxFactory = indexAlloc ? factory : new MapVariableResolverFactory(new HashMap<String, Object>(1), factory);
         Object v;
         for (initializer.getValue(ctx, thisValue, ctxFactory); (Boolean) condition.getValue(ctx, thisValue, ctxFactory); after.getValue(ctx, thisValue, ctxFactory)) {
             v = compiledBlock.getValue(ctx, thisValue, ctxFactory);
@@ -112,9 +116,11 @@ public class ForNode extends BlockNode {
                 if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
                 varsEscape = true;
             }
+            else if (spCtx != null && pCtx != null) {
+                pCtx.addVariables(spCtx.getVariables());
+            }
 
             this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockEnd, spCtx);
-            //      if (pCtx != spCtx) pCtx.addVariables(spCtx.getVariables());
 
         }
         catch (NegativeArraySizeException e) {

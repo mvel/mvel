@@ -28,28 +28,32 @@ import java.util.Set;
 
 @SuppressWarnings({"unchecked"})
 public class IndexedVariableResolverFactory extends BaseVariableResolverFactory {
+
     public IndexedVariableResolverFactory(String[] varNames, Object[] values) {
         this.indexedVariableNames = varNames;
-        this.indexedVariableResolvers = createResolvers(values);
+        this.indexedVariableResolvers = createResolvers(values, varNames.length);
     }
 
     public IndexedVariableResolverFactory(String[] varNames, Object[] values, VariableResolverFactory nextFactory) {
         this.indexedVariableNames = varNames;
         this.nextFactory = new MapVariableResolverFactory();
         this.nextFactory.setNextFactory(nextFactory);
-        this.indexedVariableResolvers = createResolvers(values);
+        this.indexedVariableResolvers = createResolvers(values, varNames.length);
+
     }
 
-    private static VariableResolver[] createResolvers(Object[] values) {
-        VariableResolver[] vr = new VariableResolver[values.length];
-        for (int i = 0; i < values.length; i++) {
-            vr[i] = new IndexVariableResolver(i, values);
+    private static VariableResolver[] createResolvers(Object[] values, int size) {
+        VariableResolver[] vr = new VariableResolver[size];
+        for (int i = 0; i < size; i++) {
+            vr[i] = i >= values.length ? new SimpleValueResolver(null) : new IndexVariableResolver(i, values);
         }
         return vr;
     }
 
     public VariableResolver createIndexedVariable(int index, String name, Object value) {
-        throw new RuntimeException("Error: cannot write to factory");
+        VariableResolver r = indexedVariableResolvers[index];
+        r.setValue(value);
+        return r;
     }
 
     public VariableResolver getIndexedVariableResolver(int index) {
@@ -57,12 +61,22 @@ public class IndexedVariableResolverFactory extends BaseVariableResolverFactory 
     }
 
     public VariableResolver createVariable(String name, Object value) {
-        return nextFactory.createVariable(name, value);
+        VariableResolver vr = getResolver(name);
+        if (vr != null) {
+            vr.setValue(value);
+        }
+        return vr;
     }
 
     public VariableResolver createVariable(String name, Object value, Class<?> type) {
-        if (nextFactory == null) nextFactory = new MapVariableResolverFactory(new HashMap());
-        return nextFactory.createVariable(name, value, type);
+        VariableResolver vr = getResolver(name);
+        if (vr != null) {
+            vr.setValue(value);
+        }
+        return vr;
+
+//        if (nextFactory == null) nextFactory = new MapVariableResolverFactory(new HashMap());
+//        return nextFactory.createVariable(name, value, type);
     }
 
     public VariableResolver getVariableResolver(String name) {

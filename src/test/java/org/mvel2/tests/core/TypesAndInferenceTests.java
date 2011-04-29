@@ -10,6 +10,7 @@ import org.mvel2.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.*;
 import org.mvel2.util.MethodStub;
+import org.mvel2.util.VariableSpaceCompiler;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -1468,5 +1469,6 @@ public class TypesAndInferenceTests extends AbstractTest {
         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
         assertTrue("Should not contain" + pctx.getVariables(), pctx.getVariables().isEmpty());
     }
+
 
 }

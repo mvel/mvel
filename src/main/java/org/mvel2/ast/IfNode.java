@@ -39,6 +39,8 @@ public class IfNode extends BlockNode implements NestedStatement {
     protected IfNode elseIf;
     protected ExecutableStatement elseBlock;
 
+    protected boolean idxAlloc = false;
+
     public IfNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
         if ((this.expr = expr) == null || offset == 0) {
             throw new CompileException("statement expected", expr, start);
@@ -47,6 +49,8 @@ public class IfNode extends BlockNode implements NestedStatement {
         this.offset = offset;
         this.blockStart = blockStart;
         this.blockOffset = blockOffset;
+
+        idxAlloc = pCtx != null && pCtx.isIndexAllocation();
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
@@ -58,13 +62,13 @@ public class IfNode extends BlockNode implements NestedStatement {
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {
         if ((Boolean) condition.getValue(ctx, thisValue, factory)) {
-            return nestedStatement.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
+            return nestedStatement.getValue(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else if (elseIf != null) {
-            return elseIf.getReducedValueAccelerated(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
+            return elseIf.getReducedValueAccelerated(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else if (elseBlock != null) {
-            return elseBlock.getValue(ctx, thisValue, new MapVariableResolverFactory(new HashMap(0), factory));
+            return elseBlock.getValue(ctx, thisValue, idxAlloc ? factory : new MapVariableResolverFactory(new HashMap(0), factory));
         }
         else {
             return null;
