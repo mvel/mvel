@@ -7,6 +7,7 @@ import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.CachingMapVariableResolverFactory;
 import org.mvel2.integration.impl.IndexedVariableResolverFactory;
+import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.VariableSpaceCompiler;
 
@@ -60,7 +61,7 @@ public class IntegrationTests extends AbstractTest {
         super.tearDown();
 
         MVEL.COMPILER_OPT_ALLOW_OVERRIDE_ALL_PROPHANDLING = false;
-        
+
         PropertyHandlerFactory.unregisterPropertyHandler(MyClass.class);
         PropertyHandlerFactory.unregisterPropertyHandler(MyInterface.class);
     }
@@ -91,6 +92,7 @@ public class IntegrationTests extends AbstractTest {
 
 //        VariableResolverFactory locals = new CachingMapVariableResolverFactory(new HashMap<String, Object>());
 //        VariableResolverFactory injected = new IndexedVariableResolverFactory(vars, vals, locals);
+
         assertEquals("foobarpoop", MVEL.executeExpression(s, injected));
     }
 }
