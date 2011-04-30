@@ -95,14 +95,14 @@ public class ExpressionCompiler extends AbstractParser {
 
 
                 //noinspection ThrowFromFinallyBlock
-                throw new CompileException("Failed to compile: " + pCtx.getErrorList().size()
+                throw new CompileException("Failed to compileShared: " + pCtx.getErrorList().size()
                         + " compilation error(s): " + err.toString(), pCtx.getErrorList(), expr, cursor, pCtx);
             }
         }
     }
 
     /**
-     * Initiate an in-context compile.  This method should really only be called by the internal API.
+     * Initiate an in-context compileShared.  This method should really only be called by the internal API.
      *
      * @return compiled expression object
      */
@@ -154,7 +154,7 @@ public class ExpressionCompiler extends AbstractParser {
                 }
 
                 /**
-                 * This kludge of code is to handle compile-time literal reduction.  We need to avoid
+                 * This kludge of code is to handle compileShared-time literal reduction.  We need to avoid
                  * reducing for certain literals like, 'this', ternary and ternary else.
                  */
                 if (!verifyOnly && tk.isLiteral()) {
@@ -164,7 +164,7 @@ public class ExpressionCompiler extends AbstractParser {
                             && !tkOp.isOperator(Operator.TERNARY) && !tkOp.isOperator(Operator.TERNARY_ELSE)) {
 
                         /**
-                         * If the next token is ALSO a literal, then we have a candidate for a compile-time literal
+                         * If the next token is ALSO a literal, then we have a candidate for a compileShared-time literal
                          * reduction.
                          */
                         if ((tkLA = nextTokenSkipSymbols()) != null && tkLA.isLiteral()
@@ -290,7 +290,7 @@ public class ExpressionCompiler extends AbstractParser {
             }
 
             if (!stk.isEmpty()) {
-                throw new CompileException("COMPILE ERROR: non-empty stack after compile.", expr, cursor);
+                throw new CompileException("COMPILE ERROR: non-empty stack after compileShared.", expr, cursor);
             }
 
 

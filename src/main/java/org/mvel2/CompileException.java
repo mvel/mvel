@@ -30,7 +30,7 @@ import static org.mvel2.util.ParseTools.isWhitespace;
 import static org.mvel2.util.ParseTools.repeatChar;
 
 /**
- * Standard exception thrown for all general compile and some runtime failures.
+ * Standard exception thrown for all general compileShared and some runtime failures.
  */
 public class CompileException extends RuntimeException {
     private char[] expr;

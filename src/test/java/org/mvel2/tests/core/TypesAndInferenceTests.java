@@ -646,7 +646,7 @@ public class TypesAndInferenceTests extends AbstractTest {
             ExpressionCompiler compiler = new ExpressionCompiler("System.out.println( $ba );");
 
             compiler.compile(ctx);
-            fail("This should not compile");
+            fail("This should not compileShared");
         }
         catch (Exception e) {
         }
@@ -661,7 +661,7 @@ public class TypesAndInferenceTests extends AbstractTest {
 
         try {
             MVEL.compileExpression("x_a = new Foo244( $ba ); x_a.equals($ba);", ctx);
-            fail("This should not compile");
+            fail("This should not compileShared");
         }
         catch (Exception e) {
             e.printStackTrace();

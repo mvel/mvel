@@ -988,7 +988,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 return prop.getProperty(property, ctx, variableFactory);
             }
             else {
-                throw new RuntimeException("unable to compile: custom accessor does not support producing bytecode: "
+                throw new RuntimeException("unable to compileShared: custom accessor does not support producing bytecode: "
                         + prop.getClass().getName());
             }
         }
@@ -3123,7 +3123,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             return ph.getProperty(property, ctx, variableFactory);
         }
         else {
-            throw new RuntimeException("unable to compile: custom accessor does not support producing bytecode: "
+            throw new RuntimeException("unable to compileShared: custom accessor does not support producing bytecode: "
                     + ph.getClass().getName());
         }
     }
@@ -3136,7 +3136,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             ph.setProperty(property, ctx, variableFactory, value);
         }
         else {
-            throw new RuntimeException("unable to compile: custom accessor does not support producing bytecode: "
+            throw new RuntimeException("unable to compileShared: custom accessor does not support producing bytecode: "
                     + ph.getClass().getName());
         }
     }

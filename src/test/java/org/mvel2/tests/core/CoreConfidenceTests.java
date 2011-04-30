@@ -418,7 +418,7 @@ public class CoreConfidenceTests extends AbstractTest {
         ExpressionCompiler compiler =
                 new ExpressionCompiler("users = [ 'darth'  : new User('Darth', 'Vadar')," +
                         "\n'bobba' : new User('Bobba', 'Feta') ]; [ users.get('darth'), users.get('bobba') ]");
-        //    Serializable s = compiler.compile(ctx);
+        //    Serializable s = compiler.compileShared(ctx);
         List list = (List) executeExpression(compiler.compile(ctx),
                 new HashMap());
         User user = (User) list.get(0);
@@ -806,7 +806,7 @@ public class CoreConfidenceTests extends AbstractTest {
                 Message.class);
         context.addImport("Item",
                 Item.class);
-        //   Serializable compiledExpression = compiler.compile(context);
+        //   Serializable compiledExpression = compiler.compileShared(context);
 
         Map vars = new HashMap();
         vars.put("$msg",
@@ -2413,7 +2413,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testJIRA166() {
         Object v = MVEL.eval("import java.util.regex.Matcher; import java.util.regex.Pattern;"
-                + " if (Pattern.compile(\"hoge\").matcher(\"hogehogehoge\").find()) { 'foo' } else { 'bar' }",
+                + " if (Pattern.compileShared(\"hoge\").matcher(\"hogehogehoge\").find()) { 'foo' } else { 'bar' }",
                 new HashMap());
         assertEquals("foo",
                 v);
@@ -3172,7 +3172,7 @@ public class CoreConfidenceTests extends AbstractTest {
         pctx.addInput( "list", ArrayList.class );
         try {
             ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-            fail( "This should not compile, as o is not of a type Collection" );
+            fail( "This should not compileShared, as o is not of a type Collection" );
         } catch ( Exception e ) {
 
         }

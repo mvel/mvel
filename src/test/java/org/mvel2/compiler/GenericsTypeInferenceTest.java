@@ -83,7 +83,7 @@ public class GenericsTypeInferenceTest extends TestCase {
 //        context.addInput("a", A.class);
 //
 //        ExpressionCompiler compiler = new ExpressionCompiler("a.getBarMap()[\"key\"].someMethod();");
-//        final CompiledExpression compiledExpression = compiler.compile(context);
+//        final CompiledExpression compiledExpression = compiler.compileShared(context);
 //
 //        Map<String,Object> vars = new HashMap<String,Object>();
 //        vars.put( "a", new A() );

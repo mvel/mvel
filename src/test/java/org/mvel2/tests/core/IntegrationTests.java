@@ -6,6 +6,7 @@ import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
+import org.mvel2.util.SharedVariableSpaceModel;
 import org.mvel2.util.VariableSpaceCompiler;
 import org.mvel2.util.VariableSpaceModel;
 
@@ -83,7 +84,7 @@ public class IntegrationTests extends AbstractTest {
 
         String expr = "def myfunc(z) { a + b + z }; myfunc('poop');";
 
-        VariableSpaceModel model = VariableSpaceCompiler.compile(expr, ctx, vals);
+        SharedVariableSpaceModel model = VariableSpaceCompiler.compileShared(expr, ctx, vals);
 
         Serializable s = MVEL.compileExpression(expr, ctx);
 

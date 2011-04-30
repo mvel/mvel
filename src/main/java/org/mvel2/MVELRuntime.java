@@ -70,7 +70,7 @@ public class MVELRuntime {
                      * encounter a debugging symbol, we check the thread local to see if there is are registered
                      * breakpoints.  If we find them, we assume that we are debugging.
                      *
-                     * The consequence of this of course, is that it's not ideal to compile expressions with
+                     * The consequence of this of course, is that it's not ideal to compileShared expressions with
                      * debugging symbols which you plan to use in a production enviroment.
                      */
                     if (debugger || (debugger = hasDebuggerContext())) {
@@ -151,7 +151,7 @@ public class MVELRuntime {
                     throw e;
                 }
                 catch (Exception e) {
-                    throw new CompileException("failed to compile sub expression", new char[0], 0, e);
+                    throw new CompileException("failed to compileShared sub expression", new char[0], 0, e);
                 }
             }
             while ((tk = tk.nextASTNode) != null);

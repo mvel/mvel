@@ -33,7 +33,7 @@ import java.util.*;
 
 /**
  * The <tt>ParserContext</tt> is the main environment object used for sharing state throughout the entire
- * parser/compile process.<br/><br/>
+ * parser/compileShared process.<br/><br/>
  * The <tt>ParserContext</tt> is used to configure the parser/compiler.  For example:
  * <pre><code>
  * ParserContext parserContext = new ParserContext();

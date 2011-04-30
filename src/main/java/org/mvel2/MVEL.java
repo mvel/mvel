@@ -681,7 +681,7 @@ public class MVEL {
     }
 
     /**
-     * Performs an analysis compile, which will populate the ParserContext with type, input and variable information,
+     * Performs an analysis compileShared, which will populate the ParserContext with type, input and variable information,
      * but will not produce a payload.
      *
      * @param expression - the expression to analyze
@@ -736,7 +736,7 @@ public class MVEL {
      * </code></pre>
      * <p/>
      * The above example demonstrates a compiled expression being reused ina tight, closed, loop.  Doing this greatly
-     * improves performance as re-parsing of the expression is not required, and the runtime can dynamically compile
+     * improves performance as re-parsing of the expression is not required, and the runtime can dynamically compileShared
      * the expression to bytecode of necessary.
      *
      * @param expression A String contaiing the expression to be compiled.
