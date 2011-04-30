@@ -29,7 +29,7 @@ public class IndexedVariablesTests extends TestCase {
         ctx.addIndexedInput(varNames);
         ctx.setIndexAllocation(true);
 
-        VariableSpaceModel model = VariableSpaceCompiler.compile(expr, ctx, varNames);
+        VariableSpaceModel model = VariableSpaceCompiler.compile(expr, ctx, values);
 
         Serializable s = MVEL.compileExpression(expr, ctx);
 

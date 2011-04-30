@@ -2,13 +2,6 @@ package org.mvel2.integration.impl;
 
 import org.mvel2.integration.VariableResolver;
 
-/**
- * Created by IntelliJ IDEA.
- * User: christopherbrock
- * Date: 24-Aug-2009
- * Time: 12:48:31 PM
- * To change this template use File | Settings | File Templates.
- */
 public class IndexVariableResolver implements VariableResolver {
     private int indexPos;
     private Object local;
@@ -24,15 +17,14 @@ public class IndexVariableResolver implements VariableResolver {
     }
 
     public Class getType() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     public void setStaticType(Class type) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public int getFlags() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0;
     }
 
     public Object getValue() {
