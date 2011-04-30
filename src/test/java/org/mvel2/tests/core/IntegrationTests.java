@@ -5,14 +5,11 @@ import org.mvel2.ParserContext;
 import org.mvel2.integration.PropertyHandler;
 import org.mvel2.integration.PropertyHandlerFactory;
 import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.impl.CachingMapVariableResolverFactory;
-import org.mvel2.integration.impl.IndexedVariableResolverFactory;
-import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.util.VariableSpaceCompiler;
+import org.mvel2.util.VariableSpaceModel;
 
 import java.io.Serializable;
-import java.util.HashMap;
 
 public class IntegrationTests extends AbstractTest {
     class NullPropertyHandler implements PropertyHandler {
@@ -86,13 +83,13 @@ public class IntegrationTests extends AbstractTest {
 
         String expr = "def myfunc(z) { a + b + z }; myfunc('poop');";
 
-        VariableResolverFactory injected = VariableSpaceCompiler.compile(expr, ctx, vals);
+        VariableSpaceModel model = VariableSpaceCompiler.compile(expr, ctx, vals);
 
         Serializable s = MVEL.compileExpression(expr, ctx);
 
 //        VariableResolverFactory locals = new CachingMapVariableResolverFactory(new HashMap<String, Object>());
 //        VariableResolverFactory injected = new IndexedVariableResolverFactory(vars, vals, locals);
 
-        assertEquals("foobarpoop", MVEL.executeExpression(s, injected));
+        assertEquals("foobarpoop", MVEL.executeExpression(s, model.createFactory()));
     }
 }

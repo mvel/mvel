@@ -3,9 +3,8 @@ package org.mvel2.tests.core;
 import junit.framework.TestCase;
 import org.mvel2.MVEL;
 import org.mvel2.ParserContext;
-import org.mvel2.integration.VariableResolverFactory;
-import org.mvel2.integration.impl.IndexedVariableResolverFactory;
 import org.mvel2.util.VariableSpaceCompiler;
+import org.mvel2.util.VariableSpaceModel;
 
 import java.io.Serializable;
 
@@ -24,18 +23,18 @@ public class IndexedVariablesTests extends TestCase {
                 "   int k = 5;\n" +
                 "   foo = k;" +
                 "}; \n"
-                + "for (i = 0; i < 100000; i++) { foo++; }; foo";
+                + "for (i = 0; i < 100000; i++) { foo++; }; foo;";
 
         ParserContext ctx = ParserContext.create();
         ctx.addIndexedInput(varNames);
         ctx.setIndexAllocation(true);
 
-        VariableResolverFactory factory = VariableSpaceCompiler.compile(expr, ctx, values);
+        VariableSpaceModel model = VariableSpaceCompiler.compile(expr, ctx, varNames);
 
         Serializable s = MVEL.compileExpression(expr, ctx);
 
     //    IndexedVariableResolverFactory factory = new IndexedVariableResolverFactory(varNames, values);
 
-        System.out.println(MVEL.executeExpression(s, factory));
+        System.out.println(MVEL.executeExpression(s, model.createFactory()));
     }
 }

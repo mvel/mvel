@@ -26,8 +26,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-@SuppressWarnings({"unchecked"})
 public class IndexedVariableResolverFactory extends BaseVariableResolverFactory {
+
+    public IndexedVariableResolverFactory(String[] varNames, VariableResolver[] resolvers) {
+        this.indexedVariableNames = varNames;
+        this.indexedVariableResolvers = resolvers;
+    }
 
     public IndexedVariableResolverFactory(String[] varNames, Object[] values) {
         this.indexedVariableNames = varNames;
