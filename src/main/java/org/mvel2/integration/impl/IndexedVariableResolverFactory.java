@@ -22,6 +22,7 @@ import org.mvel2.UnresolveablePropertyException;
 import org.mvel2.integration.VariableResolver;
 import org.mvel2.integration.VariableResolverFactory;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -121,8 +122,7 @@ public class IndexedVariableResolverFactory extends BaseVariableResolverFactory 
     }
 
     public Set<String> getKnownVariables() {
-
-        return new HashSet<String>(0);
+        return new HashSet<String>(Arrays.asList(indexedVariableNames));
     }
 
     public void clear() {
