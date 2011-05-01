@@ -108,9 +108,9 @@ public class Function extends ASTNode implements Safe {
 
         this.egressType = this.compiledBlock.getKnownEgressType();
 
-        if (pCtx.isIndexAllocation()) {
+//        if (pCtx.isIndexAllocation()) {
             pCtx.addVariable(name, Function.class);
-        }
+//        }
 
     }
 

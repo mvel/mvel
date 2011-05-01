@@ -70,6 +70,8 @@ public class ASTNode implements Cloneable, Serializable {
 
     public static final int OPT_SUBTR = 1 << 19;
 
+    public static final int FQCN = 1 << 20;
+
     public static final int DEFERRED_TYPE_RES = 1 << 23;
     public static final int STRONG_TYPING = 1 << 24;
     public static final int PCTX_STORED = 1 << 25;
@@ -155,6 +157,7 @@ public class ASTNode implements Cloneable, Serializable {
         }
 
         try {
+            pCtx.optimizationNotify();
             setAccessor(optimizer.optimizeAccessor(pCtx, expr, start, offset, ctx, thisValue, factory, true, egressType));
         }
         catch (OptimizationNotSupported ne) {
@@ -331,6 +334,7 @@ public class ASTNode implements Cloneable, Serializable {
                     }
                     break;
                 case '[':
+                case '(':
                     if (firstUnion == 0) {
                         firstUnion = i;
                     }
@@ -394,8 +398,16 @@ public class ASTNode implements Cloneable, Serializable {
         return ((fields & DEEP_PROPERTY) != 0);
     }
 
+    public boolean isFQCN() {
+        return ((fields & FQCN) != 0);
+    }
+
     public void setAsLiteral() {
         fields |= LITERAL;
+    }
+
+    public void setAsFQCNReference() {
+        fields |= FQCN;
     }
 
     public int getCursorPosition() {

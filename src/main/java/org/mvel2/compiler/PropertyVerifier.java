@@ -26,6 +26,7 @@ import org.mvel2.optimizers.impl.refl.nodes.WithAccessor;
 import static org.mvel2.util.ParseTools.*;
 import static org.mvel2.util.PropertyTools.getFieldOrAccessor;
 
+import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.NullType;
 import org.mvel2.util.ParseTools;
 import org.mvel2.util.StringAppender;
@@ -53,6 +54,8 @@ public class PropertyVerifier extends AbstractOptimizer {
     private boolean resolvedExternally;
     private boolean methodCall = false;
     private boolean deepProperty = false;
+    private boolean fqcn = false;
+
     private Map<String, Class> paramTypes;
 
     private Class ctx = null;
@@ -237,6 +240,7 @@ public class PropertyVerifier extends AbstractOptimizer {
             Object tryStaticMethodRef = tryStaticAccess();
 
             if (tryStaticMethodRef != null) {
+                fqcn = true;
                 resolvedExternally = false;
                 if (tryStaticMethodRef instanceof Class) {
                     classLiteral = true;
@@ -445,9 +449,7 @@ public class PropertyVerifier extends AbstractOptimizer {
 
                 }
                 catch (CompileException e) {
-                    e.setExpr(expr);
-                    e.setCursor(this.st);
-                    rethrow = e;
+                    rethrow = ErrorUtil.rewriteIfNeeded(e, expr, this.st);
                 }
 
                 if (errors.size() < pCtx.getErrorList().size()) {
@@ -605,6 +607,10 @@ public class PropertyVerifier extends AbstractOptimizer {
 
     public boolean isInput() {
         return resolvedExternally && !methodCall;
+    }
+
+    public boolean isFqcn() {
+        return fqcn;
     }
 
     public Class getCtx() {

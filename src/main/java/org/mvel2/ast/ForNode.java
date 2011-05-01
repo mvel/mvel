@@ -45,6 +45,7 @@ public class ForNode extends BlockNode {
     protected boolean indexAlloc = false;
 
     public ForNode(char[] expr, int start, int offset, int blockStart, int blockEnd, int fields, ParserContext pCtx) {
+
         boolean varsEscape = buildForEach(this.expr = expr, this.start = start, this.offset = offset,
                 this.blockStart = blockStart, this.blockOffset = blockEnd, fields, pCtx);
 
@@ -52,6 +53,10 @@ public class ForNode extends BlockNode {
 
         if ((fields & COMPILE_IMMEDIATE) != 0 && compiledBlock.isEmptyStatement() && !varsEscape) {
             throw new RedundantCodeException();
+        }
+
+        if (pCtx != null) {
+            pCtx.popVariableScope();
         }
     }
 
@@ -91,6 +96,10 @@ public class ForNode extends BlockNode {
             }
 
             this.initializer = (ExecutableStatement) subCompileExpression(condition, start, cursor - start - 1, spCtx);
+
+            if (pCtx != null) {
+                pCtx.pushVariableScope();
+            }
 
             try {
                 expectType(this.condition = (ExecutableStatement) subCompileExpression(condition, start = cursor,

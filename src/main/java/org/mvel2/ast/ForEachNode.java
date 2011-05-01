@@ -49,6 +49,8 @@ public class ForEachNode extends BlockNode {
     private int type = -1;
 
     public ForEachNode(char[] expr, int start, int offset, int blockStart, int blockOffset, int fields, ParserContext pCtx) {
+
+
         handleCond(this.expr = expr, this.start = start, this.offset = offset, this.fields = fields, pCtx);
         this.blockStart = blockStart;
         this.blockOffset = blockOffset;
@@ -57,9 +59,16 @@ public class ForEachNode extends BlockNode {
             if (pCtx.isStrictTypeEnforcement() && itemType != null) {
                 pCtx = pCtx.createSubcontext();
                 pCtx.addInput(item, itemType);
+
+
             }
 
+            pCtx.pushVariableScope();
+            pCtx.makeVisible(item);
+
             this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
+
+            pCtx.popVariableScope();
         }
     }
 
@@ -183,10 +192,10 @@ public class ForEachNode extends BlockNode {
             }
         }
 
-       // this.start = ++cursor;
+        // this.start = ++cursor;
 
         this.start = cursor + 1;
-        this.offset =  offset - (cursor - start) - 1;
+        this.offset = offset - (cursor - start) - 1;
 
         if ((fields & COMPILE_IMMEDIATE) != 0) {
             Class egress = (this.condition = (ExecutableStatement) subCompileExpression(expr, this.start, this.offset, pCtx)).getKnownEgressType();
@@ -218,7 +227,7 @@ public class ForEachNode extends BlockNode {
         }
     }
 
-    private  void enforceTypeSafety(Class required, Class actual) {
+    private void enforceTypeSafety(Class required, Class actual) {
         if (!required.isAssignableFrom(actual) && !DataConversion.canConvert(actual, required)) {
             throw new CompileException("type mismatch in foreach: expected: "
                     + required.getName() + "; but found: " + getBaseComponentType(actual), expr, start);

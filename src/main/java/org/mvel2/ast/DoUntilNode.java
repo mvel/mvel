@@ -21,8 +21,10 @@ package org.mvel2.ast;
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+
 import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.subCompileExpression;
+
 import org.mvel2.ParserContext;
 
 import java.util.HashMap;
@@ -42,7 +44,15 @@ public class DoUntilNode extends BlockNode {
         expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
                 Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
+        if (pCtx != null) {
+            pCtx.pushVariableScope();
+        }
+
         this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
+
+        if (pCtx != null) {
+            pCtx.popVariableScope();
+        }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

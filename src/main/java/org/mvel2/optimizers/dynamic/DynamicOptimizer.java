@@ -63,6 +63,7 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
     public Accessor optimizeAccessor(ParserContext pCtx, char[] property, int start, int offset,  Object ctx, Object thisRef,
                                      VariableResolverFactory factory, boolean rootThisRef, Class ingressType) {
         synchronized (oLock) {
+            pCtx.optimizationNotify();
             return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 0,
                     firstStage.optimizeAccessor(pCtx, property, start, offset, ctx, thisRef, factory, rootThisRef, ingressType)));
         }
@@ -94,7 +95,6 @@ public class DynamicOptimizer extends AbstractOptimizer implements AccessorOptim
     public Accessor optimizeObjectCreation(ParserContext pCtx, char[] property, int start, int offset,
                                            Object ctx, Object thisRef, VariableResolverFactory factory) {
         synchronized (oLock) {
-
             return classLoader.registerDynamicAccessor(new DynamicGetAccessor(pCtx, property, start, offset, 3,
                     firstStage.optimizeObjectCreation(pCtx, property, start, offset, ctx, thisRef, factory)));
         }

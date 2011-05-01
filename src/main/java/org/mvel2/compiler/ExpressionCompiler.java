@@ -93,12 +93,12 @@ public class ExpressionCompiler extends AbstractParser {
                     }
                 }
 
-
                 //noinspection ThrowFromFinallyBlock
                 throw new CompileException("Failed to compileShared: " + pCtx.getErrorList().size()
                         + " compilation error(s): " + err.toString(), pCtx.getErrorList(), expr, cursor, pCtx);
             }
         }
+
     }
 
     /**
@@ -381,6 +381,7 @@ public class ExpressionCompiler extends AbstractParser {
             if (tk.isIdentifier()) {
                 PropertyVerifier propVerifier = new PropertyVerifier(expr, tk.getStart(), tk.getOffset(), pCtx);
 
+
                 if (tk instanceof Union) {
                     propVerifier.setCtx(((Union) tk).getLeftEgressType());
                     tk.setEgressType(returnType = propVerifier.analyze());
@@ -388,18 +389,30 @@ public class ExpressionCompiler extends AbstractParser {
                 else {
                     tk.setEgressType(returnType = propVerifier.analyze());
 
+                    if (propVerifier.isFqcn()) {
+                        tk.setAsFQCNReference();
+                    }
+
                     if (propVerifier.isClassLiteral()) {
                         return new LiteralNode(returnType);
                     }
                     if (propVerifier.isInput()) {
                         pCtx.addInput(tk.getAbsoluteName(), propVerifier.isDeepProperty() ? Object.class : returnType);
                     }
+
+                    if (!pCtx.isOptimizerNotified() && pCtx.isStrongTyping()
+                            && !pCtx.isVariableVisible(tk.getAbsoluteName()) && !tk.isFQCN()) {
+                        throw new CompileException("no such identifier: " + tk.getAbsoluteName(), expr, tk.getStart());
+                    }
+
                 }
             }
             else if (tk.isAssignment()) {
                 Assignment a = (Assignment) tk;
 
                 if (a.getAssignmentVar() != null) {
+                    //    pCtx.makeVisible(a.getAssignmentVar());
+
                     PropertyVerifier propVerifier = new PropertyVerifier(a.getAssignmentVar(), pCtx);
                     tk.setEgressType(returnType = propVerifier.analyze());
 

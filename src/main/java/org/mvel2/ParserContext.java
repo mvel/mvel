@@ -21,14 +21,14 @@ package org.mvel2;
 import org.mvel2.ast.Function;
 import org.mvel2.ast.LineLabel;
 import org.mvel2.ast.Proto;
+import org.mvel2.compiler.AbstractParser;
 import org.mvel2.compiler.Parser;
 import org.mvel2.integration.Interceptor;
 import org.mvel2.util.MethodStub;
+import org.mvel2.util.ReflectionUtil;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.util.*;
 
 /**
@@ -53,6 +53,7 @@ public class ParserContext implements Serializable {
 
     private ArrayList<String> indexedInputs;
     private ArrayList<String> indexedLocals;
+    private ArrayList<Set<String>> variableVisibility;
 
     private HashMap<String, Class> variables;
     private Map<String, Class> inputs;
@@ -71,6 +72,7 @@ public class ParserContext implements Serializable {
     private boolean compiled = false;
     private boolean strictTypeEnforcement = false;
     private boolean strongTyping = false;
+    private boolean optimizationMode = false;
 
     private boolean fatalError = false;
     private boolean retainParserState = false;
@@ -113,6 +115,7 @@ public class ParserContext implements Serializable {
 
         ctx.sourceMap = sourceMap;
         ctx.lastLineLabel = lastLineLabel;
+        ctx.variableVisibility = variableVisibility;
 
         ctx.globalFunctions = globalFunctions;
         ctx.lastTypeParameters = lastTypeParameters;
@@ -384,6 +387,7 @@ public class ParserContext implements Serializable {
      */
     public void addImport(String name, Class cls) {
         parserConfiguration.addImport(name, cls);
+        //      addInput(name, cls);
     }
 
     /**
@@ -399,6 +403,7 @@ public class ParserContext implements Serializable {
      */
     public void addImport(String name, Method method) {
         addImport(name, new MethodStub(method));
+        //   addInput(name, MethodStub.class);
     }
 
     /**
@@ -418,6 +423,42 @@ public class ParserContext implements Serializable {
     public void initializeTables() {
         if (variables == null) variables = new LinkedHashMap<String, Class>();
         if (inputs == null) inputs = new LinkedHashMap<String, Class>();
+
+        if (variableVisibility == null) {
+            initVariableVisibility();
+            pushVariableScope();
+
+            Set<String> scope = getVariableScope();
+
+            scope.addAll(variables.keySet());
+            scope.addAll(inputs.keySet());
+
+            if (parserConfiguration.getImports() != null)
+                scope.addAll(parserConfiguration.getImports().keySet());
+
+            if (inputs.containsKey("this")) {
+                Class<?> ctxType = inputs.get("this");
+
+                for (Field field : ctxType.getFields()) {
+                    if ((field.getModifiers() & (Modifier.PUBLIC | Modifier.STATIC)) != 0) {
+                        scope.add(field.getName());
+                    }
+                }
+
+                for (Method m : ctxType.getMethods()) {
+                    if ((m.getModifiers() & Modifier.PUBLIC) != 0) {
+                        if (m.getName().startsWith("get")
+                                || (m.getName().startsWith("is")
+                                && (m.getReturnType().equals(boolean.class) || m.getReturnType().equals(Boolean.class)))) {
+                            scope.add(ReflectionUtil.getPropertyFromAccessor(m.getName()));
+                        }
+                        else {
+                            scope.add(m.getName());
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
@@ -429,6 +470,7 @@ public class ParserContext implements Serializable {
         if (type == null) type = Object.class;
 
         variables.put(name, type);
+        makeVisible(name);
     }
 
     public void addVariable(String name, Class type) {
@@ -436,6 +478,7 @@ public class ParserContext implements Serializable {
         if (variables.containsKey(name) || inputs.containsKey(name)) return;
         if (type == null) type = Object.class;
         variables.put(name, type);
+        makeVisible(name);
     }
 
     public void addVariables(Map<String, Class> variables) {
@@ -617,6 +660,57 @@ public class ParserContext implements Serializable {
         }
     }
 
+    private void initVariableVisibility() {
+        if (variableVisibility == null) {
+            variableVisibility = new ArrayList<Set<String>>();
+        }
+    }
+
+    public void pushVariableScope() {
+        initVariableVisibility();
+        variableVisibility.add(new HashSet<String>());
+    }
+
+    public void popVariableScope() {
+        if (variableVisibility != null && !variableVisibility.isEmpty()) {
+            variableVisibility.remove(variableVisibility.size() - 1);
+        }
+    }
+
+    public void makeVisible(String var) {
+        if (variableVisibility == null || variableVisibility.isEmpty()) {
+            throw new RuntimeException("no context");
+        }
+        getVariableScope().add(var);
+    }
+
+    public Set<String> getVariableScope() {
+        if (variableVisibility == null || variableVisibility.isEmpty()) {
+            throw new RuntimeException("no context");
+        }
+
+        return variableVisibility.get(variableVisibility.size() - 1);
+    }
+
+    public boolean isVariableVisible(String var) {
+        if (variableVisibility == null || variableVisibility.isEmpty()) {
+            return false;
+        }
+
+        if (AbstractParser.LITERALS.containsKey(var)) return true;
+
+        int pos = variableVisibility.size() - 1;
+        do {
+            if (variableVisibility.get(pos).contains(var)) {
+                return true;
+            }
+        }
+        while (pos-- != 0);
+
+
+        return false;
+    }
+
     public HashMap<String, Class> getVariables() {
         return variables;
     }
@@ -758,6 +852,14 @@ public class ParserContext implements Serializable {
 
     public void setExecutableCodeReached(boolean executableCodeReached) {
         this.executableCodeReached = executableCodeReached;
+    }
+
+    public void optimizationNotify() {
+        this.optimizationMode = true;
+    }
+
+    public boolean isOptimizerNotified() {
+        return optimizationMode;
     }
 
     private void initIndexedVariables() {

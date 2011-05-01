@@ -1436,7 +1436,6 @@ public class TypesAndInferenceTests extends AbstractTest {
 
     public void testForLoopTypeCoercion() {
         ParserContext pCtx = ParserContext.create();
-        pCtx.setStrictTypeEnforcement(true);
         pCtx.setStrongTyping(true);
         pCtx.addInput("$type", String.class);
         pCtx.addInput("l", List.class);

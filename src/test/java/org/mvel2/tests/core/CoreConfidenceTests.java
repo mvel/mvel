@@ -71,8 +71,7 @@ public class CoreConfidenceTests extends AbstractTest {
         assertEquals(true,
                 eval("this.foo == 'bar'", map, factory));
     }
-    
-    
+
 
     // compiled - reflective
 
@@ -2413,7 +2412,7 @@ public class CoreConfidenceTests extends AbstractTest {
 
     public void testJIRA166() {
         Object v = MVEL.eval("import java.util.regex.Matcher; import java.util.regex.Pattern;"
-                + " if (Pattern.compileShared(\"hoge\").matcher(\"hogehogehoge\").find()) { 'foo' } else { 'bar' }",
+                + " if (Pattern.compile(\"hoge\").matcher(\"hogehogehoge\").find()) { 'foo' } else { 'bar' }",
                 new HashMap());
         assertEquals("foo",
                 v);
@@ -3116,12 +3115,12 @@ public class CoreConfidenceTests extends AbstractTest {
         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
         MVEL.executeExpression(stmt, new Cheese(), new HashMap());
     }
-    
-        public void testVarArgs() throws Exception {
+
+    public void testVarArgs() throws Exception {
         ParserContext parserContext = new ParserContext();
-        parserContext.setStrictTypeEnforcement( true );
-        parserContext.setStrongTyping( true );
- 
+        parserContext.setStrictTypeEnforcement(true);
+        parserContext.setStrongTyping(true);
+
         MVEL.analyze("String.format(\"\");", parserContext);
     }
 
@@ -3131,18 +3130,18 @@ public class CoreConfidenceTests extends AbstractTest {
         Serializable expression = MVEL.compileExpression(script);
         Object result = MVEL.executeExpression(expression, new HashMap());
 
-        assertEquals( Boolean.FALSE, result );
+        assertEquals(Boolean.FALSE, result);
     }
 
 
     public void testNestedEnum() throws Exception {
 //        assertEquals(Triangle.Foo.class, MVEL.analyze("import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE" , ParserContext.create()));
 
- //       Serializable o = MVEL.compileExpression( "import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE" );
+        //       Serializable o = MVEL.compileExpression( "import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE" );
 
-   //     assertEquals( Triangle.Foo.OBTUSE, MVEL.executeExpression(o, new HashMap()) );
+        //     assertEquals( Triangle.Foo.OBTUSE, MVEL.executeExpression(o, new HashMap()) );
 
-        MVEL.eval("import " + Triangle.class.getCanonicalName() +"; Triangle.Foo.OBTUSE", new HashMap());
+        MVEL.eval("import " + Triangle.class.getCanonicalName() + "; Triangle.Foo.OBTUSE", new HashMap());
     }
 
     public static class Triangle {
@@ -3150,7 +3149,7 @@ public class CoreConfidenceTests extends AbstractTest {
             INCOMPLETE, UNCLASSIFIED,
             EQUILATERAL, ISOSCELES, RECTANGLED, ISOSCELES_RECTANGLED, ACUTE, OBTUSE;
         }
-        
+
 //        private Foo foo;
 //
 //        public Foo getFoo() {
@@ -3168,12 +3167,13 @@ public class CoreConfidenceTests extends AbstractTest {
         ParserConfiguration pconf = new ParserConfiguration();
         ParserContext pctx = new ParserContext(pconf);
         pctx.setStrongTyping(true);
-        pctx.addInput( "o", Object.class );
-        pctx.addInput( "list", ArrayList.class );
+        pctx.addInput("o", Object.class);
+        pctx.addInput("list", ArrayList.class);
         try {
             ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-            fail( "This should not compileShared, as o is not of a type Collection" );
-        } catch ( Exception e ) {
+            fail("This should not compileShared, as o is not of a type Collection");
+        }
+        catch (Exception e) {
 
         }
     }

@@ -198,6 +198,10 @@ public class CompileException extends RuntimeException {
             msgOffset = cs.length() - (cs.length() - trimmed.length());
         }
 
+        if (msgOffset == 0 && matchOffset == 0) {
+            msgOffset = cursor;
+        }
+
         return trimmed;
     }
 

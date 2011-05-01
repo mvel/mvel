@@ -41,7 +41,16 @@ public class UntilNode extends BlockNode {
         expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
                 Boolean.class, ((fields & COMPILE_IMMEDIATE) != 0));
 
+
+        if (pCtx != null) {
+            pCtx.pushVariableScope();
+        }
+
         this.compiledBlock = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
+
+        if (pCtx != null) {
+            pCtx.popVariableScope();
+        }
     }
 
     public Object getReducedValueAccelerated(Object ctx, Object thisValue, VariableResolverFactory factory) {

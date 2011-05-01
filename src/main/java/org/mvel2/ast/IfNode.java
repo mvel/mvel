@@ -20,10 +20,13 @@ package org.mvel2.ast;
 
 import org.mvel2.CompileException;
 import org.mvel2.ParserContext;
+
 import static org.mvel2.MVEL.eval;
+
 import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+
 import static org.mvel2.util.CompilerTools.expectType;
 import static org.mvel2.util.ParseTools.subCompileExpression;
 
@@ -56,7 +59,14 @@ public class IfNode extends BlockNode implements NestedStatement {
             expectType(this.condition = (ExecutableStatement) subCompileExpression(expr, start, offset, pCtx),
                     Boolean.class, true);
 
+            if (pCtx != null) {
+                pCtx.pushVariableScope();
+            }
             this.nestedStatement = (ExecutableStatement) subCompileExpression(expr, blockStart, blockOffset, pCtx);
+
+            if (pCtx != null) {
+                pCtx.popVariableScope();
+            }
         }
     }
 
