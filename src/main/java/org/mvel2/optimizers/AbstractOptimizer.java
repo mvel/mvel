@@ -169,6 +169,11 @@ public class AbstractOptimizer extends AbstractParser {
         switch (expr[tkStart = cursor]) {
             case '[':
                 return COL;
+            case '{':
+                if (expr[cursor - 1] == '.') {
+                    return WITH;
+                }
+                break;
             case '.':
                 if ((start + 1) != end) {
                     switch (expr[cursor = ++tkStart]) {

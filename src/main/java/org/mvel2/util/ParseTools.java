@@ -1566,8 +1566,13 @@ public class ParseTools {
 
                     if (parm == null) {
                         try {
-                            MVEL.eval(new StringBuilder(nestParm).append('.')
-                                    .append(block, _st, _end - _st).toString(), ctx, factory);
+                            if (nestParm == null) {
+                                MVEL.eval(new String(block, _st, _end - _st), ctx, factory);
+                            }
+                            else {
+                                MVEL.eval(new StringBuilder(nestParm).append('.')
+                                        .append(block, _st, _end - _st).toString(), ctx, factory);
+                            }
                         }
                         catch (CompileException e) {
                             e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
@@ -1581,6 +1586,10 @@ public class ParseTools {
                     else {
                         try {
                             if (oper != -1) {
+                                if (nestParm == null) {
+                                    throw new CompileException("operative assignment not possible here", block, start);
+                                }
+
                                 String rewrittenExpr = new String(
                                         createShortFormOperativeAssignment(
                                                 new StringBuilder(nestParm).append(".").append(parm).toString(),
@@ -1611,11 +1620,20 @@ public class ParseTools {
         if (_st != (_end = end)) {
             try {
                 if (parm == null || "".equals(parm)) {
-                    MVEL.eval(new StringAppender(nestParm).append('.')
-                            .append(block, _st, _end - _st).toString(), ctx, factory);
+                    if (nestParm == null) {
+                        MVEL.eval(new String(block, _st, _end - _st), ctx, factory);
+                    }
+                    else {
+                        MVEL.eval(new StringAppender(nestParm).append('.')
+                                .append(block, _st, _end - _st).toString(), ctx, factory);
+                    }
                 }
                 else {
                     if (oper != -1) {
+                        if (nestParm == null) {
+                            throw new CompileException("operative assignment not possible here", block, start);
+                        }
+
                         String rewrittenExpr = new String(createShortFormOperativeAssignment(
                                 new StringBuilder(nestParm).append(".").append(parm).toString(),
                                 block, _st, _end - _st, oper));

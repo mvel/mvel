@@ -334,6 +334,17 @@ public class WithTests extends AbstractTest {
                 executeExpression(execution));
     }
 
+    public void testInlineWithWithLiteral() {
+        String expr = "'foo'.{ toString() }";
+        assertEquals("foo", MVEL.eval(expr));
+
+        Serializable s = MVEL.compileExpression(expr);
+
+        assertEquals("foo", MVEL.executeExpression(s));
+    }
+
+
+
     public static class Recipient {
         private String name;
         private String email;

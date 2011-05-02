@@ -140,13 +140,21 @@ public class WithNode extends BlockNode implements NestedStatement {
 
                     if (parm == null || parm.length() == 0) {
                         try {
+                            String expr;
+                            if (nestParm == null) {
+                                expr = new String(block, _st, _end - _st);
+                            }
+                            else {
+                                expr = new StringBuilder(nestParm).append('.')
+                                        .append(new String(block, _st, _end - _st)).toString();
+                            }
+
                             parms.add(
                                     new ParmValuePair(null, (ExecutableStatement)
-                                            subCompileExpression(
-                                                    new StringBuilder(nestParm).append('.')
-                                                            .append(new String(block, _st, _end - _st)).toString(), pCtx),
+                                            subCompileExpression(expr, pCtx),
                                             block, _st, egressType, pCtx)
                             );
+
                         }
                         catch (CompileException e) {
                             e.setCursor(_st + (e.getCursor() - (e.getExpr().length - offset)));
@@ -158,6 +166,9 @@ public class WithNode extends BlockNode implements NestedStatement {
                         _st = ++i;
                     }
                     else {
+                        if (nestParm == null) {
+                            throw new CompileException("operative assignment not possible here", block, start);
+                        }
 
                         try {
                             parms.add(new ParmValuePair(
@@ -190,14 +201,26 @@ public class WithNode extends BlockNode implements NestedStatement {
         if (_st != (_end = end)) {
             try {
                 if (parm == null || "".equals(parm)) {
+                    String expr;
+                    if (nestParm == null) {
+                        expr = new String(block, _st, _end - _st);
+                    }
+                    else {
+                        expr = new StringBuilder(nestParm).append('.')
+                                .append(new String(block, _st, _end - _st)).toString();
+                    }
+
                     parms.add(
                             new ParmValuePair(null, (ExecutableStatement)
-                                    subCompileExpression(new StringBuilder(nestParm).append('.')
-                                            .append(new String(block, _st, _end - _st)).toString(), pCtx),
+                                    subCompileExpression(expr, pCtx),
                                     block, _st, egressType, pCtx)
                     );
                 }
                 else {
+                    if (nestParm == null) {
+                        throw new CompileException("operative assignment not possible here", block, start);
+                    }
+
                     parms.add(new ParmValuePair(
                             parm,
                             oper != -1 ?

@@ -438,7 +438,7 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
     }
 
     private Object getWithProperty(Object ctx) {
-        String root = new String(expr, start, cursor - 1).trim();
+        String root = start == cursor ? null : new String(expr, start, cursor - 1).trim();
 
         int st = cursor + 1;
         cursor = balancedCaptureWithLineAccounting(expr, cursor, end, '{', pCtx);

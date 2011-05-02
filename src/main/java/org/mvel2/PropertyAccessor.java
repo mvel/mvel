@@ -415,6 +415,11 @@ public class PropertyAccessor {
         switch (property[st = cursor]) {
             case '[':
                 return COL;
+            case '{':
+                if (property[cursor - 1] == '.') {
+                    return WITH;
+                }
+                break;
             case '.':
                 // ++cursor;
                 while (cursor < end && isWhitespace(property[cursor])) cursor++;
@@ -711,7 +716,10 @@ public class PropertyAccessor {
 
     private Object getWithProperty(Object ctx) {
         int st;
-        parseWithExpressions(new String(property, start, cursor - start - 1).trim(), property, st = cursor + 1,
+
+        String nestParm = start == cursor ? null : new String(property, start, cursor - start - 1).trim();
+
+        parseWithExpressions(nestParm, property, st = cursor + 1,
                 (cursor = balancedCaptureWithLineAccounting(property, cursor, end,
                         '{', getCurrentThreadParserContext())) - st, ctx, variableFactory);
         cursor++;
