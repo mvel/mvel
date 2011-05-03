@@ -19,24 +19,30 @@
 package org.mvel2.sh;
 
 import static org.mvel2.MVEL.*;
+
 import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.sh.command.basic.BasicCommandSet;
 import org.mvel2.sh.command.file.FileCommandSet;
 import org.mvel2.templates.TemplateRuntime;
+
 import static org.mvel2.util.PropertyTools.contains;
+
 import org.mvel2.util.StringAppender;
 import org.mvel2.ast.ASTNode;
 import org.mvel2.ParserContext;
 import org.mvel2.MVELInterpretedRuntime;
 
 import java.io.*;
+
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.System.arraycopy;
 import static java.lang.System.getProperty;
+
 import java.util.*;
+
 import static java.util.ResourceBundle.getBundle;
 
 /**
@@ -105,7 +111,7 @@ public class ShellSession {
 
         }
 
-        lvrf =  new MapVariableResolverFactory(variables, new MapVariableResolverFactory(env));
+        lvrf = new MapVariableResolverFactory(variables, new MapVariableResolverFactory(env));
 
     }
 
@@ -343,7 +349,12 @@ public class ShellSession {
 
 
             if (outputBuffer != null && "true".equals(env.get("$PRINTOUTPUT"))) {
-                out.println(String.valueOf(outputBuffer));
+                if (outputBuffer.getClass().isArray()) {
+                    out.println(Arrays.toString((Object[]) outputBuffer));
+                }
+                else {
+                    out.println(String.valueOf(outputBuffer));
+                }
             }
 
 
@@ -393,15 +404,15 @@ public class ShellSession {
         inBuf.getChars(0, inBuf.length(), buffer, 0);
 
         depth = cdepth = 0;
-        for (int i = 0 ; i < buffer.length; i++) {
+        for (int i = 0; i < buffer.length; i++) {
             switch (buffer[i]) {
                 case '/':
-                    if (i+1<buffer.length && buffer[i+1] == '*') {
+                    if (i + 1 < buffer.length && buffer[i + 1] == '*') {
                         cdepth++;
                     }
                     break;
                 case '*':
-                    if (i+1<buffer.length && buffer[i+1] == '/') {
+                    if (i + 1 < buffer.length && buffer[i + 1] == '/') {
                         cdepth--;
                     }
                     break;
@@ -415,7 +426,7 @@ public class ShellSession {
             }
         }
 
-        return depth+cdepth > 0 ;
+        return depth + cdepth > 0;
     }
 
     public String indent(int size) {

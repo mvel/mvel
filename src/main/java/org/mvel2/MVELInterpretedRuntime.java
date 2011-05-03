@@ -25,6 +25,7 @@ import org.mvel2.compiler.BlankLiteral;
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
 import org.mvel2.integration.impl.MapVariableResolverFactory;
+import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.ExecutionStack;
 
 import java.util.Map;
@@ -59,6 +60,9 @@ public class MVELInterpretedRuntime extends AbstractParser {
             else {
                 throw e;
             }
+        }
+        catch (CompileException e) {
+            throw ErrorUtil.rewriteIfNeeded(e, expr, cursor);
         }
         finally {
             if (parserContext != null) contextControl(REMOVE, null, null);
@@ -127,7 +131,7 @@ public class MVELInterpretedRuntime extends AbstractParser {
                     case OP_OVERFLOW:
                         if (!tk.isOperator()) {
                             if (!(stk.peek() instanceof Class)) {
-                                throw new CompileException("unexpected token", expr, st);
+                                throw new CompileException("unexpected token or unknown identifier:" + tk.getName(), expr, st);
                             }
                             variableFactory.createVariable(tk.getName(), null, (Class) stk.peek());
                         }
@@ -152,11 +156,12 @@ public class MVELInterpretedRuntime extends AbstractParser {
             }
         }
         catch (CompileException e) {
-            if (e.getExpr() != expr && e.getExpr().length < expr.length) {
-                e.setCursor(new String(expr).substring(e.getCursor()).indexOf(new String(e.getExpr())));
-                e.setExpr(expr);
-            }
-            throw e;
+            throw ErrorUtil.rewriteIfNeeded(e, expr, start);
+//            if (e.getExpr() != expr && e.getExpr().length < expr.length) {
+//                e.setCursor(new String(expr).substring(e.getCursor()).indexOf(new String(e.getExpr())));
+//                e.setExpr(expr);
+//            }
+//            throw e;
         }
         catch (NullPointerException e) {
             if (tk != null && tk.isOperator()) {

@@ -36,6 +36,7 @@ import static org.mvel2.integration.PropertyHandlerFactory.*;
 
 import org.mvel2.integration.VariableResolverFactory;
 import org.mvel2.integration.impl.ImmutableDefaultFactory;
+import org.mvel2.util.ErrorUtil;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.ParseTools;
 
@@ -192,7 +193,7 @@ public class PropertyAccessor {
                     + new String(property, cursor, length), property, cursor, e);
         }
         catch (CompileException e) {
-            throw e;
+            throw ErrorUtil.rewriteIfNeeded(e, property, st);
         }
         catch (NullPointerException e) {
             throw new PropertyAccessException("null pointer exception in property: " + new String(property), property, cursor, e);
