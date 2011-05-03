@@ -436,7 +436,18 @@ public class PropertyAccessor {
                 }
         }
 
-        while (cursor < end && isWhitespace(property[cursor])) cursor++;
+        do {
+            while (cursor < end && isWhitespace(property[cursor])) cursor++;
+
+            if (cursor < end && property[cursor] == '.') {
+                cursor++;
+            }
+            else {
+                break;
+            }
+        }
+        while (true);
+
         st = cursor;
 
         //noinspection StatementWithEmptyBody
