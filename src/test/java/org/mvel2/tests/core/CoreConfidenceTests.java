@@ -25,9 +25,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 import java.util.List;
 
@@ -3177,4 +3180,41 @@ public class CoreConfidenceTests extends AbstractTest {
 
         }
     }
+    
+    public void testNestedEnumFromJar() throws ClassNotFoundException,
+                                       SecurityException,
+                                       NoSuchFieldException {
+        String expr = "EventRequest.Status.ACTIVE";
+
+        // creating a classloader for the jar
+        URL resource = getClass().getResource( "/eventing-example.jar" );
+        assertNotNull( resource );
+        URLClassLoader loader = new URLClassLoader( new URL[]{resource},
+                                                    getClass().getClassLoader() );
+
+        // loading the class to prove it works
+        Class< ? > er = loader.loadClass( "org.drools.examples.eventing.EventRequest" );
+        assertNotNull( er );
+        assertEquals( "org.drools.examples.eventing.EventRequest",
+                      er.getCanonicalName() );
+
+        // getting the value of the enum to prove it works:
+        Class< ? > st = er.getDeclaredClasses()[0];
+        assertNotNull( st );
+        Field active = st.getField( "ACTIVE" );
+        assertNotNull( active );
+
+        // now, trying with MVEL
+        ParserConfiguration pconf = new ParserConfiguration();
+        pconf.setClassLoader( loader );
+        pconf.addImport( er );
+        ParserContext pctx = new ParserContext( pconf );
+        pctx.setStrongTyping( true );
+
+        Serializable compiled = MVEL.compileExpression( expr );
+        Object result = MVEL.executeExpression( compiled );
+
+        assertNotNull( result );
+    }
+    
 }
