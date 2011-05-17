@@ -247,7 +247,6 @@ public class ASTNode implements Cloneable, Serializable {
 
     public void storeInLiteralRegister(Object o) {
         this.literal = o;
-
     }
 
     public void setLiteralValue(Object literal) {

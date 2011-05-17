@@ -497,6 +497,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
         }
 
+        boolean classRef = false;
+
         Class<?> cls;
         if (ctx instanceof Class) {
             if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS
@@ -505,6 +507,8 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
             }
 
             cls = (Class<?>) ctx;
+
+            classRef = true;
         }
         else if (ctx != null) {
             cls = ctx.getClass();
@@ -520,6 +524,10 @@ public class ReflectiveAccessorOptimizer extends AbstractOptimizer implements Ac
         }
 
         Member member = cls != null ? getFieldOrAccessor(cls, property) : null;
+
+        if (member != null && classRef && (member.getModifiers() & Modifier.STATIC) == 0) {
+            member = null;
+        }
 
         Object o;
 

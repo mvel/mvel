@@ -436,7 +436,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
                 mv.visitVarInsn(ALOAD, 4);
                 mv.visitMethodInsn(INVOKESTATIC, NAMESPACE + "integration/GlobalListenerFactory",
                         "notifySetListeners", "(Ljava/lang/Object;Ljava/lang/String;L" + NAMESPACE
-                                + "integration/VariableResolverFactory;Ljava/lang/Object;)V");
+                        + "integration/VariableResolverFactory;Ljava/lang/Object;)V");
 
                 GlobalListenerFactory.notifySetListeners(ctx, tk, variableFactory, value);
             }
@@ -963,6 +963,8 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
 
+        boolean classRef = false;
+
         Class<?> cls;
         if (ctx instanceof Class) {
             if (MVEL.COMPILER_OPT_SUPPORT_JAVA_STYLE_CLASS_LITERALS
@@ -973,6 +975,7 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
             }
 
             cls = (Class<?>) ctx;
+            classRef = true;
         }
         else if (ctx != null) {
             cls = ctx.getClass();
@@ -994,6 +997,10 @@ public class ASMAccessorOptimizer extends AbstractOptimizer implements AccessorO
         }
 
         Member member = cls != null ? getFieldOrAccessor(cls, property) : null;
+
+        if (member != null && classRef && (member.getModifiers() & Modifier.STATIC) == 0) {
+            member = null;
+        }
 
         if (member != null && hasGetListeners()) {
             mv.visitVarInsn(ALOAD, 1);
