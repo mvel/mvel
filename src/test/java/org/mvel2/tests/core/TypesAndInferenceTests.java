@@ -9,6 +9,7 @@ import org.mvel2.integration.impl.DefaultLocalVariableResolverFactory;
 import org.mvel2.integration.impl.StaticMethodImportResolverFactory;
 import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.*;
+import org.mvel2.util.Make;
 import org.mvel2.util.MethodStub;
 import org.mvel2.util.VariableSpaceCompiler;
 
@@ -1469,5 +1470,13 @@ public class TypesAndInferenceTests extends AbstractTest {
         assertTrue("Should not contain" + pctx.getVariables(), pctx.getVariables().isEmpty());
     }
 
+    public void testTypeCalculation() {
+        ParserContext ctx = ParserContext.create().stronglyTyped();
+        ctx.addInput("map", Map.class);
+
+        Class cls = MVEL.analyze("map.keySet()", ctx);
+
+        assertTrue(Set.class.isAssignableFrom(cls));
+    }
 
 }

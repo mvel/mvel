@@ -2817,11 +2817,9 @@ public class CoreConfidenceTests extends AbstractTest {
         for (String expr : testCases) {
             System.out.println("Evaluating '" + expr + "': ......");
             val1 = MVEL.eval(expr, vars);
-            //       System.out.println("'" + expr + " ' = " + ret.toString());
             assertNotNull(val1);
             Serializable compiled = MVEL.compileExpression(expr);
             val2 = executeExpression(compiled, vars);
-            //     System.out.println("'" + expr + " ' = " + ret.toString());
             assertNotNull(val2);
             assertEquals("expression did not evaluate correctly: " + expr, val1, val2);
         }
