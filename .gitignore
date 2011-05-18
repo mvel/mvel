@@ -1,5 +1,12 @@
-*.iml
-*.ipr
-*.iws
-target/
-classes/
+# Ignored files deleted by mvn clean
+/target
+# Ignored files not deleted by mvn clean
+/local
+
+# Netbeans and IntelliJ files
+/.idea
+!.gitignore
+/nbproject
+/*.ipr
+/*.iws
+/*.iml
