@@ -28,6 +28,10 @@
         <url>scm:git:git@github.com:mvel/mvel.git</url>
         <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
     </scm>
+    <issueManagement>
+        <system>jira</system>
+        <url>http://jira.codehaus.org/browse/MVEL</url>
+    </issueManagement>
 
     <!--<pluginRepositories>-->
         <!--<pluginRepository>-->
