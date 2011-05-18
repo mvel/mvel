@@ -547,6 +547,7 @@ public abstract class AbstractTest extends TestCase {
         private String likes;
         private List<Foo> footributes;
         private Map<String, Foo> maptributes;
+        private Map<Object, Foo> objectKeyMaptributes;
 
         public Person() {
 
@@ -597,8 +598,16 @@ public abstract class AbstractTest extends TestCase {
 
         public void setMaptributes(Map<String, Foo> maptributes) {
             this.maptributes = maptributes;
-        }
+        }                
         
+        public Map<Object, Foo> getObjectKeyMaptributes() {
+            return objectKeyMaptributes;
+        }
+
+        public void setObjectKeyMaptributes(Map<Object, Foo> objectKeyMaptributes) {
+            this.objectKeyMaptributes = objectKeyMaptributes;
+        }
+
         public String toString() {
             return "Person( name=="+name+" age=="+age+" likes=="+likes+" )";
         }

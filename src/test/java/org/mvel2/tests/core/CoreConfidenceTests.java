@@ -3144,6 +3144,26 @@ public class CoreConfidenceTests extends AbstractTest {
 
         MVEL.eval("import " + Triangle.class.getCanonicalName() + "; Triangle.Foo.OBTUSE", new HashMap());
     }
+    
+    public void testNestedNumInMapKey() {
+        String str = "objectKeyMaptributes[Triangle.Foo.OBTUSE]";
+
+        ParserConfiguration pconf = new ParserConfiguration();
+        pconf.addImport( "Triangle", Triangle.class );
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.addInput("this", Person.class);
+        pctx.setStrictTypeEnforcement(true);
+        pctx.setStrongTyping(true);
+
+        Foo foo = new Foo();
+        Person p = new Person();
+        Map<Object, Foo> map = new HashMap<Object, Foo>();
+        map.put( Triangle.Foo.OBTUSE, foo );
+        p.setObjectKeyMaptributes( map );
+        
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        MVEL.executeExpression(stmt, p, new HashMap());        
+    }
 
     public static class Triangle {
         public static enum Foo {
