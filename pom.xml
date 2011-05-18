@@ -44,6 +44,28 @@
 
         <plugins>
             <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <inherited>true</inherited>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[1.5.0,)</version>
+                                </requireJavaVersion>
+                                <!--<requireMavenVersion>-->
+                                    <!--<version>[3.0.3,)</version>-->
+                                <!--</requireMavenVersion>-->
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.0.1</version>
