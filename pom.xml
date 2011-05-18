@@ -16,6 +16,12 @@
         from the smallest property binding and extraction, to full blown scripts.
     </description>
 
+    <scm>
+        <connection>scm:git:git@github.com:mvel/mvel.git</connection>
+        <url>scm:git:git@github.com:mvel/mvel.git</url>
+        <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
+    </scm>
+
     <pluginRepositories>
         <pluginRepository>
             <id>apache-snapshots</id>
@@ -148,12 +154,6 @@
         </resources>
     </build>
 
-      <scm>
-        <connection>scm:git:git@github.com:mikebrock/mvel.git</connection>
-        <url>scm:git:git@github.com:mikebrock/mvel.git</url>
-        <developerConnection>scm:git:git@github.com:mikebrock/mvel.git</developerConnection>
-    </scm>
-
     <reporting>
         <plugins>
             <plugin>
@@ -186,7 +186,6 @@
         <!--</dependency>        -->
     </dependencies>
 
-
     <distributionManagement>
         <!-- use the following if you're not using a snapshot version. -->
         <repository>
@@ -202,4 +201,5 @@
             <uniqueVersion>false</uniqueVersion>
         </snapshotRepository>
     </distributionManagement>
+
 </project>
