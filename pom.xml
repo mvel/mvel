@@ -22,16 +22,16 @@
         <developerConnection>scm:git:git@github.com:mvel/mvel.git</developerConnection>
     </scm>
 
-    <pluginRepositories>
-        <pluginRepository>
-            <id>apache-snapshots</id>
-            <name>Apache Snapshot Repository</name>
-            <url>http://repository.apache.org/snapshots/</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
+    <!--<pluginRepositories>-->
+        <!--<pluginRepository>-->
+            <!--<id>apache-snapshots</id>-->
+            <!--<name>Apache Snapshot Repository</name>-->
+            <!--<url>http://repository.apache.org/snapshots/</url>-->
+            <!--<snapshots>-->
+                <!--<enabled>true</enabled>-->
+            <!--</snapshots>-->
+        <!--</pluginRepository>-->
+    <!--</pluginRepositories>-->
 
     <build>
         <extensions>
