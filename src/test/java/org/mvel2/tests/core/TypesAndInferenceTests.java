@@ -1472,11 +1472,11 @@ public class TypesAndInferenceTests extends AbstractTest {
 
     public void testTypeCalculation() {
         ParserContext ctx = ParserContext.create().stronglyTyped();
-        ctx.addInput("map", Map.class);
+        ctx.addInput("foo", Foo.class);
 
-        Class cls = MVEL.analyze("map.keySet()", ctx);
+        Class cls = MVEL.analyze("foo.bar.testList.get(0)", ctx);
 
-        assertTrue(Set.class.isAssignableFrom(cls));
+        assertTrue(Integer.class.isAssignableFrom(cls));
     }
 
 }
