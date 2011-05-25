@@ -3175,7 +3175,12 @@ public class CoreConfidenceTests extends AbstractTest {
         pctx.setStrongTyping(true);
         
         ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
-        assertEquals( Integer.valueOf( 0 ), (Integer) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));        
+        assertEquals( Integer.valueOf( 0 ), (Integer) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));  
+        
+        str = "deliveries.size == 0";
+        
+        stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        assertTrue( (Boolean) MVEL.executeExpression(stmt, new Triangle(), new HashMap()));         
     }    
 
     public static class Triangle {
