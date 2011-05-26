@@ -1,12 +1,14 @@
 package org.mvel2.tests.core;
 
 import org.mvel2.MVEL;
+import org.mvel2.ParserConfiguration;
 
 import static org.mvel2.MVEL.compileExpression;
 import static org.mvel2.MVEL.executeExpression;
 
 import org.mvel2.ParserContext;
 import org.mvel2.compiler.CompiledExpression;
+import org.mvel2.compiler.ExecutableStatement;
 import org.mvel2.compiler.ExpressionCompiler;
 import org.mvel2.integration.ResolverTools;
 import org.mvel2.integration.impl.ClassImportResolverFactory;
@@ -15,6 +17,8 @@ import org.mvel2.optimizers.OptimizerFactory;
 import org.mvel2.tests.core.res.Bar;
 import org.mvel2.tests.core.res.Base;
 import org.mvel2.tests.core.res.Foo;
+import org.mvel2.tests.core.res.MyEnum;
+import org.mvel2.tests.core.res.Thing;
 
 import java.io.Serializable;
 import java.util.*;
@@ -351,7 +355,24 @@ public class WithTests extends AbstractTest {
 
         assertEquals("foo", MVEL.executeExpression(s));
     }
+    
+    public void testWithAndEnumInPackageImport() {
+        ParserConfiguration pconf = new ParserConfiguration();
+        pconf.addPackageImport( MyEnum.class.getPackage().getName() );
+        
+        ParserContext pCtx = new ParserContext(pconf);
+        pCtx.setStrongTyping(true);
 
+        pCtx.addInput("thing", Thing.class);
+
+        Thing thing = new Thing("xxx");
+        Map<String, Object> vars = new HashMap<String, Object>();
+        vars.put( "thing", thing );
+        
+        ExecutableStatement stmt = ( ExecutableStatement ) MVEL.compileExpression( "with( thing ) { myEnum = MyEnum.FULL_DOCUMENTATION }", pCtx );
+        MVEL.executeExpression( stmt, null, vars );
+        assertEquals( MyEnum.FULL_DOCUMENTATION, thing.getMyEnum() );
+    }    
 
     public static class Recipient {
         private String name;
