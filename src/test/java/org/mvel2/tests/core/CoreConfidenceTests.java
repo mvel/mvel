@@ -3179,6 +3179,19 @@ public class CoreConfidenceTests extends AbstractTest {
         }
     }
 
+    public void testArrayContains() {
+        String str = "array contains false";
+
+        ParserConfiguration pconf = new ParserConfiguration();
+        ParserContext pctx = new ParserContext(pconf);
+        pctx.setStrongTyping(true);
+        pctx.addInput("array", boolean[].class);
+        ExecutableStatement stmt = (ExecutableStatement) MVEL.compileExpression(str, pctx);
+        Map vars = new HashMap();
+        vars.put( "array", new boolean[] { true, true } );
+        MVEL.executeExpression( stmt, vars );
+    }
+
     public void testNestedEnumFromJar() throws ClassNotFoundException,
             SecurityException,
             NoSuchFieldException {
