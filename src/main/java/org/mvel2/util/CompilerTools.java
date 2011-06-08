@@ -475,16 +475,16 @@ public class CompilerTools {
 
   public static Number signNumber(Object number) {
     if (number instanceof Integer) {
-      return ((Integer) number) * -1;
+      return -((Integer) number);
     }
     else if (number instanceof Double) {
-      return ((Double) number) * -1;
+      return -((Double) number);
     }
     else if (number instanceof Float) {
-      return ((Float) number) * -1;
+      return -((Float) number);
     }
     else if (number instanceof Short) {
-      return ((Short) number) * -1;
+      return -((Short) number);
     }
     else {
       throw new CompileException("expected a numeric type but found: " + number.getClass().getName(), new char[0], 0);
